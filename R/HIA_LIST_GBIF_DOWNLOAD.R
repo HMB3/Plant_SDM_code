@@ -148,9 +148,9 @@ GBIF.HIA.RECORDS = data.frame(
   
   ## taxonomic resolution fields
   "occurrenceID"     = character(),
-  "basisOfRecord"    = character(),
-  "taxonRank"        = character(),
-  "taxonRankID"      = character(),
+  #"basisOfRecord"    = character(),
+  #"taxonRank"        = character(),
+  #"taxonRankID"      = character(),
   "institutionCode"  = character(),
   "year"             = numeric(),
   
@@ -164,9 +164,9 @@ GBIF.HIA.RECORDS = data.frame(
   ## spatial fields
   "lon"              = numeric(),
   "lat"              = numeric(),
-  "geodeticDatum"    = numeric(),
+  #"geodeticDatum"    = numeric(),
   "coordinateUncertaintyInMeters" = numeric(),
-  "elevation"        = numeric(),
+  #"elevation"        = numeric(),
   "country"          = character()
   
 )
@@ -180,27 +180,36 @@ for(sp.n in spp){
   filename = paste0("./data/base/HIA_LIST/GBIF/", sp.n, "_GBIF_records.csv")
   load(filename)
   
-  ## the restrict the dataframe to only those in common... can olny do this once fields are decided....
+  ## the restrict the dataframe to only those in common...can olny do this once fields are decided....
   GBIF = GBIF[,c(
 
+    ## taxonomic resolution fields
     "occurrenceID",
+    #"basisOfRecord",
+    #"taxonRank",
+    #"taxonRankID",
+    "institutionCode",
+    "year",
+    
+    ## taxonomic fields
     "scientificName",
     "order",
     "family",
     "genus",
     "species",
+    
+    ## spatial fields
     "lon",
     "lat",
+    #"geodeticDatum",
     "coordinateUncertaintyInMeters",
-    "country",
-    #"habitat",
-    "year",
-    "institutionCode"
-    #"identificationVerificationStatus",
+    #"elevation",
+    "country"          
+    
     )]
 
   
-  ## then finally, bind the different species dataframes together
+  ## then bind the different species dataframes together
   GBIF.HIA.RECORDS  = rbind(GBIF.HIA.RECORDS, GBIF)
   
 }
@@ -253,15 +262,10 @@ summary(GBIF.HIA.RECORDS)
 
 
 #########################################################################################################################
-## so the the ALA query got only those records with spatial accuracy < 1000, but also got some weirdos
-## first let's see if the weirdos contain any species that are in the final chapter 3 or 4 analysis
-
-
-
-
-
-
-
+## now how do we eliminate bad records?
+Magnolia.grandiflora
+key = (key <- name_suggest(q = 'Magnolia grandiflora', rank = 'species')$key[1])
+res = (res <- occ_search(taxonKey=key, limit=100))
 
 
 
