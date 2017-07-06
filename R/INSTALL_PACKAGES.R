@@ -4,13 +4,14 @@
 
 
 ## create a mega list of all the packages you could ever need?
+## can't do the special github ones like this though...
 packages <- c("ggplot2",   "plyr",   "reshape2", "RColorBrewer",  "scales",     "grid",
               "raster",    "spdep",  "rgdal",    "GISTools",      "data.table", "dtplyr",
               "Hmisc",     "Cairo",  "lattice",  "gtools",        "ggplot2",    "sjPlot",
               "gridExtra", "grid",   "sqldf",    "knitr",         "mgcv",       "MuMIn",
               "mvabund",   "asbio",  "mvtnorm",  "testthat",      "rgl",        "R.matlab",
               "ENMeval",   "lavaan", "semPlot",  "rgdal",         "sp",         "formula.tools",
-              "dismo",     "mctest", "rJava",    "ENMeval",
+              "dismo",     "mctest", "rJava",    "ENMeval",       "SDMTools",   "ALA4R",
               "statisticalModeling") # class(packages)
 
 
