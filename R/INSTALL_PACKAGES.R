@@ -3,7 +3,8 @@
 #########################################################################################################################
 
 
-## create a mega list of all the packages you could ever need?
+#########################################################################################################################
+## create a big list of all the packages needed for a project
 ## can't do the special github ones like this though...
 packages <- c("ggplot2",   "plyr",   "reshape2", "RColorBrewer",  "scales",     "grid",
               "raster",    "spdep",  "rgdal",    "GISTools",      "data.table", "dtplyr",
@@ -12,9 +13,17 @@ packages <- c("ggplot2",   "plyr",   "reshape2", "RColorBrewer",  "scales",     
               "mvabund",   "asbio",  "mvtnorm",  "testthat",      "rgl",        "R.matlab",
               "ENMeval",   "lavaan", "semPlot",  "rgdal",         "sp",         "formula.tools",
               "dismo",     "mctest", "rJava",    "ENMeval",       "SDMTools",   "ALA4R",
-              "statisticalModeling") # class(packages)
+              "statisticalModeling", 
+              "knitr", "yaml", "htmltools", "caTools", "bitops", "rmarkdown") # class(packages)
 
 
+## also to create pdf/html documents, you need to install a latex program. EG MiKtex for windows.
+## easiest to use the installr function, see:
+## https://stackoverflow.com/questions/24239420/tex-package-not-installing-in-r-version-3-1-0
+## installr::installr() and pick MikTeX (at least).
+
+
+#########################################################################################################################
 ## now use a function from the internet that takes a list of packages, installs and loads them
 ipak <- function(pkg){
   
@@ -37,7 +46,9 @@ list.files(system.file("java", package = "dismo"))
 ENMevaluate
 
 
-## now commit these changes...why can't I commit them?
 
 
 
+#########################################################################################################################
+###################################### INSTALL MULTIPLE PACKAGES AT ONCE  ############################################### 
+#########################################################################################################################
