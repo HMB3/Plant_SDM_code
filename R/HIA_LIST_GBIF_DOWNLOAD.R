@@ -55,7 +55,7 @@ head(name_lookup(query = 'Magnolia grandiflora', rank = "species", return = 'dat
 
 
 ## now read in the HIA list: this could be one list with different criteria to create the hierarchy, or several lists
-#spp.list = read.csv("./data/base/HIA_LIST_date.csv", stringsAsFactors = FALSE)
+#spp.list = read.csv("./data/base/HIA_LIST/HIA/HIA_DATE.csv", stringsAsFactors = FALSE)
 
 
 ## also consider how to download, what is the taxonomic resolution? If the varieties are troublesome, are we best
@@ -63,41 +63,30 @@ head(name_lookup(query = 'Magnolia grandiflora', rank = "species", return = 'dat
 
 
 ## just use a dummy list...
-spp.list = c("Magnolia grandiflora", 
-             "Macadamia integrifolia", 
-             "Macadamia jansenii",
-             "Macadamia ternifolia",
-             "Macadamia tetraphylla")
 
-
-## have a look
-# dim(spp.list)
-# str(spp.list)
-# head(spp.list)
+dim(spp.list)
+str(spp.list)
+head(spp.list)
 
  
 ## now what is the simplest way to do the download? EG: download all fields for a species, then do the culling later?
 ## n = 5 * ~ 200 species, so records for ~1000 taxa. So not too many to download at once! 
 Magnolia.grandiflora    = gbif('Magnolia grandiflora',   download = TRUE)
-# Macadamia.integrifolia  = gbif('Macadamia integrifolia', download = TRUE)
-# Macadamia.jansenii      = gbif('Macadamia jansenii',     download = TRUE)
-# Macadamia.ternifolia    = gbif('Macadamia ternifolia',   download = TRUE)
 
 
-
-## look at all the GBIF fields...
+## look at all the GBIF fields for an example
 GBIF.names = sort(names(Magnolia.grandiflora))
 GBIF.names
 
 
-## Might want to have this as "refresh" but trying off first. The cache should clear every time an R session is started anyway.
+## Might want to have this as "refresh" but trying off first. 
+## The cache should clear every time an R session is started anyway.
 ## R is unstable with this package and frequently crashes
 #ala_config(caching = "off")
 
 
 ## Now create list of HIA taxa
-#spp = unique(as.character(spp.list$binomial))
-spp = spp.list
+spp = unique(as.character(spp.list$Species))
 str(spp)
 head(spp, 20)
 tail(spp, 20)
@@ -107,7 +96,7 @@ tail(spp, 20)
 
 
 #########################################################################################################################
-## now run a lOOP to dowload species in the "spp" list from the GBIF
+## now run a lOOP to dowload species in the "spp" list from GBIF
 ## not including any data quality checks here, just downloading everything
 
 
@@ -117,7 +106,7 @@ for(sp.n in spp){
   ## First, check if the f*&%$*# file exists
   file = paste0("./data/base/HIA_LIST/GBIF/", sp.n, "_GBIF_records.csv")
   
-  
+  ## need this for longer list, could be up to thousands of species in total
   if (file.exists (file)) {
     
     print (paste ("file exists for species", sp.n, "skipping"))
@@ -143,6 +132,8 @@ for(sp.n in spp){
 ## 2). LOAD GBIF RECORDS FOR EACH SPECIES INTO ONE DATAFRAME
 #########################################################################################################################
 
+
+## could also do the cleaing for each species individually?
 
 ## Load a 1km grid of Australia (should be 250m grid?)
 map = raster("./data/base/world_clim/wc2.0_30s_prec_01.tif")
