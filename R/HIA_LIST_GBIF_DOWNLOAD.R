@@ -8,7 +8,6 @@
 # The trick here will be substituing the functions from the ALA4R package for the rgbif functions...
 
 
-
 ## setup 
 library(gtools)
 library(devtools)
@@ -54,16 +53,13 @@ dim(name_lookup(query  = 'Magnolia grandiflora', rank = "species", return = 'dat
 head(name_lookup(query = 'Magnolia grandiflora', rank = "species", return = 'data'), 20)
 
 
-## now read in the HIA list: this could be one list with different criteria to create the hierarchy, or several lists
-#spp.list = read.csv("./data/base/HIA_LIST/HIA/HIA_DATE.csv", stringsAsFactors = FALSE)
+## now read in the HIA list: this could be one list with different criteria to create the hierarchy, 
+## or several lists
+spp.list = read.csv("./data/base/HIA_LIST/HIA/HIA_DATE.csv", stringsAsFactors = FALSE)
 
 
 ## also consider how to download, what is the taxonomic resolution? If the varieties are troublesome, are we best
 ## downloading all the records for a genus, rather than a species? Discuss with Rach once I've got more work done...
-
-
-## just use a dummy list...
-
 dim(spp.list)
 str(spp.list)
 head(spp.list)
@@ -86,7 +82,7 @@ GBIF.names
 
 
 ## Now create list of HIA taxa
-spp = unique(as.character(spp.list$Species))
+spp = unique(as.character(spp.list$Matched_Scientific_name))
 str(spp)
 head(spp, 20)
 tail(spp, 20)
@@ -134,6 +130,10 @@ for(sp.n in spp){
 
 
 ## could also do the cleaing for each species individually?
+test            = read.csv("./data/base/HIA_LIST/GBIF/Corymbia maculata_GBIF_records.csv")
+Opuntia.stricta = read.csv("./data/base/HIA_LIST/GBIF/Opuntia stricta_GBIF_records.csv")
+str(Opuntia.stricta)
+
 
 ## Load a 1km grid of Australia (should be 250m grid?)
 map = raster("./data/base/world_clim/wc2.0_30s_prec_01.tif")
@@ -141,7 +141,8 @@ plot(map)
 
 
 ## Simple table of columns needed from GBIF to check data quality
-## problem here is that not all species have the same columns!!!!
+## problem here is that not all species have the same columns!
+## can we get all the columns at once, even if they have a different number?
 GBIF.names
 
 
@@ -259,6 +260,8 @@ write.csv(GBIF.HIA.RECORDS,       "./data/base/HIA_LIST/GBIF/GLOBAL_GBIF_HIA_rec
 ## 3). CLEAN GBIF RECORDS
 #########################################################################################################################
 
+## GBIF records could also be cleaned one at a time...
+## Maxent models will be run one at a time...
 
 ## read the GBIF data back in
 GBIF.HIA.RECORDS = read.csv("./data/GLOBAL_GBIF_HIA_records_RAW_DATE.csv", stringsAsFactors = FALSE)
