@@ -22,6 +22,7 @@ library(SDMTools)
 library(dismo)
 library(ALA4R)
 library(rgbif)
+library(speciesgeocodeR)
 library(raster)
 
 library(knitr)
@@ -43,6 +44,7 @@ library(rmarkdown)
 ## have a look at GBIF: e.g. return the total no. of records on the database?
 occ_count(basisOfRecord = 'OBSERVATION')
 occ_count(georeferenced = TRUE)
+
 
 ## search for a genus
 head(name_lookup(query = 'Magnolia', rank = "genus", return = "data"), 20)
