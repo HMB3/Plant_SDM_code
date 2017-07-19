@@ -21,6 +21,7 @@ packages <- c("ggplot2",   "plyr",   "reshape2", "RColorBrewer",  "scales",     
 ## easiest to use the installr function, see:
 ## https://stackoverflow.com/questions/24239420/tex-package-not-installing-in-r-version-3-1-0
 ## installr::installr() and pick MikTeX (at least).
+## install.packages("climates",,"http://rforge.net/",type="source")
 
 
 #########################################################################################################################
