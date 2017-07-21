@@ -31,8 +31,8 @@ library(yaml)
 library(caTools)
 library(bitops)
 library(rmarkdown)
-
-
+library(gsubfn)
+library(functional)
 
 
 
@@ -65,6 +65,25 @@ spp.list = read.csv("./data/base/HIA_LIST/HIA/HIA_DATE.csv", stringsAsFactors = 
 dim(spp.list)
 str(spp.list)
 head(spp.list)
+
+
+## now remove all the weird species
+# test = gsubfn(".", list("subsp." = "", 
+#                         "var."   = ""), paste(spp.list$Matched_Scientific_name))
+
+spp.list$Matched_Scientific_name = gsub( "subsp.", "", paste(spp.list$Matched_Scientific_name))
+spp.list$Matched_Scientific_name = gsub( "var.", "", paste(spp.list$Matched_Scientific_name))
+spp.list$Matched_Scientific_name = gsub( "  ", " ", paste(spp.list$Matched_Scientific_name))
+
+
+## then remove the varieties and subspecies?
+broken <- strsplit(spp.list$Matched_Scientific_name, ",")
+spp.list$Matched_Scientific_name = sapply(broken, 
+                                          function(x) 
+                                            paste(unique(x), collapse = ','))
+
+
+sapply(broken, Compose(unique, Curry(paste, collapse=',')))
 
  
 ## now what is the simplest way to do the download? EG: download all fields for a species, then do the culling later?
