@@ -13,8 +13,9 @@ packages <- c("ggplot2",   "plyr",   "reshape2", "RColorBrewer",  "scales",     
               "mvabund",   "asbio",  "mvtnorm",  "testthat",      "rgl",        "R.matlab",
               "ENMeval",   "lavaan", "semPlot",  "rgdal",         "sp",         "formula.tools",
               "dismo",     "mctest", "rJava",    "ENMeval",       "SDMTools",   "ALA4R",
-              "statisticalModeling", 
-              "knitr",     "yaml",   "htmltools", "caTools",      "bitops",     "rmarkdown",   
+              "maxent",    "devtools", "microbenchmark",
+              "statisticalModeling", "knitr",    "yaml",          "htmltools",  "caTools",      
+              "bitops",    "rmarkdown", "cluster",   
               "speciesgeocodeR", "gsubfn", "functional") # class(packages)
 
 
@@ -23,6 +24,13 @@ packages <- c("ggplot2",   "plyr",   "reshape2", "RColorBrewer",  "scales",     
 ## https://stackoverflow.com/questions/24239420/tex-package-not-installing-in-r-version-3-1-0
 ## installr::installr() and pick MikTeX (at least).
 ## install.packages("climates",,"http://rforge.net/",type="source")
+
+## library(devtools)
+## install_github('johnbaums/rmaxent')
+## install_github('johnbaums/jagstools')
+## install_github('johnbaums/hues')
+## install_github('johnbaums/trees')
+## install_github('johnbaums/things')
 
 
 #########################################################################################################################

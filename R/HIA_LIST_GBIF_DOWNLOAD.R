@@ -18,7 +18,10 @@ library(Rcpp)
 library(raster)
 library(rgdal)
 library(plyr)
+
+
 library(SDMTools)
+library(rmaxent)
 library(dismo)
 library(ALA4R)
 library(rgbif)

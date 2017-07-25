@@ -1,0 +1,86 @@
+---
+title: "Which plant where project, test species analysis"
+author: "Hugh, Linda, John, etc"
+date: "30 June 2017"
+output:
+html_document: default
+pdf_document: default
+---
+
+
+#########################################################################################################
+## Key information for projecting species distributions under climate change 
+#########################################################################################################
+
+
+Aim: Quantify which species - from a list - will can survive and thrive in Australian urban environments
+under climate change predicions (2050, 2070, 2100, etc.). Although the analyses specifications will evolve
+over time, there are some key bits of information that we need, regardless of the particular datasets or 
+settings used (e.g. which rasters, algorithm settingsm etc.).
+
+First, we need an ecological framework for the environmental conditions affecting plant growth, reprodcution 
+and distribution. Guisan and Zimmermans (2000) framework has achieved wide currency, and applies regardles 
+of the landscape. 
+
+
+\newpage 
+![FIG_1](output/Figures/FIG_CONCEPT/Guisan_Zimmerman_framework.png)
+
+
+
+In order the realised niche of each species in 
+
+
+
+
+
+
+
+#########################################################################################################
+## 1).Read in species data
+#########################################################################################################
+
+
+The whole analysis runs off one table which contains data for 510 ecological plot sites in the Wet Tropics. 
+This table contains the coordinates for all sites, the response variable (primary productivity), environmental 
+conditions (rainfall and temperature), and the explanatory variables (rainfall and temperature niche width): 
+
+
+```{r setup, message = FALSE, echo = FALSE}
+
+## setup 
+library(gtools)
+library(devtools)
+#devtools::install_github("ropensci/rgbif")
+library(data.table)
+library(RCurl)
+library(Rcpp)
+library(raster)
+library(rgdal)
+library(plyr)
+library(SDMTools)
+library(dismo)
+library(ALA4R)
+library(rgbif)
+library(raster)
+library(raster)
+library(knitr)
+
+
+```
+
+
+Check GBIF
+
+
+```{r load data, setup, message = FALSE}
+
+## search for a genus
+head(name_lookup(query = 'Magnolia', rank = "genus", return = "data"), 20)
+
+```
+
+
+what else needs to be isntalled?
+
+
