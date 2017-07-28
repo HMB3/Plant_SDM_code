@@ -38,6 +38,9 @@ library(gsubfn)
 library(functional)
 
 
+## source
+source('./R/GREEN_CITIES_FUNCTIONS.R')
+
 
 #########################################################################################################################
 ## 1). DOWNLOAD RECORDS FROM GBIF USING HIA LIST
@@ -70,28 +73,34 @@ str(spp.list)
 head(spp.list)
 
 
-## now remove all the weird species
+## now remove all the subspecies, etc,
 # test = gsubfn(".", list("subsp." = "", 
 #                         "var."   = ""), paste(spp.list$Matched_Scientific_name))
-
-spp.list$Matched_Scientific_name = gsub( "subsp.", "", paste(spp.list$Matched_Scientific_name))
-spp.list$Matched_Scientific_name = gsub( "var.", "", paste(spp.list$Matched_Scientific_name))
-spp.list$Matched_Scientific_name = gsub( "  ", " ", paste(spp.list$Matched_Scientific_name))
-
-
-## then remove the varieties and subspecies?
-broken <- strsplit(spp.list$Matched_Scientific_name, ",")
-spp.list$Matched_Scientific_name = sapply(broken, 
-                                          function(x) 
-                                            paste(unique(x), collapse = ','))
+spp.list$Matched_Scientific_name = gsub("subsp.", "", paste(spp.list$Matched_Scientific_name))
+spp.list$Matched_Scientific_name = gsub("sect.", "", paste(spp.list$Matched_Scientific_name))
+spp.list$Matched_Scientific_name = gsub("var.", "", paste(spp.list$Matched_Scientific_name))
+spp.list$Matched_Scientific_name = gsub("  ", " ", paste(spp.list$Matched_Scientific_name))
 
 
-sapply(broken, Compose(unique, Curry(paste, collapse=',')))
+## then remove the varieties and subspecies
+spp.list$Matched_Scientific_name = vapply(lapply(strsplit(spp.list$Matched_Scientific_name, " "), 
+                                                 unique), paste, character(1L), collapse = " ")
 
- 
+
+## then get just the first two words (again cleaning up the subspecies)
+spp.list$Matched_Scientific_name = vapply(lapply(strsplit(spp.list$Matched_Scientific_name, " "), 
+                                                 string_fun), paste, character(1L), collapse = " ")
+
+
+## this creates "NA" species where only a genus was given, so just exclude these rows
+spp.list = spp.list[!grepl("NA", spp.list$Matched_Scientific_name),]
+spp.list = spp.list[with(spp.list, order(Matched_Scientific_name)), ] 
+str(spp.list)
+
+
 ## now what is the simplest way to do the download? EG: download all fields for a species, then do the culling later?
 ## n = 5 * ~ 200 species, so records for ~1000 taxa. So not too many to download at once! 
-Magnolia.grandiflora    = gbif('Magnolia grandiflora',   download = TRUE)
+Magnolia.grandiflora = gbif('Magnolia grandiflora', download = TRUE)
 
 
 ## look at all the GBIF fields for an example
@@ -124,7 +133,7 @@ for(sp.n in spp){
 
 
   ## First, check if the f*&%$*# file exists
-  file = paste0("./data/base/HIA_LIST/GBIF/", sp.n, "_GBIF_records.csv")
+  file = paste0("./data/base/HIA_LIST/GBIF/", sp.n, "_GBIF_records.RData")
   
   ## need this for longer list, could be up to thousands of species in total
   if (file.exists (file)) {
@@ -135,12 +144,11 @@ for(sp.n in spp){
   }
 
   ## 1). download all records from GBIF
-  #GBIF = occurrences(taxon = sp.n, download_reason_id = 7)
-  GBIF = gbif(sp.n, download = TRUE)   ## could use more arguments here
+  GBIF = gbif(sp.n, download = TRUE)   ## could use more arguments here, download_reason_id = 7, etc.
     
 
   # 8. save.
-  save(GBIF, file = paste("./data/base/HIA_LIST/GBIF/", sp.n, "_GBIF_records.csv", sep = ""))
+  save(GBIF, file = paste("./data/base/HIA_LIST/GBIF/", sp.n, "_GBIF_records.RData", sep = ""))
   
 } 
 

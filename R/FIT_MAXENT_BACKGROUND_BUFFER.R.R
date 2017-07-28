@@ -12,7 +12,7 @@ fit_maxent2 <- function(occ, bg, predictors, name, outdir, template, max_bg_size
   require(dismo)
   require(things)
   
-  if(!file.exists(outdir)) stop('outdir does not exist :(', call.=FALSE)
+  if(!file.exists(outdir)) stop('outdir does not exist :(', call. = FALSE)
   outdir_sp <- file.path(outdir, gsub(' ', '_', name))
   if(!file.exists(outdir_sp)) dir.create(outdir_sp)
   features <- unlist(strsplit(features, ''))

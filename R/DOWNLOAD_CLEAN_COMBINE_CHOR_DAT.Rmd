@@ -13,14 +13,18 @@ library(rgdal)
 
 Set ALA4R cache directory
 ```{r}
-ala_config(cache_directory='c:/data/ala_cache_2017', download_reason_id=7)
+
+ala_config(cache_directory = './data/base/HIA_LIST/ALA', download_reason_id = 7)
+
 ```
+
 
 ```{r}
 aus_states <- spTransform(ne_states(country='Australia'), CRS('+init=epsg:3577'))
 aus <- spTransform(ne_countries(10, country='Australia'), CRS('+init=epsg:3577'))
 aus_buffer <- gBuffer(aus, width=10000)
 ```
+
 
 Some names have changed in ALA (e.g. prolific addition of subgenus (?) in
 names). Need to create a lookup table so we can keep track of which species
@@ -73,17 +77,23 @@ dput(spp$phase1_2016)
 #   "Vespadelus troughtoni", "Vombatus ursinus hirsutus", "Wallabia bicolor"
 # )
 
+
 spp_names <- search_names(spp$phase1_2016)
+
 
 # spp$phase1_2017[which(spp_names$searchTerm == spp_names$name)] <-
 #   spp$phase1_2016[which(spp_names$searchTerm == spp_names$name)]
 
+
 spp$phase1_2017[which(spp_names$searchTerm == sub('(.+) \\([^\\)]+) (.+)', '\\1 \\2', spp_names$name))] <-
   spp$phase1_2016[which(spp_names$searchTerm == sub('(.+) \\([^\\)]+) (.+)', '\\1 \\2', spp_names$name))]
 
+
 filter(spp, phase1_2017=='')
 
+
 spp_names %>% filter(searchTerm != name | is.na(name))
+
 
 filter(spp_names, searchTerm != sub('(.+) \\([^\\)]+) (.+)', '\\1 \\2', name) | is.na(name))
 # Some names match incorrectly to subspecies. Fix genus name as per ALA.
@@ -101,6 +111,7 @@ filter(spp_names, searchTerm != sub('(.+) \\([^\\)]+) (.+)', '\\1 \\2', name) | 
 ## 'Tyto novaehollandiae' = 'Tyto (Megastrix) novaehollandiae'
 ## 'Tyto tenebricosa tenebricosa' = 'Tyto (Megastrix) tenebricosa tenebricosa'
 
+
 # manually fix
 fix1 <- matrix(c('Cinclosoma castanotum', 'Cinclosoma (Malleeavis) castanotum',
                 'Coracina lineata', 'Coracina (Paragraucalus) lineata',
@@ -115,6 +126,7 @@ fix1 <- matrix(c('Cinclosoma castanotum', 'Cinclosoma (Malleeavis) castanotum',
                 'Tyto tenebricosa tenebricosa', 'Tyto (Megastrix) tenebricosa tenebricosa'),
               ncol=2, byrow=TRUE)
 
+
 spp$phase1_2017[match(fix1[, 1], spp$phase1_2016)] <- fix1[, 2]
 
 
@@ -122,6 +134,7 @@ spp$phase1_2017[match(fix1[, 1], spp$phase1_2016)] <- fix1[, 2]
 # Also need to add "Cyclopsitta diopthalma coxeni" (there are two spellings for this species)
 spp <- rbind(spp, c('Cyclospitta diophthalma coxeni', 'Cyclopsitta diopthalma coxeni')) %>% 
   arrange(phase1_2016)
+
 
 # Add koala (not modelled in 2016, but has been added in 2017)
 spp <- rbind(spp, c(NA, 'Phascolarctos cinereus')) %>% 
@@ -138,6 +151,7 @@ n <- setNames(sapply(spp_names$acceptedConceptGuid, function(guid) {
   occurrences(sprintf('taxon_concept_lsid:%s', guid), record_count_only=TRUE)
 }), spp_names$acceptedConceptGuid)
 
+
 # Check which species have few records
 n[n < 100]
 spp_names[spp_names$acceptedConceptGuid %in% names(n[n < 100]),]
@@ -150,6 +164,7 @@ spp_names[spp_names$acceptedConceptGuid %in% names(n[n < 100]),]
 # Vombatus ursinus hirsutus = Vombatus ursinus?
 # 
 
+
 # Modify spp vector and repeat above steps.
 fix2 <- matrix(c('Elseya belli','Wollumbinia belli',
                 'Phascogale tapoatafa','Phascogale tapoatafa tapoatafa',
@@ -158,14 +173,18 @@ fix2 <- matrix(c('Elseya belli','Wollumbinia belli',
                 'Perameles nasuta','Perameles nasuta nasuta',
                 'Vombatus ursinus hirsutus','Vombatus ursinus'), ncol=2, byrow=TRUE)
 
+
 spp$phase1_2017[match(fix2[, 1], spp$phase1_2017)] <- fix2[, 2]
 spp <- arrange(spp, phase1_2017)
 write.csv(spp, 'species_names.csv', row.names=FALSE)
 
+
 spp_names <- search_names(spp$phase1_2017) %>% 
   mutate(commonName=sapply(commonName, paste, collapse=';'))
 
+
 spp_names
+
 
 # new record count
 n <- setNames(sapply(spp_names$acceptedConceptGuid, function(guid) {
@@ -173,9 +192,11 @@ n <- setNames(sapply(spp_names$acceptedConceptGuid, function(guid) {
   occurrences(sprintf('taxon_concept_lsid:%s', guid), record_count_only=TRUE)
 }), spp_names$acceptedConceptGuid)
 
+
 # Check which species still have few records
 n[n < 100]
 spp_names[spp_names$acceptedConceptGuid %in% names(n[n < 100]),]
+
 
 # Download records (commented out to save time on subsequent runs)
 # occ <- setNames(lapply(spp_names$acceptedConceptGuid, function(guid) {
@@ -184,7 +205,10 @@ spp_names[spp_names$acceptedConceptGuid %in% names(n[n < 100]),]
 # }), spp_names$acceptedConceptGuid)
 #saveRDS(occ, 'data/occurrence/chordata/occ_ala_chordata_raw.rds')
 occ <- readRDS('data/occurrence/chordata/occ_ala_chordata_raw.rds')
+
+
 ```
+
 
 Separate data and metadata
 ```{r}
@@ -193,7 +217,9 @@ occ_meta <- lapply(occ, '[[', 'meta')
 #Reduce(intersect, sapply(occ_data, names)) # set of fields that exist for all species
 ```
 
+
 Check what entries exist for basis of record
+
 
 ```{r}
 # basis <- lapply(sapply(occ_data, '[[', 'basisOfRecord'), table)
@@ -205,7 +231,7 @@ Check what entries exist for basis of record
 create a function that cleans the ALA records. Below, we exclude observations 
 that:
 * are dated prior to 1950;
-* lack coordinates (though if we used `fq='geospatial_kosher:true'` in our
+* lack coordinates (though if we used `fq = 'geospatial_kosher:true'` in our
 `occurrences` request, this is unnecessary);
 * have zero latitude or zero longitude;
 * have coordinate uncertainty greater than 1000 m;
@@ -217,44 +243,54 @@ Environment and Heritage BioNet Atlas of NSW Wildlife" (since we already have
 these records from OEH); or
 * are flagged as `occCultivatedEscapee`.
 
+
 ```{r}
+
 clean_ala <- function(x) {
-  yr <- ifelse(is.na(x$year) | x$year < 1950, 'year', '')
-  coords1 <- is.na(x$longitude) | is.na(x$latitude) | 
-    x$longitude == '' | x$latitude == ''
+  
+  yr      <- ifelse(is.na(x$year) | x$year < 1950, 'year', '')
+  coords1 <- is.na(x$longitude) | is.na(x$latitude) | x$longitude == '' | x$latitude == ''
+  
   coords2 <- if('zeroLatitude' %in% names(x)) x$zeroLatitude else FALSE
   coords3 <- if('zeroLongitude' %in% names(x)) x$zeroLongitude else FALSE
   coords4 <- if('invertedCoordinates' %in% names(x)) x$invertedCoordinates else FALSE # could just flip them back though...
-  coords <- ifelse(coords1|coords2|coords3|coords4, 'coords', '')
+  coords  <- ifelse(coords1|coords2|coords3|coords4, 'coords', '')
   
-  coorduncert <- ifelse(!((x$coordinateUncertaintyInMetres <= 1000) | 
-                         is.na(x$coordinateUncertaintyInMetres)),
-                       'coorduncert', '')
+  coorduncert <- ifelse(!((x$coordinateUncertaintyInMetres <= 1000) | is.na(x$coordinateUncertaintyInMetres)), 'coorduncert', '')
+  
   loc <- ifelse(grepl('\\bzoo\\b', x$locality, ignore.case=TRUE), 'locality', '')
-  taxonid <- ifelse(x$taxonIdentificationIssue == 'questionSpecies', 
-                   'taxonid', '')
+  
+  taxonid <- ifelse(x$taxonIdentificationIssue == 'questionSpecies', 'taxonid', '')
+  
   basis <- ifelse(x$basisOfRecord == 'FossilSpecimen', 'basis', '')
+  
   bionet <- ifelse(x$collectionCode %in% c(
-      'BioNet Atlas of NSW Wildlife', 
-      'NSW Office of Environment and Heritage BioNet Atlas of NSW Wildlife'), 
-      'bionet', '')
+    'BioNet Atlas of NSW Wildlife', 
+    'NSW Office of Environment and Heritage BioNet Atlas of NSW Wildlife'), 
+    'bionet', '')
+  
   cultiv_esc <- if('occCultivatedEscapee' %in% names(x)) {
     ifelse(x$occCultivatedEscapee, 'cultiv_esc', '') 
+    
   } else ''
   
   reason <- gsub('^,+|(?<=,),+|,+$',
                  '',
                  paste(yr, coords, coorduncert, loc, taxonid, basis, bionet, cultiv_esc, sep=','),
-                 perl=TRUE
-  )
+                 perl = TRUE)
+  
   x <- x %>% 
-    mutate(exclude=ifelse(reason!='', TRUE, FALSE),
-           reason=ifelse(exclude, reason, NA))
+    mutate(exclude = ifelse(reason! = '', TRUE, FALSE),
+           reason  = ifelse(exclude, reason, NA))
   x
+  
 }
+
 ```
 
+
 We now apply the function to our list of datasets:
+
 
 ```{r}
 occ_data_clean <- lapply(occ_data, clean_ala)
@@ -262,6 +298,7 @@ occ_data_clean <- lapply(occ_data, clean_ala)
 
 
 Reduce to smaller set of fields
+
 
 ```{r}
 fields <- Reduce(intersect, lapply(occ_data_clean, names))
@@ -276,6 +313,7 @@ occ_data_clean_minimal <- lapply(occ_data_clean, function(x) {
 
 Combine the two _Cyclopsitta dopthalma coxeni_ datasets
 
+
 ```{r}
 occ_data_clean_minimal$`urn:lsid:biodiversity.org.au:afd.taxon:af726a03-020b-41f8-941b-b15a5141ec52` <-
   rbind(occ_data_clean_minimal$`urn:lsid:biodiversity.org.au:afd.taxon:af726a03-020b-41f8-941b-b15a5141ec52`,
@@ -284,15 +322,19 @@ occ_data_clean_minimal <- occ_data_clean_minimal[names(occ_data_clean_minimal)!=
 spp_names <- spp_names[!spp_names$acceptedConceptGuid=='ALA_Cyclopsitta_diopthalma_coxeni', ]
 ```
 
+
 Add raw data sample size to `spp_names`.
+
 
 ```{r}
 spp_names$nrecords_ala_raw <- sapply(occ_data_clean_minimal, nrow)[
   match(spp_names$acceptedConceptGuid, names(sapply(occ_data_clean_minimal, nrow)))]
 ```
 
+
 Convert to SPDFs, project to 3577, and drop any records that aren't in
 `aus_buffer` (i.e., within 10 km of Australian coastline)
+
 
 ```{r}
 occ_data_clean_minimal_sp <- lapply(occ_data_clean_minimal, function(x) {
@@ -310,20 +352,25 @@ occ_data_clean_minimal_sp <- lapply(occ_data_clean_minimal, function(x) {
 
 Calculate the number of records not flagged as `exclude` during cleaning
 
+
 ```{r}
 n_ok <- sapply(occ_data_clean_minimal_sp, function(x) sum(!x$exclude))
 spp_names$nrecords_ala_include <- n_ok
 ```
 
+
 Write our `spp_names` for future reference
+
 
 ```{r}
 write.csv(spp_names, 'animals_to_model.csv', row.names=FALSE)
 spp_names <- read.csv('animals_to_model.csv', stringsAsFactors=FALSE)
 ```
 
+
 Add pre-cleaned non-ALA records (incl. Bionet and Qld data sourced by Janeen
 Robb)
+
 
 ```{r}
 # occ_chordata <- '../sdms_1km_2016/data/occurrence/animal_occurrence_chordata_withJaneenData.rds' %>% 
@@ -338,6 +385,7 @@ Robb)
 
 
 Make maps
+
 
 ```{r}
 dir.create('data/occurrence/chordata/png')
@@ -367,31 +415,40 @@ sapply(spp_names$acceptedConceptGuid, function(guid) {
 })
 ```
 
+
 These shapefiles were then given to Linda Beaumont to clean manually. She then 
 shared them on Google Drive [here](https://drive.google.com/open?id=0B68nAZY9cTa3Q2dQdklTbUxrY1U). 
+
 
 These have been downloaded and are now in
 'data/occurrence/chordata/shp_cleaned_by_linda/ALA animal occurrence data -
 March2017 - shapefiles'. Majority have a consistent set of fields and are in
 EPSG:3577, but some have a different set of fields, and are in WGS84 lonlat.
 
+
 For some species, Linda added VBA data to the ALA data that she cleaned.
+
 
 ## Combine cleaned ALA (+VBA) with Bionet and data sourced by Janeen Robb
 
+
 Read in Linda's cleaned data, species by species, and add the phase1_2016 data. 
 We will ignore duplication, since we'll be reducing to 1 record per cell anyway.
+
 
 ```{r}
 old_data <- readRDS(file.path('../sdms_1km_2016/data/occurrence',
                               'animal_occurrence_chordata_withJaneenData.rds'))
 
+
 ff <- list.files(file.path(
   'data/occurrence/chordata/shp_cleaned_by_linda',
   'ALA animal occurrence data - March2017 - shapefiles'), '\\.shp$', full=TRUE)
 
+
 # exclude koala for now... we don't have the bionet data handy
 ff <- grep('Phascolarctos cinereus', ff, val=T, invert=T)
+
 
 lapply(ff, function(f) {
   species2017 <- extension(basename(f), '')
@@ -428,13 +485,16 @@ lapply(ff, function(f) {
 
 ## Re-download background data (Chordata)
 
+
 For efficiency, we need to do this in two steps: (1) with
 `fq='country:Australia'`, and (2) with `fq='-country=*'`. ALA is currently buggy
 when attempting both filters at once.
 
+
 Using ALA's offline download service, an email is sent to the specified email 
 address once the download is ready. Depending on the download size, this can
 take days.
+
 
 ```{r}
 #occurrences(
@@ -459,7 +519,9 @@ take days.
 
 ```
 
+
 Reading backgroung for all chordata downloaded by John
+
 
 ```{r}
 template <- raster(extent(c(-1887422.87658104, 2121577.12341896, 
@@ -483,17 +545,26 @@ gc()
 # r[as.numeric(names(n))] <- n
 # But we won't.
 
+
 bg_unique_albers <- SpatialPoints(bg_unique, proj4string=CRS('+init=epsg:3577'))
 #saveRDS(bg_unique_albers, '//sci-7910/c/data/ALA/all_chordata_aus/all_chordata_aus_since1950_uncert1000maxOrMissing.rds_uniquecells.rds')
 bg_unique_albers <- readRDS('//sci-7910/c/data/ALA/all_chordata_aus/all_chordata_aus_since1950_uncert1000maxOrMissing.rds_uniquecells.rds')
 
+
 ```
 
 ```{r}
+
 ff <- list.files('data/occurrence/chordata/shp_cleaned_by_linda_and_bionet_etc_added', 
                  '\\.shp$', full=TRUE, recursive=TRUE)
+
+
 occ <- setNames(do.call(rbind, lapply(ff, readOGR)), 
               c('record_id', 'scientific_name', 'coordinates_uncertainty', 'year'))
+
+
 saveRDS(occ, 'data/occurrence/chordata/shp_cleaned_by_linda_and_bionet_etc_added/occ_minimal_albers_chordata_phase1.rds')
 ```
+
+
 
