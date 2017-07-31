@@ -76,10 +76,36 @@ head(spp.list)
 ## now remove all the subspecies, etc,
 # test = gsubfn(".", list("subsp." = "", 
 #                         "var."   = ""), paste(spp.list$Matched_Scientific_name))
-spp.list$Matched_Scientific_name = gsub("subsp.", "", paste(spp.list$Matched_Scientific_name))
-spp.list$Matched_Scientific_name = gsub("sect.", "", paste(spp.list$Matched_Scientific_name))
-spp.list$Matched_Scientific_name = gsub("var.", "", paste(spp.list$Matched_Scientific_name))
-spp.list$Matched_Scientific_name = gsub("  ", " ", paste(spp.list$Matched_Scientific_name))
+# spp.list$Matched_Scientific_name = gsub("subsp.", "",      paste(spp.list$Matched_Scientific_name))
+# spp.list$Matched_Scientific_name = gsub("sect.", "",       paste(spp.list$Matched_Scientific_name))
+# spp.list$Matched_Scientific_name = gsub("var.", "",        paste(spp.list$Matched_Scientific_name))
+# spp.list$Matched_Scientific_name = gsub("Plantago a", "",  paste(spp.list$Matched_Scientific_name))
+# spp.list$Matched_Scientific_name = gsub("  ", " ",         paste(spp.list$Matched_Scientific_name))
+
+
+# test = gsubfn(".", list("subsp.", "", 
+#                         "sect.", "",
+#                         "var.", "",
+#                         "Plantago a", "",
+#                         "  ", " "), spp.list$Matched_Scientific_name)
+
+
+## now remove all the subspecies, etc,
+## pipe through?
+spp.list$Matched_Scientific_name %<>%
+  
+  ## list all the character strings and what to replace them with...
+  gsub("subsp.", "", .) %>%
+  gsub("sect.", "", .) %>%
+  gsub("var.", "", .) %>%
+  gsub("Plantago a", "", .) %>%
+  # gsub("#Agrostis capillaris", "", .) %>%
+  # gsub("#Agrostis capillaris", "", .) %>%
+  gsub("  ", " ", .)
+
+
+## check the list 
+str(spp.list$Matched_Scientific_name)
 
 
 ## then remove the varieties and subspecies
@@ -87,15 +113,18 @@ spp.list$Matched_Scientific_name = vapply(lapply(strsplit(spp.list$Matched_Scien
                                                  unique), paste, character(1L), collapse = " ")
 
 
-## then get just the first two words (again cleaning up the subspecies)
+## then get just the first two words (again cleaning up the subspecies, and single genera)
 spp.list$Matched_Scientific_name = vapply(lapply(strsplit(spp.list$Matched_Scientific_name, " "), 
                                                  string_fun), paste, character(1L), collapse = " ")
 
 
 ## this creates "NA" species where only a genus was given, so just exclude these rows
 spp.list = spp.list[!grepl("NA", spp.list$Matched_Scientific_name),]
+spp.list = spp.list[!(spp.list$Matched_Scientific_name == ""), ]
 spp.list = spp.list[with(spp.list, order(Matched_Scientific_name)), ] 
+
 str(spp.list)
+View(spp.list)
 
 
 ## now what is the simplest way to do the download? EG: download all fields for a species, then do the culling later?
@@ -104,6 +133,7 @@ Magnolia.grandiflora = gbif('Magnolia grandiflora', download = TRUE)
 
 
 ## look at all the GBIF fields for an example
+## do these GBIF names match the ALA names?
 GBIF.names = sort(names(Magnolia.grandiflora))
 GBIF.names
 
@@ -116,7 +146,7 @@ GBIF.names
 
 ## Now create list of HIA taxa
 spp = unique(as.character(spp.list$Matched_Scientific_name))
-str(spp)
+str(spp)   ## why 680? later check on what happens with the different queries
 head(spp, 20)
 tail(spp, 20)
 
@@ -127,30 +157,48 @@ tail(spp, 20)
 #########################################################################################################################
 ## now run a lOOP to dowload species in the "spp" list from GBIF
 ## not including any data quality checks here, just downloading everything
+GBIF.download.limit = 200000
 
 
+## for every species in the list
 for(sp.n in spp){
-
-
-  ## First, check if the f*&%$*# file exists
+  
+  
+  ## 1). First, check if the f*&%$*# file exists
   file = paste0("./data/base/HIA_LIST/GBIF/", sp.n, "_GBIF_records.RData")
   
+  
   ## need this for longer list, could be up to thousands of species in total
+  ## also GBIF, ALA, AVH will all fail intermittently 
   if (file.exists (file)) {
     
     print (paste ("file exists for species", sp.n, "skipping"))
     next
     
   }
-
-  ## 1). download all records from GBIF
-  GBIF = gbif(sp.n, download = TRUE)   ## could use more arguments here, download_reason_id = 7, etc.
+  
+  
+  ## 2). check how many records there are, and skip if there are over 200k
+  if (occ_search(scientificName = sp.n, limit = 1)$meta$count > GBIF.download.limit) {
     
-
-  # 8. save.
+    print (paste ("No. records > max for download via this service (200,000)", sp.n, "skipping"))
+    next
+    
+  }
+  
+  
+  ## 3). download ALL records from GBIF
+  GBIF = gbif(sp.n, download = TRUE)   ## could use more arguments here, download_reason_id = 7, etc.
+  
+  
+  ## 4). save records to .Rdata file note that using .csv files seemed to cause problems...
   save(GBIF, file = paste("./data/base/HIA_LIST/GBIF/", sp.n, "_GBIF_records.RData", sep = ""))
   
 } 
+
+
+## Errors...
+## The number of records is larger than the maximum for download via this service (200,000)
 
 
 
@@ -162,6 +210,9 @@ for(sp.n in spp){
 
 
 ## could also do the cleaing for each species individually?
+load("./data/base/HIA_LIST/GBIF/Agonis flexuosa_GBIF_records.RData")
+str(GBIF)
+
 test            = read.csv("./data/base/HIA_LIST/GBIF/Corymbia maculata_GBIF_records.csv")
 Opuntia.stricta = read.csv("./data/base/HIA_LIST/GBIF/Opuntia stricta_GBIF_records.csv")
 str(Opuntia.stricta)

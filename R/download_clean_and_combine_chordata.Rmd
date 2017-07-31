@@ -220,8 +220,7 @@ these records from OEH); or
 ```{r}
 clean_ala <- function(x) {
   yr <- ifelse(is.na(x$year) | x$year < 1950, 'year', '')
-  coords1 <- is.na(x$longitude) | is.na(x$latitude) | 
-    x$longitude == '' | x$latitude == ''
+  coords1 <- is.na(x$longitude) | is.na(x$latitude) | x$longitude == '' | x$latitude == ''
   coords2 <- if('zeroLatitude' %in% names(x)) x$zeroLatitude else FALSE
   coords3 <- if('zeroLongitude' %in% names(x)) x$zeroLongitude else FALSE
   coords4 <- if('invertedCoordinates' %in% names(x)) x$invertedCoordinates else FALSE # could just flip them back though...

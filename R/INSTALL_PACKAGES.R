@@ -6,17 +6,16 @@
 #########################################################################################################################
 ## create a big list of all the packages needed for a project
 ## can't do the special github ones like this though...
-packages <- c("ggplot2",   "plyr",   "reshape2", "RColorBrewer",  "scales",     "grid",
-              "raster",    "spdep",  "rgdal",    "GISTools",      "data.table", "dtplyr",
-              "Hmisc",     "Cairo",  "lattice",  "gtools",        "ggplot2",    "sjPlot",
-              "gridExtra", "grid",   "sqldf",    "knitr",         "mgcv",       "MuMIn",
-              "mvabund",   "asbio",  "mvtnorm",  "testthat",      "rgl",        "R.matlab",
-              "ENMeval",   "lavaan", "semPlot",  "rgdal",         "sp",         "formula.tools",
-              "dismo",     "mctest", "rJava",    "ENMeval",       "SDMTools",   "ALA4R",
-              "maxent",    "devtools", "microbenchmark",
-              "statisticalModeling", "knitr",    "yaml",          "htmltools",  "caTools",      
-              "bitops",    "rmarkdown", "cluster",   
-              "speciesgeocodeR", "gsubfn", "functional") # class(packages)
+packages <- c("ggplot2",   "plyr",      "reshape2", "RColorBrewer",  "scales",     "grid",
+              "raster",    "spdep",     "rgdal",    "GISTools",      "data.table", "dtplyr",
+              "Hmisc",     "Cairo",     "lattice",  "gtools",        "ggplot2",    "sjPlot",
+              "gridExtra", "grid",      "sqldf",    "knitr",         "mgcv",       "MuMIn",
+              "mvabund",   "asbio",     "mvtnorm",  "testthat",      "rgl",        "R.matlab",
+              "ENMeval",   "lavaan",    "semPlot",  "rgdal",         "sp",         "formula.tools",
+              "dismo",     "mctest",    "rJava",    "ENMeval",       "SDMTools",   "ALA4R",
+              "maxent",    "devtools",   "knitr",   "yaml",          "htmltools",  "microbenchmark",
+              "knitr",     "yaml",      "caTools",  "bitops",        "rmarkdown",  "speciesgeocodeR",                  
+              "bitops",    "rmarkdown", "cluster",  "gsubfn",        "functional") # class(packages)
 
 
 ## also to create pdf/html documents, you need to install a latex program. EG MiKtex for windows.
@@ -26,11 +25,12 @@ packages <- c("ggplot2",   "plyr",   "reshape2", "RColorBrewer",  "scales",     
 ## install.packages("climates",,"http://rforge.net/",type="source")
 
 ## library(devtools)
-## install_github('johnbaums/rmaxent')
-## install_github('johnbaums/jagstools')
-## install_github('johnbaums/hues')
-## install_github('johnbaums/trees')
-## install_github('johnbaums/things')
+#install_github('johnbaums/rmaxent')
+#install_github('johnbaums/jagstools')
+#install_github('johnbaums/hues')
+#install_github('johnbaums/trees')
+#install_github('johnbaums/things')
+#install_github("danlwarren/ENMTools")
 
 
 #########################################################################################################################
