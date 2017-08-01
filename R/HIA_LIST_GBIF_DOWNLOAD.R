@@ -177,21 +177,34 @@ for(sp.n in spp){
     
   }
   
-  
-  ## 2). check how many records there are, and skip if there are over 200k
-  if (occ_search(scientificName = sp.n, limit = 1)$meta$count > GBIF.download.limit) {
+  ## 2). Check the spelling...incorrect nomenclature will return NULL result
+  if (is.null(occ_search(scientificName = sp.n, limit = 1)$meta$count) == TRUE) {
     
-    print (paste ("No. records > max for download via this service (200,000)", sp.n, "skipping"))
+    print (paste ("Incorrect nomenclature", sp.n, "skipping"))
     next
     
   }
   
+  ## 3). Skip species with no records
+  if (occ_search(scientificName = sp.n)$meta$count == 0) {
+    
+    print (paste ("No GBIF records for", sp.n, "skipping"))
+    next
+    
+  }
   
-  ## 3). download ALL records from GBIF
+  ## 4). Check how many records there are, and skip if there are over 200k
+  if (occ_search(scientificName = sp.n, limit = 1)$meta$count > GBIF.download.limit) {
+    
+    print (paste ("Number of records > max for GBIF download via R (200,000)", sp.n, "skipping"))
+    next
+    
+  }
+  
+  ## 5). Download ALL records from GBIF
   GBIF = gbif(sp.n, download = TRUE)   ## could use more arguments here, download_reason_id = 7, etc.
   
-  
-  ## 4). save records to .Rdata file note that using .csv files seemed to cause problems...
+  ## 6). save records to .Rdata file, note that using .csv files seemed to cause problems...
   save(GBIF, file = paste("./data/base/HIA_LIST/GBIF/", sp.n, "_GBIF_records.RData", sep = ""))
   
 } 
