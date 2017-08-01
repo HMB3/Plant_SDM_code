@@ -3,9 +3,9 @@
 #########################################################################################################################
 
 
-# This code downloads all occurrence records for species on Horticulture Australia list from the GBIF database. First we week
-# can get all the records for just one list, then once that works, we can create a hieararchy as Rachel outlined.
-# The trick here will be substituing the functions from the ALA4R package for the rgbif functions...
+## This code downloads all occurrence records for species on the Horticulture Australia list, from the GBIF database. 
+## The trick here will be substituing the functions from the ALA4R package for the rgbif functions...
+## Matching the core fields could be tricky for some taxa. Also, 
 
 
 ## setup 
@@ -37,49 +37,39 @@ library(gsubfn)
 library(functional)
 
 
-## source
+## source functions
 source('./R/GREEN_CITIES_FUNCTIONS.R')
 
 
+
+
+
 #########################################################################################################################
-## 1). DOWNLOAD RECORDS FROM GBIF USING HIA LIST
+## 1). READ IN HIA LIST
 #########################################################################################################################
 
 
-## now read in the HIA list: this could be one list with different criteria to create the hierarchy, 
-## or several lists
+## this list derives from all species and varieties sold anywhere in Australia in the last 5 years. Anthony Maneahas cleaned 
+## up the data and cross-linked to growth form and exotic/native status and derived a list of ~1000 species that are the most 
+## commonly sold, covering the right ratio of growth forms, regional representation and native/exotic
 spp.list = read.csv("./data/base/HIA_LIST/HIA/GREEN_CITIES_DRAFT_LIST.csv", stringsAsFactors = FALSE)
 
 
-## also consider how to download, what is the taxonomic resolution? If the varieties are troublesome, are we best
-## downloading all the records for a genus, rather than a species? Discuss with Rach once I've got more work done...
+## have a look
 dim(spp.list)
 str(spp.list)
 head(spp.list)
 
 
-## now remove all the subspecies, etc,
+## for now, remove all the subspecies, varieties etc,
 spp.list$Species <- gsub("spp.", "", spp.list$Species)
 spp.list$Species <- gsub(" x ",  " ", spp.list$Species)
 spp.list$Species <- gsub("  ",  " ", spp.list$Species)
 
 
-## pipe through?
-# spp.list$Species %<>%
-#   
-#   ## list all the character strings and what to replace them with...
-#   # gsub("subsp.", "", .) %>%
-#   # gsub("sect.", "", .) %>%
-#   # gsub("var.", "", .) %>%
-#   # gsub("Plantago a", "", .) %>%
-#   
-#   gsub("Spp.", "", .) %>%
-#   gsub(" x ", "", .)
-
-
 ## then remove the varieties and subspecies
-# spp.list$Species = vapply(lapply(strsplit(spp.list$Species, " "), 
-#                                                  unique), paste, character(1L), collapse = " ")
+spp.list$Species = vapply(lapply(strsplit(spp.list$Species, " "),
+                                                 unique), paste, character(1L), collapse = " ")
 
 
 ## then get just the first two words (again cleaning up the subspecies, and single genera)
@@ -87,35 +77,38 @@ spp.list$Species = vapply(lapply(strsplit(spp.list$Species, " "),
                                                  string_fun), paste, character(1L), collapse = " ")
 
 
-## this creates "NA" species where only a genus was given, so just exclude these rows
-#spp.list = spp.list[!grepl("NA", spp.list$Species),]
-#spp.list = spp.list[!(spp.list$Species == ""), ]
+## if exclude NA, spp.list = spp.list[!grepl("NA", spp.list$Species),]
 spp.list = spp.list[with(spp.list, order(Species)), ] 
 
+
+## check
 str(spp.list)
 View(spp.list)
-
-
-## now what is the simplest way to do the download? EG: download all fields for a species, then do the culling later?
-## n = 5 * ~ 200 species, so records for ~1000 taxa. So not too many to download at once! 
-Magnolia.grandiflora = gbif('Magnolia grandiflora', download = TRUE)
-
 
 
 ## Now create list of HIA taxa
 spp.list = spp.list[with(spp.list, order(Species)), ]
 spp = unique(as.character(spp.list$Species))
 str(spp)   ## why 680? later check on what happens with the different queries
-head(spp, 20)
-tail(spp, 20)
+head(spp, 50)
+tail(spp, 50)
 
 
 
 
 
 #########################################################################################################################
+## 2). DOWNLOAD RECORDS FROM GBIF USING HIA LIST
+#########################################################################################################################
+
+
+#########################################################################################################################
 ## now run a lOOP to dowload species in the "spp" list from GBIF
 ## not including any data quality checks here, just downloading everything
+
+
+## download all fields for a species, then do the culling later?
+## n = 5 * ~ 200 species, so records for ~1000 taxa. So not too many to download at once! 
 GBIF.download.limit = 200000
 
 
@@ -127,8 +120,7 @@ for(sp.n in spp){
   file = paste0("./data/base/HIA_LIST/GBIF/", sp.n, "_GBIF_records.RData")
   
   
-  ## need this for longer list, could be up to thousands of species in total
-  ## also GBIF, ALA, AVH will all fail intermittently 
+  ## If it's already downloaded, skip
   if (file.exists (file)) {
     
     print (paste ("file exists for species", sp.n, "skipping"))
@@ -136,7 +128,7 @@ for(sp.n in spp){
     
   }
   
-  ## 2). Check the spelling...incorrect nomenclature will return NULL result
+  ## 2). Then check the spelling...incorrect nomenclature will return NULL result
   if (is.null(occ_search(scientificName = sp.n, limit = 1)$meta$count) == TRUE) {
     
     print (paste ("Incorrect nomenclature", sp.n, "skipping"))
@@ -196,6 +188,10 @@ plot(map)
 ## can we get all the columns at once, even if they have a different number?
 ## look at all the GBIF fields for an example
 ## do these GBIF names match the ALA names?
+
+
+## check GBIF field names for a key species...
+Magnolia.grandiflora = gbif('Magnolia grandiflora', download = TRUE)
 GBIF.names = sort(names(Magnolia.grandiflora))
 GBIF.names
 
