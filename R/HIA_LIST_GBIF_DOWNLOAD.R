@@ -19,7 +19,6 @@ library(raster)
 library(rgdal)
 library(plyr)
 
-
 library(SDMTools)
 library(rmaxent)
 library(dismo)
@@ -63,7 +62,7 @@ head(name_lookup(query = 'Magnolia grandiflora', rank = "species", return = 'dat
 
 ## now read in the HIA list: this could be one list with different criteria to create the hierarchy, 
 ## or several lists
-spp.list = read.csv("./data/base/HIA_LIST/HIA/HIA_DATE.csv", stringsAsFactors = FALSE)
+spp.list = read.csv("./data/base/HIA_LIST/HIA/GREEN_CITIES_DRAFT_LIST.csv", stringsAsFactors = FALSE)
 
 
 ## also consider how to download, what is the taxonomic resolution? If the varieties are troublesome, are we best
@@ -74,54 +73,37 @@ head(spp.list)
 
 
 ## now remove all the subspecies, etc,
-# test = gsubfn(".", list("subsp." = "", 
-#                         "var."   = ""), paste(spp.list$Matched_Scientific_name))
-# spp.list$Matched_Scientific_name = gsub("subsp.", "",      paste(spp.list$Matched_Scientific_name))
-# spp.list$Matched_Scientific_name = gsub("sect.", "",       paste(spp.list$Matched_Scientific_name))
-# spp.list$Matched_Scientific_name = gsub("var.", "",        paste(spp.list$Matched_Scientific_name))
-# spp.list$Matched_Scientific_name = gsub("Plantago a", "",  paste(spp.list$Matched_Scientific_name))
-# spp.list$Matched_Scientific_name = gsub("  ", " ",         paste(spp.list$Matched_Scientific_name))
-
-
-# test = gsubfn(".", list("subsp.", "", 
-#                         "sect.", "",
-#                         "var.", "",
-#                         "Plantago a", "",
-#                         "  ", " "), spp.list$Matched_Scientific_name)
-
-
-## now remove all the subspecies, etc,
 ## pipe through?
-spp.list$Matched_Scientific_name %<>%
+spp.list$Species %<>%
   
   ## list all the character strings and what to replace them with...
-  gsub("subsp.", "", .) %>%
-  gsub("sect.", "", .) %>%
-  gsub("var.", "", .) %>%
-  gsub("Plantago a", "", .) %>%
-  # gsub("#Agrostis capillaris", "", .) %>%
-  # gsub("#Agrostis capillaris", "", .) %>%
-  gsub("  ", " ", .)
+  # gsub("subsp.", "", .) %>%
+  # gsub("sect.", "", .) %>%
+  # gsub("var.", "", .) %>%
+  # gsub("Plantago a", "", .) %>%
+  
+  gsub("Spp.", "", .) %>%
+  gsub(" x ", " ", .)
 
 
 ## check the list 
-str(spp.list$Matched_Scientific_name)
+dim(spp.list$Species)
 
 
 ## then remove the varieties and subspecies
-spp.list$Matched_Scientific_name = vapply(lapply(strsplit(spp.list$Matched_Scientific_name, " "), 
+spp.list$Species = vapply(lapply(strsplit(spp.list$Species, " "), 
                                                  unique), paste, character(1L), collapse = " ")
 
 
 ## then get just the first two words (again cleaning up the subspecies, and single genera)
-spp.list$Matched_Scientific_name = vapply(lapply(strsplit(spp.list$Matched_Scientific_name, " "), 
+spp.list$Species = vapply(lapply(strsplit(spp.list$Species, " "), 
                                                  string_fun), paste, character(1L), collapse = " ")
 
 
 ## this creates "NA" species where only a genus was given, so just exclude these rows
-spp.list = spp.list[!grepl("NA", spp.list$Matched_Scientific_name),]
-spp.list = spp.list[!(spp.list$Matched_Scientific_name == ""), ]
-spp.list = spp.list[with(spp.list, order(Matched_Scientific_name)), ] 
+spp.list = spp.list[!grepl("NA", spp.list$Species),]
+spp.list = spp.list[!(spp.list$Species == ""), ]
+spp.list = spp.list[with(spp.list, order(Species)), ] 
 
 str(spp.list)
 View(spp.list)
@@ -145,7 +127,7 @@ GBIF.names
 
 
 ## Now create list of HIA taxa
-spp = unique(as.character(spp.list$Matched_Scientific_name))
+spp = unique(as.character(spp.list$Species))
 str(spp)   ## why 680? later check on what happens with the different queries
 head(spp, 20)
 tail(spp, 20)
@@ -357,7 +339,10 @@ write.csv(GBIF.HIA.RECORDS,       "./data/base/HIA_LIST/GBIF/GLOBAL_GBIF_HIA_rec
 #########################################################################################################################
 
 ## GBIF records could also be cleaned one at a time...
-## Maxent models will be run one at a time...
+
+
+
+## which fields do 
 
 ## read the GBIF data back in
 GBIF.HIA.RECORDS = read.csv("./data/GLOBAL_GBIF_HIA_records_RAW_DATE.csv", stringsAsFactors = FALSE)
