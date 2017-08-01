@@ -46,20 +46,6 @@ source('./R/GREEN_CITIES_FUNCTIONS.R')
 #########################################################################################################################
 
 
-## have a look at GBIF: e.g. return the total no. of records on the database?
-occ_count(basisOfRecord = 'OBSERVATION')
-occ_count(georeferenced = TRUE)
-
-
-## search for a genus
-head(name_lookup(query = 'Magnolia', rank = "genus", return = "data"), 20)
-
-
-## how bout the no. 1 species on the HIA list?
-dim(name_lookup(query  = 'Magnolia grandiflora', rank = "species", return = 'data'))
-head(name_lookup(query = 'Magnolia grandiflora', rank = "species", return = 'data'), 20)
-
-
 ## now read in the HIA list: this could be one list with different criteria to create the hierarchy, 
 ## or several lists
 spp.list = read.csv("./data/base/HIA_LIST/HIA/GREEN_CITIES_DRAFT_LIST.csv", stringsAsFactors = FALSE)
@@ -73,26 +59,27 @@ head(spp.list)
 
 
 ## now remove all the subspecies, etc,
+spp.list$Species <- gsub("spp.", "", spp.list$Species)
+spp.list$Species <- gsub(" x ",  " ", spp.list$Species)
+spp.list$Species <- gsub("  ",  " ", spp.list$Species)
+
+
 ## pipe through?
-spp.list$Species %<>%
-  
-  ## list all the character strings and what to replace them with...
-  # gsub("subsp.", "", .) %>%
-  # gsub("sect.", "", .) %>%
-  # gsub("var.", "", .) %>%
-  # gsub("Plantago a", "", .) %>%
-  
-  gsub("Spp.", "", .) %>%
-  gsub(" x ", " ", .)
-
-
-## check the list 
-dim(spp.list$Species)
+# spp.list$Species %<>%
+#   
+#   ## list all the character strings and what to replace them with...
+#   # gsub("subsp.", "", .) %>%
+#   # gsub("sect.", "", .) %>%
+#   # gsub("var.", "", .) %>%
+#   # gsub("Plantago a", "", .) %>%
+#   
+#   gsub("Spp.", "", .) %>%
+#   gsub(" x ", "", .)
 
 
 ## then remove the varieties and subspecies
-spp.list$Species = vapply(lapply(strsplit(spp.list$Species, " "), 
-                                                 unique), paste, character(1L), collapse = " ")
+# spp.list$Species = vapply(lapply(strsplit(spp.list$Species, " "), 
+#                                                  unique), paste, character(1L), collapse = " ")
 
 
 ## then get just the first two words (again cleaning up the subspecies, and single genera)
@@ -101,8 +88,8 @@ spp.list$Species = vapply(lapply(strsplit(spp.list$Species, " "),
 
 
 ## this creates "NA" species where only a genus was given, so just exclude these rows
-spp.list = spp.list[!grepl("NA", spp.list$Species),]
-spp.list = spp.list[!(spp.list$Species == ""), ]
+#spp.list = spp.list[!grepl("NA", spp.list$Species),]
+#spp.list = spp.list[!(spp.list$Species == ""), ]
 spp.list = spp.list[with(spp.list, order(Species)), ] 
 
 str(spp.list)
@@ -114,19 +101,9 @@ View(spp.list)
 Magnolia.grandiflora = gbif('Magnolia grandiflora', download = TRUE)
 
 
-## look at all the GBIF fields for an example
-## do these GBIF names match the ALA names?
-GBIF.names = sort(names(Magnolia.grandiflora))
-GBIF.names
-
-
-## Might want to have this as "refresh" but trying off first. 
-## The cache should clear every time an R session is started anyway.
-## R is unstable with this package and frequently crashes
-#ala_config(caching = "off")
-
 
 ## Now create list of HIA taxa
+spp.list = spp.list[with(spp.list, order(Species)), ]
 spp = unique(as.character(spp.list$Species))
 str(spp)   ## why 680? later check on what happens with the different queries
 head(spp, 20)
@@ -192,10 +169,6 @@ for(sp.n in spp){
 } 
 
 
-## Errors...
-## The number of records is larger than the maximum for download via this service (200,000)
-
-
 
 
 
@@ -221,6 +194,9 @@ plot(map)
 ## Simple table of columns needed from GBIF to check data quality
 ## problem here is that not all species have the same columns!
 ## can we get all the columns at once, even if they have a different number?
+## look at all the GBIF fields for an example
+## do these GBIF names match the ALA names?
+GBIF.names = sort(names(Magnolia.grandiflora))
 GBIF.names
 
 
