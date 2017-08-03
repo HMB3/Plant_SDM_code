@@ -86,7 +86,7 @@ str(spp.list)
 View(spp.list)
 
 
-## Now create list of HIA taxa
+## Now create list of HIA taxa. 768 unique species, mius the corrections, etc. 
 spp.list = spp.list[with(spp.list, order(Species)), ]
 spp = unique(as.character(spp.list$Species))
 str(spp)   ## why 680? later check on what happens with the different queries
@@ -153,6 +153,7 @@ for(sp.n in spp){
   }
   
   ## 5). Download ALL records from GBIF
+  ## ala = occurrences(taxon = sp.n, download_reason_id = 7)
   GBIF = gbif(sp.n, download = TRUE)   ## could use more arguments here, download_reason_id = 7, etc.
   
   ## 6). save records to .Rdata file, note that using .csv files seemed to cause problems...
@@ -170,12 +171,8 @@ for(sp.n in spp){
 
 
 ## could also do the cleaing for each species individually?
-load("./data/base/HIA_LIST/GBIF/Agonis flexuosa_GBIF_records.RData")
+load("./data/base/HIA_LIST/GBIF/Agapanthus orientalis_GBIF_records.RData")
 str(GBIF)
-
-test            = read.csv("./data/base/HIA_LIST/GBIF/Corymbia maculata_GBIF_records.csv")
-Opuntia.stricta = read.csv("./data/base/HIA_LIST/GBIF/Opuntia stricta_GBIF_records.csv")
-str(Opuntia.stricta)
 
 
 ## Load a 1km grid of Australia (should be 250m grid?)
