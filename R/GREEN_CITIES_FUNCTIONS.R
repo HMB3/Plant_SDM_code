@@ -7,9 +7,17 @@
 ## sorting functions
 #########################################################################################################################
 
-string_fun <- function(x) {
+string_fun_first_two_words <- function(x) {
   
   ul = unlist(strsplit(x, split = "\\s+"))[1:2]
+  paste(ul, collapse = " ") 
+  
+}
+
+
+string_fun_first_word <- function(x) {
+  
+  ul = unlist(strsplit(x, split = "\\s+"))[1]
   paste(ul, collapse = " ") 
   
 }

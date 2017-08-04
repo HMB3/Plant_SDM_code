@@ -74,7 +74,7 @@ spp.list$Species = vapply(lapply(strsplit(spp.list$Species, " "),
 
 ## then get just the first two words (again cleaning up the subspecies, and single genera)
 spp.list$Species = vapply(lapply(strsplit(spp.list$Species, " "), 
-                                                 string_fun), paste, character(1L), collapse = " ")
+                                 string_fun_first_two_words), paste, character(1L), collapse = " ")
 
 
 ## if exclude NA, spp.list = spp.list[!grepl("NA", spp.list$Species),]
@@ -94,6 +94,16 @@ head(spp, 50)
 tail(spp, 50)
 
 
+## also make a genus list?
+genera = unique(vapply(lapply(strsplit(spp.list$Species, " "), 
+                              string_fun_first_word), paste, character(1L), collapse = " "))
+
+
+## check
+str(genera)
+head(genera, 50)
+tail(genera, 50)
+
 
 
 
@@ -110,16 +120,22 @@ tail(spp, 50)
 ## download all fields for a species, then do the culling later?
 ## n = 5 * ~ 200 species, so records for ~1000 taxa. So not too many to download at once! 
 GBIF.download.limit = 200000
+skip.list           = list()
+
+
+
+
+#########################################################################################################################
+## SPECIES
+#########################################################################################################################
 
 
 ## for every species in the list
 for(sp.n in spp){
   
-  
   ## 1). First, check if the f*&%$*# file exists
   file = paste0("./data/base/HIA_LIST/GBIF/", sp.n, "_GBIF_records.RData")
-  
-  
+
   ## If it's already downloaded, skip
   if (file.exists (file)) {
     
@@ -131,7 +147,11 @@ for(sp.n in spp){
   ## 2). Then check the spelling...incorrect nomenclature will return NULL result
   if (is.null(occ_search(scientificName = sp.n, limit = 1)$meta$count) == TRUE) {
     
-    print (paste ("Incorrect nomenclature", sp.n, "skipping"))
+    ## now append the species which had incorrect nomenclature to the "skipped list"
+    print (paste ("Possible incorrect nomenclature", sp.n, "skipping"))
+    nomenclature = paste ("Possible incorrect nomenclature", sp.n, "skipping")
+    #skip.list[i] <- values[nomenclature]
+    skip.list <- c(skip.list, nomenclature)
     next
     
   }
@@ -140,6 +160,8 @@ for(sp.n in spp){
   if (occ_search(scientificName = sp.n)$meta$count == 0) {
     
     print (paste ("No GBIF records for", sp.n, "skipping"))
+    records = paste ("No GBIF records for", sp.n, "skipping")
+    skip.list <- c(skip.list, records)
     next
     
   }
@@ -148,6 +170,8 @@ for(sp.n in spp){
   if (occ_search(scientificName = sp.n, limit = 1)$meta$count > GBIF.download.limit) {
     
     print (paste ("Number of records > max for GBIF download via R (200,000)", sp.n, "skipping"))
+    max =  paste ("Number of records > max for GBIF download via R (200,000)", sp.n, "skipping")
+    skip.list <- c(skip.list, max)
     next
     
   }
@@ -158,8 +182,67 @@ for(sp.n in spp){
   
   ## 6). save records to .Rdata file, note that using .csv files seemed to cause problems...
   save(GBIF, file = paste("./data/base/HIA_LIST/GBIF/", sp.n, "_GBIF_records.RData", sep = ""))
+  return(skip.list)
   
-} 
+}
+
+
+
+
+
+#########################################################################################################################
+## GENERA
+#########################################################################################################################
+
+
+## for every species in the list
+for(gen.n in genera){
+  
+  
+  ## 1). First, check if the f*&%$*# file exists
+  file = paste0("./data/base/HIA_LIST/GBIF/GENERA/", gen.n, "_GBIF_records.RData")
+  
+  
+  ## If it's already downloaded, skip
+  if (file.exists (file)) {
+    
+    print (paste ("file exists for species", gen.n, "skipping"))
+    next
+    
+  }
+  
+  ## 2). Then check the spelling...incorrect nomenclature will return NULL result
+  if (is.null(occ_search(scientificName = gen.n, limit = 1)$meta$count) == TRUE) {
+    
+    print (paste ("Incorrect nomenclature", gen.n, "skipping"))
+    next
+    
+  }
+  
+  ## 3). Skip species with no records
+  if (occ_search(scientificName = gen.n)$meta$count == 0) {
+    
+    print (paste ("No GBIF records for", gen.n, "skipping"))
+    next
+    
+  }
+  
+  ## 4). Check how many records there are, and skip if there are over 200k
+  if (occ_search(scientificName = gen.n, limit = 1)$meta$count > GBIF.download.limit) {
+    
+    print (paste ("Number of records > max for GBIF download via R (200,000)", gen.n, "skipping"))
+    next
+    
+  }
+  
+  ## 5). Download ALL records from GBIF
+  ## ala = occurrences(taxon = sp.n, download_reason_id = 7)
+  GBIF.GEN = gbif(gen.n, download = TRUE)   ## could use more arguments here, download_reason_id = 7, etc.
+  
+  ## 6). save records to .Rdata file, note that using .csv files seemed to cause problems...
+  save(GBIF.GEN, file = paste("./data/base/HIA_LIST/GBIF/GENERA/", gen.n, "_GBIF_records.RData", sep = ""))
+  
+}
 
 
 
