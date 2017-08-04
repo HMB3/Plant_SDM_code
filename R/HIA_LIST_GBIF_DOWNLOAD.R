@@ -35,6 +35,7 @@ library(bitops)
 library(rmarkdown)
 library(gsubfn)
 library(functional)
+library(splitstackshape)
 
 
 ## source functions
@@ -45,7 +46,7 @@ source('./R/GREEN_CITIES_FUNCTIONS.R')
 
 
 #########################################################################################################################
-## 1). READ IN HIA LIST
+## 1). READ IN DRAFT HIA LIST
 #########################################################################################################################
 
 
@@ -112,143 +113,39 @@ tail(genera, 50)
 #########################################################################################################################
 
 
-
 ## now run lOOPs to dowload species in the "spp" list from GBIF
 ## not including any data quality checks here, just downloading everything
 
 
 ## set a few global variables to be used inside the functions...
 GBIF.download.limit = 200000
-skip.list           = list()
+skip.spp.list       = list()
+skip.gen.list       = list()
 
 
+## test the download function on the species and genera lists
+skipped.species = download_GBIF_all_species(spp)    ## saves each spp as .Rdata file, returning list of skipped spp 
+skipped.genera  = download_GBIF_all_genera(genera)  ## saves each gen as .Rdata file, returning list of skipped genera 
 
 
-
-#########################################################################################################################
-## SPECIES
-#########################################################################################################################
-
-
-## for every species in the list
-for(sp.n in spp){
-  
-  ## 1). First, check if the f*&%$*# file exists
-  file = paste0("./data/base/HIA_LIST/GBIF/", sp.n, "_GBIF_records.RData")
-
-  ## If it's already downloaded, skip
-  if (file.exists (file)) {
-    
-    print (paste ("file exists for species", sp.n, "skipping"))
-    next
-    
-  }
-  
-  ## 2). Then check the spelling...incorrect nomenclature will return NULL result
-  if (is.null(occ_search(scientificName = sp.n, limit = 1)$meta$count) == TRUE) {
-    
-    ## now append the species which had incorrect nomenclature to the "skipped list"
-    print (paste ("Possible incorrect nomenclature", sp.n, "skipping"))
-    nomenclature = paste ("Possible incorrect nomenclature", sp.n)
-    #skip.list[i] <- values[nomenclature]
-    skip.list <- c(skip.list, nomenclature)
-    next
-    
-  }
-  
-  ## 3). Skip species with no records
-  if (occ_search(scientificName = sp.n)$meta$count == 0) {
-    
-    print (paste ("No GBIF records for", sp.n, "skipping"))
-    records = paste ("No GBIF records", sp.n)
-    skip.list <- c(skip.list, records)
-    next
-    
-  }
-  
-  ## 4). Check how many records there are, and skip if there are over 200k
-  if (occ_search(scientificName = sp.n, limit = 1)$meta$count > GBIF.download.limit) {
-    
-    print (paste ("Number of records > max for GBIF download via R (200,000)", sp.n, "skipping"))
-    max =  paste ("Number of records > 200,000", sp.n)
-    skip.list <- c(skip.list, max)
-    next
-    
-  }
-  
-  ## 5). Download ALL records from GBIF
-  ## ala = occurrences(taxon = sp.n, download_reason_id = 7)
-  GBIF = gbif(sp.n, download = TRUE)   ## could use more arguments here, download_reason_id = 7, etc.
-  
-  ## 6). save records to .Rdata file, note that using .csv files seemed to cause problems...
-  save(GBIF, file = paste("./data/base/HIA_LIST/GBIF/", sp.n, "_GBIF_records.RData", sep = ""))
-  return(skip.list)
-  
-}
+## now try converting the lists of skipped species and genera into a dataframe
+str(skipped.spp)
+str(skipped.genera)
 
 
+## split the reason and the species into separate columns
+skipped.spp <- data.frame(matrix(unlist(skipped.spp), nrow = length(skipped.spp), byrow = T))
+skipped.spp <- cSplit(skipped.spp, 1:ncol(skipped.spp), sep = "|", stripWhite = TRUE, type.convert = FALSE)
 
 
+## update names
+colnames(skipped.spp)[1] <- "Reason skipped"
+colnames(skipped.spp)[2] <- "Taxa"
 
-#########################################################################################################################
-## GENERA
-#########################################################################################################################
 
-
-## for every species in the list
-for(gen.n in genera){
-  
-  
-  ## 1). First, check if the f*&%$*# file exists
-  file = paste0("./data/base/HIA_LIST/GBIF/GENERA/", gen.n, "_GBIF_records.RData")
-  
-  
-  ## If it's already downloaded, skip
-  if (file.exists (file)) {
-    
-    print (paste ("file exists for genera", gen.n, "skipping"))
-    next
-    
-  }
-  
-  ## 2). Then check the spelling...incorrect nomenclature will return NULL result
-  if (is.null(occ_search(scientificName = gen.n, limit = 1)$meta$count) == TRUE) {
-    
-    print (paste ("Possible incorrect nomenclature", gen.n, "skipping"))
-    nomenclature = paste ("Possible incorrect nomenclature", sp.n)
-    skip.list <- c(skip.list, nomenclature)
-    next
-    
-  }
-  
-  ## 3). Skip species with no records
-  if (occ_search(scientificName = gen.n)$meta$count == 0) {
-    
-    print (paste ("No GBIF records for", gen.n, "skipping"))
-    records = paste ("No GBIF records for", sp.n)
-    skip.list <- c(skip.list, records)
-    next
-    
-  }
-  
-  ## 4). Check how many records there are, and skip if there are over 200k
-  if (occ_search(scientificName = gen.n, limit = 1)$meta$count > GBIF.download.limit) {
-    
-    print (paste ("Number of records > max for GBIF download via R (200,000)", gen.n, "skipping"))
-    max =  paste ("Number of records > 200,000", sp.n)
-    skip.list <- c(skip.list, max)
-    next
-    
-  }
-  
-  ## 5). Download ALL records from GBIF
-  ## ala = occurrences(taxon = sp.n, download_reason_id = 7)
-  GBIF.GEN = gbif(gen.n, download = TRUE)   ## could use more arguments here, download_reason_id = 7, etc.
-  
-  ## 6). save records to .Rdata file, note that using .csv files seemed to cause problems...
-  save(GBIF.GEN, file = paste("./data/base/HIA_LIST/GBIF/GENERA/", gen.n, "_GBIF_records.RData", sep = ""))
-  
-}
+str(skipped.spp)
+head(skipped.spp)
+tail(skipped.spp)
 
 
 
