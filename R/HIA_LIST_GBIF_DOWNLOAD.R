@@ -112,15 +112,15 @@ tail(genera, 50)
 #########################################################################################################################
 
 
-#########################################################################################################################
-## now run a lOOP to dowload species in the "spp" list from GBIF
+
+## now run lOOPs to dowload species in the "spp" list from GBIF
 ## not including any data quality checks here, just downloading everything
 
 
-## download all fields for a species, then do the culling later?
-## n = 5 * ~ 200 species, so records for ~1000 taxa. So not too many to download at once! 
+## set a few global variables to be used inside the functions...
 GBIF.download.limit = 200000
 skip.list           = list()
+
 
 
 
@@ -149,7 +149,7 @@ for(sp.n in spp){
     
     ## now append the species which had incorrect nomenclature to the "skipped list"
     print (paste ("Possible incorrect nomenclature", sp.n, "skipping"))
-    nomenclature = paste ("Possible incorrect nomenclature", sp.n, "skipping")
+    nomenclature = paste ("Possible incorrect nomenclature", sp.n)
     #skip.list[i] <- values[nomenclature]
     skip.list <- c(skip.list, nomenclature)
     next
@@ -160,7 +160,7 @@ for(sp.n in spp){
   if (occ_search(scientificName = sp.n)$meta$count == 0) {
     
     print (paste ("No GBIF records for", sp.n, "skipping"))
-    records = paste ("No GBIF records for", sp.n, "skipping")
+    records = paste ("No GBIF records", sp.n)
     skip.list <- c(skip.list, records)
     next
     
@@ -170,7 +170,7 @@ for(sp.n in spp){
   if (occ_search(scientificName = sp.n, limit = 1)$meta$count > GBIF.download.limit) {
     
     print (paste ("Number of records > max for GBIF download via R (200,000)", sp.n, "skipping"))
-    max =  paste ("Number of records > max for GBIF download via R (200,000)", sp.n, "skipping")
+    max =  paste ("Number of records > 200,000", sp.n)
     skip.list <- c(skip.list, max)
     next
     
@@ -206,7 +206,7 @@ for(gen.n in genera){
   ## If it's already downloaded, skip
   if (file.exists (file)) {
     
-    print (paste ("file exists for species", gen.n, "skipping"))
+    print (paste ("file exists for genera", gen.n, "skipping"))
     next
     
   }
@@ -214,7 +214,9 @@ for(gen.n in genera){
   ## 2). Then check the spelling...incorrect nomenclature will return NULL result
   if (is.null(occ_search(scientificName = gen.n, limit = 1)$meta$count) == TRUE) {
     
-    print (paste ("Incorrect nomenclature", gen.n, "skipping"))
+    print (paste ("Possible incorrect nomenclature", gen.n, "skipping"))
+    nomenclature = paste ("Possible incorrect nomenclature", sp.n)
+    skip.list <- c(skip.list, nomenclature)
     next
     
   }
@@ -223,6 +225,8 @@ for(gen.n in genera){
   if (occ_search(scientificName = gen.n)$meta$count == 0) {
     
     print (paste ("No GBIF records for", gen.n, "skipping"))
+    records = paste ("No GBIF records for", sp.n)
+    skip.list <- c(skip.list, records)
     next
     
   }
@@ -231,6 +235,8 @@ for(gen.n in genera){
   if (occ_search(scientificName = gen.n, limit = 1)$meta$count > GBIF.download.limit) {
     
     print (paste ("Number of records > max for GBIF download via R (200,000)", gen.n, "skipping"))
+    max =  paste ("Number of records > 200,000", sp.n)
+    skip.list <- c(skip.list, max)
     next
     
   }
