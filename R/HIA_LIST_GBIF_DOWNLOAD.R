@@ -118,9 +118,9 @@ tail(genera, 50)
 
 
 ## set a few global variables to be used inside the functions...
-GBIF.download.limit = 200000
-skip.spp.list       = list()
-skip.gen.list       = list()
+# GBIF.download.limit = 200000
+# skip.spp.list       = list()
+# skip.gen.list       = list()
 
 
 ## test the download function on the species and genera lists
@@ -134,7 +134,9 @@ str(skipped.genera)
 
 
 ## split the reason and the species into separate columns
-skipped.spp <- data.frame(matrix(unlist(skipped.spp), nrow = length(skipped.spp), byrow = T))
+skipped.spp    <- data.frame(matrix(unlist(skipped.spp), nrow = length(skipped.spp), byrow = T))
+skipped.genera <- data.frame(matrix(unlist(skipped.spp), nrow = length(skipped.spp), byrow = T))
+
 skipped.spp <- cSplit(skipped.spp, 1:ncol(skipped.spp), sep = "|", stripWhite = TRUE, type.convert = FALSE)
 
 
