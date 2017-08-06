@@ -96,7 +96,7 @@ download_GBIF_all_species = function (list) {
     
     ## 6). save records to .Rdata file, note that using .csv files seemed to cause problems...
     save(GBIF, file = paste("./data/base/HIA_LIST/GBIF/", sp.n, "_GBIF_records.RData", sep = ""))
-    return(skip.list)
+    #return(skip.list)
     
   }
   

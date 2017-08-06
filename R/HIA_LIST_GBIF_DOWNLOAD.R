@@ -114,7 +114,7 @@ tail(genera, 50)
 
 
 ## now run lOOPs to dowload species in the "spp" list from GBIF
-## not including any data quality checks here, just downloading everything
+## not including any data quality checks here, just downloading everything ##
 
 
 ## set a few global variables to be used inside the functions...
