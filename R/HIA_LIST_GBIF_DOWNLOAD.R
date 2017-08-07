@@ -164,7 +164,7 @@ no.records   <- skipped.species[ which(skipped.species$Reason_skipped == "No GBI
 max.records.spp  = unique(as.character(max.records$Taxa))
 name.records.spp = unique(as.character(name.records$Taxa))
 no.records.spp   = unique(as.character(no.records$Taxa))
-View(name.records.spp)
+
 
 
 
