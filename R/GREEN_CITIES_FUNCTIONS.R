@@ -170,7 +170,7 @@ download_GBIF_all_genera = function (list) {
     
     ## 6). save records to .Rdata file, note that using .csv files seemed to cause problems...
     save(GBIF.GEN, file = paste("./data/base/HIA_LIST/GBIF/GENERA/", gen.n, "_GBIF_records.RData", sep = ""))
-    return(skip.list)
+    #return(skip.list)
     
   }
   
