@@ -39,7 +39,7 @@ string_fun_first_word <- function(x) {
 download_GBIF_all_species = function (list) {
   
   ## create variables
-  skip.list       = list()
+  # skip.list       = list()
   GBIF.download.limit = 200000
   
   ## for every species in the list
@@ -63,7 +63,7 @@ download_GBIF_all_species = function (list) {
       ## this is slow, but it works for now
       print (paste ("Possible incorrect nomenclature", sp.n, "skipping"))
       nomenclature = paste ("Possible incorrect nomenclature |", sp.n)
-      skip.list <- c(skip.list, nomenclature)
+      skip.spp.list <- c(skip.spp.list, nomenclature)
       next
       
     }
@@ -74,7 +74,7 @@ download_GBIF_all_species = function (list) {
       ## now append the species which had no records to the skipped list
       print (paste ("No GBIF records for", sp.n, "skipping"))
       records = paste ("No GBIF records |", sp.n)
-      skip.list <- c(skip.list, records)
+      skip.spp.list <- c(skip.spp.list, records)
       next
       
     }
@@ -85,7 +85,7 @@ download_GBIF_all_species = function (list) {
       ## now append the species which had > 200k records to the skipped list
       print (paste ("Number of records > max for GBIF download via R (200,000)", sp.n, "skipping"))
       max =  paste ("Number of records > 200,000 |", sp.n)
-      skip.list <- c(skip.list, max)
+      skip.spp.list <- c(skip.spp.list, max)
       next
       
     }
@@ -96,7 +96,7 @@ download_GBIF_all_species = function (list) {
     
     ## 6). save records to .Rdata file, note that using .csv files seemed to cause problems...
     save(GBIF, file = paste("./data/base/HIA_LIST/GBIF/", sp.n, "_GBIF_records.RData", sep = ""))
-    #return(skip.list)
+    return(skip.spp.list)
     
   }
   

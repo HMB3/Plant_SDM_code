@@ -118,37 +118,53 @@ tail(genera, 50)
 
 
 ## set a few global variables to be used inside the functions...
-# GBIF.download.limit = 200000
-# skip.spp.list       = list()
-# skip.gen.list       = list()
+#GBIF.download.limit = 200000
+skip.spp.list       = list()
+skip.gen.list       = list()
 
 
-## test the download function on the species and genera lists
+## run the download function on the species and genera lists
 skipped.species = download_GBIF_all_species(spp)    ## saves each spp as .Rdata file, returning list of skipped spp 
 skipped.genera  = download_GBIF_all_genera(genera)  ## saves each gen as .Rdata file, returning list of skipped genera 
 
 
-## now try converting the lists of skipped species and genera into a dataframe
-str(skipped.spp)
+## now convert the lists of skipped species and genera into a dataframe
+str(skipped.species)
 str(skipped.genera)
 
 
-## split the reason and the species into separate columns
-skipped.spp    <- data.frame(matrix(unlist(skipped.spp), nrow = length(skipped.spp), byrow = T))
-skipped.genera <- data.frame(matrix(unlist(skipped.spp), nrow = length(skipped.spp), byrow = T))
+## converting the lists of skipped species and genera into a dataframe
+skipped.species <- data.frame(matrix(unlist(skipped.species), nrow = length(skipped.species), byrow = TRUE))
+skipped.genera  <- data.frame(matrix(unlist(skipped.genera),  nrow = length(skipped.spp), byrow = TRUE))
 
-skipped.spp <- cSplit(skipped.spp, 1:ncol(skipped.spp), sep = "|", stripWhite = TRUE, type.convert = FALSE)
+
+## split the reason and the species into separate columns
+skipped.species <- cSplit(skipped.species, 1:ncol(skipped.species), sep = "|", stripWhite = TRUE, type.convert = FALSE)
 
 
 ## update names
-colnames(skipped.spp)[1] <- "Reason skipped"
-colnames(skipped.spp)[2] <- "Taxa"
+colnames(skipped.species)[1] <- "Reason_skipped"
+colnames(skipped.species)[2] <- "Taxa"
 
 
-str(skipped.spp)
-head(skipped.spp)
-tail(skipped.spp)
+## check
+str(skipped.species)
+head(skipped.species)
+tail(skipped.species)
+View(skipped.species)
 
+
+## get subset for each type
+max.records  <- skipped.species[ which(skipped.species$Reason_skipped == "Number of records > 200,000"), ]
+name.records <- skipped.species[ which(skipped.species$Reason_skipped == "Possible incorrect nomenclature"), ]
+no.records   <- skipped.species[ which(skipped.species$Reason_skipped == "No GBIF records"), ]
+
+
+## create lists for each category
+max.records.spp  = unique(as.character(max.records$Taxa))
+name.records.spp = unique(as.character(name.records$Taxa))
+no.records.spp   = unique(as.character(no.records$Taxa))
+View(name.records.spp)
 
 
 
