@@ -15,7 +15,8 @@ packages <- c("ggplot2",   "plyr",      "reshape2", "RColorBrewer",  "scales",  
               "dismo",     "mctest",    "rJava",    "ENMeval",       "SDMTools",   "ALA4R",
               "maxent",    "devtools",   "knitr",   "yaml",          "htmltools",  "microbenchmark",
               "knitr",     "yaml",      "caTools",  "bitops",        "rmarkdown",  "speciesgeocodeR",                  
-              "bitops",    "rmarkdown", "cluster",  "gsubfn",        "functional", "splitstackshape") # class(packages)
+              "bitops",    "rmarkdown", "cluster",  "gsubfn",        "functional", "splitstackshape",
+              "tidyverse") # class(packages)
 
 
 ## also to create pdf/html documents, you need to install a latex program. EG MiKtex for windows.

@@ -38,6 +38,13 @@ library(functional)
 library(splitstackshape)
 
 
+library(tidyverse)
+library(stringr)
+library(maptools)
+library(rgeos)
+library(magrittr)
+
+
 ## source functions
 source('./R/GREEN_CITIES_FUNCTIONS.R')
 
@@ -46,7 +53,7 @@ source('./R/GREEN_CITIES_FUNCTIONS.R')
 
 
 #########################################################################################################################
-## 1). READ IN DRAFT HIA LIST
+## 1). READ IN DRAFT HIA LIST AND CLEAN
 #########################################################################################################################
 
 
@@ -54,6 +61,7 @@ source('./R/GREEN_CITIES_FUNCTIONS.R')
 ## up the data and cross-linked to growth form and exotic/native status and derived a list of ~1000 species that are the most 
 ## commonly sold, covering the right ratio of growth forms, regional representation and native/exotic
 spp.list = read.csv("./data/base/HIA_LIST/HIA/GREEN_CITIES_DRAFT_LIST.csv", stringsAsFactors = FALSE)
+top.200  = read.csv("./data/base/HIA_LIST/HIA/HIA_TOP_200.csv", stringsAsFactors = FALSE)
 
 
 ## have a look
@@ -62,7 +70,39 @@ str(spp.list)
 head(spp.list)
 
 
-## for now, remove all the subspecies, varieties etc,
+## also, add the "Top 200 species in here"
+spp.200          = top.200[c("Species")]
+spp.200$Top_200  = "TRUE"
+
+spp.list = merge(spp.list, spp.200, by = "Species", all.x = TRUE) 
+spp.list$Top_200[is.na(spp.list$Top_200)] <- "FALSE"
+spp.list$Origin <- gsub(" ",  "", spp.list$Origin)
+
+
+## check
+str(spp.list)
+head(spp.list)
+unique(spp.list$Top_200)
+unique(spp.list$Origin)
+
+
+#########################################################################################################################
+## WHAT ARE SOME USEFUL MEASURES OF THE DATASET?
+#########################################################################################################################
+
+
+## ~ HALF the total species are native, ~47% of the top 200
+dim(subset(spp.list, Origin == "Native"))[1]/dim(spp.list)[1]*100
+dim(subset(top.200, Origin == "Native"))[1]/dim(top.200)[1]*100
+
+
+#########################################################################################################################
+## DRAFT CLEAN: THIS NEEDS TO CHANGE IN CONSULTATION WITH RACH, PAUL, ETC
+#########################################################################################################################
+
+
+## for now, remove all the subspecies, varieties etc.
+## but check if some of them work on GBIF, e.g. a separate list of varities
 spp.list$Species <- gsub("spp.", "", spp.list$Species)
 spp.list$Species <- gsub(" x ",  " ", spp.list$Species)
 spp.list$Species <- gsub("  ",  " ", spp.list$Species)
@@ -104,6 +144,7 @@ genera = unique(vapply(lapply(strsplit(spp.list$Species, " "),
 str(genera)
 head(genera, 50)
 tail(genera, 50)
+
 
 
 

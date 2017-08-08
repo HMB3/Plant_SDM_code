@@ -96,7 +96,7 @@ download_GBIF_all_species = function (list) {
     
     ## 6). save records to .Rdata file, note that using .csv files seemed to cause problems...
     save(GBIF, file = paste("./data/base/HIA_LIST/GBIF/", sp.n, "_GBIF_records.RData", sep = ""))
-    #return(skip.spp.list)
+    return(skip.spp.list)
     
   }
   
@@ -139,7 +139,7 @@ download_GBIF_all_genera = function (list) {
       
       print (paste ("Possible incorrect nomenclature", gen.n, "skipping"))
       nomenclature = paste ("Possible incorrect nomenclature |", gen.n)
-      skip.list <- c(skip.list, nomenclature)
+      skip.list <- c(skip.gen.list, nomenclature)
       next
       
     }
@@ -149,7 +149,7 @@ download_GBIF_all_genera = function (list) {
       
       print (paste ("No GBIF records for", gen.n, "skipping"))
       records = paste ("No GBIF records for |", gen.n)
-      skip.list <- c(skip.list, records)
+      skip.list <- c(skip.gen.list, records)
       next
       
     }
@@ -159,7 +159,7 @@ download_GBIF_all_genera = function (list) {
       
       print (paste ("Number of records > max for GBIF download via R (200,000)", gen.n, "skipping"))
       max =  paste ("Number of records > 200,000 |", gen.n)
-      skip.list <- c(skip.list, max)
+      skip.list <- c(skip.gen.list, max)
       next
       
     }
@@ -170,7 +170,7 @@ download_GBIF_all_genera = function (list) {
     
     ## 6). save records to .Rdata file, note that using .csv files seemed to cause problems...
     save(GBIF.GEN, file = paste("./data/base/HIA_LIST/GBIF/GENERA/", gen.n, "_GBIF_records.RData", sep = ""))
-    #return(skip.list)
+    return(skip.gen.list)
     
   }
   
