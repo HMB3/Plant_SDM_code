@@ -156,6 +156,7 @@ tail(genera, 50)
 
 ## now run lOOPs to dowload species in the "spp" list from GBIF
 ## not including any data quality checks here, just downloading everything ##
+## 
 
 
 ## set a few global variables to be used inside the functions...
@@ -216,7 +217,7 @@ no.records.spp   = unique(as.character(no.records$Taxa))
 
 
 ## could also do the cleaing for each species individually?
-load("./data/base/HIA_LIST/GBIF/Agapanthus orientalis_GBIF_records.RData")
+load("./data/base/HIA_LIST/GBIF/Viburnum suspensum_GBIF_records.RData")
 str(GBIF)
 
 
@@ -230,6 +231,12 @@ plot(map)
 ## can we get all the columns at once, even if they have a different number?
 ## look at all the GBIF fields for an example
 ## do these GBIF names match the ALA names?
+
+
+## Stu: As to binding multiple data frames that may not all have the same columns: dplyr::bind_rows() will 
+## do this. I do this once all the individual files are downloaded for each species. This can get very 
+## slow for a large number of data frames if you do them one by one, I found a quicker way was to read 
+## all data frames to a list, then use a single bind_rows() to do them all in one hit.
 
 
 ## check GBIF field names for a key species...
