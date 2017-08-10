@@ -1,16 +1,98 @@
 #########################################################################################################################
-##############################  DOWNLOAD GLOBAL SPECIES RECORDS FOR HORT AUS LIST ####################################### 
+#######################################  COMBINE ALL SPECIES DATA FRAMES INTO ONE ####################################### 
 #########################################################################################################################
+
+
+#########################################################################################################################
+## 1). COMBINE ALL SPECIES DATA FRAMES USING SHAWN'S APPROACH
+#########################################################################################################################
+
+
+## check GBIF field names for a key species...
+Magnolia.grandiflora = gbif('Magnolia grandiflora', download = TRUE)
+GBIF.names = sort(names(Magnolia.grandiflora))
+GBIF.names
+
+
+## create empty dataframes to store all the data?
+GBIF.HIA.SPP.RECORDS = data.frame()
+GBIF.HIA.GEN.RECORDS = data.frame()
+
+
+## the species list doesn't match the downloaded species, so create a list from the downloaded files
+spp.download = list.files("./data/base/HIA_LIST/GBIF/SPECIES/", pattern = ".RData")
+spp.download = gsub("_GBIF_records.RData", "", spp.download)
+
+gen.download = list.files("./data/base/HIA_LIST/GBIF/GENUS/", pattern = ".RData")
+gen.download = gsub("_GBIF_records.RData", "", spp.download)
+
+str(spp.download)
+str(gen.download)
+
+
+
+
+
+#########################################################################################################################
+## combine species
+
+## this is slow, because every file was saved as GBIF, so creating the list of data frames doesn't work...
+for(sp.n in spp.download) {
+  
+  # Load GBIF records for each species as a .CSV file
+  filename = paste0("./data/base/HIA_LIST/GBIF/SPECIES/", sp.n, "_GBIF_records.RData")
+  load(filename)
+  
+  ## the restrict the dataframe to only those in common...can olny do this once fields are decided....
+  GBIF                  = GBIF
+  GBIF.HIA.SPP.RECORDS  = bind_rows(GBIF.HIA.RECORDS, GBIF)
+  
+}
+
+
+
+
+
+#########################################################################################################################
+## combine genera
+## for all the species in the HIA list
+for(gen.n in gen.download) {
+  
+  # Load GBIF records for each species as a .CSV file
+  filename = paste0("./data/base/HIA_LIST/GBIF/SPECIES/", sp.n, "_GBIF_records.RData")
+  load(filename)
+  
+  ## the restrict the dataframe to only those in common...can olny do this once fields are decided....
+  GBIF                  = GBIF
+  GBIF.HIA.GEN.RECORDS  = bind_rows(GBIF.GEN.RECORDS, GBIF)
+  
+}
+
+
+## now check the combined data frame
+dim(GBIF.HIA.SPP.RECORDS)
+dim(GBIF.HIA.GEN.RECORDS)
+
+head(GBIF.HIA.SPP.RECORDS, 20)
+head(GBIF.HIA.GEN.RECORDS, 20) 
+
+
+
+
+
+#########################################################################################################################
+## 2). COMBINE ALL SPECIES DATA FRAMES INTO ONE WITH STU'S APPROACH
+#########################################################################################################################
+
+# Stu: for binding multiple data frames that may not all have the same columns: dplyr::bind_rows() will do this. I do this once 
+# all the individual files are downloaded for each species. This can get very slow for a large number of data frames if you 
+# do them one by one, I found a quicker way was to read all data frames to a list, then use a single bind_rows() to do them 
+# all in one hit. The code below is also here (https://gist.github.com/snubian/b0819f1ad9861d7663161f49bc91663a)
 
 
 ## set download variables
 rm(list = ls())
 #gbif_config(download_reason_id = 7)
-
-
-#########################################################################################################################
-## 1). READ IN DRAFT HIA LIST
-#########################################################################################################################
 
 
 ## get final taxon list (i.e. the cleaned list)
@@ -30,9 +112,10 @@ for (i in 1:nrow(draft.taxa)) {
   
   ## pipe the draft.taxa into a .CSV file... 
   taxon %>%
-    str_replace(" ", "_") %>%
-    paste0("output/occurrence/ala/original/", ., "_data.csv") %>%
-    write_csv(occ$data, .)
+    #str_replace(" ", "_") %>%
+    #paste0("output/occurrence/ala/original/", ., "_data.csv") %>%
+    paste0("./data/base/HIA_LIST/GBIF/", ., "_GBIF_records.RData")
+  #write_csv(occ$data, .)
   
 }
 
@@ -104,10 +187,40 @@ gbifColsToDrop <- c("cloc",
 
 
 #########################################################################################################################
-## read data frames to list
+## Temporary fix
 #########################################################################################################################
 
 
+##
+setwd("./data/base/HIA_LIST/GBIF/SPECIES/")
+
+file_list <- list.files()
+
+ala <- bind_rows(file_list)
+
+for (file in file_list){
+  
+  # if the merged dataset doesn't exist, create it
+  if (!exists("dataset")){
+    
+    dataset <- read.table(file, header = TRUE, sep = "\t")
+  }
+  
+  # if the merged dataset does exist, append to it
+  if (exists("dataset")){
+    
+    temp_dataset <- read.table(file, header = TRUE, sep = "\t")
+    dataset      <- bind_rows(dataset, temp_dataset)
+    
+    rm(temp_dataset)
+  }
+  
+}
+
+
+
+
+#########################################################################################################################
 ## this seems to be a way to combine thousands of data frames without it getting progressively slower and s l o w e r
 ALL.GBIF.HIA.RECORDS <- list()
 
@@ -117,6 +230,7 @@ for (i in seq_len(nrow(draft.taxa))) {
   
   data <-
     
+    browser()
     draft.taxa[i, ]$Species %>%
     #str_replace(" ", " ")   %>%
     paste0("./data/base/HIA_LIST/GBIF/", ., "_GBIF_records.RData") %>%
@@ -137,6 +251,9 @@ for (i in seq_len(nrow(draft.taxa))) {
 }
 
 
+
+
+#########################################################################################################################
 ## create the combined GBIF object
 GBIF <-
   
@@ -153,9 +270,35 @@ GBIF %>% write_csv("./data/base/HIA_LIST/GBIF/ALL_GBIF_HIA_SPP_RECORDS.csv")
 #   write_csv("output/occurrence/occurrence_combined_sample.csv")
 
 
+df <- list()
+
+for (i in seq_len(nrow(taxa))) {
+  
+  data <-
+    
+    taxa[i, ]$taxonName %>%
+    
+    str_replace(" ", "_") %>%
+    
+    paste0("output/occurrence/ala/original/", ., "_data.csv") %>%
+    
+    read_csv %>%
+    
+    mutate(searchTaxon = taxa[i, ]$taxonName,
+           catalogNumber = as.character(catalogNumber)) %>%
+    
+    dplyr::select(-one_of(alaColsToDrop))
+  
+  df[[i]] <- data
+  
+}
+
+ala <- bind_rows(df)
+
+
 
 
 
 #########################################################################################################################
-#############################################  FUNCTIONS FOR HORT AUS LIST ############################################## 
+#####################################################  END ############################################################## 
 #########################################################################################################################

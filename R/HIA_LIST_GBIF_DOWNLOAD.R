@@ -246,83 +246,93 @@ GBIF.names
 
 
 ## can only do this once/if fields are decided?
-GBIF.HIA.RECORDS = data.frame(
+GBIF.HIA.RECORDS = data.frame()
   
   ## taxonomic resolution fields
-  "occurrenceID"     = character(),
-  "gbifID"           = numeric(),
-  #"basisOfRecord"    = character(),
-  #"taxonRank"        = character(),
-  #"taxonRankID"      = character(),
-  "type"             = character(),
-  "institutionCode"  = character(),
-  "year"             = numeric(),
-  "eventDate"        = numeric(),
-  "identifiedBy"     = character(),
-  
-  ## taxonomic fields
-  "scientificName"   = character(),
-  "order"            = character(),
-  "family"           = character(),
-  "genus"            = character(),
-  "species"          = character(),
-  
-  ## spatial fields
-  "lon"              = numeric(),
-  "lat"              = numeric(),
-  #"geodeticDatum"    = numeric(),
-  "coordinateUncertaintyInMeters" = numeric(),
-  #"elevation"        = numeric(),
-  "country"          = character(),
-  "locality"         = character()
-  
+  # "occurrenceID"     = character(),
+  # "gbifID"           = numeric(),
+  # #"basisOfRecord"    = character(),
+  # #"taxonRank"        = character(),
+  # #"taxonRankID"      = character(),
+  # "type"             = character(),
+  # "institutionCode"  = character(),
+  # "year"             = numeric(),
+  # "eventDate"        = numeric(),
+  # "identifiedBy"     = character(),
+  # 
+  # ## taxonomic fields
+  # "scientificName"   = character(),
+  # "order"            = character(),
+  # "family"           = character(),
+  # "genus"            = character(),
+  # "species"          = character(),
+  # 
+  # ## spatial fields
+  # "lon"              = numeric(),
+  # "lat"              = numeric(),
+  # #"geodeticDatum"    = numeric(),
+  # "coordinateUncertaintyInMeters" = numeric(),
+  # #"elevation"        = numeric(),
+  # "country"          = character(),
+  # "locality"         = character()
+  # 
 )
 
 
-## for all the species in the HIA list
-for(sp.n in spp){
-  
 
+## spp doesn't match the downloaded species
+## now create a list from the downloaded files
+spp.download = list.files("./data/base/HIA_LIST/GBIF/SPECIES/", pattern = ".RData")
+spp.download = gsub("_GBIF_records.RData", "", spp.download)
+str(spp.download)
+
+
+
+## for all the species in the HIA list
+for(sp.n in spp.download) {
+  
   # Load GBIF records for each species as a .CSV file
-  filename = paste0("./data/base/HIA_LIST/GBIF/", sp.n, "_GBIF_records.csv")
+  filename = paste0("./data/base/HIA_LIST/GBIF/SPECIES/", sp.n, "_GBIF_records.RData")
   load(filename)
   
   ## the restrict the dataframe to only those in common...can olny do this once fields are decided....
-  GBIF = GBIF[,c(
-
-    ## taxonomic resolution fields
-    "occurrenceID",
-    "gbifID",
-    #"basisOfRecord",
-    #"taxonRank",
-    #"taxonRankID",
-    "type",
-    "institutionCode",
-    "year",
-    "eventDate",
-    "identifiedBy",
-    
-    ## taxonomic fields
-    "scientificName",
-    "order",
-    "family",
-    "genus",
-    "species",
-    
-    ## spatial fields
-    "lon",
-    "lat",
-    #"geodeticDatum",
-    "coordinateUncertaintyInMeters",
-    #"elevation",
-    "country",
-    "locality" 
-    
-    )]
+  GBIF = GBIF
+  # GBIF = GBIF[,c(
+  # 
+  #   ## taxonomic resolution fields
+  #   "occurrenceID",
+  #   "gbifID",
+  #   #"basisOfRecord",
+  #   #"taxonRank",
+  #   #"taxonRankID",
+  #   "type",
+  #   "institutionCode",
+  #   "year",
+  #   "eventDate",
+  #   "identifiedBy",
+  #   
+  #   ## taxonomic fields
+  #   "scientificName",
+  #   "order",
+  #   "family",
+  #   "genus",
+  #   "species",
+  #   
+  #   ## spatial fields
+  #   "lon",
+  #   "lat",
+  #   #"geodeticDatum",
+  #   "coordinateUncertaintyInMeters",
+  #   #"elevation",
+  #   "country",
+  #   "locality" 
+  #   
+  #   )]
 
   
   ## then bind the different species dataframes together
-  GBIF.HIA.RECORDS  = rbind(GBIF.HIA.RECORDS, GBIF)
+  #GBIF.HIA.RECORDS  = rbind(GBIF.HIA.RECORDS, GBIF)
+  GBIF.HIA.RECORDS  = bind_rows(GBIF.HIA.RECORDS, GBIF)
   
 }
 
