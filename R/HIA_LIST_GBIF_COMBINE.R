@@ -10,7 +10,7 @@ library(ALA4R)
 library(magrittr)
 
 
-## set ALA variables
+## set download variables
 rm(list = ls())
 #gbif_config(download_reason_id = 7)
 
@@ -58,8 +58,9 @@ for (i in 1:nrow(draft.taxa)) {
 load("./data/base/HIA_LIST/GBIF/Viburnum suspensum_GBIF_records.RData")
 names(GBIF)
 
+
 #########################################################################################################################
-## a bunch of fields we don't need
+## a bunch of GBIF fields we don't need
 #########################################################################################################################
 gbifColsToDrop <- c("cloc",
                     "crawlId",
@@ -160,3 +161,11 @@ GBIF %>% write_csv("./data/base/HIA_LIST/GBIF/ALL_GBIF_HIA_SPP_RECORDS.csv")
 #   
 #   filter(scientificName %in% taxa[sample(nrow(taxa), 100), ]$taxonName) %>%
 #   write_csv("output/occurrence/occurrence_combined_sample.csv")
+
+
+
+
+
+#########################################################################################################################
+#############################################  FUNCTIONS FOR HORT AUS LIST ############################################## 
+#########################################################################################################################

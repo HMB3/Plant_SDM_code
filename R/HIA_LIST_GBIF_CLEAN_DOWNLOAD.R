@@ -173,7 +173,7 @@ skip.gen.list       = list()
 
 
 ## run the download function on the species and genera lists
-## why is this loop producing NULL?
+## It needs to download at least one file, or it will return NULL
 skipped.species = download_GBIF_all_species(spp)    ## saves each spp as .Rdata file, returning list of skipped spp 
 skipped.genera  = download_GBIF_all_genera(genera)  ## saves each gen as .Rdata file, returning list of skipped genera 
 
@@ -214,6 +214,20 @@ no.records   <- skipped.species[ which(skipped.species$Reason_skipped == "No GBI
 max.records.spp  = unique(as.character(max.records$Taxa))
 name.records.spp = unique(as.character(name.records$Taxa))
 no.records.spp   = unique(as.character(no.records$Taxa))
+
+
+## have a look at the list of skipped species
+View(skipped.species)
+
+
+## check an eg file
+load("./data/base/HIA_LIST/GBIF/Viburnum suspensum_GBIF_records.RData")
+str(GBIF)
+
+
+## now what about the species with >200k records?
+test.200 = read.csv("./data/base/HIA_LIST/GBIF/0011820-170714134226665.csv", stringsAsFactors = FALSE)
+dim(test.200)
 
 
 

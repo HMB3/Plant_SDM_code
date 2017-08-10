@@ -39,7 +39,7 @@ string_fun_first_word <- function(x) {
 download_GBIF_all_species = function (list) {
   
   ## create variables
-  # skip.list       = list()
+  skip.spp.list       = list()
   GBIF.download.limit = 200000
   
   ## for every species in the list
