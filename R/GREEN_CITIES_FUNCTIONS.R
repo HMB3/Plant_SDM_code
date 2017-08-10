@@ -4,6 +4,23 @@
 
 
 #########################################################################################################################
+## Package functions
+#########################################################################################################################
+
+
+ipak <- function(pkg){
+  
+  new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+  
+  if (length(new.pkg)) 
+    install.packages(new.pkg, dependencies = TRUE)
+  
+  sapply(pkg, require, character.only = TRUE)
+  
+}
+
+
+#########################################################################################################################
 ## sorting functions
 #########################################################################################################################
 
@@ -115,7 +132,7 @@ download_GBIF_all_species = function (list) {
 download_GBIF_all_genera = function (list) {
   
   ## create variables
-  skip.list           = list()
+  skip.gen.list       = list()
   GBIF.download.limit = 200000
   
   ## for every unique genus in the list
@@ -139,7 +156,7 @@ download_GBIF_all_genera = function (list) {
       
       print (paste ("Possible incorrect nomenclature", gen.n, "skipping"))
       nomenclature = paste ("Possible incorrect nomenclature |", gen.n)
-      skip.list <- c(skip.gen.list, nomenclature)
+      skip.gen.list <- c(skip.gen.list, nomenclature)
       next
       
     }
@@ -149,7 +166,7 @@ download_GBIF_all_genera = function (list) {
       
       print (paste ("No GBIF records for", gen.n, "skipping"))
       records = paste ("No GBIF records for |", gen.n)
-      skip.list <- c(skip.gen.list, records)
+      skip.gen.list <- c(skip.gen.list, records)
       next
       
     }
@@ -159,7 +176,7 @@ download_GBIF_all_genera = function (list) {
       
       print (paste ("Number of records > max for GBIF download via R (200,000)", gen.n, "skipping"))
       max =  paste ("Number of records > 200,000 |", gen.n)
-      skip.list <- c(skip.gen.list, max)
+      skip.gen.list <- c(skip.gen.list, max)
       next
       
     }
@@ -293,7 +310,7 @@ CLEAN_GBIF_MACQU <- function(x) {
   
   ## remove records with taxonomic problems, or that are fossils
   #taxonid <- ifelse(x$taxonIdentificationIssue == 'questionSpecies', 'taxonid', '')
-  basis   <- ifelse(x$basisOfRecord == 'FOSSIL_SPECIMEN',  'basis', '')                      ## length(x$basisOfRecord[x$basisOfRecord == "UNKNOWN"])
+  basis   <- ifelse(x$basisOfRecord == 'FOSSIL_SPECIMEN',  'basis', '')   ## length(x$basisOfRecord[x$basisOfRecord == "UNKNOWN"])
   
   
   

@@ -3,18 +3,9 @@
 #########################################################################################################################
 
 
-## 
-library(tidyverse)
-library(stringr)
-library(ALA4R)
-library(magrittr)
-
-
 ## set download variables
 rm(list = ls())
 #gbif_config(download_reason_id = 7)
-
-
 
 
 #########################################################################################################################
@@ -118,7 +109,6 @@ gbifColsToDrop <- c("cloc",
 
 
 ## this seems to be a way to combine thousands of data frames without it getting progressively slower and s l o w e r
-browser()
 ALL.GBIF.HIA.RECORDS <- list()
 
 

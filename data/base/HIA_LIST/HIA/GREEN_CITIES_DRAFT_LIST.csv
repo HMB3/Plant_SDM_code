@@ -1,4 +1,4 @@
-Species,Plant type,ACT,NSW,NT,QLD,SA,VIC,WA,Number of growers,Number of States,Origin,Count,Synonym
+Species,Plant type,ACT,NSW,NT,QLD,SA,VIC,WA,Number of growers,Number of States,Origin,Count,Comment
 Abelia grandiflora,Shrub,7,16,1,10,2,17,5,58,7,Exotic,,
 Abelia grandiflora Dwarf,Shrub,,12,1,13,,19,,45,4,Exotic,,
 Abelia grandiflora Nana,Shrub,2,17,,2,2,21,1,45,6,Exotic,,
@@ -561,7 +561,7 @@ Gardenia,Shrub,,,,,,,,,,Exotic,,
 Gaura lindheimeri Belleza Dark Pink,Herb,,11,,1,,16,,28,3,Exotic,,
 Gazania rigens,Herb,,5,,38,,,,43,2,Exotic,,
 Gazania spp. Assorted,Herb,2,12,1,20,,18,,53,5,Exotic,,
-Gazania tomentosa,Herb,,22,,6,,4,,32,3,Exotic,None,
+Gazania tomentosa,Herb,,22,,6,,4,,32,3,Exotic,No records,
 Geijera parviflora,Shrub,,1,,,2,30,,33,3,Native,,
 Geranium spp. Assorted,Herb,1,10,,4,,19,1,35,5,Exotic,,
 Geranium spp. Caliope Big Red,Herb,,10,,9,,6,1,26,4,Exotic,,
@@ -578,7 +578,7 @@ Gordonia axillaris,Shrub,,21,,24,,4,,49,3,Exotic,,
 Graptophyllum ilicifolium,Shrub,,10,,26,,,,36,2,Exotic,,
 Grevillea baileyana,Shrub,,17,,112,,,,129,2,Native,,
 Grevillea banksii Forsterii,Shrub,,9,1,14,,1,,25,4,Native,,
-Grevillea ivanhoe,Shrub,,13,,6,,10,4,33,4,Native,,Cultivar
+Grevillea ivanhoe,Shrub,,13,,6,,10,4,33,4,Native,,Ambiguous variety
 Grevillea juniperina Molonglo,Shrub,1,14,,14,,9,4,42,5,Native,,
 Grevillea juniperina Pink Lady,Shrub,4,11,,3,,11,,29,4,Native,,
 Grevillea lanigera,Shrub,3,19,,1,,11,1,35,5,Native,,
@@ -722,7 +722,7 @@ Leptospermum flavescens Cardwell,Shrub,,38,,56,,4,10,108,4,Native,,
 Leptospermum laevigatum,Shrub,,13,,6,,23,,42,3,Native,,
 Leptospermum liversidgei ,Shrub,,8,,17,,,,25,2,Native,,
 Leptospermum madidum,Shrub,,2,2,23,,,,27,3,Native,,
-Leptospermum nanum Rubrum,Shrub,,5,,3,,19,5,32,4,Native,,Variety
+Leptospermum nanum Rubrum,Shrub,,5,,3,,19,5,32,4,Native,,Ambiguous variety
 Leptospermum obovatum Starry Night,Shrub,,8,,6,,27,2,43,4,Native,,
 Leptospermum petersonii,Shrub,,43,,53,,40,2,138,4,Native,,
 Leptospermum polygalifolium ,Shrub,,21,,40,,,,61,2,Native,,
@@ -738,7 +738,7 @@ Leucophyta brownii,Shrub,,3,,,,26,9,38,3,Native,,
 Leucophyta brownii Silver Nugget,Shrub,,6,,,,13,6,25,3,Native,,
 Licuala elegans,Palm,,2,2,18,,3,,25,4,Exotic,,
 Licuala ramsayi,Palm,,12,2,46,,,,60,3,Native,,
-Ligustrum undulatum,Shrub,,2,,5,2,29,,38,4,Exotic,,Variety
+Ligustrum undulatum,Shrub,,2,,5,2,29,,38,4,Exotic,,Check taxonomy
 Limonium perezii,Herb,,9,,3,1,27,1,41,5,Exotic,,
 Linospadix monostachya,Palm,,10,,14,,1,,25,3,Native,,
 Liquidambar styraciflua,Tree,1,71,,36,2,50,8,168,6,Exotic,,

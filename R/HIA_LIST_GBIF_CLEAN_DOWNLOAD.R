@@ -37,7 +37,6 @@ library(gsubfn)
 library(functional)
 library(splitstackshape)
 
-
 library(tidyverse)
 library(stringr)
 library(maptools)
@@ -168,66 +167,117 @@ head(draft.taxa)
 
 ## set a few global variables to be used inside the functions...
 #GBIF.download.limit = 200000
-skip.spp.list       = list()
-skip.gen.list       = list()
+# skip.spp.list       = list()
+# skip.gen.list       = list()
 
 
 ## run the download function on the species and genera lists
-## It needs to download at least one file, or it will return NULL
+## these functions need to download at least one file, or they will return NULL
 skipped.species = download_GBIF_all_species(spp)    ## saves each spp as .Rdata file, returning list of skipped spp 
 skipped.genera  = download_GBIF_all_genera(genera)  ## saves each gen as .Rdata file, returning list of skipped genera 
 
 
-## now convert the lists of skipped species and genera into a dataframe
-str(skipped.species)
-str(skipped.genera)
-
-
-## converting the lists of skipped species and genera into a dataframe
-skipped.species <- data.frame(matrix(unlist(skipped.species), nrow = length(skipped.species), byrow = TRUE))
-skipped.genera  <- data.frame(matrix(unlist(skipped.genera),  nrow = length(skipped.spp), byrow = TRUE))
-
-
-## split the reason and the species into separate columns
-skipped.species <- cSplit(skipped.species, 1:ncol(skipped.species), sep = "|", stripWhite = TRUE, type.convert = FALSE)
-
-
-## update names
-colnames(skipped.species)[1] <- "Reason_skipped"
-colnames(skipped.species)[2] <- "Taxa"
-
-
-## check
-str(skipped.species)
-head(skipped.species)
-tail(skipped.species)
-View(skipped.species)
-
-
-## get subset for each type
-max.records  <- skipped.species[ which(skipped.species$Reason_skipped == "Number of records > 200,000"), ]
-name.records <- skipped.species[ which(skipped.species$Reason_skipped == "Possible incorrect nomenclature"), ]
-no.records   <- skipped.species[ which(skipped.species$Reason_skipped == "No GBIF records"), ]
-
-
-## create lists for each category
-max.records.spp  = unique(as.character(max.records$Taxa))
-name.records.spp = unique(as.character(name.records$Taxa))
-no.records.spp   = unique(as.character(no.records$Taxa))
-
-
-## have a look at the list of skipped species
-View(skipped.species)
-
-
-## check an eg file
+## check an eg file...not sure why it was working with RData files, but not .csv files...
 load("./data/base/HIA_LIST/GBIF/Viburnum suspensum_GBIF_records.RData")
 str(GBIF)
 
 
 ## now what about the species with >200k records?
-test.200 = read.csv("./data/base/HIA_LIST/GBIF/0011820-170714134226665.csv", stringsAsFactors = FALSE)
+test.200 = read.csv("./data/base/HIA_LIST/GBIF/occurrence.txt", stringsAsFactors = FALSE)
 dim(test.200)
+
+
+
+
+
+#########################################################################################################################
+## 3). CHECK THE SPECIES WHICH WERE SKIPPED? 
+#########################################################################################################################
+
+
+## now convert the lists of skipped species and genera into a dataframe
+length(skipped.species)   
+length(skipped.genera)
+
+
+## converting the lists of skipped species and genera into a dataframe
+skipped.species.df <- data.frame(matrix(unlist(skipped.species), nrow = length(skipped.species), byrow = TRUE))
+skipped.genera.df  <- data.frame(matrix(unlist(skipped.genera),  nrow = length(skipped.genera),  byrow = TRUE))
+
+
+## split the reason and the species into separate columns
+skipped.species.df <- cSplit(skipped.species.df, 1:ncol(skipped.species.df), sep = "|", stripWhite = TRUE, type.convert = FALSE)
+skipped.genera.df  <- cSplit(skipped.genera.df,  1:ncol(skipped.genera.df),  sep = "|", stripWhite = TRUE, type.convert = FALSE)
+
+
+## update names
+colnames(skipped.species.df)[1] <- "Reason_skipped"
+colnames(skipped.species.df)[2] <- "Species"
+colnames(skipped.genera.df)[1]  <- "Reason_skipped"
+colnames(skipped.genera.df)[2]  <- "Genus"  ## head(skipped.species.df), head(skipped.genera.df)
+
+
+## get subset for each type
+max.records.spp  <- skipped.species.df[ which(skipped.species.df$Reason_skipped == "Number of records > 200,000"), ]
+max.records.gen  <- skipped.genera.df[ which(skipped.genera.df$Reason_skipped   == "Number of records > 200,000"), ]
+
+name.records.spp <- skipped.species.df[ which(skipped.species.df$Reason_skipped == "Possible incorrect nomenclature"), ]
+name.records.gen <- skipped.genera.df[ which(skipped.genera.df$Reason_skipped   == "Possible incorrect nomenclature"), ]
+no.records.spp   <- skipped.species.df[ which(skipped.species.df$Reason_skipped == "No GBIF records"), ]
+
+
+## create lists for each category
+max.records.spp.list  = unique(as.character(max.records.spp$Taxa))
+name.records.spp.list = unique(as.character(name.records.spp$Taxa))
+no.records.spp.list   = unique(as.character(no.records.spp$Taxa))
+
+max.records.gen.list  = unique(as.character(max.records.gen$Taxa))
+name.records.gen.list = unique(as.character(name.records.gen$Taxa))
+
+
+## save lists just in case
+## save(skipped.species.df, file = paste("./data/base/HIA_LIST/GBIF/skipped_species.RData", sep = ""))
+## save(skipped.genera.df,  file = paste("./data/base/HIA_LIST/GBIF/skipped_genera.RData",  sep = ""))
+
+
+## have a look at the list of skipped species
+View(skipped.species.df)
+
+
+## which of these species are on the top 200?
+skipped.200.spp = merge(spp.200, skipped.species.df, by = "Species", all = FALSE)
+kable(skipped.200.spp)
+
+
+
+
+
+#########################################################################################################################
+## 3). DOWNLOAD SPECIES WITH >200k RECORDS USING THE GBIF API
+#########################################################################################################################
+
+
+## create a list of taxa with too many records, to pass to the curl code..
+
+##
+# function gbifapi { 
+#   
+#   curl -i –user popple_1500:Popple1500 -H "Content-Type: 
+#   application/json" -H "Accept: application/json" -X POST -d "{\"creator\":
+#   \”yourGbifUserName\", \"notification_address\": [\”hugh.burley@mq.edu.au\"], 
+#   \"predicate\": {\"type\":\"and\", \"predicates\": [{\"type\":\"equals\",\"key\":
+#   \"HAS_COORDINATE\",\"value\":\"true\"}, {\"type\":\"equals\", \"key\":
+#   \"TAX O N _KEY\", \"value\":\"$1\"}] }}" 
+#   http://api.gbif.org/v1/occurrence/download/request  >> log.txt 
+#   echo -e "\r\n$1 $2\r\n\r\n----------------\r\n\r\n" >> log.txt
+#   
+# }  
+# 
+# $ gbifapi 4140730 "Betula pendula" 
+# $ gbifapi 2882316 "Fagus sylvatica" 
+# $ gbifapi 3172358 "Fraxinus excelsior" 
+# $ gbifapi 8351737 "Hedera helix" 
+# $ gbifapi 2878688 "Quercus robur"
 
 
 
