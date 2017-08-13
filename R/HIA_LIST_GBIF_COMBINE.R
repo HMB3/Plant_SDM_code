@@ -23,8 +23,8 @@ GBIF.HIA.GEN.RECORDS = data.frame()
 spp.download = list.files("./data/base/HIA_LIST/GBIF/SPECIES/", pattern = ".RData")
 spp.download = gsub("_GBIF_records.RData", "", spp.download)
 
-gen.download = list.files("./data/base/HIA_LIST/GBIF/GENUS/", pattern = ".RData")
-gen.download = gsub("_GBIF_records.RData", "", spp.download)
+gen.download = list.files("./data/base/HIA_LIST/GBIF/GENERA/", pattern = ".RData")
+gen.download = gsub("_GBIF_records.RData", "", gen.download )
 
 str(spp.download)
 str(gen.download)
@@ -36,18 +36,23 @@ str(gen.download)
 #########################################################################################################################
 ## combine species
 
+
 ## this is slow, because every file was saved as GBIF, so creating the list of data frames doesn't work...
 for(sp.n in spp.download) {
   
-  # Load GBIF records for each species as a .CSV file
+  ## Load GBIF records for each species as a .CSV file
   filename = paste0("./data/base/HIA_LIST/GBIF/SPECIES/", sp.n, "_GBIF_records.RData")
   load(filename)
   
-  ## the restrict the dataframe to only those in common...can olny do this once fields are decided....
+  ## then bind the .RData files together
   GBIF                  = GBIF
-  GBIF.HIA.SPP.RECORDS  = bind_rows(GBIF.HIA.RECORDS, GBIF)
+  GBIF.HIA.SPP.RECORDS  = bind_rows(GBIF.HIA.SPP.RECORDS, GBIF)
   
 }
+
+
+## now save the combined species GBIF data as one .RData file
+save(GBIF.HIA.SPP.RECORDS,  file = paste("./data/base/HIA_LIST/GBIF/SPECIES/", sep = ""))
 
 
 
@@ -59,17 +64,21 @@ for(sp.n in spp.download) {
 for(gen.n in gen.download) {
   
   # Load GBIF records for each species as a .CSV file
-  filename = paste0("./data/base/HIA_LIST/GBIF/SPECIES/", sp.n, "_GBIF_records.RData")
+  filename = paste0("./data/base/HIA_LIST/GBIF/GENERA/", sp.n, "_GBIF_records.RData")
   load(filename)
   
-  ## the restrict the dataframe to only those in common...can olny do this once fields are decided....
+  ## then bind the .RData files together
   GBIF                  = GBIF
-  GBIF.HIA.GEN.RECORDS  = bind_rows(GBIF.GEN.RECORDS, GBIF)
+  GBIF.HIA.GEN.RECORDS  = bind_rows(GBIF.HIA.GEN.RECORDS, GBIF)
   
 }
 
 
-## now check the combined data frame
+## now save the combined species GBIF data as one .RData file
+save(GBIF.HIA.SPP.RECORDS,  file = paste("./data/base/HIA_LIST/GBIF/GENERA/", sep = ""))
+
+
+## now check the combined data frames
 dim(GBIF.HIA.SPP.RECORDS)
 dim(GBIF.HIA.GEN.RECORDS)
 
