@@ -30,10 +30,6 @@ str(spp.download)
 str(gen.download)
 
 
-## test the download
-spp.download.test = spp.download[c(1:4)] 
-
-
 
 
 
@@ -42,7 +38,9 @@ spp.download.test = spp.download[c(1:4)]
 #########################################################################################################################
 
 ## take the list of taxa
-GBIF.HIA.SPP.RECORDS <- sprintf("./data/base/HIA_LIST/GBIF/SPECIES/%s_GBIF_records.RData", spp.download[c(1:4)]) %>%
+# Start the clock!
+ptm <- proc.time()
+GBIF.HIA.SPP.RECORDS <- sprintf("./data/base/HIA_LIST/GBIF/SPECIES/%s_GBIF_records.RData", spp.download[c(1:length(spp.download))]) %>% ## [c(1:4)])
   
   ## pipe it into the lapply function to load all the .Rdata files
   lapply(function(x) get(load(x))) %>% 
@@ -53,6 +51,12 @@ GBIF.HIA.SPP.RECORDS <- sprintf("./data/base/HIA_LIST/GBIF/SPECIES/%s_GBIF_recor
 
   ## then bind the rows together
   bind_rows
+
+# Start the clock!
+proc.time() - ptm
+
+
+## Error: cannot allocate vector of size 32.0 Mb
 
 
 ## have a look at the output of bind rows
