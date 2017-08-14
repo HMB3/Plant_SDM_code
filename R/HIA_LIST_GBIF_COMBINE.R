@@ -30,19 +30,56 @@ str(spp.download)
 str(gen.download)
 
 
+## test the download
+spp.download.test = spp.download[c(1:4)] 
+
+
 
 
 
 #########################################################################################################################
-## combine species
+## make a list of all the taxa, then combine the species
+#########################################################################################################################
+
+## take the list of taxa
+GBIF.HIA.SPP.RECORDS <- sprintf("./data/base/HIA_LIST/GBIF/SPECIES/%s_GBIF_records.RData", spp.download[c(1:4)]) %>%
+  
+  ## pipe it into the lapply function to load all the .Rdata files
+  lapply(function(x) get(load(x))) %>% 
+  
+  ## create a column for the searched taxon
+  # mutate(searchTaxon   = spp.download[i], #taxa[i, ]$taxonName,
+  #        catalogNumber = as.character(catalogNumber)) %>%
+
+  ## then bind the rows together
+  bind_rows
+
+
+## have a look at the output of bind rows
+class(GBIF.HIA.SPP.RECORDS)
+names(GBIF.HIA.SPP.RECORDS)
+dim(GBIF.HIA.SPP.RECORDS)
+unique(GBIF.HIA.SPP.RECORDS$scientificName)
+unique(GBIF.HIA.SPP.RECORDS$searchTaxon)
+
+
+ala <-
+  bind_rows(df) %>%
+  filter(scientificName == searchTaxon)
+
+ala %>% write_csv("output/occurrence/occurrence_combined.csv")
+
 
 
 ## this is slow, because every file was saved as GBIF, so creating the list of data frames doesn't work...
-for(sp.n in spp.download) {
+for(sp.n in spp.download[c(1:2)]) {
   
   ## Load GBIF records for each species as a .CSV file
   filename = paste0("./data/base/HIA_LIST/GBIF/SPECIES/", sp.n, "_GBIF_records.RData")
   load(filename)
+
+  ## print
+  print(sp.n)
   
   ## then bind the .RData files together
   GBIF                  = GBIF
@@ -52,6 +89,10 @@ for(sp.n in spp.download) {
 
 
 ## now save the combined species GBIF data as one .RData file
+class(GBIF.HIA.SPP.RECORDS)
+dim(GBIF.HIA.SPP.RECORDS)
+str(GBIF.HIA.SPP.RECORDS)
+
 save(GBIF.HIA.SPP.RECORDS,  file = paste("./data/base/HIA_LIST/GBIF/SPECIES/", sep = ""))
 
 
@@ -117,14 +158,15 @@ for (i in 1:nrow(draft.taxa)) {
   message(taxon)
   
   ## get occurrence data for taxon from ALA, with extra fields specified
-  occ <- occurrences(taxon, extra = c("data_hub_uid", "data_provider", "data_resource"))
+  #occ <- occurrences(taxon, extra = c("data_hub_uid", "data_provider", "data_resource"))
+  occ <- gbif(taxon, download = TRUE)
   
   ## pipe the draft.taxa into a .CSV file... 
   taxon %>%
-    #str_replace(" ", "_") %>%
+    str_replace(" ", "_") %>%
     #paste0("output/occurrence/ala/original/", ., "_data.csv") %>%
-    paste0("./data/base/HIA_LIST/GBIF/", ., "_GBIF_records.RData")
-  #write_csv(occ$data, .)
+    paste0("./data/base/HIA_LIST/GBIF/CSV/", ., "_data.csv") %>%
+  write_csv(occ$data, .)
   
 }
 
@@ -140,6 +182,12 @@ for (i in 1:nrow(draft.taxa)) {
 ## what are the fields?
 load("./data/base/HIA_LIST/GBIF/Viburnum suspensum_GBIF_records.RData")
 names(GBIF)
+
+
+## check GBIF field names for a key species...
+Magnolia.grandiflora = gbif('Magnolia grandiflora', download = TRUE)
+GBIF.names = sort(names(Magnolia.grandiflora))
+GBIF.names
 
 
 #########################################################################################################################
@@ -239,7 +287,7 @@ for (i in seq_len(nrow(draft.taxa))) {
   
   data <-
     
-    browser()
+    #browser()
     draft.taxa[i, ]$Species %>%
     #str_replace(" ", " ")   %>%
     paste0("./data/base/HIA_LIST/GBIF/", ., "_GBIF_records.RData") %>%
@@ -258,6 +306,14 @@ for (i in seq_len(nrow(draft.taxa))) {
   ALL.GBIF.HIA.RECORDS[[i]] <- data
   
 }
+
+
+list.taxa <- sprintf("./data/base/HIA_LIST/GBIF/%s_GBIF_records.RData", draft.taxa$Species) %>%
+  
+  lapply(function(x) get(load(x))) %>% 
+  
+  bind_rows
+
 
 
 
