@@ -4,7 +4,7 @@
 
 
 #########################################################################################################################
-## 1). COMBINE ALL SPECIES DATA FRAMES USING SHAWN'S APPROACH
+## 1). COMBINE ALL SPECIES DATA FRAMES USING JOHN'S APPROACH
 #########################################################################################################################
 
 
@@ -34,13 +34,14 @@ str(gen.download)
 
 
 #########################################################################################################################
-## make a list of all the taxa, then combine the species
+## make a list of all the taxa, then combine the species dataframes into one
 #########################################################################################################################
 
 ## take the list of taxa
 # Start the clock!
 ptm <- proc.time()
-GBIF.HIA.SPP.RECORDS <- sprintf("./data/base/HIA_LIST/GBIF/SPECIES/%s_GBIF_records.RData", spp.download[c(1:length(spp.download))]) %>% ## [c(1:4)])
+GBIF.HIA.SPP.RECORDS.1 <- sprintf("./data/base/HIA_LIST/GBIF/SPECIES/%s_GBIF_records.RData", 
+                                  spp.download[c(1:300)]) %>% ## length(spp.download)
   
   ## pipe it into the lapply function to load all the .Rdata files
   lapply(function(x) get(load(x))) %>% 
@@ -52,6 +53,24 @@ GBIF.HIA.SPP.RECORDS <- sprintf("./data/base/HIA_LIST/GBIF/SPECIES/%s_GBIF_recor
   ## then bind the rows together
   bind_rows
 
+GBIF.HIA.SPP.RECORDS.2 <- sprintf("./data/base/HIA_LIST/GBIF/SPECIES/%s_GBIF_records.RData", 
+                                  spp.download[c(301:600)]) %>% ## length(spp.download)
+  
+  ## pipe it into the lapply function to load all the .Rdata files
+  lapply(function(x) get(load(x))) %>% 
+  
+  ## then bind the rows together
+  bind_rows
+
+GBIF.HIA.SPP.RECORDS.3 <- sprintf("./data/base/HIA_LIST/GBIF/SPECIES/%s_GBIF_records.RData", 
+                                  spp.download[c(601:length(spp.download))]) %>% ## length(spp.download)
+  
+  ## pipe it into the lapply function to load all the .Rdata files
+  lapply(function(x) get(load(x))) %>% 
+  
+  ## then bind the rows together
+  bind_rows
+
 # Start the clock!
 proc.time() - ptm
 
@@ -60,11 +79,19 @@ proc.time() - ptm
 
 
 ## have a look at the output of bind rows
-class(GBIF.HIA.SPP.RECORDS)
-names(GBIF.HIA.SPP.RECORDS)
-dim(GBIF.HIA.SPP.RECORDS)
-unique(GBIF.HIA.SPP.RECORDS$scientificName)
-unique(GBIF.HIA.SPP.RECORDS$searchTaxon)
+class(GBIF.HIA.SPP.RECORDS.1)
+names(GBIF.HIA.SPP.RECORDS.1)
+dim(GBIF.HIA.SPP.RECORDS.1)
+unique(GBIF.HIA.SPP.RECORDS.1$scientificName)
+unique(GBIF.HIA.SPP.RECORDS.1$searchTaxon)
+
+
+## bind all 3 together
+GBIF.HIA.SPP.RECORDS = bind_rows(GBIF.HIA.SPP.RECORDS.1,
+                                 GBIF.HIA.SPP.RECORDS.2,
+                                 GBIF.HIA.SPP.RECORDS.3)
+
+## 
 
 
 ala <-
@@ -72,6 +99,8 @@ ala <-
   filter(scientificName == searchTaxon)
 
 ala %>% write_csv("output/occurrence/occurrence_combined.csv")
+
+
 
 
 

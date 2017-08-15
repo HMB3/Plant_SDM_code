@@ -32,7 +32,10 @@ packages <- c("ggplot2",   "plyr",      "reshape2", "RColorBrewer",  "scales",  
 #install_github('johnbaums/hues')
 #install_github('johnbaums/trees')
 #install_github('johnbaums/things')
+
 #install_github("danlwarren/ENMTools")
+#devtools::install_github("richfitz/datastorr")
+#devtools::install_github("traitecoevo/baad.data")
 
 
 #########################################################################################################################

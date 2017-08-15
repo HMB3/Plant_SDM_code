@@ -42,7 +42,8 @@ library(stringr)
 library(maptools)
 library(rgeos)
 library(magrittr)
-
+library(datastorr)
+library(baad.data)
 
 ## source functions
 source('./R/GREEN_CITIES_FUNCTIONS.R')
