@@ -4,7 +4,7 @@
 
 
 #########################################################################################################################
-## 1). COMBINE ALL SPECIES DATA FRAMES USING JOHN'S APPROACH
+## 1). CREATE LIST OF TAXA
 #########################################################################################################################
 
 
@@ -30,92 +30,95 @@ str(spp.download)
 str(gen.download)
 
 
-## remove all columns in a list
-GBIF.HIA.SPP.RECORDS.DROP <- sprintf("./data/base/HIA_LIST/GBIF/SPECIES/%s_GBIF_records.RData", 
-                                     spp.download[c(1:300)]) %>% ## length(spp.download)
-  
-  ## pipe it into the lapply function to load all the .Rdata files
-  lapply(function(x) get(load(x))) %>% 
-  
-  dplyr::select(-one_of(gbifColsToDrop))
 
 
 
 #########################################################################################################################
-## make a list of all the taxa, then combine the species dataframes into one
+## 2). LOAD TAXA, ADD SEARCH TAXA, DROP COLUMNS AND COMBINE SPECIES DATAFRAMES INTO ONE
 #########################################################################################################################
+
 
 ## take the list of taxa
-ptm <- proc.time()
-GBIF.HIA.SPP.RECORDS.1 <- sprintf("./data/base/HIA_LIST/GBIF/SPECIES/%s_GBIF_records.RData", 
-                                  spp.download[c(1:300)]) %>% ## length(spp.download)
+GBIF.HIA.SPP.RECORDS.300 <- spp.download[c(1:300)] %>% ##length(spp.download)
   
-  ## pipe it into the lapply function to load all the .Rdata files
-  lapply(function(x) get(load(x))) %>% 
-  
-  ## create a column for the searched taxon
-  # mutate(searchTaxon   = spp.download[i], #taxa[i, ]$taxonName,
-  #        catalogNumber = as.character(catalogNumber)) %>%
+  ## pipe the list into lapply
+  lapply(function(x) {
+    
+    ## create the character string
+    f <- sprintf("./data/base/HIA_LIST/GBIF/SPECIES/%s_GBIF_records.RData", x)
+    
+    ## load each .RData file
+    d <- get(load(f))
+    
+    ## now drop the columns which we don't need
+    data.frame(searchTaxon = x, d[, !colnames(d) %in% gbifColsToDrop], 
+               stringsAsFactors = FALSE)
+    
+  }) %>% 
 
-  ## then bind the rows together
+  ## finally, bind all the rows together
   bind_rows
 
-GBIF.HIA.SPP.RECORDS.2 <- sprintf("./data/base/HIA_LIST/GBIF/SPECIES/%s_GBIF_records.RData", 
-                                  spp.download[c(301:600)]) %>% ## length(spp.download)
+
+
+
+
+## take the list of taxa
+GBIF.HIA.SPP.RECORDS.600 <- spp.download[c(301:600)] %>% ##length(spp.download)
   
-  ## pipe it into the lapply function to load all the .Rdata files
-  lapply(function(x) get(load(x))) %>% 
+  ## pipe the list into lapply
+  lapply(function(x) {
+    
+    ## create the character string
+    f <- sprintf("./data/base/HIA_LIST/GBIF/SPECIES/%s_GBIF_records.RData", x)
+    
+    ## load each .RData file
+    d <- get(load(f))
+    
+    ## now drop the columns which we don't need
+    data.frame(searchTaxon = x, d[, !colnames(d) %in% gbifColsToDrop], 
+               stringsAsFactors = FALSE)
+    
+  }) %>% 
   
-  ## then bind the rows together
+  ## finally, bind all the rows together
   bind_rows
 
-GBIF.HIA.SPP.RECORDS.3 <- sprintf("./data/base/HIA_LIST/GBIF/SPECIES/%s_GBIF_records.RData", 
-                                  spp.download[c(601:length(spp.download))]) %>% ## length(spp.download)
+
+
+
+
+## take the list of taxa
+GBIF.HIA.SPP.RECORDS.800 <- spp.download[c(601:length(spp.download))] %>% ##length(spp.download)
   
-  ## pipe it into the lapply function to load all the .Rdata files
-  lapply(function(x) get(load(x))) %>% 
+  ## pipe the list into lapply
+  lapply(function(x) {
+    
+    ## create the character string
+    f <- sprintf("./data/base/HIA_LIST/GBIF/SPECIES/%s_GBIF_records.RData", x)
+    
+    ## load each .RData file
+    d <- get(load(f))
+    
+    ## now drop the columns which we don't need
+    data.frame(searchTaxon = x, d[, !colnames(d) %in% gbifColsToDrop], 
+               stringsAsFactors = FALSE)
+    
+  }) %>% 
   
-  ## then bind the rows together
+  ## finally, bind all the rows together
   bind_rows
 
-# Start the clock!
-proc.time() - ptm
 
 
-## Error: cannot allocate vector of size 32.0 Mb
 
 
-## have a look at the output of bind rows
-class(GBIF.HIA.SPP.RECORDS.1)
-names(GBIF.HIA.SPP.RECORDS.1)
-dim(GBIF.HIA.SPP.RECORDS.1)
-unique(GBIF.HIA.SPP.RECORDS.1$scientificName)
-unique(GBIF.HIA.SPP.RECORDS.1$searchTaxon)
-
-
-## 
-GBIF.HIA.SPP.RECORDS.1 %>% 
-  
-  dplyr::select(-one_of(gbifColsToDrop))
-
-
+#########################################################################################################################
 ## bind all 3 together
-GBIF.HIA.SPP.RECORDS = bind_rows(GBIF.HIA.SPP.RECORDS.1,
-                                 GBIF.HIA.SPP.RECORDS.2,
-                                 GBIF.HIA.SPP.RECORDS.3)
-
-
-
-## filter combined dataset to just those species where the searched and returned taxa match
-GBIF.HIA.SPP.RECORDS <-
-  bind_rows(df) %>%
-  filter(scientificName == searchTaxon)
-
-GBIF.HIA.SPP.RECORDS %>% write_csv("./data/base/HIA_LIST/GBIF/GBIF_combo.csv")
-
-
-
-
+dim(GBIF.HIA.SPP.RECORDS.300)[1]+dim(GBIF.HIA.SPP.RECORDS.600)[1]+dim(GBIF.HIA.SPP.RECORDS.800)[1]
+GBIF.HIA.SPP.RECORDS = bind_rows(GBIF.HIA.SPP.RECORDS.300,
+                                 GBIF.HIA.SPP.RECORDS.600,
+                                 GBIF.HIA.SPP.RECORDS.800)
 
 
 
@@ -131,35 +134,35 @@ GBIF.HIA.SPP.RECORDS %>% write_csv("./data/base/HIA_LIST/GBIF/GBIF_combo.csv")
 # all in one hit. The code below is also here (https://gist.github.com/snubian/b0819f1ad9861d7663161f49bc91663a)
 
 
-## set download variables
-rm(list = ls())
-#gbif_config(download_reason_id = 7)
-
-
-## get final taxon list (i.e. the cleaned list)
-str(draft.taxa) 
-
-
-## for all draft.taxa in a list...
-for (i in 1:nrow(draft.taxa)) {
-  
-  ## print the draft.taxa to screen
-  ## not "i" is created inside the loop ()
-  taxon <- draft.taxa[i, ]$Species
-  message(taxon)
-  
-  ## get occurrence data for taxon from ALA, with extra fields specified
-  #occ <- occurrences(taxon, extra = c("data_hub_uid", "data_provider", "data_resource"))
-  occ <- gbif(taxon, download = TRUE)
-  
-  ## pipe the draft.taxa into a .CSV file... 
-  taxon %>%
-    str_replace(" ", "_") %>%
-    #paste0("output/occurrence/ala/original/", ., "_data.csv") %>%
-    paste0("./data/base/HIA_LIST/GBIF/CSV/", ., "_data.csv") %>%
-  write_csv(occ$data, .)
-  
-}
+# ## set download variables
+# rm(list = ls())
+# #gbif_config(download_reason_id = 7)
+# 
+# 
+# ## get final taxon list (i.e. the cleaned list)
+# str(draft.taxa) 
+# 
+# 
+# ## for all draft.taxa in a list...
+# for (i in 1:nrow(draft.taxa)) {
+#   
+#   ## print the draft.taxa to screen
+#   ## not "i" is created inside the loop ()
+#   taxon <- draft.taxa[i, ]$Species
+#   message(taxon)
+#   
+#   ## get occurrence data for taxon from ALA, with extra fields specified
+#   #occ <- occurrences(taxon, extra = c("data_hub_uid", "data_provider", "data_resource"))
+#   occ <- gbif(taxon, download = TRUE)
+#   
+#   ## pipe the draft.taxa into a .CSV file... 
+#   taxon %>%
+#     str_replace(" ", "_") %>%
+#     #paste0("output/occurrence/ala/original/", ., "_data.csv") %>%
+#     paste0("./data/base/HIA_LIST/GBIF/CSV/", ., "_data.csv") %>%
+#     write_csv(occ$data, .)
+#   
+# }
 
 
 
@@ -170,46 +173,35 @@ for (i in 1:nrow(draft.taxa)) {
 #########################################################################################################################
 
 
-## what are the fields?
-load("./data/base/HIA_LIST/GBIF/Viburnum suspensum_GBIF_records.RData")
-names(GBIF)
-
-
-## check GBIF field names for a key species...
-Magnolia.grandiflora = gbif('Magnolia grandiflora', download = TRUE)
-GBIF.names = sort(names(Magnolia.grandiflora))
-GBIF.names
-
-
-#########################################################################################################################
-## this seems to be a way to combine thousands of data frames without it getting progressively slower and s l o w e r
-ALL.GBIF.HIA.RECORDS <- list()
-
-
-## for all draft.taxa
-for (i in seq_len(nrow(draft.taxa))) {
-  
-  data <-
-    
-    #browser()
-    draft.taxa[i, ]$Species %>%
-    #str_replace(" ", " ")   %>%
-    paste0("./data/base/HIA_LIST/GBIF/", ., "_GBIF_records.RData") %>%
-    
-    load %>%
-    
-    ## here we are creating a column which is the draft.taxa searched for in GBIF
-    ## match this against what was returned, to check for other errors...
-    mutate(searchTaxon   = draft.taxa[i, ]$Species,
-           catalogNumber = as.character(catalogNumber)) %>%
-    
-    ## this is the function which combines dataframes with different columns
-    dplyr::select(-one_of(gbifColsToDrop))
-  
-  ## the ith element of data becomes big GBIF dataframe
-  ALL.GBIF.HIA.RECORDS[[i]] <- data
-  
-}
+# #########################################################################################################################
+# ## this seems to be a way to combine thousands of data frames without it getting progressively slower and s l o w e r
+# ALL.GBIF.HIA.RECORDS <- list()
+# 
+# 
+# ## for all draft.taxa
+# for (i in seq_len(nrow(draft.taxa))) {
+#   
+#   data <-
+#     
+#     #browser()
+#     draft.taxa[i, ]$Species %>%
+#     #str_replace(" ", " ")   %>%
+#     paste0("./data/base/HIA_LIST/GBIF/", ., "_GBIF_records.RData") %>%
+#     
+#     load %>%
+#     
+#     ## here we are creating a column which is the draft.taxa searched for in GBIF
+#     ## match this against what was returned, to check for other errors...
+#     mutate(searchTaxon   = draft.taxa[i, ]$Species,
+#            catalogNumber = as.character(catalogNumber)) %>%
+#     
+#     ## this is the function which combines dataframes with different columns
+#     dplyr::select(-one_of(gbifColsToDrop))
+#   
+#   ## the ith element of data becomes big GBIF dataframe
+#   ALL.GBIF.HIA.RECORDS[[i]] <- data
+#   
+# }
 
 
 
@@ -217,13 +209,13 @@ for (i in seq_len(nrow(draft.taxa))) {
 
 #########################################################################################################################
 ## create the combined GBIF object
-GBIF <-
-  
-  ## check the searched species matches the found species...
-  bind_rows(ALL.GBIF.HIA.RECORDS) %>%
-  filter(scientificName == searchTaxon)
-
-GBIF %>% write_csv("./data/base/HIA_LIST/GBIF/ALL_GBIF_HIA_SPP_RECORDS.csv")
+# GBIF <-
+#   
+#   ## check the searched species matches the found species...
+#   bind_rows(ALL.GBIF.HIA.RECORDS) %>%
+#   filter(scientificName == searchTaxon)
+# 
+# GBIF %>% write_csv("./data/base/HIA_LIST/GBIF/ALL_GBIF_HIA_SPP_RECORDS.csv")
 
 ## get sample of 100 taxa
 # GBIF %>%

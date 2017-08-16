@@ -97,7 +97,7 @@ dim(subset(top.200, Origin == "Native"))[1]/dim(top.200)[1]*100
 
 
 #########################################################################################################################
-## DRAFT CLEAN: THIS NEEDS TO CHANGE IN CONSULTATION WITH RACH, PAUL, ETC
+## 2). DRAFT CLEAN: THIS NEEDS TO CHANGE IN CONSULTATION WITH RACH, PAUL, ETC
 #########################################################################################################################
 
 
@@ -110,7 +110,7 @@ spp.list$Species <- gsub("  ",  " ", spp.list$Species)
 
 ## then remove the varieties and subspecies
 spp.list$Species = vapply(lapply(strsplit(spp.list$Species, " "),
-                                                 unique), paste, character(1L), collapse = " ")
+                                 unique), paste, character(1L), collapse = " ")
 
 
 ## then get just the first two words (again cleaning up the subspecies, and single genera)
@@ -157,7 +157,7 @@ head(draft.taxa)
 
 
 #########################################################################################################################
-## 2). DOWNLOAD RECORDS FROM GBIF USING HIA LIST
+## 4). DOWNLOAD RECORDS FROM GBIF USING HIA LIST
 #########################################################################################################################
 
 
@@ -192,7 +192,7 @@ dim(test.200)
 
 
 #########################################################################################################################
-## 3). CHECK THE SPECIES WHICH WERE SKIPPED? 
+## 4). CHECK THE SPECIES WHICH WERE SKIPPED? 
 #########################################################################################################################
 
 
@@ -254,7 +254,7 @@ kable(skipped.200.spp)
 
 
 #########################################################################################################################
-## 3). DOWNLOAD SPECIES WITH >200k RECORDS USING THE GBIF API
+## 5). DOWNLOAD SPECIES WITH >200k RECORDS USING THE GBIF API
 #########################################################################################################################
 
 
