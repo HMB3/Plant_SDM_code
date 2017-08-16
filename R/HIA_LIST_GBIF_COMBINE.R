@@ -30,6 +30,14 @@ str(spp.download)
 str(gen.download)
 
 
+## remove all columns in a list
+GBIF.HIA.SPP.RECORDS.DROP <- sprintf("./data/base/HIA_LIST/GBIF/SPECIES/%s_GBIF_records.RData", 
+                                     spp.download[c(1:300)]) %>% ## length(spp.download)
+  
+  ## pipe it into the lapply function to load all the .Rdata files
+  lapply(function(x) get(load(x))) %>% 
+  
+  dplyr::select(-one_of(gbifColsToDrop))
 
 
 
@@ -38,7 +46,6 @@ str(gen.download)
 #########################################################################################################################
 
 ## take the list of taxa
-# Start the clock!
 ptm <- proc.time()
 GBIF.HIA.SPP.RECORDS.1 <- sprintf("./data/base/HIA_LIST/GBIF/SPECIES/%s_GBIF_records.RData", 
                                   spp.download[c(1:300)]) %>% ## length(spp.download)
@@ -86,78 +93,29 @@ unique(GBIF.HIA.SPP.RECORDS.1$scientificName)
 unique(GBIF.HIA.SPP.RECORDS.1$searchTaxon)
 
 
+## 
+GBIF.HIA.SPP.RECORDS.1 %>% 
+  
+  dplyr::select(-one_of(gbifColsToDrop))
+
+
 ## bind all 3 together
 GBIF.HIA.SPP.RECORDS = bind_rows(GBIF.HIA.SPP.RECORDS.1,
                                  GBIF.HIA.SPP.RECORDS.2,
                                  GBIF.HIA.SPP.RECORDS.3)
 
-## 
 
 
-ala <-
+## filter combined dataset to just those species where the searched and returned taxa match
+GBIF.HIA.SPP.RECORDS <-
   bind_rows(df) %>%
   filter(scientificName == searchTaxon)
 
-ala %>% write_csv("output/occurrence/occurrence_combined.csv")
+GBIF.HIA.SPP.RECORDS %>% write_csv("./data/base/HIA_LIST/GBIF/GBIF_combo.csv")
 
 
 
 
-
-## this is slow, because every file was saved as GBIF, so creating the list of data frames doesn't work...
-for(sp.n in spp.download[c(1:2)]) {
-  
-  ## Load GBIF records for each species as a .CSV file
-  filename = paste0("./data/base/HIA_LIST/GBIF/SPECIES/", sp.n, "_GBIF_records.RData")
-  load(filename)
-
-  ## print
-  print(sp.n)
-  
-  ## then bind the .RData files together
-  GBIF                  = GBIF
-  GBIF.HIA.SPP.RECORDS  = bind_rows(GBIF.HIA.SPP.RECORDS, GBIF)
-  
-}
-
-
-## now save the combined species GBIF data as one .RData file
-class(GBIF.HIA.SPP.RECORDS)
-dim(GBIF.HIA.SPP.RECORDS)
-str(GBIF.HIA.SPP.RECORDS)
-
-save(GBIF.HIA.SPP.RECORDS,  file = paste("./data/base/HIA_LIST/GBIF/SPECIES/", sep = ""))
-
-
-
-
-
-#########################################################################################################################
-## combine genera
-## for all the species in the HIA list
-for(gen.n in gen.download) {
-  
-  # Load GBIF records for each species as a .CSV file
-  filename = paste0("./data/base/HIA_LIST/GBIF/GENERA/", sp.n, "_GBIF_records.RData")
-  load(filename)
-  
-  ## then bind the .RData files together
-  GBIF                  = GBIF
-  GBIF.HIA.GEN.RECORDS  = bind_rows(GBIF.HIA.GEN.RECORDS, GBIF)
-  
-}
-
-
-## now save the combined species GBIF data as one .RData file
-save(GBIF.HIA.SPP.RECORDS,  file = paste("./data/base/HIA_LIST/GBIF/GENERA/", sep = ""))
-
-
-## now check the combined data frames
-dim(GBIF.HIA.SPP.RECORDS)
-dim(GBIF.HIA.GEN.RECORDS)
-
-head(GBIF.HIA.SPP.RECORDS, 20)
-head(GBIF.HIA.GEN.RECORDS, 20) 
 
 
 
@@ -224,93 +182,6 @@ GBIF.names
 
 
 #########################################################################################################################
-## a bunch of GBIF fields we don't need
-#########################################################################################################################
-gbifColsToDrop <- c("cloc",
-                    "crawlId",
-                    "disposition",
-                    "dynamicProperties",
-                    "elevationAccuracy",
-                    "endDayOfYear",
-                    "startDayOfYear",
-                    "eventRemarks",
-                    "eventTime",
-                    "eventID",
-                    "month",
-                    
-                    "familyKey",
-                    "genusKey",
-                    "kingdomKey",
-                    "phylumKey",
-                    "publishingOrgKey",
-                    
-                    "georeferenceVerificationStatus",
-                    "eventID",
-                    "lastCrawled",
-                    "higherGeography",
-                    "municipality",
-                    
-                    "informationWithheld",
-                    "language",
-                    "protocol",
-                    "rightsHolder")
-                    
-                    # "kingdom", 
-                    # "phylum", 
-                    # "class", 
-                    # "order", 
-                    # "IBRA7Regions", 
-                    # "IMCRA4Regions", 
-                    # "localGovernmentAreas",
-                    # "country", 
-                    # "basisOfRecordOriginal", 
-                    # "sex", 
-                    # "altitudeInFeet", 
-                    # "altitudeNonNumeric",
-                    # "minimumElevationInMetres", 
-                    # "maximumElevationInMetres", 
-                    # "minimumDepthInMeters", 
-                    # "maximumDepthInMeters",
-                    # "latitudeOriginal", 
-                    # "longitudeOriginal", 
-                    # "geodeticDatum")
-
-
-#########################################################################################################################
-## Temporary fix
-#########################################################################################################################
-
-
-##
-setwd("./data/base/HIA_LIST/GBIF/SPECIES/")
-
-file_list <- list.files()
-
-ala <- bind_rows(file_list)
-
-for (file in file_list){
-  
-  # if the merged dataset doesn't exist, create it
-  if (!exists("dataset")){
-    
-    dataset <- read.table(file, header = TRUE, sep = "\t")
-  }
-  
-  # if the merged dataset does exist, append to it
-  if (exists("dataset")){
-    
-    temp_dataset <- read.table(file, header = TRUE, sep = "\t")
-    dataset      <- bind_rows(dataset, temp_dataset)
-    
-    rm(temp_dataset)
-  }
-  
-}
-
-
-
-
-#########################################################################################################################
 ## this seems to be a way to combine thousands of data frames without it getting progressively slower and s l o w e r
 ALL.GBIF.HIA.RECORDS <- list()
 
@@ -341,13 +212,6 @@ for (i in seq_len(nrow(draft.taxa))) {
 }
 
 
-list.taxa <- sprintf("./data/base/HIA_LIST/GBIF/%s_GBIF_records.RData", draft.taxa$Species) %>%
-  
-  lapply(function(x) get(load(x))) %>% 
-  
-  bind_rows
-
-
 
 
 
@@ -366,32 +230,6 @@ GBIF %>% write_csv("./data/base/HIA_LIST/GBIF/ALL_GBIF_HIA_SPP_RECORDS.csv")
 #   
 #   filter(scientificName %in% taxa[sample(nrow(taxa), 100), ]$taxonName) %>%
 #   write_csv("output/occurrence/occurrence_combined_sample.csv")
-
-
-df <- list()
-
-for (i in seq_len(nrow(taxa))) {
-  
-  data <-
-    
-    taxa[i, ]$taxonName %>%
-    
-    str_replace(" ", "_") %>%
-    
-    paste0("output/occurrence/ala/original/", ., "_data.csv") %>%
-    
-    read_csv %>%
-    
-    mutate(searchTaxon = taxa[i, ]$taxonName,
-           catalogNumber = as.character(catalogNumber)) %>%
-    
-    dplyr::select(-one_of(alaColsToDrop))
-  
-  df[[i]] <- data
-  
-}
-
-ala <- bind_rows(df)
 
 
 

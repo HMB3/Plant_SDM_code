@@ -196,6 +196,64 @@ download_GBIF_all_genera = function (list) {
 
 
 
+
+#########################################################################################################################
+## GBIF fields we don't need
+#########################################################################################################################
+
+
+gbifColsToDrop <- c("cloc",
+                    "crawlId",
+                    "disposition",
+                    "dynamicProperties",
+                    "elevationAccuracy",
+                    "endDayOfYear",
+                    "startDayOfYear",
+                    "eventRemarks",
+                    "eventTime",
+                    "eventID",
+                    "month",
+                    
+                    "familyKey",
+                    "genusKey",
+                    "kingdomKey",
+                    "phylumKey",
+                    "publishingOrgKey",
+                    
+                    "georeferenceVerificationStatus",
+                    "eventID",
+                    "lastCrawled",
+                    "higherGeography",
+                    "municipality",
+                    
+                    "informationWithheld",
+                    "language",
+                    "protocol",
+                    "rightsHolder")
+
+# "kingdom", 
+# "phylum", 
+# "class", 
+# "order", 
+# "IBRA7Regions", 
+# "IMCRA4Regions", 
+# "localGovernmentAreas",
+# "country", 
+# "basisOfRecordOriginal", 
+# "sex", 
+# "altitudeInFeet", 
+# "altitudeNonNumeric",
+# "minimumElevationInMetres", 
+# "maximumElevationInMetres", 
+# "minimumDepthInMeters", 
+# "maximumDepthInMeters",
+# "latitudeOriginal", 
+# "longitudeOriginal", 
+# "geodeticDatum")
+
+
+
+
 #########################################################################################################################
 ## NICHE BREADTH CALCULATIONS
 #########################################################################################################################
@@ -221,15 +279,18 @@ nicheBreadth <- function(data, species, r, verbose = TRUE) {
   
   ## setup output data frame ()
   out <- data.frame(matrix(ncol = 11, nrow = length(species)))
+  
   colnames(out) <- c("species", "n", "min", "max", "median",
-                     "perc02", "perc05", "perc95", "perc98", "breadth", "breadth95", "breadth98")
+                     "perc02", "perc05", "perc95", "perc98", 
+                     "breadth", "breadth95", "breadth98")
   
-  
-  ## for 
+  ## for all species
   for (i in seq_len(length(species))) {
     
     speciesName <- species[i]
+    
     if (verbose) {
+      
       message(paste(i, ':', speciesName))
       
     }
@@ -260,7 +321,7 @@ nicheBreadth <- function(data, species, r, verbose = TRUE) {
   out$breadth98 <- out$perc98 - out$perc02
   
   ## this returns "out"?
-  out
+  return(out)
   
 }
 
