@@ -116,11 +116,15 @@ GBIF.HIA.SPP.RECORDS.800 <- spp.download[c(601:length(spp.download))] %>% ##leng
 #########################################################################################################################
 ## bind all 3 together
 dim(GBIF.HIA.SPP.RECORDS.300)[1]+dim(GBIF.HIA.SPP.RECORDS.600)[1]+dim(GBIF.HIA.SPP.RECORDS.800)[1]
-GBIF.HIA.SPP.RECORDS = bind_rows(GBIF.HIA.SPP.RECORDS.300,
-                                 GBIF.HIA.SPP.RECORDS.600,
-                                 GBIF.HIA.SPP.RECORDS.800)
+GBIF.HIA.SPP.RECORDS.ALL = bind_rows(GBIF.HIA.SPP.RECORDS.300,
+                                     GBIF.HIA.SPP.RECORDS.600,
+                                     GBIF.HIA.SPP.RECORDS.800)
 
 
+## 
+dim(GBIF.HIA.SPP.RECORDS.ALL)
+GBIF.HIA.SPP.RECORDS.TEST = 
+TEST =   GBIF.HIA.SPP.RECORDS.ALL[, !colnames(GBIF.HIA.SPP.RECORDS.ALL) %in% gbifColsToDrop]
 
 
 
