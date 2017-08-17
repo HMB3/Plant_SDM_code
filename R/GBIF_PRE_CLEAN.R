@@ -100,22 +100,17 @@ TEST %<>%
 ## can write the GBIF data to shapefile for mapping?
 GBIF.ALL.POINTS = GBIF.HIA.SPP.RECORDS.ALL[c("lon", "lat")]
 GBIF.ALL.POINTS = na.omit(GBIF.ALL.POINTS)
-
 coordinates(GBIF.ALL.POINTS) = c("lon", "lat")
 proj4string(GBIF.ALL.POINTS) <- CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
 
 
-
 ## clip to coastline
 WORLD <- readOGR("./data/base/URBAN/TM_WORLD_BORDERS-0.3.shp", layer = "TM_WORLD_BORDERS-0.3")
-plot(WORLD)
-points(GBIF.HIA.SPP.RECORDS.ALL[c("lon", "lat")], cex = 0.1, col = "blue", pch = 19)
-
-
-## now clip the GBIF points to those on land
-proj4string(GBIF.ALL.POINTS)
-proj4string(WORLD)
 GBIF.LAND.POINTS <- GBIF.ALL.POINTS[WORLD, ]
 
+
+## hard to tell if the points in the ocean are on islands?
+plot(WORLD)
+points(GBIF.LAND.POINTS, cex = 0.05, col = "blue", pch = 19)
 
 
