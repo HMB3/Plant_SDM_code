@@ -14,11 +14,6 @@ GBIF.names = sort(names(Magnolia.grandiflora))
 GBIF.names
 
 
-## create empty dataframes to store all the data?
-GBIF.HIA.SPP.RECORDS = data.frame()
-GBIF.HIA.GEN.RECORDS = data.frame()
-
-
 ## the species list doesn't match the downloaded species, so create a list from the downloaded files
 spp.download = list.files("./data/base/HIA_LIST/GBIF/SPECIES/", pattern = ".RData")
 spp.download = gsub("_GBIF_records.RData", "", spp.download)
@@ -36,6 +31,10 @@ str(gen.download)
 #########################################################################################################################
 ## 2). LOAD TAXA, ADD SEARCH TAXA, DROP COLUMNS AND COMBINE SPECIES DATAFRAMES INTO ONE
 #########################################################################################################################
+
+
+## memory is a problem. So we need more RAM
+memory.limit()
 
 
 ## take the list of taxa
@@ -121,10 +120,11 @@ GBIF.HIA.SPP.RECORDS.ALL = bind_rows(GBIF.HIA.SPP.RECORDS.300,
                                      GBIF.HIA.SPP.RECORDS.800)
 
 
-## 
+## remove columns again
+GBIF.HIA.SPP.RECORDS.ALL = GBIF.HIA.SPP.RECORDS.ALL[, !colnames(GBIF.HIA.SPP.RECORDS.ALL) %in% gbifColsToDrop]
 dim(GBIF.HIA.SPP.RECORDS.ALL)
-GBIF.HIA.SPP.RECORDS.TEST = 
-TEST =   GBIF.HIA.SPP.RECORDS.ALL[, !colnames(GBIF.HIA.SPP.RECORDS.ALL) %in% gbifColsToDrop]
+
+
 
 
 
