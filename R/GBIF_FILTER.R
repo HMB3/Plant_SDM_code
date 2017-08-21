@@ -156,27 +156,7 @@ GBIF.CLEAN <- GBIF.HIA.SPP.RECORDS.ALL %>%
 
 
 
-#########################################################################################################################
-## Check what flags are doing?
 
-
-
-#########################################################################################################################
-## Check what flags are doing?
-table(GBIF.ALL$establishmentMeans)[3]
-summary(GBIF.ALL$CLEAN_REMOVE_CULTIVATED_FLAG)[3]   ## TRUE = MANAGED
-
-table(GBIF.ALL$basisOfRecord)[2]
-summary(GBIF.ALL$CLEAN_REMOVE_BASISOFRECORD)[3]     ## TRUE = HUMAN OBSERVATION
-
-summary(GBIF.ALL$lat)[7]                            
-summary(GBIF.ALL$CLEAN_REMOVE_MISSING_LONLAT)[3]    ## TRUE = na(lon/lat)
-
-summary(GBIF.ALL$year)[7]                           
-summary(GBIF.ALL$FLAG_MISSING_YEAR)[3]              ## TRUE = na(year)
-
-dim(GBIF.ALL[which(GBIF.ALL$year >= 1950), ])[1]                           
-summary(GBIF.ALL$CLEAN_REMOVE_PRE_1950)[3]          ## TRUE = year > 1950 and not NA
 
 
 
@@ -199,31 +179,6 @@ vals <- gdalUtils::gdallocationinfo(
   "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_01",
   coords=xy,
   valonly=TRUE, raw_output=FALSE, geoloc=T, wgs84=T)
-
-
-# ## can we just use the ALA to download data?
-# sp.n = "Magnolia grandiflora"
-# ALA.Magnolia.grandiflora  = occurrences(taxon = sp.n, download_reason_id = 7)
-# GBIF.Magnolia.grandiflora = gbif(sp.n, download = TRUE)
-# 
-# 
-# ## how does ALA and GBIF data compare?
-# dim(ALA.Magnolia.grandiflora$data)
-# dim(GBIF.Magnolia.grandiflora)
-# 
-# 
-# ## plot each
-# plot(WORLD)
-# points(ALA.Magnolia.grandiflora$data[c("longitude", "latitude")], cex = 0.9, col = "red", pch = 19)
-# plot(WORLD)
-# points(GBIF.Magnolia.grandiflora[c("lon", "lat")], cex = 0.9, col = "blue", pch = 19)
-
-
-## can write the GBIF data to shapefile for mapping?
-GBIF.ALL.POINTS = GBIF.ALL[c("lon", "lat")]
-GBIF.ALL.POINTS = na.omit(GBIF.ALL.POINTS)
-coordinates(GBIF.ALL) = c("lon", "lat")
-proj4string(GBIF.ALL) <- CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
 
 
 ## clip to coastline
