@@ -38,6 +38,10 @@ packages <- c("ggplot2",   "plyr",      "reshape2", "RColorBrewer",  "scales",  
 #devtools::install_github("traitecoevo/baad.data")
 
 
+# install.packages("bigmemory",
+#                  dependencies = c("Depends", "Suggests", "Enhances"))
+
+
 #########################################################################################################################
 ## this function from the internet that takes a list of packages, installs and loads them
 #########################################################################################################################

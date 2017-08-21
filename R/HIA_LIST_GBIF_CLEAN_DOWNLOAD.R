@@ -45,6 +45,11 @@ library(magrittr)
 library(datastorr)
 library(baad.data)
 
+library("biglm")
+library("bigmemory")
+library("biganalytics")
+library("bigtabulate")
+
 
 ## source functions
 source('./R/GREEN_CITIES_FUNCTIONS.R')
@@ -182,11 +187,6 @@ skipped.genera  = download_GBIF_all_genera(genera)  ## saves each gen as .Rdata 
 ## check an eg file...not sure why it was working with RData files, but not .csv files...
 load("./data/base/HIA_LIST/GBIF/Viburnum suspensum_GBIF_records.RData")
 str(GBIF)
-
-
-## now what about the species with >200k records?
-test.200 = read.csv("./data/base/HIA_LIST/GBIF/occurrence.txt", stringsAsFactors = FALSE)
-dim(test.200)
 
 
 
