@@ -112,6 +112,55 @@ GBIF.ALL %<>%
   )
 
 
+
+
+#########################################################################################################################
+## 4). CLEAN RECORDS
+#########################################################################################################################
+
+
+## Apply the filters created above
+## why are the filters removing more than the number of records that meet each condition? 
+GBIF.CLEAN = GBIF.ALL
+
+
+GBIF.CLEAN %<>%
+  
+  ## can't apply the filters that only apply to ALA data
+  filter(!CLEAN_REMOVE_MISSING_LONLAT)
+
+problems <- with(GBIF.TRIM,
+                 table(
+                   is.na(lon)|is.na(lat),
+                   establishmentMeans=='MANAGED' & !is.na(establishmentMeans),
+                   year < 1950 & !is.na(year),
+                   is.na(year),
+                   coordinateUncertaintyInMeters > 1000 & 
+                     !is.na(coordinateUncertaintyInMeters)
+                   )
+                 ) %>% 
+  as.data.frame %>% 
+  setNames(c('lonlat', 'establishment', 
+             'pre1950', 'noyear', 'coord_uncertainty', 'count'))
+
+write.csv(problems, 'problems.csv', row.names=FALSE)
+
+GBIF.CLEAN <- GBIF.HIA.SPP.RECORDS.ALL %>% 
+  select(one_of(
+    c('basisOfRecord', 'lon', 'lat', 'establishmentMeans', 
+      'year', 'scientificName', 'searchTaxon', 'gbifID', 
+      'coordinateUncertaintyInMeters'))) %>% 
+  filter(!is.na(lon) & !is.na(lat),
+         establishmentMeans!='MANAGED' | is.na(establishmentMeans),
+         year >= 1950 & !is.na(year))
+
+
+
+#########################################################################################################################
+## Check what flags are doing?
+
+
+
 #########################################################################################################################
 ## Check what flags are doing?
 table(GBIF.ALL$establishmentMeans)[3]
@@ -136,6 +185,14 @@ summary(GBIF.ALL$CLEAN_REMOVE_PRE_1950)[3]          ## TRUE = year > 1950 and no
 #########################################################################################################################
 ## 3). Remove spatial outliers
 #########################################################################################################################
+
+
+world.temp = raster("//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_01")
+
+GBIF.LAND = cellFromXY(world.temp, GBIF.CLEAN[c("lon", "lat")]) %>% 
+  unique %>% 
+  #length
+  world.temp[.]  ## placeholder for what's been passed from previous argument
 
 
 # ## can we just use the ALA to download data?
@@ -171,72 +228,5 @@ GBIF.LAND.POINTS <- GBIF.ALL.POINTS[WORLD, ]
 ## hard to tell if the points in the ocean are on islands?
 plot(WORLD)
 points(GBIF.LAND.POINTS, cex = 0.05, col = "blue", pch = 19)
-
-
-
-
-
-#########################################################################################################################
-## 4). CLEAN RECORDS
-#########################################################################################################################
-
-
-## Apply the filters created above
-## why are the filters removing more than the number of records that meet each condition? 
-GBIF.CLEAN = GBIF.ALL
-
-
-GBIF.CLEAN %<>%
-  
-  ## can't apply the filters that only apply to ALA data
-  filter(!CLEAN_REMOVE_MISSING_LONLAT)
-
-GBIF.TRIM <- GBIF.HIA.SPP.RECORDS.ALL %>% 
-  select(one_of(
-    c('basisOfRecord', 'lon', 'lat', 'establishmentMeans', 
-      'year', 'scientificName', 'searchTaxon', 'gbifID', 
-      'coordinateUncertaintyInMeters')))
-
-clean_gbif <- function(x) {
-  table(x$basisOfRecord=='HUMAN_OBSERVATION',
-        is.na(x$lon) | is.na(x$lat),
-        x$establishmentMeans=='MANAGED',
-        x$year < 1950 & !is.na(x$year),
-        is.na(x$year))
-}
-
-problems <- table(GBIF.TRIM$basisOfRecord=='HUMAN_OBSERVATION',
-      is.na(GBIF.TRIM$lon) | is.na(GBIF.TRIM$lat),
-      GBIF.TRIM$establishmentMeans=='MANAGED',
-      GBIF.TRIM$year < 1950 & !is.na(GBIF.TRIM$year),
-      is.na(GBIF.TRIM$year),
-      exclude=NULL) %>% 
-  as.data.frame %>% 
-  setNames(c('basis', 'lonlat', 'establishment', 
-             'old', 'noyear', 'count'))
-
-
-
-mutate(
-  CLEAN_REMOVE_BASISOFRECORD = basisOfRecord == "HUMAN_OBSERVATION",  ## TRUE for HUMAN OBSERVATION
-  CLEAN_REMOVE_MISSING_LONLAT = is.na(lon) | is.na(lat),              ## TRUE = na(lon/lat)
-  CLEAN_REMOVE_CULTIVATED_FLAG = establishmentMeans == "MANAGED",
-  CLEAN_REMOVE_PRE_1950 = year < 1950 & !is.na(year),                 ## TRUE = na(year)
-  FLAG_MISSING_YEAR = is.na(year)
-)
-
-
-##
-dim(GBIF.CLEAN)
-summary(GBIF.CLEAN$CLEAN_REMOVE_MISSING_LONLAT)
-
-## How many records are knocked out by each filter?
-GBIF.CLEAN %>% 
-  
-  ## 
-  filter(CLEAN_REMOVE_BASISOFRECORD) %>% 
-  
-  ## how many rows?
-  nrow
 
 
