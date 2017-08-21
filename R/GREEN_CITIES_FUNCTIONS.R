@@ -202,6 +202,13 @@ download_GBIF_all_genera = function (list) {
 #########################################################################################################################
 
 
+gbif.keep <- c("lat",
+               "lon",
+               "gbifID",
+               "coordinateUncertaintyInMeters",
+               "scientificName",
+               "searchTaxon")
+
 gbifColsToDrop <- c("cloc",
                     "crawlId",
                     "disposition",

@@ -8,6 +8,9 @@
 #########################################################################################################################
 
 
+## drop all the columns we don't need
+str(GBIF.ALL$gbifID)
+
 ## create a dummy file to run the records through
 GBIF.ALL = GBIF.HIA.SPP.RECORDS.ALL
 
@@ -112,10 +115,10 @@ GBIF.ALL %<>%
 #########################################################################################################################
 ## Check what flags are doing?
 table(GBIF.ALL$establishmentMeans)[3]
-summary(GBIF.ALL$CLEAN_REMOVE_CULTIVATED_FLAG)[3]   ## TRUE = HUMAN OBSERVATION
+summary(GBIF.ALL$CLEAN_REMOVE_CULTIVATED_FLAG)[3]   ## TRUE = MANAGED
 
 table(GBIF.ALL$basisOfRecord)[2]
-summary(GBIF.ALL$CLEAN_REMOVE_BASISOFRECORD)[3]     ## TRUE = MANAGED
+summary(GBIF.ALL$CLEAN_REMOVE_BASISOFRECORD)[3]     ## TRUE = HUMAN OBSERVATION
 
 summary(GBIF.ALL$lat)[7]                            
 summary(GBIF.ALL$CLEAN_REMOVE_MISSING_LONLAT)[3]    ## TRUE = na(lon/lat)
@@ -130,18 +133,34 @@ summary(GBIF.ALL$CLEAN_REMOVE_PRE_1950)[3]          ## TRUE = year > 1950 and no
 
 
 
-
-
 #########################################################################################################################
 ## 3). Remove spatial outliers
 #########################################################################################################################
 
 
+# ## can we just use the ALA to download data?
+# sp.n = "Magnolia grandiflora"
+# ALA.Magnolia.grandiflora  = occurrences(taxon = sp.n, download_reason_id = 7)
+# GBIF.Magnolia.grandiflora = gbif(sp.n, download = TRUE)
+# 
+# 
+# ## how does ALA and GBIF data compare?
+# dim(ALA.Magnolia.grandiflora$data)
+# dim(GBIF.Magnolia.grandiflora)
+# 
+# 
+# ## plot each
+# plot(WORLD)
+# points(ALA.Magnolia.grandiflora$data[c("longitude", "latitude")], cex = 0.9, col = "red", pch = 19)
+# plot(WORLD)
+# points(GBIF.Magnolia.grandiflora[c("lon", "lat")], cex = 0.9, col = "blue", pch = 19)
+
+
 ## can write the GBIF data to shapefile for mapping?
 GBIF.ALL.POINTS = GBIF.ALL[c("lon", "lat")]
 GBIF.ALL.POINTS = na.omit(GBIF.ALL.POINTS)
-coordinates(GBIF.ALL.POINTS) = c("lon", "lat")
-proj4string(GBIF.ALL.POINTS) <- CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
+coordinates(GBIF.ALL) = c("lon", "lat")
+proj4string(GBIF.ALL) <- CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
 
 
 ## clip to coastline
@@ -163,26 +182,53 @@ points(GBIF.LAND.POINTS, cex = 0.05, col = "blue", pch = 19)
 
 
 ## Apply the filters created above
+## why are the filters removing more than the number of records that meet each condition? 
 GBIF.CLEAN = GBIF.ALL
 
 
 GBIF.CLEAN %<>%
   
   ## can't apply the filters that only apply to ALA data
-  filter(#!CLEAN_REMOVE_NOT_IN_TAXON_LIST,
-         #!CLEAN_REMOVE_NOT_OEH_AVH,
-         !CLEAN_REMOVE_BASISOFRECORD,
-         !CLEAN_REMOVE_MISSING_LONLAT,
-         !CLEAN_REMOVE_CULTIVATED_FLAG,
-         !CLEAN_REMOVE_CULTIVATED_LOCALITY,
-         !CLEAN_REMOVE_PRE_1950,
-         !FLAG_MISSING_YEAR,
-         #!ASSERT_TAXON_ID_ISSUE,
-         #!ASSERT_COORD_ISSUE,
-         #!ASSERT_DATE_FIRST_CENTURY,
-         #!is.na(clip_0.05)
-         )
+  filter(!CLEAN_REMOVE_MISSING_LONLAT)
 
+GBIF.TRIM <- GBIF.HIA.SPP.RECORDS.ALL %>% 
+  select(one_of(
+    c('basisOfRecord', 'lon', 'lat', 'establishmentMeans', 
+      'year', 'scientificName', 'searchTaxon', 'gbifID', 
+      'coordinateUncertaintyInMeters')))
+
+clean_gbif <- function(x) {
+  table(x$basisOfRecord=='HUMAN_OBSERVATION',
+        is.na(x$lon) | is.na(x$lat),
+        x$establishmentMeans=='MANAGED',
+        x$year < 1950 & !is.na(x$year),
+        is.na(x$year))
+}
+
+problems <- table(GBIF.TRIM$basisOfRecord=='HUMAN_OBSERVATION',
+      is.na(GBIF.TRIM$lon) | is.na(GBIF.TRIM$lat),
+      GBIF.TRIM$establishmentMeans=='MANAGED',
+      GBIF.TRIM$year < 1950 & !is.na(GBIF.TRIM$year),
+      is.na(GBIF.TRIM$year),
+      exclude=NULL) %>% 
+  as.data.frame %>% 
+  setNames(c('basis', 'lonlat', 'establishment', 
+             'old', 'noyear', 'count'))
+
+
+
+mutate(
+  CLEAN_REMOVE_BASISOFRECORD = basisOfRecord == "HUMAN_OBSERVATION",  ## TRUE for HUMAN OBSERVATION
+  CLEAN_REMOVE_MISSING_LONLAT = is.na(lon) | is.na(lat),              ## TRUE = na(lon/lat)
+  CLEAN_REMOVE_CULTIVATED_FLAG = establishmentMeans == "MANAGED",
+  CLEAN_REMOVE_PRE_1950 = year < 1950 & !is.na(year),                 ## TRUE = na(year)
+  FLAG_MISSING_YEAR = is.na(year)
+)
+
+
+##
+dim(GBIF.CLEAN)
+summary(GBIF.CLEAN$CLEAN_REMOVE_MISSING_LONLAT)
 
 ## How many records are knocked out by each filter?
 GBIF.CLEAN %>% 

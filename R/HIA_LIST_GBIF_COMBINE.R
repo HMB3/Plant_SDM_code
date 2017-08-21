@@ -125,6 +125,11 @@ GBIF.HIA.SPP.RECORDS.ALL = GBIF.HIA.SPP.RECORDS.ALL[, !colnames(GBIF.HIA.SPP.REC
 dim(GBIF.HIA.SPP.RECORDS.ALL)
 
 
+## gc() frees up RAM
+GBIF.TRIM <- GBIF.HIA.SPP.RECORDS.ALL %>% 
+  select(one_of(gbif.keep))
+
+
 
 
 
