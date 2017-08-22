@@ -51,6 +51,7 @@ GBIF.PROBLEMS <- with(GBIF.TRIM,
                  
 ) %>% 
   
+  ## create a data frame and set the names
   as.data.frame %>%  
   
   setNames(c('NO_COORD', 'MANAGED', 
@@ -66,19 +67,26 @@ kable(GBIF.PROBLEMS)
 write.csv(GBIF.PROBLEMS, "./output/tables/GBIF_PROBLEMS.csv", row.names = FALSE)
 
 
+
+
+
 #########################################################################################################################
-## Now filter the records
-GBIF.CLEAN <- GBIF.HIA.SPP.RECORDS.ALL %>% 
+## 2). FILTER RECORDS 
+#########################################################################################################################
+
+
+## Filter the GBIF records using conditions which are not too restrictive
+GBIF.CLEAN <- GBIF.CLEAN %>% 
   
-  select(one_of(
-    
-    c('basisOfRecord', 'lon', 'lat', 'establishmentMeans', 
-      'year', 'scientificName', 'searchTaxon', 'gbifID', 
-      'coordinateUncertaintyInMeters'))) %>% 
-  
+  ## Note that these filters are very forgiving...
+  ## unless we exclude the NAs, very few records are returned! 
   filter(!is.na(lon) & !is.na(lat),
          establishmentMeans!='MANAGED' | is.na(establishmentMeans),
          year >= 1950 & !is.na(year))
+
+## The table above gives the details, but worth documenting how many records are knocked out by each
+remaining.records = dim(GBIF.CLEAN)[1]/total.records*100  
+remaining.records ## 65% of records remain after cleaning 
 
 
 
@@ -89,13 +97,27 @@ GBIF.CLEAN <- GBIF.HIA.SPP.RECORDS.ALL %>%
 #########################################################################################################################
 
 
-## first get one of the BIOCLIM variables
-world.temp = raster("//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_01")
+## Can use WORLDCIM rasters to get only records where wordlclim data is. 
+## At the global scale, there probably is no alterntive to using WORLDCLIM...
 
+
+## First get one of the BIOCLIM variables
+world.temp = raster("//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_01")
+plot(world.temp)
+
+
+## Now get the XY centroids of the unique 1km * 1km WORLDCLIM blocks where GBIF records are found
 xy <- cellFromXY(world.temp, GBIF.CLEAN[c("lon", "lat")]) %>% 
   unique %>% 
   #length
-  xyFromCell(world.temp, .)
+  cellFromXY(world.temp, .)
+
+
+## take a look at xy: NA's should be removed
+summary(xy)
+str(xy)
+points(xy, pch = ".", col = "red")
+
 
 #onland <- cells[!is.na(world.temp[cells])]  ## placeholder for what's been passed from previous argument
 # vals <- gdalUtils::gdallocationinfo(
@@ -105,21 +127,24 @@ xy <- cellFromXY(world.temp, GBIF.CLEAN[c("lon", "lat")]) %>%
 # 
 
 
-##
-onland <- extract(world.temp, xy) %>% !is.na %>% xy[.,]
+## now get the 
+z   = extract(world.temp, xy)
+#onland <- extract(world.temp, xy) %>% !is.na %>% xy[.,]
+
+
 onland = z %>% is.na %>%  `!` # %>% xy[.,]  cells on land or not
 
 onland.points = filter(GBIF.CLEAN, cellFromXY(world.temp, GBIF.CLEAN[c("lon", "lat")]) %in% 
                          unique(cellFromXY(world.temp, GBIF.CLEAN[c("lon", "lat")]))[onland]) 
   
 
-##
-points(onland.points[c("lon", "lat")], pch = ".")
+#########################################################################################################################
+## plot data
+plot(world.temp)
+points(onland.points[c("lon", "lat")], pch = ".", col = "red")
 
 
-## clip to coastline
-WORLD <- readOGR("./data/base/URBAN/TM_WORLD_BORDERS-0.3.shp", layer = "TM_WORLD_BORDERS-0.3")
-GBIF.LAND.POINTS <- GBIF.TRIM.POINTS[WORLD, ]
+
 
 
 ## hard to tell if the points in the ocean are on islands?
