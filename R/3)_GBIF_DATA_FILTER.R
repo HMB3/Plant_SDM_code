@@ -81,7 +81,7 @@ GBIF.CLEAN <- GBIF.CLEAN %>%
   ## Note that these filters are very forgiving...
   ## unless we exclude the NAs, very few records are returned! 
   filter(!is.na(lon) & !is.na(lat),
-         establishmentMeans!='MANAGED' | is.na(establishmentMeans),
+         establishmentMeans! = 'MANAGED' | is.na(establishmentMeans),
          year >= 1950 & !is.na(year))
 
 ## The table above gives the details, but worth documenting how many records are knocked out by each
@@ -119,21 +119,31 @@ str(xy)
 points(xy, pch = ".", col = "red")
 
 
+## For some reason, we need to convert the xy coords to a spatial points data frame
+## This is to avoid:  NAs introduced by coercion to integer range
+xy <- SpatialPointsDataFrame(coords = xy, data = df,
+                             proj4string = CRS("+proj=longlat +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +no_defs"))
+
+
 #onland <- cells[!is.na(world.temp[cells])]  ## placeholder for what's been passed from previous argument
-# vals <- gdalUtils::gdallocationinfo(
+# vals  <- gdalUtils::gdallocationinfo(
 #   "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_01",
 #   coords=xy,
 #   valonly=TRUE, raw_output=FALSE, geoloc=T, wgs84=T)
 # 
 
 
-## now get the 
+## now get the ().
 z   = extract(world.temp, xy)
 #onland <- extract(world.temp, xy) %>% !is.na %>% xy[.,]
 
 
+## 
 onland = z %>% is.na %>%  `!` # %>% xy[.,]  cells on land or not
+summary(onland)
 
+
+## 
 onland.points = filter(GBIF.CLEAN, cellFromXY(world.temp, GBIF.CLEAN[c("lon", "lat")]) %in% 
                          unique(cellFromXY(world.temp, GBIF.CLEAN[c("lon", "lat")]))[onland]) 
   
@@ -142,9 +152,6 @@ onland.points = filter(GBIF.CLEAN, cellFromXY(world.temp, GBIF.CLEAN[c("lon", "l
 ## plot data
 plot(world.temp)
 points(onland.points[c("lon", "lat")], pch = ".", col = "red")
-
-
-
 
 
 ## hard to tell if the points in the ocean are on islands?
