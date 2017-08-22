@@ -211,7 +211,7 @@ gbif.keep <- c("searchTaxon",
                "institutionCode",
                "datasetName",
                "basisOfRecord",
-               "identifiedBy",
+               #"identifiedBy",
                "gbifID",
                "catalogNumber",
                "establishmentMeans",
@@ -220,7 +220,8 @@ gbif.keep <- c("searchTaxon",
                "lon",
                "country",
                "coordinateUncertaintyInMeters",
-               "geodeticDatum")
+               "geodeticDatum",
+               "year")
 
 
 gbifColsToDrop <- c("cloc",

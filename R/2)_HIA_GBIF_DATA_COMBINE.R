@@ -107,7 +107,6 @@ GBIF.800 <- spp.download[c(601:length(spp.download))] %>%
 
 
 
-
 #########################################################################################################################
 ## 3). CHECK SEARCHED AND RETURNED TAXONOMIC NAMES FROM GBIF
 #########################################################################################################################
@@ -120,23 +119,23 @@ GBIF.ALL = bind_rows(GBIF.300,
                      GBIF.800)
 
 
-## remove from memory
+## now get just the columns we want to keep. Note gc() frees up RAM
+GBIF.TRIM <- GBIF.ALL %>% 
+  select(one_of(gbif.keep))
+
+
+## remove working dataframes from memory
 rm(GBIF.ALL)
 rm(GBIF.300)
 rm(GBIF.600)
 rm(GBIF.800)
 
 
-## now get just the columns we want to keep. Note gc() frees up RAM
-GBIF.TRIM <- GBIF.ALL %>% 
-  select(one_of(gbif.keep))
-
-
-## now check if this has worked
+## now check if this term has worked
 head(GBIF.TRIM)
 
 
-## remove the varieties, etc, from the scientific name returned by GBIF.
+## remove the varieties, etc., from the scientific name returned by GBIF.
 Returned.binomial <- unlist(lapply(GBIF.TRIM$scientificName, string_fun_first_two_words))
 GBIF.TRIM = cbind(Returned.binomial, GBIF.TRIM)
 
