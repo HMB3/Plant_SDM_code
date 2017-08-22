@@ -87,6 +87,7 @@ GBIF.CLEAN <- GBIF.CLEAN %>%
 ## The table above gives the details, but worth documenting how many records are knocked out by each
 remaining.records = dim(GBIF.CLEAN)[1]/total.records*100  
 remaining.records ## 65% of records remain after cleaning 
+gc()
 
 
 
@@ -114,48 +115,56 @@ xy <- cellFromXY(world.temp, GBIF.CLEAN[c("lon", "lat")]) %>%
 
 
 ## take a look at xy: NA's should be removed
+## but the numbers are too big
 summary(xy)
 str(xy)
 points(xy, pch = ".", col = "red")
 
 
 ## For some reason, we need to convert the xy coords to a spatial points data frame
-## This is to avoid:  NAs introduced by coercion to integer range
+## This is to avoid:  'NAs introduced by coercion to integer range'
 xy <- SpatialPointsDataFrame(coords = xy, data = df,
                              proj4string = CRS("+proj=longlat +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +no_defs"))
 
 
-#onland <- cells[!is.na(world.temp[cells])]  ## placeholder for what's been passed from previous argument
-# vals  <- gdalUtils::gdallocationinfo(
-#   "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_01",
-#   coords=xy,
-#   valonly=TRUE, raw_output=FALSE, geoloc=T, wgs84=T)
-# 
-
-
-## now get the ().
+## Now extract the temperature values for the unique 1km centroids which contain GBIF data
 z   = extract(world.temp, xy)
-#onland <- extract(world.temp, xy) %>% !is.na %>% xy[.,]
 
 
-## 
+## Then remove the NA values from the temperature values: these are on land
 onland = z %>% is.na %>%  `!` # %>% xy[.,]  cells on land or not
 summary(onland)
 
 
-## 
-onland.points = filter(GBIF.CLEAN, cellFromXY(world.temp, GBIF.CLEAN[c("lon", "lat")]) %in% 
-                         unique(cellFromXY(world.temp, GBIF.CLEAN[c("lon", "lat")]))[onland]) 
+## Finally, filter the cleaned GBIF data to only those points on land 
+GBIF.LAND = filter(GBIF.CLEAN, cellFromXY(world.temp, GBIF.CLEAN[c("lon", "lat")]) %in% 
+                         unique(cellFromXY(world.temp, GBIF.CLEAN[c("lon", "lat")]))[onland])
+
+
+## how many records were on land?
+dim(GBIF.CLEAN)[1] - dim(GBIF.LAND)[1]  ## 91575 missing records   
   
 
 #########################################################################################################################
-## plot data
+## Plot cleaned data
 plot(world.temp)
-points(onland.points[c("lon", "lat")], pch = ".", col = "red")
+points(GBIF.CLEAN[c("lon", "lat")], pch = ".", col = "red")
 
 
-## hard to tell if the points in the ocean are on islands?
-plot(WORLD)
-points(GBIF.LAND.POINTS, cex = 0.05, col = "blue", pch = 19)
+## Plot cleaned data that's in the worldclim raster
+plot(world.temp)
+points(GBIF.LAND[c("lon", "lat")], pch = ".", col = "red")
+gc()
 
 
+#########################################################################################################################
+## save data
+save(GBIF.LAND, file = paste("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.RData"))
+
+
+
+
+
+#########################################################################################################################
+#####################################################  END ############################################################## 
+#########################################################################################################################

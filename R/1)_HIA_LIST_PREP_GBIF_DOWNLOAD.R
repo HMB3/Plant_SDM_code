@@ -158,8 +158,8 @@ tail(genera, 50)
 ## also, for Stuarts code EG, I need a df not a list. Get just the rows of spp.list which have
 ## unique species names. 
 DRAFT.HIA.TAXA = spp.list[!duplicated(spp.list$Species), ]
-dim(DRAFT.HIA.TAXA )
-head(DRAFT.HIA.TAXA )
+dim(DRAFT.HIA.TAXA)
+head(DRAFT.HIA.TAXA)
 
 
 
