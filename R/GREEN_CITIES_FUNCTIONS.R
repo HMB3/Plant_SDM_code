@@ -198,16 +198,30 @@ download_GBIF_all_genera = function (list) {
 
 
 #########################################################################################################################
-## GBIF fields we don't need
+## GBIF fields we do and don't need
 #########################################################################################################################
 
 
-gbif.keep <- c("lat",
-               "lon",
-               "gbifID",
-               "coordinateUncertaintyInMeters",
+gbif.keep <- c("searchTaxon",
                "scientificName",
-               "searchTaxon")
+               "taxonRank",
+               "family",
+               "genus",
+               
+               "institutionCode",
+               "datasetName",
+               "basisOfRecord",
+               "identifiedBy",
+               "gbifID",
+               "catalogNumber",
+               "establishmentMeans",
+               
+               "lat",
+               "lon",
+               "country",
+               "coordinateUncertaintyInMeters",
+               "geodeticDatum")
+
 
 gbifColsToDrop <- c("cloc",
                     "crawlId",
