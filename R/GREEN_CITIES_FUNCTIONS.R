@@ -418,6 +418,65 @@ nicheBreadth <- function(data, species, r, verbose = TRUE) {
 
 
 
+########################################################################################################################
+## summarise species niches
+########################################################################################################################
+
+
+## This is much simpler than Stuart's EG, but we can add in more stuff later
+niche_estimate = function (DF, 
+                           colname) {
+  
+  ## Use ddply inside a function to create niche widths and medians for each species
+  ## This syntax is tricky, maybe ask John and Stu what they think
+  summary = ddply(DF, 
+                  .(searchTaxon),
+                  .fun = function (xx, col) {
+                    
+                    ## Get the same summaries that Stu and Rachael use for 'niche finder'
+                    #n        = length(xx[[col]])
+                    min      = min(xx[[col]])
+                    max      = max(xx[[col]])
+                    
+                    q02      = quantile(xx[[col]], .02)
+                    q05      = quantile(xx[[col]], .05)
+                    q95      = quantile(xx[[col]], .95)
+                    q98      = quantile(xx[[col]], .98)
+                    
+                    median   = median(xx[[col]])
+                    mean     = mean(xx[[col]])
+                    range    = max - min
+                    q95_q05  = (q95 - q05)
+                    q98_q02  = (q98 - q02)
+                    
+                    ## Then crunch them together
+                    c(min, max, median, mean, range, q95_q05, q98_q02)
+                    
+                  },
+                  
+                  colname
+                  
+  )
+  
+  ## concatenate output
+  colnames(summary) = c("searchTaxon", 
+                        paste0(colname,  "_min"),
+                        paste0(colname,  "_max"),
+                        paste0(colname,  "_median"),
+                        paste0(colname,  "_mean"),
+                        paste0(colname,  "_range"),
+                        paste0(colname,  "_q95_q05"),
+                        paste0(colname,  "_q98_q02"))
+  
+  ## return the summary of niche width and median
+  return (summary)
+  
+}
+
+
+
+
+
 #########################################################################################################################
 ## GBIF data
 ## so here, x would be a "GBIF" object that comes from the previous loop
