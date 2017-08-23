@@ -4,7 +4,7 @@
 
 
 #########################################################################################################################
-## 1). CREATE PRE-CLEAN FLAGS 
+## 1). CREATE TABLE OF PRE-CLEAN FLAGS 
 #########################################################################################################################
 
 
@@ -17,11 +17,6 @@
 ## year
 ## taxonIdentificationIssue (ALA), GBIF no equivalent
 ## fatal assertions         (ALA), GBIF no equivalent
-
-
-## create copy and free memory
-GBIF.CLEAN = GBIF.TRIM
-gc()
 
 
 #########################################################################################################################
@@ -59,11 +54,17 @@ GBIF.PROBLEMS <- with(GBIF.TRIM,
              'COORD_UNCERT', 'COUNT'))
 
 
-## print table to screen: in .Rmd file, no need to save 
+## print table to screen: in .Rmd file, no need to save
+## Note that TRUE indicates there is a problem (e.g. no lat/long = TRUE)
 kable(GBIF.PROBLEMS)
 
 
-## write file to CSV
+## quickly check the total record number matches the count of problems
+total.count = sum(GBIF.PROBLEMS$COUNT)
+identical(total.records, total.count)  ## identical matches two objects
+
+
+## probably don't need this
 write.csv(GBIF.PROBLEMS, "./output/tables/GBIF_PROBLEMS.csv", row.names = FALSE)
 
 
@@ -76,18 +77,27 @@ write.csv(GBIF.PROBLEMS, "./output/tables/GBIF_PROBLEMS.csv", row.names = FALSE)
 
 
 ## Filter the GBIF records using conditions which are not too restrictive
-GBIF.CLEAN <- GBIF.CLEAN %>% 
+gc()
+
+
+
+GBIF.CLEAN <- GBIF.TRIM %>% 
   
   ## Note that these filters are very forgiving...
-  ## unless we exclude the NAs, very few records are returned! 
+  ## unless we include the NAs, very few records are returned!
   filter(!is.na(lon) & !is.na(lat),
-         establishmentMeans! = 'MANAGED' | is.na(establishmentMeans),
+         establishmentMeans!='MANAGED' | is.na(establishmentMeans),
          year >= 1950 & !is.na(year))
+
 
 ## The table above gives the details, but worth documenting how many records are knocked out by each
 remaining.records = dim(GBIF.CLEAN)[1]/total.records*100  
 remaining.records ## 65% of records remain after cleaning 
 gc()
+
+
+## check
+dim(GBIF.CLEAN)
 
 
 

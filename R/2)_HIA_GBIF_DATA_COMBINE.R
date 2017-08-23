@@ -37,6 +37,7 @@ str(gen.download)
 memory.limit()
 
 
+#########################################################################################################################
 ## Take the first 300 taxa
 GBIF.300 <- spp.download[c(1:300)] %>% 
   
@@ -59,6 +60,7 @@ GBIF.300 <- spp.download[c(1:300)] %>%
   bind_rows
 
 
+#########################################################################################################################
 ## Take the second 300 taxa
 GBIF.600 <- spp.download[c(301:600)] %>% 
   
@@ -81,7 +83,7 @@ GBIF.600 <- spp.download[c(301:600)] %>%
   bind_rows
 
 
-
+#########################################################################################################################
 ## take the last 300 taxa
 GBIF.800 <- spp.download[c(601:length(spp.download))] %>% 
   
@@ -104,6 +106,29 @@ GBIF.800 <- spp.download[c(601:length(spp.download))] %>%
   bind_rows
 
 
+# #########################################################################################################################
+# ## all 800 taxa
+# GBIF.ALL <- spp.download[c(1:length(spp.download))] %>% 
+#   
+#   ## pipe the list into lapply
+#   lapply(function(x) {
+#     
+#     ## create the character string
+#     f <- sprintf("./data/base/HIA_LIST/GBIF/SPECIES/%s_GBIF_records.RData", x)
+#     
+#     ## load each .RData file
+#     d <- get(load(f))
+#     
+#     ## now drop the columns which we don't need
+#     data.frame(searchTaxon = x, d[, !colnames(d) %in% gbifColsToDrop], 
+#                stringsAsFactors = FALSE)
+#     
+#   }) %>% 
+#   
+#   ## finally, bind all the rows together
+#   bind_rows
+
+
 
 
 
@@ -124,17 +149,6 @@ GBIF.TRIM <- GBIF.ALL %>%
   select(one_of(gbif.keep))
 
 
-## remove working dataframes from memory
-rm(GBIF.ALL)
-rm(GBIF.300)
-rm(GBIF.600)
-rm(GBIF.800)
-
-
-## now check if this term has worked
-head(GBIF.TRIM)
-
-
 ## remove the varieties, etc., from the scientific name returned by GBIF.
 Returned.binomial <- unlist(lapply(GBIF.TRIM$scientificName, string_fun_first_two_words))
 GBIF.TRIM = cbind(Returned.binomial, GBIF.TRIM)
@@ -145,6 +159,13 @@ head(GBIF.TRIM)
 head(GBIF.TRIM$scientificName, 10)
 head(GBIF.TRIM$searchTaxon, 10)
 head(GBIF.TRIM$scientificName, 10)
+
+
+## remove working dataframes from memory
+rm(GBIF.ALL)
+rm(GBIF.300)
+rm(GBIF.600)
+rm(GBIF.800)
 gc()
 
 

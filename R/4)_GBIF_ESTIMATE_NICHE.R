@@ -8,12 +8,13 @@
 #########################################################################################################################
 
 
-# First, consider the HIA brief again
+# First, consider the HIA brief again:
+
 # Our research might demonstrate, for example, that a particular species of tree is already at the very limit of its ability 
 # to cope with heat, and that the only suitable place to plant this species in the future will be in cool-climate or more 
 # temperate locations
 
-##
+# First step is to 
 
 
 #########################################################################################################################
