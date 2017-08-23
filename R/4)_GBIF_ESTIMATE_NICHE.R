@@ -8,34 +8,36 @@
 #########################################################################################################################
 
 
-# First, consider the HIA brief again:
+## First, consider the HIA brief again:
+ 
+## Our research might demonstrate, for example, that a particular species of tree is already at the very limit of its ability 
+## to cope with heat, and that the only suitable place to plant this species in the future will be in cool-climate or more 
+## temperate locations.
 
-# Our research might demonstrate, for example, that a particular species of tree is already at the very limit of its ability 
-# to cope with heat, and that the only suitable place to plant this species in the future will be in cool-climate or more 
-# temperate locations
-
-# First step is to 
+## First step is to estimate the current niche, using the best available data. This will give us a broad indication of the 
+## currernt climatic toleance of each species.
 
 
 #########################################################################################################################
 ## WHICH WORLDCLIM VARIABLES TO ESTIMATE?
 
 
-# BIO1 = Annual Mean Temperature   ##
+## copy the ones which Rach and Stu have used for the niche finder website
+# BIO1 = Annual Mean Temperature                                     ##
 # BIO2 = Mean Diurnal Range (Mean of monthly (max temp - min temp))
 # BIO3 = Isothermality (BIO2/BIO7) (* 100)
-# BIO4 = Temperature Seasonality (standard deviation *100) ##
-# BIO5 = Max Temperature of Warmest Month  ##
-# BIO6 = Min Temperature of Coldest Month  ##
+# BIO4 = Temperature Seasonality (standard deviation *100)           ##
+# BIO5 = Max Temperature of Warmest Month                            ##
+# BIO6 = Min Temperature of Coldest Month                            ##
 # BIO7 = Temperature Annual Range (BIO5-BIO6)
 # BIO8 = Mean Temperature of Wettest Quarter
 # BIO9 = Mean Temperature of Driest Quarter
 # BIO10 = Mean Temperature of Warmest Quarter
 # BIO11 = Mean Temperature of Coldest Quarter
-# BIO12 = Annual Precipitation  ##
-# BIO13 = Precipitation of Wettest Month ##
-# BIO14 = Precipitation of Driest Month  ##
-# BIO15 = Precipitation Seasonality (Coefficient of Variation) ##
+# BIO12 = Annual Precipitation                                       ##
+# BIO13 = Precipitation of Wettest Month                             ##
+# BIO14 = Precipitation of Driest Month                              ##
+# BIO15 = Precipitation Seasonality (Coefficient of Variation)       ##
 # BIO16 = Precipitation of Wettest Quarter
 # BIO17 = Precipitation of Driest Quarter
 # BIO18 = Precipitation of Warmest Quarter
@@ -46,6 +48,9 @@
 GBIF.POINTS   = GBIF.LAND[c("lon", "lat")]
 GBIF.POINTS   = SpatialPointsDataFrame(coords = GBIF.LAND[c("lon", "lat")], data = GBIF.POINTS,
                                        proj4string = CRS("+proj=longlat +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +no_defs"))
+
+## check
+summary(GBIF.POINTS)
 
 
 #########################################################################################################################
@@ -60,19 +65,37 @@ env.grids = c("//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_01",
               "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_15")
 
 
-## create a loop fr
+## create a loop to extract all the raster values for the land points
 n.env.variables   = length(env.grids)
 site.env.mat      = GBIF.POINTS
 
-for(i.env in 1:n.env.variables) {
-  
-  col.heads       = colnames(site.env.mat)
-  Env1.ras        = raster(env.grids[i.env])
-  point.vals      = extract(Env1.ras, GBIF.POINTS) #, method = 'simple') ## why is this not needed?
-  site.env.mat    = cbind(site.env.mat, point.vals)
-  colnames(site.env.mat) = c(col.heads, substr(env.grids[i.env], 1, (nchar(env.grids[i.env])-4)))
-  
-} ## end for i.env
+## this is Karel's
+
+# ## For every environmental variable:
+# for(i.env in 1:n.env.variables) {
+#   
+#   ## Get the column names from GBIF, create the raster, 
+#   ## extract the raster values, bind the GBIF points and raster values together,
+#   ## then finally get the names 
+#   col.heads           = names(site.env.mat)
+#   Env1.ras            = raster(env.grids[i.env])
+#   point.vals          = extract(Env1.ras, GBIF.POINTS) #, method = 'simple') ## why is this not needed?
+#   site.env.mat        = cbind(site.env.mat, point.vals)
+#   #names(site.env.mat) = c(col.heads, substr(env.grids[i.env], 1, (nchar(env.grids[i.env])-4)))  ## watch this, probably not needed
+#   
+# } ## end for i.env
+
+
+## Can do this all at once in R
+s <- stack(env.grids)
+point.vals <- extract(s, GBIF.POINTS) %>% 
+  cbind(coordinates(GBIF.POINTS), .)
+
+
+
+
+# Error in checkNames(value) : 
+#   (converted from warning) attempt to set invalid names: this may lead to problems later on. See ?make.names
 
 
 #########################################################################################################################
