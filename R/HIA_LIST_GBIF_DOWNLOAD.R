@@ -18,6 +18,8 @@ library(Rcpp)
 library(raster)
 library(rgdal)
 library(plyr)
+library(dplyr)
+library(dtplyr)
 
 library(SDMTools)
 library(rmaxent)

@@ -6,18 +6,18 @@
 #########################################################################################################################
 ## create a big list of all the packages needed for a project
 ## can't do the special github ones like this though...
-packages <- c("ggplot2",   "plyr",      "reshape2", "RColorBrewer",  "scales",     "grid",
-              "raster",    "spdep",     "rgdal",    "GISTools",      "data.table", "dtplyr",
-              "Hmisc",     "Cairo",     "lattice",  "gtools",        "ggplot2",    "sjPlot",
-              "gridExtra", "grid",      "sqldf",    "knitr",         "mgcv",       "MuMIn",
-              "mvabund",   "asbio",     "mvtnorm",  "testthat",      "rgl",        "R.matlab",
-              "ENMeval",   "lavaan",    "semPlot",  "rgdal",         "sp",         "formula.tools",
-              "dismo",     "mctest",    "rJava",    "ENMeval",       "SDMTools",   "ALA4R",
-              "maxent",    "devtools",  "knitr",    "yaml",          "htmltools",  "microbenchmark",
-              "knitr",     "yaml",      "caTools",  "bitops",        "rmarkdown",  "speciesgeocodeR",                  
-              "bitops",    "rmarkdown", "cluster",  "gsubfn",        "functional", "splitstackshape",
-              "EML",       "taxize",    "geonames", "rWBclimate",    "rfigshare",  "tidyverse",
-              "jsonlite",  "zoom") # class(packages)
+packages <- c("ggplot2",   "plyr",      "reshape2",  "RColorBrewer",  "scales",     "grid",
+              "raster",    "spdep",     "rgdal",     "GISTools",      "data.table", "dtplyr",
+              "Hmisc",     "Cairo",     "lattice",   "gtools",        "ggplot2",    "sjPlot",
+              "gridExtra", "grid",      "sqldf",     "knitr",         "mgcv",       "MuMIn",
+              "mvabund",   "asbio",     "mvtnorm",   "testthat",      "rgl",        "R.matlab",
+              "ENMeval",   "lavaan",    "semPlot",   "rgdal",         "sp",         "formula.tools",
+              "dismo",     "mctest",    "rJava",     "ENMeval",       "SDMTools",   "ALA4R",
+              "maxent",    "devtools",  "knitr",     "yaml",          "htmltools",  "microbenchmark",
+              "knitr",     "yaml",      "caTools",   "bitops",        "rmarkdown",  "speciesgeocodeR",                  
+              "bitops",    "rmarkdown", "cluster",   "gsubfn",        "functional", "splitstackshape",
+              "EML",       "taxize",    "geonames",  "rWBclimate",    "rfigshare",  "tidyverse",
+              "jsonlite",  "zoom",      "bigmemory", "installr") # class(packages)
 
 
 ## also to create pdf/html documents, you need to install a latex program. EG MiKtex for windows.
@@ -67,6 +67,19 @@ ipak(packages)
 ## check that R maxent is installed
 list.files(system.file("java", package = "dismo"))
 ENMevaluate
+
+
+## Also, update R here too
+# installing/loading the package:
+if(!require(installr)) {
+  install.packages("installr"); require(installr)} #load / install+load installr
+
+##
+## https://cran.r-project.org/web/packages/installr/index.html
+
+
+## Check the settings again
+## https://www.r-statistics.com/2013/03/updating-r-from-r-on-windows-using-the-installr-package/
 
 
 

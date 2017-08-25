@@ -50,6 +50,8 @@ library("bigmemory")
 library("biganalytics")
 library("bigtabulate")
 
+library(Cairo)
+library(lattice)
 
 ## source functions
 source('./R/GREEN_CITIES_FUNCTIONS.R')
@@ -63,7 +65,7 @@ source('./R/GREEN_CITIES_FUNCTIONS.R')
 #########################################################################################################################
 
 
-## this list derives from all species and varieties sold anywhere in Australia in the last 5 years. Anthony Maneahas cleaned 
+## This list derives from all species and varieties sold anywhere in Australia in the last 5 years. Anthony Maneahas cleaned 
 ## up the data and cross-linked to growth form and exotic/native status and derived a list of ~1000 species that are the most 
 ## commonly sold, covering the right ratio of growth forms, regional representation and native/exotic
 spp.list = read.csv("./data/base/HIA_LIST/HIA/GREEN_CITIES_DRAFT_LIST.csv", stringsAsFactors = FALSE)

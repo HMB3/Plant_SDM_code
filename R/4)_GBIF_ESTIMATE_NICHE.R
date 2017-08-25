@@ -17,6 +17,19 @@
 ## First step is to estimate the current niche, using the best available data. This will give us a broad indication of the 
 ## currernt climatic toleance of each species.
 
+## There are two streams here: 
+
+## the broad niches for each species (ie. macroscale env and bio data)
+## the bespoke microscale approach (e.g. ecological framework, solar surfaces, etc.)
+
+## The broad niche stream informs the micro stream, based on two tables:
+
+## 1). All records, contextual data and environmnetal conditions
+## 2). One row for each species, contextual data and species attributes (niches, traits, etc.)
+
+
+
+
 
 #########################################################################################################################
 ## WHICH WORLDCLIM VARIABLES TO ESTIMATE?
@@ -108,24 +121,30 @@ names(GBIF.RASTER)
 #########################################################################################################################
 
 
+#########################################################################################################################
 ## Focus on the top 200 taxa to begin with: some of the top 200 species have not been downloaded yet
-head(DRAFT.HIA.TAXA)
 DRAFT.HIA.TAXA.200 = subset(DRAFT.HIA.TAXA, Top_200 == "TRUE")
+DRAFT.HIA.TAXA.200 = rename(DRAFT.HIA.TAXA.200, searchTaxon = Species)
+DRAFT.HIA.TAXA     = rename(DRAFT.HIA.TAXA, searchTaxon = Species)
 
 
 ## sort by no. of growers?
-DRAFT.HIA.TAXA.200 = DRAFT.HIA.TAXA.200[with(DRAFT.HIA.TAXA.200, rev(order(Number.of.growers))), ] 
+DRAFT.HIA.TAXA.200 = DRAFT.HIA.TAXA.200[with(DRAFT.HIA.TAXA.200, rev(order(Number.of.growers))), ]
+DRAFT.HIA.TAXA     = DRAFT.HIA.TAXA[with(DRAFT.HIA.TAXA, rev(order(Number.of.growers))), ] 
 dim(DRAFT.HIA.TAXA.200)
+dim(DRAFT.HIA.TAXA)
 head(DRAFT.HIA.TAXA.200)
+head(DRAFT.HIA.TAXA)
 
 
 ## now summarise the niches. But figure out a cleaner way of doing this?
-variables = c("Annual_mean_temp", "Temp_seasonality", "Max_temp_warm_month", "Min_temp_cold_month",
-              "Annual_precip",    "Precip_Wet_month", "Precip_dry_month",    "Precip_seasonality")
+env.variables = c("Annual_mean_temp", "Temp_seasonality", "Max_temp_warm_month", "Min_temp_cold_month",
+                   "Annual_precip",    "Precip_Wet_month", "Precip_dry_month",    "Precip_seasonality")
 
 
 #########################################################################################################################
 ## We want to create niche summaries for each environmental condition like this...
+## Here's what the function will produce :
 head(niche_estimate (DF = GBIF.RASTER, colname = "Annual_mean_temp"))
 
 
@@ -138,7 +157,7 @@ GBIF.NICHE <- variables[c(1:length(variables))] %>%
     ## now use the niche width function 
     niche_estimate (DF = GBIF.RASTER, colname = x)
     
-    ## would be good to remove the duplicates here
+    ## would be good to remove the duplicates here, somehow
     
   }) %>% 
   
@@ -152,13 +171,85 @@ str(GBIF.NICHE)
 
 ## Add counts for each species
 count = as.data.frame(table(GBIF.RASTER$searchTaxon))$Freq
-test = cbind(count, annual.temp.niche.est)
-head(annual.temp.niche.est)
+GBIF.NICHE  = cbind(count, GBIF.NICHE)
+head(GBIF.NICHE)
 
 
 
 
 
+#########################################################################################################################
+## 3). SUMMARISE SPECIES NUMERICALLY: WHICH ONES COULD BE MODELLED?
+#########################################################################################################################
 
+
+#########################################################################################################################
+## Now join the horticultural contextual data onto one or both tables ()
+## Which columns do we need?
+names(GBIF.RASTER)
+names(GBIF.NICHE)
+names(DRAFT.HIA.TAXA.200)
+View(DRAFT.HIA.TAXA)
+
+
+## Now join hort context to all records. Provisional, keep working on it 
+GBIF.RASTER.CONTEXT = join(GBIF.RASTER, DRAFT.HIA.TAXA[, c("searchTaxon", "Plant.type", 
+                                                               "Number.of.growers", "Origin", "Top_200")], 
+                           by = "searchTaxon", type = "left", match = "all")
+
+
+## Now join hort context to all the niches. Provisional, keep working on it 
+GBIF.NICHE.CONTEXT = join(GBIF.NICHE, DRAFT.HIA.TAXA[, c("searchTaxon", "Plant.type", 
+                                                             "Number.of.growers", "Origin", "Top_200")], 
+                          by = "searchTaxon", type = "left", match = "all")
+
+
+#########################################################################################################################
+## For pedantry, reroder columns...
+## Note that the downloaded species don't all match up to the original list. This is because there are different lists 
+## propagating throughout the workflow, I need to watch out for this. 
+GBIF.RASTER.CONTEXT = GBIF.RASTER.CONTEXT[, c(1:12, 27:30, 13:26)]
+GBIF.NICHE.CONTEXT  = GBIF.NICHE.CONTEXT[, c(2,1, 66:69, 3:65)]
+
+
+## View the data
+View(GBIF.RASTER.CONTEXT)
+View(GBIF.NICHE.CONTEXT)
+
+
+#########################################################################################################################
+## now create a master summary of the recrods so far. What do we need to know?
+## These numbers could be variables that update each time code is re-run with changes to the variables
+## Also a table could be made for each source (GBIF, ALA, Council, etc.), But ideally it is just one table
+
+## Total number of number of taxa (ie. all variables are dynamic)
+## Total number of records (uncleaned, and broken down by source)
+## % records retained after filtering 
+## 6-figure summary across all taxa (min, max, median)
+## number of all taxa with > n records (e.g. +50, +100, +1000, +10,000) - assuming it doesn't matter above certain level
+## number of taxa with > n records
+
+
+## How many species where knocked out by using filters?
+kable(GBIF.PROBLEMS)
+
+
+
+#########################################################################################################################
+## Which species have more than n records, are on the top 200, etc?
+summary(GBIF.NICHE.CONTEXT$count)
+
+
+histogram(GBIF.NICHE.CONTEXT$count,
+          breaks = 50, border = NA, col = "grey",
+          xlab = "No. of GBIF records", 
+          main = "Distribution of GBIF records for HIA species")
+
+
+
+
+#########################################################################################################################
+## 3). SUMMARISE NICHES GRAPHICALLY FOR SELECTED TAXA
+#########################################################################################################################
 
 
