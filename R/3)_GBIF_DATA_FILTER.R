@@ -63,7 +63,7 @@ kable(GBIF.PROBLEMS)
 
 
 ## quickly check the total record number matches the count of problems
-total.count = sum(GBIF.PROBLEMS$COUNT)
+Total.count = sum(GBIF.PROBLEMS$COUNT)
 identical(total.records, total.count)  ## identical matches two objects
 
 
@@ -90,14 +90,20 @@ GBIF.CLEAN <- GBIF.TRIM %>%
 
 
 ## The table above gives the details, but worth documenting how many records are knocked out by each
-remaining.records = dim(GBIF.CLEAN)[1]/total.records*100  
-remaining.records ## 65% of records remain after cleaning 
+Remaining.records = dim(GBIF.CLEAN)[1] 
+Remaining.percent = dim(GBIF.CLEAN)[1]/total.records*100  
+Remaining.percent ## 65% of records remain after cleaning 
 gc()
 
 
 ## check
 dim(GBIF.CLEAN)
 head(GBIF.CLEAN)
+
+
+## Store character string of the filters applied
+Filters.applied = "NA COORD | MANAGED/NA | < 1950/NA" 
+
 
 
 

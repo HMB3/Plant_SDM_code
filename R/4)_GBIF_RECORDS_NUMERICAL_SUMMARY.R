@@ -169,8 +169,10 @@ GBIF.NICHE <- variables[c(1:length(variables))] %>%
 str(GBIF.NICHE)
 
 
-## Add counts for each species
+## Add counts for each species, and record the total number of taxa processed
 count = as.data.frame(table(GBIF.RASTER$searchTaxon))$Freq
+Total.taxa.processed = dim(GBIF.NICHE)[1]
+Rank = "SPECIES"
 GBIF.NICHE  = cbind(count, GBIF.NICHE)
 head(GBIF.NICHE)
 
@@ -228,44 +230,89 @@ View(GBIF.NICHE.CONTEXT)
 ## 6-figure summary across all taxa (min, max, median)
 ## number of all taxa with > n records (e.g. +50, +100, +1000, +10,000) - assuming it doesn't matter above certain level
 ## number of taxa with > n records
+summary(GBIF.NICHE.CONTEXT$count)
+Min.records    = summary(GBIF.NICHE.CONTEXT$count)[1]
+Max.records    = summary(GBIF.NICHE.CONTEXT$count)[6]
+Median.records = summary(GBIF.NICHE.CONTEXT$count)[4]
 
 
 ## How many species where knocked out by using filters?
 kable(GBIF.PROBLEMS)
 
 
-
 #########################################################################################################################
 ## Which species have more than n records, are on the top 200, etc?
 ## first create column headings for final results table  
-## these match data frame created by bivariate lm function  
-GBIF.RECORD.SUMMARY = c(  
+## these match data frame created by bivariate lm function
+n.samples = 1
+table.columns = c(  
   "Dataset",
-  "Taxa dowloaded", 
-  "% records retained",
-  "min",  
-  "max",
-  "median",
+  "Taxa processed",
+  "Rank",
+  "Total records",
+  "Filters applied",
+  "Cleaned records",
+  "% Records retained",
+  "Min",  
+  "Max",
+  "Median",
   "All taxa count 50+",
   "All taxa count 100+",
-  "All taxa count 100+",
+  "All taxa count 1000+",
+  "All taxa count 10,000+",
   "Top taxa count 50+",
   "Top taxa count 100+",
-  "Top taxa count 100+"
+  "Top taxa count 1000+",
+  "Top taxa count 10,000+"
 )
 
-## create big matrices with n rows = n samples
-## these will be filled by the linear model functions  
-table.length         = length(table.columns)
-LM.RESULTS           = matrix(0, n.samples, table.length)
-colnames(LM.RESULTS) = table.columns 
 
-LM.RESULTS.TABLE.1 = as.data.frame(LM.RESULTS)
-
-
-summary(GBIF.NICHE.CONTEXT$count)
+## Create big matrices with n rows = n samples
+## These will be filled by the linear model functions  
+table.length                   = length(table.columns)
+GBIF.RECORD.SUMMARY            = matrix(0, n.samples, table.length)
+colnames(GBIF.RECORD.SUMMARY)  = table.columns 
+GBIF.RECORD.SUMMARY            = as.data.frame(GBIF.RECORD.SUMMARY)
 
 
+## now put the data in. Could use "melt", etc?
+GBIF.RECORD.SUMMARY[1, "Dataset"]                 = "GBIF_occurrence"                # H1.ms[1, "Intercept"]
+GBIF.RECORD.SUMMARY[1, "Taxa processed"]          = Total.taxa.processed
+GBIF.RECORD.SUMMARY[1, "Rank"]                    = Rank
+GBIF.RECORD.SUMMARY[1, "Total records"]           = Total.count
+GBIF.RECORD.SUMMARY[1, "Filters applied"]         = Filters.applied
+GBIF.RECORD.SUMMARY[1, "Cleaned records"]         = Remaining.records
+GBIF.RECORD.SUMMARY[1, "% Records retained"]      = Remaining.percent
+
+GBIF.RECORD.SUMMARY[1, "Min"]                     = Min.records
+GBIF.RECORD.SUMMARY[1, "Max"]                     = Max.records
+GBIF.RECORD.SUMMARY[1, "Median"]                  = Median.records
+
+GBIF.RECORD.SUMMARY[1, "All taxa count 50+"]      = sum(GBIF.NICHE.CONTEXT$count >= 50,   na.rm = TRUE)
+GBIF.RECORD.SUMMARY[1, "All taxa count 100+"]     = sum(GBIF.NICHE.CONTEXT$count >= 100,  na.rm = TRUE)
+GBIF.RECORD.SUMMARY[1, "All taxa count 1000+"]    = sum(GBIF.NICHE.CONTEXT$count >= 1000, na.rm = TRUE)
+GBIF.RECORD.SUMMARY[1, "All taxa count 10,000+"]  = sum(GBIF.NICHE.CONTEXT$count >= 10000, na.rm = TRUE)
+
+GBIF.RECORD.SUMMARY[1, "Top taxa count 50+"]      = sum(GBIF.NICHE.CONTEXT$count >= 50    & GBIF.NICHE.CONTEXT$Top_200 == "TRUE", na.rm = TRUE)
+GBIF.RECORD.SUMMARY[1, "Top taxa count 100+"]     = sum(GBIF.NICHE.CONTEXT$count >= 100   & GBIF.NICHE.CONTEXT$Top_200 == "TRUE", na.rm = TRUE)
+GBIF.RECORD.SUMMARY[1, "Top taxa count 1000+"]    = sum(GBIF.NICHE.CONTEXT$count >= 1000  & GBIF.NICHE.CONTEXT$Top_200 == "TRUE", na.rm = TRUE)
+GBIF.RECORD.SUMMARY[1, "Top taxa count 10,000+"]  = sum(GBIF.NICHE.CONTEXT$count >= 10000 & GBIF.NICHE.CONTEXT$Top_200 == "TRUE", na.rm = TRUE)
+
+
+## visualise this
+str(GBIF.RECORD.SUMMARY)
+colnames(GBIF.RECORD.SUMMARY)
+rownames(GBIF.RECORD.SUMMARY) = "VALUE"
+
+GBIF.RECORD.SUMMARY = as.data.frame(t(GBIF.RECORD.SUMMARY)) ## do melting, etc later
+kable(GBIF.RECORD.SUMMARY)
+
+
+#########################################################################################################################
+## Now visualise the distribution of records
+
+
+## Use lattice histograms
 histogram(GBIF.NICHE.CONTEXT$count,
           breaks = 50, border = NA, col = "grey",
           xlab = "No. of GBIF records", 
@@ -274,8 +321,30 @@ histogram(GBIF.NICHE.CONTEXT$count,
 
 
 
+
 #########################################################################################################################
-## 3). SUMMARISE NICHES GRAPHICALLY FOR SELECTED TAXA
+## 3). SUMMARISE NICHES GRAPHICALLY FOR SELECTED TAXA - START WITH THE TOP 200
 #########################################################################################################################
+
+
+## Many ways to break this down. Could create a list, then apply over this
+Top.hist.test = DRAFT.HIA.TAXA.200$searchTaxon[1:10]
+taxa.n = "Murraya paniculata"
+dim(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ])
+
+
+## Use lattice histograms
+for (taxa.n in Top.hist.test) {
+  
+  histogram(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ]$Annual_mean_temp,
+            breaks = 50, border = NA, col = "orange",
+            main = taxa.n, 
+            xlab = "Wordlclim Annual mean temp", plot = TRUE)
+  
+}
+
+
+
+
 
 
