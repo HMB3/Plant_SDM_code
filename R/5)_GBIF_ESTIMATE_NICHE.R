@@ -1,5 +1,5 @@
 #########################################################################################################################
-#######################################  CREATE SPECIES NICHES FOR HIA LIST ############################################# 
+############################################  VISUALISE SPECIES NICHES ################################################## 
 #########################################################################################################################
 
 
@@ -69,14 +69,19 @@
 
 ## Consider some simple outputs for each species, and each environmental condition, create:
 
-## A map of global GBIF ocurrences
-## Histograms with a bar chart
-## Something else?
+## A map of global and Australian GBIF ocurrences
+## Histograms with a bar chart?
+## A 3-d representation of the niche for selected variables (e.g. niche volume/hull, etc.)
+## Other stuff?
 
 
-## Many ways to break this down. Could create a list, then apply over this
+#########################################################################################################################
+## Many ways to break this down. Could create a list, then loop/apply over this
 Top.200.test = DRAFT.HIA.TAXA.200$searchTaxon[1:10]
 taxa.n = "Murraya paniculata"
+
+
+## example taxa
 dim(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ])
 dim(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n 
                                & GBIF.RASTER.CONTEXT$country == "Australia"), ][18:17])
@@ -93,25 +98,31 @@ points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][
 plot(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n 
                                 & GBIF.RASTER.CONTEXT$country == "Australia"), ][18:17], 
      pch = ".", cex = 5, col = "red")
-
 title(paste0("Australian occurrences for ", taxa.n))
 plot(LAND, add = T)
 
 
-## now try using a mapping function
-plot_GBIF_records(Top.200.test)
+#########################################################################################################################
+## Now try using a mapping function
+source('./R/GREEN_CITIES_FUNCTIONS.R')
+map_GBIF_records(Top.200.test)
+
+# Warning messages:
+#   1: In if (dim(GBIF.RASTER.CONTEXT[which(GBIF.RASTER.CONTEXT$searchTaxon ==  ... :
+#                                           the condition has length > 1 and only the first element will be used
+
+
+## And try using a histogram function
+## Is it possible to run multiple environmental variables at once? 
+## EG the arguments are just set up for one variable and units, could do multiplese by having env.1, env.2, etc...
+
+
+##
+histogram_GBIF_records(taxa.list = Top.200.test, env.var = "Annual_mean_temp",   env.col = "orange", env.units = "°K")
+histogram_GBIF_records(taxa.list = Top.200.test, env.var = "Annual_mean_precip", env.col = "blue",   env.units = "mm") ## etc
 
 
 ## Use lattice histograms
-for (taxa.n in Top.hist.test) {
-  
-  histogram(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ]$Annual_mean_temp,
-            breaks = 50, border = NA, col = "orange",
-            main = taxa.n, 
-            xlab = "Wordlclim Annual mean temp", plot = TRUE)
-  
-}
-
 
 
 

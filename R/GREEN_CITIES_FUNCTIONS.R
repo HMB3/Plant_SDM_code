@@ -61,7 +61,7 @@ env_histo = function(variable){
 
 
 #########################################################################################################################
-## downloading functions
+## DOWNLOADING FUNCTIONS
 #########################################################################################################################
 
 
@@ -215,7 +215,7 @@ download_GBIF_all_genera = function (list) {
 
 
 #########################################################################################################################
-## GBIF fields we do and don't need
+## GBIF FIELDS WE DON'T NEED
 #########################################################################################################################
 
 
@@ -365,6 +365,11 @@ gbifColsToDrop <- c("cloc",
 #########################################################################################################################
 
 
+#########################################################################################################################
+## STU'S CALC
+#########################################################################################################################
+
+
 ## 
 nicheBreadth <- function(data, species, r, verbose = TRUE) {
 
@@ -436,7 +441,7 @@ nicheBreadth <- function(data, species, r, verbose = TRUE) {
 
 
 ########################################################################################################################
-## summarise species niches
+## SHAWN'S NICHE
 ########################################################################################################################
 
 
@@ -495,7 +500,10 @@ niche_estimate = function (DF,
 
 
 #########################################################################################################################
-## GBIF data
+## CLEANING FUNCTIONS
+#########################################################################################################################
+
+
 ## so here, x would be a "GBIF" object that comes from the previous loop
 # load("./data/base/HIA_LIST/GBIF/Agonis flexuosa_GBIF_records.RData")
 # x = GBIF
@@ -587,33 +595,42 @@ CLEAN_GBIF_MACQU <- function(x) {
 
 
 ########################################################################################################################
+## PLOTTING FUNCTIONS
+########################################################################################################################
+
+
+
+########################################################################################################################
 ## MAPPING FUNCTIONS
 ########################################################################################################################
 
 
-plot_GBIF_records = function (taxa.list) {
+## create simple maps of all GBIF records for selected taxa, in Australia and overseas
+map_GBIF_records = function (taxa.list) {
   
-  
+  ###############################
   ## for all the taxa in the list
   for (taxa.n in taxa.list) {
     
     ## If the dim = 0 for the that taxa, skip to next
-    if (dim(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ]) == 0) {
+    if (dim(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ])[1] == 0) {
       
       print (paste ("Incorrect nomencalture for ", taxa.n, "skipping"))
       next
       
     }
     
+    ###############################
     ## If the dim = 0 for that taxa subset to Australia, skip to next
     if (dim(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n 
-                                       & GBIF.RASTER.CONTEXT$country == "Australia"), ][18:17]) == 0) {
+                                       & GBIF.RASTER.CONTEXT$country == "Australia"), ][18:17])[1] == 0) {
       
       print (paste ("Possible no Australian records for ", taxa.n, "skipping"))
       next
       
     }
     
+    ########################################
     ## 1). Plot global occurences for taxa.n
     plot(LAND)
     title(paste0("Global occurrences for ", taxa.n))
@@ -622,7 +639,32 @@ plot_GBIF_records = function (taxa.list) {
     points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][18:17], 
            pch = ".", col = "red", cex = 1.5)
     
-    ## 2). Plot Australian occurences for taxa.n
+    
+    ###############################
+    ## 2). Save global maps to file?
+    ## start Cairo device
+    CairoPNG(width  = 10000, height = 10000, 
+             file = paste("./output/maps/", taxa.n, "_WORLD_GBIF_map.png", sep = ""), 
+             canvas = "white", bg = "white", units = "px", dpi = 600)
+    
+    # par(#mfrow = c(2,1),
+    #   mar   = c(10, 12, 10, 12), 
+    #   mgp   = c(10, 3, 0), 
+    #   oma   = c(1.5, 1.5, 1.5, 1.5))
+    
+    plot(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][18:17], 
+         pch = ".", cex = 5, col = "red", cex.lab = 5)
+    
+    ## add title
+    title(paste0("Australian occurrences for ", taxa.n), cex = 5)
+    plot(LAND, add = T)
+    
+    ##
+    dev.off()
+    
+    
+    ###########################################
+    ## 3). Plot Australian occurences for taxa.n
     plot(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n 
                                     & GBIF.RASTER.CONTEXT$country == "Australia"), ][18:17], 
          pch = ".", cex = 5, col = "red")
@@ -631,9 +673,99 @@ plot_GBIF_records = function (taxa.list) {
     title(paste0("Australian occurrences for ", taxa.n))
     plot(LAND, add = T)
     
-    
+    ###############################
     ## 3). Save records maps to file?
-    # save(GBIF.GEN, file = paste("./data/base/HIA_LIST/GBIF/GENERA/", gen.n, "_GBIF_records.RData", sep = ""))
+    ## start Cairo device
+    CairoPNG(width  = 10000, height = 10000, 
+             file = paste("./output/maps/", taxa.n, "_AUS_GBIF_map.png", sep = ""), 
+             canvas = "white", bg = "white", units = "px", dpi = 600)
+    
+    # par(#mfrow = c(2,1),
+    #   mar   = c(3, 3, 10, 12), 
+    #   mgp   = c(10, 3, 0), 
+    #   oma   = c(1.5, 1.5, 1.5, 1.5))
+    
+    plot(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n 
+                                    & GBIF.RASTER.CONTEXT$country == "Australia"), ][18:17], 
+         pch = ".", cex = 5, col = "red")
+    
+    ## add title
+    title(paste0("Australian occurrences for ", taxa.n), cex = 5)
+    plot(LAND, add = T)
+    
+    ##
+    dev.off()
+    
+  }
+  
+}
+
+
+
+
+
+########################################################################################################################
+## HISTOGRAM FUNCTIONS
+########################################################################################################################
+
+
+## create simple maps of all GBIF records for selected taxa, in Australia and overseas
+histogram_GBIF_records = function (taxa.list, env.var, env.col, env.units) {
+  
+  ###############################
+  ## for all the taxa in the list
+  for (taxa.n in taxa.list) {
+    
+    ## If the dim = 0 for the that taxa, skip to next
+    if (dim(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ])[1] == 0) {
+      
+      print (paste ("Incorrect nomencalture for ", taxa.n, "skipping"))
+      next
+      
+    }
+    
+    #####################################################
+    ## 1). Plot histograms for global occurences of taxa.n
+    print.hist = histogram(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][[env.var]],
+                           breaks = 50, border = NA, col = env.col,
+                           main = taxa.n, 
+                           xlab = paste0("Worldclim ", env.var, " ", env.units, sep = " "))
+    
+    print(print.hist)
+    ## Could do multiples by having env.1, env.2, etc...
+    ## Then we'd have a panel, maybe using four key variables...
+    
+
+    #################################
+    ## 2). Save histograms to file?
+    CairoPNG(width  = 10000, height = 10000, 
+             file = paste("./output/maps/", taxa.n, "_", env.var, "_world_GBIF_histo.png", sep = ""), 
+             canvas = "white", bg = "white", units = "px", dpi = 600)
+    
+    par(#mfrow = c(2,1),
+        mar   = c(10, 12, 10, 12), 
+        mgp   = c(10, 3, 0), 
+        oma   = c(1.5, 1.5, 1.5, 1.5))
+    
+    par(font.lab = 2, lwd = 2)
+    
+    
+    histogram(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][[env.var]],
+              breaks = 50, border = NA, col = env.col,
+              main = taxa.n, 
+              xlab = paste0("Worldclim ", env.var, " ", env.units, sep = " "),
+              cex.lab = 5, cex.axis = 4)
+    
+    #box(lwd = 3)
+    
+    dev.off()
+    
+    
+    # save(GBIF.GEN, file = paste("./output/maps/", taxa.n, "_", env.var, "_WORLD_GBIF_histo.png", sep = ""))
+    
+    # save(GBIF.GEN, file = paste("./output/maps/", taxa.n, "_AUS_GBIF_map.png",   sep = ""))
+    
+    
     # return(skip.gen.list)
     
     
