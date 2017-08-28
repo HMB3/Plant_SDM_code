@@ -586,6 +586,64 @@ CLEAN_GBIF_MACQU <- function(x) {
 
 
 
+########################################################################################################################
+## MAPPING FUNCTIONS
+########################################################################################################################
+
+
+plot_GBIF_records = function (taxa.list) {
+  
+  
+  ## for all the taxa in the list
+  for (taxa.n in taxa.list) {
+    
+    ## If the dim = 0 for the that taxa, skip to next
+    if (dim(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ]) == 0) {
+      
+      print (paste ("Incorrect nomencalture for ", taxa.n, "skipping"))
+      next
+      
+    }
+    
+    ## If the dim = 0 for that taxa subset to Australia, skip to next
+    if (dim(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n 
+                                       & GBIF.RASTER.CONTEXT$country == "Australia"), ][18:17]) == 0) {
+      
+      print (paste ("Possible no Australian records for ", taxa.n, "skipping"))
+      next
+      
+    }
+    
+    ## 1). Plot global occurences for taxa.n
+    plot(LAND)
+    title(paste0("Global occurrences for ", taxa.n))
+    
+    ## add points
+    points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][18:17], 
+           pch = ".", col = "red", cex = 1.5)
+    
+    ## 2). Plot Australian occurences for taxa.n
+    plot(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n 
+                                    & GBIF.RASTER.CONTEXT$country == "Australia"), ][18:17], 
+         pch = ".", cex = 5, col = "red")
+    
+    ## add title
+    title(paste0("Australian occurrences for ", taxa.n))
+    plot(LAND, add = T)
+    
+    
+    ## 3). Save records maps to file?
+    # save(GBIF.GEN, file = paste("./data/base/HIA_LIST/GBIF/GENERA/", gen.n, "_GBIF_records.RData", sep = ""))
+    # return(skip.gen.list)
+    
+    
+  }
+  
+}
+
+
+
+
 #########################################################################################################################
 #############################################  FUNCTIONS FOR HORT AUS LIST ############################################## 
 #########################################################################################################################
