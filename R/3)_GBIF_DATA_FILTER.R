@@ -18,6 +18,9 @@
 ## taxonIdentificationIssue (ALA), GBIF no equivalent
 ## fatal assertions         (ALA), GBIF no equivalent
 
+## Currently, what is missing from this workflow is checking duplicate refords, checking taxonomy and checking the 
+## spatial outliers.
+
 
 #########################################################################################################################
 ## Create a table which counts the number of records meeting all the criteria
@@ -35,6 +38,8 @@ GBIF.PROBLEMS <- with(GBIF.TRIM,
                    ## establishment means is "MANAGED", can change this
                    establishmentMeans == 'MANAGED' & !is.na(establishmentMeans),
                    
+                   ## also add duplicated
+                   
                    ## collected before 1950 or na.year
                    year < 1950 & !is.na(year),
                    
@@ -44,6 +49,9 @@ GBIF.PROBLEMS <- with(GBIF.TRIM,
                    ## coordinate uncertainty is > 100 or is not NA
                    coordinateUncertaintyInMeters > 1000 & 
                      !is.na(coordinateUncertaintyInMeters)
+                   
+                   ## add maybe the centre of Australia?
+                   ## Lamber centre of Aus: 25.610111, 134.354806
                    
                  )
                  
@@ -210,7 +218,7 @@ plot(LAND)
 #########################################################################################################################
 ## save data
 save(GBIF.LAND, file = paste("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.RData"))
-
+gc()
 
 
 

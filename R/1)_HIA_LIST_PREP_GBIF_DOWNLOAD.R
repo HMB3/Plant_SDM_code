@@ -17,7 +17,7 @@ library(RCurl)
 library(Rcpp)
 library(raster)
 library(rgdal)
-library(plyr)
+#library(plyr)
 library(dplyr)
 
 library(SDMTools)
@@ -54,7 +54,7 @@ library("biglm")
 library("bigmemory")
 library("biganalytics")
 library("bigtabulate")
-
+library(taxonlookup)
 
 ## source functions
 source('./R/GREEN_CITIES_FUNCTIONS.R')
@@ -167,6 +167,12 @@ dim(DRAFT.HIA.TAXA)
 head(DRAFT.HIA.TAXA)
 
 
+########################################################################################################################
+## Try using taxonlookup to check the taxonomy
+DRAFT.TAXA.LOOKUP = lookup_table(DRAFT.HIA.TAXA[["searchTaxon"]], by_species = TRUE) ## convert rows to column and merge
+DRAFT.TAXA.LOOKUP = setDT(DRAFT.TAXA.LOOKUP , keep.rownames = TRUE)[]
+DRAFT.TAXA.LOOKUP = rename(DRAFT.TAXA.LOOKUP, searchTaxon = rn)
+head(DRAFT.TAXA.LOOKUP)
 
 
 

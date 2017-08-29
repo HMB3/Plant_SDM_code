@@ -451,8 +451,11 @@ niche_estimate = function (DF,
   
   ## Use ddply inside a function to create niche widths and medians for each species
   ## This syntax is tricky, maybe ask John and Stu what they think
+  
+  
+  ## Also, need to figure out how to make the aggregating column generic (species, genus, etc.)
   summary = ddply(DF, 
-                  .(searchTaxon),
+                  .(searchTaxon),               ## currently grouping column only works hard-wired
                   .fun = function (xx, col) {
                     
                     ## Get the same summaries that Stu and Rachael use for 'niche finder'
@@ -481,6 +484,8 @@ niche_estimate = function (DF,
   )
   
   ## concatenate output
+  ## Also, need to figure out how to make the aggregating column generic (species, genus, etc.)
+  ## currently it only works hard-wired
   colnames(summary) = c("searchTaxon", 
                         paste0(colname,  "_min"),
                         paste0(colname,  "_max"),
@@ -612,13 +617,13 @@ map_GBIF_records = function (taxa.list) {
   ## for all the taxa in the list
   for (taxa.n in taxa.list) {
     
-    ## If the dim = 0 for the that taxa, skip to next
-    if (dim(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ])[1] == 0) {
-      
-      print (paste ("Incorrect nomencalture for ", taxa.n, "skipping"))
-      next
-      
-    }
+    # ## If the dim = 0 for the that taxa, skip to next
+    # if (dim(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ])[1] == 0) {
+    #   
+    #   print (paste ("Incorrect nomencalture for ", taxa.n, "skipping"))
+    #   next
+    #   
+    # }
     
     ###############################
     ## If the dim = 0 for that taxa subset to Australia, skip to next
@@ -626,81 +631,114 @@ map_GBIF_records = function (taxa.list) {
                                        & GBIF.RASTER.CONTEXT$country == "Australia"), ][18:17])[1] == 0) {
       
       print (paste ("Possible no Australian records for ", taxa.n, "skipping"))
-      next
+      
+      ########################################
+      ## Plot global occurences for taxa.n
+      plot(LAND)
+      title(paste0("Global occurrences for ", taxa.n))
+      
+      ## add points
+      points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][18:17], 
+             pch = ".", col = "red", cex = 1.5)
+      
+      
+      ###############################
+      ## Save global maps to file?
+      ## start Cairo device
+      CairoPNG(width  = 10000, height = 10000, 
+               file = paste("./output/maps/", taxa.n, "_WORLD_GBIF_map.png", sep = ""), 
+               canvas = "white", bg = "white", units = "px", dpi = 600)
+      
+      # par(#mfrow = c(2,1),
+      #   mar   = c(10, 12, 10, 12), 
+      #   mgp   = c(10, 3, 0), 
+      #   oma   = c(1.5, 1.5, 1.5, 1.5))
+      
+      plot(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][18:17], 
+           pch = ".", cex = 5, col = "red", cex.lab = 5)
+      
+      ## add title
+      title(paste0("Australian occurrences for ", taxa.n), cex = 5)
+      plot(LAND, add = T)
+      
+      ##
+      dev.off()
       
     }
     
-    ########################################
-    ## 1). Plot global occurences for taxa.n
-    plot(LAND)
-    title(paste0("Global occurrences for ", taxa.n))
-    
-    ## add points
-    points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][18:17], 
-           pch = ".", col = "red", cex = 1.5)
-    
-    
-    ###############################
-    ## 2). Save global maps to file?
-    ## start Cairo device
-    CairoPNG(width  = 10000, height = 10000, 
-             file = paste("./output/maps/", taxa.n, "_WORLD_GBIF_map.png", sep = ""), 
-             canvas = "white", bg = "white", units = "px", dpi = 600)
-    
-    # par(#mfrow = c(2,1),
-    #   mar   = c(10, 12, 10, 12), 
-    #   mgp   = c(10, 3, 0), 
-    #   oma   = c(1.5, 1.5, 1.5, 1.5))
-    
-    plot(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][18:17], 
-         pch = ".", cex = 5, col = "red", cex.lab = 5)
-    
-    ## add title
-    title(paste0("Australian occurrences for ", taxa.n), cex = 5)
-    plot(LAND, add = T)
-    
-    ##
-    dev.off()
-    
-    
-    ###########################################
-    ## 3). Plot Australian occurences for taxa.n
-    plot(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n 
-                                    & GBIF.RASTER.CONTEXT$country == "Australia"), ][18:17], 
-         pch = ".", cex = 5, col = "red")
-    
-    ## add title
-    title(paste0("Australian occurrences for ", taxa.n))
-    plot(LAND, add = T)
-    
-    ###############################
-    ## 3). Save records maps to file?
-    ## start Cairo device
-    CairoPNG(width  = 10000, height = 10000, 
-             file = paste("./output/maps/", taxa.n, "_AUS_GBIF_map.png", sep = ""), 
-             canvas = "white", bg = "white", units = "px", dpi = 600)
-    
-    # par(#mfrow = c(2,1),
-    #   mar   = c(3, 3, 10, 12), 
-    #   mgp   = c(10, 3, 0), 
-    #   oma   = c(1.5, 1.5, 1.5, 1.5))
-    
-    plot(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n 
-                                    & GBIF.RASTER.CONTEXT$country == "Australia"), ][18:17], 
-         pch = ".", cex = 5, col = "red")
-    
-    ## add title
-    title(paste0("Australian occurrences for ", taxa.n), cex = 5)
-    plot(LAND, add = T)
-    
-    ##
-    dev.off()
+    else {
+      
+      ########################################
+      ## 1). Plot global occurences for taxa.n
+      plot(LAND)
+      title(paste0("Global occurrences for ", taxa.n))
+      
+      ## add points
+      points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][18:17], 
+             pch = ".", col = "red", cex = 1.5)
+      
+      
+      ###############################
+      ## 2). Save global maps to file?
+      ## start Cairo device
+      CairoPNG(width  = 10000, height = 10000, 
+               file = paste("./output/maps/", taxa.n, "_WORLD_GBIF_map.png", sep = ""), 
+               canvas = "white", bg = "white", units = "px", dpi = 600)
+      
+      # par(#mfrow = c(2,1),
+      #   mar   = c(10, 12, 10, 12), 
+      #   mgp   = c(10, 3, 0), 
+      #   oma   = c(1.5, 1.5, 1.5, 1.5))
+      
+      plot(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][18:17], 
+           pch = ".", cex = 5, col = "red", cex.lab = 5)
+      
+      ## add title
+      title(paste0("Australian occurrences for ", taxa.n), cex = 5)
+      plot(LAND, add = T)
+      
+      ##
+      dev.off()
+      
+      
+      ###########################################
+      ## 3). Plot Australian occurences for taxa.n
+      plot(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n 
+                                      & GBIF.RASTER.CONTEXT$country == "Australia"), ][18:17], 
+           pch = ".", cex = 5, col = "red")
+      
+      ## add title
+      title(paste0("Australian occurrences for ", taxa.n))
+      plot(LAND, add = T)
+      
+      ###############################
+      ## 3). Save records maps to file?
+      ## start Cairo device
+      CairoPNG(width  = 10000, height = 10000, 
+               file = paste("./output/maps/", taxa.n, "_AUS_GBIF_map.png", sep = ""), 
+               canvas = "white", bg = "white", units = "px", dpi = 600)
+      
+      # par(#mfrow = c(2,1),
+      #   mar   = c(3, 3, 10, 12), 
+      #   mgp   = c(10, 3, 0), 
+      #   oma   = c(1.5, 1.5, 1.5, 1.5))
+      
+      plot(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n 
+                                      & GBIF.RASTER.CONTEXT$country == "Australia"), ][18:17], 
+           pch = ".", cex = 5, col = "red")
+      
+      ## add title
+      title(paste0("Australian occurrences for ", taxa.n), cex = 5)
+      plot(LAND, add = T)
+      
+      ##
+      dev.off()
+      
+    }
     
   }
   
 }
-
-
 
 
 
@@ -735,7 +773,7 @@ histogram_GBIF_records = function (taxa.list, env.var, env.col, env.units) {
     ## Could do multiples by having env.1, env.2, etc...
     ## Then we'd have a panel, maybe using four key variables...
     
-
+    
     #################################
     ## 2). Save histograms to file?
     CairoPNG(width  = 10000, height = 10000, 
@@ -743,9 +781,9 @@ histogram_GBIF_records = function (taxa.list, env.var, env.col, env.units) {
              canvas = "white", bg = "white", units = "px", dpi = 600)
     
     par(#mfrow = c(2,1),
-        mar   = c(10, 12, 10, 12), 
-        mgp   = c(10, 3, 0), 
-        oma   = c(1.5, 1.5, 1.5, 1.5))
+      mar   = c(10, 12, 10, 12), 
+      mgp   = c(10, 3, 0), 
+      oma   = c(1.5, 1.5, 1.5, 1.5))
     
     par(font.lab = 2, lwd = 2)
     
@@ -772,8 +810,9 @@ histogram_GBIF_records = function (taxa.list, env.var, env.col, env.units) {
   }
   
 }
+    
 
-
+  
 
 
 #########################################################################################################################

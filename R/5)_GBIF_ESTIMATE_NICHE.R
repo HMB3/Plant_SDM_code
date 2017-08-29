@@ -31,18 +31,18 @@
 # major plant traits including:
   
 
-# growth rate and form
-# height
-# canopy density
-# ground cover
-# longevity
-# seasonality
-# water quality
-# allergenicity
-# air and water quality influences and urban temperatures
-# insect resistance
-# ornamental and amenity features
-# and biodiversity impacts.
+# Growth rate and form
+# Height
+# Canopy density
+# Ground cover
+# Longevity
+# Seasonality
+# Water quality
+# Allergenicity
+# Air and water quality influences and urban temperatures
+# Insect resistance
+# Ornamental and amenity features
+# Biodiversity impacts.
 
 
 ## First step is to estimate the current niche, using the best available data. This will give us a broad indication of the 
@@ -77,8 +77,11 @@
 
 #########################################################################################################################
 ## Many ways to break this down. Could create a list, then loop/apply over this
-Top.200.test = DRAFT.HIA.TAXA.200$searchTaxon[1:10]
-taxa.n = "Murraya paniculata"
+## The top 200 list does not have the taxonomic errors corrected
+gc()
+Top.200.test = GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$Top_200 == "TRUE"), ]
+Top.200.map  = unique(Top.200.test[["searchTaxon"]])[1:10]
+taxa.n       = "Magnolia grandiflora"
 
 
 ## example taxa
@@ -105,7 +108,7 @@ plot(LAND, add = T)
 #########################################################################################################################
 ## Now try using a mapping function
 source('./R/GREEN_CITIES_FUNCTIONS.R')
-map_GBIF_records(Top.200.test)
+map_GBIF_records(Top.200.map)
 
 # Warning messages:
 #   1: In if (dim(GBIF.RASTER.CONTEXT[which(GBIF.RASTER.CONTEXT$searchTaxon ==  ... :

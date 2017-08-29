@@ -159,14 +159,22 @@ DRAFT.HIA.TAXA.200 = rename(DRAFT.HIA.TAXA.200, searchTaxon = Species)
 DRAFT.HIA.TAXA     = rename(DRAFT.HIA.TAXA,     searchTaxon = Species)
 
 
-## sort by no. of growers?
+## Set NA to blank, then sort by no. of growers?
+DRAFT.HIA.TAXA[is.na(DRAFT.HIA.TAXA)] <- 0
+DRAFT.HIA.TAXA = DRAFT.HIA.TAXA[with(DRAFT.HIA.TAXA, rev(order(Number.of.growers))), ]
 DRAFT.HIA.TAXA.200 = DRAFT.HIA.TAXA.200[with(DRAFT.HIA.TAXA.200, rev(order(Number.of.growers))), ]
-DRAFT.HIA.TAXA     = DRAFT.HIA.TAXA[with(DRAFT.HIA.TAXA, rev(order(Number.of.growers))), ] 
-dim(DRAFT.HIA.TAXA.200)
-dim(DRAFT.HIA.TAXA)
-head(DRAFT.HIA.TAXA.200)
-head(DRAFT.HIA.TAXA)
+
+## check
+head(DRAFT.HIA.TAXA[, c("searchTaxon", "Number.of.growers")])
 View(DRAFT.HIA.TAXA)
+
+
+## save list to file for Rachel to check Austraits
+drops <- c("Count", "Comment")
+DRAFT.HIA.TAXA = DRAFT.HIA.TAXA[ , !(names(DRAFT.HIA.TAXA) %in% drops)]
+names(DRAFT.HIA.TAXA)
+## write.csv(DRAFT.HIA.TAXA, "./data/base/HIA_LIST/HIA/DRAFT_HIA_TAXA.csv", row.names = FALSE)
+
 
 
 ## now summarise the niches. But figure out a cleaner way of doing this?
@@ -178,16 +186,19 @@ env.variables = c("Annual_mean_temp", "Temp_seasonality", "Max_temp_warm_month",
 ## We want to create niche summaries for each environmental condition like this...
 ## Here's what the function will produce :
 head(niche_estimate (DF = GBIF.RASTER, colname = "Annual_mean_temp"))
-dim(niche_estimate (DF = GBIF.RASTER, colname = "Annual_mean_temp"))  ## 7 environmetnal summaries so far
+dim(niche_estimate  (DF = GBIF.RASTER, colname = "Annual_mean_temp"))  ## 7 environmetnal summaries so far
 
 
-## So lets use lapply!
+## So lets use lapply on the "Search Taxon".
+## Note additonal flags are needed, and the taxonomic lists need to be managed better...
 GBIF.NICHE <- variables[c(1:length(variables))] %>% 
   
-  ## pipe the list into lapply
+  ## Pipe the list into lapply
   lapply(function(x) {
     
-    ## now use the niche width function on each colname (so 8 environmental variables)
+    ## Now use the niche width function on each colname (so 8 environmental variables)
+    ## Also, need to figure out how to make the aggregating column generic (species, genus, etc.)
+    ## currently it only works hard-wired
     niche_estimate (DF = GBIF.RASTER, colname = x)
     
     ## would be good to remove the duplicates here, somehow
@@ -216,7 +227,7 @@ names(GBIF.NICHE)
 
 
 #########################################################################################################################
-## 3). SUMMARISE SPECIES NUMERICALLY: WHICH ONES COULD BE MODELLED?
+## 3). SUMMARISE SPECIES NUMERICALLY: WHICH COULD BE MODELLED?
 #########################################################################################################################
 
 
@@ -252,6 +263,9 @@ GBIF.NICHE.CONTEXT  = GBIF.NICHE.CONTEXT[, c(2,1, 59:62, 3:58)]
 ## View the data
 View(GBIF.RASTER.CONTEXT)
 View(GBIF.NICHE.CONTEXT)
+
+names(GBIF.RASTER.CONTEXT)
+names(GBIF.NICHE.CONTEXT)
 
 
 #########################################################################################################################
@@ -350,6 +364,13 @@ histogram(GBIF.NICHE.CONTEXT$count,
           xlab = "Number of GBIF records per species", 
           main = "Distribution of GBIF records for HIA species")
 
+
+## remove older files
+rm(GBIF.CLEAN)
+rm(GBIF.LAND)
+rm(GBIF.TEST)
+rm(GBIF.RASTER)
+gc()
 
 
 #########################################################################################################################
