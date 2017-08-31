@@ -617,15 +617,7 @@ map_GBIF_records = function (taxa.list) {
   ## for all the taxa in the list
   for (taxa.n in taxa.list) {
     
-    # ## If the dim = 0 for the that taxa, skip to next
-    # if (dim(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ])[1] == 0) {
-    #   
-    #   print (paste ("Incorrect nomencalture for ", taxa.n, "skipping"))
-    #   next
-    #   
-    # }
-    
-    ###############################
+    ################################################################
     ## If the dim = 0 for that taxa subset to Australia, skip to next
     if (dim(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n 
                                        & GBIF.RASTER.CONTEXT$country == "Australia"), ][18:17])[1] == 0) {
@@ -634,104 +626,109 @@ map_GBIF_records = function (taxa.list) {
       
       ########################################
       ## Plot global occurences for taxa.n
-      plot(LAND)
+      plot(LAND, col = 'grey', bg = 'sky blue')
       title(paste0("Global occurrences for ", taxa.n))
       
       ## add points
       points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][18:17], 
-             pch = ".", col = "red", cex = 1.5)
+             pch = ".", col = "red", cex = 1.5, asp = 1)
       
       
       ###############################
-      ## Save global maps to file?
+      ## Save global maps to file
       ## start Cairo device
-      CairoPNG(width  = 10000, height = 10000, 
-               file = paste("./output/maps/", taxa.n, "_WORLD_GBIF_map.png", sep = ""), 
+      CairoPNG(width  = 16180, height = 10000, 
+               file   = paste("./output/Figures/niche_summary/maps/", taxa.n, "_WORLD_GBIF_map.png", sep = ""), 
                canvas = "white", bg = "white", units = "px", dpi = 600)
       
-      # par(#mfrow = c(2,1),
-      #   mar   = c(10, 12, 10, 12), 
-      #   mgp   = c(10, 3, 0), 
-      #   oma   = c(1.5, 1.5, 1.5, 1.5))
+      par(mgp      = c(10, 4, 0), 
+          oma      = c(1.5, 1.5, 1.5, 1.5),
+          font.lab = 2) 
       
       plot(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][18:17], 
-           pch = ".", cex = 5, col = "red", cex.lab = 5)
+             pch = ".", cex = 7, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2,
+             main = paste0("Global occurrences for ", taxa.n),
+             xlab = "", ylab = "", asp = 1)
       
       ## add title
-      title(paste0("Australian occurrences for ", taxa.n), cex = 5)
-      plot(LAND, add = T)
+      plot(LAND, add = TRUE, 
+           lwd = 1.8, bg = "sky blue") 
+      #col = alpha("grey", 0.3), bg = 'white')
       
-      ##
+      ## finsh the device
       dev.off()
       
     }
     
     else {
       
-      ########################################
-      ## 1). Plot global occurences for taxa.n
-      plot(LAND)
+      ##############################################
+      ## Plot global occurences for taxa.n to screen
+      plot(LAND, col = 'grey', bg = 'sky blue')
       title(paste0("Global occurrences for ", taxa.n))
       
       ## add points
       points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][18:17], 
-             pch = ".", col = "red", cex = 1.5)
+             pch = ".", col = "red", cex = 1.5, asp = 1)
       
-      
-      ###############################
-      ## 2). Save global maps to file?
-      ## start Cairo device
-      CairoPNG(width  = 10000, height = 10000, 
-               file = paste("./output/maps/", taxa.n, "_WORLD_GBIF_map.png", sep = ""), 
-               canvas = "white", bg = "white", units = "px", dpi = 600)
-      
-      # par(#mfrow = c(2,1),
-      #   mar   = c(10, 12, 10, 12), 
-      #   mgp   = c(10, 3, 0), 
-      #   oma   = c(1.5, 1.5, 1.5, 1.5))
-      
-      plot(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][18:17], 
-           pch = ".", cex = 5, col = "red", cex.lab = 5)
-      
-      ## add title
-      title(paste0("Australian occurrences for ", taxa.n), cex = 5)
-      plot(LAND, add = T)
-      
-      ##
-      dev.off()
-      
-      
-      ###########################################
-      ## 3). Plot Australian occurences for taxa.n
-      plot(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n 
+      ## PLot Australian occurrences to screen
+      points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n 
                                       & GBIF.RASTER.CONTEXT$country == "Australia"), ][18:17], 
-           pch = ".", cex = 5, col = "red")
+           pch = ".", cex = 5, col = "red", asp = 1)
       
       ## add title
       title(paste0("Australian occurrences for ", taxa.n))
-      plot(LAND, add = T)
+      plot(LAND, add = TRUE, asp = 1, col = 'grey', bg = 'sky blue')
       
-      ###############################
-      ## 3). Save records maps to file?
+      
+      ##################################
+      ## Save global recrod maps to file
       ## start Cairo device
-      CairoPNG(width  = 10000, height = 10000, 
-               file = paste("./output/maps/", taxa.n, "_AUS_GBIF_map.png", sep = ""), 
+      CairoPNG(width  = 16180, height = 10000, 
+               file = paste("./output/Figures/niche_summary/maps/", taxa.n, "_WORLD_GBIF_map.png", sep = ""), 
                canvas = "white", bg = "white", units = "px", dpi = 600)
       
-      # par(#mfrow = c(2,1),
-      #   mar   = c(3, 3, 10, 12), 
-      #   mgp   = c(10, 3, 0), 
-      #   oma   = c(1.5, 1.5, 1.5, 1.5))
+      ## set dimensions
+      par(mgp      = c(10, 4, 0), 
+          oma      = c(1.5, 1.5, 1.5, 1.5),
+          font.lab = 2)
       
+      ## Add land
+      plot(LAND, #add = TRUE, 
+           lwd = 1.8, asp = 1, col = 'grey', bg = 'sky blue')
+      
+      ## 
+      points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][18:17], 
+             pch = ".", cex = 7, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2, 
+             main = paste0("Global occurrences for ", taxa.n), 
+             xlab = "", ylab = "", asp = 1)
+      
+      ## finsh the device
+      dev.off()
+      
+      ################################
+      ## Save Aus records maps to file
+      ## start Cairo device
+      CairoPNG(width  = 16180, height = 10000, 
+               file   = paste("./output/Figures/niche_summary/maps/", taxa.n, "_AUS_GBIF_map.png", sep = ""), 
+               canvas = "white", bg = "white", units = "px", dpi = 600)
+      
+      ## set par
+      par(mgp      = c(10, 4, 0), 
+          oma      = c(1.5, 1.5, 1.5, 1.5),
+          font.lab = 2)
+      
+      ## plot
       plot(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n 
                                       & GBIF.RASTER.CONTEXT$country == "Australia"), ][18:17], 
-           pch = ".", cex = 5, col = "red")
+           pch = ".", cex = 7, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2, 
+           main = paste0("Australian occurrences for ", taxa.n), 
+           xlab = "", ylab = "", asp = 1)
       
-      ## add title
-      title(paste0("Australian occurrences for ", taxa.n), cex = 5)
-      plot(LAND, add = T)
+      ## Add land
+      plot(LAND, add = TRUE, lwd = 1.8, asp = 1, col = 'grey', bg = 'sky blue')
       
-      ##
+      ## finsh the device
       dev.off()
       
     }
@@ -753,14 +750,14 @@ histogram_GBIF_records = function (taxa.list, env.var, env.col, env.units) {
   ###############################
   ## for all the taxa in the list
   for (taxa.n in taxa.list) {
-    
-    ## If the dim = 0 for the that taxa, skip to next
-    if (dim(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ])[1] == 0) {
-      
-      print (paste ("Incorrect nomencalture for ", taxa.n, "skipping"))
-      next
-      
-    }
+    #   
+    #   ## If the dim = 0 for the that taxa, skip to next
+    #   if (dim(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ])[1] == 0) {
+    #     
+    #     print (paste ("Incorrect nomencalture for ", taxa.n, "skipping"))
+    #     next
+    #     
+    #   }
     
     #####################################################
     ## 1). Plot histograms for global occurences of taxa.n
@@ -768,44 +765,39 @@ histogram_GBIF_records = function (taxa.list, env.var, env.col, env.units) {
                            breaks = 50, border = NA, col = env.col,
                            main = taxa.n, 
                            xlab = paste0("Worldclim ", env.var, " ", env.units, sep = " "))
-    
+                           
     print(print.hist)
+    
+    print.box = boxplot(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][[env.var]],
+                        main = taxa.n, ylab = paste0("Worldclim ", env.var, " ", env.units, sep = " "))
+    
+    print(print.box)
+    
     ## Could do multiples by having env.1, env.2, etc...
     ## Then we'd have a panel, maybe using four key variables...
     
     
     #################################
     ## 2). Save histograms to file?
-    CairoPNG(width  = 10000, height = 10000, 
-             file = paste("./output/maps/", taxa.n, "_", env.var, "_world_GBIF_histo.png", sep = ""), 
+    CairoPNG(width  = 16180, height = 10000, 
+             file = paste("./output/Figures/niche_summary/histograms/", taxa.n, "_", env.var, "_world_GBIF_histo.png", sep = ""), 
              canvas = "white", bg = "white", units = "px", dpi = 600)
     
-    par(#mfrow = c(2,1),
-      mar   = c(10, 12, 10, 12), 
-      mgp   = c(10, 3, 0), 
-      oma   = c(1.5, 1.5, 1.5, 1.5))
+    par(mgp      = c(10, 4, 0), 
+        oma      = c(1.5, 1.5, 1.5, 1.5),
+        font.lab = 2)
     
     par(font.lab = 2, lwd = 2)
     
-    
+    ## 
     histogram(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][[env.var]],
               breaks = 50, border = NA, col = env.col,
               main = taxa.n, 
               xlab = paste0("Worldclim ", env.var, " ", env.units, sep = " "),
-              cex.lab = 5, cex.axis = 4)
+              cex.lab = 3, cex.main = 4, cex.axis = 2)
     
-    #box(lwd = 3)
-    
+    ## finsh the device
     dev.off()
-    
-    
-    # save(GBIF.GEN, file = paste("./output/maps/", taxa.n, "_", env.var, "_WORLD_GBIF_histo.png", sep = ""))
-    
-    # save(GBIF.GEN, file = paste("./output/maps/", taxa.n, "_AUS_GBIF_map.png",   sep = ""))
-    
-    
-    # return(skip.gen.list)
-    
     
   }
   

@@ -17,7 +17,7 @@ packages <- c("ggplot2",   "plyr",      "reshape2",  "RColorBrewer",  "scales", 
               "knitr",     "yaml",      "caTools",   "bitops",        "rmarkdown",  "speciesgeocodeR",                  
               "bitops",    "rmarkdown", "cluster",   "gsubfn",        "functional", "splitstackshape",
               "EML",       "taxize",    "geonames",  "rWBclimate",    "rfigshare",  "tidyverse",
-              "jsonlite",  "zoom",      "bigmemory", "installr") # class(packages)
+              "jsonlite",  "zoom",      "bigmemory", "installr",      "sfsmisc") # class(packages)
 
 
 ## also to create pdf/html documents, you need to install a latex program. EG MiKtex for windows.

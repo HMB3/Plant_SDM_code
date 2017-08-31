@@ -91,7 +91,7 @@ dim(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n
 
 
 ## Global map
-plot(LAND)
+plot(LAND, col = 'grey', bg = 'sky blue')
 title(paste0("Global occurrences for ", taxa.n))
 points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][18:17], 
        pch = ".", col = "red", cex = 1.5)
@@ -110,10 +110,6 @@ plot(LAND, add = T)
 source('./R/GREEN_CITIES_FUNCTIONS.R')
 map_GBIF_records(Top.200.map)
 
-# Warning messages:
-#   1: In if (dim(GBIF.RASTER.CONTEXT[which(GBIF.RASTER.CONTEXT$searchTaxon ==  ... :
-#                                           the condition has length > 1 and only the first element will be used
-
 
 ## And try using a histogram function
 ## Is it possible to run multiple environmental variables at once? 
@@ -121,8 +117,8 @@ map_GBIF_records(Top.200.map)
 
 
 ##
-histogram_GBIF_records(taxa.list = Top.200.test, env.var = "Annual_mean_temp",   env.col = "orange", env.units = "°K")
-histogram_GBIF_records(taxa.list = Top.200.test, env.var = "Annual_mean_precip", env.col = "blue",   env.units = "mm") ## etc
+histogram_GBIF_records(taxa.list = Top.200.map, env.var = "Annual_mean_temp",   env.col = "orange", env.units = "°K")
+histogram_GBIF_records(taxa.list = Top.200.map, env.var = "Annual_precip",      env.col = "blue",   env.units = "mm") ## etc
 
 
 ## Use lattice histograms

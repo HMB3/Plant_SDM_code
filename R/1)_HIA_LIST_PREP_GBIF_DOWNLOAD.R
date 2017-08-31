@@ -10,6 +10,7 @@
 
 ## setup 
 library(gtools)
+library(GISTools)
 library(devtools)
 #devtools::install_github("ropensci/rgbif")
 library(data.table)
@@ -19,6 +20,7 @@ library(raster)
 library(rgdal)
 #library(plyr)
 library(dplyr)
+library(sfsmisc)
 
 library(SDMTools)
 library(rmaxent)
