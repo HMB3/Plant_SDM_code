@@ -631,7 +631,7 @@ map_GBIF_records = function (taxa.list) {
       
       ## add points
       points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][18:17], 
-             pch = ".", col = "red", cex = 1.5, asp = 1)
+             pch = ".", col = "red", cex = 3, asp = 1)
       
       
       ###############################
@@ -652,8 +652,7 @@ map_GBIF_records = function (taxa.list) {
       
       ## add title
       plot(LAND, add = TRUE, 
-           lwd = 1.8, bg = "sky blue") 
-      #col = alpha("grey", 0.3), bg = 'white')
+           lwd = 1.8) #, col = alpha("grey", 0.3), bg = 'sky blue')
       
       ## finsh the device
       dev.off()
@@ -669,18 +668,18 @@ map_GBIF_records = function (taxa.list) {
       
       ## add points
       points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][18:17], 
-             pch = ".", col = "red", cex = 1.5, asp = 1)
+             pch = ".", col = "red", cex = 3, asp = 1)
       
       ## PLot Australian occurrences to screen
-      points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n 
+      plot(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n 
                                       & GBIF.RASTER.CONTEXT$country == "Australia"), ][18:17], 
            pch = ".", cex = 5, col = "red", asp = 1)
       
       ## add title
       title(paste0("Australian occurrences for ", taxa.n))
-      plot(LAND, add = TRUE, asp = 1, col = 'grey', bg = 'sky blue')
+      plot(LAND, add = TRUE, asp = 1)
       
-      
+
       ##################################
       ## Save global recrod maps to file
       ## start Cairo device
@@ -697,11 +696,15 @@ map_GBIF_records = function (taxa.list) {
       plot(LAND, #add = TRUE, 
            lwd = 1.8, asp = 1, col = 'grey', bg = 'sky blue')
       
-      ## 
+      ## add points
       points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][18:17], 
              pch = ".", cex = 7, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2, 
              main = paste0("Global occurrences for ", taxa.n), 
              xlab = "", ylab = "", asp = 1)
+      
+      ## title 
+      title(paste0("Global occurrences for ", taxa.n),
+            cex.main = 4,   font.main = 4, col.main = "blue")
       
       ## finsh the device
       dev.off()
@@ -714,20 +717,21 @@ map_GBIF_records = function (taxa.list) {
                canvas = "white", bg = "white", units = "px", dpi = 600)
       
       ## set par
-      par(mgp      = c(10, 4, 0), 
+      par(mgp      = c(10, 3, 0), 
           oma      = c(1.5, 1.5, 1.5, 1.5),
           font.lab = 2)
       
       ## plot
       plot(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n 
                                       & GBIF.RASTER.CONTEXT$country == "Australia"), ][18:17], 
-           pch = ".", cex = 7, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2, 
+           pch = ".", cex = 10, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2.5,
+           font.main = 4, col.main = "blue",
            main = paste0("Australian occurrences for ", taxa.n), 
            xlab = "", ylab = "", asp = 1)
       
       ## Add land
-      plot(LAND, add = TRUE, lwd = 1.8, asp = 1, col = 'grey', bg = 'sky blue')
-      
+      plot(LAND, add = TRUE, lwd = 1.8, asp = 1) # col = 'grey', bg = 'sky blue')
+
       ## finsh the device
       dev.off()
       
