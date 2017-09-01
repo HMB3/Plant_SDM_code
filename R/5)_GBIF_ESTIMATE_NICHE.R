@@ -63,7 +63,7 @@
 
 
 #########################################################################################################################
-## 1). SUMMARISE NICHES GRAPHICALLY FOR SELECTED TAXA - START WITH THE TOP 200
+## 1). SUMMARISE NICHES GRAPHICALLY AND NUMERCIALLY FOR SELECTED TAXA - START WITH THE TOP 200
 #########################################################################################################################
 
 
@@ -80,29 +80,29 @@
 ## The top 200 list does not have the taxonomic errors corrected
 gc()
 Top.200.test = GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$Top_200 == "TRUE"), ]
-Top.200.map  = unique(Top.200.test[["searchTaxon"]])[1:10]
+Top.200.map  = unique(Top.200.test[["searchTaxon"]]) ## [1:10]
 taxa.n       = "Magnolia grandiflora"
 
 
-## example taxa
-dim(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ])
-dim(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n 
-                               & GBIF.RASTER.CONTEXT$country == "Australia"), ][18:17])
-
-
-## Global map
-plot(LAND, col = 'grey', bg = 'sky blue')
-title(paste0("Global occurrences for ", taxa.n))
-points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][18:17], 
-       pch = ".", col = "red", cex = 1.5)
-
-
-## Australian map
-plot(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n 
-                                & GBIF.RASTER.CONTEXT$country == "Australia"), ][18:17], 
-     pch = ".", cex = 5, col = "red")
-title(paste0("Australian occurrences for ", taxa.n))
-plot(LAND, add = T)
+# ## example taxa
+# dim(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ])
+# dim(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n 
+#                                & GBIF.RASTER.CONTEXT$country == "Australia"), ][18:17])
+# 
+# 
+# ## Global map
+# plot(LAND, col = 'grey', bg = 'sky blue')
+# title(paste0("Global occurrences for ", taxa.n))
+# points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][18:17], 
+#        pch = ".", col = "red", cex = 1.5)
+# 
+# 
+# ## Australian map
+# plot(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n 
+#                                 & GBIF.RASTER.CONTEXT$country == "Australia"), ][18:17], 
+#      pch = ".", cex = 5, col = "red")
+# title(paste0("Australian occurrences for ", taxa.n))
+# plot(LAND, add = T)
 
 
 #########################################################################################################################
@@ -116,9 +116,9 @@ map_GBIF_records(Top.200.map)
 ## EG the arguments are just set up for one variable and units, could do multiplese by having env.1, env.2, etc...
 
 
-##
-histogram_GBIF_records(taxa.list = Top.200.map, env.var = "Annual_mean_temp",   env.col = "orange", env.units = "°K")
-histogram_GBIF_records(taxa.list = Top.200.map, env.var = "Annual_precip",      env.col = "blue",   env.units = "mm") ## etc
+## Also consider how to combine outputs into
+histogram_GBIF_records(taxa.list = Top.200.map, env.var = "Annual_mean_temp",   env.col = "orange",     env.units = "°K")
+histogram_GBIF_records(taxa.list = Top.200.map, env.var = "Annual_precip",      env.col = "sky blue",   env.units = "mm") ## etc
 
 
 ## Use lattice histograms

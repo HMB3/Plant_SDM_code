@@ -645,14 +645,19 @@ map_GBIF_records = function (taxa.list) {
           oma      = c(1.5, 1.5, 1.5, 1.5),
           font.lab = 2) 
       
-      plot(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][18:17], 
-             pch = ".", cex = 7, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2,
-             main = paste0("Global occurrences for ", taxa.n),
+      ## Add land
+      plot(LAND, #add = TRUE, 
+           lwd = 1.8, asp = 1, col = 'grey', bg = 'sky blue')
+      
+      ## add points
+      points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][18:17], 
+             pch = ".", cex = 7, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2, 
+             main = paste0("Global occurrences for ", taxa.n), 
              xlab = "", ylab = "", asp = 1)
       
-      ## add title
-      plot(LAND, add = TRUE, 
-           lwd = 1.8) #, col = alpha("grey", 0.3), bg = 'sky blue')
+      ## title 
+      title(paste0("Global occurrences for ", taxa.n),
+            cex.main = 4,   font.main = 4, col.main = "blue")
       
       ## finsh the device
       dev.off()
@@ -681,7 +686,7 @@ map_GBIF_records = function (taxa.list) {
       
 
       ##################################
-      ## Save global recrod maps to file
+      ## Save global record maps to file
       ## start Cairo device
       CairoPNG(width  = 16180, height = 10000, 
                file = paste("./output/Figures/niche_summary/maps/", taxa.n, "_WORLD_GBIF_map.png", sep = ""), 
@@ -754,52 +759,60 @@ histogram_GBIF_records = function (taxa.list, env.var, env.col, env.units) {
   ###############################
   ## for all the taxa in the list
   for (taxa.n in taxa.list) {
-    #   
-    #   ## If the dim = 0 for the that taxa, skip to next
-    #   if (dim(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ])[1] == 0) {
-    #     
-    #     print (paste ("Incorrect nomencalture for ", taxa.n, "skipping"))
-    #     next
-    #     
-    #   }
+
     
     #####################################################
     ## 1). Plot histograms for global occurences of taxa.n
-    print.hist = histogram(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][[env.var]],
-                           breaks = 50, border = NA, col = env.col,
-                           main = taxa.n, 
-                           xlab = paste0("Worldclim ", env.var, " ", env.units, sep = " "))
-                           
-    print(print.hist)
     
-    print.box = boxplot(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][[env.var]],
-                        main = taxa.n, ylab = paste0("Worldclim ", env.var, " ", env.units, sep = " "))
+    ## create the plot dimensions
+    nf <- layout(mat = matrix(c(1,2),2,1, byrow = TRUE),  height = c(1,3))
+    par(mar = c(3.1, 3.1, 1.1, 2.1),
+        oma = c(1.5, 1.5, 1.5, 1.5)) 
     
-    print(print.box)
+    ## set min and max
+    data = GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][[env.var]]
+    min  = min(data)
+    max  = max(data)
     
+    ## now create the boxplot
+    boxplot(data, horizontal = TRUE,  outline = TRUE, ylim  = c(min, max), frame = FALSE, col = env.col, axes = FALSE)
+
+    ## and the histogram
+    hist(data, xlim = c(min, max),
+         breaks = 50, border = NA, col = env.col, main = taxa.n,
+         xlab = paste0("Worldclim ", env.var, " ", env.units, sep = " "))
+  
+    # print.hist = histogram(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][[env.var]],
+    #                        breaks = 50, border = NA, col = env.col,
+    #                        main = taxa.n, 
+    #                        xlab = paste0("Worldclim ", env.var, " ", env.units, sep = " "))
+  
     ## Could do multiples by having env.1, env.2, etc...
     ## Then we'd have a panel, maybe using four key variables...
     
     
     #################################
     ## 2). Save histograms to file?
-    CairoPNG(width  = 16180, height = 10000, 
-             file = paste("./output/Figures/niche_summary/histograms/", taxa.n, "_", env.var, "_world_GBIF_histo.png", sep = ""), 
+    CairoPNG(width  = 16180, height = 12000,
+             file   = paste("./output/Figures/niche_summary/histograms/", taxa.n, "_", env.var, "_world_GBIF_histo.png", sep = ""),
              canvas = "white", bg = "white", units = "px", dpi = 600)
+
+    ## create layout
+    nf <- layout(mat = matrix(c(1,2), 2,1, byrow = TRUE), height = c(1,3))
+    par(mar = c(7.5, 5.5, 4, 2),
+        oma = c(4, 4, 4, 4),
+        mgp = c(6, 3, 0),
+        font.lab = 2, lwd = 2)
     
-    par(mgp      = c(10, 4, 0), 
-        oma      = c(1.5, 1.5, 1.5, 1.5),
-        font.lab = 2)
+    ## print the boxplot
+    boxplot(data, horizontal = TRUE,  outline = TRUE, ylim  = c(min, max), frame = FALSE, col = env.col, axes = FALSE)
     
-    par(font.lab = 2, lwd = 2)
-    
-    ## 
-    histogram(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][[env.var]],
-              breaks = 50, border = NA, col = env.col,
-              main = taxa.n, 
-              xlab = paste0("Worldclim ", env.var, " ", env.units, sep = " "),
-              cex.lab = 3, cex.main = 4, cex.axis = 2)
-    
+    ## and print the
+    hist(data, xlim = c(min, max),
+         breaks = 50, border = NA, col = env.col, main = "",
+         xlab = paste0(taxa.n, " ", env.var, " ", "(", env.units, ")", sep = ""), ylab = "",
+         cex.lab = 3, cex.axis = 2.5)
+
     ## finsh the device
     dev.off()
     
