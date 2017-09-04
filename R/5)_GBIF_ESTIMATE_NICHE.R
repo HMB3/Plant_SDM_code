@@ -81,6 +81,7 @@
 gc()
 Top.200.test = GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$Top_200 == "TRUE"), ]
 Top.200.map  = unique(Top.200.test[["searchTaxon"]]) ## [1:10]
+All.spp.map  = unique(GBIF.RASTER.CONTEXT[["searchTaxon"]])
 taxa.n       = "Magnolia grandiflora"
 
 
@@ -108,19 +109,37 @@ taxa.n       = "Magnolia grandiflora"
 #########################################################################################################################
 ## Now try using a mapping function
 source('./R/GREEN_CITIES_FUNCTIONS.R')
-map_GBIF_records(Top.200.map)
+map_GBIF_records(taxa.list = All.spp.map)
 taxa.n = "Magnolia grandiflora"
 
 ## And try using a histogram function. Is it possible to run multiple environmental variables at once? EG the arguments 
 ## are just set up for one variable and units, could do multiples by having env.1, env.2, etc...
 
 
-## Also consider how to combine outputs into
-histogram_GBIF_records(taxa.list = Top.200.map, env.var = "Annual_mean_temp",   env.col = "orange",     env.units = "°K")
-histogram_GBIF_records(taxa.list = Top.200.map, env.var = "Annual_precip",      env.col = "sky blue",   env.units = "mm") ## etc
+## Also consider how to combine outputs?
+histogram_GBIF_records(taxa.list = Top.200.map, env.var.1 = "Annual_mean_temp",   env.col.1 = "orange",     env.units.1 = "°K",
+                       env.var.2 = "Annual_precip",   env.col.2 = "sky blue",     env.units.2 = "mm")
+
+## the whole list?
+histogram_GBIF_records(taxa.list = All.spp.map, env.var.1 = "Annual_mean_temp",   env.col.1 = "orange",     env.units.1 = "°K",
+                       env.var.2 = "Annual_precip",   env.col.2 = "sky blue",     env.units.2 = "mm")
 
 
-## Use lattice histograms
+
+#########################################################################################################################
+## How bout a a numerical summary for one species? So this is like slicing
+
+## create table for each species?
+GBIF_summary_slice(taxa.list = All.spp.map, 
+                   env.cols  = c("searchTaxon",             "Annual_mean_temp_min", 
+                                 "Annual_mean_temp_median", "Annual_mean_temp_max", 
+                                 "Annual_mean_temp_range"), 
+                   GBIF      = GBIF.NICHE.CONTEXT)
+
+
+## ideally, what we want is one summary per species, that has all their particulars.
+## Maps, histograms, numerical summaries...
+
 
 
 

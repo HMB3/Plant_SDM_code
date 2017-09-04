@@ -778,49 +778,71 @@ map_GBIF_records = function (taxa.list) {
 
 
 ## create simple maps of all GBIF records for selected taxa, in Australia and overseas
-histogram_GBIF_records = function (taxa.list, env.var, env.col, env.units) {
+histogram_GBIF_records = function (taxa.list, env.var.1, env.col.1, env.units.1,
+                                   env.var.2, env.col.2, env.units.2) {
   
   ###############################
   ## for all the taxa in the list
   for (taxa.n in taxa.list) {
-
+    
+    ## First, check if the file exists
+    file  = paste("./output/Figures/niche_summary/histograms/", taxa.n, "_", env.var.1, "_world_GBIF_histo.png", sep = "")
+    
+    ## If it's already downloaded, skip
+    if (file.exists (file)) {
+      
+      print (paste ("Global histogram exists for", taxa.n, "skipping")) 
+      next
+      
+    }
     
     #####################################################
     ## 1). Plot histograms for global occurences of taxa.n
     
-    ## create the plot dimensions
+    #####################################################
+    ## Env.1: create the plot dimensions
     nf <- layout(mat = matrix(c(1,2),2,1, byrow = TRUE),  height = c(1,3))
     par(mar = c(3.1, 3.1, 1.1, 2.1),
         oma = c(1.5, 1.5, 1.5, 1.5)) 
     
     ## set min and max
-    data = GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][[env.var]]
-    min  = min(data)
-    max  = max(data)
+    env.1 = GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][[env.var.1]]
+    min.1 = min(env.1)
+    max.1 = max(env.1)
     
     ## now create the boxplot
-    boxplot(data, horizontal = TRUE,  outline = TRUE, ylim  = c(min, max), frame = FALSE, col = env.col, axes = FALSE)
-
-    ## and the histogram
-    hist(data, xlim = c(min, max),
-         breaks = 50, border = NA, col = env.col, main = taxa.n,
-         xlab = paste0("Worldclim ", env.var, " ", env.units, sep = " "))
-  
-    # print.hist = histogram(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][[env.var]],
-    #                        breaks = 50, border = NA, col = env.col,
-    #                        main = taxa.n, 
-    #                        xlab = paste0("Worldclim ", env.var, " ", env.units, sep = " "))
-  
-    ## Could do multiples by having env.1, env.2, etc...
-    ## Then we'd have a panel, maybe using four key variables...
+    boxplot(env.1, horizontal = TRUE,  outline = TRUE, ylim  = c(min.1, max.1), frame = FALSE, col = env.col.1, axes = FALSE)
     
+    ## and the histogram
+    hist(env.1, xlim = c(min.1, max.1),
+         breaks = 50, border = NA, col = env.col.1, main = taxa.n,
+         xlab = paste0("Worldclim ", env.var.1, " ", env.units.1, sep = " "))
+    
+    #####################################################
+    ## Env.2: create the plot dimensions
+    nf <- layout(mat = matrix(c(1,2),2,1, byrow = TRUE),  height = c(1,3))
+    par(mar = c(3.1, 3.1, 1.1, 2.1),
+        oma = c(1.5, 1.5, 1.5, 1.5)) 
+    
+    ## set min and max
+    env.2 = GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][[env.var.2]]
+    min.2  = min(env.2)
+    max.2  = max(env.2)
+    
+    ## now create the boxplot
+    boxplot(data, horizontal = TRUE,  outline = TRUE, ylim  = c(min, max), frame = FALSE, col = env.col.2, axes = FALSE)
+    
+    ## and the histogram
+    hist(env.2, xlim = c(min.2, max.2),
+         breaks = 50, border = NA, col = env.col.2, main = taxa.n,
+         xlab = paste0("Worldclim ", env.var.2, " ", env.units.2, sep = " "))
     
     #################################
-    ## 2). Save histograms to file?
+    ## 2). Save env.1 histogram to file
     CairoPNG(width  = 16180, height = 12000,
-             file   = paste("./output/Figures/niche_summary/histograms/", taxa.n, "_", env.var, "_world_GBIF_histo.png", sep = ""),
+             file   = paste("./output/Figures/niche_summary/histograms/", taxa.n, "_", env.var.1, "_world_GBIF_histo.png", sep = ""),
              canvas = "white", bg = "white", units = "px", dpi = 600)
-
+    
     ## create layout
     nf <- layout(mat = matrix(c(1,2), 2,1, byrow = TRUE), height = c(1,3))
     par(mar = c(7.5, 5.5, 4, 2),
@@ -829,23 +851,72 @@ histogram_GBIF_records = function (taxa.list, env.var, env.col, env.units) {
         font.lab = 2, lwd = 2)
     
     ## print the boxplot
-    boxplot(data, horizontal = TRUE,  outline = TRUE, ylim  = c(min, max), frame = FALSE, col = env.col, axes = FALSE)
+    boxplot(env.1, horizontal = TRUE,  outline = TRUE, ylim  = c(min.1, max.1), frame = FALSE, col = env.col.1, axes = FALSE)
     
     ## and print the
-    hist(data, xlim = c(min, max),
-         breaks = 50, border = NA, col = env.col, main = "",
-         xlab = paste0(taxa.n, " ", env.var, " ", "(", env.units, ")", sep = ""), ylab = "",
+    hist(env.1, xlim = c(min.1, max.1),
+         breaks = 50, border = NA, col = env.col.1, main = "",
+         xlab = paste0(taxa.n, " ", env.var.1, " ", "(", env.units.1, ")", sep = ""), ylab = "",
          cex.lab = 3, cex.axis = 2.5)
-
+    
+    ## finsh the device
+    dev.off()
+    
+    #################################
+    ## 3). Save env.2 histogram to file
+    CairoPNG(width  = 16180, height = 12000,
+             file   = paste("./output/Figures/niche_summary/histograms/", taxa.n, "_", env.var.2, "_world_GBIF_histo.png", sep = ""),
+             canvas = "white", bg = "white", units = "px", dpi = 600)
+    
+    ## create layout
+    nf <- layout(mat = matrix(c(1,2), 2,1, byrow = TRUE), height = c(1,3))
+    par(mar = c(7.5, 5.5, 4, 2),
+        oma = c(4, 4, 4, 4),
+        mgp = c(6, 3, 0),
+        font.lab = 2, lwd = 2)
+    
+    ## print the boxplot
+    boxplot(env.2, horizontal = TRUE,  outline = TRUE, ylim  = c(min.2, max.2), frame = FALSE, col = env.col.2, axes = FALSE)
+    
+    ## and print the
+    hist(env.2, xlim = c(min.2, max.2),
+         breaks = 50, border = NA, col = env.col.2, main = "",
+         xlab = paste0(taxa.n, " ", env.var.2, " ", "(", env.units.2, ")", sep = ""), ylab = "",
+         cex.lab = 3, cex.axis = 2.5)
+    
     ## finsh the device
     dev.off()
     
   }
   
 }
-    
 
+
+
+
+
+########################################################################################################################
+## TABLE FUNCTIONS
+########################################################################################################################
+
+
+########################################################################################################################
+## create simple summaries for selected taxa
+GBIF_summary_slice = function (taxa.list, env.cols, GBIF) {
   
+  ###############################
+  ## for all the taxa in the list
+  for (taxa.n in taxa.list) {
+    
+    ## slice the table 
+    summary.table <- GBIF[, env.cols][ which(GBIF[["searchTaxon"]] == taxa.n ), ]
+
+    ## print to screen
+    print(kable(summary.table, row.names = FALSE))
+    
+  }
+  
+}
 
 
 #########################################################################################################################

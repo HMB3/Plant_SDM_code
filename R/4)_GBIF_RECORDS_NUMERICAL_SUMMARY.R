@@ -141,7 +141,7 @@ GBIF.RASTER = rename(GBIF.RASTER,
 
 ## check the data
 dim(GBIF.RASTER)
-names(GBIF.RASTER)
+names(GBIF.RASTER) 
 
 
 
