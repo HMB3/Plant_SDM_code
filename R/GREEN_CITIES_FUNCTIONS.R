@@ -617,12 +617,25 @@ map_GBIF_records = function (taxa.list) {
   ## for all the taxa in the list
   for (taxa.n in taxa.list) {
     
+    
     ################################################################
     ## If the dim = 0 for that taxa subset to Australia, skip to next
     if (dim(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n 
                                        & GBIF.RASTER.CONTEXT$country == "Australia"), ][18:17])[1] == 0) {
       
       print (paste ("Possible no Australian records for ", taxa.n, "skipping"))
+      
+      ## First, check if the file exists
+      file   = paste("./output/Figures/niche_summary/maps/", taxa.n, "_WORLD_GBIF_map.png", sep = "")
+      
+      ## If it's already downloaded, skip
+      if (file.exists (file)) {
+        
+        print (paste ("World map exists for", taxa.n, "skipping"))
+        next
+        
+      }
+      
       
       ########################################
       ## Plot global occurences for taxa.n
@@ -666,6 +679,18 @@ map_GBIF_records = function (taxa.list) {
     
     else {
       
+      ## First, check if the file exists
+      file   = paste("./output/Figures/niche_summary/maps/", taxa.n, "_WORLD_GBIF_map.png", sep = "")
+      
+      ## If it's already downloaded, skip
+      if (file.exists (file)) {
+        
+        print (paste ("Global map exists for", taxa.n, "skipping"))
+        next
+        
+      }
+      
+      
       ##############################################
       ## Plot global occurences for taxa.n to screen
       plot(LAND, col = 'grey', bg = 'sky blue')
@@ -684,7 +709,6 @@ map_GBIF_records = function (taxa.list) {
       title(paste0("Australian occurrences for ", taxa.n))
       plot(LAND, add = TRUE, asp = 1)
       
-
       ##################################
       ## Save global record maps to file
       ## start Cairo device
@@ -736,7 +760,7 @@ map_GBIF_records = function (taxa.list) {
       
       ## Add land
       plot(LAND, add = TRUE, lwd = 1.8, asp = 1) # col = 'grey', bg = 'sky blue')
-
+      
       ## finsh the device
       dev.off()
       

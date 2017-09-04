@@ -109,11 +109,10 @@ taxa.n       = "Magnolia grandiflora"
 ## Now try using a mapping function
 source('./R/GREEN_CITIES_FUNCTIONS.R')
 map_GBIF_records(Top.200.map)
+taxa.n = "Magnolia grandiflora"
 
-
-## And try using a histogram function
-## Is it possible to run multiple environmental variables at once? 
-## EG the arguments are just set up for one variable and units, could do multiplese by having env.1, env.2, etc...
+## And try using a histogram function. Is it possible to run multiple environmental variables at once? EG the arguments 
+## are just set up for one variable and units, could do multiples by having env.1, env.2, etc...
 
 
 ## Also consider how to combine outputs into
