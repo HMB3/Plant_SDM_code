@@ -44,23 +44,6 @@ string_fun_first_word <- function(x) {
 
 
 #########################################################################################################################
-## Histogram functions
-#########################################################################################################################
-
-
-env_histo = function(variable){
-  
-  histogram(x, breaks = 50, border = NA, col = "ornage", plot = TRUE)
-            #col = env.col, main = label, xlab = env.value, plot = TRUE)
-  
-}
-
-
-
-
-
-
-#########################################################################################################################
 ## DOWNLOADING FUNCTIONS
 #########################################################################################################################
 
@@ -773,6 +756,61 @@ map_GBIF_records = function (taxa.list) {
 
 
 ########################################################################################################################
+## Print simple maps of all GBIF records for selected taxa, in Australia and overseas
+print_GBIF_records = function (taxa.list) {
+  
+  ###############################
+  ## for all the taxa in the list
+  for (taxa.n in taxa.list) {
+    
+    ################################################################
+    ## If the dim = 0 for that taxa subset to Australia, skip to next
+    if (dim(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n 
+                                       & GBIF.RASTER.CONTEXT$country == "Australia"), ][18:17])[1] == 0) {
+      
+      print (paste ("Possible no Australian records for ", taxa.n, "skipping"))
+      
+      ########################################
+      ## Plot global occurences for taxa.n
+      plot(LAND, col = 'grey', bg = 'sky blue')
+      title(paste0("Global occurrences for ", taxa.n))
+      
+      ## add points
+      points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][18:17], 
+             pch = ".", col = "red", cex = 3, asp = 1)
+      
+    }
+    
+    else {
+      
+      ##############################################
+      ## Plot global occurences for taxa.n to screen
+      plot(LAND, col = 'grey', bg = 'sky blue')
+      title(paste0("Global occurrences for ", taxa.n))
+      
+      ## add points
+      points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][18:17], 
+             pch = ".", col = "red", cex = 3, asp = 1)
+      
+      ## PLot Australian occurrences to screen
+      plot(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n 
+                                      & GBIF.RASTER.CONTEXT$country == "Australia"), ][18:17], 
+           pch = ".", cex = 5, col = "red", asp = 1)
+      
+      ## add title
+      title(paste0("Australian occurrences for ", taxa.n))
+      plot(LAND, add = TRUE, asp = 1)
+      
+    }
+    
+  }
+  
+}
+
+
+
+
+########################################################################################################################
 ## HISTOGRAM FUNCTIONS
 ########################################################################################################################
 
@@ -805,7 +843,7 @@ histogram_GBIF_records = function (taxa.list, env.var.1, env.col.1, env.units.1,
     par(mar = c(3.1, 3.1, 1.1, 2.1),
         oma = c(1.5, 1.5, 1.5, 1.5)) 
     
-    ## set min and max
+    ## create vector for the environmental dimenson, and set min and max for plotting
     env.1 = GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][[env.var.1]]
     min.1 = min(env.1)
     max.1 = max(env.1)
@@ -830,7 +868,7 @@ histogram_GBIF_records = function (taxa.list, env.var.1, env.col.1, env.units.1,
     max.2  = max(env.2)
     
     ## now create the boxplot
-    boxplot(data, horizontal = TRUE,  outline = TRUE, ylim  = c(min, max), frame = FALSE, col = env.col.2, axes = FALSE)
+    boxplot(env.2, horizontal = TRUE,  outline = TRUE, ylim  = c(min.2, max.2), frame = FALSE, col = env.col.2, axes = FALSE)
     
     ## and the histogram
     hist(env.2, xlim = c(min.2, max.2),

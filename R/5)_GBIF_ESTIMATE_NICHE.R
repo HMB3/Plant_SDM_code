@@ -80,7 +80,7 @@
 ## The top 200 list does not have the taxonomic errors corrected
 gc()
 Top.200.test = GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$Top_200 == "TRUE"), ]
-Top.200.map  = unique(Top.200.test[["searchTaxon"]]) ## [1:10]
+Top.200.map  = unique(Top.200.test[["searchTaxon"]])[1:10]
 All.spp.map  = unique(GBIF.RASTER.CONTEXT[["searchTaxon"]])
 taxa.n       = "Magnolia grandiflora"
 
@@ -109,7 +109,11 @@ taxa.n       = "Magnolia grandiflora"
 #########################################################################################################################
 ## Now try using a mapping function
 source('./R/GREEN_CITIES_FUNCTIONS.R')
+
+
+## Create a global and Australian map where applicable...
 map_GBIF_records(taxa.list = All.spp.map)
+print_GBIF_records(taxa.list = Top.200.map)
 taxa.n = "Magnolia grandiflora"
 
 ## And try using a histogram function. Is it possible to run multiple environmental variables at once? EG the arguments 
@@ -137,8 +141,8 @@ GBIF_summary_slice(taxa.list = All.spp.map,
                    GBIF      = GBIF.NICHE.CONTEXT)
 
 
-## ideally, what we want is one summary per species, that has all their particulars.
-## Maps, histograms, numerical summaries...
+## ideally, what we want is one summary per species, with a range of particulars.
+## Maps, histograms, numerical summaries...etc
 
 
 
