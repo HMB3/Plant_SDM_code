@@ -1,7 +1,9 @@
+
+
 p <- c('ff', 'things', 'raster', 'dismo', 'sp', 'latticeExtra', 
 'rgdal', 'rgeos', 'gdalUtils', 'rmaxent', 'readr', 'dplyr', 'tidyr',
 'readr', 'rnaturalearth', 'rasterVis', 'RColorBrewer', 'latticeExtra')
-sapply(p, require, character.only=TRUE)
+sapply(p, require, character.only = TRUE)
 
 
 #Load the occurrence and background data.
@@ -12,6 +14,8 @@ group <- 'chordata'
 occ <- readRDS(c(plants='', 
                   chordata='data/occurrence/chordata/shp_cleaned_by_linda_and_bionet_etc_added/occ_minimal_albers_chordata_phase1.rds',
                   nonchordata='')[group])
+
+
 # overwrite CRS to EPSG:3577 so its expression is consistent with bg data
 proj4string(occ) <- '+init=epsg:3577'
 occ_by_sp <- split(occ, occ$scientific_name)
