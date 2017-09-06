@@ -12,6 +12,7 @@
 library(gtools)
 library(GISTools)
 library(devtools)
+library(Rtools)
 #devtools::install_github("ropensci/rgbif")
 library(data.table)
 library(RCurl)
