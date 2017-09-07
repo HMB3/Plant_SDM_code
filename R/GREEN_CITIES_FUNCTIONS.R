@@ -757,7 +757,7 @@ map_GBIF_records = function (taxa.list) {
 
 ########################################################################################################################
 ## Print simple maps of all GBIF records for selected taxa, in Australia and overseas
-print_GBIF_records = function (taxa.list) {
+print_GBIF_records = function (taxa.list, env.var.1, env.1, env.col.1, env.units.1) {
   
   ###############################
   ## for all the taxa in the list
@@ -800,6 +800,26 @@ print_GBIF_records = function (taxa.list) {
       ## add title
       title(paste0("Australian occurrences for ", taxa.n))
       plot(LAND, add = TRUE, asp = 1)
+      
+      ##############################################
+      ## Plot Histograms to the screen
+      ## Env.1: create the plot dimensions
+      # nf <- layout(mat = matrix(c(1,2),2,1, byrow = TRUE),  height = c(1,3))
+      # par(mar = c(3.1, 3.1, 1.1, 2.1),
+      #     oma = c(1.5, 1.5, 1.5, 1.5)) 
+      # 
+      # ## create vector for the environmental dimenson, and set min and max for plotting
+      # env.1 = GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][[env.var.1]]
+      # min.1 = min(env.1)
+      # max.1 = max(env.1)
+      # 
+      # ## now create the boxplot
+      # boxplot(env.1, horizontal = TRUE,  outline = TRUE, ylim  = c(min.1, max.1), frame = FALSE, col = env.col.1, axes = FALSE)
+      # 
+      # ## and the histogram
+      # hist(env.1, xlim = c(min.1, max.1),
+      #      breaks = 50, border = NA, col = env.col.1, main = taxa.n,
+      #      xlab = paste0("Worldclim ", env.var.1, " ", env.units.1, sep = " "))
       
     }
     

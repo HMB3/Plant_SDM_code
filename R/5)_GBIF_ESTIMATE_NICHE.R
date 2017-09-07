@@ -85,25 +85,25 @@ All.spp.map  = unique(GBIF.RASTER.CONTEXT[["searchTaxon"]])
 taxa.n       = "Magnolia grandiflora"
 
 
-# ## example taxa
-# dim(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ])
-# dim(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n 
-#                                & GBIF.RASTER.CONTEXT$country == "Australia"), ][18:17])
-# 
-# 
-# ## Global map
-# plot(LAND, col = 'grey', bg = 'sky blue')
-# title(paste0("Global occurrences for ", taxa.n))
-# points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][18:17], 
-#        pch = ".", col = "red", cex = 1.5)
-# 
-# 
-# ## Australian map
-# plot(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n 
-#                                 & GBIF.RASTER.CONTEXT$country == "Australia"), ][18:17], 
-#      pch = ".", cex = 5, col = "red")
-# title(paste0("Australian occurrences for ", taxa.n))
-# plot(LAND, add = T)
+## example taxa
+dim(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ])
+dim(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n
+                               & GBIF.RASTER.CONTEXT$country == "Australia"), ][18:17])
+
+
+## Global map
+plot(LAND, col = 'grey', bg = 'sky blue')
+title(paste0("Global occurrences for ", taxa.n))
+points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][18:17],
+       pch = ".", col = "red", cex = 3)
+
+
+## Australian map
+plot(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n
+                                & GBIF.RASTER.CONTEXT$country == "Australia"), ][18:17],
+     pch = ".", cex = 5, col = "red", asp = 1)
+title(paste0("Australian occurrences for ", taxa.n))
+plot(LAND, add = TRUE, asp = 1)
 
 
 #########################################################################################################################
@@ -113,8 +113,9 @@ source('./R/GREEN_CITIES_FUNCTIONS.R')
 
 ## Create a global and Australian map where applicable...
 map_GBIF_records(taxa.list = All.spp.map)
-print_GBIF_records(taxa.list = Top.200.map)
-taxa.n = "Magnolia grandiflora"
+print_GBIF_records(taxa.list = Top.200.map, 
+                   env.var.1 = "Annual_mean_temp",   env.col.1 = "orange", env.units.1 = "°K")
+
 
 ## And try using a histogram function. Is it possible to run multiple environmental variables at once? EG the arguments 
 ## are just set up for one variable and units, could do multiples by having env.1, env.2, etc...

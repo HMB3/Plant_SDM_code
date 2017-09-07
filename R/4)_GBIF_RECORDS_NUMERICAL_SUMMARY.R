@@ -69,12 +69,14 @@
 ## copy the ones which Rach and Stu have used for the niche finder website
 ## for now, ignore edaphic variables
 
-# BIO1  = Annual Mean Temperature                                     ##
-# BIO2  = Mean Diurnal Range (Mean of monthly (max temp - min temp))
+## threshold based traits, use Dave Kendall's approach.
+
+# BIO1  = Annual Mean Temperature                                     ## 
+# BIO2  = Mean Diurnal Range (Mean of monthly (max temp - min temp))  ##
 # BIO3  = Isothermality (BIO2/BIO7) (* 100)
 # BIO4  = Temperature Seasonality (standard deviation *100)           ##
-# BIO5  = Max Temperature of Warmest Month                            ##
-# BIO6  = Min Temperature of Coldest Month                            ##
+# BIO5  = Max Temperature of Warmest Month                            ## Take out max of max
+# BIO6  = Min Temperature of Coldest Month                            ## Take out min of min, use threshold variables 
 # BIO7  = Temperature Annual Range (BIO5-BIO6)
 # BIO8  = Mean Temperature of Wettest Quarter
 # BIO9  = Mean Temperature of Driest Quarter
@@ -177,9 +179,9 @@ names(DRAFT.HIA.TAXA)
 
 
 
-## now summarise the niches. But figure out a cleaner way of doing this?
+## Now summarise the niches. But figure out a cleaner way of doing this?
 env.variables = c("Annual_mean_temp", "Temp_seasonality", "Max_temp_warm_month", "Min_temp_cold_month",
-                   "Annual_precip",    "Precip_Wet_month", "Precip_dry_month",    "Precip_seasonality")
+                  "Annual_precip",    "Precip_Wet_month", "Precip_dry_month",    "Precip_seasonality")
 
 
 #########################################################################################################################
@@ -246,18 +248,29 @@ GBIF.RASTER.CONTEXT = join(GBIF.RASTER, DRAFT.HIA.TAXA[, c("searchTaxon", "Plant
                            by = "searchTaxon", type = "left", match = "all")
 
 
-## Now join hort context to all the niches. Provisional, keep working on it 
+## Now join hort context to all the niches. Provisional, keep working on it .
+## Paul Rymer wants more contextual data
 GBIF.NICHE.CONTEXT = join(GBIF.NICHE, DRAFT.HIA.TAXA[, c("searchTaxon", "Plant.type", 
-                                                         "Number.of.growers", "Origin", "Top_200")], 
+                                                         "Number.of.growers", "Number.of.States",
+                                                         "ACT", "NSW", "NT", "QLD", "SA", "VIC", "WA",
+                                                         "Origin", "Top_200")], 
                           by = "searchTaxon", type = "left", match = "all")
 
+
+## Now where are the species coming from that don't match? Somewhere in the downloading, I've got species which don't
+## match. This is because of the species/variety names, find and replace, etc. 
+
+## Set NA to blank, then sort by no. of growers?
+GBIF.NICHE.CONTEXT[is.na(GBIF.NICHE.CONTEXT)] <- 0
+GBIF.NICHE.CONTEXT = GBIF.NICHE.CONTEXT[with(GBIF.NICHE.CONTEXT, rev(order(Number.of.growers))), ]
+View(GBIF.NICHE.CONTEXT)
 
 #########################################################################################################################
 ## For pedantry, reroder columns...
 ## Note that the downloaded species don't all match up to the original list. This is because there are different lists 
 ## propagating throughout the workflow, I need to watch out for this. 
 GBIF.RASTER.CONTEXT = GBIF.RASTER.CONTEXT[, c(1:12, 27:30, 13:26)]
-GBIF.NICHE.CONTEXT  = GBIF.NICHE.CONTEXT[, c(2,1, 59:62, 3:58)]
+GBIF.NICHE.CONTEXT  = GBIF.NICHE.CONTEXT[, c(2,1, 59:70, 3:58)]
 
 
 ## View the data
@@ -266,6 +279,7 @@ View(GBIF.NICHE.CONTEXT)
 
 names(GBIF.RASTER.CONTEXT)
 names(GBIF.NICHE.CONTEXT)
+dim(GBIF.NICHE.CONTEXT)
 
 
 #########################################################################################################################
