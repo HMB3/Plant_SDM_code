@@ -18,6 +18,11 @@ GBIF.names
 spp.download = list.files("./data/base/HIA_LIST/GBIF/SPECIES/", pattern = ".RData")
 spp.download = gsub("_GBIF_records.RData", "", spp.download)
 
+## setdiff species
+set.download = list.files("./data/base/HIA_LIST/GBIF/SETDIFF/", pattern = ".RData")
+set.download = gsub("_GBIF_records.RData", "", set.download)
+
+## genera
 gen.download = list.files("./data/base/HIA_LIST/GBIF/GENERA/", pattern = ".RData")
 gen.download = gsub("_GBIF_records.RData", "", gen.download )
 
@@ -106,27 +111,27 @@ GBIF.800 <- spp.download[c(601:length(spp.download))] %>%
   bind_rows
 
 
-# #########################################################################################################################
-# ## all 800 taxa
-# GBIF.ALL <- spp.download[c(1:length(spp.download))] %>% 
-#   
-#   ## pipe the list into lapply
-#   lapply(function(x) {
-#     
-#     ## create the character string
-#     f <- sprintf("./data/base/HIA_LIST/GBIF/SPECIES/%s_GBIF_records.RData", x)
-#     
-#     ## load each .RData file
-#     d <- get(load(f))
-#     
-#     ## now drop the columns which we don't need
-#     data.frame(searchTaxon = x, d[, !colnames(d) %in% gbifColsToDrop], 
-#                stringsAsFactors = FALSE)
-#     
-#   }) %>% 
-#   
-#   ## finally, bind all the rows together
-#   bind_rows
+#########################################################################################################################
+## remaining taxa
+GBIF.SET <- set.download[c(1:length(set.download))] %>%
+
+  ## pipe the list into lapply
+  lapply(function(x) {
+
+    ## create the character string
+    f <- sprintf("./data/base/HIA_LIST/GBIF/SETDIFF/%s_GBIF_records.RData", x)
+
+    ## load each .RData file
+    d <- get(load(f))
+
+    ## now drop the columns which we don't need
+    data.frame(searchTaxon = x, d[, !colnames(d) %in% gbifColsToDrop],
+               stringsAsFactors = FALSE)
+
+  }) %>%
+
+  ## finally, bind all the rows together
+  bind_rows
 
 
 
@@ -148,10 +153,17 @@ GBIF.ALL = bind_rows(GBIF.300,
 GBIF.TRIM <- GBIF.ALL %>% 
   select(one_of(gbif.keep))
 
+GBIF.SET.TRIM <- GBIF.SET %>% 
+  select(one_of(gbif.keep))
+
 
 ## remove the varieties, etc., from the scientific name returned by GBIF.
 Returned.binomial <- unlist(lapply(GBIF.TRIM$scientificName, string_fun_first_two_words))
 GBIF.TRIM = cbind(Returned.binomial, GBIF.TRIM)
+
+
+Returned.binomial <- unlist(lapply(GBIF.SET.TRIM$scientificName, string_fun_first_two_words))
+GBIF.SET.TRIM = cbind(Returned.binomial, GBIF.SET.TRIM)
 
 
 ## check how many records match the search term?

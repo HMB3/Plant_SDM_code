@@ -124,6 +124,7 @@ dim(subset(top.200, Origin == "Native"))[1]/dim(top.200)[1]*100
 spp.list$Species <- gsub("spp.", "", spp.list$Species)
 spp.list$Species <- gsub(" x ",  " ", spp.list$Species)
 spp.list$Species <- gsub("  ",  " ", spp.list$Species)
+## spp.list$Species = gsub(" $","",     spp.list$Species, perl = TRUE) ## also trailing space?
 
 
 ## then remove the varieties and subspecies
@@ -173,7 +174,7 @@ head(DRAFT.HIA.TAXA)
 
 ########################################################################################################################
 ## Try using taxonlookup to check the taxonomy
-DRAFT.TAXA.LOOKUP = lookup_table(DRAFT.HIA.TAXA[["searchTaxon"]], by_species = TRUE) ## convert rows to column and merge
+DRAFT.TAXA.LOOKUP = lookup_table(DRAFT.HIA.TAXA[["Species"]], by_species = TRUE) ## convert rows to column and merge
 DRAFT.TAXA.LOOKUP = setDT(DRAFT.TAXA.LOOKUP , keep.rownames = TRUE)[]
 DRAFT.TAXA.LOOKUP = rename(DRAFT.TAXA.LOOKUP, searchTaxon = rn)
 head(DRAFT.TAXA.LOOKUP)
@@ -202,6 +203,9 @@ skipped.species = download_GBIF_all_species(spp)    ## saves each spp as .Rdata 
 skipped.genera  = download_GBIF_all_genera(genera)  ## saves each gen as .Rdata file, returning list of skipped genera 
 
 
+## get the setdiff species
+setdiff.species = download_GBIF_setdiff_species(missing.taxa)
+
 ## check an eg file...not sure why it was working with RData files, but not .csv files...
 load("./data/base/HIA_LIST/GBIF/Viburnum suspensum_GBIF_records.RData")
 str(GBIF)
@@ -223,11 +227,12 @@ length(skipped.genera)
 ## converting the lists of skipped species and genera into a dataframe
 skipped.species.df <- data.frame(matrix(unlist(skipped.species), nrow = length(skipped.species), byrow = TRUE))
 skipped.genera.df  <- data.frame(matrix(unlist(skipped.genera),  nrow = length(skipped.genera),  byrow = TRUE))
-
+skipped.setdiff.df <- data.frame(matrix(unlist(setdiff.species),  nrow = length(setdiff.species),  byrow = TRUE))
 
 ## split the reason and the species into separate columns
-skipped.species.df <- cSplit(skipped.species.df, 1:ncol(skipped.species.df), sep = "|", stripWhite = TRUE, type.convert = FALSE)
-skipped.genera.df  <- cSplit(skipped.genera.df,  1:ncol(skipped.genera.df),  sep = "|", stripWhite = TRUE, type.convert = FALSE)
+skipped.species.df  <- cSplit(skipped.species.df, 1:ncol(skipped.species.df), sep = "|", stripWhite = TRUE, type.convert = FALSE)
+skipped.genera.df   <- cSplit(skipped.genera.df,  1:ncol(skipped.genera.df),  sep = "|", stripWhite = TRUE, type.convert = FALSE)
+skipped.setdiff.df  <- cSplit(skipped.setdiff.df,  1:ncol(skipped.setdiff.df),  sep = "|", stripWhite = TRUE, type.convert = FALSE)
 
 
 ## update names
@@ -235,6 +240,8 @@ colnames(skipped.species.df)[1] <- "Reason_skipped"
 colnames(skipped.species.df)[2] <- "Species"
 colnames(skipped.genera.df)[1]  <- "Reason_skipped"
 colnames(skipped.genera.df)[2]  <- "Genus"  ## head(skipped.species.df), head(skipped.genera.df)
+colnames(skipped.setdiff.df)[1]  <- "Reason_skipped"
+colnames(skipped.setdiff.df)[2]  <- "Genus" 
 
 
 ## get subset for each type

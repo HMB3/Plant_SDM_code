@@ -170,7 +170,7 @@ fit_maxent2 <- function(occ, bg, predictors, name, outdir, template,
   saveRDS(list(me_xval = me_xval, me_full = me_full, swd = swd, pa = pa), 
           file.path(outdir_sp, 'maxent_fitted.rds'))
   
-  ## finally, return the object
+  ## Don't return anything?
   return(invisible(NULL))
   
 }
