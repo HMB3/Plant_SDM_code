@@ -8,9 +8,9 @@
 #########################################################################################################################
 
 
-## this list derives from all species and varieties sold anywhere in Australia in the last 5 years. Anthony Manea cleaned 
-## up the data and cross-linked to growth form and exotic/native status and derived a list of ~1000 species that are the 
-## most commonly sold, covering the right ratio of growth forms, regional representation and native/exotic
+## This list derives from all species and varieties sold anywhere in Australia in the last 5 years. Anthony Manea cleaned 
+## Up the data and cross-linked to growth form and exotic/native status and derived a list of ~1000 species that are the 
+## Most commonly sold, covering the right ratio of growth forms, regional representation and native/exotic
 HIA.list   = read.csv("./data/base/HIA_LIST/HIA/GREEN_CITIES_DRAFT_LIST_0809_2017.csv", stringsAsFactors = FALSE)
 top.200    = read.csv("./data/base/HIA_LIST/HIA/HIA_TOP_200.csv",             stringsAsFactors = FALSE)
 renee.taxa = read.csv("./data/base/HIA_LIST/RENEE/RENEE_TAXA.csv",            stringsAsFactors = FALSE)
@@ -23,9 +23,9 @@ str(HIA.list)
 head(HIA.list)
 
 
-## also, add the "Top 200 species in here"
+## also, add the "Top 200" species in here
 spp.200          = top.200[c("Species")]
-spp.200$Species  = gsub(" $","",     DRAFT.HIA.TAXA$Species, perl = TRUE)
+spp.200$Species  = gsub(" $", "", spp.200$Species, perl = TRUE)
 spp.200$Top_200  = "TRUE"
 
 
@@ -66,34 +66,35 @@ dim(subset(top.200, Origin == "Native"))[1]/dim(top.200)[1]*100
 
 ## For now, remove all the subspecies, varieties etc.
 ## But check if some of them work on GBIF, e.g. a separate list of varities
+DRAFT.HIA.TAXA = HIA.list
 DRAFT.HIA.TAXA$Species = gsub("spp.", "",  DRAFT.HIA.TAXA$Species)
-DRAFT.HIA.TAXA$Species = gsub(" x",  "",   DRAFT.HIA.TAXA$Species)
-DRAFT.HIA.TAXA$Species = gsub("NA",  "",   DRAFT.HIA.TAXA$Species)
-DRAFT.HIA.TAXA$Species = gsub(" $","",     DRAFT.HIA.TAXA$Species, perl = TRUE)
+DRAFT.HIA.TAXA$Species = gsub(" x",   "",  DRAFT.HIA.TAXA$Species)
+DRAFT.HIA.TAXA$Species = gsub("NA",   "",  DRAFT.HIA.TAXA$Species)
+DRAFT.HIA.TAXA$Species = gsub(" $",   "",  DRAFT.HIA.TAXA$Species, perl = TRUE)
 
 
 ## then remove the varieties and subspecies
-HIA.list$Species = vapply(lapply(strsplit(HIA.list$Species, " "),
+DRAFT.HIA.TAXA$Species = vapply(lapply(strsplit(DRAFT.HIA.TAXA$Species, " "),
                                  unique), paste, character(1L), collapse = " ")
 
 
 ## then get just the first two words (again cleaning up the subspecies, and single genera)
-HIA.list$Species = vapply(lapply(strsplit(HIA.list$Species, " "), 
+DRAFT.HIA.TAXA$Species = vapply(lapply(strsplit(DRAFT.HIA.TAXA$Species, " "), 
                                  string_fun_first_two_words), paste, character(1L), collapse = " ")
 
 
-## if exclude NA, HIA.list = HIA.list[!grepl("NA", HIA.list$Species),]
-HIA.list = HIA.list[with(HIA.list, order(Species)), ] 
+## if exclude NA, DRAFT.HIA.TAXA = DRAFT.HIA.TAXA[!grepl("NA", DRAFT.HIA.TAXA$Species),]
+DRAFT.HIA.TAXA = DRAFT.HIA.TAXA[with(DRAFT.HIA.TAXA, order(Species)), ] 
 
 
 ## check
-str(HIA.list)
-View(HIA.list)
+str(DRAFT.HIA.TAXA)
+View(DRAFT.HIA.TAXA)
 
 
 ## Now create list of HIA taxa. 768 unique species, mius the corrections, etc. 
-HIA.list = HIA.list[with(HIA.list, order(Species)), ]
-spp = unique(as.character(HIA.list$Species))                         ## 
+DRAFT.HIA.TAXA = DRAFT.HIA.TAXA[with(DRAFT.HIA.TAXA, order(Species)), ]
+spp      = unique(as.character(DRAFT.HIA.TAXA$Species))                         ## 
 str(spp)   ## why 660? later check on what happens with the different queries
 head(spp, 50)
 tail(spp, 50)
@@ -112,9 +113,10 @@ tail(spp, 50)
 
 ## also, for Stuarts code EG, I need a df not a list. Get just the rows of HIA.list which have
 ## unique species names. 
-DRAFT.HIA.TAXA = HIA.list[!duplicated(HIA.list$Species), ]
+DRAFT.HIA.TAXA = DRAFT.HIA.TAXA[!duplicated(DRAFT.HIA.TAXA$Species), ]
 dim(DRAFT.HIA.TAXA)
 head(DRAFT.HIA.TAXA)
+View(DRAFT.HIA.TAXA)
 
 
 ## get rid of the gunk again
@@ -203,8 +205,9 @@ setdiff(GBIF.NICHE.CONTEXT.UNIQUE, missing.taxa)
 ## So some of the character replacements are not working as intended. 
 ## But not many of those species are on the top 200. 
 
-
-## Is there a way to record the number of species which are
+## The lists are getting messy! Outstanding tasks:
+## Get all the unique species that are still on the list, especially the top 200
+## Find a way to store the number of varieties for each species
 
 
 
