@@ -112,27 +112,27 @@ GBIF.800 <- spp.download[c(601:length(spp.download))] %>%
   bind_rows
 
 
-#########################################################################################################################
-## remaining taxa
-GBIF.SET <- set.download[c(1:length(set.download))] %>%
-
-  ## pipe the list into lapply
-  lapply(function(x) {
-
-    ## create the character string
-    f <- sprintf("./data/base/HIA_LIST/GBIF/SETDIFF/%s_GBIF_records.RData", x)
-
-    ## load each .RData file
-    d <- get(load(f))
-
-    ## now drop the columns which we don't need
-    data.frame(searchTaxon = x, d[, !colnames(d) %in% gbifColsToDrop],
-               stringsAsFactors = FALSE)
-
-  }) %>%
-
-  ## finally, bind all the rows together
-  bind_rows
+# #########################################################################################################################
+# ## remaining taxa
+# GBIF.SET <- set.download[c(1:length(set.download))] %>%
+# 
+#   ## pipe the list into lapply
+#   lapply(function(x) {
+# 
+#     ## create the character string
+#     f <- sprintf("./data/base/HIA_LIST/GBIF/SETDIFF/%s_GBIF_records.RData", x)
+# 
+#     ## load each .RData file
+#     d <- get(load(f))
+# 
+#     ## now drop the columns which we don't need
+#     data.frame(searchTaxon = x, d[, !colnames(d) %in% gbifColsToDrop],
+#                stringsAsFactors = FALSE)
+# 
+#   }) %>%
+# 
+#   ## finally, bind all the rows together
+#   bind_rows
 
 
 

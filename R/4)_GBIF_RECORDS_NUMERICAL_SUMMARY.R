@@ -171,6 +171,7 @@ GBIF.RASTER = rename(GBIF.RASTER,
 ## check the data
 dim(GBIF.RASTER)
 names(GBIF.RASTER) 
+save(GBIF.RASTER, file = paste("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.RData"))
 
 
 

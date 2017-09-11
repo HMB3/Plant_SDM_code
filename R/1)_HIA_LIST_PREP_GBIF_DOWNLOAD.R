@@ -212,7 +212,10 @@ setdiff.species = download_GBIF_Renee_species(spp.renee)
 load("./data/base/HIA_LIST/GBIF/Viburnum suspensum_GBIF_records.RData")
 str(GBIF)
 
-
+source("./R/2)_HIA_GBIF_DATA_COMBINE.R")
+source("./R/3)_GBIF_DATA_FILTER.R")
+source("./R/4)_GBIF_RECORDS_NUMERICAL_SUMMARY.R")
+source("./R/4)_GBIF_ESTIMATE_NICHE.R")
 
 
 
