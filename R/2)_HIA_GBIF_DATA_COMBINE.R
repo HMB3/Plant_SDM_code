@@ -21,6 +21,7 @@ spp.download = gsub("_GBIF_records.RData", "", spp.download)
 ## setdiff species
 set.download = list.files("./data/base/HIA_LIST/GBIF/SETDIFF/", pattern = ".RData")
 set.download = gsub("_GBIF_records.RData", "", set.download)
+#set.download = gsub(" _",  "", set.download, perl = TRUE)
 
 ## genera
 gen.download = list.files("./data/base/HIA_LIST/GBIF/GENERA/", pattern = ".RData")
@@ -40,7 +41,7 @@ str(gen.download)
 
 ## memory is a problem. So we need more RAM
 memory.limit()
-
+gc()
 
 #########################################################################################################################
 ## Take the first 300 taxa

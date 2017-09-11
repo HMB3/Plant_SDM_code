@@ -207,6 +207,7 @@ skipped.genera  = download_GBIF_all_genera(genera)  ## saves each gen as .Rdata 
 setdiff.species = download_GBIF_setdiff_species(missing.taxa)
 setdiff.species = download_GBIF_Renee_species(spp.renee)
 
+
 ## check an eg file...not sure why it was working with RData files, but not .csv files...
 load("./data/base/HIA_LIST/GBIF/Viburnum suspensum_GBIF_records.RData")
 str(GBIF)

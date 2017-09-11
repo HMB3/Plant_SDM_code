@@ -8,7 +8,7 @@
 #########################################################################################################################
 
 
-## Which columns overlap between GBIF and ALA/AVH? The problem here is that we don't no what each GBIF field means, and 
+## Which columns overlap between GBIF and ALA/AVH? The problem here is that we don't know what each GBIF field means, and 
 ## the documentation is a bit dodgy.
 
 ## dataProvider             (ALA), GBIF ?
@@ -72,11 +72,11 @@ kable(GBIF.PROBLEMS)
 
 ## quickly check the total record number matches the count of problems
 Total.count = sum(GBIF.PROBLEMS$COUNT)
-identical(total.records, total.count)  ## identical matches two objects
+identical(total.records, Total.count)  ## identical matches two objects
 
 
 ## probably don't need this
-write.csv(GBIF.PROBLEMS, "./output/tables/GBIF_PROBLEMS.csv", row.names = FALSE)
+#write.csv(GBIF.PROBLEMS, "./output/tables/GBIF_PROBLEMS.csv", row.names = FALSE)
 
 
 

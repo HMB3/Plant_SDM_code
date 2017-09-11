@@ -109,14 +109,25 @@ summary(GBIF.POINTS)
 
 #########################################################################################################################
 ## Create a stack of rasters to sample
-env.grids = c("//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_01",    
-              "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_04",
-              "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_05",        
+env.grids = c("//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_01",
+              "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_02", 
+              "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_03",
+              "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_04",        
+              "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_05",
               "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_06",
-              "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_12",
+              "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_07",
+              "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_08",
+              "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_09",
+              "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_10", 
+              "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_11",
+              "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_12",        
               "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_13",
               "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_14",
-              "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_15")
+              "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_15",
+              "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_16",
+              "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_17",
+              "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_18",
+              "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_19")
 
 
 ## convert all the rasters to a stack
@@ -132,13 +143,29 @@ GBIF.RASTER <- extract(s, GBIF.POINTS) %>%
 ## multiple rename?
 GBIF.RASTER = rename(GBIF.RASTER,
                      Annual_mean_temp     = bio_01,
+                     Mean_diurnal_range   = bio_02,
+                     Isothermality        = bio_03,
+                     
                      Temp_seasonality     = bio_04,
                      Max_temp_warm_month  = bio_05,
                      Min_temp_cold_month  = bio_06,
+                     
+                     Temp_annual_range    = bio_07,
+                     Mean_temp_wet_qu     = bio_08,
+                     Mean_temp_dry_qu     = bio_09,
+                     
+                     Mean_temp_warm_qu    = bio_10,
+                     Mean_temp_cold_qu    = bio_11,
                      Annual_precip        = bio_12,
-                     Precip_Wet_month     = bio_13,
+                     
+                     Precip_wet_month     = bio_13,
                      Precip_dry_month     = bio_14,
-                     Precip_seasonality   = bio_15)
+                     Precip_seasonality   = bio_15,
+                     
+                     Precip_wet_qu        = bio_16,
+                     Precip_dry_qu        = bio_17,
+                     Precip_warm_qu       = bio_18,
+                     Precip_col_qu        = bio_19)
 
 
 ## check the data
