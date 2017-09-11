@@ -78,28 +78,43 @@ DRAFT.HIA.TAXA$Species = gsub("NA",   "",  DRAFT.HIA.TAXA$Species)
 DRAFT.HIA.TAXA$Species = gsub(" $",   "",  DRAFT.HIA.TAXA$Species, perl = TRUE)
 
 
-## then remove the varieties and subspecies
+##
+
+DRAFT.HIA.TAXA$binomial <- sub('(^\\S+ \\S+).*', '\\1', DRAFT.HIA.TAXA$Species) # \\s = white space; \\S = not white space
+DRAFT.HIA.TAXA <- 
+  DRAFT.HIA.TAXA$binomial[DRAFT.HIA.TAXA$binomial != DRAFT.HIA.TAXA$Species] %>% 
+  table %>% 
+  as.data.frame %>% 
+  setNames(c('binomial', 'n_infraspecific')) %>% 
+  full_join(DRAFT.HIA.TAXA) %>% 
+  select(Species, binomial, n_infraspecific, Plant.type:WA)
+
+DRAFT.HIA.TAXA %>% 
+  filter(binomial==Species)
+
+grep('^\\S+ [A-Z]', DRAFT.HIA.TAXA$Species, val=T)
+
+
+## Then remove the varieties and subspecies
 DRAFT.HIA.TAXA$Species = vapply(lapply(strsplit(DRAFT.HIA.TAXA$Species, " "),
                                  unique), paste, character(1L), collapse = " ")
 
 
-## then get just the first two words (again cleaning up the subspecies, and single genera)
+## Then get just the first two words (again cleaning up the subspecies, and single genera)
 DRAFT.HIA.TAXA$Species = vapply(lapply(strsplit(DRAFT.HIA.TAXA$Species, " "), 
                                  string_fun_first_two_words), paste, character(1L), collapse = " ")
 
 
-## remove NA
-unique.HIA.Species = DRAFT.HIA.TAXA$Species[!grepl(paste0("NA", collapse = "|"), DRAFT.HIA.TAXA$Species)]
-
-
-## if exclude NA, DRAFT.HIA.TAXA = DRAFT.HIA.TAXA[!grepl("NA", DRAFT.HIA.TAXA$Species),]
+## Reorder by species
 DRAFT.HIA.TAXA = DRAFT.HIA.TAXA[with(DRAFT.HIA.TAXA, order(Species)), ] 
-
 
 
 ## check
 str(DRAFT.HIA.TAXA)
 View(DRAFT.HIA.TAXA)
+
+
+## in here, try to count how many varieties each species has... 
 
 
 ## Now create list of HIA taxa. 768 unique species, mius the corrections, etc. 
