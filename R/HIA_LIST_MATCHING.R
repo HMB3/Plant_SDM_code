@@ -46,9 +46,6 @@ unique(HIA.list$Top_200)
 unique(HIA.list$Origin)
 
 
-
-
-
 #########################################################################################################################
 ## WHAT ARE SOME USEFUL MEASURES OF THE DATASET?
 #########################################################################################################################
@@ -59,6 +56,9 @@ dim(subset(HIA.list, Origin == "Native"))[1]/dim(HIA.list)[1]*100
 dim(subset(top.200,  Origin == "Native"))[1]/dim(top.200)[1]*100
 
 
+
+
+
 #########################################################################################################################
 ## 2). DRAFT LIST PREP: THIS NEEDS TO CHANGE IN CONSULTATION WITH RACH, PAUL, ETC
 #########################################################################################################################
@@ -66,46 +66,44 @@ dim(subset(top.200,  Origin == "Native"))[1]/dim(top.200)[1]*100
 
 ## First, taxa with "spp". Return to these later...
 DRAFT.HIA.TAXA         = HIA.list
-HIA.SPP                = DRAFT.HIA.TAXA$Species[grepl("spp.", DRAFT.HIA.TAXA$Species)]
-HIA.BINOMIAL           = DRAFT.HIA.TAXA$Species[!grepl("spp.", DRAFT.HIA.TAXA$Species)]
-DRAFT.HIA.TAXA         = DRAFT.HIA.TAXA[DRAFT.HIA.TAXA$Species %in% EXCLUDE.SPP, ]
+DRAFT.HIA.TAXA         = DRAFT.HIA.TAXA[DRAFT.HIA.TAXA$Species %in% DRAFT.HIA.TAXA$Species[!grepl("spp.", DRAFT.HIA.TAXA$Species)], ]
 dim(DRAFT.HIA.TAXA)
 
 
 ## Remove weird characters...
-DRAFT.HIA.TAXA$Species = gsub(" x",   "",  DRAFT.HIA.TAXA$Species)
-DRAFT.HIA.TAXA$Species = gsub("NA",   "",  DRAFT.HIA.TAXA$Species)
-DRAFT.HIA.TAXA$Species = gsub(" $",   "",  DRAFT.HIA.TAXA$Species, perl = TRUE)
+DRAFT.HIA.TAXA$Species = gsub(" x",     "",  DRAFT.HIA.TAXA$Species)
+DRAFT.HIA.TAXA$Species = gsub("NA",     "",  DRAFT.HIA.TAXA$Species)
+DRAFT.HIA.TAXA$Species = gsub("  ",     " ",  DRAFT.HIA.TAXA$Species)
+DRAFT.HIA.TAXA$Species = gsub(" $",     "",  DRAFT.HIA.TAXA$Species, perl = TRUE)
+DRAFT.HIA.TAXA$Species = gsub("    $",  "",  DRAFT.HIA.TAXA$Species, perl = TRUE)
 
 
 #########################################################################################################################
-## Now create a binomial column 
-DRAFT.HIA.TAXA$binomial <- sub('(^\\S+ \\S+).*', '\\1', DRAFT.HIA.TAXA$Species) # \\s = white space; \\S = not white space
+## Now create a table of how many varieties each species has
+DRAFT.HIA.TAXA$Binomial <- sub('(^\\S+ \\S+).*', '\\1', DRAFT.HIA.TAXA$Species) # \\s = white space; \\S = not white space
 
 
 ## And count how many varieties each taxa has? 
 HIA.VARIETY <- 
-  DRAFT.HIA.TAXA$binomial[DRAFT.HIA.TAXA$binomial != DRAFT.HIA.TAXA$Species] %>% 
+  DRAFT.HIA.TAXA$Binomial[DRAFT.HIA.TAXA$Binomial != DRAFT.HIA.TAXA$Species] %>% 
   table %>% 
   as.data.frame %>% 
-  setNames(c('binomial', 'n_infraspecific')) %>% 
+  setNames(c('Binomial', 'No.of.Varieties')) %>% 
   full_join(DRAFT.HIA.TAXA) %>% 
-  select(Species, binomial, n_infraspecific, Plant.type:WA, Number.of.growers, Number.of.States, Origin, Top_200)
+  select(Species, Binomial, No.of.Varieties, Plant.type:WA, Number.of.growers, Number.of.States, Origin, Top_200)
 
 HIA.VARIETY %>% 
-  filter(binomial==Species)
+  filter(Binomial==Species)
 
 
+#######################################################################################################################
 ## Which taxa have the second word capitalised?
 grep('^\\S+ [A-Z]', HIA.VARIETY$Species, val = TRUE)
-dim(HIA.VARIETY)
-head(HIA.VARIETY)
-View(HIA.VARIETY)
 
 
 ## Now for GBIF, just get the unique species...
-HIA.SPP = HIA.VARIETY[HIA.VARIETY$Species %in% unique(as.character(HIA.VARIETY$binomial)), ]
-HIA.SPP$binomial <- NULL
+HIA.SPP = HIA.VARIETY[!duplicated(HIA.VARIETY["Binomial"]),]
+HIA.SPP = rename(HIA.SPP, HIA.Taxa = Species)
 
 
 ## Reorder by species
@@ -113,87 +111,56 @@ HIA.SPP = HIA.SPP[with(HIA.SPP, order(Species)), ]
 View(HIA.SPP)
 
 
-## check
-dim(HIA.VARIETY)
-dim(HIA.SPP)
-View(HIA.VARIETY)
-View(HIA.SPP)
+## This still leaves single genera?
+# vapply(lapply(strsplit(HIA.SPP$binomial, " "),
+#               unique), paste, character(1L), collapse = " ")
 
 
-
+#######################################################################################################################
 ## Now create list of HIA species. 496 unique species, mius the corrections, etc. 
-spp            = unique(as.character(HIA.SPP$Species))
+spp            = unique(as.character(HIA.SPP$Binomial))
 spp.renee      = unique(as.character(renee.list$Species)) ## 
-str(spp)   ## why 660? later check on what happens with the different queries
-head(spp, 50)
-tail(spp, 50)
-
-
-
-# ## also, for Stuarts code EG, I need a df not a list. Get just the rows of HIA.list which have
-# ## unique species names. 
-# DRAFT.HIA.TAXA = DRAFT.HIA.TAXA[!duplicated(DRAFT.HIA.TAXA$Species), ]
-# dim(DRAFT.HIA.TAXA)
-# head(DRAFT.HIA.TAXA)
-# View(DRAFT.HIA.TAXA)
-# 
-# 
-# ## get rid of the gunk again
-# HIA.list$Species = gsub("spp.", "",  HIA.list$Species)
-# HIA.list$Species = gsub(" x",  "",   HIA.list$Species)
-# HIA.list$Species = gsub("NA",  "",   HIA.list$Species)
-# HIA.list$Species = gsub(" $","",     HIA.list$Species, perl = TRUE)
-# 
-# 
-# ## then remove the varieties and subspecies
-# DRAFT.HIA.TAXA$Species = vapply(lapply(strsplit(DRAFT.HIA.TAXA$Species, " "),
-#                                  unique), paste, character(1L), collapse = " ")
-# 
-# ## then get just the first two words (again cleaning up the subspecies, and single genera)
-# DRAFT.HIA.TAXA$Species = vapply(lapply(strsplit(DRAFT.HIA.TAXA$Species, " "), 
-#                              string_fun_first_two_words), paste, character(1L), collapse = " ")
-# 
-# ## remove NA
-# unique.HIA.Species = DRAFT.HIA.TAXA$Species[!grepl(paste0("NA", collapse = "|"), DRAFT.HIA.TAXA$Species)]
-# length(unique.HIA.Species)
+length(spp)   ## why 660? later check on what happens with the different queries
 
 
 ########################################################################################################################
 ## Try using taxonlookup to check the taxonomy
-DRAFT.TAXA.LOOKUP = lookup_table(DRAFT.HIA.TAXA[["Species"]], by_species = TRUE) ## convert rows to column and merge
-DRAFT.TAXA.LOOKUP = setDT(DRAFT.TAXA.LOOKUP , keep.rownames = TRUE)[]
-DRAFT.TAXA.LOOKUP = rename(DRAFT.TAXA.LOOKUP, searchTaxon = rn)
-head(DRAFT.TAXA.LOOKUP)
+HIA.SPP.LOOKUP = lookup_table(HIA.SPP[["Binomial"]], by_species = TRUE) ## convert rows to column and merge
+HIA.SPP.LOOKUP = setDT(HIA.SPP.LOOKUP , keep.rownames = TRUE)[]
+HIA.SPP.LOOKUP = rename(HIA.SPP.LOOKUP, Binomial = rn)
+head(HIA.SPP.LOOKUP) ## Can merge on the bilogical data here...
 
 
 
 
 
 #########################################################################################################################
-## So some of the character replacements are not working as intended. 
-## But not many of those species are on the top 200. 
+## 3). NOW MATCH THE LISTS
+#########################################################################################################################
+
+
+## Five spp have more than 200K records...
+load("./data/base/HIA_LIST/GBIF/GBIF_NICHE_CONTEXT.RData")
+load("./data/base/HIA_LIST/GBIF/skipped_species.RData")
+skipped.species.df[ which(skipped.species.df$Reason_skipped == "Number of records > 200,000"), ]
+View(GBIF.NICHE.CONTEXT)
 
 
 ## Get the difference between the original list and the processed list
-missed.HIA.processed = setdiff(HIA.list$Species, GBIF.NICHE.CONTEXT$searchTaxon)        ## return elements beloning to HIA only
-missed.processed.HIA = setdiff(GBIF.NICHE.CONTEXT$searchTaxon, unique.HIA.Species)        ## return elements beloning to processed only
-missed.spp.processed = setdiff(unique.HIA.Species, GBIF.NICHE.CONTEXT$searchTaxon)    ## return elements beloning to spp only
+missed.HIA.processed = setdiff(HIA.SPP$Binomial, GBIF.NICHE.CONTEXT$searchTaxon)        ## return elements beloning to HIA only
+missed.processed.HIA = setdiff(GBIF.NICHE.CONTEXT$searchTaxon, HIA.SPP$Binomial)        ## beloning to processed only
 
 
 ## Plus the difference between the top 200 and the processed list
 missed.t200.processed = setdiff(spp.200$Species, GBIF.NICHE.CONTEXT$searchTaxon)        ## return elements beloning to 200 only
-missed.t200.processed = setdiff(spp.200$Species, missed.spp.processed)                  ## return elements beloning to 200 only
-
-
-## Plus the difference between the setdiff, and the top 200
-setdiff.t200          = setdiff(missed.spp.processed, spp.200$Species)                  ## return elements beloning to setdiff only
-t200.setdiff          = setdiff(missed.spp.processed, spp.200$Species)                  ## return elements beloning to setdiff only
+#missed.t200.processed = setdiff(spp.200$Species, missed.HIA.processed)                 ## return elements beloning to 200 only
 
 
 ## Need 660 rows in the processed data with contextual data
-length(missed.spp.processed) + length(missed.t200.processed)                            ## 133 missing taxa... 660 -559
-missing.taxa = unique(c(missed.spp.processed, missed.t200.processed))
-
+length(missed.HIA.processed) + length(missed.t200.processed)                            ## 133 missing taxa... 660 -559
+missing.taxa = unique(c(missed.HIA.processed, missed.t200.processed))
+missing.taxa = gsub("    $",  "",  missing.taxa, perl = TRUE)
+missing.taxa
 
 # ## get rid of the gunk again
 # missing.taxa = gsub("spp.", "",  missing.taxa)

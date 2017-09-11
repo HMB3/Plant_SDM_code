@@ -298,7 +298,7 @@ summary(GBIF.NICHE.CONTEXT$count)
 
 ## How many species where knocked out by using filters?
 kable(GBIF.PROBLEMS)
-
+## save(GBIF.NICHE.CONTEXT, file = paste("./data/base/HIA_LIST/GBIF/GBIF_NICHE_CONTEXT.RData", sep = ""))
 
 #########################################################################################################################
 ## Which species have more than n records, are on the top 200, etc?

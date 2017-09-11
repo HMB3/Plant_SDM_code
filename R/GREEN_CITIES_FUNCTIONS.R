@@ -184,7 +184,7 @@ download_GBIF_setdiff_species = function (list) {
     
     ## 6). save records to .Rdata file, note that using .csv files seemed to cause problems...
     save(GBIF, file = paste("./data/base/HIA_LIST/GBIF/SETDIFF/", sp.n, "_GBIF_records.RData", sep = ""))
-    return(skip.spp.list)
+    #return(skip.spp.list)
     
   }
   
