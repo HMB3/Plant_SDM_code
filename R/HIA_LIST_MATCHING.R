@@ -12,8 +12,8 @@
 ## Up the data and cross-linked to growth form and exotic/native status and derived a list of ~1000 species that are the 
 ## Most commonly sold, covering the right ratio of growth forms, regional representation and native/exotic
 HIA.list   = read.csv("./data/base/HIA_LIST/HIA/GREEN_CITIES_DRAFT_LIST_0809_2017.csv", stringsAsFactors = FALSE)
-top.200    = read.csv("./data/base/HIA_LIST/HIA/HIA_TOP_200.csv",             stringsAsFactors = FALSE)
-renee.taxa = read.csv("./data/base/HIA_LIST/RENEE/RENEE_TAXA.csv",            stringsAsFactors = FALSE)
+top.200    = read.csv("./data/base/HIA_LIST/HIA/HIA_TOP_200.csv",                       stringsAsFactors = FALSE)
+renee.taxa = read.csv("./data/base/HIA_LIST/RENEE/RENEE_TAXA.csv",                      stringsAsFactors = FALSE)
 
 
 ## have a look
@@ -56,7 +56,7 @@ unique(HIA.list$Origin)
 
 ## ~ HALF the total species are native, ~47% of the top 200
 dim(subset(HIA.list, Origin == "Native"))[1]/dim(HIA.list)[1]*100
-dim(subset(top.200, Origin == "Native"))[1]/dim(top.200)[1]*100
+dim(subset(top.200,  Origin == "Native"))[1]/dim(top.200)[1]*100
 
 
 #########################################################################################################################
@@ -64,10 +64,15 @@ dim(subset(top.200, Origin == "Native"))[1]/dim(top.200)[1]*100
 #########################################################################################################################
 
 
+## First, get rid of all the lines with "spp".
+DRAFT.HIA.TAXA         = HIA.list
+EXCLUDE.SPP            = DRAFT.HIA.TAXA$Species[!grepl("spp.", DRAFT.HIA.TAXA$Species)]
+DRAFT.HIA.TAXA         = DRAFT.HIA.TAXA[DRAFT.HIA.TAXA$Species %in% EXCLUDE.SPP, ]
+dim(DRAFT.HIA.TAXA)
+
+
 ## For now, remove all the subspecies, varieties etc.
 ## But check if some of them work on GBIF, e.g. a separate list of varities
-DRAFT.HIA.TAXA = HIA.list
-DRAFT.HIA.TAXA$Species = gsub("spp.", "",  DRAFT.HIA.TAXA$Species)
 DRAFT.HIA.TAXA$Species = gsub(" x",   "",  DRAFT.HIA.TAXA$Species)
 DRAFT.HIA.TAXA$Species = gsub("NA",   "",  DRAFT.HIA.TAXA$Species)
 DRAFT.HIA.TAXA$Species = gsub(" $",   "",  DRAFT.HIA.TAXA$Species, perl = TRUE)
@@ -83,8 +88,13 @@ DRAFT.HIA.TAXA$Species = vapply(lapply(strsplit(DRAFT.HIA.TAXA$Species, " "),
                                  string_fun_first_two_words), paste, character(1L), collapse = " ")
 
 
+## remove NA
+unique.HIA.Species = DRAFT.HIA.TAXA$Species[!grepl(paste0("NA", collapse = "|"), DRAFT.HIA.TAXA$Species)]
+
+
 ## if exclude NA, DRAFT.HIA.TAXA = DRAFT.HIA.TAXA[!grepl("NA", DRAFT.HIA.TAXA$Species),]
 DRAFT.HIA.TAXA = DRAFT.HIA.TAXA[with(DRAFT.HIA.TAXA, order(Species)), ] 
+
 
 
 ## check
@@ -94,7 +104,8 @@ View(DRAFT.HIA.TAXA)
 
 ## Now create list of HIA taxa. 768 unique species, mius the corrections, etc. 
 DRAFT.HIA.TAXA = DRAFT.HIA.TAXA[with(DRAFT.HIA.TAXA, order(Species)), ]
-spp      = unique(as.character(DRAFT.HIA.TAXA$Species))                         ## 
+spp            = unique(as.character(DRAFT.HIA.TAXA$Species))
+spp.renee      = unique(as.character(renee.list$Species)) ## 
 str(spp)   ## why 660? later check on what happens with the different queries
 head(spp, 50)
 tail(spp, 50)
