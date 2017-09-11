@@ -64,105 +64,98 @@ dim(subset(top.200,  Origin == "Native"))[1]/dim(top.200)[1]*100
 #########################################################################################################################
 
 
-## First, get rid of all the lines with "spp".
+## First, taxa with "spp". Return to these later...
 DRAFT.HIA.TAXA         = HIA.list
-EXCLUDE.SPP            = DRAFT.HIA.TAXA$Species[!grepl("spp.", DRAFT.HIA.TAXA$Species)]
+HIA.SPP                = DRAFT.HIA.TAXA$Species[grepl("spp.", DRAFT.HIA.TAXA$Species)]
+HIA.BINOMIAL           = DRAFT.HIA.TAXA$Species[!grepl("spp.", DRAFT.HIA.TAXA$Species)]
 DRAFT.HIA.TAXA         = DRAFT.HIA.TAXA[DRAFT.HIA.TAXA$Species %in% EXCLUDE.SPP, ]
 dim(DRAFT.HIA.TAXA)
 
 
-## For now, remove all the subspecies, varieties etc.
-## But check if some of them work on GBIF, e.g. a separate list of varities
+## Remove weird characters...
 DRAFT.HIA.TAXA$Species = gsub(" x",   "",  DRAFT.HIA.TAXA$Species)
 DRAFT.HIA.TAXA$Species = gsub("NA",   "",  DRAFT.HIA.TAXA$Species)
 DRAFT.HIA.TAXA$Species = gsub(" $",   "",  DRAFT.HIA.TAXA$Species, perl = TRUE)
 
 
-##
-
+#########################################################################################################################
+## Now create a binomial column 
 DRAFT.HIA.TAXA$binomial <- sub('(^\\S+ \\S+).*', '\\1', DRAFT.HIA.TAXA$Species) # \\s = white space; \\S = not white space
-DRAFT.HIA.TAXA <- 
+
+
+## And count how many varieties each taxa has? 
+HIA.VARIETY <- 
   DRAFT.HIA.TAXA$binomial[DRAFT.HIA.TAXA$binomial != DRAFT.HIA.TAXA$Species] %>% 
   table %>% 
   as.data.frame %>% 
   setNames(c('binomial', 'n_infraspecific')) %>% 
   full_join(DRAFT.HIA.TAXA) %>% 
-  select(Species, binomial, n_infraspecific, Plant.type:WA)
+  select(Species, binomial, n_infraspecific, Plant.type:WA, Number.of.growers, Number.of.States, Origin, Top_200)
 
-DRAFT.HIA.TAXA %>% 
+HIA.VARIETY %>% 
   filter(binomial==Species)
 
-grep('^\\S+ [A-Z]', DRAFT.HIA.TAXA$Species, val=T)
+
+## Which taxa have the second word capitalised?
+grep('^\\S+ [A-Z]', HIA.VARIETY$Species, val = TRUE)
+dim(HIA.VARIETY)
+head(HIA.VARIETY)
+View(HIA.VARIETY)
 
 
-## Then remove the varieties and subspecies
-DRAFT.HIA.TAXA$Species = vapply(lapply(strsplit(DRAFT.HIA.TAXA$Species, " "),
-                                 unique), paste, character(1L), collapse = " ")
-
-
-## Then get just the first two words (again cleaning up the subspecies, and single genera)
-DRAFT.HIA.TAXA$Species = vapply(lapply(strsplit(DRAFT.HIA.TAXA$Species, " "), 
-                                 string_fun_first_two_words), paste, character(1L), collapse = " ")
+## Now for GBIF, just get the unique species...
+HIA.SPP = HIA.VARIETY[HIA.VARIETY$Species %in% unique(as.character(HIA.VARIETY$binomial)), ]
+HIA.SPP$binomial <- NULL
 
 
 ## Reorder by species
-DRAFT.HIA.TAXA = DRAFT.HIA.TAXA[with(DRAFT.HIA.TAXA, order(Species)), ] 
+HIA.SPP = HIA.SPP[with(HIA.SPP, order(Species)), ] 
+View(HIA.SPP)
 
 
 ## check
-str(DRAFT.HIA.TAXA)
-View(DRAFT.HIA.TAXA)
+dim(HIA.VARIETY)
+dim(HIA.SPP)
+View(HIA.VARIETY)
+View(HIA.SPP)
 
 
-## in here, try to count how many varieties each species has... 
 
-
-## Now create list of HIA taxa. 768 unique species, mius the corrections, etc. 
-DRAFT.HIA.TAXA = DRAFT.HIA.TAXA[with(DRAFT.HIA.TAXA, order(Species)), ]
-spp            = unique(as.character(DRAFT.HIA.TAXA$Species))
+## Now create list of HIA species. 496 unique species, mius the corrections, etc. 
+spp            = unique(as.character(HIA.SPP$Species))
 spp.renee      = unique(as.character(renee.list$Species)) ## 
 str(spp)   ## why 660? later check on what happens with the different queries
 head(spp, 50)
 tail(spp, 50)
 
 
-# ## also make a genus list?
-# genera = unique(vapply(lapply(strsplit(HIA.list$Species, " "), 
-#                               string_fun_first_word), paste, character(1L), collapse = " "))
+
+# ## also, for Stuarts code EG, I need a df not a list. Get just the rows of HIA.list which have
+# ## unique species names. 
+# DRAFT.HIA.TAXA = DRAFT.HIA.TAXA[!duplicated(DRAFT.HIA.TAXA$Species), ]
+# dim(DRAFT.HIA.TAXA)
+# head(DRAFT.HIA.TAXA)
+# View(DRAFT.HIA.TAXA)
 # 
 # 
-# ## check
-# str(genera)
-# head(genera, 50)
-# tail(genera, 50)
-
-
-## also, for Stuarts code EG, I need a df not a list. Get just the rows of HIA.list which have
-## unique species names. 
-DRAFT.HIA.TAXA = DRAFT.HIA.TAXA[!duplicated(DRAFT.HIA.TAXA$Species), ]
-dim(DRAFT.HIA.TAXA)
-head(DRAFT.HIA.TAXA)
-View(DRAFT.HIA.TAXA)
-
-
-## get rid of the gunk again
-HIA.list$Species = gsub("spp.", "",  HIA.list$Species)
-HIA.list$Species = gsub(" x",  "",   HIA.list$Species)
-HIA.list$Species = gsub("NA",  "",   HIA.list$Species)
-HIA.list$Species = gsub(" $","",     HIA.list$Species, perl = TRUE)
-
-
-## then remove the varieties and subspecies
-DRAFT.HIA.TAXA$Species = vapply(lapply(strsplit(DRAFT.HIA.TAXA$Species, " "),
-                                 unique), paste, character(1L), collapse = " ")
-
-## then get just the first two words (again cleaning up the subspecies, and single genera)
-DRAFT.HIA.TAXA$Species = vapply(lapply(strsplit(DRAFT.HIA.TAXA$Species, " "), 
-                             string_fun_first_two_words), paste, character(1L), collapse = " ")
-
-## remove NA
-unique.HIA.Species = DRAFT.HIA.TAXA$Species[!grepl(paste0("NA", collapse = "|"), DRAFT.HIA.TAXA$Species)]
-length(unique.HIA.Species)
+# ## get rid of the gunk again
+# HIA.list$Species = gsub("spp.", "",  HIA.list$Species)
+# HIA.list$Species = gsub(" x",  "",   HIA.list$Species)
+# HIA.list$Species = gsub("NA",  "",   HIA.list$Species)
+# HIA.list$Species = gsub(" $","",     HIA.list$Species, perl = TRUE)
+# 
+# 
+# ## then remove the varieties and subspecies
+# DRAFT.HIA.TAXA$Species = vapply(lapply(strsplit(DRAFT.HIA.TAXA$Species, " "),
+#                                  unique), paste, character(1L), collapse = " ")
+# 
+# ## then get just the first two words (again cleaning up the subspecies, and single genera)
+# DRAFT.HIA.TAXA$Species = vapply(lapply(strsplit(DRAFT.HIA.TAXA$Species, " "), 
+#                              string_fun_first_two_words), paste, character(1L), collapse = " ")
+# 
+# ## remove NA
+# unique.HIA.Species = DRAFT.HIA.TAXA$Species[!grepl(paste0("NA", collapse = "|"), DRAFT.HIA.TAXA$Species)]
+# length(unique.HIA.Species)
 
 
 ########################################################################################################################
