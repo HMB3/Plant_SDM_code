@@ -7,7 +7,14 @@
 ## 1). READ IN DRAFT HIA LIST AND CLEAN
 #########################################################################################################################
 
+## The aim here is to take the raw list of plants with 25 or more growers supplied by Matt Plumber and Anthony Manea, and
+## then clean the list as best as possible in R to use the species binomial as the unit of downloading and analysis.
 
+## All the cleaining methods will throw up some anomalies, which need to be tracked, and checked with the team for how
+## each case is treated (see outstanding tasks at the bottom)
+
+
+#########################################################################################################################
 ## This list derives from all species and varieties sold anywhere in Australia in the last 5 years. Anthony Manea cleaned 
 ## Up the data and cross-linked to growth form and exotic/native status and derived a list of ~1000 species that are the 
 ## Most commonly sold, covering the right ratio of growth forms, regional representation and native/exotic
@@ -24,21 +31,30 @@ head(HIA.list)
 
 
 ## also, add the "Top 200" species in here
-spp.200          = top.200[c("Species")]
-spp.200$Species  = gsub(" $", "", spp.200$Species, perl = TRUE)
+spp.200          = top.200[c("Species", "t200_MATCH_25")]
+spp.200$Species  <- sub('(^\\S+ \\S+).*', '\\1', spp.200$Species) # \\s = white space; \\S = not white space
+
+spp.200$Species  = gsub("  ",     " ", spp.200$Species)
+spp.200$Species  = gsub(" $",     "",  spp.200$Species, perl = TRUE)
+spp.200$Species  = gsub("    $",  "",  spp.200$Species, perl = TRUE)
 spp.200$Top_200  = "TRUE"
+spp.200          = rename(spp.200, Binomial = Species)
 
 
 ## Just get the species renee selected that are not on the top 1000 or 200
 renee.list       = renee.taxa[c("Species", "Growth_Form")]
 
 
+#########################################################################################################################
 ## Merge the ~1000 with the top 200
 ## This merge won't get the ones that match to binomial
-HIA.list$Binomial <- sub('(^\\S+ \\S+).*', '\\1', DRAFT.HIA.TAXA$Species) # \\s = white space; \\S = not white space
+HIA.list$Binomial <- sub('(^\\S+ \\S+).*', '\\1', HIA.list$Species) # \\s = white space; \\S = not white space
 
-HIA.list = merge(HIA.list, spp.200, by = "Species", all.x = TRUE) 
+
+## Check this reduces the number of Top 200 missing from this list
+HIA.list = merge(HIA.list, spp.200, by = "Binomial", all.x = TRUE) 
 HIA.list$Top_200[is.na(HIA.list$Top_200)] <- "FALSE"
+HIA.list$Top_200[is.na(HIA.list$t200_MATCH_25)] <- "TRUE"
 HIA.list$Origin <- gsub(" ",  "", HIA.list$Origin)
 
 
@@ -47,6 +63,7 @@ str(HIA.list)
 head(HIA.list)
 unique(HIA.list$Top_200)
 unique(HIA.list$Origin)
+length(unique(HIA.list$Binomial)) ## 660 unique binomials
 
 
 #########################################################################################################################
@@ -70,7 +87,7 @@ dim(subset(top.200,  Origin == "Native"))[1]/dim(top.200)[1]*100
 ## First, taxa with "spp". Return to these later...
 DRAFT.HIA.TAXA         = HIA.list
 DRAFT.HIA.TAXA         = DRAFT.HIA.TAXA[DRAFT.HIA.TAXA$Species %in% DRAFT.HIA.TAXA$Species[!grepl("spp.", DRAFT.HIA.TAXA$Species)], ]
-dim(DRAFT.HIA.TAXA)
+dim(DRAFT.HIA.TAXA)    ## 948 species after we cut out the "spp."
 
 
 ## Remove weird characters...
@@ -83,6 +100,12 @@ DRAFT.HIA.TAXA$Species = gsub("    $",  "",  DRAFT.HIA.TAXA$Species, perl = TRUE
 
 #########################################################################################################################
 ## Now create a table of how many varieties each species has
+# length(unique(HIA.list$Binomial)) 
+# length(unique(sub('(^\\S+ \\S+).*', '\\1', DRAFT.HIA.TAXA$Species)))
+# setdiff(unique(HIA.list$Binomial), unique(sub('(^\\S+ \\S+).*', '\\1', DRAFT.HIA.TAXA$Species)))
+
+
+## Create another binomial column
 DRAFT.HIA.TAXA$Binomial <- sub('(^\\S+ \\S+).*', '\\1', DRAFT.HIA.TAXA$Species) # \\s = white space; \\S = not white space
 
 
@@ -100,7 +123,7 @@ HIA.VARIETY %>%
 
 
 #######################################################################################################################
-## Which taxa have the second word capitalised?
+## Which taxa have the second word capitalised, and are not captured by eliminating the "spp"?
 grep('^\\S+ [A-Z]', HIA.VARIETY$Species, val = TRUE)
 
 
@@ -142,10 +165,12 @@ head(HIA.SPP.LOOKUP) ## Can merge on the bilogical data here...
 #########################################################################################################################
 
 
+#########################################################################################################################
 ## Five spp have more than 200K records...
 load("./data/base/HIA_LIST/GBIF/GBIF_NICHE_CONTEXT.RData")
 load("./data/base/HIA_LIST/GBIF/skipped_species.RData")
 skipped.species.df[ which(skipped.species.df$Reason_skipped == "Number of records > 200,000"), ]
+View(skipped.species.df)
 View(GBIF.NICHE.CONTEXT)
 
 
@@ -155,9 +180,8 @@ missed.processed.HIA = setdiff(GBIF.NICHE.CONTEXT$searchTaxon, HIA.SPP$Binomial)
 
 
 ## Plus the difference between the top 200 and the processed list
-missed.t200.processed = setdiff(spp.200$Species, GBIF.NICHE.CONTEXT$searchTaxon)        ## return elements beloning to 200 only
-missed.t200.processed = setdiff(spp.200$Species, subset(HIA.SPP, Top_200 == "TRUE")[["Binomial"]])
-#missed.t200.processed = setdiff(spp.200$Species, missed.HIA.processed)                 ## return elements beloning to 200 only
+missed.t200.processed = setdiff(spp.200$Binomial, subset(HIA.SPP, Top_200 == "TRUE")[["Binomial"]])
+missed.t200.processed = setdiff(spp.200$Binomial, GBIF.NICHE.CONTEXT$searchTaxon) 
 
 
 ## Need 660 rows in the processed data with contextual data
@@ -166,39 +190,28 @@ missing.taxa = unique(c(missed.HIA.processed, missed.t200.processed))
 missing.taxa = gsub("    $",  "",  missing.taxa, perl = TRUE)
 missing.taxa
 
-# ## get rid of the gunk again
-# missing.taxa = gsub("spp.", "",  missing.taxa)
-# missing.taxa = gsub(" x",  "",   missing.taxa)
-# missing.taxa = gsub("NA",  "",   missing.taxa)
-# missing.taxa = gsub(" $","",     missing.taxa, perl = TRUE)
-# 
-# 
-# ## then get just the first two words (again cleaning up the subspecies, and single genera)
-# missing.taxa = vapply(lapply(strsplit(missing.taxa, " "), 
-#                              string_fun_first_two_words), paste, character(1L), collapse = " ")
-# 
-# 
-# ## remove NA
-# test = missing.taxa[!grepl(paste0("NA", collapse = "|"), missing.taxa)]
 
-
+#########################################################################################################################
 ## Get the unique list from the final data
 length(GBIF.NICHE.CONTEXT[ which(GBIF.NICHE.CONTEXT$Number.of.growers >= 25), ][["searchTaxon"]])
 GBIF.NICHE.CONTEXT.UNIQUE = unique(GBIF.NICHE.CONTEXT[ which(GBIF.NICHE.CONTEXT$Number.of.growers >= 25), ][["searchTaxon"]])
 setdiff(GBIF.NICHE.CONTEXT.UNIQUE, missing.taxa)
 
 
+#########################################################################################################################
+## List tasks:
+## Record each list: Raw top 25 (1135), Varieties (948), Binomials (610) 
+length(unique(HIA.list$Species))     ## Raw top 25 (1135)
+length(unique(HIA.VARIETY$Species))  ## Varieties  (948), excluding "spp.", eg Philodendron spp. Congo, Nandina domestica Moon Bay
+ 
+length(unique(HIA.SPP$Binomial))     ## Binomials (610), keep Michelia yunnanensis Scented Pearl, exclude Spathiphyllum spp. Assorted
 
 
+
+## All the unique species that are still on the list, especially the top 200
+## Find a way to store the number of varieties for each species
+## Keep a list of the exceptions
 
 #########################################################################################################################
-## So some of the character replacements are not working as intended. 
-## But not many of those species are on the top 200. 
-
-## The lists are getting messy! Outstanding tasks:
-## Get all the unique species that are still on the list, especially the top 200
-## Find a way to store the number of varieties for each species
-
-
-
-
+############################################  END OF HIA LIST CODE ###################################################### 
+#########################################################################################################################
