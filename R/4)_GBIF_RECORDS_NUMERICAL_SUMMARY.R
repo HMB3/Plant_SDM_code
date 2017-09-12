@@ -183,7 +183,10 @@ save(GBIF.RASTER, file = paste("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.RData
 
 
 #########################################################################################################################
-## Focus on the top 200 taxa to begin with: some of the top 200 species have not been downloaded yet
+## Only 160 of the the unique species are on the top 200
+dim(subset(HIA.SPP, Top_200 == "TRUE"))
+
+##
 DRAFT.HIA.TAXA.200 = subset(DRAFT.HIA.TAXA, Top_200 == "TRUE")
 DRAFT.HIA.TAXA.200 = rename(DRAFT.HIA.TAXA.200, searchTaxon = Species)
 DRAFT.HIA.TAXA     = rename(DRAFT.HIA.TAXA,     searchTaxon = Species)

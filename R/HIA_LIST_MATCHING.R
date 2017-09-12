@@ -13,7 +13,7 @@
 ## Most commonly sold, covering the right ratio of growth forms, regional representation and native/exotic
 HIA.list   = read.csv("./data/base/HIA_LIST/HIA/GREEN_CITIES_DRAFT_LIST_0809_2017.csv", stringsAsFactors = FALSE)
 top.200    = read.csv("./data/base/HIA_LIST/HIA/HIA_TOP_200.csv",                       stringsAsFactors = FALSE)
-renee.taxa = read.csv("./data/base/HIA_LIST/RENEE/RENEE_TAXA.csv",                      stringsAsFactors = FALSE)
+renee.taxa = read.csv("./data/base/HIA_LIST/HIA/RENEE_TAXA.csv",                        stringsAsFactors = FALSE)
 
 
 ## have a look
@@ -34,6 +34,9 @@ renee.list       = renee.taxa[c("Species", "Growth_Form")]
 
 
 ## Merge the ~1000 with the top 200
+## This merge won't get the ones that match to binomial
+HIA.list$Binomial <- sub('(^\\S+ \\S+).*', '\\1', DRAFT.HIA.TAXA$Species) # \\s = white space; \\S = not white space
+
 HIA.list = merge(HIA.list, spp.200, by = "Species", all.x = TRUE) 
 HIA.list$Top_200[is.na(HIA.list$Top_200)] <- "FALSE"
 HIA.list$Origin <- gsub(" ",  "", HIA.list$Origin)
@@ -153,6 +156,7 @@ missed.processed.HIA = setdiff(GBIF.NICHE.CONTEXT$searchTaxon, HIA.SPP$Binomial)
 
 ## Plus the difference between the top 200 and the processed list
 missed.t200.processed = setdiff(spp.200$Species, GBIF.NICHE.CONTEXT$searchTaxon)        ## return elements beloning to 200 only
+missed.t200.processed = setdiff(spp.200$Species, subset(HIA.SPP, Top_200 == "TRUE")[["Binomial"]])
 #missed.t200.processed = setdiff(spp.200$Species, missed.HIA.processed)                 ## return elements beloning to 200 only
 
 
