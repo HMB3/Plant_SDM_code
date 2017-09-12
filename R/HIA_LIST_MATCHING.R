@@ -203,8 +203,7 @@ setdiff(GBIF.NICHE.CONTEXT.UNIQUE, missing.taxa)
 ## Record each list: Raw top 25 (1135), Varieties (948), Binomials (610) 
 length(unique(HIA.list$Species))     ## Raw top 25 (1135)
 length(unique(HIA.VARIETY$Species))  ## Varieties  (948), excluding "spp.", eg Philodendron spp. Congo, Nandina domestica Moon Bay
- 
-length(unique(HIA.SPP$Binomial))     ## Binomials (610), keep Michelia yunnanensis Scented Pearl, exclude Spathiphyllum spp. Assorted
+ length(unique(HIA.SPP$Binomial))     ## Binomials (610), keep Michelia yunnanensis Scented Pearl, exclude Spathiphyllum spp. Assorted
 
 
 
