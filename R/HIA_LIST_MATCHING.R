@@ -18,8 +18,8 @@
 ## This list derives from all species and varieties sold anywhere in Australia in the last 5 years. Anthony Manea cleaned 
 ## Up the data and cross-linked to growth form and exotic/native status and derived a list of ~1000 species that are the 
 ## Most commonly sold, covering the right ratio of growth forms, regional representation and native/exotic
-HIA.list   = read.csv("./data/base/HIA_LIST/HIA/GREEN_CITIES_DRAFT_LIST_0809_2017.csv", stringsAsFactors = FALSE)
-top.200    = read.csv("./data/base/HIA_LIST/HIA/HIA_TOP_200.csv",                       stringsAsFactors = FALSE)
+HIA.list   = read.csv("./data/base/HIA_LIST/HIA/GREEN_CITIES_DRAFT_LIST_1309_2017.csv", stringsAsFactors = FALSE)
+top.200    = read.csv("./data/base/HIA_LIST/HIA/HIA_TOP_200_1309_2017.csv",             stringsAsFactors = FALSE)
 renee.taxa = read.csv("./data/base/HIA_LIST/HIA/RENEE_TAXA.csv",                        stringsAsFactors = FALSE)
 
 
@@ -28,6 +28,13 @@ dim(HIA.list)
 dim(renee.taxa)
 str(HIA.list)
 head(HIA.list)
+
+
+## Create a list of the raw HIA list, but removing the weird characters...
+RAW.HIA.SPP = gsub("  ",     " ", HIA.list$Species)
+RAW.HIA.SPP = gsub(" $",     "",  HIA.list$Species, perl = TRUE)
+RAW.HIA.SPP = gsub("    $",  "",  HIA.list$Species, perl = TRUE)
+length(RAW.HIA.SPP)
 
 
 ## also, add the "Top 200" species in here
@@ -102,7 +109,6 @@ DRAFT.HIA.TAXA$Species = gsub("    $",  "",  DRAFT.HIA.TAXA$Species, perl = TRUE
 ## Now create a table of how many varieties each species has
 # length(unique(HIA.list$Binomial)) 
 # length(unique(sub('(^\\S+ \\S+).*', '\\1', DRAFT.HIA.TAXA$Species)))
-# setdiff(unique(HIA.list$Binomial), unique(sub('(^\\S+ \\S+).*', '\\1', DRAFT.HIA.TAXA$Species)))
 
 
 ## Create another binomial column
@@ -133,20 +139,15 @@ HIA.SPP = rename(HIA.SPP, HIA.Taxa = Species)
 
 
 ## Reorder by species
-HIA.SPP = HIA.SPP[with(HIA.SPP, order(Species)), ] 
+HIA.SPP = HIA.SPP[with(HIA.SPP, order(Binomial)), ] 
 View(HIA.SPP)
 
 
-## This still leaves single genera?
-# vapply(lapply(strsplit(HIA.SPP$binomial, " "),
-#               unique), paste, character(1L), collapse = " ")
-
-
 #######################################################################################################################
-## Now create list of HIA species. 496 unique species, mius the corrections, etc. 
+## Now create list of HIA species. 610 unique species, mius the corrections, etc. 
 spp            = unique(as.character(HIA.SPP$Binomial))
 spp.renee      = unique(as.character(renee.list$Species)) ## 
-length(spp)   ## why 660? later check on what happens with the different queries
+length(spp)   
 
 
 ########################################################################################################################
@@ -170,7 +171,6 @@ head(HIA.SPP.LOOKUP) ## Can merge on the bilogical data here...
 load("./data/base/HIA_LIST/GBIF/GBIF_NICHE_CONTEXT.RData")
 load("./data/base/HIA_LIST/GBIF/skipped_species.RData")
 skipped.species.df[ which(skipped.species.df$Reason_skipped == "Number of records > 200,000"), ]
-View(skipped.species.df)
 View(GBIF.NICHE.CONTEXT)
 
 
@@ -180,7 +180,7 @@ missed.processed.HIA = setdiff(GBIF.NICHE.CONTEXT$searchTaxon, HIA.SPP$Binomial)
 
 
 ## Plus the difference between the top 200 and the processed list
-missed.t200.processed = setdiff(spp.200$Binomial, subset(HIA.SPP, Top_200 == "TRUE")[["Binomial"]])
+setdiff(spp.200$Binomial, subset(HIA.SPP, Top_200 == "TRUE")[["Binomial"]])
 missed.t200.processed = setdiff(spp.200$Binomial, GBIF.NICHE.CONTEXT$searchTaxon) 
 
 
@@ -195,21 +195,26 @@ missing.taxa
 ## Get the unique list from the final data
 length(GBIF.NICHE.CONTEXT[ which(GBIF.NICHE.CONTEXT$Number.of.growers >= 25), ][["searchTaxon"]])
 GBIF.NICHE.CONTEXT.UNIQUE = unique(GBIF.NICHE.CONTEXT[ which(GBIF.NICHE.CONTEXT$Number.of.growers >= 25), ][["searchTaxon"]])
-setdiff(GBIF.NICHE.CONTEXT.UNIQUE, missing.taxa)
+missing.taxa = setdiff(missing.taxa, GBIF.NICHE.CONTEXT.UNIQUE)
 
 
 #########################################################################################################################
 ## List tasks:
 ## Record each list: Raw top 25 (1135), Varieties (948), Binomials (610) 
+## Check exceptions with Paul, Linda and Rach
 length(unique(HIA.list$Species))     ## Raw top 25 (1135)
 length(unique(HIA.VARIETY$Species))  ## Varieties  (948), excluding "spp.", eg Philodendron spp. Congo, Nandina domestica Moon Bay
- length(unique(HIA.SPP$Binomial))     ## Binomials (610), keep Michelia yunnanensis Scented Pearl, exclude Spathiphyllum spp. Assorted
+length(unique(HIA.SPP$Binomial))     ## Binomials (610), keep Michelia yunnanensis Scented Pearl, exclude Spathiphyllum spp. Assorted
+
+
+## record the "spp." weirdos
+#EXCLUDED.SPP        = setdiff(unique(RAW.HIA.SPP), DRAFT.HIA.TAXA$Species)
+EXCLUDED.SPP         = setdiff(unique(RAW.HIA.SPP), unique(HIA.VARIETY$Species))
+EXCLUDED.VARIETIES   = setdiff(unique(HIA.VARIETY$Species), unique(HIA.SPP$HIA.Taxa))
 
 
 
-## All the unique species that are still on the list, especially the top 200
-## Find a way to store the number of varieties for each species
-## Keep a list of the exceptions
+
 
 #########################################################################################################################
 ############################################  END OF HIA LIST CODE ###################################################### 

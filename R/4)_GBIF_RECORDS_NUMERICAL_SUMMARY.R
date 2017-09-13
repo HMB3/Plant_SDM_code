@@ -168,12 +168,14 @@ GBIF.RASTER = rename(GBIF.RASTER,
                      Precip_col_qu        = bio_19)
 
 
-## check the data
+## Save/load
+save(GBIF.RASTER, file = paste("./data/base/HIA_LIST/GBIF/GBIF_RASTER.RData"))
+load("./data/base/HIA_LIST/GBIF/GBIF_RASTER.RData")
+
+
+## check
 dim(GBIF.RASTER)
-names(GBIF.RASTER) 
-save(GBIF.RASTER, file = paste("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.RData"))
-
-
+names(GBIF.RASTER)
 
 
 
