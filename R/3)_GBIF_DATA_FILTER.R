@@ -200,9 +200,6 @@ plot(WORLD)
 plot(LAND)
 
 
-## consider some more ways of spatially checking the records in the ocean...
-
-
 
 
 
@@ -211,7 +208,7 @@ plot(LAND)
 #########################################################################################################################
 
 
-##
+## consider some more ways of spatially checking the records in the ocean...
 
 
 
@@ -219,8 +216,6 @@ plot(LAND)
 ## save data
 save(GBIF.LAND, file = paste("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.RData"))
 gc()
-
-
 
 
 #########################################################################################################################

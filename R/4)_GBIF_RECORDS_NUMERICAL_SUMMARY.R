@@ -196,11 +196,7 @@ HIA.SPP.JOIN     = rename(HIA.SPP.JOIN,     searchTaxon = Binomial)
 HIA.SPP.JOIN[is.na(HIA.SPP.JOIN)] <- 0
 HIA.SPP.JOIN = HIA.SPP.JOIN[with(HIA.SPP.JOIN, rev(order(Number.of.growers))), ]
 HIA.SPP.JOIN.200 = HIA.SPP.JOIN.200[with(HIA.SPP.JOIN.200, rev(order(Number.of.growers))), ]
-
-
-## check
 head(HIA.SPP.JOIN[, c("searchTaxon", "Number.of.growers")])
-View(HIA.SPP.JOIN)
 
 
 ## save list to file for Rachel to check Austraits
@@ -209,10 +205,6 @@ View(HIA.SPP.JOIN)
 
 
 ## Now summarise the niches. But figure out a cleaner way of doing this?
-env.variables = c("Annual_mean_temp", "Temp_seasonality", "Max_temp_warm_month", "Min_temp_cold_month",
-                  "Annual_precip",    "Precip_Wet_month", "Precip_dry_month",    "Precip_seasonality")
-
-
 env.variables = c("Annual_mean_temp",     
                   "Mean_diurnal_range",   
                   "Isothermality",        
@@ -238,13 +230,14 @@ env.variables = c("Annual_mean_temp",
 #########################################################################################################################
 ## We want to create niche summaries for each environmental condition like this...
 ## Here's what the function will produce :
+library(plyr)  ## detach plyr again if doing more renaming
 head(niche_estimate (DF = GBIF.RASTER, colname = "Annual_mean_temp"))
 dim(niche_estimate  (DF = GBIF.RASTER, colname = "Annual_mean_temp"))  ## 7 environmetnal summaries so far
 
 
 ## So lets use lapply on the "Search Taxon".
 ## Note additonal flags are needed, and the taxonomic lists need to be managed better...
-GBIF.NICHE <- variables[c(1:length(variables))] %>% 
+GBIF.NICHE <- env.variables[c(1:length(env.variables))] %>% 
   
   ## Pipe the list into lapply
   lapply(function(x) {
@@ -263,16 +256,19 @@ GBIF.NICHE <- variables[c(1:length(variables))] %>%
 
 
 ## Remove duplicate Taxon columns and check the output
-drops <- c("searchTaxon.1", "searchTaxon.2", "searchTaxon.3", "searchTaxon.4",
-           "searchTaxon.5", "searchTaxon.6", "searchTaxon.7")
-GBIF.NICHE = GBIF.NICHE[ , !(names(GBIF.NICHE) %in% drops)]
 names(GBIF.NICHE)
+drops <- c("searchTaxon.1",  "searchTaxon.2",  "searchTaxon.3",  "searchTaxon.4",
+           "searchTaxon.5",  "searchTaxon.6",  "searchTaxon.7",  "searchTaxon.7",
+           "searchTaxon.8",  "searchTaxon.9",  "searchTaxon.10", "searchTaxon.11",
+           "searchTaxon.12", "searchTaxon.13", "searchTaxon.14", "searchTaxon.15",
+           "searchTaxon.16", "searchTaxon.17")
+GBIF.NICHE = GBIF.NICHE[ , !(names(GBIF.NICHE) %in% drops)]
 
 
 ## Add counts for each species, and record the total number of taxa processed
-count = as.data.frame(table(GBIF.RASTER$searchTaxon))$Freq
+GBIF.count = as.data.frame(table(GBIF.RASTER$searchTaxon))$Freq
 Total.taxa.processed = dim(GBIF.NICHE)[1]
-GBIF.NICHE  = cbind(count, GBIF.NICHE)
+GBIF.NICHE  = cbind(GBIF.count, GBIF.NICHE)
 names(GBIF.NICHE)
 
 
@@ -289,40 +285,32 @@ names(GBIF.NICHE)
 ## Which columns do we need?
 names(GBIF.RASTER)
 names(GBIF.NICHE)
-names(HIA.SPP.JOIN.200)
+names(HIA.SPP.JOIN)
 View(HIA.SPP.JOIN)
 
 
 ## Now join hort context to all records. Provisional, keep working on it 
-GBIF.RASTER.CONTEXT = join(GBIF.RASTER, HIA.SPP.JOIN[, c("searchTaxon", "Plant.type", 
-                                                           "Number.of.growers", "Origin", "Top_200")], 
+GBIF.RASTER.CONTEXT = join(GBIF.RASTER, HIA.SPP.JOIN, 
                            by = "searchTaxon", type = "left", match = "all")
 
 
 ## Now join hort context to all the niches. Provisional, keep working on it .
-## Paul Rymer wants more contextual data
-GBIF.NICHE.CONTEXT = join(GBIF.NICHE, HIA.SPP.JOIN[, c("searchTaxon", "Plant.type", 
-                                                         "Number.of.growers", "Number.of.States",
-                                                         "ACT", "NSW", "NT", "QLD", "SA", "VIC", "WA",
-                                                         "Origin", "Top_200")], 
+GBIF.NICHE.CONTEXT = join(GBIF.NICHE, HIA.SPP.JOIN, 
                           by = "searchTaxon", type = "left", match = "all")
-
-
-## Now where are the species coming from that don't match? Somewhere in the downloading, I've got species which don't
-## match. This is because of the species/variety names, find and replace, etc. 
-
-## Set NA to blank, then sort by no. of growers?
-GBIF.NICHE.CONTEXT[is.na(GBIF.NICHE.CONTEXT)] <- 0
-GBIF.NICHE.CONTEXT = GBIF.NICHE.CONTEXT[with(GBIF.NICHE.CONTEXT, rev(order(Number.of.growers))), ]
-View(GBIF.NICHE.CONTEXT)
 
 
 #########################################################################################################################
 ## For pedantry, reroder columns...
 ## Note that the downloaded species don't all match up to the original list. This is because there are different lists 
 ## propagating throughout the workflow, I need to watch out for this. 
-GBIF.RASTER.CONTEXT = GBIF.RASTER.CONTEXT[, c(1:12, 27:30, 13:26)]
-GBIF.NICHE.CONTEXT  = GBIF.NICHE.CONTEXT[, c(2,1, 59:70, 3:58)]
+GBIF.RASTER.CONTEXT = GBIF.RASTER.CONTEXT[, c(38, 2, 1, 3,  39:51, 4:37)]
+GBIF.NICHE.CONTEXT  = GBIF.NICHE.CONTEXT[,  c(137, 2, 1, 138:150,  3:133)]
+
+
+## Set NA to blank, then sort by no. of growers.
+## The extra species are ones I dowloaded in error
+GBIF.NICHE.CONTEXT[is.na(GBIF.NICHE.CONTEXT)] <- 0
+GBIF.NICHE.CONTEXT = GBIF.NICHE.CONTEXT[with(GBIF.NICHE.CONTEXT, rev(order(Number.of.growers))), ]
 
 
 ## View the data
@@ -332,6 +320,20 @@ View(GBIF.NICHE.CONTEXT)
 names(GBIF.RASTER.CONTEXT)
 names(GBIF.NICHE.CONTEXT)
 dim(GBIF.NICHE.CONTEXT)
+
+
+## quickly check how many species match from the original 610 
+View(HIA.SPP.JOIN)
+missing.25 = setdiff(unique(HIA.SPP.JOIN[ which(HIA.SPP.JOIN$Number.of.growers >= 25), ][["searchTaxon"]]),
+                     unique(GBIF.NICHE.CONTEXT[ which(GBIF.NICHE.CONTEXT$Number.of.growers >= 25), ][["searchTaxon"]]))
+missing.taxa = unique(c(missing.taxa, missing.25))
+       
+
+## Save the summary datasets
+save(GBIF.RASTER.CONTEXT, file = paste("./data/base/HIA_LIST/GBIF/GBIF_RASTER_CONTEXT.RData", sep = ""))
+save(GBIF.NICHE.CONTEXT,  file = paste("./data/base/HIA_LIST/GBIF/GBIF_NICHE_CONTEXT.RData",  sep = ""))
+write.csv(GBIF.NICHE.CONTEXT, "./data/base/HIA_LIST/GBIF/GBIF_NICHE_CONTEXT.csv",       row.names = FALSE)
+
 
 
 #########################################################################################################################
@@ -345,12 +347,11 @@ dim(GBIF.NICHE.CONTEXT)
 ## 6-figure summary across all taxa (min, max, median)
 ## number of all taxa with > n records (e.g. +50, +100, +1000, +10,000) - assuming it doesn't matter above certain level
 ## number of top 200 taxa with > n records
-summary(GBIF.NICHE.CONTEXT$count)
+summary(GBIF.NICHE.CONTEXT$GBIF.count)
 
 
 ## How many species where knocked out by using filters?
 kable(GBIF.PROBLEMS)
-## save(GBIF.NICHE.CONTEXT, file = paste("./data/base/HIA_LIST/GBIF/GBIF_NICHE_CONTEXT.RData", sep = ""))
 
 
 #########################################################################################################################

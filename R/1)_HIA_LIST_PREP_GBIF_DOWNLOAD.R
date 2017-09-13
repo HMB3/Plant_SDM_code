@@ -206,7 +206,8 @@ skipped.genera  = download_GBIF_all_genera(genera)  ## saves each gen as .Rdata 
 
 ## get the extra species
 setdiff.species = download_GBIF_setdiff_species(missing.taxa)
-setdiff.species = download_GBIF_Renee_species(spp.renee)
+setdiff.25      = download_GBIF_setdiff_species(missing.25)
+setdiff.Renee   = download_GBIF_Renee_species(spp.renee)
 
 
 ## check an eg file...not sure why it was working with RData files, but not .csv files...
