@@ -46,6 +46,7 @@ spp.200$Species  = gsub(" $",     "",  spp.200$Species, perl = TRUE)
 spp.200$Species  = gsub("    $",  "",  spp.200$Species, perl = TRUE)
 spp.200$Top_200  = "TRUE"
 spp.200          = rename(spp.200, Binomial = Species)
+#spp.200$Binomial = spp.200$Species # rename(spp.200, Binomial = Species)
 
 
 ## Just get the species renee selected that are not on the top 1000 or 200
@@ -61,7 +62,7 @@ HIA.list$Binomial <- sub('(^\\S+ \\S+).*', '\\1', HIA.list$Species) # \\s = whit
 ## Check this reduces the number of Top 200 missing from this list
 HIA.list = merge(HIA.list, spp.200, by = "Binomial", all.x = TRUE) 
 HIA.list$Top_200[is.na(HIA.list$Top_200)] <- "FALSE"
-HIA.list$Top_200[is.na(HIA.list$t200_MATCH_25)] <- "TRUE"
+HIA.list$t200_MATCH_25[is.na(HIA.list$t200_MATCH_25)] <- "TRUE"
 HIA.list$Origin <- gsub(" ",  "", HIA.list$Origin)
 
 
@@ -69,8 +70,10 @@ HIA.list$Origin <- gsub(" ",  "", HIA.list$Origin)
 str(HIA.list)
 head(HIA.list)
 unique(HIA.list$Top_200)
+unique(HIA.list$t200_MATCH_25)
 unique(HIA.list$Origin)
 length(unique(HIA.list$Binomial)) ## 660 unique binomials
+names(HIA.list)
 
 
 #########################################################################################################################

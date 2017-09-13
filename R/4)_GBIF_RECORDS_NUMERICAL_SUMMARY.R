@@ -31,22 +31,22 @@
 # major plant traits including:
 
 
-# growth rate and form
+# Growth rate and form
 # height
 # canopy density
-# ground cover
-# longevity
-# seasonality
-# water quality
-# allergenicity
-# air and water quality influences and urban temperatures
-# insect resistance
-# ornamental and amenity features
+# Ground cover
+# Longevity
+# Seasonality
+# Water quality
+# Allergenicity
+# Air and water quality influences and urban temperatures
+# Insect resistance
+# Ornamental and amenity features
 # and biodiversity impacts.
 
 
-## First step is to estimate the current niche, using the best available data. This will give us a broad indication of the 
-## currernt climatic toleance of each species.
+## First step is to estimate the current global realised niche, using the best available data. This will give us 
+## a broad indication of the currernt climatic toleance of each species.
 
 ## There are two streams here: 
 
@@ -66,10 +66,8 @@
 ## WHICH WORLDCLIM VARIABLES TO ESTIMATE?
 
 
-## copy the ones which Rach and Stu have used for the niche finder website
-## for now, ignore edaphic variables
-
-## threshold based traits, use Dave Kendall's approach.
+## Copy the ones which Rach and Stu have used for the niche finder website for now, ignore edaphic variables
+## Use Threshold based traits, use Dave Kendall's approach.
 
 # BIO1  = Annual Mean Temperature                                     ## 
 # BIO2  = Mean Diurnal Range (Mean of monthly (max temp - min temp))  ##
@@ -179,6 +177,8 @@ names(GBIF.RASTER)
 
 
 
+
+
 #########################################################################################################################
 ## 2). CREATE NICHES FOR SELECTED TAXA
 #########################################################################################################################
@@ -189,26 +189,26 @@ names(GBIF.RASTER)
 dim(subset(HIA.SPP, Top_200 == "TRUE"))
 
 ##
-DRAFT.HIA.TAXA.200 = subset(DRAFT.HIA.TAXA, Top_200 == "TRUE")
-DRAFT.HIA.TAXA.200 = rename(DRAFT.HIA.TAXA.200, searchTaxon = Species)
-DRAFT.HIA.TAXA     = rename(DRAFT.HIA.TAXA,     searchTaxon = Species)
+HIA.SPP.200 = subset(HIA.SPP, Top_200 == "TRUE")
+HIA.SPP.200 = rename(HIA.SPP.200, searchTaxon = Species)
+HIA.SPP     = rename(HIA.SPP,     searchTaxon = Species)
 
 
 ## Set NA to blank, then sort by no. of growers?
-DRAFT.HIA.TAXA[is.na(DRAFT.HIA.TAXA)] <- 0
-DRAFT.HIA.TAXA = DRAFT.HIA.TAXA[with(DRAFT.HIA.TAXA, rev(order(Number.of.growers))), ]
-DRAFT.HIA.TAXA.200 = DRAFT.HIA.TAXA.200[with(DRAFT.HIA.TAXA.200, rev(order(Number.of.growers))), ]
+HIA.SPP[is.na(HIA.SPP)] <- 0
+HIA.SPP = HIA.SPP[with(HIA.SPP, rev(order(Number.of.growers))), ]
+HIA.SPP.200 = HIA.SPP.200[with(HIA.SPP.200, rev(order(Number.of.growers))), ]
 
 ## check
-head(DRAFT.HIA.TAXA[, c("searchTaxon", "Number.of.growers")])
-View(DRAFT.HIA.TAXA)
+head(HIA.SPP[, c("searchTaxon", "Number.of.growers")])
+View(HIA.SPP)
 
 
 ## save list to file for Rachel to check Austraits
 drops <- c("Count", "Comment")
-DRAFT.HIA.TAXA = DRAFT.HIA.TAXA[ , !(names(DRAFT.HIA.TAXA) %in% drops)]
-names(DRAFT.HIA.TAXA)
-## write.csv(DRAFT.HIA.TAXA, "./data/base/HIA_LIST/HIA/DRAFT_HIA_TAXA.csv", row.names = FALSE)
+HIA.SPP = HIA.SPP[ , !(names(HIA.SPP) %in% drops)]
+names(HIA.SPP)
+## write.csv(HIA.SPP, "./data/base/HIA_LIST/HIA/DRAFT_HIA_TAXA.csv", row.names = FALSE)
 
 
 
@@ -271,19 +271,19 @@ names(GBIF.NICHE)
 ## Which columns do we need?
 names(GBIF.RASTER)
 names(GBIF.NICHE)
-names(DRAFT.HIA.TAXA.200)
-View(DRAFT.HIA.TAXA)
+names(HIA.SPP.200)
+View(HIA.SPP)
 
 
 ## Now join hort context to all records. Provisional, keep working on it 
-GBIF.RASTER.CONTEXT = join(GBIF.RASTER, DRAFT.HIA.TAXA[, c("searchTaxon", "Plant.type", 
+GBIF.RASTER.CONTEXT = join(GBIF.RASTER, HIA.SPP[, c("searchTaxon", "Plant.type", 
                                                            "Number.of.growers", "Origin", "Top_200")], 
                            by = "searchTaxon", type = "left", match = "all")
 
 
 ## Now join hort context to all the niches. Provisional, keep working on it .
 ## Paul Rymer wants more contextual data
-GBIF.NICHE.CONTEXT = join(GBIF.NICHE, DRAFT.HIA.TAXA[, c("searchTaxon", "Plant.type", 
+GBIF.NICHE.CONTEXT = join(GBIF.NICHE, HIA.SPP[, c("searchTaxon", "Plant.type", 
                                                          "Number.of.growers", "Number.of.States",
                                                          "ACT", "NSW", "NT", "QLD", "SA", "VIC", "WA",
                                                          "Origin", "Top_200")], 
@@ -297,6 +297,7 @@ GBIF.NICHE.CONTEXT = join(GBIF.NICHE, DRAFT.HIA.TAXA[, c("searchTaxon", "Plant.t
 GBIF.NICHE.CONTEXT[is.na(GBIF.NICHE.CONTEXT)] <- 0
 GBIF.NICHE.CONTEXT = GBIF.NICHE.CONTEXT[with(GBIF.NICHE.CONTEXT, rev(order(Number.of.growers))), ]
 View(GBIF.NICHE.CONTEXT)
+
 
 #########################################################################################################################
 ## For pedantry, reroder columns...
@@ -316,7 +317,7 @@ dim(GBIF.NICHE.CONTEXT)
 
 
 #########################################################################################################################
-## now create a master summary of the recrods so far. What do we need to know?
+## Now create a master summary of the recrods so far. What do we need to know?
 ## These numbers could be variables that update each time code is re-run with changes to the variables
 ## Also a table could be made for each source (GBIF, ALA, Council, etc.), But ideally it is just one table
 
@@ -325,13 +326,14 @@ dim(GBIF.NICHE.CONTEXT)
 ## % records retained after filtering 
 ## 6-figure summary across all taxa (min, max, median)
 ## number of all taxa with > n records (e.g. +50, +100, +1000, +10,000) - assuming it doesn't matter above certain level
-## number of taxa with > n records
+## number of top 200 taxa with > n records
 summary(GBIF.NICHE.CONTEXT$count)
 
 
 ## How many species where knocked out by using filters?
 kable(GBIF.PROBLEMS)
 ## save(GBIF.NICHE.CONTEXT, file = paste("./data/base/HIA_LIST/GBIF/GBIF_NICHE_CONTEXT.RData", sep = ""))
+
 
 #########################################################################################################################
 ## Which species have more than n records, are on the top 200, etc?
@@ -403,9 +405,6 @@ kable(GBIF.RECORD.SUMMARY)
 
 #########################################################################################################################
 ## Now visualise the distribution of records
-
-
-## Use lattice histograms
 histogram(GBIF.NICHE.CONTEXT$count,
           breaks = 50, border = NA, col = "grey",
           xlab = "Number of GBIF records per species", 
@@ -418,6 +417,9 @@ rm(GBIF.LAND)
 rm(GBIF.TEST)
 rm(GBIF.RASTER)
 gc()
+
+
+
 
 
 #########################################################################################################################
