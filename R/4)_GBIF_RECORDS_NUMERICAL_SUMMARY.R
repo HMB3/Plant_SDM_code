@@ -185,36 +185,54 @@ names(GBIF.RASTER)
 
 
 #########################################################################################################################
-## Only 160 of the the unique species are on the top 200
-dim(subset(HIA.SPP, Top_200 == "TRUE"))
-
-##
-HIA.SPP.200 = subset(HIA.SPP, Top_200 == "TRUE")
-HIA.SPP.200 = rename(HIA.SPP.200, searchTaxon = Species)
-HIA.SPP     = rename(HIA.SPP,     searchTaxon = Species)
+## Might not need separate top 200 anymore...
+HIA.SPP.JOIN = HIA.SPP
+HIA.SPP.JOIN.200 = subset(HIA.SPP.JOIN, Top_200 == "TRUE")
+HIA.SPP.JOIN.200 = rename(HIA.SPP.JOIN.200, searchTaxon = Binomial)
+HIA.SPP.JOIN     = rename(HIA.SPP.JOIN,     searchTaxon = Binomial)
 
 
-## Set NA to blank, then sort by no. of growers?
-HIA.SPP[is.na(HIA.SPP)] <- 0
-HIA.SPP = HIA.SPP[with(HIA.SPP, rev(order(Number.of.growers))), ]
-HIA.SPP.200 = HIA.SPP.200[with(HIA.SPP.200, rev(order(Number.of.growers))), ]
+## Set NA to blank, then sort by no. of growers to get them to the top
+HIA.SPP.JOIN[is.na(HIA.SPP.JOIN)] <- 0
+HIA.SPP.JOIN = HIA.SPP.JOIN[with(HIA.SPP.JOIN, rev(order(Number.of.growers))), ]
+HIA.SPP.JOIN.200 = HIA.SPP.JOIN.200[with(HIA.SPP.JOIN.200, rev(order(Number.of.growers))), ]
+
 
 ## check
-head(HIA.SPP[, c("searchTaxon", "Number.of.growers")])
-View(HIA.SPP)
+head(HIA.SPP.JOIN[, c("searchTaxon", "Number.of.growers")])
+View(HIA.SPP.JOIN)
 
 
 ## save list to file for Rachel to check Austraits
-drops <- c("Count", "Comment")
-HIA.SPP = HIA.SPP[ , !(names(HIA.SPP) %in% drops)]
-names(HIA.SPP)
-## write.csv(HIA.SPP, "./data/base/HIA_LIST/HIA/DRAFT_HIA_TAXA.csv", row.names = FALSE)
-
+## Also could join the taxon lookup
+## write.csv(HIA.SPP.JOIN, "./data/base/HIA_LIST/HIA/HIA_SPP_JOIN.csv", row.names = FALSE)
 
 
 ## Now summarise the niches. But figure out a cleaner way of doing this?
 env.variables = c("Annual_mean_temp", "Temp_seasonality", "Max_temp_warm_month", "Min_temp_cold_month",
                   "Annual_precip",    "Precip_Wet_month", "Precip_dry_month",    "Precip_seasonality")
+
+
+env.variables = c("Annual_mean_temp",     
+                  "Mean_diurnal_range",   
+                  "Isothermality",        
+                  "Temp_seasonality",     
+                  "Max_temp_warm_month",  
+                  "Min_temp_cold_month",  
+                  "Temp_annual_range",    
+                  "Mean_temp_wet_qu",     
+                  "Mean_temp_dry_qu",     
+                  "Mean_temp_warm_qu",    
+                  "Mean_temp_cold_qu",
+                  
+                  "Annual_precip",        
+                  "Precip_wet_month",     
+                  "Precip_dry_month",     
+                  "Precip_seasonality",   
+                  "Precip_wet_qu",        
+                  "Precip_dry_qu",        
+                  "Precip_warm_qu",       
+                  "Precip_col_qu")
 
 
 #########################################################################################################################
@@ -271,19 +289,19 @@ names(GBIF.NICHE)
 ## Which columns do we need?
 names(GBIF.RASTER)
 names(GBIF.NICHE)
-names(HIA.SPP.200)
-View(HIA.SPP)
+names(HIA.SPP.JOIN.200)
+View(HIA.SPP.JOIN)
 
 
 ## Now join hort context to all records. Provisional, keep working on it 
-GBIF.RASTER.CONTEXT = join(GBIF.RASTER, HIA.SPP[, c("searchTaxon", "Plant.type", 
+GBIF.RASTER.CONTEXT = join(GBIF.RASTER, HIA.SPP.JOIN[, c("searchTaxon", "Plant.type", 
                                                            "Number.of.growers", "Origin", "Top_200")], 
                            by = "searchTaxon", type = "left", match = "all")
 
 
 ## Now join hort context to all the niches. Provisional, keep working on it .
 ## Paul Rymer wants more contextual data
-GBIF.NICHE.CONTEXT = join(GBIF.NICHE, HIA.SPP[, c("searchTaxon", "Plant.type", 
+GBIF.NICHE.CONTEXT = join(GBIF.NICHE, HIA.SPP.JOIN[, c("searchTaxon", "Plant.type", 
                                                          "Number.of.growers", "Number.of.States",
                                                          "ACT", "NSW", "NT", "QLD", "SA", "VIC", "WA",
                                                          "Origin", "Top_200")], 
