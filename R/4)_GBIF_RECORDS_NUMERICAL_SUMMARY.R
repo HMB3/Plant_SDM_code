@@ -143,23 +143,19 @@ GBIF.RASTER = rename(GBIF.RASTER,
                      Annual_mean_temp     = bio_01,
                      Mean_diurnal_range   = bio_02,
                      Isothermality        = bio_03,
-                     
                      Temp_seasonality     = bio_04,
                      Max_temp_warm_month  = bio_05,
                      Min_temp_cold_month  = bio_06,
-                     
                      Temp_annual_range    = bio_07,
                      Mean_temp_wet_qu     = bio_08,
                      Mean_temp_dry_qu     = bio_09,
-                     
                      Mean_temp_warm_qu    = bio_10,
                      Mean_temp_cold_qu    = bio_11,
-                     Annual_precip        = bio_12,
                      
+                     Annual_precip        = bio_12,
                      Precip_wet_month     = bio_13,
                      Precip_dry_month     = bio_14,
                      Precip_seasonality   = bio_15,
-                     
                      Precip_wet_qu        = bio_16,
                      Precip_dry_qu        = bio_17,
                      Precip_warm_qu       = bio_18,
@@ -176,6 +172,11 @@ dim(GBIF.RASTER)
 names(GBIF.RASTER)
 
 
+## Also consider converting degrees Kelvin to Celsius?
+# hist(GBIF.RASTER$Annual_mean_temp)
+# hist((GBIF.RASTER$Annual_mean_temp)-273.15)
+
+
 
 
 
@@ -186,7 +187,7 @@ names(GBIF.RASTER)
 
 #########################################################################################################################
 ## Might not need separate top 200 anymore...
-HIA.SPP.JOIN = HIA.SPP
+HIA.SPP.JOIN     = HIA.SPP
 HIA.SPP.JOIN.200 = subset(HIA.SPP.JOIN, Top_200 == "TRUE")
 HIA.SPP.JOIN.200 = rename(HIA.SPP.JOIN.200, searchTaxon = Binomial)
 HIA.SPP.JOIN     = rename(HIA.SPP.JOIN,     searchTaxon = Binomial)
@@ -197,6 +198,7 @@ HIA.SPP.JOIN[is.na(HIA.SPP.JOIN)] <- 0
 HIA.SPP.JOIN = HIA.SPP.JOIN[with(HIA.SPP.JOIN, rev(order(Number.of.growers))), ]
 HIA.SPP.JOIN.200 = HIA.SPP.JOIN.200[with(HIA.SPP.JOIN.200, rev(order(Number.of.growers))), ]
 head(HIA.SPP.JOIN[, c("searchTaxon", "Number.of.growers")])
+View(HIA.SPP.JOIN)
 
 
 ## save list to file for Rachel to check Austraits
@@ -228,7 +230,7 @@ env.variables = c("Annual_mean_temp",
 
 
 #########################################################################################################################
-## We want to create niche summaries for each environmental condition like this...
+## Create niche summaries for each environmental condition like this...
 ## Here's what the function will produce :
 library(plyr)  ## detach plyr again if doing more renaming
 head(niche_estimate (DF = GBIF.RASTER, colname = "Annual_mean_temp"))
@@ -282,19 +284,11 @@ names(GBIF.NICHE)
 
 #########################################################################################################################
 ## Now join the horticultural contextual data onto one or both tables ()
-## Which columns do we need?
-names(GBIF.RASTER)
-names(GBIF.NICHE)
-names(HIA.SPP.JOIN)
-View(HIA.SPP.JOIN)
-
-
-## Now join hort context to all records. Provisional, keep working on it 
 GBIF.RASTER.CONTEXT = join(GBIF.RASTER, HIA.SPP.JOIN, 
                            by = "searchTaxon", type = "left", match = "all")
 
 
-## Now join hort context to all the niches. Provisional, keep working on it .
+## Now join hort context to all the niche
 GBIF.NICHE.CONTEXT = join(GBIF.NICHE, HIA.SPP.JOIN, 
                           by = "searchTaxon", type = "left", match = "all")
 
