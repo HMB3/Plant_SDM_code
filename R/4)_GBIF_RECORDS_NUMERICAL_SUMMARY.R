@@ -187,10 +187,9 @@ names(GBIF.RASTER)
 
 #########################################################################################################################
 ## Might not need separate top 200 anymore...
+library(plyr)  ## detach plyr again if doing more renaming
 HIA.SPP.JOIN     = HIA.SPP
-HIA.SPP.JOIN.200 = subset(HIA.SPP.JOIN, Top_200 == "TRUE")
-HIA.SPP.JOIN.200 = rename(HIA.SPP.JOIN.200, searchTaxon = Binomial)
-HIA.SPP.JOIN     = rename(HIA.SPP.JOIN,     searchTaxon = Binomial)
+names(HIA.SPP.JOIN)[names(HIA.SPP.JOIN) == "Binomial"] <- "searchTaxon"
 
 
 ## Set NA to blank, then sort by no. of growers to get them to the top
@@ -232,7 +231,6 @@ env.variables = c("Annual_mean_temp",
 #########################################################################################################################
 ## Create niche summaries for each environmental condition like this...
 ## Here's what the function will produce :
-library(plyr)  ## detach plyr again if doing more renaming
 head(niche_estimate (DF = GBIF.RASTER, colname = "Annual_mean_temp"))
 dim(niche_estimate  (DF = GBIF.RASTER, colname = "Annual_mean_temp"))  ## 7 environmetnal summaries so far
 
@@ -392,19 +390,19 @@ GBIF.RECORD.SUMMARY[1, "Filters applied"]         = Filters.applied
 GBIF.RECORD.SUMMARY[1, "Cleaned records"]         = Remaining.records
 GBIF.RECORD.SUMMARY[1, "% Records retained"]      = Remaining.percent
 
-GBIF.RECORD.SUMMARY[1, "Min"]                     = summary(GBIF.NICHE.CONTEXT$count)[1]
-GBIF.RECORD.SUMMARY[1, "Max"]                     = summary(GBIF.NICHE.CONTEXT$count)[6]
-GBIF.RECORD.SUMMARY[1, "Median"]                  = summary(GBIF.NICHE.CONTEXT$count)[4]
+GBIF.RECORD.SUMMARY[1, "Min"]                     = summary(GBIF.NICHE.CONTEXT$GBIF.count)[1]
+GBIF.RECORD.SUMMARY[1, "Max"]                     = summary(GBIF.NICHE.CONTEXT$GBIF.count)[6]
+GBIF.RECORD.SUMMARY[1, "Median"]                  = summary(GBIF.NICHE.CONTEXT$GBIF.count)[4]
 
-GBIF.RECORD.SUMMARY[1, "All taxa count 50+"]      = sum(GBIF.NICHE.CONTEXT$count >= 50,   na.rm = TRUE)
-GBIF.RECORD.SUMMARY[1, "All taxa count 100+"]     = sum(GBIF.NICHE.CONTEXT$count >= 100,  na.rm = TRUE)
-GBIF.RECORD.SUMMARY[1, "All taxa count 1000+"]    = sum(GBIF.NICHE.CONTEXT$count >= 1000, na.rm = TRUE)
-GBIF.RECORD.SUMMARY[1, "All taxa count 10,000+"]  = sum(GBIF.NICHE.CONTEXT$count >= 10000, na.rm = TRUE)
+GBIF.RECORD.SUMMARY[1, "All taxa count 50+"]      = sum(GBIF.NICHE.CONTEXT$GBIF.count >= 50,   na.rm = TRUE)
+GBIF.RECORD.SUMMARY[1, "All taxa count 100+"]     = sum(GBIF.NICHE.CONTEXT$GBIF.count >= 100,  na.rm = TRUE)
+GBIF.RECORD.SUMMARY[1, "All taxa count 1000+"]    = sum(GBIF.NICHE.CONTEXT$GBIF.count >= 1000, na.rm = TRUE)
+GBIF.RECORD.SUMMARY[1, "All taxa count 10,000+"]  = sum(GBIF.NICHE.CONTEXT$GBIF.count >= 10000, na.rm = TRUE)
 
-GBIF.RECORD.SUMMARY[1, "Top taxa count 50+"]      = sum(GBIF.NICHE.CONTEXT$count >= 50    & GBIF.NICHE.CONTEXT$Top_200 == "TRUE", na.rm = TRUE)
-GBIF.RECORD.SUMMARY[1, "Top taxa count 100+"]     = sum(GBIF.NICHE.CONTEXT$count >= 100   & GBIF.NICHE.CONTEXT$Top_200 == "TRUE", na.rm = TRUE)
-GBIF.RECORD.SUMMARY[1, "Top taxa count 1000+"]    = sum(GBIF.NICHE.CONTEXT$count >= 1000  & GBIF.NICHE.CONTEXT$Top_200 == "TRUE", na.rm = TRUE)
-GBIF.RECORD.SUMMARY[1, "Top taxa count 10,000+"]  = sum(GBIF.NICHE.CONTEXT$count >= 10000 & GBIF.NICHE.CONTEXT$Top_200 == "TRUE", na.rm = TRUE)
+GBIF.RECORD.SUMMARY[1, "Top taxa count 50+"]      = sum(GBIF.NICHE.CONTEXT$GBIF.count >= 50    & GBIF.NICHE.CONTEXT$Top_200 == "TRUE", na.rm = TRUE)
+GBIF.RECORD.SUMMARY[1, "Top taxa count 100+"]     = sum(GBIF.NICHE.CONTEXT$GBIF.count >= 100   & GBIF.NICHE.CONTEXT$Top_200 == "TRUE", na.rm = TRUE)
+GBIF.RECORD.SUMMARY[1, "Top taxa count 1000+"]    = sum(GBIF.NICHE.CONTEXT$GBIF.count >= 1000  & GBIF.NICHE.CONTEXT$Top_200 == "TRUE", na.rm = TRUE)
+GBIF.RECORD.SUMMARY[1, "Top taxa count 10,000+"]  = sum(GBIF.NICHE.CONTEXT$GBIF.count >= 10000 & GBIF.NICHE.CONTEXT$Top_200 == "TRUE", na.rm = TRUE)
 
 
 ## visualise this
@@ -418,7 +416,7 @@ kable(GBIF.RECORD.SUMMARY)
 
 #########################################################################################################################
 ## Now visualise the distribution of records
-histogram(GBIF.NICHE.CONTEXT$count,
+histogram(GBIF.NICHE.CONTEXT$GBIF.count,
           breaks = 50, border = NA, col = "grey",
           xlab = "Number of GBIF records per species", 
           main = "Distribution of GBIF records for HIA species")

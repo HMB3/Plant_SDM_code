@@ -138,7 +138,8 @@ grep('^\\S+ [A-Z]', HIA.VARIETY$Species, val = TRUE)
 
 ## Now for GBIF, just get the unique species...
 HIA.SPP = HIA.VARIETY[!duplicated(HIA.VARIETY["Binomial"]),]
-HIA.SPP = rename(HIA.SPP, HIA.Taxa = Species)
+names(HIA.SPP)[names(HIA.SPP) == "Species"] <- "HIA.Taxa"
+#HIA.SPP = rename(HIA.SPP, HIA.Taxa = Species)
 
 
 ## Reorder by species

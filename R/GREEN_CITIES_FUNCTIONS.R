@@ -60,7 +60,7 @@ download_GBIF_all_species = function (list) {
   GBIF.download.limit = 200000
   
   ## for every species in the list
-  for(sp.n in spp){
+  for(sp.n in list){
     
     ## 1). First, check if the f*&%$*# file exists
     file = paste0("./data/base/HIA_LIST/GBIF/", sp.n, "_GBIF_records.RData")
@@ -113,8 +113,8 @@ download_GBIF_all_species = function (list) {
     GBIF = gbif(sp.n, download = TRUE)   ## could use more arguments here, download_reason_id = 7, etc.
     
     ## 6). save records to .Rdata file, note that using .csv files seemed to cause problems...
-    save(GBIF, file = paste("./data/base/HIA_LIST/GBIF/", sp.n, "_GBIF_records.RData", sep = ""))
-    return(skip.spp.list)
+    save(GBIF, file = paste("./data/base/HIA_LIST/GBIF/SPECIES/", sp.n, "_GBIF_records.RData", sep = ""))
+    #return(skip.spp.list)
     
   }
   

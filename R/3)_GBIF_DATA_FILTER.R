@@ -99,7 +99,8 @@ GBIF.CLEAN <- GBIF.TRIM %>%
 
 ## The table above gives the details, but worth documenting how many records are knocked out by each
 Remaining.records = dim(GBIF.CLEAN)[1] 
-Remaining.percent = dim(GBIF.CLEAN)[1]/total.records*100  
+Remaining.percent = dim(GBIF.CLEAN)[1]/total.records*100
+Filters.applied = "NA COORD | MANAGED/NA | < 1950/NA"
 Remaining.percent ## 65% of records remain after cleaning 
 gc()
 
@@ -107,10 +108,6 @@ gc()
 ## check
 dim(GBIF.CLEAN)
 head(GBIF.CLEAN)
-
-
-## Store character string of the filters applied
-Filters.applied = "NA COORD | MANAGED/NA | < 1950/NA"
 
 
 
