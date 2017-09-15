@@ -71,15 +71,9 @@ source('./R/SDM_FUNCTIONS.R')
 #########################################################################################################################
 
 
-## now run lOOPs to dowload species in the "spp" list from GBIF
-## not including any data quality checks here, just downloading everything ##
-## 
-
-
-## set a few global variables to be used inside the functions...
-#GBIF.download.limit = 200000
-# skip.spp.list       = list()
-# skip.gen.list       = list()
+## Now run loops to dowload species in the "spp" list from GBIF. Not including any data quality checks here, just 
+## downloading everything
+source('./R/HIA_LIST_MATCHING.R')
 
 
 ## run the download function on the species and genera lists
@@ -100,8 +94,9 @@ str(GBIF)
 
 source("./R/2)_HIA_GBIF_DATA_COMBINE.R")
 source("./R/3)_GBIF_DATA_FILTER.R")
+
 source("./R/4)_GBIF_RECORDS_NUMERICAL_SUMMARY.R")
-source("./R/4)_GBIF_ESTIMATE_NICHE.R")
+source("./R/5)_GBIF_ESTIMATE_NICHE.R")
 
 
 

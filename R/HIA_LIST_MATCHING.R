@@ -21,6 +21,7 @@
 HIA.list   = read.csv("./data/base/HIA_LIST/HIA/GREEN_CITIES_DRAFT_LIST_1309_2017.csv", stringsAsFactors = FALSE)
 top.200    = read.csv("./data/base/HIA_LIST/HIA/HIA_TOP_200_1309_2017.csv",             stringsAsFactors = FALSE)
 renee.taxa = read.csv("./data/base/HIA_LIST/HIA/RENEE_TAXA.csv",                        stringsAsFactors = FALSE)
+renee.50   = read.csv("./data/base/HIA_LIST/HIA/RENEE_TOP_50.csv", stringsAsFactors = FALSE)
 
 
 ## have a look
@@ -45,8 +46,7 @@ spp.200$Species  = gsub("  ",     " ", spp.200$Species)
 spp.200$Species  = gsub(" $",     "",  spp.200$Species, perl = TRUE)
 spp.200$Species  = gsub("    $",  "",  spp.200$Species, perl = TRUE)
 spp.200$Top_200  = "TRUE"
-spp.200          = rename(spp.200, Binomial = Species)
-#spp.200$Binomial = spp.200$Species # rename(spp.200, Binomial = Species)
+spp.200          = dplyr::rename(spp.200, Binomial = Species)
 
 
 ## Just get the species renee selected that are not on the top 1000 or 200
@@ -138,8 +138,7 @@ grep('^\\S+ [A-Z]', HIA.VARIETY$Species, val = TRUE)
 
 ## Now for GBIF, just get the unique species...
 HIA.SPP = HIA.VARIETY[!duplicated(HIA.VARIETY["Binomial"]),]
-names(HIA.SPP)[names(HIA.SPP) == "Species"] <- "HIA.Taxa"
-#HIA.SPP = rename(HIA.SPP, HIA.Taxa = Species)
+HIA.SPP = dplyr::rename(HIA.SPP, HIA.Taxa = Species)
 
 
 ## Reorder by species
@@ -158,7 +157,7 @@ length(spp)
 ## Try using taxonlookup to check the taxonomy
 HIA.SPP.LOOKUP = lookup_table(HIA.SPP[["Binomial"]], by_species = TRUE) ## convert rows to column and merge
 HIA.SPP.LOOKUP = setDT(HIA.SPP.LOOKUP , keep.rownames = TRUE)[]
-HIA.SPP.LOOKUP = rename(HIA.SPP.LOOKUP, Binomial = rn)
+HIA.SPP.LOOKUP = dplyr::rename(HIA.SPP.LOOKUP, Binomial = rn)
 head(HIA.SPP.LOOKUP) ## Can merge on the bilogical data here...
 ## write.csv(HIA.SPP.LOOKUP, "./data/base/HIA_LIST/HIA/HIA_BINOMIAL_LOOKUP.csv", row.names = FALSE)
 

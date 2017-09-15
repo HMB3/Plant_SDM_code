@@ -139,32 +139,32 @@ GBIF.RASTER <- extract(s, GBIF.POINTS) %>%
 
 
 ## multiple rename?
-GBIF.RASTER = rename(GBIF.RASTER,
-                     Annual_mean_temp     = bio_01,
-                     Mean_diurnal_range   = bio_02,
-                     Isothermality        = bio_03,
-                     Temp_seasonality     = bio_04,
-                     Max_temp_warm_month  = bio_05,
-                     Min_temp_cold_month  = bio_06,
-                     Temp_annual_range    = bio_07,
-                     Mean_temp_wet_qu     = bio_08,
-                     Mean_temp_dry_qu     = bio_09,
-                     Mean_temp_warm_qu    = bio_10,
-                     Mean_temp_cold_qu    = bio_11,
-                     
-                     Annual_precip        = bio_12,
-                     Precip_wet_month     = bio_13,
-                     Precip_dry_month     = bio_14,
-                     Precip_seasonality   = bio_15,
-                     Precip_wet_qu        = bio_16,
-                     Precip_dry_qu        = bio_17,
-                     Precip_warm_qu       = bio_18,
-                     Precip_col_qu        = bio_19)
+GBIF.RASTER = dplyr::rename(GBIF.RASTER,
+                            Annual_mean_temp     = bio_01,
+                            Mean_diurnal_range   = bio_02,
+                            Isothermality        = bio_03,
+                            Temp_seasonality     = bio_04,
+                            Max_temp_warm_month  = bio_05,
+                            Min_temp_cold_month  = bio_06,
+                            Temp_annual_range    = bio_07,
+                            Mean_temp_wet_qu     = bio_08,
+                            Mean_temp_dry_qu     = bio_09,
+                            Mean_temp_warm_qu    = bio_10,
+                            Mean_temp_cold_qu    = bio_11,
+                            
+                            Annual_precip        = bio_12,
+                            Precip_wet_month     = bio_13,
+                            Precip_dry_month     = bio_14,
+                            Precip_seasonality   = bio_15,
+                            Precip_wet_qu        = bio_16,
+                            Precip_dry_qu        = bio_17,
+                            Precip_warm_qu       = bio_18,
+                            Precip_col_qu        = bio_19)
 
 
 ## Save/load
 save(GBIF.RASTER, file = paste("./data/base/HIA_LIST/GBIF/GBIF_RASTER.RData"))
-load("./data/base/HIA_LIST/GBIF/GBIF_RASTER.RData")
+#load("./data/base/HIA_LIST/GBIF/GBIF_RASTER.RData")
 
 
 ## check
@@ -189,7 +189,8 @@ names(GBIF.RASTER)
 ## Might not need separate top 200 anymore...
 library(plyr)  ## detach plyr again if doing more renaming
 HIA.SPP.JOIN     = HIA.SPP
-names(HIA.SPP.JOIN)[names(HIA.SPP.JOIN) == "Binomial"] <- "searchTaxon"
+HIA.SPP.JOIN     = dplyr::rename(HIA.SPP.JOIN, searchTaxon = Binomial)
+#names(HIA.SPP.JOIN)[names(HIA.SPP.JOIN) == "Binomial"] <- "searchTaxon"
 
 
 ## Set NA to blank, then sort by no. of growers to get them to the top
@@ -301,7 +302,7 @@ GBIF.NICHE.CONTEXT  = GBIF.NICHE.CONTEXT[,  c(137, 2, 1, 138:150,  3:133)]
 
 ## Set NA to blank, then sort by no. of growers.
 ## The extra species are ones I dowloaded in error
-GBIF.NICHE.CONTEXT[is.na(GBIF.NICHE.CONTEXT)] <- 0
+GBIF.NICHE.CONTEXT$Number.of.growers[is.na(GBIF.NICHE.CONTEXT$Number.of.growers)] <- 0
 GBIF.NICHE.CONTEXT = GBIF.NICHE.CONTEXT[with(GBIF.NICHE.CONTEXT, rev(order(Number.of.growers))), ]
 
 
@@ -319,6 +320,9 @@ View(HIA.SPP.JOIN)
 missing.25 = setdiff(unique(HIA.SPP.JOIN[ which(HIA.SPP.JOIN$Number.of.growers >= 25), ][["searchTaxon"]]),
                      unique(GBIF.NICHE.CONTEXT[ which(GBIF.NICHE.CONTEXT$Number.of.growers >= 25), ][["searchTaxon"]]))
 missing.taxa = unique(c(missing.taxa, missing.25))
+
+renee.extra  = setdiff(unique(renee.50$Species),
+                       unique(GBIF.NICHE.CONTEXT[ which(GBIF.NICHE.CONTEXT$Number.of.growers >= 25), ][["searchTaxon"]]))
        
 
 ## Save the summary datasets
