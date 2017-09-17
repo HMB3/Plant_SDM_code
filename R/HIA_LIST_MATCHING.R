@@ -177,21 +177,21 @@ skipped.species.df[ which(skipped.species.df$Reason_skipped == "Number of record
 View(GBIF.NICHE.CONTEXT)
 
 
-## Get the difference between the original list and the processed list
-missed.HIA.processed = setdiff(HIA.SPP$Binomial, GBIF.NICHE.CONTEXT$searchTaxon)        ## return elements beloning to HIA only
-missed.processed.HIA = setdiff(GBIF.NICHE.CONTEXT$searchTaxon, HIA.SPP$Binomial)        ## beloning to processed only
-
-
-## Plus the difference between the top 200 and the processed list
-setdiff(spp.200$Binomial, subset(HIA.SPP, Top_200 == "TRUE")[["Binomial"]])
-missed.t200.processed = setdiff(spp.200$Binomial, GBIF.NICHE.CONTEXT$searchTaxon) 
-
-
-## Need 660 rows in the processed data with contextual data
-length(missed.HIA.processed) + length(missed.t200.processed)                            ## 133 missing taxa... 660 -559
-missing.taxa = unique(c(missed.HIA.processed, missed.t200.processed))
-missing.taxa = gsub("    $",  "",  missing.taxa, perl = TRUE)
-missing.taxa
+# ## Get the difference between the original list and the processed list
+# missed.HIA.processed = setdiff(HIA.SPP$Binomial, GBIF.NICHE.CONTEXT$searchTaxon)        ## return elements beloning to HIA only
+# missed.processed.HIA = setdiff(GBIF.NICHE.CONTEXT$searchTaxon, HIA.SPP$Binomial)        ## beloning to processed only
+# 
+# 
+# ## Plus the difference between the top 200 and the processed list
+# setdiff(spp.200$Binomial, subset(HIA.SPP, Top_200 == "TRUE")[["Binomial"]])
+# missed.t200.processed = setdiff(spp.200$Binomial, GBIF.NICHE.CONTEXT$searchTaxon) 
+# 
+# 
+# ## Need 660 rows in the processed data with contextual data
+# length(missed.HIA.processed) + length(missed.t200.processed)                            ## 133 missing taxa... 660 -559
+# missing.taxa = unique(c(missed.HIA.processed, missed.t200.processed))
+# missing.taxa = gsub("    $",  "",  missing.taxa, perl = TRUE)
+# missing.taxa
 
 
 #########################################################################################################################
@@ -211,7 +211,6 @@ length(unique(HIA.SPP$Binomial))     ## Binomials (610), keep Michelia yunnanens
 
 
 ## record the "spp." weirdos
-#EXCLUDED.SPP        = setdiff(unique(RAW.HIA.SPP), DRAFT.HIA.TAXA$Species)
 EXCLUDED.SPP         = setdiff(unique(RAW.HIA.SPP), unique(HIA.VARIETY$Species))
 EXCLUDED.VARIETIES   = setdiff(unique(HIA.VARIETY$Species), unique(HIA.SPP$HIA.Taxa))
 

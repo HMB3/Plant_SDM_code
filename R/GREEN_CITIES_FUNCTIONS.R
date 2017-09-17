@@ -53,6 +53,8 @@ string_fun_first_word <- function(x) {
 #########################################################################################################################
 
 
+#########################################################################################################################
+## GBIF
 download_GBIF_all_species = function (list) {
   
   ## create variables
@@ -63,7 +65,7 @@ download_GBIF_all_species = function (list) {
   for(sp.n in list){
     
     ## 1). First, check if the f*&%$*# file exists
-    file = paste0("./data/base/HIA_LIST/GBIF/", sp.n, "_GBIF_records.RData")
+    file = paste0("./data/base/HIA_LIST/GBIF/SPECIES", sp.n, "_GBIF_records.RData")
     
     ## If it's already downloaded, skip
     if (file.exists (file)) {
@@ -119,6 +121,82 @@ download_GBIF_all_species = function (list) {
   }
   
 }
+
+
+
+
+
+#########################################################################################################################
+## ALA
+download_ALA_all_species = function (list) {
+  
+  ## create variables
+  skip.spp.list       = list()
+  #ALA.download.limit  = 200000
+  
+  ## for every species in the list
+  for(sp.n in list){
+    
+    ## 1). First, check if the f*&%$*# file exists
+    file = paste0("./data/base/HIA_LIST/ALA/SPECIES", sp.n, "_ALA_records.RData")
+    
+    ## If it's already downloaded, skip
+    if (file.exists (file)) {
+      
+      print (paste ("file exists for species", sp.n, "skipping"))
+      next
+      
+    }
+    
+    ## 2). Then check the spelling...incorrect nomenclature will return NULL result
+    #if (is.null(occ_search(scientificName = sp.n, limit = 1)$meta$count) == TRUE)
+    if (is.null(occurrences(taxon = sp.n, download_reason_id = 7)$data) == TRUE) {
+      
+      ## now append the species which had incorrect nomenclature to the skipped list
+      ## this is slow, but it works for now
+      print (paste ("Possible incorrect nomenclature", sp.n, "skipping"))
+      nomenclature = paste ("Possible incorrect nomenclature |", sp.n)
+      skip.spp.list <- c(skip.spp.list, nomenclature)
+      next
+      
+    }
+    
+    ## 3). Skip species with no records
+    if (dim(occurrences(taxon = sp.n, download_reason_id = 7)$data[1]) < 20) {
+      
+      ## now append the species which had no records to the skipped list
+      print (paste ("Insufficient ALA records or incorrect nomenclature for", sp.n, "skipping"))
+      records = paste ("Insufficient ALA records |", sp.n)
+      skip.spp.list <- c(skip.spp.list, records)
+      next
+      
+    }
+    
+    # ## 4). Check how many records there are, and skip if there are over 200k
+    # if (occ_search(scientificName = sp.n, limit = 1)$meta$count > ALA.download.limit) {
+    #   
+    #   ## now append the species which had > 200k records to the skipped list
+    #   print (paste ("Number of records > max for ALA download via R (200,000)", sp.n, "skipping"))
+    #   max =  paste ("Number of records > 200,000 |", sp.n)
+    #   skip.spp.list <- c(skip.spp.list, max)
+    #   next
+    #   
+    # }
+    
+    ## 5). Download ALL records from ALA
+    ## ala = occurrences(taxon = sp.n, download_reason_id = 7)
+    print (paste (sp.n))
+    ALA = occurrences(taxon = sp.n, download_reason_id = 7)   ## could use more arguments here, download_reason_id = 7, etc.
+    
+    ## 6). save records to .Rdata file, note that using .csv files seemed to cause problems...
+    save(ALA, file = paste("./data/base/HIA_LIST/ALA/SPECIES/", sp.n, "_ALA_records.RData", sep = ""))
+    #return(skip.spp.list)
+    
+  }
+  
+}
+
+
 
 
 

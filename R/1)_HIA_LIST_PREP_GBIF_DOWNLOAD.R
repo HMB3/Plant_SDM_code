@@ -79,6 +79,7 @@ source('./R/HIA_LIST_MATCHING.R')
 ## run the download function on the species and genera lists
 ## these functions need to download at least one file, or they will return NULL
 skipped.species = download_GBIF_all_species(spp)    ## saves each spp as .Rdata file, returning list of skipped spp 
+skipped.ALA     = download_ALA_all_species(spp)    ## saves each spp as .Rdata file, returning list of skipped spp 
 skipped.genera  = download_GBIF_all_genera(genera)  ## saves each gen as .Rdata file, returning list of skipped genera 
 
 
@@ -88,13 +89,10 @@ setdiff.25      = download_GBIF_setdiff_species(missing.25)
 setdiff.Renee   = download_GBIF_Renee_species(spp.renee)
 
 
-## check an eg file...not sure why it was working with RData files, but not .csv files...
-load("./data/base/HIA_LIST/GBIF/Viburnum suspensum_GBIF_records.RData")
-str(GBIF)
-
+#########################################################################################################################
+## Run all the GBIF code 
 source("./R/2)_HIA_GBIF_DATA_COMBINE.R")
 source("./R/3)_GBIF_DATA_FILTER.R")
-
 source("./R/4)_GBIF_RECORDS_NUMERICAL_SUMMARY.R")
 source("./R/5)_GBIF_ESTIMATE_NICHE.R")
 

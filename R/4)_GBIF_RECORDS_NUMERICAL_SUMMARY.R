@@ -315,6 +315,7 @@ names(GBIF.NICHE.CONTEXT)
 dim(GBIF.NICHE.CONTEXT)
 
 
+#########################################################################################################################
 ## quickly check how many species match from the original 610 
 View(HIA.SPP.JOIN)
 missing.25 = setdiff(unique(HIA.SPP.JOIN[ which(HIA.SPP.JOIN$Number.of.growers >= 25), ][["searchTaxon"]]),
@@ -434,7 +435,9 @@ rm(GBIF.RASTER)
 gc()
 
 
-
+#########################################################################################################################
+## Outstanding tasks:
+## For all species, particularly those occurring mostly in Australia, we need to get the GBIF records
 
 
 #########################################################################################################################
