@@ -83,12 +83,6 @@ skipped.ALA     = download_ALA_all_species(spp)    ## saves each spp as .Rdata f
 skipped.genera  = download_GBIF_all_genera(genera)  ## saves each gen as .Rdata file, returning list of skipped genera 
 
 
-## get the extra species
-setdiff.species = download_GBIF_setdiff_species(missing.taxa)
-setdiff.25      = download_GBIF_setdiff_species(missing.25)
-setdiff.Renee   = download_GBIF_Renee_species(spp.renee)
-
-
 #########################################################################################################################
 ## Run all the GBIF code 
 source("./R/2)_HIA_GBIF_DATA_COMBINE.R")
@@ -111,12 +105,12 @@ length(skipped.genera)
 ## converting the lists of skipped species and genera into a dataframe
 skipped.species.df <- data.frame(matrix(unlist(skipped.species), nrow = length(skipped.species), byrow = TRUE))
 skipped.genera.df  <- data.frame(matrix(unlist(skipped.genera),  nrow = length(skipped.genera),  byrow = TRUE))
-skipped.setdiff.df <- data.frame(matrix(unlist(setdiff.species),  nrow = length(setdiff.species),  byrow = TRUE))
+skipped.ALA.df     <- data.frame(matrix(unlist(skipped.ALA),     nrow = length(skipped.ALA),     byrow = TRUE))
 
 ## split the reason and the species into separate columns
 skipped.species.df  <- cSplit(skipped.species.df, 1:ncol(skipped.species.df), sep = "|", stripWhite = TRUE, type.convert = FALSE)
 skipped.genera.df   <- cSplit(skipped.genera.df,  1:ncol(skipped.genera.df),  sep = "|", stripWhite = TRUE, type.convert = FALSE)
-skipped.setdiff.df  <- cSplit(skipped.setdiff.df,  1:ncol(skipped.setdiff.df),  sep = "|", stripWhite = TRUE, type.convert = FALSE)
+skipped.ALA.df      <- cSplit(skipped.ALA.df,  1:ncol(skipped.ALA.df),        sep = "|", stripWhite = TRUE, type.convert = FALSE)
 
 
 ## update names
@@ -124,8 +118,8 @@ colnames(skipped.species.df)[1] <- "Reason_skipped"
 colnames(skipped.species.df)[2] <- "Species"
 colnames(skipped.genera.df)[1]  <- "Reason_skipped"
 colnames(skipped.genera.df)[2]  <- "Genus"  ## head(skipped.species.df), head(skipped.genera.df)
-colnames(skipped.setdiff.df)[1]  <- "Reason_skipped"
-colnames(skipped.setdiff.df)[2]  <- "Genus" 
+colnames(skipped.ALA.df)[1]  <- "Reason_skipped"
+colnames(skipped.ALA.df)[2]  <- "Genus" 
 
 
 ## get subset for each type
@@ -149,6 +143,7 @@ name.records.gen.list = unique(as.character(name.records.gen$Taxa))
 ## save lists just in case
 ## save(skipped.species.df, file = paste("./data/base/HIA_LIST/GBIF/skipped_species.RData", sep = ""))
 ## save(skipped.genera.df,  file = paste("./data/base/HIA_LIST/GBIF/skipped_genera.RData",  sep = ""))
+## save(skipped.ALA.df,     file = paste("./data/base/HIA_LIST/GBIF/skipped_ALA.RData",     sep = ""))
 
 
 ## have a look at the list of skipped species
