@@ -19,12 +19,12 @@ spp.download = list.files("./data/base/HIA_LIST/GBIF/SPECIES/", pattern = ".RDat
 spp.download = gsub("_GBIF_records.RData", "", spp.download)
 
 
-## genera
-gen.download = list.files("./data/base/HIA_LIST/GBIF/GENERA/", pattern = ".RData")
-gen.download = gsub("_GBIF_records.RData", "", gen.download )
-
-str(spp.download)
-str(gen.download)
+# ## genera
+# gen.download = list.files("./data/base/HIA_LIST/GBIF/GENERA/", pattern = ".RData")
+# gen.download = gsub("_GBIF_records.RData", "", gen.download )
+# 
+# str(spp.download)
+# str(gen.download)
 
 
 

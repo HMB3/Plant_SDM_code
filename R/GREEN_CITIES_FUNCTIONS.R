@@ -65,7 +65,8 @@ download_GBIF_all_species = function (list) {
   for(sp.n in list){
     
     ## 1). First, check if the f*&%$*# file exists
-    file = paste0("./data/base/HIA_LIST/GBIF/SPECIES", sp.n, "_GBIF_records.RData")
+    ## data\base\HIA_LIST\GBIF\SPECIES
+    file = paste0("./data/base/HIA_LIST/GBIF/SPECIES/", sp.n, "_GBIF_records.RData")
     
     ## If it's already downloaded, skip
     if (file.exists (file)) {
@@ -138,7 +139,7 @@ download_ALA_all_species = function (list) {
   for(sp.n in list){
     
     ## 1). First, check if the f*&%$*# file exists
-    file = paste0("./data/base/HIA_LIST/ALA/SPECIES", sp.n, "_ALA_records.RData")
+    file = paste0("./data/base/HIA_LIST/ALA/SPECIES/", sp.n, "_ALA_records.RData")
     
     ## If it's already downloaded, skip
     if (file.exists (file)) {
@@ -190,7 +191,7 @@ download_ALA_all_species = function (list) {
     
     ## 6). save records to .Rdata file, note that using .csv files seemed to cause problems...
     save(ALA, file = paste("./data/base/HIA_LIST/ALA/SPECIES/", sp.n, "_ALA_records.RData", sep = ""))
-    #return(skip.spp.list)
+    return(skip.spp.list)
     
   }
   

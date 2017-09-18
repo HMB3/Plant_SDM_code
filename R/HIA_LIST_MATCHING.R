@@ -171,10 +171,10 @@ head(HIA.SPP.LOOKUP) ## Can merge on the bilogical data here...
 
 #########################################################################################################################
 ## Five spp have more than 200K records...
-load("./data/base/HIA_LIST/GBIF/GBIF_NICHE_CONTEXT.RData")
-load("./data/base/HIA_LIST/GBIF/skipped_species.RData")
-skipped.species.df[ which(skipped.species.df$Reason_skipped == "Number of records > 200,000"), ]
-View(GBIF.NICHE.CONTEXT)
+# load("./data/base/HIA_LIST/GBIF/GBIF_NICHE_CONTEXT.RData")
+# load("./data/base/HIA_LIST/GBIF/skipped_species.RData")
+# skipped.species.df[ which(skipped.species.df$Reason_skipped == "Number of records > 200,000"), ]
+# View(GBIF.NICHE.CONTEXT)
 
 
 # ## Get the difference between the original list and the processed list
@@ -196,9 +196,9 @@ View(GBIF.NICHE.CONTEXT)
 
 #########################################################################################################################
 ## Get the unique list from the final data
-length(GBIF.NICHE.CONTEXT[ which(GBIF.NICHE.CONTEXT$Number.of.growers >= 25), ][["searchTaxon"]])
-GBIF.NICHE.CONTEXT.UNIQUE = unique(GBIF.NICHE.CONTEXT[ which(GBIF.NICHE.CONTEXT$Number.of.growers >= 25), ][["searchTaxon"]])
-missing.taxa = setdiff(missing.taxa, GBIF.NICHE.CONTEXT.UNIQUE)
+# length(GBIF.NICHE.CONTEXT[ which(GBIF.NICHE.CONTEXT$Number.of.growers >= 25), ][["searchTaxon"]])
+# GBIF.NICHE.CONTEXT.UNIQUE = unique(GBIF.NICHE.CONTEXT[ which(GBIF.NICHE.CONTEXT$Number.of.growers >= 25), ][["searchTaxon"]])
+# missing.taxa = setdiff(missing.taxa, GBIF.NICHE.CONTEXT.UNIQUE)
 
 
 #########################################################################################################################
@@ -215,7 +215,8 @@ EXCLUDED.SPP         = setdiff(unique(RAW.HIA.SPP), unique(HIA.VARIETY$Species))
 EXCLUDED.VARIETIES   = setdiff(unique(HIA.VARIETY$Species), unique(HIA.SPP$HIA.Taxa))
 
 
-
+## Remaining anomalies:
+## EG: Rhaphiolepis indica has growers for the spp and each variety, should we add them together?
 
 
 #########################################################################################################################

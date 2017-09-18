@@ -196,7 +196,6 @@ HIA.SPP.JOIN     = dplyr::rename(HIA.SPP.JOIN, searchTaxon = Binomial)
 ## Set NA to blank, then sort by no. of growers to get them to the top
 HIA.SPP.JOIN[is.na(HIA.SPP.JOIN)] <- 0
 HIA.SPP.JOIN = HIA.SPP.JOIN[with(HIA.SPP.JOIN, rev(order(Number.of.growers))), ]
-HIA.SPP.JOIN.200 = HIA.SPP.JOIN.200[with(HIA.SPP.JOIN.200, rev(order(Number.of.growers))), ]
 head(HIA.SPP.JOIN[, c("searchTaxon", "Number.of.growers")])
 View(HIA.SPP.JOIN)
 
@@ -262,7 +261,7 @@ drops <- c("searchTaxon.1",  "searchTaxon.2",  "searchTaxon.3",  "searchTaxon.4"
            "searchTaxon.5",  "searchTaxon.6",  "searchTaxon.7",  "searchTaxon.7",
            "searchTaxon.8",  "searchTaxon.9",  "searchTaxon.10", "searchTaxon.11",
            "searchTaxon.12", "searchTaxon.13", "searchTaxon.14", "searchTaxon.15",
-           "searchTaxon.16", "searchTaxon.17")
+           "searchTaxon.16", "searchTaxon.17", "searchTaxon.18")
 GBIF.NICHE = GBIF.NICHE[ , !(names(GBIF.NICHE) %in% drops)]
 
 
@@ -297,7 +296,7 @@ GBIF.NICHE.CONTEXT = join(GBIF.NICHE, HIA.SPP.JOIN,
 ## Note that the downloaded species don't all match up to the original list. This is because there are different lists 
 ## propagating throughout the workflow, I need to watch out for this. 
 GBIF.RASTER.CONTEXT = GBIF.RASTER.CONTEXT[, c(38, 2, 1, 3,  39:51, 4:37)]
-GBIF.NICHE.CONTEXT  = GBIF.NICHE.CONTEXT[,  c(137, 2, 1, 138:150,  3:133)]
+GBIF.NICHE.CONTEXT  = GBIF.NICHE.CONTEXT[,  c(137, 2, 1, 138:149,  3:133)]
 
 
 ## Set NA to blank, then sort by no. of growers.
@@ -307,23 +306,33 @@ GBIF.NICHE.CONTEXT = GBIF.NICHE.CONTEXT[with(GBIF.NICHE.CONTEXT, rev(order(Numbe
 
 
 ## View the data
+names(GBIF.RASTER.CONTEXT)
+names(GBIF.NICHE.CONTEXT)
+dim(GBIF.RASTER.CONTEXT)
+dim(GBIF.NICHE.CONTEXT)
+
 View(GBIF.RASTER.CONTEXT)
 View(GBIF.NICHE.CONTEXT)
 
-names(GBIF.RASTER.CONTEXT)
-names(GBIF.NICHE.CONTEXT)
-dim(GBIF.NICHE.CONTEXT)
-
 
 #########################################################################################################################
-## quickly check how many species match from the original 610 
-View(HIA.SPP.JOIN)
-missing.25 = setdiff(unique(HIA.SPP.JOIN[ which(HIA.SPP.JOIN$Number.of.growers >= 25), ][["searchTaxon"]]),
-                     unique(GBIF.NICHE.CONTEXT[ which(GBIF.NICHE.CONTEXT$Number.of.growers >= 25), ][["searchTaxon"]]))
-missing.taxa = unique(c(missing.taxa, missing.25))
+## quickly check how many species match from the original 610. Only 553 are currently there.
+missing.25     = setdiff(unique(HIA.SPP.JOIN[ which(HIA.SPP.JOIN$Number.of.growers >= 25), ][["searchTaxon"]]),
+                         unique(GBIF.NICHE.CONTEXT[ which(GBIF.NICHE.CONTEXT$Number.of.growers >= 25), ][["searchTaxon"]]))
 
-renee.extra  = setdiff(unique(renee.50$Species),
-                       unique(GBIF.NICHE.CONTEXT[ which(GBIF.NICHE.CONTEXT$Number.of.growers >= 25), ][["searchTaxon"]]))
+missing.all    = setdiff(unique(HIA.SPP.JOIN[["searchTaxon"]]),
+                         unique(GBIF.NICHE.CONTEXT[["searchTaxon"]]))
+
+missing.200    = setdiff(unique(spp.200$Binomial),
+                         unique(GBIF.NICHE.CONTEXT[ which(GBIF.NICHE.CONTEXT$Number.of.growers >= 25), ][["searchTaxon"]]))
+
+missing.renee  = setdiff(unique(renee.50$Species),
+                         unique(GBIF.NICHE.CONTEXT[["searchTaxon"]]))
+
+missing.taxa   = unique(c(missing.25, missing.200, missing.renee))  
+
+## The missing species are due to too few records, too many or taxonomy problems. EG some of the species are varieties, so they 
+## only match to the genus. So 610 - 31 = 579. What is the difference?
        
 
 ## Save the summary datasets
