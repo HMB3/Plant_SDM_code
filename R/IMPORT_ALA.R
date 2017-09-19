@@ -32,6 +32,7 @@
 
 ## Read in ALA data: need readRDS
 AVH.OEH.VASC = readRDS("./data/base/HIA_LIST/ALA/SPECIES/background_all_plants_oeh_avh_with_ibra_dodgy_removed.rds", refhook = NULL)
+write.csv(AVH.OEH.VASC, "./data/base/HIA_LIST/ALA/SPECIES/AVH_OEH_VASC.csv", row.names = FALSE)
 
 
 ## What is this file?
@@ -44,4 +45,11 @@ head(AVH.OEH.VASC)
 ## Consider that GBIF has data for both sources. So are we topping up the native ranges with the AVH. So it will be important 
 ## to get rid of the duplicates. 
 names(GBIF.RASTER.CONTEXT)
+
+
+
+
+
+
+
 
