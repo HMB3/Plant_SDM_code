@@ -9,7 +9,10 @@
 
 
 ## check ALA field names for a key species...
-Magnolia.grandiflora = gbif('Magnolia grandiflora', download = TRUE)
+sp.n = 'Magnolia grandiflora'
+Magnolia.grandiflora = gbif(sp.n, download = TRUE)
+save(Magnolia.grandiflora, file = paste("./data/base/HIA_LIST/GBIF/SPECIES/", sp.n, "_GBIF_records.RData", sep = ""))
+
 GBIF.names = sort(names(Magnolia.grandiflora))
 
 Syzygium.floribundum = occurrences(taxon = 'Syzygium floribundum', download_reason_id = 7)[["data"]]

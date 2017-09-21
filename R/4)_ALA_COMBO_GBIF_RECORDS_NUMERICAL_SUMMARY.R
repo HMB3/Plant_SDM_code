@@ -90,19 +90,41 @@
 # BIO19 = Precipitation of Coldest Quarter
 
 
-## to save time, load in previous data
+## To save time, load in previous data
 load("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.RData")
+load("./data/base/HIA_LIST/ALA/ALA_LAND_POINTS.RData")
 str(GBIF.LAND)
+str()
 
 
-## create points
-GBIF.POINTS   = SpatialPointsDataFrame(coords = GBIF.LAND[c("lon", "lat")], 
-                                       data   = GBIF.LAND[c("lon", "lat")],
+#########################################################################################################################
+## Here is where we could merge on the ALA data
+names(GBIF.LAND)
+names(ALA.LAND)
+setdiff(names(GBIF.LAND), names(ALA.LAND))
+
+
+## Rename a few fields
+ALA.LAND     = dplyr::rename(ALA.LAND, 
+                             scientificName                = scientificname,
+                             coordinateUncertaintyInMeters = uncertainty_m)
+
+
+## bind the rows together?
+GBIF.ALA.COMBO.LAND = bind_rows(GBIF.LAND, ALA.LAND)
+names(GBIF.ALA.COMBO.LAND)
+identical((dim(GBIF.LAND)[1]+dim(ALA.LAND)[1]),dim(GBIF.ALA.COMBO.LAND)[1]) 
+head(GBIF.ALA.COMBO.LAND)
+
+
+## Create points
+COMBO.POINTS   = SpatialPointsDataFrame(coords = GBIF.ALA.COMBO.LAND[c("lon", "lat")], 
+                                       data    = GBIF.ALA.COMBO.LAND[c("lon", "lat")],
                                        proj4string = CRS("+proj=longlat +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +no_defs"))
 
 
 ## check
-summary(GBIF.POINTS)
+summary(COMBO.POINTS)
 
 
 #########################################################################################################################
@@ -133,13 +155,13 @@ s <- stack(env.grids)
 
 
 ## then use the extract function for all the rasters,
-## and finaly bind on the GBIF data to the left of the raster values 
-GBIF.RASTER <- extract(s, GBIF.POINTS) %>% 
-  cbind(GBIF.LAND, .)
+## and finaly bind on the COMBO data to the left of the raster values 
+COMBO.RASTER <- extract(s, COMBO.POINTS) %>% 
+  cbind(COMBO.LAND, .)
 
 
 ## multiple rename?
-GBIF.RASTER = dplyr::rename(GBIF.RASTER,
+COMBO.RASTER = dplyr::rename(COMBO.RASTER,
                             Annual_mean_temp     = bio_01,
                             Mean_diurnal_range   = bio_02,
                             Isothermality        = bio_03,
@@ -163,18 +185,18 @@ GBIF.RASTER = dplyr::rename(GBIF.RASTER,
 
 
 ## Save/load
-save(GBIF.RASTER, file = paste("./data/base/HIA_LIST/GBIF/GBIF_RASTER.RData"))
-#load("./data/base/HIA_LIST/GBIF/GBIF_RASTER.RData")
+save(COMBO.RASTER, file = paste("./data/base/HIA_LIST/COMBO/COMBO_RASTER.RData"))
+#load("./data/base/HIA_LIST/COMBO/COMBO_RASTER.RData")
 
 
 ## check
-dim(GBIF.RASTER)
-names(GBIF.RASTER)
+dim(COMBO.RASTER)
+names(COMBO.RASTER)
 
 
 ## Also consider converting degrees Kelvin to Celsius?
-# hist(GBIF.RASTER$Annual_mean_temp)
-# hist((GBIF.RASTER$Annual_mean_temp)-273.15)
+# hist(COMBO.RASTER$Annual_mean_temp)
+# hist((COMBO.RASTER$Annual_mean_temp)-273.15)
 
 
 
@@ -190,6 +212,7 @@ names(GBIF.RASTER)
 library(plyr)  ## detach plyr again if doing more renaming
 HIA.SPP.JOIN     = HIA.SPP
 HIA.SPP.JOIN     = dplyr::rename(HIA.SPP.JOIN, searchTaxon = Binomial)
+#names(HIA.SPP.JOIN)[names(HIA.SPP.JOIN) == "Binomial"] <- "searchTaxon"
 
 
 ## Set NA to blank, then sort by no. of growers to get them to the top
@@ -201,9 +224,7 @@ View(HIA.SPP.JOIN)
 
 ## save list to file for Rachel to check Austraits
 ## Also could join the taxon lookup
-HIA.SPP.LOOKUP = dplyr::rename(HIA.SPP.LOOKUP, searchTaxon = Binomial)
-HIA.SPP.LOOKUP = merge(HIA.SPP.JOIN, HIA.SPP.LOOKUP, by = "searchTaxon", all = TRUE)
-write.csv(HIA.SPP.LOOKUP, "./data/base/HIA_LIST/HIA/HIA_SPP_LOOKUP.csv", row.names = FALSE)
+## write.csv(HIA.SPP.JOIN, "./data/base/HIA_LIST/HIA/HIA_SPP_JOIN.csv", row.names = FALSE)
 
 
 ## Now summarise the niches. But figure out a cleaner way of doing this?
@@ -232,13 +253,13 @@ env.variables = c("Annual_mean_temp",
 #########################################################################################################################
 ## Create niche summaries for each environmental condition like this...
 ## Here's what the function will produce :
-head(niche_estimate (DF = GBIF.RASTER, colname = "Annual_mean_temp"))
-dim(niche_estimate  (DF = GBIF.RASTER, colname = "Annual_mean_temp"))  ## 7 environmetnal summaries so far
+head(niche_estimate (DF = COMBO.RASTER, colname = "Annual_mean_temp"))
+dim(niche_estimate  (DF = COMBO.RASTER, colname = "Annual_mean_temp"))  ## 7 environmetnal summaries so far
 
 
 ## So lets use lapply on the "Search Taxon".
 ## Note additonal flags are needed, and the taxonomic lists need to be managed better...
-GBIF.NICHE <- env.variables[c(1:length(env.variables))] %>% 
+COMBO.NICHE <- env.variables[c(1:length(env.variables))] %>% 
   
   ## Pipe the list into lapply
   lapply(function(x) {
@@ -246,7 +267,7 @@ GBIF.NICHE <- env.variables[c(1:length(env.variables))] %>%
     ## Now use the niche width function on each colname (so 8 environmental variables)
     ## Also, need to figure out how to make the aggregating column generic (species, genus, etc.)
     ## currently it only works hard-wired
-    niche_estimate (DF = GBIF.RASTER, colname = x)
+    niche_estimate (DF = COMBO.RASTER, colname = x)
     
     ## would be good to remove the duplicates here, somehow
     
@@ -257,20 +278,20 @@ GBIF.NICHE <- env.variables[c(1:length(env.variables))] %>%
 
 
 ## Remove duplicate Taxon columns and check the output
-names(GBIF.NICHE)
+names(COMBO.NICHE)
 drops <- c("searchTaxon.1",  "searchTaxon.2",  "searchTaxon.3",  "searchTaxon.4",
            "searchTaxon.5",  "searchTaxon.6",  "searchTaxon.7",  "searchTaxon.7",
            "searchTaxon.8",  "searchTaxon.9",  "searchTaxon.10", "searchTaxon.11",
            "searchTaxon.12", "searchTaxon.13", "searchTaxon.14", "searchTaxon.15",
            "searchTaxon.16", "searchTaxon.17", "searchTaxon.18")
-GBIF.NICHE = GBIF.NICHE[ , !(names(GBIF.NICHE) %in% drops)]
+COMBO.NICHE = COMBO.NICHE[ , !(names(COMBO.NICHE) %in% drops)]
 
 
 ## Add counts for each species, and record the total number of taxa processed
-GBIF.count = as.data.frame(table(GBIF.RASTER$searchTaxon))$Freq
-Total.taxa.processed = dim(GBIF.NICHE)[1]
-GBIF.NICHE  = cbind(GBIF.count, GBIF.NICHE)
-names(GBIF.NICHE)
+COMBO.count = as.data.frame(table(COMBO.RASTER$searchTaxon))$Freq
+Total.taxa.processed = dim(COMBO.NICHE)[1]
+COMBO.NICHE  = cbind(COMBO.count, COMBO.NICHE)
+names(COMBO.NICHE)
 
 
 
@@ -283,12 +304,12 @@ names(GBIF.NICHE)
 
 #########################################################################################################################
 ## Now join the horticultural contextual data onto one or both tables ()
-GBIF.RASTER.CONTEXT = join(GBIF.RASTER, HIA.SPP.JOIN, 
+COMBO.RASTER.CONTEXT = join(COMBO.RASTER, HIA.SPP.JOIN, 
                            by = "searchTaxon", type = "left", match = "all")
 
 
 ## Now join hort context to all the niche
-GBIF.NICHE.CONTEXT = join(GBIF.NICHE, HIA.SPP.JOIN, 
+COMBO.NICHE.CONTEXT = join(COMBO.NICHE, HIA.SPP.JOIN, 
                           by = "searchTaxon", type = "left", match = "all")
 
 
@@ -296,39 +317,39 @@ GBIF.NICHE.CONTEXT = join(GBIF.NICHE, HIA.SPP.JOIN,
 ## For pedantry, reroder columns...
 ## Note that the downloaded species don't all match up to the original list. This is because there are different lists 
 ## propagating throughout the workflow, I need to watch out for this. 
-GBIF.RASTER.CONTEXT = GBIF.RASTER.CONTEXT[, c(38, 2, 1, 3,  39:51, 4:37)]
-GBIF.NICHE.CONTEXT  = GBIF.NICHE.CONTEXT[,  c(136, 2, 1, 138:149,  3:135)]
+COMBO.RASTER.CONTEXT = COMBO.RASTER.CONTEXT[, c(38, 2, 1, 3,  39:51, 4:37)]
+COMBO.NICHE.CONTEXT  = COMBO.NICHE.CONTEXT[,  c(136, 2, 1, 138:149,  3:135)]
 
 
 ## Set NA to blank, then sort by no. of growers.
 ## The extra species are ones I dowloaded in error
-GBIF.NICHE.CONTEXT$Number.of.growers[is.na(GBIF.NICHE.CONTEXT$Number.of.growers)] <- 0
-GBIF.NICHE.CONTEXT = GBIF.NICHE.CONTEXT[with(GBIF.NICHE.CONTEXT, rev(order(Number.of.growers))), ]
+COMBO.NICHE.CONTEXT$Number.of.growers[is.na(COMBO.NICHE.CONTEXT$Number.of.growers)] <- 0
+COMBO.NICHE.CONTEXT = COMBO.NICHE.CONTEXT[with(COMBO.NICHE.CONTEXT, rev(order(Number.of.growers))), ]
 
 
 ## View the data
-names(GBIF.RASTER.CONTEXT)
-names(GBIF.NICHE.CONTEXT)
-dim(GBIF.RASTER.CONTEXT)
-dim(GBIF.NICHE.CONTEXT)
+names(COMBO.RASTER.CONTEXT)
+names(COMBO.NICHE.CONTEXT)
+dim(COMBO.RASTER.CONTEXT)
+dim(COMBO.NICHE.CONTEXT)
 
-View(GBIF.RASTER.CONTEXT)
-View(GBIF.NICHE.CONTEXT)
+View(COMBO.RASTER.CONTEXT)
+View(COMBO.NICHE.CONTEXT)
 
 
 #########################################################################################################################
 ## quickly check how many species match from the original 610. Only 553 are currently there.
 missing.25     = setdiff(unique(HIA.SPP.JOIN[ which(HIA.SPP.JOIN$Number.of.growers >= 25), ][["searchTaxon"]]),
-                         unique(GBIF.NICHE.CONTEXT[ which(GBIF.NICHE.CONTEXT$Number.of.growers >= 25), ][["searchTaxon"]]))
+                         unique(COMBO.NICHE.CONTEXT[ which(COMBO.NICHE.CONTEXT$Number.of.growers >= 25), ][["searchTaxon"]]))
 
 missing.all    = setdiff(unique(HIA.SPP.JOIN[["searchTaxon"]]),
-                         unique(GBIF.NICHE.CONTEXT[["searchTaxon"]]))
+                         unique(COMBO.NICHE.CONTEXT[["searchTaxon"]]))
 
 missing.200    = setdiff(unique(spp.200$Binomial),
-                         unique(GBIF.NICHE.CONTEXT[ which(GBIF.NICHE.CONTEXT$Number.of.growers >= 25), ][["searchTaxon"]]))
+                         unique(COMBO.NICHE.CONTEXT[ which(COMBO.NICHE.CONTEXT$Number.of.growers >= 25), ][["searchTaxon"]]))
 
 missing.renee  = setdiff(unique(renee.50$Species),
-                         unique(GBIF.NICHE.CONTEXT[["searchTaxon"]]))
+                         unique(COMBO.NICHE.CONTEXT[["searchTaxon"]]))
 
 missing.taxa   = unique(c(missing.25, missing.200, missing.renee))  
 
@@ -337,16 +358,16 @@ missing.taxa   = unique(c(missing.25, missing.200, missing.renee))
        
 
 ## Save the summary datasets
-save(GBIF.RASTER.CONTEXT, file = paste("./data/base/HIA_LIST/GBIF/GBIF_RASTER_CONTEXT.RData", sep = ""))
-save(GBIF.NICHE.CONTEXT,  file = paste("./data/base/HIA_LIST/GBIF/GBIF_NICHE_CONTEXT.RData",  sep = ""))
-write.csv(GBIF.NICHE.CONTEXT, "./data/base/HIA_LIST/GBIF/GBIF_NICHE_CONTEXT.csv",       row.names = FALSE)
+save(COMBO.RASTER.CONTEXT, file = paste("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData", sep = ""))
+save(COMBO.NICHE.CONTEXT,  file = paste("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData",  sep = ""))
+write.csv(COMBO.NICHE.CONTEXT, "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.csv",       row.names = FALSE)
 
 
 
 #########################################################################################################################
 ## Now create a master summary of the recrods so far. What do we need to know?
 ## These numbers could be variables that update each time code is re-run with changes to the variables
-## Also a table could be made for each source (GBIF, ALA, Council, etc.), But ideally it is just one table
+## Also a table could be made for each source (COMBO, ALA, Council, etc.), But ideally it is just one table
 
 ## Total number of number of taxa (ie. all variables are dynamic)
 ## Total number of records (uncleaned, and broken down by source)
@@ -354,11 +375,11 @@ write.csv(GBIF.NICHE.CONTEXT, "./data/base/HIA_LIST/GBIF/GBIF_NICHE_CONTEXT.csv"
 ## 6-figure summary across all taxa (min, max, median)
 ## number of all taxa with > n records (e.g. +50, +100, +1000, +10,000) - assuming it doesn't matter above certain level
 ## number of top 200 taxa with > n records
-summary(GBIF.NICHE.CONTEXT$GBIF.count)
+summary(COMBO.NICHE.CONTEXT$COMBO.count)
 
 
 ## How many species where knocked out by using filters?
-kable(GBIF.PROBLEMS)
+kable(COMBO.PROBLEMS)
 
 
 #########################################################################################################################
@@ -391,65 +412,63 @@ table.columns = c(
 ## Create big matrices with n rows = n samples
 ## These will be filled by the linear model functions  
 table.length                   = length(table.columns)
-GBIF.RECORD.SUMMARY            = matrix(0, n.samples, table.length)
-colnames(GBIF.RECORD.SUMMARY)  = table.columns 
-GBIF.RECORD.SUMMARY            = as.data.frame(GBIF.RECORD.SUMMARY)
+COMBO.RECORD.SUMMARY            = matrix(0, n.samples, table.length)
+colnames(COMBO.RECORD.SUMMARY)  = table.columns 
+COMBO.RECORD.SUMMARY            = as.data.frame(COMBO.RECORD.SUMMARY)
 
 
 ## now put the data in. Could use "melt", etc?
-GBIF.RECORD.SUMMARY[1, "Dataset"]                 = "GBIF_occurrence"                # H1.ms[1, "Intercept"]
-GBIF.RECORD.SUMMARY[1, "Taxa processed"]          = Total.taxa.processed
-GBIF.RECORD.SUMMARY[1, "Rank"]                    = "Species"
-GBIF.RECORD.SUMMARY[1, "Total records"]           = Total.count
-GBIF.RECORD.SUMMARY[1, "Filters applied"]         = Filters.applied
-GBIF.RECORD.SUMMARY[1, "Cleaned records"]         = Remaining.records
-GBIF.RECORD.SUMMARY[1, "% Records retained"]      = Remaining.percent
+COMBO.RECORD.SUMMARY[1, "Dataset"]                 = "COMBO_occurrence"                # H1.ms[1, "Intercept"]
+COMBO.RECORD.SUMMARY[1, "Taxa processed"]          = Total.taxa.processed
+COMBO.RECORD.SUMMARY[1, "Rank"]                    = "Species"
+COMBO.RECORD.SUMMARY[1, "Total records"]           = Total.count
+COMBO.RECORD.SUMMARY[1, "Filters applied"]         = Filters.applied
+COMBO.RECORD.SUMMARY[1, "Cleaned records"]         = Remaining.records
+COMBO.RECORD.SUMMARY[1, "% Records retained"]      = Remaining.percent
 
-GBIF.RECORD.SUMMARY[1, "Min"]                     = summary(GBIF.NICHE.CONTEXT$GBIF.count)[1]
-GBIF.RECORD.SUMMARY[1, "Max"]                     = summary(GBIF.NICHE.CONTEXT$GBIF.count)[6]
-GBIF.RECORD.SUMMARY[1, "Median"]                  = summary(GBIF.NICHE.CONTEXT$GBIF.count)[4]
+COMBO.RECORD.SUMMARY[1, "Min"]                     = summary(COMBO.NICHE.CONTEXT$COMBO.count)[1]
+COMBO.RECORD.SUMMARY[1, "Max"]                     = summary(COMBO.NICHE.CONTEXT$COMBO.count)[6]
+COMBO.RECORD.SUMMARY[1, "Median"]                  = summary(COMBO.NICHE.CONTEXT$COMBO.count)[4]
 
-GBIF.RECORD.SUMMARY[1, "All taxa count 50+"]      = sum(GBIF.NICHE.CONTEXT$GBIF.count >= 50,   na.rm = TRUE)
-GBIF.RECORD.SUMMARY[1, "All taxa count 100+"]     = sum(GBIF.NICHE.CONTEXT$GBIF.count >= 100,  na.rm = TRUE)
-GBIF.RECORD.SUMMARY[1, "All taxa count 1000+"]    = sum(GBIF.NICHE.CONTEXT$GBIF.count >= 1000, na.rm = TRUE)
-GBIF.RECORD.SUMMARY[1, "All taxa count 10,000+"]  = sum(GBIF.NICHE.CONTEXT$GBIF.count >= 10000, na.rm = TRUE)
+COMBO.RECORD.SUMMARY[1, "All taxa count 50+"]      = sum(COMBO.NICHE.CONTEXT$COMBO.count >= 50,   na.rm = TRUE)
+COMBO.RECORD.SUMMARY[1, "All taxa count 100+"]     = sum(COMBO.NICHE.CONTEXT$COMBO.count >= 100,  na.rm = TRUE)
+COMBO.RECORD.SUMMARY[1, "All taxa count 1000+"]    = sum(COMBO.NICHE.CONTEXT$COMBO.count >= 1000, na.rm = TRUE)
+COMBO.RECORD.SUMMARY[1, "All taxa count 10,000+"]  = sum(COMBO.NICHE.CONTEXT$COMBO.count >= 10000, na.rm = TRUE)
 
-GBIF.RECORD.SUMMARY[1, "Top taxa count 50+"]      = sum(GBIF.NICHE.CONTEXT$GBIF.count >= 50    & GBIF.NICHE.CONTEXT$Top_200 == "TRUE", na.rm = TRUE)
-GBIF.RECORD.SUMMARY[1, "Top taxa count 100+"]     = sum(GBIF.NICHE.CONTEXT$GBIF.count >= 100   & GBIF.NICHE.CONTEXT$Top_200 == "TRUE", na.rm = TRUE)
-GBIF.RECORD.SUMMARY[1, "Top taxa count 1000+"]    = sum(GBIF.NICHE.CONTEXT$GBIF.count >= 1000  & GBIF.NICHE.CONTEXT$Top_200 == "TRUE", na.rm = TRUE)
-GBIF.RECORD.SUMMARY[1, "Top taxa count 10,000+"]  = sum(GBIF.NICHE.CONTEXT$GBIF.count >= 10000 & GBIF.NICHE.CONTEXT$Top_200 == "TRUE", na.rm = TRUE)
+COMBO.RECORD.SUMMARY[1, "Top taxa count 50+"]      = sum(COMBO.NICHE.CONTEXT$COMBO.count >= 50    & COMBO.NICHE.CONTEXT$Top_200 == "TRUE", na.rm = TRUE)
+COMBO.RECORD.SUMMARY[1, "Top taxa count 100+"]     = sum(COMBO.NICHE.CONTEXT$COMBO.count >= 100   & COMBO.NICHE.CONTEXT$Top_200 == "TRUE", na.rm = TRUE)
+COMBO.RECORD.SUMMARY[1, "Top taxa count 1000+"]    = sum(COMBO.NICHE.CONTEXT$COMBO.count >= 1000  & COMBO.NICHE.CONTEXT$Top_200 == "TRUE", na.rm = TRUE)
+COMBO.RECORD.SUMMARY[1, "Top taxa count 10,000+"]  = sum(COMBO.NICHE.CONTEXT$COMBO.count >= 10000 & COMBO.NICHE.CONTEXT$Top_200 == "TRUE", na.rm = TRUE)
 
 
 ## visualise this
-str(GBIF.RECORD.SUMMARY)
-colnames(GBIF.RECORD.SUMMARY)
-rownames(GBIF.RECORD.SUMMARY) = "VALUE"
+str(COMBO.RECORD.SUMMARY)
+colnames(COMBO.RECORD.SUMMARY)
+rownames(COMBO.RECORD.SUMMARY) = "VALUE"
 
-GBIF.RECORD.SUMMARY = as.data.frame(t(GBIF.RECORD.SUMMARY)) ## do melting, etc later
-kable(GBIF.RECORD.SUMMARY)
+COMBO.RECORD.SUMMARY = as.data.frame(t(COMBO.RECORD.SUMMARY)) ## do melting, etc later
+kable(COMBO.RECORD.SUMMARY)
 
 
 #########################################################################################################################
 ## Now visualise the distribution of records
-histogram(GBIF.NICHE.CONTEXT$GBIF.count,
+histogram(COMBO.NICHE.CONTEXT$COMBO.count,
           breaks = 50, border = NA, col = "grey",
-          xlab = "Number of GBIF records per species", 
-          main = "Distribution of GBIF records for HIA species")
+          xlab = "Number of COMBO records per species", 
+          main = "Distribution of COMBO records for HIA species")
 
 
 ## remove older files
-rm(GBIF.CLEAN)
-rm(GBIF.LAND)
-rm(GBIF.TEST)
-rm(GBIF.RASTER)
+rm(COMBO.CLEAN)
+rm(COMBO.LAND)
+rm(COMBO.TEST)
+rm(COMBO.RASTER)
 gc()
 
 
 #########################################################################################################################
 ## Outstanding tasks:
-## Clean the data for duplicates and spatial outliers
-## Need to report which species actually have < 20 records, etc. 
-## Reprt Which species have a wide niche, lots of GBIF data, are not popular and might have traits similar to the popular ones? 
+## For all species, particularly those occurring mostly in Australia, we need to get the GBIF records
 
 
 #########################################################################################################################

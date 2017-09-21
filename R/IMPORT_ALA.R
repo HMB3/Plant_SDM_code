@@ -5,7 +5,8 @@
 
 # John: In case my comment doesn't come through: Occurrence records for all vascular plants (native and non-native) in Australia,
 # to the extent that they exist in OEH (Bionet) and the AVH hub of ALA.
-# 
+
+ 
 # OEH data not otherwise cleaned other than removing records with coordinate uncertainty > 1000 m. ALA data have had records
 # removed if they: were duplicates (based on ALA duplicate flags); had invalid geodetic datums; were flagged as cultivated/
 # escapees (occCultivatedEscapee); were recorded earlier than 1950; had taxonomic identification issues (taxonIdentificationIssue)
@@ -16,23 +17,28 @@
 # c:/projects/maxent_in_R/download_all_avh.R (but I can't find the original bionet extract provided by OEH, nor the code used to
 # read it in.. I suspect it might be the series of txt files in \\sci-6944.mqauth.uni.mq.edu.au\C\data\OEH\OEH_Atlas_Licensed\
 # native_flora.7z).
-# 
-# 
+
+ 
 # I believe the OEH data are licensed and use would not be permitted beyond the refugia project. I suggest we recreate these data
 # using a new bionet extract (will need to contact OEH to ask for it) and redownload the ALA data as well. Alternatively, just use
 # ALA alone, but for our NSW work we complemented it with OEH data because it is more complete for NSW, and this better matched
 # our focal species' data.
 
 
+# Also, please don't pass those data on any further. OEH recently contacted us about unlicensed use of their data. They're happy to 
+# provide licenses, but don't want data floating around being used without their permission and attribution.
+# If you're working with any threatened species (probably not?) then you may need to request as-held records for those species, since 
+# they degrade the coordinates otherwise (as in the dataset I shared).
+
+
 
 #########################################################################################################################
-## 1). READ IN AVH
+## 1). READ IN AVH AND MATCH TO HIA SPECIES LIST
 #########################################################################################################################
 
 
 ## Read in ALA data: need readRDS
 AVH.OEH.VASC = readRDS("./data/base/HIA_LIST/ALA/SPECIES/background_all_plants_oeh_avh_with_ibra_dodgy_removed.rds", refhook = NULL)
-write.csv(AVH.OEH.VASC, "./data/base/HIA_LIST/ALA/SPECIES/AVH_OEH_VASC.csv", row.names = FALSE)
 
 
 ## What is this file?
@@ -41,11 +47,45 @@ names(AVH.OEH.VASC)
 head(AVH.OEH.VASC)
 
 
+## Project the ALA data into WGS84
+projection(AVH.OEH.VASC)
+CRS.new <- CRS("+init=epsg:4326")
+AVH.WGS = spTransform(AVH.OEH.VASC, CRS.new)
+projection(AVH.WGS)
+
+
+## Get the coordinates
+AVH.XY          = as.data.frame(coordinates(AVH.WGS))
+head(AVH.XY)
+AVH.OEH.VASC.DF = as.data.frame(AVH.OEH.VASC)
+AVH.OEH.VASC.XY = cbind(AVH.XY, AVH.OEH.VASC.DF)
+AVH.OEH.VASC.XY[12] <- NULL
+AVH.OEH.VASC.XY[13] <- NULL
+AVH.OEH.VASC.XY[12] <- NULL
+
+
+## check the output
+names(AVH.OEH.VASC.XY)
+str(AVH.OEH.VASC.XY)
+
+
+#########################################################################################################################
+## Now match the species list
+HIA.FIN = unique(HIA.SPP.JOIN$searchTaxon)
+AVH.SPP = unique(AVH.OEH.VASC.XY$scientificname)
+
+
+## Intersection of the HIA list and the AVH list
+HIA.AVH.OVERLAP = intersect(HIA.FIN, AVH.SPP)
+HIA.AVH.DIFF    = setdiff(HIA.FIN, AVH.SPP)
+
+
+
 ## Now when do we join on the others? And do we blend the AVH and GBIF? Is there a simple way of combining the two sources? 
 ## Consider that GBIF has data for both sources. So are we topping up the native ranges with the AVH. So it will be important 
 ## to get rid of the duplicates. 
 names(GBIF.RASTER.CONTEXT)
-
+str(GBIF.RASTER.CONTEXT)
 
 
 

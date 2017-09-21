@@ -219,6 +219,13 @@ EXCLUDED.VARIETIES   = setdiff(unique(HIA.VARIETY$Species), unique(HIA.SPP$HIA.T
 ## EG: Rhaphiolepis indica has growers for the spp and each variety, should we add them together?
 
 
+
+##
+AUS.GROW   = read.csv("./data/base/HIA_LIST/HIA/database_aus_sp_growing.csv", stringsAsFactors = FALSE)
+
+
+
+
 #########################################################################################################################
 ## Load Manuels' list
 AUS.GROW = read.csv("./data/base/HIA_LIST/HIA/database_aus_sp_growing.csv", stringsAsFactors = FALSE)

@@ -93,9 +93,20 @@
 ## to save time, load in previous data
 load("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.RData")
 str(GBIF.LAND)
+str()
 
 
-## create points
+#########################################################################################################################
+## Here is where we could merge on the ALA data
+names(GBIF.LAND)
+names(ALA.LAND)
+
+
+## bind the rows together?
+
+
+
+## Create points
 GBIF.POINTS   = SpatialPointsDataFrame(coords = GBIF.LAND[c("lon", "lat")], 
                                        data   = GBIF.LAND[c("lon", "lat")],
                                        proj4string = CRS("+proj=longlat +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +no_defs"))
@@ -190,6 +201,7 @@ names(GBIF.RASTER)
 library(plyr)  ## detach plyr again if doing more renaming
 HIA.SPP.JOIN     = HIA.SPP
 HIA.SPP.JOIN     = dplyr::rename(HIA.SPP.JOIN, searchTaxon = Binomial)
+#names(HIA.SPP.JOIN)[names(HIA.SPP.JOIN) == "Binomial"] <- "searchTaxon"
 
 
 ## Set NA to blank, then sort by no. of growers to get them to the top
@@ -201,9 +213,7 @@ View(HIA.SPP.JOIN)
 
 ## save list to file for Rachel to check Austraits
 ## Also could join the taxon lookup
-HIA.SPP.LOOKUP = dplyr::rename(HIA.SPP.LOOKUP, searchTaxon = Binomial)
-HIA.SPP.LOOKUP = merge(HIA.SPP.JOIN, HIA.SPP.LOOKUP, by = "searchTaxon", all = TRUE)
-write.csv(HIA.SPP.LOOKUP, "./data/base/HIA_LIST/HIA/HIA_SPP_LOOKUP.csv", row.names = FALSE)
+## write.csv(HIA.SPP.JOIN, "./data/base/HIA_LIST/HIA/HIA_SPP_JOIN.csv", row.names = FALSE)
 
 
 ## Now summarise the niches. But figure out a cleaner way of doing this?
@@ -447,9 +457,7 @@ gc()
 
 #########################################################################################################################
 ## Outstanding tasks:
-## Clean the data for duplicates and spatial outliers
-## Need to report which species actually have < 20 records, etc. 
-## Reprt Which species have a wide niche, lots of GBIF data, are not popular and might have traits similar to the popular ones? 
+## For all species, particularly those occurring mostly in Australia, we need to get the GBIF records
 
 
 #########################################################################################################################
