@@ -220,5 +220,37 @@ EXCLUDED.VARIETIES   = setdiff(unique(HIA.VARIETY$Species), unique(HIA.SPP$HIA.T
 
 
 #########################################################################################################################
+## Load Manuels' list
+AUS.GROW = read.csv("./data/base/HIA_LIST/HIA/database_aus_sp_growing.csv", stringsAsFactors = FALSE)
+head(AUS.GROW)
+
+
+## Extracing only unique Rows based on only 1 Column: "scientific_name"
+## The last bit gets the columns we want and re-arranges them
+dim(AUS.GROW)
+AUS.GROW.UNIQUE = subset(AUS.GROW, !duplicated(AUS.GROW$scientific_name))[, c("scientific_name", "state", "SUA", 
+                                                                              "LGA", "origin", "common_name", "ref")]
+
+## Check the dimensions
+dim(AUS.GROW)
+dim(AUS.GROW.UNIQUE)
+length(unique(AUS.GROW$scientific_name))  ## looks right!
+
+
+## Now find the differences between the grown list and the HIA list
+names(HIA.SPP)
+HIA.SPP.BINOMIAL = unique(HIA.SPP$Binomial)
+
+
+## First what are the differences between the lists?
+setdiff(AUS.GROW.UNIQUE$scientific_name, HIA.SPP$Binomial)  ## only on the grown list
+setdiff(HIA.SPP$Binomial, AUS.GROW.UNIQUE$scientific_name)  ## only on the HIA list
+
+## now merge them
+HIA.JOIN = dplyr::rename(HIA.SPP, scientific_name = Binomial)[, c(2:15)]
+GROW.HIA = merge(AUS.GROW.UNIQUE, HIA.JOIN, by = "scientific_name", all = FALSE) ## change to TRUE to get them all
+
+
+#########################################################################################################################
 ############################################  END OF HIA LIST CODE ###################################################### 
 #########################################################################################################################
