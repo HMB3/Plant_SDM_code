@@ -54,6 +54,33 @@ string_fun_first_word <- function(x) {
 
 
 #########################################################################################################################
+## GBIF PARSE
+
+
+# GBIF has recently made a bunch of handy tools available via their revamped API. These tools include a species name parser, 
+# which seems very useful for cleaning long lists of taxon names.
+# 
+# Here’s a simple R function that takes a vector of taxon names and parses them using GBIF’s API, extracting, among other 
+# details, the genus, species, infraspecific rank and epithet, nothorank (i.e., indicating the taxonomic rank of hybridisation), 
+# and authorship
+
+
+gbif_parse <- function(x) {
+  # x is a vector of species names
+  library(RJSONIO)
+  library(RCurl)
+  library(plyr)
+  u <- "http://api.gbif.org/v1/parser/name"
+  res <- fromJSON(
+    postForm(u,
+             .opts = list(postfields = RJSONIO::toJSON(x),
+                          httpheader = c('Content-Type' = 'application/json')))
+  )
+  do.call(rbind.fill, lapply(res, as.data.frame))  
+}
+
+
+#########################################################################################################################
 ## GBIF
 download_GBIF_all_species = function (list) {
   
