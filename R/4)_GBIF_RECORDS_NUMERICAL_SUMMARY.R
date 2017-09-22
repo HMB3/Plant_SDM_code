@@ -449,6 +449,7 @@ gc()
 
 
 #########################################################################################################################
+<<<<<<< HEAD
 ## OUTSTANDING NICHE TASKS:
 #########################################################################################################################
 
@@ -459,6 +460,12 @@ gc()
 
 
 
+=======
+## Outstanding tasks:
+## Clean the data for duplicates and spatial outliers
+## Need to report which species actually have < 20 records, etc. 
+## Reprt Which species have a wide niche, lots of GBIF data, are not popular and might have traits similar to the popular ones? 
+>>>>>>> fc054faf492c5474a09084907a642bbbb0fb3122
 
 
 #########################################################################################################################

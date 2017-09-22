@@ -861,7 +861,7 @@ niche_estimate = function (DF,
                     q98_q02  = (q98 - q02)
                     
                     ## Then crunch them together
-                    c(min, max, median, mean, range, q95_q05, q98_q02)
+                    c(min, max, median, mean, range, q05, q95,  q95_q05, q98_q02)
                     
                   },
                   
@@ -878,6 +878,8 @@ niche_estimate = function (DF,
                         paste0(colname,  "_median"),
                         paste0(colname,  "_mean"),
                         paste0(colname,  "_range"),
+                        paste0(colname,  "_q05"),
+                        paste0(colname,  "_q95"),
                         paste0(colname,  "_q95_q05"),
                         paste0(colname,  "_q98_q02"))
   
@@ -1007,7 +1009,7 @@ map_GBIF_records = function (taxa.list) {
     ################################################################
     ## If the dim = 0 for that taxa subset to Australia, skip to next
     if (dim(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n 
-                                       & GBIF.RASTER.CONTEXT$country == "Australia"), ][18:17])[1] == 0) {
+                                       & GBIF.RASTER.CONTEXT$country == "Australia"), ][[, c("lon", "lat")]])[1] == 0) {
       
       print (paste ("Possible no Australian records for ", taxa.n, "skipping"))
       
@@ -1029,7 +1031,7 @@ map_GBIF_records = function (taxa.list) {
       title(paste0("Global occurrences for ", taxa.n))
       
       ## add points
-      points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][18:17], 
+      points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][[, c("lon", "lat")]], 
              pch = ".", col = "red", cex = 3, asp = 1)
       
       
@@ -1049,7 +1051,7 @@ map_GBIF_records = function (taxa.list) {
            lwd = 1.8, asp = 1, col = 'grey', bg = 'sky blue')
       
       ## add points
-      points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][18:17], 
+      points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][[, c("lon", "lat")]], 
              pch = ".", cex = 7, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2, 
              main = paste0("Global occurrences for ", taxa.n), 
              xlab = "", ylab = "", asp = 1)
@@ -1083,12 +1085,12 @@ map_GBIF_records = function (taxa.list) {
       title(paste0("Global occurrences for ", taxa.n))
       
       ## add points
-      points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][18:17], 
+      points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][[, c("lon", "lat")]], 
              pch = ".", col = "red", cex = 3, asp = 1)
       
       ## PLot Australian occurrences to screen
       plot(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n 
-                                      & GBIF.RASTER.CONTEXT$country == "Australia"), ][18:17], 
+                                      & GBIF.RASTER.CONTEXT$country == "Australia"), ][[, c("lon", "lat")]], 
            pch = ".", cex = 5, col = "red", asp = 1)
       
       ## add title
@@ -1112,7 +1114,7 @@ map_GBIF_records = function (taxa.list) {
            lwd = 1.8, asp = 1, col = 'grey', bg = 'sky blue')
       
       ## add points
-      points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][18:17], 
+      points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][[, c("lon", "lat")]], 
              pch = ".", cex = 7, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2, 
              main = paste0("Global occurrences for ", taxa.n), 
              xlab = "", ylab = "", asp = 1)
@@ -1138,7 +1140,7 @@ map_GBIF_records = function (taxa.list) {
       
       ## plot
       plot(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n 
-                                      & GBIF.RASTER.CONTEXT$country == "Australia"), ][18:17], 
+                                      & GBIF.RASTER.CONTEXT$country == "Australia"), ][[, c("lon", "lat")]], 
            pch = ".", cex = 10, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2.5,
            font.main = 4, col.main = "blue",
            main = paste0("Australian occurrences for ", taxa.n), 
@@ -1169,7 +1171,7 @@ print_GBIF_records = function (taxa.list, env.var.1, env.1, env.col.1, env.units
     ################################################################
     ## If the dim = 0 for that taxa subset to Australia, skip to next
     if (dim(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n 
-                                       & GBIF.RASTER.CONTEXT$country == "Australia"), ][18:17])[1] == 0) {
+                                       & GBIF.RASTER.CONTEXT$country == "Australia"), ][[, c("lon", "lat")]])[1] == 0) {
       
       print (paste ("Possible no Australian records for ", taxa.n, "skipping"))
       
@@ -1179,7 +1181,7 @@ print_GBIF_records = function (taxa.list, env.var.1, env.1, env.col.1, env.units
       title(paste0("Global occurrences for ", taxa.n))
       
       ## add points
-      points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][18:17], 
+      points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][[, c("lon", "lat")]], 
              pch = ".", col = "red", cex = 3, asp = 1)
       
     }
@@ -1192,12 +1194,12 @@ print_GBIF_records = function (taxa.list, env.var.1, env.1, env.col.1, env.units
       title(paste0("Global occurrences for ", taxa.n))
       
       ## add points
-      points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][18:17], 
+      points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][, c("lon", "lat")], 
              pch = ".", col = "red", cex = 3, asp = 1)
       
       ## PLot Australian occurrences to screen
       plot(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n 
-                                      & GBIF.RASTER.CONTEXT$country == "Australia"), ][18:17], 
+                                      & GBIF.RASTER.CONTEXT$country == "Australia"), ][[, c("lon", "lat")]], 
            pch = ".", cex = 5, col = "red", asp = 1)
       
       ## add title
@@ -1236,6 +1238,65 @@ print_GBIF_records = function (taxa.list, env.var.1, env.1, env.col.1, env.units
 ########################################################################################################################
 ## HISTOGRAM FUNCTIONS
 ########################################################################################################################
+
+
+## create simple maps of all GBIF records for selected taxa, in Australia and overseas
+Print_global_histogram = function (taxa.list, DF, env.var.1, env.col.1, env.units.1,
+                                         env.var.2, env.col.2, env.units.2) {
+  
+  ###############################
+  ## for all the taxa in the list
+  for (taxa.n in taxa.list) {
+    
+    #####################################################
+    ## 1). Plot histograms for global occurences of taxa.n
+    
+    #####################################################
+    ## Env.1: create the plot dimensions
+    nf <- layout(mat = matrix(c(1,2),2,1, byrow = TRUE),  height = c(1,3))
+    par(mar = c(3.1, 3.1, 1.1, 2.1),
+        oma = c(1.5, 1.5, 1.5, 1.5)) 
+    
+    ## create vector for the environmental dimenson, and set min and max for plotting
+    env.1 = DF[ which(DF$searchTaxon == taxa.n), ][[env.var.1]]
+    min.1 = min(env.1)
+    max.1 = max(env.1)
+    
+    ## now create the boxplot
+    boxplot(env.1, horizontal = TRUE,  outline = TRUE, 
+            ylim  = c(min.1, max.1), frame = FALSE, 
+            col = env.col.1, axes = FALSE)
+    
+    ## and the histogram
+    hist(env.1, xlim = c(min.1, max.1),
+         breaks = 50, border = NA, col = env.col.1, main = taxa.n,
+         xlab = paste0("Worldclim ", env.var.1, " ", env.units.1, sep = " "))
+    
+    #####################################################
+    ## Env.2: create the plot dimensions
+    nf <- layout(mat = matrix(c(1,2),2,1, byrow = TRUE),  height = c(1,3))
+    par(mar = c(3.1, 3.1, 1.1, 2.1),
+        oma = c(1.5, 1.5, 1.5, 1.5)) 
+    
+    ## set min and max
+    env.2 = DF[ which(DF$searchTaxon == taxa.n), ][[env.var.2]]
+    min.2  = min(env.2)
+    max.2  = max(env.2)
+    
+    ## now create the boxplot
+    boxplot(env.2, horizontal = TRUE,  outline = TRUE, 
+            ylim  = c(min.2, max.2), frame = FALSE, 
+            col = env.col.2, axes = FALSE)
+    
+    ## and the histogram
+    hist(env.2, xlim = c(min.2, max.2),
+         breaks = 50, border = NA, col = env.col.2, main = taxa.n,
+         xlab = paste0("Worldclim ", env.var.2, " ", env.units.2, sep = " "))
+    
+  }
+  
+}
+
 
 
 ## create simple maps of all GBIF records for selected taxa, in Australia and overseas

@@ -15,7 +15,6 @@ library(devtools)
 library(Rtools)
 #devtools::install_github("ropensci/rgbif")
 library(data.table)
-library(RCurl)
 library(Rcpp)
 library(raster)
 library(rgdal)
@@ -27,9 +26,15 @@ library(SDMTools)
 library(rmaxent)
 library(dismo)
 library(AdaptR)
+
+
 library(ALA4R)
 library(rgbif)
+library(RCurl)
+library(httr)
+library(taxonlookup)
 library(speciesgeocodeR)
+
 library(raster)
 
 library(knitr)
@@ -58,7 +63,6 @@ library("biglm")
 library("bigmemory")
 library("biganalytics")
 library("bigtabulate")
-library(taxonlookup)
 
 
 ## source functions
