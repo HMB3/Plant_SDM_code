@@ -16,6 +16,7 @@ load("./data/base/HIA_LIST/GBIF/GBIF_NICHE_CONTEXT.RData")    ## The niches for 
 renee.50   = read.csv("./data/base/HIA_LIST/HIA/RENEE_TOP_50.csv", stringsAsFactors = FALSE)  ## Renee's list
 ## load in LAND map here
 
+
 ## Check
 View(GBIF.RASTER.CONTEXT)
 View(GBIF.NICHE.CONTEXT)
@@ -26,7 +27,7 @@ View(GBIF.NICHE.CONTEXT)
 #########################################################################################################################
 
 
-## I have summarise them all:
+## I have summarised all these variables:
 
 # CODE    NAME                                                          MY NAME
 # BIO1  = Annual Mean Temperature                                    ## moslty self explanatory                                
@@ -65,16 +66,23 @@ View(GBIF.NICHE.CONTEXT)
 names(GBIF.NICHE.CONTEXT)
 
 
+## Also, I need to do more cleaning of the GBIF records, and also eliminate the duplicates between the ALA
+## and GBIF. It's easy to run the whole thing again, but best to treat these niches as an overestimate for now
+
+
+
+
+
 #########################################################################################################################
 ## Now slice the big and small dataframes to just the ones on Renee's list.
-RENEE.SPP          = as.character(renee.50$Species)
+RENEE.SPP          = as.character(unique(GBIF.NICHE.RENEE$searchTaxon))
 GBIF.RASTER.RENEE  = GBIF.RASTER.CONTEXT[GBIF.RASTER.CONTEXT$searchTaxon %in% renee.50$Species, ]
 GBIF.NICHE.RENEE   = GBIF.NICHE.CONTEXT[GBIF.NICHE.CONTEXT$searchTaxon %in% renee.50$Species, ]
 
 ## 
 GBIF.200.RENEE     = GBIF.RASTER.RENEE[ which(GBIF.RASTER.RENEE$Top_200 == "TRUE"), ]
 All.spp.map        = unique(GBIF.RASTER.RENEE[["searchTaxon"]])
-taxa.n             = RENEE.SPP[1]                  ## First species on the list...
+taxa.n             = RENEE.SPP[2]                  ## First species on the list...
 
 
 ## Have a look 
@@ -96,9 +104,18 @@ GBIF_summary_slice(taxa.list = taxa.n,                       ## Could be a list
 
 #########################################################################################################################
 ## Then plot global map
+## note that this still leaves lots of points in the Islands. So we need to decide if those are legitimate.
+WORLD <- readOGR("./data/base/CONTEXTUAL/TM_WORLD_BORDERS-0.3.shp", layer = "TM_WORLD_BORDERS-0.3")
+LAND  <- readOGR("./data/base/CONTEXTUAL/ne_10m_land.shp", layer = "ne_10m_land")
+
+
+
+## Plot global and Australian occurrences for all taxa on the list
+print_GBIF_records(taxa.list = RENEE.SPP)
+
+
 plot(LAND, col = 'grey', bg = 'sky blue')
 title(paste0("Global occurrences for ", taxa.n))
-
 points(GBIF.RASTER.RENEE[ which(GBIF.RASTER.RENEE$searchTaxon == taxa.n), ][, c("lon", "lat")],
        pch = ".", col = "red", cex = 3)
 
@@ -114,12 +131,24 @@ plot(LAND, add = TRUE, asp = 1)
 #########################################################################################################################
 ## And plot the histograms
 ## Also consider how to combine outputs?
+old.par <- par(mar = c(0, 0, 0, 0))
 Print_global_histogram(taxa.list = RENEE.SPP, DF = GBIF.RASTER.RENEE, env.var.1 = "Annual_mean_temp",   env.col.1 = "orange",  env.units.1 = "°K",
                        env.var.2 = "Annual_precip",   env.col.2 = "sky blue",     env.units.2 = "mm")
 
 ## the whole list?
-histogram_GBIF_records(taxa.list = RENEE.SPP, env.var.1 = "Annual_mean_temp",   env.col.1 = "orange",     env.units.1 = "°K",
-                       env.var.2 = "Annual_precip",   env.col.2 = "sky blue",     env.units.2 = "mm")
+# histogram_GBIF_records(taxa.list = RENEE.SPP, env.var.1 = "Annual_mean_temp",   env.col.1 = "orange",     env.units.1 = "°K",
+#                        env.var.2 = "Annual_precip",   env.col.2 = "sky blue",     env.units.2 = "mm")
+
+
+
+
+#########################################################################################################################
+## OUTSTANDING NICHE TASKS:
+#########################################################################################################################
+
+
+## Clean the ALA data and merge with GBIF to avoid duplicates
+## Lots more...
 
 
 

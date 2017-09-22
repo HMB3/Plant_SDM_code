@@ -1162,7 +1162,7 @@ map_GBIF_records = function (taxa.list) {
 
 ########################################################################################################################
 ## Print simple maps of all GBIF records for selected taxa, in Australia and overseas
-print_GBIF_records = function (taxa.list, env.var.1, env.1, env.col.1, env.units.1) {
+print_GBIF_records = function (taxa.list) {
   
   ###############################
   ## for all the taxa in the list
@@ -1170,8 +1170,8 @@ print_GBIF_records = function (taxa.list, env.var.1, env.1, env.col.1, env.units
     
     ################################################################
     ## If the dim = 0 for that taxa subset to Australia, skip to next
-    if (dim(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n 
-                                       & GBIF.RASTER.CONTEXT$country == "Australia"), ][[, c("lon", "lat")]])[1] == 0) {
+    if (dim(DF[ which(DF$searchTaxon == taxa.n 
+                                       & DF$country == "Australia"), ][, c("lon", "lat")])[1] == 0) {
       
       print (paste ("Possible no Australian records for ", taxa.n, "skipping"))
       
@@ -1181,7 +1181,7 @@ print_GBIF_records = function (taxa.list, env.var.1, env.1, env.col.1, env.units
       title(paste0("Global occurrences for ", taxa.n))
       
       ## add points
-      points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][[, c("lon", "lat")]], 
+      points(DF[ which(DF$searchTaxon == taxa.n), ][, c("lon", "lat")], 
              pch = ".", col = "red", cex = 3, asp = 1)
       
     }
@@ -1194,12 +1194,12 @@ print_GBIF_records = function (taxa.list, env.var.1, env.1, env.col.1, env.units
       title(paste0("Global occurrences for ", taxa.n))
       
       ## add points
-      points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][, c("lon", "lat")], 
+      points(DF[ which(DF$searchTaxon == taxa.n), ][, c("lon", "lat")], 
              pch = ".", col = "red", cex = 3, asp = 1)
       
       ## PLot Australian occurrences to screen
-      plot(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n 
-                                      & GBIF.RASTER.CONTEXT$country == "Australia"), ][[, c("lon", "lat")]], 
+      plot(DF[ which(DF$searchTaxon == taxa.n 
+                                      & DF$country == "Australia"), ][, c("lon", "lat")], 
            pch = ".", cex = 5, col = "red", asp = 1)
       
       ## add title
@@ -1214,7 +1214,7 @@ print_GBIF_records = function (taxa.list, env.var.1, env.1, env.col.1, env.units
       #     oma = c(1.5, 1.5, 1.5, 1.5)) 
       # 
       # ## create vector for the environmental dimenson, and set min and max for plotting
-      # env.1 = GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][[env.var.1]]
+      # env.1 = DF[ which(DF$searchTaxon == taxa.n), ][[env.var.1]]
       # min.1 = min(env.1)
       # max.1 = max(env.1)
       # 
@@ -1242,7 +1242,7 @@ print_GBIF_records = function (taxa.list, env.var.1, env.1, env.col.1, env.units
 
 ## create simple maps of all GBIF records for selected taxa, in Australia and overseas
 Print_global_histogram = function (taxa.list, DF, env.var.1, env.col.1, env.units.1,
-                                         env.var.2, env.col.2, env.units.2) {
+                                   env.var.2, env.col.2, env.units.2) {
   
   ###############################
   ## for all the taxa in the list
@@ -1254,10 +1254,10 @@ Print_global_histogram = function (taxa.list, DF, env.var.1, env.col.1, env.unit
     #####################################################
     ## Env.1: create the plot dimensions
     nf <- layout(mat = matrix(c(1,2),2,1, byrow = TRUE),  height = c(1,3))
-    par(mar = c(3.1, 3.1, 1.1, 2.1),
-        oma = c(1.5, 1.5, 1.5, 1.5)) 
+    par(mar = c(5, 1.6, 1.6, 1.6),
+        oma = c(0.5, 0.5, 0.5, 0.5)) 
     
-    ## create vector for the environmental dimenson, and set min and max for plotting
+    ## Create vector for the environmental dimenson, and set min and max for plotting
     env.1 = DF[ which(DF$searchTaxon == taxa.n), ][[env.var.1]]
     min.1 = min(env.1)
     max.1 = max(env.1)
@@ -1275,8 +1275,8 @@ Print_global_histogram = function (taxa.list, DF, env.var.1, env.col.1, env.unit
     #####################################################
     ## Env.2: create the plot dimensions
     nf <- layout(mat = matrix(c(1,2),2,1, byrow = TRUE),  height = c(1,3))
-    par(mar = c(3.1, 3.1, 1.1, 2.1),
-        oma = c(1.5, 1.5, 1.5, 1.5)) 
+    par(mar = c(5, 1.6, 1.6, 1.6),
+        oma = c(0.5, 0.5, 0.5, 0.5)) 
     
     ## set min and max
     env.2 = DF[ which(DF$searchTaxon == taxa.n), ][[env.var.2]]
