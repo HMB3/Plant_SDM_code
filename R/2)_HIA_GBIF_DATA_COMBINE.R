@@ -134,6 +134,11 @@ Returned.binomial <- unlist(lapply(GBIF.TRIM$scientificName, string_fun_first_tw
 GBIF.TRIM = cbind(Returned.binomial, GBIF.TRIM)
 
 
+#########################################################################################################################
+## Here we could check if the searched and returned taxa match
+## filter(scientificName == searchTaxon)
+
+
 ## Check how many records match the search term?
 head(GBIF.TRIM)
 head(GBIF.TRIM$scientificName, 10)
@@ -142,6 +147,8 @@ head(GBIF.TRIM$scientificName, 10)
 
 
 ## Remove working dataframes from memory
+save(GBIF.TRIM, file = paste("./data/base/HIA_LIST/GBIF/GBIF_TRIM.RData"))
+
 rm(GBIF.ALL)
 rm(GBIF.300)
 rm(GBIF.600)

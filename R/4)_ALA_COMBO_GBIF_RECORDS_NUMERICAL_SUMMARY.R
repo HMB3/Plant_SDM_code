@@ -160,7 +160,7 @@ s <- stack(env.grids)
 ## Then use the extract function for all the rasters,
 ## and finaly bind on the COMBO data to the left of the raster values 
 COMBO.RASTER <- extract(s, COMBO.POINTS) %>% 
-  cbind(COMBO.LAND, .)
+  cbind(GBIF.ALA.COMBO.LAND, .)
 
 
 ## Multiple rename?

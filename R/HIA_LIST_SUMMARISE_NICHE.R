@@ -12,9 +12,8 @@ library(plyr)
 #########################################################################################################################
 ## Load two tables: note the GBIF records need further cleaning
 load("./data/base/HIA_LIST/GBIF/GBIF_RASTER_CONTEXT.RData")   ## All the environmental data, one row for each record
-load("./data/base/HIA_LIST/GBIF/GBIF_NICHE_CONTEXT.RData")    ## The niches for each summary, one row for each species
+load("./data/base/HIA_LIST/GBIF/GBIF_NICHE_CONTEXT.RData")    ## The niches for each variable, one row for each species
 renee.50   = read.csv("./data/base/HIA_LIST/HIA/RENEE_TOP_50.csv", stringsAsFactors = FALSE)  ## Renee's list
-## load in LAND map here
 
 
 ## Check
@@ -57,24 +56,31 @@ View(GBIF.NICHE.CONTEXT)
 ## _median
 ## _median 
 ## _range
+## _q05 : 5th percentile
+## _q95 : 95th percentile
 ## _q95_q05 : 95th percentile - the 5th
 ## _q98_q02 : 98th percentile - 2nd
-## They probabaly wants the top and bottom quintiles themselves: so thats the q95 and q05
 
-## Just let me know if there are other measures you want. Not all of these make sense (e.g. min of the min).
-## But it's easier to just do them all and ignore the ones we don't need.
+
+## Just let me know if there are other measures you would like. Not all of these make sense (e.g. min of the min).
+## But it's easier to just do them all, and ignore the ones we don't need!
 names(GBIF.NICHE.CONTEXT)
 
 
-## Also, I need to do more cleaning of the GBIF records, and also eliminate the duplicates between the ALA
-## and GBIF. It's easy to run the whole thing again, but best to treat these niches as an overestimate for now
+## Also, note I need to do more cleaning of the GBIF records, and also eliminate the duplicates between the ALA
+## and GBIF. It's easy to re-create the niches, but best to treat these niches as an overestimate for now
 
 
 
 
 
 #########################################################################################################################
-## Now slice the big and small dataframes to just the ones on Renee's list.
+## SUMMARISE NICHES
+#########################################################################################################################
+
+
+#########################################################################################################################
+## Slice the big and small dataframes to just the ones on Renee's list.
 RENEE.SPP          = as.character(unique(GBIF.NICHE.RENEE$searchTaxon))
 GBIF.RASTER.RENEE  = GBIF.RASTER.CONTEXT[GBIF.RASTER.CONTEXT$searchTaxon %in% renee.50$Species, ]
 GBIF.NICHE.RENEE   = GBIF.NICHE.CONTEXT[GBIF.NICHE.CONTEXT$searchTaxon %in% renee.50$Species, ]
@@ -82,7 +88,7 @@ GBIF.NICHE.RENEE   = GBIF.NICHE.CONTEXT[GBIF.NICHE.CONTEXT$searchTaxon %in% rene
 ## 
 GBIF.200.RENEE     = GBIF.RASTER.RENEE[ which(GBIF.RASTER.RENEE$Top_200 == "TRUE"), ]
 All.spp.map        = unique(GBIF.RASTER.RENEE[["searchTaxon"]])
-taxa.n             = RENEE.SPP[2]                  ## First species on the list...
+taxa.n             = "Stenotaphrum secundatum"                  ## First species on the list...
 
 
 ## Have a look 
@@ -109,36 +115,23 @@ WORLD <- readOGR("./data/base/CONTEXTUAL/TM_WORLD_BORDERS-0.3.shp", layer = "TM_
 LAND  <- readOGR("./data/base/CONTEXTUAL/ne_10m_land.shp", layer = "ne_10m_land")
 
 
-
 ## Plot global and Australian occurrences for all taxa on the list
 print_GBIF_records(taxa.list = RENEE.SPP)
-
-
-plot(LAND, col = 'grey', bg = 'sky blue')
-title(paste0("Global occurrences for ", taxa.n))
-points(GBIF.RASTER.RENEE[ which(GBIF.RASTER.RENEE$searchTaxon == taxa.n), ][, c("lon", "lat")],
-       pch = ".", col = "red", cex = 3)
-
-
-## Plot Australian map
-plot(GBIF.RASTER.RENEE[ which(GBIF.RASTER.RENEE$searchTaxon == taxa.n
-                                & GBIF.RASTER.RENEE$country == "Australia"), ][, c("lon", "lat")],
-     pch = ".", cex = 5, col = "red", asp = 1)
-title(paste0("Australian occurrences for ", taxa.n))
-plot(LAND, add = TRUE, asp = 1)
 
 
 #########################################################################################################################
 ## And plot the histograms
 ## Also consider how to combine outputs?
-old.par <- par(mar = c(0, 0, 0, 0))
-Print_global_histogram(taxa.list = RENEE.SPP, DF = GBIF.RASTER.RENEE, env.var.1 = "Annual_mean_temp",   env.col.1 = "orange",  env.units.1 = "°K",
-                       env.var.2 = "Annual_precip",   env.col.2 = "sky blue",     env.units.2 = "mm")
+Print_global_histogram(taxa.list = RENEE.SPP, DF = GBIF.RASTER.RENEE, 
+                       env.var.1 = "Annual_mean_temp",   
+                       env.col.1 = "orange",  
+                       env.units.1 = "°K",
+                       env.var.2 = "Annual_precip",   
+                       env.col.2 = "sky blue",     
+                       env.units.2 = "mm")
 
-## the whole list?
-# histogram_GBIF_records(taxa.list = RENEE.SPP, env.var.1 = "Annual_mean_temp",   env.col.1 = "orange",     env.units.1 = "°K",
-#                        env.var.2 = "Annual_precip",   env.col.2 = "sky blue",     env.units.2 = "mm")
 
+## Do these distributions look sensible? What visual/numerical outputs would be more useful for the other modules?
 
 
 
@@ -147,7 +140,8 @@ Print_global_histogram(taxa.list = RENEE.SPP, DF = GBIF.RASTER.RENEE, env.var.1 
 #########################################################################################################################
 
 
-## Clean the ALA data and merge with GBIF to avoid duplicates
+## Clean the GBIF data and merge with ALA to avoid duplicates, spatial outliers, etc.
+## Improve mapping functions to be more useful
 ## Lots more...
 
 

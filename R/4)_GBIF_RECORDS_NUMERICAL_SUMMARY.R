@@ -449,23 +449,18 @@ gc()
 
 
 #########################################################################################################################
-<<<<<<< HEAD
 ## OUTSTANDING NICHE TASKS:
 #########################################################################################################################
 
 
-## Return species species from queries:
-## EG: Find spp that are infrequently used, have big environmental & geographic range, but could have similar traits to popular species
+## Return species species from queries EG: 
+## Find spp that are infrequently used, have big environmental & geographic range, but could have similar traits to popular species
 
-
-
-
-=======
-## Outstanding tasks:
 ## Clean the data for duplicates and spatial outliers
+
 ## Need to report which species actually have < 20 records, etc. 
-## Reprt Which species have a wide niche, lots of GBIF data, are not popular and might have traits similar to the popular ones? 
->>>>>>> fc054faf492c5474a09084907a642bbbb0fb3122
+
+## Report Which species have a wide niche, lots of GBIF data, are not popular and might have traits similar to the popular ones? 
 
 
 #########################################################################################################################

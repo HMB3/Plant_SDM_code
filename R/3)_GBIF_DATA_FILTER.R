@@ -211,7 +211,7 @@ gc()
 #########################################################################################################################
 
 
-## Get GBIF duplicates 
+## Get GBIF duplicates: ones where the searched and returned name don't match?
 
 ## Get GBIF spatial outliers
 
