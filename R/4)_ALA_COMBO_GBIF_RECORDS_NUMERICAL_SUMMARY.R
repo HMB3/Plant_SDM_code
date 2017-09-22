@@ -107,15 +107,26 @@ setdiff(names(GBIF.LAND), names(ALA.LAND))
 
 ## Rename a few fields
 ALA.LAND     = dplyr::rename(ALA.LAND, 
-                             scientificName                = scientificname,
+                             searchTaxon                   = scientificname,
                              coordinateUncertaintyInMeters = uncertainty_m)
 
 
-## bind the rows together?
+## Restrict ALA data to just those species on the existing list
+ALA.LAND.HIA  = ALA.LAND[ALA.LAND$searchTaxon %in% HIA.SPP.JOIN$searchTaxon, ]
+str(unique(ALA.LAND.HIA$searchTaxon))
+
+
+## Bind the rows together?
 GBIF.ALA.COMBO.LAND = bind_rows(GBIF.LAND, ALA.LAND)
 names(GBIF.ALA.COMBO.LAND)
 identical((dim(GBIF.LAND)[1]+dim(ALA.LAND)[1]),dim(GBIF.ALA.COMBO.LAND)[1]) 
 head(GBIF.ALA.COMBO.LAND)
+
+
+## What species  are unique to each dataset?
+setdiff(unique(GBIF.LAND$searchTaxon), unique(ALA.LAND$searchTaxon))
+setdiff(unique(ALA.LAND$searchTaxon), unique(GBIF.LAND$searchTaxon))
+intersect(unique(ALA.LAND$searchTaxon), unique(GBIF.LAND$searchTaxon))
 
 
 ## Create points
@@ -188,7 +199,7 @@ COMBO.RASTER = dplyr::rename(COMBO.RASTER,
 
 
 ## Save/load
-save(COMBO.RASTER, file = paste("./data/base/HIA_LIST/COMBO/COMBO_GBIF_ALA_RASTER.RData"))
+save(COMBO.RASTER, file = paste("./data/base/HIA_LIST/GBIF/COMBO_GBIF_ALA_RASTER.RData"))
 #load("./data/base/HIA_LIST/COMBO/COMBO_RASTER.RData")
 
 

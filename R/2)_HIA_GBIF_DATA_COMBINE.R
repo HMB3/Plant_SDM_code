@@ -129,7 +129,8 @@ GBIF.TRIM <- GBIF.ALL %>%
   select(one_of(gbif.keep))
 
 
-## remove the varieties, etc., from the scientific name returned by GBIF: probably get rid of this!
+## Remove the varieties, etc., from the scientific name returned by GBIF: probably get rid of this!
+## Also, replace with John's example?
 Returned.binomial <- unlist(lapply(GBIF.TRIM$scientificName, string_fun_first_two_words))
 GBIF.TRIM = cbind(Returned.binomial, GBIF.TRIM)
 
@@ -137,6 +138,9 @@ GBIF.TRIM = cbind(Returned.binomial, GBIF.TRIM)
 #########################################################################################################################
 ## Here we could check if the searched and returned taxa match
 ## filter(scientificName == searchTaxon)
+GBIF.TRIM.CHECK = GBIF.TRIM
+GBIF.TRIM$CHECK = pmatch(GBIF.TRIM.CHECK$Returned.binomial, GBIF.TRIM.CHECK$scientificName)
+GBIF.TRIM.NO    = subset(GBIF.TRIM, CHECK == NA)
 
 
 ## Check how many records match the search term?
