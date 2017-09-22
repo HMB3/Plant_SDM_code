@@ -94,11 +94,12 @@
 load("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.RData")
 load("./data/base/HIA_LIST/ALA/ALA_LAND_POINTS.RData")
 str(GBIF.LAND)
-str()
+str(ALA.LAND)
 
 
 #########################################################################################################################
-## Here is where we could merge on the ALA data
+## Here is where we could merge on the ALA data. Consider that GBIF has data for both sources. So are we topping up the 
+## native ranges with the AVH. So it will be important to get rid of the duplicates. 
 names(GBIF.LAND)
 names(ALA.LAND)
 setdiff(names(GBIF.LAND), names(ALA.LAND))
@@ -119,12 +120,14 @@ head(GBIF.ALA.COMBO.LAND)
 
 ## Create points
 COMBO.POINTS   = SpatialPointsDataFrame(coords = GBIF.ALA.COMBO.LAND[c("lon", "lat")], 
-                                       data    = GBIF.ALA.COMBO.LAND[c("lon", "lat")],
-                                       proj4string = CRS("+proj=longlat +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +no_defs"))
+                                        data    = GBIF.ALA.COMBO.LAND[c("lon", "lat")],
+                                        proj4string = CRS("+proj=longlat +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +no_defs"))
 
 
 ## check
 summary(COMBO.POINTS)
+
+
 
 
 #########################################################################################################################
@@ -154,38 +157,38 @@ env.grids = c("//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_01",
 s <- stack(env.grids)
 
 
-## then use the extract function for all the rasters,
+## Then use the extract function for all the rasters,
 ## and finaly bind on the COMBO data to the left of the raster values 
 COMBO.RASTER <- extract(s, COMBO.POINTS) %>% 
   cbind(COMBO.LAND, .)
 
 
-## multiple rename?
+## Multiple rename?
 COMBO.RASTER = dplyr::rename(COMBO.RASTER,
-                            Annual_mean_temp     = bio_01,
-                            Mean_diurnal_range   = bio_02,
-                            Isothermality        = bio_03,
-                            Temp_seasonality     = bio_04,
-                            Max_temp_warm_month  = bio_05,
-                            Min_temp_cold_month  = bio_06,
-                            Temp_annual_range    = bio_07,
-                            Mean_temp_wet_qu     = bio_08,
-                            Mean_temp_dry_qu     = bio_09,
-                            Mean_temp_warm_qu    = bio_10,
-                            Mean_temp_cold_qu    = bio_11,
-                            
-                            Annual_precip        = bio_12,
-                            Precip_wet_month     = bio_13,
-                            Precip_dry_month     = bio_14,
-                            Precip_seasonality   = bio_15,
-                            Precip_wet_qu        = bio_16,
-                            Precip_dry_qu        = bio_17,
-                            Precip_warm_qu       = bio_18,
-                            Precip_col_qu        = bio_19)
+                             Annual_mean_temp     = bio_01,
+                             Mean_diurnal_range   = bio_02,
+                             Isothermality        = bio_03,
+                             Temp_seasonality     = bio_04,
+                             Max_temp_warm_month  = bio_05,
+                             Min_temp_cold_month  = bio_06,
+                             Temp_annual_range    = bio_07,
+                             Mean_temp_wet_qu     = bio_08,
+                             Mean_temp_dry_qu     = bio_09,
+                             Mean_temp_warm_qu    = bio_10,
+                             Mean_temp_cold_qu    = bio_11,
+                             
+                             Annual_precip        = bio_12,
+                             Precip_wet_month     = bio_13,
+                             Precip_dry_month     = bio_14,
+                             Precip_seasonality   = bio_15,
+                             Precip_wet_qu        = bio_16,
+                             Precip_dry_qu        = bio_17,
+                             Precip_warm_qu       = bio_18,
+                             Precip_col_qu        = bio_19)
 
 
 ## Save/load
-save(COMBO.RASTER, file = paste("./data/base/HIA_LIST/COMBO/COMBO_RASTER.RData"))
+save(COMBO.RASTER, file = paste("./data/base/HIA_LIST/COMBO/COMBO_GBIF_ALA_RASTER.RData"))
 #load("./data/base/HIA_LIST/COMBO/COMBO_RASTER.RData")
 
 
@@ -467,8 +470,15 @@ gc()
 
 
 #########################################################################################################################
-## Outstanding tasks:
-## For all species, particularly those occurring mostly in Australia, we need to get the GBIF records
+## OUTSTANDING NICHE TASKS:
+#########################################################################################################################
+
+
+## Convert WORLDCLIM values back into decimals?
+
+## Return species species from queries: EG
+
+## EG: Find spp that are infrequently used, have big environmental & geographic range, but could have similar traits to popular species
 
 
 #########################################################################################################################

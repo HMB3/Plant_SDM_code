@@ -445,9 +445,20 @@ rm(GBIF.RASTER)
 gc()
 
 
+
+
+
 #########################################################################################################################
-## Outstanding tasks:
-## For all species, particularly those occurring mostly in Australia, we need to get the GBIF records
+## OUTSTANDING NICHE TASKS:
+#########################################################################################################################
+
+
+## Return species species from queries:
+## EG: Find spp that are infrequently used, have big environmental & geographic range, but could have similar traits to popular species
+
+
+
+
 
 
 #########################################################################################################################

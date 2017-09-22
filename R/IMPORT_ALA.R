@@ -1,5 +1,5 @@
 #########################################################################################################################
-#######################################  COMBINE ALL SPECIES DATA FRAMES INTO ONE ####################################### 
+##################################################  ALA DATA ############################################################ 
 #########################################################################################################################
 
 
@@ -71,7 +71,7 @@ str(AVH.OEH.VASC.XY)
 
 #########################################################################################################################
 ## Now match the species list
-HIA.FIN = unique(HIA.SPP.JOIN$searchTaxon)
+HIA.FIN = unique(HIA.SPP$Binomial)
 AVH.SPP = unique(AVH.OEH.VASC.XY$scientificname)
 
 
@@ -81,15 +81,22 @@ HIA.AVH.DIFF    = setdiff(HIA.FIN, AVH.SPP)
 
 
 
-## Now when do we join on the others? And do we blend the AVH and GBIF? Is there a simple way of combining the two sources? 
-## Consider that GBIF has data for both sources. So are we topping up the native ranges with the AVH. So it will be important 
-## to get rid of the duplicates. 
-names(GBIF.RASTER.CONTEXT)
-str(GBIF.RASTER.CONTEXT)
 
 
+#########################################################################################################################
+## OUTSTANDING ALA TASKS:
+#########################################################################################################################
 
 
+## Get permission to use the ALA data.
+
+## Get the file which Kate from WSU made: spatial join of ALA and LGAs?
+
+## Filter the records that Paul needs...
+
+## When do we join the ALA data to others? 
 
 
-
+#########################################################################################################################
+#################################################  END OF ALA CODE ###################################################### 
+#########################################################################################################################

@@ -149,9 +149,16 @@ rm(GBIF.800)
 gc()
 
 
-# ## remove columns again
-# GBIF.ALL = GBIF.ALL[, !colnames(GBIF.ALL) %in% gbifColsToDrop]
-# dim(GBIF.ALL)
+
+
+#########################################################################################################################
+## OUTSTANDING DOWNLOADING TASKS:
+#########################################################################################################################
+
+
+## Get the species with > 200k records
+
+## Keep in touch with Renee RE the list
 
 
 
