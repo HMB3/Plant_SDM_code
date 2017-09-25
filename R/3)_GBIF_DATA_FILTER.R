@@ -79,6 +79,16 @@ identical(total.records, Total.count)  ## identical matches two objects
 #write.csv(GBIF.PROBLEMS, "./output/tables/GBIF_PROBLEMS.csv", row.names = FALSE)
 
 
+## Also keep the managed records:
+GBIF.MANAGED <- GBIF.TRIM %>% 
+  
+  ## Note that these filters are very forgiving...
+  ## unless we include the NAs, very few records are returned!
+  filter(establishmentMeans = 'MANAGED')
+
+## save(GBIF.MANAGED, file = paste("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.RData"))
+
+
 
 
 
@@ -100,7 +110,7 @@ GBIF.CLEAN <- GBIF.TRIM %>%
 ## The table above gives the details, but worth documenting how many records are knocked out by each
 Remaining.records = dim(GBIF.CLEAN)[1] 
 Remaining.percent = dim(GBIF.CLEAN)[1]/total.records*100
-Filters.applied = "NA COORD | MANAGED/NA | < 1950/NA"
+Filters.applied   = "NA COORD | MANAGED/NA | < 1950/NA"
 Remaining.percent ## 65% of records remain after cleaning 
 gc()
 
@@ -211,13 +221,15 @@ gc()
 #########################################################################################################################
 
 
+## Keep managed records as a separate file...
+
 ## GBIF duplicates: see email from CSIRO
 
-## Check species match; Taxon rank?
+## Check species match; Taxon rank? Don't really need this, the species summary will take care of it. 
 
-## GBIF spatial outliers; Ocean, middle of Australia, etc.
+## GBIF spatial outliers: Ocean, middle of Australia, etc.
 
-## GBIF taxonomic errors - ones where the searched and returned name don't match?
+## GBIF taxonomic errors?
 
 ## Duplicates between GBIF and ALA - keep in touch with CSIRO
 

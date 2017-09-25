@@ -319,12 +319,12 @@ names(COMBO.NICHE)
 #########################################################################################################################
 ## Now join the horticultural contextual data onto one or both tables ()
 COMBO.RASTER.CONTEXT = join(COMBO.RASTER, HIA.SPP.JOIN, 
-                           by = "searchTaxon", type = "left", match = "all")
+                            by = "searchTaxon", type = "left", match = "all")
 
 
 ## Now join hort context to all the niche
 COMBO.NICHE.CONTEXT = join(COMBO.NICHE, HIA.SPP.JOIN, 
-                          by = "searchTaxon", type = "left", match = "all")
+                           by = "searchTaxon", type = "left", match = "all")
 
 
 #########################################################################################################################
@@ -484,6 +484,8 @@ gc()
 ## OUTSTANDING NICHE TASKS:
 #########################################################################################################################
 
+
+## GBIF duplicates: see email from CSIRO
 
 ## Convert WORLDCLIM values back into decimals?
 
