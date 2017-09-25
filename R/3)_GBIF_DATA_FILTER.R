@@ -211,13 +211,15 @@ gc()
 #########################################################################################################################
 
 
-## Get GBIF duplicates: ones where the searched and returned name don't match?
+## GBIF duplicates: see email from CSIRO
 
-## Get GBIF spatial outliers
+## Check species match; Taxon rank?
 
-## Get GBIF taxonomic errors - probably the most serious erro
+## GBIF spatial outliers; Ocean, middle of Australia, etc.
 
-## Get duplicates between GBIF and ALA - keep in touch with CSIRO
+## GBIF taxonomic errors - ones where the searched and returned name don't match?
+
+## Duplicates between GBIF and ALA - keep in touch with CSIRO
 
 
 

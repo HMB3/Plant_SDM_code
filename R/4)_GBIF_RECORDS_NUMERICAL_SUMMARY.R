@@ -453,14 +453,15 @@ gc()
 #########################################################################################################################
 
 
-## Return species species from queries EG: 
+## Convert WORLDCLIM values back into decimals?
+
+## Return species from queries EG: 
 ## Find spp that are infrequently used, have big environmental & geographic range, but could have similar traits to popular species
 
-## Clean the data for duplicates and spatial outliers
+## Clean the data for duplicates and spatial outliers. Add geographic range for each species
 
 ## Need to report which species actually have < 20 records, etc. 
 
-## Report Which species have a wide niche, lots of GBIF data, are not popular and might have traits similar to the popular ones? 
 
 
 #########################################################################################################################

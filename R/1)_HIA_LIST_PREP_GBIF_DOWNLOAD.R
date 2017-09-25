@@ -167,7 +167,33 @@ kable(skipped.200.spp)
 #########################################################################################################################
 
 
-## create a list of taxa with too many records, to pass to the curl code..
+
+## Read in each file as text?
+Magnolia.g = gbif('Magnolia grandiflora', download = TRUE)
+Magnolia.g.names = sort(names(Magnolia.g))
+
+
+Betula.p = read.csv("./data/base/HIA_LIST/GBIF/SPECIES/Betula_pendula.csv", stringsAsFactors = FALSE)
+Betula.p.names = sort(names(Betula.p))
+
+
+
+## How different are the manually downloaded species?
+setdiff(Magnolia.g.names, Betula.p.names)
+setdiff(Betula.p.names, Magnolia.g.names)
+setdiff(gbif.keep, Betula.p.names)
+
+
+##
+unique(Magnolia.g$country)
+unique(Betula.p$countryCode)
+unique(Betula.p$coordinateUncertaintyInMeters)
+unique(Betula.p$continent)
+
+
+## Save all files as .Rdata, then try concatenating them.
+
+
 
 ##
 # function gbifapi { 
