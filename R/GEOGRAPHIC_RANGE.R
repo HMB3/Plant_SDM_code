@@ -21,9 +21,11 @@ source("BLOCK_SPECIES_RANDOMISATION_FUNCTIONS.R")
 
 #####################################################################################################
 ## read data
-data    = load("./data/./data/base/HIA_LIST/COMBO/COMBO_GBIF_ALA_RASTER.RData")
-points  = data.matrix(data["lon", "lat"])
-View(data)
+load("./data/base/HIA_LIST/GBIF/GBIF_RASTER_CONTEXT.RData")
+data = GBIF.RASTER.CONTEXT
+points  = data.matrix(data[, c("lon", "lat")])
+str(points)
+str(data)
 
 
 #####################################################################################################
@@ -43,7 +45,8 @@ plot(index.raster)
 
 ## extract raster values
 block.index = extract(index.raster, points, method = "simple")
-data.index  = cbind(data, block.index) 
+data.index  = cbind(data, block.index)
+summary(data.index$block.index)
 
 
 ## get species IDs as 'unique' on data index: known vascular flora of the WT ~4,300
@@ -70,7 +73,8 @@ for(i.spp in 1:length(spp.ids)) {
   unique.block = unique(spp.blocks)
   
   ## area of occurrence: this needs to change for block size of 10km, 10 * 10 = 100 km squared
-  area.table[i.spp, 2] = length(unique.block) * 100
+  #area.table[i.spp, 2] = length(unique.block) * 100
+  area.table[i.spp] = length(unique.block) * 100
   area.table = as.data.frame(area.table)
   
 }
@@ -80,9 +84,10 @@ for(i.spp in 1:length(spp.ids)) {
 dim(area.table)
 area.table = area.table[order(area.table[,"searchTaxon"]),]
 head(area.table)
+summary(area.table$area_occurrence)
 
 
-############################################################################################################
+#######################################################################################################
 ## now combine geographic and environmental ranges
 ## first, read in the species summaries
 all       = load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")
