@@ -30,6 +30,7 @@ library(AdaptR)
 
 library(ALA4R)
 library(rgbif)
+library(scrubr)
 library(RCurl)
 library(httr)
 library(taxonlookup)
