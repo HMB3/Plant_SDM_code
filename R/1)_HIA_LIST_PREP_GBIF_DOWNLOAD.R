@@ -21,6 +21,7 @@ library(rgdal)
 #library(plyr)
 library(dplyr)
 library(sfsmisc)
+library(spatstat)
 
 library(SDMTools)
 library(rmaxent)

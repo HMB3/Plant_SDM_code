@@ -111,14 +111,13 @@ test = GeoClean(Fagus.coord.rename)
 
 
 ## Try getting spatial duplicates
-library(spatstat)
-x <- GBIF.RASTER.CONTEXT$lon ; y<-GBIF.RASTER.CONTEXT$lat
-w <- ripras(x, y)
-wp <- ppp(x,y, window = w)
-dupv<-duplicated.ppp(wp)
+x    <- GBIF.RASTER.CONTEXT$lon ; y<-GBIF.RASTER.CONTEXT$lat
+w    <- ripras(x, y)
+wp   <- ppp(x,y, window = w)
+dupv <- duplicated.ppp(wp)
 
-x2<-x[which(dupv==FALSE)] 
-y2<-y[which(dupv==FALSE)]
+x2   <- x[which(dupv == FALSE)] 
+y2   <- y[which(dupv == FALSE)]
 
 
 ##
