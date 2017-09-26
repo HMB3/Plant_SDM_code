@@ -36,7 +36,6 @@ library(RCurl)
 library(httr)
 library(taxonlookup)
 library(speciesgeocodeR)
-
 library(raster)
 
 library(knitr)

@@ -18,41 +18,111 @@
 ## taxonIdentificationIssue (ALA), GBIF no equivalent
 ## fatal assertions         (ALA), GBIF no equivalent
 
-## Currently, what is missing from this workflow is checking duplicate refords, checking taxonomy and checking the 
-## spatial outliers.
+
+#########################################################################################################################
+## GET SPATIAL OUTLIERS AND DUPLICATES?
+#########################################################################################################################
 load("./data/base/HIA_LIST/GBIF/GBIF_TRIM.RData")
+dim(GBIF.TRIM)
+
+
+#########################################################################################################################
+## Try 'Geoclean' : this provides several different tests to clean datasets with geographic coordinates...
+GBIF.TRIM.GEO = rename(GBIF.TRIM, identifier = searchTaxon, 
+                       XCOOR = lat, YCOOR = lon)
+
+## 
+GBIF.GeoClean.table = GeoClean(GBIF.TRIM.GEO, countrycentroid = TRUE, outp = 'detailed') ## one column for each check
+GBIF.GeoClean       = GeoClean(GBIF.TRIM.GEO, countrycentroid = TRUE, outp = 'summary')
+save(GBIF.GeoClean.table, file = paste("./data/base/HIA_LIST/GBIF/GBIF_GEOCLEAN_TABLE.RData"))
+head(GBIF.GeoClean.table)                                                                ## looks restrictive!
+
+GBIF.GeoClean = GBIF.GeoClean.table$summary
+unique(GBIF.GeoClean)                                                                    ##  FALSE = suspicious coordinates
+
+
+## Check the output
+length(GBIF.GeoClean)
+length(GBIF.GeoClean[GBIF.GeoClean == TRUE])
+length(GBIF.GeoClean[GBIF.GeoClean == FALSE])                                    ##  FALSE = suspicious coordinates
+
+
+#########################################################################################################################
+## And 'duplicated'...returns a logical vector of which rows of a table are duplicates of a row with smaller subscripts.
+GBIF.dups <- duplicated(GBIF.TRIM)
+unique(GBIF.dups)                                                                ##  TRUE  = Duplicated
+
+
+## Check the output
+length(GBIF.dups)
+length(GBIF.dups[GBIF.dups == TRUE])
+length(GBIF.dups[GBIF.dups == FALSE])
+
+
+#############################################################################################################################
+## Try PPP? Takes 3 hours...also this is too restrictive. Needs to be run within each species, not across whole dataset
+# x    <- GBIF.RASTER.CONTEXT$lon ; y<-GBIF.RASTER.CONTEXT$lat
+# w    <- ripras(x, y)
+# wp   <- ppp(x,y, window = w)
+# dupv <- duplicated.ppp(wp)
+# 
+# 
+# ## Check
+# length(dupv[dupv == TRUE])          ## this need to be run on each species, not the whole dataset
+# length(dupv[dupv == FALSE])          
+# 
+# 
+# ## Assing to
+# x2   <- x[which(dupv == FALSE)] 
+# y2   <- y[which(dupv == FALSE)]
+# 
+# 
+# ## coordinates of points with no duplicates
+# x2<-x[which(dupv==FALSE)] ; y2<-y[which(dupv == FALSE)]
+
+
+#############################################################################################################################
+## Now add these two columns to the intial GBIF file
+GBIF.TRIM$GEOCLEAN    = GBIF.GeoClean
+GBIF.TRIM$DUPLICATED  = GBIF.dups
+
+
 
 
 
 #########################################################################################################################
-## Create a table which counts the number of records meeting all the criteria
-## Note that TRUE indicates there is a problem (e.g. no lat/long = TRUE)
+## Then create a table which counts the number of records meeting each criteria:
+## Note that TRUE indicates there is a problem (e.g. if a record has no lat/long, it will = TRUE)
 GBIF.PROBLEMS <- with(GBIF.TRIM,
                  
                  table(
                    
-                   ## note this list could be exanded for other data types
+                   ## Note this list could be exanded for other data types
                    ## ALA/AVH, council data, etc.
                    
-                   ## no coordinates
+                   ## No coordinates
                    is.na(lon)|is.na(lat),
                    
-                   ## establishment means is "MANAGED", can change this
+                   ## Establishment means is "MANAGED", can change this:
                    establishmentMeans == 'MANAGED' & !is.na(establishmentMeans),
                    
-                   ## also add duplicated
+                   ## Also add duplicated
+                   DUPL == 'TRUE'
                    
-                   ## collected before 1950 or na.year
+                   ## Also add geoclean
+                   GEOCLEAN == 'TRUE'
+                   
+                   ## Collected before 1950 or na.year
                    year < 1950 & !is.na(year),
                    
-                   ## no year
+                   ## No year
                    is.na(year),
                    
-                   ## coordinate uncertainty is > 100 or is not NA
+                   ## Coordinate uncertainty is > 100 or is not NA
                    coordinateUncertaintyInMeters > 1000 & 
                      !is.na(coordinateUncertaintyInMeters)
                    
-                   ## add maybe the centre of Australia?
+                   ## Add maybe the centre of Australia?
                    ## Lamber centre of Aus: 25.610111, 134.354806
                    
                  )
@@ -236,19 +306,19 @@ gc()
 #########################################################################################################################
 
 
-## When should the additional filters be run in? Just after GBIF.TRIM?
+## When should the additional filters be run in? Just after GBIF.TRIM?            -
 
-## Keep managed records as a separate file...
+## Keep managed records as a separate file                                        - Have them
 
-## GBIF duplicates 
+## GBIF duplicates                                                                - Maybe
 
-## GBIF species match: species summary will take care of it. 
+## GBIF species match                                                             - Species summary will take care of it. 
 
-## GBIF spatial outliers: Ocean, middle of Australia, etc. ppp function? Duplicated?
+## GBIF spatial outliers: Ocean, middle of Australia, etc. ppp? Duplicated?       - Check each map for the modelled spp
 
-## GBIF taxonomic errors?
+## GBIF taxonomic errors?                                                         - Get GBIF issues uisng GBIF ID? Or redownload with occ_search
 
-## Duplicates between GBIF and ALA - see email from CSIRO
+## Duplicates between GBIF and ALA                                                - See email from CSIRO
 
 
 

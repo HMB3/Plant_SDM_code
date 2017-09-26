@@ -150,11 +150,6 @@ dim(dp[1]) - dim(Fagus.1000[1])
 
 
 
-## How would you test if this has worked? Try Geoclean
-Fagus.coord.rename = rename(Fagus.coord, identifier = species, 
-                           XCOOR = decimalLatitude, YCOOR = decimalLongitude, country = countryCode)
-test = GeoClean(Fagus.coord.rename)
-
 
 #############################################################################################################################
 ## Try getting spatial duplicates
@@ -163,16 +158,19 @@ w    <- ripras(x, y)
 wp   <- ppp(x,y, window = w)
 dupv <- duplicated.ppp(wp)
 
+
+## Check
+length(dupv[dupv == TRUE])          ## this need to be run on each species, not the whole dataset
+length(dupv[dupv == FALSE])          
+
+
+## Assing to
 x2   <- x[which(dupv == FALSE)] 
 y2   <- y[which(dupv == FALSE)]
 
 
 ## coordinates of points with no duplicates
 x2<-x[which(dupv==FALSE)] ; y2<-y[which(dupv == FALSE)] 
-
-
-## This is a base R function, but can we trust it? What is the difference between these two measures?
-GBIF.dups <- duplicated(GBIF.RASTER.CONTEXT)
 
 
 ##
