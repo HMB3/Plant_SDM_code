@@ -16,19 +16,45 @@ Hedera.helix       = read.csv("./data/base/HIA_LIST/GBIF/SPECIES/Fraxinus_excels
 Quercus.robur      = read.csv("./data/base/HIA_LIST/GBIF/SPECIES/Quercus_robur.csv",      stringsAsFactors = FALSE)
 
 
-## Which columns need renaming?
-test.occ  = occ_search(scientificName = 'Magnolia grandiflora')$data
-occ.names = sort(names(test.occ))
-gbif.keep
-setdiff(gbif.keep, occ.names)
-
-
 ## Change column names
-#Betula.pendula     = rename(Betula.pendula,     lat  = decimalLatitude, lon  = decimalLongitude)
-Fagus.sylvatica    = rename(Fagus.sylvatica,    lat  = decimalLatitude, lon  = decimalLongitude)
-Fraxinus.excelsior = rename(Fraxinus.excelsior, lat  = decimalLatitude, lon  = decimalLongitude)
-Hedera.helix       = rename(Hedera.helix,       lat  = decimalLatitude, lon  = decimalLongitude)
-Quercus.robur      = rename(Quercus.robur,      lat  = decimalLatitude, lon  = decimalLongitude)
+Betula.pendula     = rename(Betula.pendula,     lat  = decimalLatitude, lon  = decimalLongitude, country = countryCode)
+Fagus.sylvatica    = rename(Fagus.sylvatica,    lat  = decimalLatitude, lon  = decimalLongitude, country = countryCode)
+Fraxinus.excelsior = rename(Fraxinus.excelsior, lat  = decimalLatitude, lon  = decimalLongitude, country = countryCode)
+Hedera.helix       = rename(Hedera.helix,       lat  = decimalLatitude, lon  = decimalLongitude, country = countryCode)
+Quercus.robur      = rename(Quercus.robur,      lat  = decimalLatitude, lon  = decimalLongitude, country = countryCode)
+
+
+## Which columns need renaming?
+Magnolia.g   = gbif('Magnolia grandiflora', download = TRUE)
+test.occ     = occ_search(scientificName = 'Magnolia grandiflora')$data
+occ.names    = sort(names(test.occ))
+Betula.names = sort(names(Betula.pendula))
+gbif.keep                                                          ## final names I'm keeping...
+
+
+## difference
+setdiff(gbif.keep, occ.names)
+setdiff(gbif.keep, Betula.names)
+
+
+## overlap
+intersect(gbif.keep, occ.names)
+intersect(gbif.keep, Betula.names)
+
+
+## Change the country name?
+unique(Betula.pendula$countryCode)
+unique(Magnolia.g$country)
+
+Betula.pendula$countryCode      = gsub("AU", "Australia", Betula.pendula$countryCode)
+Fagus.sylvatica$countryCode     = gsub("AU", "Australia", Fagus.sylvatica$countryCode)
+Fraxinus.excelsior$countryCode  = gsub("AU", "Australia", Fraxinus.excelsior$countryCode)
+Hedera.helix$countryCode        = gsub("AU", "Australia", Hedera.helix$countryCode)
+Quercus.robur$countryCode       = gsub("AU", "Australia", Quercus.robur$countryCode)
+
+
+unique(Betula.pendula$countryCode)
+unique(Quercus.robur$countryCode)
 
 
 ## Save
@@ -93,9 +119,9 @@ unique(test.occ$continent)
 
 
 ## Do we need the GBIF ISSUES?
-(key <- name_suggest(q = 'Helianthus annuus', rank = 'species')$key[1])
+(key <- name_suggest(q = 'Magnolia grandiflora', rank = 'species')$key[1])
 (res <- occ_search(taxonKey=key, limit=100))
-head(gbif_issues())
+gbif.issues = gbif_issues()
 
 
 

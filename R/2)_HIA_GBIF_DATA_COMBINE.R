@@ -8,13 +8,7 @@
 #########################################################################################################################
 
 
-## check GBIF field names for a key species...
-Magnolia.grandiflora = gbif('Magnolia grandiflora', download = TRUE)
-GBIF.names = sort(names(Magnolia.grandiflora))
-GBIF.names
-
-
-## the species list doesn't match the downloaded species, so create a list from the downloaded files
+## The species list doesn't match the downloaded species, so create a list from the downloaded files
 spp.download = list.files("./data/base/HIA_LIST/GBIF/SPECIES/", pattern = ".RData")
 spp.download = gsub("_GBIF_records.RData", "", spp.download)
 
@@ -131,7 +125,7 @@ GBIF.TRIM <- GBIF.ALL %>%
 
 ## Remove the varieties, etc., from the scientific name returned by GBIF: probably get rid of this!
 ## Also, replace with John's example?
-Returned.binomial <- unlist(lapply(GBIF.TRIM$scientificName, string_fun_first_two_words))
+#Returned.binomial <- unlist(lapply(GBIF.TRIM$scientificName, string_fun_first_two_words))
 GBIF.TRIM = cbind(Returned.binomial, GBIF.TRIM)
 
 

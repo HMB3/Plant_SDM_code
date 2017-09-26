@@ -224,7 +224,7 @@ unique(Betula.p$continent)
 #########################################################################################################################
 
 
-## Get the species with > 200k records
+## Got the species with > 200k records
 
 ## Keep in touch with Renee RE the list
 

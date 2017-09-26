@@ -123,6 +123,10 @@ dim(GBIF.CLEAN)
 head(GBIF.CLEAN)
 
 
+## What does this dataframe look like?
+names(GBIF.CLEAN)
+
+
 
 
 
@@ -211,6 +215,14 @@ plot(LAND)
 
 
 #########################################################################################################################
+## So here we could add extra filters?
+names(GBIF.LAND)
+
+
+
+
+
+#########################################################################################################################
 ## save data
 save(GBIF.LAND, file = paste("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.RData"))
 gc()
@@ -224,9 +236,13 @@ gc()
 #########################################################################################################################
 
 
+## When should the additional filters be run in? Just after GBIF.TRIM?
+
 ## Keep managed records as a separate file...
 
-## Check species match; Taxon rank? Don't really need this, the species summary will take care of it. 
+## GBIF duplicates 
+
+## GBIF species match: species summary will take care of it. 
 
 ## GBIF spatial outliers: Ocean, middle of Australia, etc. ppp function? Duplicated?
 
