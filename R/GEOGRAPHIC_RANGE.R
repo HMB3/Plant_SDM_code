@@ -41,7 +41,7 @@ aoo(red.range)
 aoo(test)
 
 
-## Create a species list
+## Create a species list: this should be just the 
 spp.geo = as.character(unique(GBIF.RASTER.CONTEXT$searchTaxon)) 
 data    = GBIF.RASTER.CONTEXT
 

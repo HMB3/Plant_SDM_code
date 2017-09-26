@@ -50,8 +50,8 @@
 
 ## There are two streams here: 
 
-## the broad niches for each species (ie. macroscale env and bio data)
-## the bespoke microscale approach (e.g. ecological framework, solar surfaces, etc.)
+## The broad niches for each species (ie. macroscale env and bio data)
+## The bespoke microscale approach (e.g. ecological framework, solar surfaces, etc.)
 
 ## The broad niche stream informs the micro stream, based on two tables:
 
@@ -187,7 +187,7 @@ COMBO.RASTER <- extract(s, COMBO.POINTS) %>%
   cbind(GBIF.ALA.COMBO.LAND, .)
 
 
-## Multiple rename?
+## Multiple rename using dplyr
 COMBO.RASTER = dplyr::rename(COMBO.RASTER,
                              Annual_mean_temp     = bio_01,
                              Mean_diurnal_range   = bio_02,
@@ -311,7 +311,46 @@ names(COMBO.NICHE)
 
 
 #########################################################################################################################
-## 3). SUMMARISE SPECIES NUMERICALLY: WHICH COULD BE MODELLED?
+## 3). CALCULATE AREA OF OCCUPANCY RANGES 
+#########################################################################################################################
+
+
+## Create a species list: this should be from the "COMBO.RASTER" file...
+spp.geo = as.character(unique(COMBO.RASTER$searchTaxon)) 
+data    = COMBO.RASTER
+
+##
+GBIF.RANGE <- spp.geo[c(1:length(spp.geo))] %>% 
+  
+  ## Pipe the list into lapply
+  lapply(function(x) {
+    
+    ## Subset the the data frame 
+    DF      = subset(data, searchTaxon == x)[, c("lon", "lat")]
+    
+    ## Calculate area of occupancy according the the "red" package
+    aoo (DF)
+    
+    ## Warning messages: Ask John if this is a problem
+    ## In rgdal::project(longlat, paste("+proj=utm +zone=", zone,  ... :
+    ## 3644 projected point(s) not finite
+    
+  }) %>% 
+  
+  ## finally, create one dataframe for all niches
+  as.data.frame
+
+
+## Clean it up...
+GBIF.RANGE = gather(GBIF.RANGE)
+str(GBIF.RANGE)
+
+
+
+
+
+#########################################################################################################################
+## 4). SUMMARISE SPECIES NUMERICALLY: WHICH COULD BE MODELLED?
 #########################################################################################################################
 
 
@@ -488,9 +527,9 @@ gc()
 
 ## Convert WORLDCLIM values back into decimals?
 
-## Return species species from queries: EG
+## Return species EG:
 
-## EG: Find spp that are infrequently used, have big environmental & geographic range, but could have similar traits to popular species
+## Find spp that are infrequently used, have big environmental & geographic range, but could have similar traits to popular species
 
 
 #########################################################################################################################
