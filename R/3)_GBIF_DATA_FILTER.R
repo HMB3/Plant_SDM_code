@@ -24,6 +24,7 @@
 #########################################################################################################################
 load("./data/base/HIA_LIST/GBIF/GBIF_TRIM.RData")
 dim(GBIF.TRIM)
+length(unique(GBIF.TRIM$searchTaxon))  ## has the list update with extra species?
 
 
 #########################################################################################################################
@@ -32,19 +33,18 @@ GBIF.TRIM.GEO = rename(GBIF.TRIM, identifier = searchTaxon,
                        XCOOR = lat, YCOOR = lon)
 
 ## 
-GBIF.GeoClean.table = GeoClean(GBIF.TRIM.GEO, countrycentroid = TRUE, outp = 'detailed') ## one column for each check
-GBIF.GeoClean       = GeoClean(GBIF.TRIM.GEO, countrycentroid = TRUE, outp = 'summary')
+GBIF.GeoClean.table = GeoClean(GBIF.TRIM.GEO, #countrycentroid = TRUE, 
+                               outp = 'detailed') ## one column for each check
+GBIF.GeoClean       = GeoClean(GBIF.TRIM.GEO, outp = 'summary')
 save(GBIF.GeoClean.table, file = paste("./data/base/HIA_LIST/GBIF/GBIF_GEOCLEAN_TABLE.RData"))
-head(GBIF.GeoClean.table)                                                                ## looks restrictive!
-
-GBIF.GeoClean = GBIF.GeoClean.table$summary
+head(GBIF.GeoClean.table)                                                                ##  Too restrictive!
 unique(GBIF.GeoClean)                                                                    ##  FALSE = suspicious coordinates
 
 
 ## Check the output
 length(GBIF.GeoClean)
 length(GBIF.GeoClean[GBIF.GeoClean == TRUE])
-length(GBIF.GeoClean[GBIF.GeoClean == FALSE])                                    ##  FALSE = suspicious coordinates
+length(GBIF.GeoClean[GBIF.GeoClean == FALSE])                                            ##  FALSE = suspicious coordinates
 
 
 #########################################################################################################################
@@ -60,16 +60,19 @@ length(GBIF.dups[GBIF.dups == FALSE])
 
 
 #############################################################################################################################
-## Try PPP? Takes 3 hours...also this is too restrictive. Needs to be run within each species, not across whole dataset
-# x    <- GBIF.RASTER.CONTEXT$lon ; y<-GBIF.RASTER.CONTEXT$lat
+## Try PPP? This is too restrictive. Needs to be run within each species, not across whole dataset
+# sp.n      = "Syzygium floribundum"
+# test      = subset(GBIF.RASTER.CONTEXT, searchTaxon == sp.n)[, c("lon", "lat")]
+
+# x    <- test$lon ; y<-test$lat
 # w    <- ripras(x, y)
 # wp   <- ppp(x,y, window = w)
 # dupv <- duplicated.ppp(wp)
 # 
 # 
 # ## Check
-# length(dupv[dupv == TRUE])          ## this need to be run on each species, not the whole dataset
-# length(dupv[dupv == FALSE])          
+# length(dupv[dupv == TRUE])          ## Run on each species, not the whole dataset
+# length(dupv[dupv == FALSE])         ## Check the maps: is it getting rid of good data?
 # 
 # 
 # ## Assing to
@@ -85,7 +88,7 @@ length(GBIF.dups[GBIF.dups == FALSE])
 ## Now add these two columns to the intial GBIF file
 GBIF.TRIM$GEOCLEAN    = GBIF.GeoClean
 GBIF.TRIM$DUPLICATED  = GBIF.dups
-
+names(GBIF.TRIM)
 
 
 
@@ -103,14 +106,14 @@ GBIF.PROBLEMS <- with(GBIF.TRIM,
                    ## No coordinates
                    is.na(lon)|is.na(lat),
                    
-                   ## Establishment means is "MANAGED", can change this:
-                   establishmentMeans == 'MANAGED' & !is.na(establishmentMeans),
+                   ## Also add geoclean
+                   GEOCLEAN   == 'FALSE',
                    
                    ## Also add duplicated
-                   DUPL == 'TRUE'
+                   DUPLICATED == 'TRUE',
                    
-                   ## Also add geoclean
-                   GEOCLEAN == 'TRUE'
+                   ## Establishment means is "MANAGED", can change this:
+                   establishmentMeans == 'MANAGED' & !is.na(establishmentMeans),
                    
                    ## Collected before 1950 or na.year
                    year < 1950 & !is.na(year),
@@ -132,8 +135,8 @@ GBIF.PROBLEMS <- with(GBIF.TRIM,
   ## create a data frame and set the names
   as.data.frame %>%  
   
-  setNames(c('NO_COORD', 'MANAGED', 
-             'PRE_1950', 'NO_YEAR', 
+  setNames(c('NO_COORD', 'GEOCLEAN', 'DUPLICATED', 
+             'MANAGED',  'PRE_1950', 'NO_YEAR', 
              'COORD_UNCERT', 'COUNT'))
 
 
@@ -144,11 +147,11 @@ kable(GBIF.PROBLEMS)
 
 ## quickly check the total record number matches the count of problems
 Total.count = sum(GBIF.PROBLEMS$COUNT)
-identical(total.records, Total.count)  ## identical matches two objects
+identical(dim(GBIF.TRIM)[1], Total.count)  ## identical matches two objects
 
 
 ## probably don't need this
-#write.csv(GBIF.PROBLEMS, "./output/tables/GBIF_PROBLEMS.csv", row.names = FALSE)
+## save(GBIF.PROBLEMS,  file = paste("./data/base/HIA_LIST/GBIF/GBIF_PROBLEMS.RData"))
 
 
 ## Also keep the managed records:
@@ -178,11 +181,13 @@ GBIF.CLEAN <- GBIF.TRIM %>%
   filter(!is.na(lon) & !is.na(lat),
          establishmentMeans!='MANAGED' | is.na(establishmentMeans),
          year >= 1950 & !is.na(year))
+         # DUPLICATED != 'TRUE',
+         # GEOCLEAN   != 'FALSE')
 
 
 ## The table above gives the details, but worth documenting how many records are knocked out by each
 Remaining.records = dim(GBIF.CLEAN)[1] 
-Remaining.percent = dim(GBIF.CLEAN)[1]/total.records*100
+Remaining.percent = dim(GBIF.CLEAN)[1]/Total.count*100
 Filters.applied = "NA COORD | MANAGED/NA | < 1950/NA"
 Remaining.percent ## 65% of records remain after cleaning 
 gc()

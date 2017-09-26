@@ -30,9 +30,46 @@ str(data)
 
 #####################################################################################################
 ## read data
-sp.n      = "Magnolia grandiflora"
+sp.n      = "Syzygium floribundum"
 test      = subset(data, searchTaxon == sp.n)[, c("lon", "lat")]
-MyResults <- IUCN.eval(test, Cell_size_AOO = 2)
+MyResults <- IUCN.eval(test, Cell_size_AOO = 2) ## doesn't work...
+
+
+## Test the AOO function
+data(red.range)
+aoo(red.range)
+aoo(test)
+
+
+## Create a species list
+spp.geo = as.character(unique(GBIF.RASTER.CONTEXT$searchTaxon)) 
+data    = GBIF.RASTER.CONTEXT
+
+##
+GBIF.RANGE <- spp.geo[c(1:length(spp.geo))] %>% 
+  
+  ## Pipe the list into lapply
+  lapply(function(x) {
+    
+    ## Subset the the data frame 
+    DF      = subset(data, searchTaxon == x)[, c("lon", "lat")]
+    
+    ## Calculate area of occupancy according the the "red" package
+    aoo (DF)
+    
+    ## Warning messages:
+    ## In rgdal::project(longlat, paste("+proj=utm +zone=", zone,  ... :
+    ## 3644 projected point(s) not finite
+    
+  }) %>% 
+  
+  ## finally, create one dataframe for all niches
+  as.data.frame
+
+
+## Clean it up...
+GBIF.RANGE = gather(GBIF.RANGE)
+str(GBIF.RANGE)
 
 
 #####################################################################################################

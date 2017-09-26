@@ -112,6 +112,19 @@ ALA.LAND     = dplyr::rename(ALA.LAND,
 
 
 ## Restrict ALA data to just those species on the existing list
+library(plyr)  ## detach plyr again if doing more renaming
+HIA.SPP.JOIN     = HIA.SPP
+HIA.SPP.JOIN     = dplyr::rename(HIA.SPP.JOIN, searchTaxon = Binomial)
+
+
+## Set NA to blank, then sort by no. of growers to get them to the top
+HIA.SPP.JOIN[is.na(HIA.SPP.JOIN)] <- 0
+HIA.SPP.JOIN = HIA.SPP.JOIN[with(HIA.SPP.JOIN, rev(order(Number.of.growers))), ]
+head(HIA.SPP.JOIN[, c("searchTaxon", "Number.of.growers")])
+View(HIA.SPP.JOIN)
+
+
+##
 ALA.LAND.HIA  = ALA.LAND[ALA.LAND$searchTaxon %in% HIA.SPP.JOIN$searchTaxon, ]
 str(unique(ALA.LAND.HIA$searchTaxon))
 
@@ -142,7 +155,7 @@ summary(COMBO.POINTS)
 
 
 #########################################################################################################################
-## Create a stack of rasters to sample
+## Create a stack of rasters to sample: get all the World clim variables just for good measure
 env.grids = c("//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_01",
               "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_02", 
               "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_03",
@@ -222,20 +235,6 @@ names(COMBO.RASTER)
 
 
 #########################################################################################################################
-## Might not need separate top 200 anymore...
-library(plyr)  ## detach plyr again if doing more renaming
-HIA.SPP.JOIN     = HIA.SPP
-HIA.SPP.JOIN     = dplyr::rename(HIA.SPP.JOIN, searchTaxon = Binomial)
-#names(HIA.SPP.JOIN)[names(HIA.SPP.JOIN) == "Binomial"] <- "searchTaxon"
-
-
-## Set NA to blank, then sort by no. of growers to get them to the top
-HIA.SPP.JOIN[is.na(HIA.SPP.JOIN)] <- 0
-HIA.SPP.JOIN = HIA.SPP.JOIN[with(HIA.SPP.JOIN, rev(order(Number.of.growers))), ]
-head(HIA.SPP.JOIN[, c("searchTaxon", "Number.of.growers")])
-View(HIA.SPP.JOIN)
-
-
 ## save list to file for Rachel to check Austraits
 ## Also could join the taxon lookup
 ## write.csv(HIA.SPP.JOIN, "./data/base/HIA_LIST/HIA/HIA_SPP_JOIN.csv", row.names = FALSE)
@@ -353,19 +352,19 @@ View(COMBO.NICHE.CONTEXT)
 
 #########################################################################################################################
 ## quickly check how many species match from the original 610. Only 553 are currently there.
-missing.25     = setdiff(unique(HIA.SPP.JOIN[ which(HIA.SPP.JOIN$Number.of.growers >= 25), ][["searchTaxon"]]),
-                         unique(COMBO.NICHE.CONTEXT[ which(COMBO.NICHE.CONTEXT$Number.of.growers >= 25), ][["searchTaxon"]]))
-
-missing.all    = setdiff(unique(HIA.SPP.JOIN[["searchTaxon"]]),
-                         unique(COMBO.NICHE.CONTEXT[["searchTaxon"]]))
-
-missing.200    = setdiff(unique(spp.200$Binomial),
-                         unique(COMBO.NICHE.CONTEXT[ which(COMBO.NICHE.CONTEXT$Number.of.growers >= 25), ][["searchTaxon"]]))
-
-missing.renee  = setdiff(unique(renee.50$Species),
-                         unique(COMBO.NICHE.CONTEXT[["searchTaxon"]]))
-
-missing.taxa   = unique(c(missing.25, missing.200, missing.renee))  
+# missing.25     = setdiff(unique(HIA.SPP.JOIN[ which(HIA.SPP.JOIN$Number.of.growers >= 25), ][["searchTaxon"]]),
+#                          unique(COMBO.NICHE.CONTEXT[ which(COMBO.NICHE.CONTEXT$Number.of.growers >= 25), ][["searchTaxon"]]))
+# 
+# missing.all    = setdiff(unique(HIA.SPP.JOIN[["searchTaxon"]]),
+#                          unique(COMBO.NICHE.CONTEXT[["searchTaxon"]]))
+# 
+# missing.200    = setdiff(unique(spp.200$Binomial),
+#                          unique(COMBO.NICHE.CONTEXT[ which(COMBO.NICHE.CONTEXT$Number.of.growers >= 25), ][["searchTaxon"]]))
+# 
+# missing.renee  = setdiff(unique(renee.50$Species),
+#                          unique(COMBO.NICHE.CONTEXT[["searchTaxon"]]))
+# 
+# missing.taxa   = unique(c(missing.25, missing.200, missing.renee))  
 
 ## The missing species are due to too few records, too many or taxonomy problems. EG some of the species are varieties, so they 
 ## only match to the genus. So 610 - 31 = 579. What is the difference?
