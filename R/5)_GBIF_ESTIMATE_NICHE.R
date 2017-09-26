@@ -75,6 +75,12 @@
 ## Other stuff?
 
 
+## Load data
+load("./data/base/HIA_LIST/GBIF/GBIF_RASTER_CONTEXT.RData")
+load("./data/base/HIA_LIST/GBIF/GBIF_NICHE_CONTEXT.RData")
+
+
+
 #########################################################################################################################
 ## Many ways to break this down. Could create a list, then loop/apply over this
 ## The top 200 list does not have the taxonomic errors corrected

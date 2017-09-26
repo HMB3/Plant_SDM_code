@@ -20,6 +20,8 @@
 
 ## Currently, what is missing from this workflow is checking duplicate refords, checking taxonomy and checking the 
 ## spatial outliers.
+load("./data/base/HIA_LIST/GBIF/GBIF_TRIM.RData")
+
 
 
 #########################################################################################################################
@@ -84,9 +86,10 @@ GBIF.MANAGED <- GBIF.TRIM %>%
   
   ## Note that these filters are very forgiving...
   ## unless we include the NAs, very few records are returned!
-  filter(establishmentMeans = 'MANAGED')
+  filter(establishmentMeans == 'MANAGED')
 
-## save(GBIF.MANAGED, file = paste("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.RData"))
+## unique(GBIF.MANAGED$establishmentMeans)
+## save(GBIF.MANAGED, file = paste("./data/base/HIA_LIST/GBIF/GBIF_MANAGED.RData"))
 
 
 
@@ -110,7 +113,7 @@ GBIF.CLEAN <- GBIF.TRIM %>%
 ## The table above gives the details, but worth documenting how many records are knocked out by each
 Remaining.records = dim(GBIF.CLEAN)[1] 
 Remaining.percent = dim(GBIF.CLEAN)[1]/total.records*100
-Filters.applied   = "NA COORD | MANAGED/NA | < 1950/NA"
+Filters.applied = "NA COORD | MANAGED/NA | < 1950/NA"
 Remaining.percent ## 65% of records remain after cleaning 
 gc()
 
@@ -223,15 +226,13 @@ gc()
 
 ## Keep managed records as a separate file...
 
-## GBIF duplicates: see email from CSIRO
-
 ## Check species match; Taxon rank? Don't really need this, the species summary will take care of it. 
 
-## GBIF spatial outliers: Ocean, middle of Australia, etc.
+## GBIF spatial outliers: Ocean, middle of Australia, etc. ppp function? Duplicated?
 
 ## GBIF taxonomic errors?
 
-## Duplicates between GBIF and ALA - keep in touch with CSIRO
+## Duplicates between GBIF and ALA - see email from CSIRO
 
 
 
