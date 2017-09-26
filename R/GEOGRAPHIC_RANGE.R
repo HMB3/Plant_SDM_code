@@ -29,6 +29,13 @@ str(data)
 
 
 #####################################################################################################
+## read data
+sp.n      = "Magnolia grandiflora"
+test      = subset(data, searchTaxon == sp.n)[, c("lon", "lat")]
+MyResults <- IUCN.eval(test, Cell_size_AOO = 2)
+
+
+#####################################################################################################
 ## create raster for biodata lat/long bounding box using Aus dimensions, and Rachael Gallagher's 
 ## 10km * 10km area of occupancy measure
 n.x = ceiling(153.64 - 112.92) / 0.1
@@ -73,8 +80,8 @@ for(i.spp in 1:length(spp.ids)) {
   unique.block = unique(spp.blocks)
   
   ## area of occurrence: this needs to change for block size of 10km, 10 * 10 = 100 km squared
-  #area.table[i.spp, 2] = length(unique.block) * 100
-  area.table[i.spp] = length(unique.block) * 100
+  area.table[i.spp, 2] = length(unique.block) * 100
+  #area.table[i.spp] = length(unique.block) * 100
   area.table = as.data.frame(area.table)
   
 }

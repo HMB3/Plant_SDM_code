@@ -27,6 +27,8 @@ library(SDMTools)
 library(rmaxent)
 library(dismo)
 library(AdaptR)
+library(red)
+library(ConR)
 
 
 library(ALA4R)
