@@ -24,6 +24,9 @@ ipak <- function(pkg){
 ## sorting functions
 #########################################################################################################################
 
+trim <- function (x) gsub("^\\s+|\\s+$", "", x)
+
+
 string_fun_first_two_words <- function(x) {
   
   ul = unlist(strsplit(x, split = "\\s+"))[1:2]

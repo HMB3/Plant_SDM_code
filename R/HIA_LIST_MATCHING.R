@@ -32,6 +32,8 @@ head(HIA.list)
 
 
 ## Create a list of the raw HIA list, but removing the weird characters...
+## Just use "TRIM(CELL)" in excel
+## trim <- function (x) gsub("^\\s+|\\s+$", "", x) ##  HIA.list$Species <- trim(HIA.list$Species)
 RAW.HIA.SPP = gsub("  ",     " ", HIA.list$Species)
 RAW.HIA.SPP = gsub(" $",     "",  HIA.list$Species, perl = TRUE)
 RAW.HIA.SPP = gsub("    $",  "",  HIA.list$Species, perl = TRUE)

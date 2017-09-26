@@ -124,7 +124,7 @@ head(HIA.SPP.JOIN[, c("searchTaxon", "Number.of.growers")])
 View(HIA.SPP.JOIN)
 
 
-##
+## Get just those ALA species which are on the HIA
 ALA.LAND.HIA  = ALA.LAND[ALA.LAND$searchTaxon %in% HIA.SPP.JOIN$searchTaxon, ]
 str(unique(ALA.LAND.HIA$searchTaxon))
 
@@ -148,7 +148,7 @@ COMBO.POINTS   = SpatialPointsDataFrame(coords = GBIF.ALA.COMBO.LAND[c("lon", "l
                                         proj4string = CRS("+proj=longlat +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +no_defs"))
 
 
-## check
+## Check
 summary(COMBO.POINTS)
 
 
@@ -219,11 +219,6 @@ save(COMBO.RASTER, file = paste("./data/base/HIA_LIST/GBIF/COMBO_GBIF_ALA_RASTER
 ## check
 dim(COMBO.RASTER)
 names(COMBO.RASTER)
-
-
-## Also consider converting degrees Kelvin to Celsius?
-# hist(COMBO.RASTER$Annual_mean_temp)
-# hist((COMBO.RASTER$Annual_mean_temp)-273.15)
 
 
 
@@ -523,13 +518,11 @@ gc()
 #########################################################################################################################
 
 
-## GBIF duplicates: see email from CSIRO
+## Convert WORLDCLIM values back into decimals            - 
 
-## Convert WORLDCLIM values back into decimals?
+## Return species EG:                                     -
 
-## Return species EG:
-
-## Find spp that are infrequently used, have big environmental & geographic range, but could have similar traits to popular species
+## Find infrequently sold spp, big environmental & geographic range, but could have similar traits to popular species
 
 
 #########################################################################################################################
