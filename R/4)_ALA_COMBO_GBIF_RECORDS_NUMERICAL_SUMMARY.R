@@ -346,6 +346,10 @@ head(GBIF.RANGE)
 COMBO.NICHE$AREA_OCCUPANCY = GBIF.RANGE$value
 
 
+## AOO is calculated as the area of all known or predicted cells for the species. The resolution will be 2x2km as required by IUCN.
+## A single value in km2.
+
+
 
 
 
