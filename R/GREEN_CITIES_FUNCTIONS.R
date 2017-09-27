@@ -24,9 +24,21 @@ ipak <- function(pkg){
 ## sorting functions
 #########################################################################################################################
 
+
+## Trim trailin and leading white space
 trim <- function (x) gsub("^\\s+|\\s+$", "", x)
 
 
+## Reorder column names
+movetolast <- function(data, move) {
+  
+  data[c(setdiff(names(data), move), move)]
+  
+}
+
+
+
+## Get the first two words of a string
 string_fun_first_two_words <- function(x) {
   
   ul = unlist(strsplit(x, split = "\\s+"))[1:2]
@@ -35,6 +47,7 @@ string_fun_first_two_words <- function(x) {
 }
 
 
+## Get the first word of a string
 string_fun_first_word <- function(x) {
   
   ul = unlist(strsplit(x, split = "\\s+"))[1]

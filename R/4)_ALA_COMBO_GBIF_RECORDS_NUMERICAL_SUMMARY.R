@@ -126,19 +126,23 @@ View(HIA.SPP.JOIN)
 
 ## Get just those ALA species which are on the HIA
 ALA.LAND.HIA  = ALA.LAND[ALA.LAND$searchTaxon %in% HIA.SPP.JOIN$searchTaxon, ]
-str(unique(ALA.LAND.HIA$searchTaxon))
+str(unique(ALA.LAND.HIA$searchTaxon))   ## ok
 
 
 ## Bind the rows together?
-GBIF.ALA.COMBO.LAND = bind_rows(GBIF.LAND, ALA.LAND)
+GBIF.ALA.COMBO.LAND = bind_rows(GBIF.LAND, ALA.LAND.HIA)
 names(GBIF.ALA.COMBO.LAND)
-identical((dim(GBIF.LAND)[1]+dim(ALA.LAND)[1]),dim(GBIF.ALA.COMBO.LAND)[1]) 
+identical((dim(GBIF.LAND)[1]+dim(ALA.LAND)[1]),dim(GBIF.ALA.COMBO.LAND)[1])   ## no, only adding the ovelap...
 head(GBIF.ALA.COMBO.LAND)
 
 
-## What species  are unique to each dataset?
+## Check the new data frame has just the species on the HIA list
+str(unique(GBIF.ALA.COMBO.LAND$searchTaxon))   ## ok
+
+
+## What species are unique to each dataset?
 setdiff(unique(GBIF.LAND$searchTaxon), unique(ALA.LAND$searchTaxon))
-setdiff(unique(ALA.LAND$searchTaxon), unique(GBIF.LAND$searchTaxon))
+length(setdiff(unique(ALA.LAND$searchTaxon), unique(GBIF.LAND$searchTaxon)))
 intersect(unique(ALA.LAND$searchTaxon), unique(GBIF.LAND$searchTaxon))
 
 
@@ -213,7 +217,7 @@ COMBO.RASTER = dplyr::rename(COMBO.RASTER,
 
 ## Save/load
 save(COMBO.RASTER, file = paste("./data/base/HIA_LIST/GBIF/COMBO_GBIF_ALA_RASTER.RData"))
-#load("./data/base/HIA_LIST/COMBO/COMBO_RASTER.RData")
+#load("./data/base/HIA_LIST/GBIF/COMBO_GBIF_ALA_RASTER.RData")
 
 
 ## check
@@ -230,12 +234,7 @@ names(COMBO.RASTER)
 
 
 #########################################################################################################################
-## save list to file for Rachel to check Austraits
-## Also could join the taxon lookup
-## write.csv(HIA.SPP.JOIN, "./data/base/HIA_LIST/HIA/HIA_SPP_JOIN.csv", row.names = FALSE)
-
-
-## Now summarise the niches. But figure out a cleaner way of doing this?
+## Now summarise the niches. But figure out a cleaner way of doing this
 env.variables = c("Annual_mean_temp",     
                   "Mean_diurnal_range",   
                   "Isothermality",        
@@ -277,7 +276,7 @@ COMBO.NICHE <- env.variables[c(1:length(env.variables))] %>%
     ## currently it only works hard-wired
     niche_estimate (DF = COMBO.RASTER, colname = x)
     
-    ## would be good to remove the duplicates here, somehow
+    ## would be good to remove the duplicate columns here
     
   }) %>% 
   
@@ -314,7 +313,8 @@ names(COMBO.NICHE)
 spp.geo = as.character(unique(COMBO.RASTER$searchTaxon)) 
 data    = COMBO.RASTER
 
-##
+
+## For every species in the list: calculate the 
 GBIF.RANGE <- spp.geo[c(1:length(spp.geo))] %>% 
   
   ## Pipe the list into lapply
@@ -332,13 +332,18 @@ GBIF.RANGE <- spp.geo[c(1:length(spp.geo))] %>%
     
   }) %>% 
   
-  ## finally, create one dataframe for all niches
+  ## Finally, create one dataframe for all niches
   as.data.frame
 
 
-## Clean it up...
+## Clean it up. The order of species should be preserved
 GBIF.RANGE = gather(GBIF.RANGE)
 str(GBIF.RANGE)
+head(GBIF.RANGE)
+
+
+## Now join on the GEOGRAPHIC RANGE
+COMBO.NICHE$AREA_OCCUPANCY = GBIF.RANGE$value
 
 
 
@@ -362,10 +367,8 @@ COMBO.NICHE.CONTEXT = join(COMBO.NICHE, HIA.SPP.JOIN,
 
 #########################################################################################################################
 ## For pedantry, reroder columns...
-## Note that the downloaded species don't all match up to the original list. This is because there are different lists 
-## propagating throughout the workflow, I need to watch out for this. 
-COMBO.RASTER.CONTEXT = COMBO.RASTER.CONTEXT[, c(38, 2, 1, 3,  39:51, 4:37)]
-COMBO.NICHE.CONTEXT  = COMBO.NICHE.CONTEXT[,  c(136, 2, 1, 138:149,  3:135)]
+COMBO.RASTER.CONTEXT = COMBO.RASTER.CONTEXT[, c(47, 2, 3,  48:60, 4:46)]
+COMBO.NICHE.CONTEXT  = COMBO.NICHE.CONTEXT[,  c(175, 2, 1, 174, 176:187,  3:173)]
 
 
 ## Set NA to blank, then sort by no. of growers.

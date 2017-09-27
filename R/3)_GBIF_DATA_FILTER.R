@@ -319,7 +319,7 @@ gc()
 
 ## GBIF species match                                                             - Species summary will take care of it. 
 
-## GBIF spatial outliers: Ocean, middle of Australia, etc. ppp? Duplicated?       - Check each map for the modelled spp
+## GBIF spatial outliers: Ocean, middle of Australia, etc. ppp? Duplicated?       - Check each map, email Alex Zika
 
 ## GBIF taxonomic errors?                                                         - Get GBIF issues uisng GBIF ID? Or redownload with occ_search
 
