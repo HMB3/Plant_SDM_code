@@ -130,7 +130,7 @@ print_occurrence_records(taxa.list = RENEE.SPP, DF = GBIF.RASTER.RENEE)
 #########################################################################################################################
 ## And plot the histograms
 ## Also consider how to combine outputs?
-Print_global_histogram(taxa.list    = RENEE.SPP, DF = GBIF.RASTER.RENEE, 
+Print_global_histogram(taxa.list    = RENEE.SPP[1:32], DF = GBIF.RASTER.RENEE,  ## 33 is a problem: Cupianopsis anacardiodes
                        env.var.1    = "Annual_mean_temp",   
                        env.col.1    = "orange",  
                        env.units.1  = "°K",
