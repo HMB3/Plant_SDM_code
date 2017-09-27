@@ -1178,7 +1178,7 @@ map_GBIF_records = function (taxa.list) {
 
 ########################################################################################################################
 ## Print simple maps of all GBIF records for selected taxa, in Australia and overseas
-print_GBIF_records = function (taxa.list) {
+print_occurrence_records = function (taxa.list, DF) {
   
   ###############################
   ## for all the taxa in the list

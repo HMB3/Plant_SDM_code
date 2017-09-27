@@ -120,7 +120,10 @@ DRAFT.HIA.TAXA$Species = gsub("    $",  "",  DRAFT.HIA.TAXA$Species, perl = TRUE
 DRAFT.HIA.TAXA$Binomial <- sub('(^\\S+ \\S+).*', '\\1', DRAFT.HIA.TAXA$Species) # \\s = white space; \\S = not white space
 
 
-## And count how many varieties each taxa has? 
+## And count how many varieties each taxa has?
+## Before, this needs to change so that every variety that matches a binomial (e.g. magnolia grandiflora) is added to the
+## Number of varieties. Also, can we take the variety with the highest number of growers? There are 8 different varieties
+## of magnolia, currently I'm not getting the most popular ones.
 HIA.VARIETY <- 
   DRAFT.HIA.TAXA$Binomial[DRAFT.HIA.TAXA$Binomial != DRAFT.HIA.TAXA$Species] %>% 
   table %>% 
@@ -166,45 +169,9 @@ head(HIA.SPP.LOOKUP) ## Can merge on the bilogical data here...
 
 
 
-#########################################################################################################################
-## 3). NOW MATCH THE LISTS
-#########################################################################################################################
-
 
 #########################################################################################################################
-## Five spp have more than 200K records...
-# load("./data/base/HIA_LIST/GBIF/GBIF_NICHE_CONTEXT.RData")
-# load("./data/base/HIA_LIST/GBIF/skipped_species.RData")
-# skipped.species.df[ which(skipped.species.df$Reason_skipped == "Number of records > 200,000"), ]
-# View(GBIF.NICHE.CONTEXT)
-
-
-# ## Get the difference between the original list and the processed list
-# missed.HIA.processed = setdiff(HIA.SPP$Binomial, GBIF.NICHE.CONTEXT$searchTaxon)        ## return elements beloning to HIA only
-# missed.processed.HIA = setdiff(GBIF.NICHE.CONTEXT$searchTaxon, HIA.SPP$Binomial)        ## beloning to processed only
-# 
-# 
-# ## Plus the difference between the top 200 and the processed list
-# setdiff(spp.200$Binomial, subset(HIA.SPP, Top_200 == "TRUE")[["Binomial"]])
-# missed.t200.processed = setdiff(spp.200$Binomial, GBIF.NICHE.CONTEXT$searchTaxon) 
-# 
-# 
-# ## Need 660 rows in the processed data with contextual data
-# length(missed.HIA.processed) + length(missed.t200.processed)                            ## 133 missing taxa... 660 -559
-# missing.taxa = unique(c(missed.HIA.processed, missed.t200.processed))
-# missing.taxa = gsub("    $",  "",  missing.taxa, perl = TRUE)
-# missing.taxa
-
-
-#########################################################################################################################
-## Get the unique list from the final data
-# length(GBIF.NICHE.CONTEXT[ which(GBIF.NICHE.CONTEXT$Number.of.growers >= 25), ][["searchTaxon"]])
-# GBIF.NICHE.CONTEXT.UNIQUE = unique(GBIF.NICHE.CONTEXT[ which(GBIF.NICHE.CONTEXT$Number.of.growers >= 25), ][["searchTaxon"]])
-# missing.taxa = setdiff(missing.taxa, GBIF.NICHE.CONTEXT.UNIQUE)
-
-
-#########################################################################################################################
-## OUTSTANDING LIST TASKS:
+## LIST EXCEPTIONS:
 #########################################################################################################################
 
 
@@ -217,11 +184,13 @@ length(unique(HIA.SPP$Binomial))     ## Binomials (610), keep Michelia yunnanens
 
 ## record the "spp." weirdos
 EXCLUDED.SPP         = setdiff(unique(RAW.HIA.SPP), unique(HIA.VARIETY$Species))
-EXCLUDED.VARIETIES   = setdiff(unique(HIA.VARIETY$Species), unique(HIA.SPP$HIA.Taxa))
+EXCLUDED.VARIETIES   = setdiff(unique(HIA.VARIETY$Species), unique(HIA.SPP$HIA.Taxa))   ## Here is the list that spots the exceptions!!!!!!!
 
 
 ## Remaining anomalies:
+
 ## EG: Rhaphiolepis indica has growers for the spp and each variety, should we add them together?
+## Magnolia grandiflora has 8 varieties which are being missed by the current code...
 
 
 

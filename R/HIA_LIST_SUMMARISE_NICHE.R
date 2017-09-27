@@ -6,19 +6,19 @@
 #########################################################################################################################
 ## load packages and source functions...should not need any packages to do run this simple code...
 source('./R/GREEN_CITIES_FUNCTIONS.R')
-library(plyr)
+#library(plyr)
 
 
 #########################################################################################################################
 ## Load two tables: note the GBIF records need further cleaning
-load("./data/base/HIA_LIST/GBIF/GBIF_RASTER_CONTEXT.RData")   ## All the environmental data, one row for each record
-load("./data/base/HIA_LIST/GBIF/GBIF_NICHE_CONTEXT.RData")    ## The niches for each variable, one row for each species
+load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData")   ## All the environmental data, one row for each record
+load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")     ## The niches for each variable, one row for each species
 renee.50   = read.csv("./data/base/HIA_LIST/HIA/RENEE_TOP_50.csv", stringsAsFactors = FALSE)  ## Renee's list
 
 
 ## Check
-View(GBIF.RASTER.CONTEXT)
-View(GBIF.NICHE.CONTEXT)
+View(COMBO.RASTER.CONTEXT)
+View(COMBO.NICHE.CONTEXT)
 
 
 #########################################################################################################################
@@ -64,7 +64,7 @@ View(GBIF.NICHE.CONTEXT)
 
 ## Just let me know if there are other measures you would like. Not all of these make sense (e.g. min of the min).
 ## But it's easier to just do them all, and ignore the ones we don't need!
-names(GBIF.NICHE.CONTEXT)
+names(COMBO.NICHE.CONTEXT)
 
 
 ## Also, note I need to do more cleaning of the GBIF records, and also eliminate the duplicates between the ALA
@@ -81,14 +81,15 @@ names(GBIF.NICHE.CONTEXT)
 
 #########################################################################################################################
 ## Slice the big and small dataframes to just the ones on Renee's list.
-RENEE.SPP          = as.character(unique(GBIF.NICHE.RENEE$searchTaxon))
-GBIF.RASTER.RENEE  = GBIF.RASTER.CONTEXT[GBIF.RASTER.CONTEXT$searchTaxon %in% renee.50$Species, ]
-GBIF.NICHE.RENEE   = GBIF.NICHE.CONTEXT[GBIF.NICHE.CONTEXT$searchTaxon %in% renee.50$Species, ]
+RENEE.SPP          = as.character(unique(renee.50$Species))
+GBIF.RASTER.RENEE  = COMBO.RASTER.CONTEXT[COMBO.RASTER.CONTEXT$searchTaxon %in% renee.50$Species, ]
+GBIF.NICHE.RENEE   = COMBO.NICHE.CONTEXT[COMBO.NICHE.CONTEXT$searchTaxon %in% renee.50$Species, ]
+
 
 ## 
 GBIF.200.RENEE     = GBIF.RASTER.RENEE[ which(GBIF.RASTER.RENEE$Top_200 == "TRUE"), ]
 All.spp.map        = unique(GBIF.RASTER.RENEE[["searchTaxon"]])
-taxa.n             = "Stenotaphrum secundatum"                  ## First species on the list...
+taxa.n             = "Ficus brachypoda"                  ## EG...
 
 
 ## Have a look 
@@ -99,13 +100,20 @@ View(GBIF.NICHE.RENEE)
 ## Can use a simple function to slice the niche dataframe to specific columns for one species
 GBIF_summary_slice(taxa.list = taxa.n,                       ## Could be a list
                    env.cols  = c("searchTaxon", 
+                                 "COMBO.count",
+                                 "AREA_OCCUPANCY",
                                  "Number.of.growers",
                                  "Top_200",
-                                 "Annual_mean_temp_min",     ## Change these using columns above
-                                 "Annual_mean_temp_median",  ## Should be q95, q05, etc...
-                                 "Annual_mean_temp_max",     
-                                 "Annual_mean_temp_range"),  
-                   GBIF      = GBIF.NICHE.CONTEXT)
+                                 "Annual_mean_temp_q05",     ## Change these using columns above
+                                 #"Annual_mean_temp_median",  ## Should be q95, q05, etc...
+                                 "Annual_mean_temp_q95",     
+                                 "Annual_mean_temp_q95_q05"),  
+                   GBIF      = COMBO.NICHE.CONTEXT)
+
+
+
+## AOO is calculated as the area of all known or predicted cells for the species. The resolution will be 2x2km as required by IUCN.
+## A single value in km2.
 
 
 #########################################################################################################################
@@ -116,19 +124,19 @@ LAND  <- readOGR("./data/base/CONTEXTUAL/ne_10m_land.shp", layer = "ne_10m_land"
 
 
 ## Plot global and Australian occurrences for all taxa on the list
-print_GBIF_records(taxa.list = RENEE.SPP)
+print_occurrence_records(taxa.list = RENEE.SPP, DF = GBIF.RASTER.RENEE)
 
 
 #########################################################################################################################
 ## And plot the histograms
 ## Also consider how to combine outputs?
-Print_global_histogram(taxa.list = RENEE.SPP, DF = GBIF.RASTER.RENEE, 
-                       env.var.1 = "Annual_mean_temp",   
-                       env.col.1 = "orange",  
-                       env.units.1 = "°K",
-                       env.var.2 = "Annual_precip",   
-                       env.col.2 = "sky blue",     
-                       env.units.2 = "mm")
+Print_global_histogram(taxa.list    = RENEE.SPP, DF = GBIF.RASTER.RENEE, 
+                       env.var.1    = "Annual_mean_temp",   
+                       env.col.1    = "orange",  
+                       env.units.1  = "°K",
+                       env.var.2    = "Annual_precip",   
+                       env.col.2    = "sky blue",     
+                       env.units.2  = "mm")
 
 
 ## Do these distributions look sensible? What visual/numerical outputs would be more useful for the other modules?
@@ -141,6 +149,7 @@ Print_global_histogram(taxa.list = RENEE.SPP, DF = GBIF.RASTER.RENEE,
 
 
 ## Clean the GBIF data and merge with ALA to avoid duplicates, spatial outliers, etc.
+## Check on the missing species
 ## Improve mapping functions to be more useful
 ## Lots more...
 

@@ -368,7 +368,7 @@ COMBO.NICHE.CONTEXT = join(COMBO.NICHE, HIA.SPP.JOIN,
 #########################################################################################################################
 ## For pedantry, reroder columns...
 COMBO.RASTER.CONTEXT = COMBO.RASTER.CONTEXT[, c(47, 2, 3,  48:60, 4:46)]
-COMBO.NICHE.CONTEXT  = COMBO.NICHE.CONTEXT[,  c(175, 2, 1, 174, 176:187,  3:173)]
+COMBO.NICHE.CONTEXT  = COMBO.NICHE.CONTEXT[,  c(175, 2, 1, 174, 176:188,  3:173)]
 
 
 ## Set NA to blank, then sort by no. of growers.
@@ -389,25 +389,37 @@ View(COMBO.NICHE.CONTEXT)
 
 #########################################################################################################################
 ## quickly check how many species match from the original 610. Only 553 are currently there.
-# missing.25     = setdiff(unique(HIA.SPP.JOIN[ which(HIA.SPP.JOIN$Number.of.growers >= 25), ][["searchTaxon"]]),
-#                          unique(COMBO.NICHE.CONTEXT[ which(COMBO.NICHE.CONTEXT$Number.of.growers >= 25), ][["searchTaxon"]]))
-# 
-# missing.all    = setdiff(unique(HIA.SPP.JOIN[["searchTaxon"]]),
-#                          unique(COMBO.NICHE.CONTEXT[["searchTaxon"]]))
-# 
-# missing.200    = setdiff(unique(spp.200$Binomial),
-#                          unique(COMBO.NICHE.CONTEXT[ which(COMBO.NICHE.CONTEXT$Number.of.growers >= 25), ][["searchTaxon"]]))
-# 
-# missing.renee  = setdiff(unique(renee.50$Species),
-#                          unique(COMBO.NICHE.CONTEXT[["searchTaxon"]]))
-# 
-# missing.taxa   = unique(c(missing.25, missing.200, missing.renee))  
 
-## The missing species are due to too few records, too many or taxonomy problems. EG some of the species are varieties, so they 
-## only match to the genus. So 610 - 31 = 579. What is the difference?
+
+## Which species from those with > 25 growers are missing?
+missing.25     = setdiff(unique(HIA.SPP.JOIN[ which(HIA.SPP.JOIN$Number.of.growers >= 25), ][["searchTaxon"]]),
+                         unique(COMBO.NICHE.CONTEXT[ which(COMBO.NICHE.CONTEXT$Number.of.growers >= 25), ][["searchTaxon"]]))
+
+
+## Same as for 
+missing.all    = setdiff(unique(HIA.SPP.JOIN[["searchTaxon"]]),
+                         unique(COMBO.NICHE.CONTEXT[["searchTaxon"]]))
+
+## Which species from the top 200 are missing?
+missing.200    = setdiff(unique(spp.200$Binomial),
+                         unique(COMBO.NICHE.CONTEXT[ which(COMBO.NICHE.CONTEXT$Number.of.growers >= 25), ][["searchTaxon"]]))
+
+
+## Which species from Renee's list are missing?
+missing.renee  = setdiff(unique(renee.50$Species),
+                         unique(COMBO.NICHE.CONTEXT[["searchTaxon"]]))
+
+## Overall list
+missing.taxa   = unique(c(missing.25, missing.200, missing.renee))
+missing.taxa   = as.data.frame(missing.taxa)
+
+
+## The missing species are due to too few records, too many, or taxonomy problems. EG some of the species are varieties, so they 
+## only match to the genus. So 605 - 30 = 575. What is the difference?
        
 
 ## Save the summary datasets
+save(missing.taxa, file = paste("./data/base/HIA_LIST/COMBO/MISSING_TAXA.RData", sep = ""))
 save(COMBO.RASTER.CONTEXT, file = paste("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData", sep = ""))
 save(COMBO.NICHE.CONTEXT,  file = paste("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData",  sep = ""))
 write.csv(COMBO.NICHE.CONTEXT, "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.csv",       row.names = FALSE)
@@ -429,7 +441,7 @@ summary(COMBO.NICHE.CONTEXT$COMBO.count)
 
 
 ## How many species where knocked out by using filters?
-kable(COMBO.PROBLEMS)
+kable(COMBO.PROBLEMS)   ## doesn't exist
 
 
 #########################################################################################################################
@@ -521,11 +533,17 @@ gc()
 #########################################################################################################################
 
 
+## Check on species which seem to have been knocked out: E.G Fagus sylvatica 
+
 ## Convert WORLDCLIM values back into decimals            - 
 
 ## Return species EG:                                     -
 
 ## Find infrequently sold spp, big environmental & geographic range, but could have similar traits to popular species
+
+## Find rarest species (are there popular species with not many records?)
+
+## Ask Linda and others about the kind of queries they want to run...
 
 
 #########################################################################################################################
