@@ -67,6 +67,10 @@ projection(AVH.WGS)
 projection(LGA)
 
 
+## write AVH shapefile
+writeOGR(AVH.OEH.VASC, ".", "AVH_OEH_VASC", driver = "ESRI Shapefile")
+
+
 ## Get the coordinates
 AVH.XY          = as.data.frame(coordinates(AVH.WGS))
 head(AVH.XY)
