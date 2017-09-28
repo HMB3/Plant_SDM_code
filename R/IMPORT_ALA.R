@@ -37,8 +37,16 @@
 #########################################################################################################################
 
 
-## Read in ALA data: need readRDS
+## Read in ALA point data and shapefiles: need readRDS
 AVH.OEH.VASC = readRDS("./data/base/HIA_LIST/ALA/SPECIES/background_all_plants_oeh_avh_with_ibra_dodgy_removed.rds", refhook = NULL)
+SUA          = readOGR("./data/base/CONTEXTUAL/SUA_2011_AUST.shp", layer = "SUA_2011_AUST")
+LGA          = readOGR("./data/base/CONTEXTUAL/LGA_2016_AUST.shp", layer = "LGA_2016_AUST")
+
+
+## plot to check
+plot(AVH.OEH.VASC)
+plot(SUA)
+plot(LGA)
 
 
 ## What is this file?
@@ -49,9 +57,14 @@ head(AVH.OEH.VASC)
 
 ## Project the ALA data into WGS84
 projection(AVH.OEH.VASC)
+projection(LGA)
+
 CRS.new <- CRS("+init=epsg:4326")
 AVH.WGS = spTransform(AVH.OEH.VASC, CRS.new)
+LGA.WGS = spTransform(LGA, CRS.new)
+
 projection(AVH.WGS)
+projection(LGA)
 
 
 ## Get the coordinates
@@ -80,6 +93,26 @@ HIA.AVH.OVERLAP = intersect(HIA.FIN, AVH.SPP)
 HIA.AVH.DIFF    = setdiff(HIA.FIN, AVH.SPP)
 
 
+## Read in Kate's data
+## set wd to where kates files are, eg LGA folder
+file_names <- list.files(pattern = ".csv") ## "./data/base/HIA_LIST/LGA/") # where you have your files
+your_data_frame <- do.call(bind_rows, lapply(file_names, read.csv))
+## change WD back to the top...
+
+
+
+
+
+#########################################################################################################################
+## 2). INTERSECT ALA WITH LGA DATA
+#########################################################################################################################
+
+
+## point.in.poly Intersects point and polygon feature classes and adds polygon attributes to points
+## Try it for a subset
+AVH.test = 
+
+pts.poly <- point.in.poly(AVH.WGS, LGA.WGS)
 
 
 

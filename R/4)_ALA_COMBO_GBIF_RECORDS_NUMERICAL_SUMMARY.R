@@ -309,6 +309,10 @@ names(COMBO.NICHE)
 #########################################################################################################################
 
 
+## These numbers don't look that accurate: Try converting data into a sp data frame and projecting into a projected
+## coordinate system
+
+
 ## Create a species list: this should be from the "COMBO.RASTER" file...
 spp.geo = as.character(unique(COMBO.RASTER$searchTaxon)) 
 data    = COMBO.RASTER
@@ -392,7 +396,7 @@ View(COMBO.NICHE.CONTEXT)
 
 
 #########################################################################################################################
-## quickly check how many species match from the original 610. Only 553 are currently there.
+## quickly check how many species match from the original 605. Only 553 are currently there.
 
 
 ## Which species from those with > 25 growers are missing?
