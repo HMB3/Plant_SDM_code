@@ -58,13 +58,16 @@ head(AVH.OEH.VASC)
 ## Project the ALA data into WGS84
 projection(AVH.OEH.VASC)
 projection(LGA)
+projection(SUA)
 
 CRS.new <- CRS("+init=epsg:4326")
 AVH.WGS = spTransform(AVH.OEH.VASC, CRS.new)
 LGA.WGS = spTransform(LGA, CRS.new)
+SUA.WGS = spTransform(SUA, CRS.new)
 
 projection(AVH.WGS)
-projection(LGA)
+projection(LGA.WGS)
+projection(LGA.WGS)
 
 
 ## write AVH shapefile
@@ -114,7 +117,8 @@ your_data_frame <- do.call(bind_rows, lapply(file_names, read.csv))
 
 ## point.in.poly Intersects point and polygon feature classes and adds polygon attributes to points
 ## Try it for a subset
-pts.poly <- point.in.poly(AVH.WGS, LGA.WGS)
+AVH.LGA <- point.in.poly(AVH.WGS, LGA.WGS)
+AVH.SUA <- point.in.poly(AVH.WGS, SUA.WGS)
 
 
 
