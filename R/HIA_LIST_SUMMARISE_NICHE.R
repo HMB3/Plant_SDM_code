@@ -104,12 +104,10 @@ GBIF_summary_slice(taxa.list = taxa.n,                       ## Could be a list
                                  "AREA_OCCUPANCY",
                                  "Number.of.growers",
                                  "Top_200",
-                                 "Annual_mean_temp_q05",     ## Change these using columns above
-                                 #"Annual_mean_temp_median",  ## Should be q95, q05, etc...
+                                 "Annual_mean_temp_q05",      
                                  "Annual_mean_temp_q95",     
                                  "Annual_mean_temp_q95_q05"),  
                    GBIF      = COMBO.NICHE.CONTEXT)
-
 
 
 ## AOO is calculated as the area of all known or predicted cells for the species. The resolution will be 2x2km as required by IUCN.
@@ -124,12 +122,12 @@ LAND  <- readOGR("./data/base/CONTEXTUAL/ne_10m_land.shp", layer = "ne_10m_land"
 
 
 ## Plot global and Australian occurrences for all taxa on the list
+## Might need to make plot window bigger
 print_occurrence_records(taxa.list = RENEE.SPP, DF = GBIF.RASTER.RENEE)
 
 
 #########################################################################################################################
-## And plot the histograms
-## Also consider how to combine outputs?
+## And plot the histograms. Consider how to combine outputs. Might need to make plot window bigger
 Print_global_histogram(taxa.list    = RENEE.SPP[1:32], DF = GBIF.RASTER.RENEE,  ## 33 is a problem: Cupianopsis anacardiodes
                        env.var.1    = "Annual_mean_temp",   
                        env.col.1    = "orange",  

@@ -60,7 +60,7 @@ projection(AVH.OEH.VASC)
 projection(LGA)
 projection(SUA)
 
-CRS.new <- CRS("+init=epsg:4326")
+CRS.new <- CRS("+init=epsg:4326") # EPSG:3577
 AVH.WGS = spTransform(AVH.OEH.VASC, CRS.new)
 LGA.WGS = spTransform(LGA, CRS.new)
 SUA.WGS = spTransform(SUA, CRS.new)
