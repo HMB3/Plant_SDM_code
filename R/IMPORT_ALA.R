@@ -123,6 +123,10 @@ AVH.LGA <- point.in.poly(AVH.WGS, LGA.WGS)
 AVH.SUA <- point.in.poly(AVH.WGS, SUA.WGS)
 
 
+## save
+save(AVH.LGA , file = paste("./data/base/HIA_LIST/ALA/SPECIES/AVH.LGA .RData", sep = ""))
+save(AVH.SUA , file = paste("./data/base/HIA_LIST/ALA/SPECIES/AVH.SUA .RData", sep = ""))
+
 
 #########################################################################################################################
 ## OUTSTANDING ALA TASKS:
