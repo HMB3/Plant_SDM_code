@@ -116,7 +116,9 @@ your_data_frame <- do.call(bind_rows, lapply(file_names, read.csv))
 
 
 ## point.in.poly Intersects point and polygon feature classes and adds polygon attributes to points
-## Try it for a subset
+## Check columns
+names(LGA.WGS)
+names(SUA.WGS)
 AVH.LGA <- point.in.poly(AVH.WGS, LGA.WGS)
 AVH.SUA <- point.in.poly(AVH.WGS, SUA.WGS)
 
