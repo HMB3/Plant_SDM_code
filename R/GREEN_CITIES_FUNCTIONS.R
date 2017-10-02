@@ -1457,6 +1457,25 @@ GBIF_summary_slice = function (taxa.list, env.cols, GBIF) {
 }
 
 
+########################################################################################################################
+## Create lists of species in each LGA
+LGA_lists = function (taxa.list, env.cols, GBIF) {
+  
+  ###############################
+  ## for all the taxa in the list
+  for (taxa.n in taxa.list) {
+    
+    ## slice the table 
+    summary.table <- GBIF[, env.cols][ which(GBIF[["searchTaxon"]] == taxa.n ), ]
+    
+    ## print to screen
+    print(kable(summary.table, row.names = FALSE))
+    
+  }
+  
+}
+
+
 
 
 
