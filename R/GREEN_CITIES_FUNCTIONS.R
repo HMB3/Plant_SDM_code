@@ -462,6 +462,79 @@ download_GBIF_all_genera = function (list) {
 
 
 #########################################################################################################################
+## COMBINE FUNCTIONS
+#########################################################################################################################
+
+
+## Read in a list of tables, bind them together and output one dataframe
+read_bind_tables = function (table.list, path) {
+  
+  READ.BIND.TABLE <- table.list[c(1:length(table.list))] %>% 
+    
+    ## pipe the list into lapply
+    lapply(function(x) {
+      
+      ## create the character string
+      f <- paste0(path, x)
+      
+      ## read each .csv file
+      d <- read.csv(f, stringsAsFactors = FALSE)
+      
+      ## now drop the columns which we don't need
+      #d <- d[, columns]
+      
+    }) %>% 
+    
+    ## finally, bind all the rows together
+    bind_rows
+  
+}
+
+
+# dfl <- list(df1,df2)
+# 
+# # This would generate your error
+# # df <- bind_rows(dfl)
+# 
+# # This would solve it while keeping the factors
+# df <- dfl %>%
+#   lapply(function(x) mutate_each(x, funs('as.character'))) %>%
+#   bind_rows() %>% 
+#   mutate_each(funs('as.factor'))
+
+# for(i in LGA.list){
+#   f <- paste0("./data/base/HIA_LIST/LGA/", i)
+#   assign(i, read.csv(f, stringsAsFactors = FALSE))
+#   
+# }
+
+
+
+## Read in a list of tables, bind them together and output one dataframe
+read_LGA_list = function (table.list, path) {
+  
+  READ.BIND.TABLE <- table.list[c(1:length(table.list))] %>% 
+    
+    ## pipe the list into lapply
+    lapply(function(x) {
+      
+      ## create the character string
+      f <- paste0(path, x)
+      
+      ## read each .csv file
+      d <- read.csv(f, stringsAsFactors = FALSE)
+      
+      ## now drop the columns which we don't need
+      assign(i, read.delim(filepath,
+                           colClasses=c("character","factor",rep("numeric",4)),
+                           sep = "\t"))
+      
+    })
+  
+}
+
+
+#########################################################################################################################
 ## GBIF FIELDS WE DON'T NEED
 #########################################################################################################################
 

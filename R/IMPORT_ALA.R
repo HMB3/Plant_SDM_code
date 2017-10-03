@@ -102,9 +102,22 @@ HIA.AVH.DIFF    = setdiff(HIA.FIN, AVH.SPP)
 
 ## Read in Kate's data
 ## set wd to where kates files are, eg LGA folder
-file_names <- list.files(pattern = ".csv") ## "./data/base/HIA_LIST/LGA/") # where you have your files
-your_data_frame <- do.call(bind_rows, lapply(file_names, read.csv))
-## change WD back to the top...
+LGA.list <- list.files(path = "./data/base/HIA_LIST/LGA/", pattern = ".csv")
+
+
+list = function (table.list, path) {
+  
+  for(i in LGA.list){
+    f <- paste0("./data/base/HIA_LIST/LGA/", i)
+    assign(i, read.csv(f, stringsAsFactors = FALSE))
+    
+  }
+  
+  return(list)
+}  
+
+
+read_LGA_list(LGA.list, "./data/base/HIA_LIST/LGA/") # Error: Can not automatically convert from character to integer in column "Catalog_Nu"
 
 
 
