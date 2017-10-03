@@ -24,7 +24,7 @@
 #########################################################################################################################
 load("./data/base/HIA_LIST/GBIF/GBIF_TRIM.RData")
 dim(GBIF.TRIM)
-length(unique(GBIF.TRIM$searchTaxon))  ## has the list update with extra species?
+length(unique(GBIF.TRIM$searchTaxon))  ## has the list update with extra species? YES!
 
 
 #########################################################################################################################

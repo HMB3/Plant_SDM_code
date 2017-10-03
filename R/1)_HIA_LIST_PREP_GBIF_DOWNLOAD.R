@@ -94,8 +94,9 @@ skipped.genera  = download_GBIF_all_genera(genera)  ## saves each gen as .Rdata 
 ## Run all the GBIF code 
 source("./R/2)_HIA_GBIF_DATA_COMBINE.R")
 source("./R/3)_GBIF_DATA_FILTER.R")
-source("./R/4)_GBIF_RECORDS_NUMERICAL_SUMMARY.R")
-source("./R/5)_GBIF_ESTIMATE_NICHE.R")
+source("./R/4)_ALA_COMBO_GBIF_RECORDS_NUMERICAL_SUMMARY.R")
+
+
 
 
 

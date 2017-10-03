@@ -144,12 +144,29 @@ Print_global_histogram(taxa.list    = RENEE.SPP[1:32], DF = GBIF.RASTER.RENEE,  
 
 
 #########################################################################################################################
-## 2). QUERY SPECIES
+## 2). QUERY SPECIES TO FIND NEW ONES
 #########################################################################################################################
 
 
-##
+## Find infrequently sold spp, big environmental & geographic range, but could have similar traits to popular species
+summary(COMBO.NICHE.CONTEXT$AREA_OCCUPANCY)
+summary(COMBO.NICHE.CONTEXT$Annual_mean_temp_range)
+summary(COMBO.NICHE.CONTEXT$Number.of.growers)
+summary(COMBO.NICHE.CONTEXT$COMBO.count)
 
+
+## Rare species we can't model?
+subset(COMBO.NICHE.CONTEXT, COMBO.count < 100)[ c("searchTaxon", "Top_200")]
+
+
+## Potentiall new species
+subset(COMBO.NICHE.CONTEXT, AREA_OCCUPANCY > 4000 & 
+         Annual_mean_temp_range > 180 & 
+         Number.of.growers < 25)[["searchTaxon"]]
+
+
+## Wh
+RARE.SPP$searchTaxon
 
 
 #########################################################################################################################
