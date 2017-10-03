@@ -12,7 +12,7 @@ source('./R/GREEN_CITIES_FUNCTIONS.R')
 #########################################################################################################################
 ## Load two tables: note the GBIF records need further cleaning
 load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData")   ## All the environmental data, one row for each record
-load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")     ## The niches for each variable, one row for each species
+load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")    ## The niches for each variable, one row for each species
 renee.50   = read.csv("./data/base/HIA_LIST/HIA/RENEE_TOP_50.csv", stringsAsFactors = FALSE)  ## Renee's list
 
 
@@ -26,7 +26,7 @@ View(COMBO.NICHE.CONTEXT)
 #########################################################################################################################
 
 
-## I have summarised all these variables:
+## I have summarised all these variables: 
 
 # CODE    NAME                                                          MY NAME
 # BIO1  = Annual Mean Temperature                                    ## moslty self explanatory                                
@@ -75,7 +75,7 @@ names(COMBO.NICHE.CONTEXT)
 
 
 #########################################################################################################################
-## SUMMARISE NICHES
+## 1). SUMMARISE NICHES
 #########################################################################################################################
 
 
@@ -138,6 +138,17 @@ Print_global_histogram(taxa.list    = RENEE.SPP[1:32], DF = GBIF.RASTER.RENEE,  
 
 
 ## Do these distributions look sensible? What visual/numerical outputs would be more useful for the other modules?
+
+
+
+
+
+#########################################################################################################################
+## 2). QUERY SPECIES
+#########################################################################################################################
+
+
+##
 
 
 

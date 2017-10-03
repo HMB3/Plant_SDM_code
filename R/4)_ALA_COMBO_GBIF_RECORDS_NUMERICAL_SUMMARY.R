@@ -158,6 +158,7 @@ summary(COMBO.POINTS)
 
 
 
+
 #########################################################################################################################
 ## Create a stack of rasters to sample: get all the World clim variables just for good measure
 env.grids = c("//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_01",
@@ -181,7 +182,7 @@ env.grids = c("//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_01",
               "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_19")
 
 
-## convert all the rasters to a stack
+## Convert all the rasters to a stack
 s <- stack(env.grids)
 
 
@@ -438,6 +439,8 @@ write.csv(COMBO.NICHE.CONTEXT, "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.c
 ## Now create a master summary of the recrods so far. What do we need to know?
 ## These numbers could be variables that update each time code is re-run with changes to the variables
 ## Also a table could be made for each source (COMBO, ALA, Council, etc.), But ideally it is just one table
+load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData")   ## All the environmental data, one row for each record
+load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")    ## The niches for each variable, one row for each species
 
 ## Total number of number of taxa (ie. all variables are dynamic)
 ## Total number of records (uncleaned, and broken down by source)
@@ -449,7 +452,7 @@ summary(COMBO.NICHE.CONTEXT$COMBO.count)
 
 
 ## How many species where knocked out by using filters?
-kable(COMBO.PROBLEMS)   ## doesn't exist
+#kable(COMBO.PROBLEMS)   ## doesn't exist
 
 
 #########################################################################################################################
@@ -528,20 +531,13 @@ histogram(COMBO.NICHE.CONTEXT$COMBO.count,
           main = "Distribution of COMBO records for HIA species")
 
 
-## remove older files
-rm(COMBO.CLEAN)
-rm(COMBO.LAND)
-rm(COMBO.TEST)
-rm(COMBO.RASTER)
-gc()
-
 
 #########################################################################################################################
 ## OUTSTANDING NICHE TASKS:
 #########################################################################################################################
 
 
-## Check on species which seem to have been knocked out: E.G Fagus sylvatica 
+## Check on species which seem to have been knocked out: E.G Fagus sylvatica. Individual filter doesn't knock them all out  
 
 ## Convert WORLDCLIM values back into decimals            - 
 

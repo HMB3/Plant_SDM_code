@@ -48,11 +48,14 @@ GBIF.300 <- spp.download[c(1:300)] %>%
     d <- get(load(f))
     
     ## now drop the columns which we don't need
-    data.frame(searchTaxon = x, d[, !colnames(d) %in% gbifColsToDrop], 
-               stringsAsFactors = FALSE)
-    
+    dat <- data.frame(searchTaxon = x, d[, !colnames(d) %in% gbifColsToDrop], 
+                      stringsAsFactors = FALSE)
+    if(!is.character(dat$gbifID)) {
+      dat$gbifID <- as.character(dat$gbifID)
+    }
+    dat
   }) %>% 
-
+  
   ## finally, bind all the rows together
   bind_rows
 
@@ -71,9 +74,12 @@ GBIF.600 <- spp.download[c(301:600)] %>%
     d <- get(load(f))
     
     ## now drop the columns which we don't need
-    data.frame(searchTaxon = x, d[, !colnames(d) %in% gbifColsToDrop], 
-               stringsAsFactors = FALSE)
-    
+    dat <- data.frame(searchTaxon = x, d[, !colnames(d) %in% gbifColsToDrop], 
+                      stringsAsFactors = FALSE)
+    if(!is.character(dat$gbifID)) {
+      dat$gbifID <- as.character(dat$gbifID)
+    }
+    dat
   }) %>% 
   
   ## finally, bind all the rows together
@@ -94,9 +100,12 @@ GBIF.800 <- spp.download[c(601:length(spp.download))] %>%
     d <- get(load(f))
     
     ## now drop the columns which we don't need
-    data.frame(searchTaxon = x, d[, !colnames(d) %in% gbifColsToDrop], 
-               stringsAsFactors = FALSE)
-    
+    dat <- data.frame(searchTaxon = x, d[, !colnames(d) %in% gbifColsToDrop], 
+                      stringsAsFactors = FALSE)
+    if(!is.character(dat$gbifID)) {
+      dat$gbifID <- as.character(dat$gbifID)
+    }
+    dat
   }) %>% 
   
   ## finally, bind all the rows together
