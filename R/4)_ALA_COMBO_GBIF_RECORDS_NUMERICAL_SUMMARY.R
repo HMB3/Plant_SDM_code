@@ -588,7 +588,7 @@ rownames(COMBO.RECORD.SUMMARY) = "VALUE"
 COMBO.RECORD.SUMMARY = as.data.frame(t(COMBO.RECORD.SUMMARY)) ## do melting, etc later
 kable(COMBO.RECORD.SUMMARY)
 
-## Save data
+## Save data:
 save(COMBO.RECORD.SUMMARY,  file = paste("./data/base/HIA_LIST/COMBO/COMBO_RECORD_SUMMARY.RData",  sep = ""))
 
 
