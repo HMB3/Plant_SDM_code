@@ -267,7 +267,7 @@ COMBO.RASTER.CONVERT[, (env.variables[c(1:11)]) := lapply(.SD, function(x)
   x / 10 ), .SDcols = env.variables[c(1:11)]]
 
 
-## Check. Looks ok?
+## Check Looks ok?
 COMBO.RASTER.CONVERT = as.data.frame(COMBO.RASTER.CONVERT)
 
 summary(COMBO.RASTER.CONVERT$Annual_mean_temp)
@@ -277,19 +277,15 @@ summary(COMBO.RASTER.CONVERT$Isothermality)
 summary(COMBO.RASTER$Isothermality)
 
 
-
-
-
 #########################################################################################################################
 ## Create niche summaries for each environmental condition like this...
 ## Here's what the function will produce :
 library(plyr)
-head(niche_estimate (DF = COMBO.RASTER, colname = "Annual_mean_temp"))
-dim(niche_estimate  (DF = COMBO.RASTER, colname = "Annual_mean_temp"))  ## 7 environmetnal summaries so far
+head(niche_estimate (DF = COMBO.RASTER.CONVERT, colname = "Annual_mean_temp"))
+head(niche_estimate (DF = COMBO.RASTER.CONVERT, colname = "Annual_mean_temp"))  ## including the q05 and q95
 
 
-## So lets use lapply on the "Search Taxon".
-## Note additonal flags are needed, and the taxonomic lists need to be managed better...
+## So lets use lapply on the "Search Taxon". Note additonal flags are needed, and the taxonomic lists need to be managed better...
 COMBO.NICHE <- env.variables[c(1:length(env.variables))] %>% 
   
   ## Pipe the list into lapply
@@ -298,7 +294,7 @@ COMBO.NICHE <- env.variables[c(1:length(env.variables))] %>%
     ## Now use the niche width function on each colname (so 8 environmental variables)
     ## Also, need to figure out how to make the aggregating column generic (species, genus, etc.)
     ## currently it only works hard-wired
-    niche_estimate (DF = COMBO.RASTER, colname = x)
+    niche_estimate (DF = COMBO.RASTER.CONVERT, colname = x)
     
     ## would be good to remove the duplicate columns here
     
@@ -319,7 +315,7 @@ COMBO.NICHE = COMBO.NICHE[ , !(names(COMBO.NICHE) %in% drops)]
 
 
 ## Add counts for each species, and record the total number of taxa processed
-COMBO.count = as.data.frame(table(COMBO.RASTER$searchTaxon))$Freq
+COMBO.count = as.data.frame(table(COMBO.RASTER.CONVERT$searchTaxon))$Freq
 Total.taxa.processed = dim(COMBO.NICHE)[1]
 COMBO.NICHE  = cbind(COMBO.count, COMBO.NICHE)
 names(COMBO.NICHE)
@@ -498,8 +494,8 @@ write.csv(COMBO.NICHE.CONTEXT, "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.c
 ## Now create a master summary of the recrods so far. What do we need to know?
 ## These numbers could be variables that update each time code is re-run with changes to the variables
 ## Also a table could be made for each source (COMBO, ALA, Council, etc.), But ideally it is just one table
-load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData")   ## All the environmental data, one row for each record
-load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")    ## The niches for each variable, one row for each species
+# load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData")   ## All the environmental data, one row for each record
+# load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")    ## The niches for each variable, one row for each species
 load("./data/base/HIA_LIST/GBIF/GBIF_TRIM.RData")
 
 
@@ -591,6 +587,9 @@ rownames(COMBO.RECORD.SUMMARY) = "VALUE"
 
 COMBO.RECORD.SUMMARY = as.data.frame(t(COMBO.RECORD.SUMMARY)) ## do melting, etc later
 kable(COMBO.RECORD.SUMMARY)
+
+## Save data
+save(COMBO.RECORD.SUMMARY,  file = paste("./data/base/HIA_LIST/COMBO/COMBO_RECORD_SUMMARY.RData",  sep = ""))
 
 
 #########################################################################################################################
