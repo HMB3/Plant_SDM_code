@@ -261,6 +261,7 @@ env.variables = c("Annual_mean_temp",
 #########################################################################################################################
 ## Create niche summaries for each environmental condition like this...
 ## Here's what the function will produce :
+library(plyr)
 head(niche_estimate (DF = COMBO.RASTER, colname = "Annual_mean_temp"))
 dim(niche_estimate  (DF = COMBO.RASTER, colname = "Annual_mean_temp"))  ## 7 environmetnal summaries so far
 
@@ -319,8 +320,10 @@ spp.geo = as.character(unique(COMBO.RASTER$searchTaxon))
 data    = COMBO.RASTER
 
 
-## For every species in the list: calculate the 
-GBIF.RANGE <- spp.geo[c(1:length(spp.geo))] %>% 
+#########################################################################################################################
+## AREA OF OCCUPANCY 
+## For every species in the list: calculate the AOO
+GBIF.AOO <- spp.geo[c(1:length(spp.geo))] %>% 
   
   ## Pipe the list into lapply
   lapply(function(x) {
@@ -341,18 +344,47 @@ GBIF.RANGE <- spp.geo[c(1:length(spp.geo))] %>%
   as.data.frame
 
 
+#########################################################################################################################
+## EXTENT OF OCCURRENCE
+## For every species in the list: calculate the EOO
+# GBIF.EOO <- spp.geo[c(1:length(spp.geo))] %>% 
+#   
+#   ## Pipe the list into lapply
+#   lapply(function(x) {
+#     
+#     ## Subset the the data frame 
+#     DF      = subset(data, searchTaxon == x)[, c("searchTaxon", "lon", "lat")]
+#     DF.GEO  = dplyr::rename(DF, 
+#                             identifier = searchTaxon,
+#                             XCOOR      = lon,
+#                             YCOOR      = lat)
+#     
+#     ## Calculate area of occupancy according the the "red" package
+#     CalcRange (DF.GEO)
+#     
+#     ## Warning messages: Ask John if this is a problem
+#     ## In rgdal::project(longlat, paste("+proj=utm +zone=", zone,  ... :
+#     ## 3644 projected point(s) not finite
+#     
+#   }) %>% 
+#   
+#   ## Finally, create one dataframe for all niches
+#   as.data.frame
+
+
 ## Clean it up. The order of species should be preserved
-GBIF.RANGE = gather(GBIF.RANGE)
-str(GBIF.RANGE)
-head(GBIF.RANGE)
+GBIF.AOO = gather(GBIF.AOO)
+#GBIF.EOO = gather(GBIF.EOO)
+str(GBIF.AOO)
+#str(GBIF.EOO)
 
 
 ## Now join on the GEOGRAPHIC RANGE
-COMBO.NICHE$AREA_OCCUPANCY = GBIF.RANGE$value
+COMBO.NICHE$AREA_OCCUPANCY = GBIF.AOO$value
 
 
-## AOO is calculated as the area of all known or predicted cells for the species. The resolution will be 2x2km as required by IUCN.
-## A single value in km2.
+## AOO is calculated as the area of all known or predicted cells for the species. The resolution will be 2x2km as 
+## required by IUCN. A single value in km2.
 
 
 
@@ -376,8 +408,13 @@ COMBO.NICHE.CONTEXT = join(COMBO.NICHE, HIA.SPP.JOIN,
 
 #########################################################################################################################
 ## For pedantry, reroder columns...
-COMBO.RASTER.CONTEXT = COMBO.RASTER.CONTEXT[, c(47, 2, 3,  48:60, 4:46)]
-COMBO.NICHE.CONTEXT  = COMBO.NICHE.CONTEXT[,  c(175, 2, 1, 174, 176:188,  3:173)]
+names(COMBO.RASTER.CONTEXT)
+names(COMBO.NICHE.CONTEXT)
+
+
+##
+COMBO.RASTER.CONTEXT = COMBO.RASTER.CONTEXT[, c(1:5,  46:59, 7:45)]
+COMBO.NICHE.CONTEXT  = COMBO.NICHE.CONTEXT[,  c(2, 1, 174, 176:188,  3:173)]
 
 
 ## Set NA to blank, then sort by no. of growers.
@@ -540,6 +577,8 @@ histogram(COMBO.NICHE.CONTEXT$COMBO.count,
 ## Check on species which seem to have been knocked out: E.G Fagus sylvatica. Individual filter doesn't knock them all out  
 
 ## Convert WORLDCLIM values back into decimals            - 
+
+## Check geographic range: doesn't look right for some species. Calc extent of occurrnece as well 
 
 ## Return species EG:                                     -
 

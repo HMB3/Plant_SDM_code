@@ -478,14 +478,20 @@ read_bind_tables = function (table.list, path) {
       f <- paste0(path, x)
       
       ## read each .csv file
-      d <- read.csv(f, stringsAsFactors = FALSE)
+      dat <- read.csv(f, stringsAsFactors = FALSE)
       
       ## now drop the columns which we don't need
-      #d <- d[, columns]
+      if(!is.character(dat$Catalog_Nu)) {
+        
+        dat$Catalog_Nu <- as.character(dat$Catalog_Nu)
+        
+      }
       
-    }) %>% 
+      dat
+      
+    }) %>%
     
-    ## finally, bind all the rows together
+    ## Finally, bind all the rows together
     bind_rows
   
 }
@@ -509,29 +515,41 @@ read_bind_tables = function (table.list, path) {
 # }
 
 
+# list = function (table.list, path) {
+#   
+#   for(i in LGA.list){
+#     f <- paste0("./data/base/HIA_LIST/LGA/", i)
+#     assign(i, read.csv(f, stringsAsFactors = FALSE))
+#     
+#   }
+#   
+#   return(list)
+# }  
 
-## Read in a list of tables, bind them together and output one dataframe
-read_LGA_list = function (table.list, path) {
-  
-  READ.BIND.TABLE <- table.list[c(1:length(table.list))] %>% 
-    
-    ## pipe the list into lapply
-    lapply(function(x) {
-      
-      ## create the character string
-      f <- paste0(path, x)
-      
-      ## read each .csv file
-      d <- read.csv(f, stringsAsFactors = FALSE)
-      
-      ## now drop the columns which we don't need
-      assign(i, read.delim(filepath,
-                           colClasses=c("character","factor",rep("numeric",4)),
-                           sep = "\t"))
-      
-    })
-  
-}
+
+
+# ## Read in a list of tables, bind them together and output one dataframe
+# read_LGA_list = function (table.list, path) {
+#   
+#   READ.BIND.TABLE <- table.list[c(1:length(table.list))] %>% 
+#     
+#     ## pipe the list into lapply
+#     lapply(function(x) {
+#       
+#       ## create the character string
+#       f <- paste0(path, x)
+#       
+#       ## read each .csv file
+#       d <- read.csv(f, stringsAsFactors = FALSE)
+#       
+#       ## now drop the columns which we don't need
+#       assign(i, read.delim(filepath,
+#                            colClasses=c("character","factor",rep("numeric",4)),
+#                            sep = "\t"))
+#       
+#     })
+#   
+# }
 
 
 #########################################################################################################################

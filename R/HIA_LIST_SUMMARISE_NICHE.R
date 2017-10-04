@@ -156,7 +156,7 @@ summary(COMBO.NICHE.CONTEXT$COMBO.count)
 
 
 ## Rare species we can't model?
-subset(COMBO.NICHE.CONTEXT, COMBO.count < 100)[ c("searchTaxon", "Top_200")]
+rare.spp = subset(COMBO.NICHE.CONTEXT, COMBO.count < 100)[ c("searchTaxon", "Top_200")]
 
 
 ## Potentiall new species
@@ -165,8 +165,7 @@ subset(COMBO.NICHE.CONTEXT, AREA_OCCUPANCY > 4000 &
          Number.of.growers < 25)[["searchTaxon"]]
 
 
-## Wh
-RARE.SPP$searchTaxon
+
 
 
 #########################################################################################################################
@@ -175,8 +174,15 @@ RARE.SPP$searchTaxon
 
 
 ## Clean the GBIF data and merge with ALA to avoid duplicates, spatial outliers, etc.
+
 ## Check on the missing species
-## Improve mapping functions to be more useful
+
+## Improve mapping functions to be more useful. Combine maps and historgrams in one
+
+## Correct the worldclim raster values
+
+## Use different rasters too: Manuel
+
 ## Lots more...
 
 
