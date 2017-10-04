@@ -414,7 +414,7 @@ names(COMBO.NICHE.CONTEXT)
 
 ##
 COMBO.RASTER.CONTEXT = COMBO.RASTER.CONTEXT[, c(1:5,  46:59, 7:45)]
-COMBO.NICHE.CONTEXT  = COMBO.NICHE.CONTEXT[,  c(2, 1, 174, 176:188,  3:173)]
+COMBO.NICHE.CONTEXT  = COMBO.NICHE.CONTEXT[,  c(175, 2, 1, 174, 176:188,  3:173)]
 
 
 ## Set NA to blank, then sort by no. of growers.
@@ -465,7 +465,7 @@ missing.taxa   = as.data.frame(missing.taxa)
        
 
 ## Save the summary datasets
-save(missing.taxa, file = paste("./data/base/HIA_LIST/COMBO/MISSING_TAXA.RData", sep = ""))
+save(missing.taxa,         file = paste("./data/base/HIA_LIST/COMBO/MISSING_TAXA.RData",         sep = ""))
 save(COMBO.RASTER.CONTEXT, file = paste("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData", sep = ""))
 save(COMBO.NICHE.CONTEXT,  file = paste("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData",  sep = ""))
 write.csv(COMBO.NICHE.CONTEXT, "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.csv",       row.names = FALSE)
@@ -478,6 +478,14 @@ write.csv(COMBO.NICHE.CONTEXT, "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.c
 ## Also a table could be made for each source (COMBO, ALA, Council, etc.), But ideally it is just one table
 load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData")   ## All the environmental data, one row for each record
 load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")    ## The niches for each variable, one row for each species
+load("./data/base/HIA_LIST/GBIF/GBIF_TRIM.RData")
+
+
+## The table above gives the details, but worth documenting how many records are knocked out by each
+Total.records     = dim(GBIF.TRIM)[1]
+Remaining.records = dim(COMBO.RASTER.CONTEXT)[1] 
+Remaining.percent = Remaining.records/Total.records * 100
+Filters.applied   = "NA COORD | MANAGED/NA | < 1950/NA"
 
 ## Total number of number of taxa (ie. all variables are dynamic)
 ## Total number of records (uncleaned, and broken down by source)
@@ -489,6 +497,7 @@ summary(COMBO.NICHE.CONTEXT$COMBO.count)
 
 
 ## How many species where knocked out by using filters?
+load("./data/base/HIA_LIST/GBIF/GBIF_PROBLEMS.RData")
 #kable(COMBO.PROBLEMS)   ## doesn't exist
 
 

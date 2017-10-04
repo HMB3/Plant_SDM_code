@@ -177,11 +177,11 @@ subset(COMBO.NICHE.CONTEXT, AREA_OCCUPANCY > 4000 &
 
 ## Check on the missing species
 
-## Improve mapping functions to be more useful. Combine maps and historgrams in one
+## Improve mapping functions to be more useful: Combine maps and historgrams in one
 
 ## Correct the worldclim raster values
 
-## Use different rasters too: Manuel
+## Use different rasters too: Manuel?
 
 ## Lots more...
 

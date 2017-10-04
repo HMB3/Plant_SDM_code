@@ -29,8 +29,8 @@ length(unique(GBIF.TRIM$searchTaxon))  ## has the list update with extra species
 
 #########################################################################################################################
 ## Try 'Geoclean' : this provides several different tests to clean datasets with geographic coordinates...
-GBIF.TRIM.GEO = rename(GBIF.TRIM, identifier = searchTaxon, 
-                       XCOOR = lat, YCOOR = lon)
+GBIF.TRIM.GEO = dplyr::rename(GBIF.TRIM, identifier = searchTaxon, 
+                              XCOOR = lat, YCOOR = lon)
 
 ## 
 GBIF.GeoClean.table = GeoClean(GBIF.TRIM.GEO, #countrycentroid = TRUE, 
@@ -151,7 +151,7 @@ identical(dim(GBIF.TRIM)[1], Total.count)  ## identical matches two objects
 
 
 ## probably don't need this
-## save(GBIF.PROBLEMS,  file = paste("./data/base/HIA_LIST/GBIF/GBIF_PROBLEMS.RData"))
+save(GBIF.PROBLEMS,  file = paste("./data/base/HIA_LIST/GBIF/GBIF_PROBLEMS.RData"))
 
 
 ## Also keep the managed records:
@@ -162,7 +162,7 @@ GBIF.MANAGED <- GBIF.TRIM %>%
   filter(establishmentMeans == 'MANAGED')
 
 ## unique(GBIF.MANAGED$establishmentMeans)
-## save(GBIF.MANAGED, file = paste("./data/base/HIA_LIST/GBIF/GBIF_MANAGED.RData"))
+save(GBIF.MANAGED, file = paste("./data/base/HIA_LIST/GBIF/GBIF_MANAGED.RData"))
 
 
 
