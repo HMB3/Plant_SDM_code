@@ -259,6 +259,28 @@ env.variables = c("Annual_mean_temp",
 
 
 #########################################################################################################################
+## CHANGE THE RASTER VALUES HERE: 
+## see http://worldclim.org/formats1
+
+COMBO.RASTER.CONVERT = as.data.table(COMBO.RASTER)
+COMBO.RASTER.CONVERT[, (env.variables[c(1:11)]) := lapply(.SD, function(x) 
+  x / 10 ), .SDcols = env.variables[c(1:11)]]
+
+
+## Check. Looks ok?
+COMBO.RASTER.CONVERT = as.data.frame(COMBO.RASTER.CONVERT)
+
+summary(COMBO.RASTER.CONVERT$Annual_mean_temp)
+summary(COMBO.RASTER$Annual_mean_temp)
+
+summary(COMBO.RASTER.CONVERT$Isothermality)
+summary(COMBO.RASTER$Isothermality)
+
+
+
+
+
+#########################################################################################################################
 ## Create niche summaries for each environmental condition like this...
 ## Here's what the function will produce :
 library(plyr)
@@ -412,7 +434,7 @@ names(COMBO.RASTER.CONTEXT)
 names(COMBO.NICHE.CONTEXT)
 
 
-##
+## Rename...
 COMBO.RASTER.CONTEXT = COMBO.RASTER.CONTEXT[, c(1:5,  46:59, 7:45)]
 COMBO.NICHE.CONTEXT  = COMBO.NICHE.CONTEXT[,  c(175, 2, 1, 174, 176:188,  3:173)]
 
@@ -498,7 +520,7 @@ summary(COMBO.NICHE.CONTEXT$COMBO.count)
 
 ## How many species where knocked out by using filters?
 load("./data/base/HIA_LIST/GBIF/GBIF_PROBLEMS.RData")
-#kable(COMBO.PROBLEMS)   ## doesn't exist
+kable(GBIF.PROBLEMS)   ## doesn't exist
 
 
 #########################################################################################################################
@@ -536,7 +558,8 @@ colnames(COMBO.RECORD.SUMMARY)  = table.columns
 COMBO.RECORD.SUMMARY            = as.data.frame(COMBO.RECORD.SUMMARY)
 
 
-## now put the data in. Could use "melt", etc?
+#########################################################################################################################
+## Now put the data in. Could use "melt", etc?
 COMBO.RECORD.SUMMARY[1, "Dataset"]                 = "COMBO_occurrence"                # H1.ms[1, "Intercept"]
 COMBO.RECORD.SUMMARY[1, "Taxa processed"]          = Total.taxa.processed
 COMBO.RECORD.SUMMARY[1, "Rank"]                    = "Species"
@@ -560,7 +583,8 @@ COMBO.RECORD.SUMMARY[1, "Top taxa count 1000+"]    = sum(COMBO.NICHE.CONTEXT$COM
 COMBO.RECORD.SUMMARY[1, "Top taxa count 10,000+"]  = sum(COMBO.NICHE.CONTEXT$COMBO.count >= 10000 & COMBO.NICHE.CONTEXT$Top_200 == "TRUE", na.rm = TRUE)
 
 
-## visualise this
+#########################################################################################################################
+## Visualise this
 str(COMBO.RECORD.SUMMARY)
 colnames(COMBO.RECORD.SUMMARY)
 rownames(COMBO.RECORD.SUMMARY) = "VALUE"
@@ -585,13 +609,13 @@ histogram(COMBO.NICHE.CONTEXT$COMBO.count,
 
 ## Check on species which seem to have been knocked out: E.G Fagus sylvatica. Individual filter doesn't knock them all out  
 
-## Convert WORLDCLIM values back into decimals            - 
+## Convert WORLDCLIM values back into decimals            - multiply by 10
 
 ## Check geographic range: doesn't look right for some species. Calc extent of occurrnece as well 
 
 ## Return species EG:                                     -
 
-## Find infrequently sold spp, big environmental & geographic range, but could have similar traits to popular species
+## Find infrequently sold spp., big environmental & geographic range, but could have similar traits to popular species
 
 ## Find rarest species (are there popular species with not many records?)
 

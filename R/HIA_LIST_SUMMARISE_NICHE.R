@@ -159,7 +159,13 @@ summary(COMBO.NICHE.CONTEXT$COMBO.count)
 rare.spp = subset(COMBO.NICHE.CONTEXT, COMBO.count < 100)[ c("searchTaxon", "Top_200")]
 
 
-## Potentiall new species
+## Potential new species
+new.spp = subset(COMBO.NICHE.CONTEXT, AREA_OCCUPANCY > 4000 & 
+                   Annual_mean_temp_range > 180 & 
+                   Number.of.growers < 25)[ c("searchTaxon", "Top_200")]
+
+
+## Potential new species
 subset(COMBO.NICHE.CONTEXT, AREA_OCCUPANCY > 4000 & 
          Annual_mean_temp_range > 180 & 
          Number.of.growers < 25)[["searchTaxon"]]
