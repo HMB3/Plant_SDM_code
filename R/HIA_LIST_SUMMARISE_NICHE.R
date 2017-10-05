@@ -13,12 +13,15 @@ source('./R/GREEN_CITIES_FUNCTIONS.R')
 ## Load two tables: note the GBIF records need further cleaning
 load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData")   ## All the environmental data, one row for each record
 load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")    ## The niches for each variable, one row for each species
+renee.full = read.csv("./data/base/HIA_LIST/HIA/RENEE_FULL_LIST.csv", stringsAsFactors = FALSE)  ## Renee's list
 renee.50   = read.csv("./data/base/HIA_LIST/HIA/RENEE_TOP_50.csv", stringsAsFactors = FALSE)  ## Renee's list
+renee.25   = read.csv("./data/base/HIA_LIST/HIA/RENEE_TOP_25.csv", stringsAsFactors = FALSE)  ## Renee's list
 
 
 ## Check
 View(COMBO.RASTER.CONTEXT)
 View(COMBO.NICHE.CONTEXT)
+renee.missing = setdiff(renee.full$Species, renee.50$Species)
 
 
 #########################################################################################################################
@@ -81,7 +84,7 @@ names(COMBO.NICHE.CONTEXT)
 
 #########################################################################################################################
 ## Slice the big and small dataframes to just the ones on Renee's list.
-RENEE.SPP          = as.character(unique(renee.50$Species))
+RENEE.SPP          = sort(as.character(unique(renee.full$Species)))
 GBIF.RASTER.RENEE  = COMBO.RASTER.CONTEXT[COMBO.RASTER.CONTEXT$searchTaxon %in% renee.50$Species, ]
 GBIF.NICHE.RENEE   = COMBO.NICHE.CONTEXT[COMBO.NICHE.CONTEXT$searchTaxon %in% renee.50$Species, ]
 

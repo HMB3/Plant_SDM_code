@@ -30,6 +30,13 @@ library(AdaptR)
 library(red)
 library(ConR)
 
+library(ff)
+library(rgeos)
+library(sp)
+library(raster)
+library(rJava)
+library(things)
+
 
 library(ALA4R)
 library(rgbif)

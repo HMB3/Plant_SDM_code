@@ -4,7 +4,7 @@
 
 
 #########################################################################################################################
-## MAXENT functions
+## MAXENT FUNCTIONS
 #########################################################################################################################
 
 
@@ -53,8 +53,8 @@ fit_maxent2 <- function(occ, bg, predictors, name, outdir, template,
   cells <- cells[not_dupes]
   message(nrow(occ), ' occurrence records (unique cells).')
   
-  ## skip species with < 5 records
-  if(length(occ) < 5) {
+  ## skip species with < 20 records
+  if(length(occ) < min.spp) {
     
     warning('Fewer occurrence records than the number of cross-validation ',
             'replicates for species ', name, 
