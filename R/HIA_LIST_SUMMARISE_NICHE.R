@@ -168,8 +168,9 @@ new.spp = subset(COMBO.NICHE.CONTEXT, AREA_OCCUPANCY > 7000 &
                    Number.of.growers < 25)[ c("searchTaxon", "Origin")]
 
 
-## Other queries?
-
+## Other queries? What is the relationship between environmental and geographic ranges?
+cor(log(COMBO.NICHE.CONTEXT$AREA_OCCUPANCY), COMBO.NICHE.CONTEXT$Annual_mean_temp_range)
+plot(log(new.spp$AREA_OCCUPANCY), new.spp$Annual_mean_temp_range)
 
 
 

@@ -7,6 +7,8 @@
 ## MAXENT FUNCTIONS
 #########################################################################################################################
 
+## Need an example of actually runnin the code
+
 
 #########################################################################################################################
 ## Big function for getting background points...and fitting maxent? 
@@ -36,9 +38,9 @@ fit_maxent2 <- function(occ, bg, predictors, name, outdir, template,
   features <- unlist(strsplit(features, ''))
   
   ## What?
-  if(length(setdiff(features, c('l', 'p', 'q', 'h', 't'))) > 1)
-    stop("features must be a vector of one or more of ',
-         'l', 'p', 'q', 'h', and 't'.")
+  # if(length(setdiff(features, c('l', 'p', 'q', 'h', 't'))) > 1)
+  #   stop("features must be a vector of one or more of ',
+  #        'l', 'p', 'q', 'h', and 't'.")
   
   ## aggregate
   b <- aggregate(gBuffer(occ, width = 200000, byid = TRUE))
@@ -97,7 +99,7 @@ fit_maxent2 <- function(occ, bg, predictors, name, outdir, template,
     
     suppressWarnings({
       
-      writeOGR(SpatialPolygonsDataFrame(b, data.frame(ID=seq_len(length(b)))), 
+      writeOGR(SpatialPolygonsDataFrame(b, data.frame(ID = seq_len(length(b)))), 
                outdir_sp, 'bg_buffer', 'ESRI Shapefile', overwrite_layer = TRUE)  
       writeOGR(bg,  outdir_sp, 'bg',   'ESRI Shapefile', overwrite_layer = TRUE)  
       writeOGR(occ, outdir_sp, 'occ',  'ESRI Shapefile', overwrite_layer = TRUE) 
@@ -106,7 +108,7 @@ fit_maxent2 <- function(occ, bg, predictors, name, outdir, template,
     
   }
   
-  saveRDS(bg, file.path(outdir_sp, 'bg.rds'))
+  saveRDS(bg,  file.path(outdir_sp, 'bg.rds'))
   saveRDS(occ, file.path(outdir_sp, 'occ.rds'))
   
   #####################################################################
@@ -124,8 +126,8 @@ fit_maxent2 <- function(occ, bg, predictors, name, outdir, template,
   ## save shapefiles?
   if(shapefiles) {
     
-    writeOGR(swd_occ, outdir_sp, 'occ_swd', 'ESRI Shapefile', overwrite_layer = TRUE)
-    writeOGR(swd_bg, outdir_sp,   'bg_swd', 'ESRI Shapefile', overwrite_layer = TRUE)
+    writeOGR(swd_occ, outdir_sp,  'occ_swd', 'ESRI Shapefile', overwrite_layer = TRUE)
+    writeOGR(swd_bg,  outdir_sp,   'bg_swd', 'ESRI Shapefile', overwrite_layer = TRUE)
     
   }
   
@@ -151,18 +153,18 @@ fit_maxent2 <- function(occ, bg, predictors, name, outdir, template,
     
     if(missing(rep_args)) rep_args <- NULL
     
-    ## What?
+    ## This runs the MAXENT
     me_xval <- maxent(swd, pa, path = file.path(outdir_sp, 'xval'), 
-                      args=c(paste0('replicates=', replicates),
-                             'responsecurves=TRUE',
-                             off, paste(names(rep_args), rep_args, sep='=')))
+                      args = c(paste0('replicates = ', replicates),
+                             'responsecurves = TRUE',
+                             off, paste(names(rep_args), rep_args, sep = '=')))
     
   }
   
   ## 
   if(missing(full_args)) full_args <- NULL
   me_full <- maxent(swd, pa, path = file.path(outdir_sp, 'full'), 
-                    args = c(off, paste(names(full_args), full_args, sep= '='),
+                    args = c(off, paste(names(full_args), full_args, sep = '='),
                            'responsecurves = TRUE'))
   
   #####################################################################
@@ -179,7 +181,5 @@ fit_maxent2 <- function(occ, bg, predictors, name, outdir, template,
 
 
 #########################################################################################################################
-## 
-
-
-
+#####################################################  TBC ############################################################## 
+#########################################################################################################################

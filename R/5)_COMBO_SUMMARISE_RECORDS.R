@@ -134,18 +134,20 @@ summary(COMBO.NICHE.CONTEXT$COMBO.count)
 
 
 ## Rare species we can't model?
-rare.spp = subset(COMBO.NICHE.CONTEXT, COMBO.count < 100)[ c("searchTaxon", "Top_200", "Origin")]
+rare.spp = subset(COMBO.NICHE.CONTEXT, COMBO.count < 50)[ c("searchTaxon", "COMBO.count", "AREA_OCCUPANCY", "Annual_mean_temp_range",
+                                                             "Top_200", "Origin")]
 
 
 ## Potential new species
-new.spp = subset(COMBO.NICHE.CONTEXT, AREA_OCCUPANCY > 7000 & 
+new.spp = subset(COMBO.NICHE.CONTEXT, AREA_OCCUPANCY > 7900 & 
                    Annual_mean_temp_range > 18 & 
-                   Number.of.growers < 25)[ c("searchTaxon", "Top_200", "Origin")]
+                   Number.of.growers < 25)[ c("searchTaxon", "COMBO.count", "AREA_OCCUPANCY", "Annual_mean_temp_range",
+                                              "Top_200", "Origin")]
 
 
 ## Other queries?
-
-
+dim(rare.spp)
+dim(new.spp)
 
 
 
