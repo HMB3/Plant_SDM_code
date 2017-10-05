@@ -188,7 +188,7 @@ EXCLUDED.VARIETIES   = setdiff(unique(HIA.VARIETY$Species), unique(HIA.SPP$HIA.T
 ## Remaining anomalies:
 
 ## EG: Rhaphiolepis indica has growers for the spp and each variety, should we add them together?
-## Magnolia grandiflora has 8 varieties which are being missed by the current code...
+## Magnolia grandiflora has 8 varieties which are being missed by the current code...#
 
 
 
