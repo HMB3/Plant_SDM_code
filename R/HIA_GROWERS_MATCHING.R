@@ -19,26 +19,28 @@
 ## Up the data and cross-linked to growth form and exotic/native status and derived a list of ~1000 species that are the 
 ## Most commonly sold, covering the right ratio of growth forms, regional representation and native/exotic
 CLEAN.list = read.csv("./data/base/HIA_LIST/HIA/HIA.CLEAN.csv",                         stringsAsFactors = FALSE)
+GROW.list  = read.csv("./data/base/HIA_LIST/HIA/database_aus_sp_growing.csv",           stringsAsFactors = FALSE) 
 top.200    = read.csv("./data/base/HIA_LIST/HIA/HIA_TOP_200_1309_2017.csv",             stringsAsFactors = FALSE)
 
 
 #########################################################################################################################
 ## Dim
-dim(CLEAN.list)
+dim(GROW.list)
+GROW.list = dplyr::rename(GROW.list, Species = scientific_name)
 
 
 ## Create a list of the raw HIA list, but removing the weird characters...
 ## Just use "TRIM(CELL)" in excel
-## trim <- function (x) gsub("^\\s+|\\s+$", "", x) ##  CLEAN.list$Species <- trim(CLEAN.list$Species)
-RAW.HIA.SPP = gsub("  ",     " ", CLEAN.list$Species)
-RAW.HIA.SPP = gsub(" $",     "",  CLEAN.list$Species, perl = TRUE)
-RAW.HIA.SPP = gsub("    $",  "",  CLEAN.list$Species, perl = TRUE)
+## trim <- function (x) gsub("^\\s+|\\s+$", "", x) ##  GROW.list$Species <- trim(GROW.list$Species)
+RAW.HIA.SPP = gsub("  ",     " ", GROW.list$Species)
+RAW.HIA.SPP = gsub(" $",     "",  GROW.list$Species, perl = TRUE)
+RAW.HIA.SPP = gsub("    $",  "",  GROW.list$Species, perl = TRUE)
 length(RAW.HIA.SPP)
 
 
 #########################################################################################################################
 ## Taxon check on the original list
-#intersect(CLEAN.list$Species, GROWING$scientific_name)
+#intersect(GROW.list$Species, GROWING$scientific_name)
 CLEAN.UNIQUE = as.character(unique(RAW.HIA.SPP))
 FIRST.LOOKUP = lookup_table(CLEAN.UNIQUE, by_species = TRUE, missing_action = "NA") ## convert rows to column and merge
 FIRST.LOOKUP = setDT(FIRST.LOOKUP, keep.rownames = TRUE)[]
@@ -62,24 +64,24 @@ spp.200          = dplyr::rename(spp.200, Binomial = Species)
 #########################################################################################################################
 ## Merge the ~1000 with the top 200
 ## This merge won't get the ones that match to binomial
-CLEAN.list$Binomial <- sub('(^\\S+ \\S+).*', '\\1', CLEAN.list$Species) # \\s = white space; \\S = not white space
+GROW.list$Binomial <- sub('(^\\S+ \\S+).*', '\\1', GROW.list$Species) # \\s = white space; \\S = not white space
 
 
 ## Check this reduces the number of Top 200 missing from this list
-CLEAN.list = merge(CLEAN.list, spp.200, by = "Binomial", all.x = TRUE) 
-CLEAN.list$Top_200[is.na(CLEAN.list$Top_200)] <- "FALSE"
-CLEAN.list$t200_MATCH_25[is.na(CLEAN.list$t200_MATCH_25)] <- "TRUE"
-CLEAN.list$Origin <- gsub(" ",  "", CLEAN.list$Origin)
+GROW.list = merge(GROW.list, spp.200, by = "Binomial", all.x = TRUE) 
+GROW.list$Top_200[is.na(GROW.list$Top_200)] <- "FALSE"
+GROW.list$t200_MATCH_25[is.na(GROW.list$t200_MATCH_25)] <- "TRUE"
+#GROW.list$Origin <- gsub(" ",  "", GROW.list$Origin)
 
 
 ## check
-str(CLEAN.list)
-head(CLEAN.list)
-unique(CLEAN.list$Top_200)
-unique(CLEAN.list$t200_MATCH_25)
-unique(CLEAN.list$Origin)
-length(unique(CLEAN.list$Binomial)) ## 660 unique binomials
-names(CLEAN.list)
+str(GROW.list)
+head(GROW.list)
+unique(GROW.list$Top_200)
+unique(GROW.list$t200_MATCH_25)
+unique(GROW.list$Origin)
+length(unique(GROW.list$Binomial)) ## 1077 unique binomials
+names(GROW.list)
 
 
 
@@ -91,8 +93,9 @@ names(CLEAN.list)
 
 
 ## First, taxa with "spp". Return to these later...
-DRAFT.HIA.TAXA         = CLEAN.list
+DRAFT.HIA.TAXA         = GROW.list
 DRAFT.HIA.TAXA         = DRAFT.HIA.TAXA[DRAFT.HIA.TAXA$Species %in% DRAFT.HIA.TAXA$Species[!grepl("spp.", DRAFT.HIA.TAXA$Species)], ]
+DRAFT.HIA.TAXA         = DRAFT.HIA.TAXA[DRAFT.HIA.TAXA$Species %in% DRAFT.HIA.TAXA$Species[!grepl("sp.", DRAFT.HIA.TAXA$Species)], ]
 dim(DRAFT.HIA.TAXA)    ## 948 species after we cut out the "spp."
 
 
@@ -106,7 +109,7 @@ DRAFT.HIA.TAXA$Species = gsub("    $",  "",  DRAFT.HIA.TAXA$Species, perl = TRUE
 
 #########################################################################################################################
 ## Now create a table of how many varieties each species has
-# length(unique(CLEAN.list$Binomial)) 
+# length(unique(GROW.list$Binomial)) 
 # length(unique(sub('(^\\S+ \\S+).*', '\\1', DRAFT.HIA.TAXA$Species)))
 
 
@@ -124,7 +127,7 @@ HIA.VARIETY <-
   as.data.frame %>% 
   setNames(c('Binomial', 'No.of.Varieties')) %>% 
   full_join(DRAFT.HIA.TAXA) %>% 
-  select(Species, Binomial, No.of.Varieties, Plant.type:WA, Number.of.growers, Number.of.States, Origin, Top_200)
+  select(Binomial, state, SUA, LGA, Species, common_name, ref, Top_200)
 
 HIA.VARIETY %>% 
   filter(Binomial==Species)
@@ -147,8 +150,8 @@ View(HIA.SPP)
 
 #######################################################################################################################
 ## Now create list of HIA species. 610 unique species, mius the corrections, etc. 
-spp.clean            = unique(as.character(HIA.SPP$Binomial))
-length(spp.clean)   
+spp.grow = unique(as.character(HIA.SPP$Binomial))
+length(spp.grow)   
 
 
 ########################################################################################################################
@@ -158,7 +161,7 @@ HIA.SPP.LOOKUP = setDT(HIA.SPP.LOOKUP , keep.rownames = TRUE)[]
 HIA.SPP.LOOKUP = dplyr::rename(HIA.SPP.LOOKUP, Binomial = rn)
 head(HIA.SPP.LOOKUP) ## Can merge on the bilogical data here...
 View(HIA.SPP.LOOKUP)
-## setdiff(spp, HIA.SPP.LOOKUP$Binomial)
+## setdiff(spp.grow, HIA.SPP.LOOKUP$Binomial)
 ## write.csv(HIA.SPP.LOOKUP, "./data/base/HIA_LIST/HIA/HIA_BINOMIAL_LOOKUP.csv", row.names = FALSE)
 
 
@@ -172,9 +175,9 @@ View(HIA.SPP.LOOKUP)
 
 ## Record each list: Raw top 25 (1135), Varieties (948), Binomials (610) 
 ## Check exceptions with Paul, Linda and Rach
-length(unique(CLEAN.list$Species))   ## Raw top 25 (13736)
+length(unique(GROW.list$Species))   ## Raw top 25 (13736)
 length(unique(HIA.VARIETY$Species))  ## Varieties  (8822), excluding "spp.", eg Philodendron spp. Congo, Nandina domestica Moon Bay
-length(unique(HIA.SPP$Binomial))     ## Binomials  (4306), keep Michelia yunnanensis Scented Pearl, exclude Spathiphyllum spp. Assorted
+length(unique(HIA.SPP$Binomial))     ## Binomials (4306), keep Michelia yunnanensis Scented Pearl, exclude Spathiphyllum spp. Assorted
 
 
 ## record the "spp." weirdos
