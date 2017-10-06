@@ -41,16 +41,21 @@ length(RAW.HIA.SPP)
 #########################################################################################################################
 ## Taxon check on the original list
 #intersect(GROW.list$Species, GROWING$scientific_name)
-CLEAN.UNIQUE = as.character(unique(RAW.HIA.SPP))
-FIRST.LOOKUP = lookup_table(CLEAN.UNIQUE, by_species = TRUE, missing_action = "NA") ## convert rows to column and merge
+GROW.UNIQUE = as.character(unique(RAW.HIA.SPP))
+FIRST.LOOKUP = lookup_table(GROW.UNIQUE, by_species = TRUE, missing_action = "NA") ## convert rows to column and merge
 FIRST.LOOKUP = setDT(FIRST.LOOKUP, keep.rownames = TRUE)[]
 FIRST.LOOKUP = dplyr::rename(FIRST.LOOKUP, Binomial = rn)
 head(FIRST.LOOKUP)
 View(FIRST.LOOKUP)
-setdiff(FIRST.LOOKUP$Binomial, CLEAN.UNIQUE)
+setdiff(FIRST.LOOKUP$Binomial, GROW.UNIQUE)
 
 
-## also, add the "Top 200" species in here
+## Just get the NA rows
+GROW_NA <- FIRST.LOOKUP[rowSums(is.na(FIRST.LOOKUP)) > 0,]
+View(GROW_NA)
+
+
+## Also, add the "Top 200" species in here
 spp.200          = top.200[c("Species", "t200_MATCH_25")]
 spp.200$Species  <- sub('(^\\S+ \\S+).*', '\\1', spp.200$Species) # \\s = white space; \\S = not white space
 

@@ -11,11 +11,14 @@ p <- c('ff', 'things', 'raster', 'dismo', 'sp', 'latticeExtra',
 sapply(p, require, character.only = TRUE)
 
 
+
+
+
 #########################################################################################################################
 ## 1). READ IN GBIF DATA
 #########################################################################################################################
 
-# group: 'plants', 'chordata', or 'nonchordata'
+## Group: 'plants', 'chordata', or 'nonchordata'
 group <- 'chordata'
 
 load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData") 
@@ -29,32 +32,16 @@ load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData")
 #proj4string(occ) <- '+init=epsg:3577'
 occ_by_sp <- split(occ, occ$searchTaxon)
 
-# ## Plot if you want to
-# set.seed(0)
-# #png('some_plants.png', 1800, 2640, res=300, type='cairo')
-# par(mfrow=c(6, 4), mar=c(0.5, 0.5, 2, 0.5))
-# i <- sort(sample(length(occ_by_sp), 24))
-# mapply(function(x, name) {
-#   plot(x, pch=20, axes=FALSE, main=name, cex.main=0.9, font.main=3)
-#   plot(things::aus_albers, add=TRUE)
-#   box()
-# }, occ_by_sp[i], names(occ_by_sp)[i])
-# #dev.off()
 
-# Load background (change file path as necessary)
-# bg <- readRDS(c(plants='C:/Users/MQ20156218/Documents/R_projects/sdms_1km_2016/data/background/background_all_plants_oeh_avh_with_ibra_dodgy_removed.rds', 
-#                 chordata='//sci-7910/c/data/ALA/all_chordata_aus/all_chordata_aus_since1950_uncert1000maxOrMissing.rds_uniquecells.rds',
-#                 nonchordata='')[group])
 
-# need to convert chordata and nonchordata bg to SpatialPoints and project to 3577
-if(group == 'nonchordata') {
-  coordinates(bg) <- ~longitude+latitude
-  proj4string(bg) <- '+init=epsg:4326'
-  bg <- spTransform(bg, CRS('+init=epsg:3577'))
-}
+
+
+#########################################################################################################################
+## 2). READ IN RASTER DATA
+#########################################################################################################################
+
 
 #Load template raster to determine cell numbers for points
-
 r1000 <- raster('//SCI-7910/f/data/narclim/albers/1km/BIOCLIM/epoch_1990-2009/aus/bioclim_1990-2009_aus_p02_albers.tif')
 
 # gdalUtils::gdalwarp('C:/data/weathering/wii_1km/wii_1km/wii_oz2_w1k3',
@@ -81,8 +68,9 @@ TPI <- raster('//sci-7910/f/data/narclim/CSIRO_topo_AA/CSIRO_TPI_eMast_albers.ti
 #                     t_srs='epsg:3577')
 TWI <- raster('//sci-7910/f/data/narclim/CSIRO_topo_AA/TWI_eMAST_albers.tif')
 
-#Create vector of predictor paths
 
+#########################################################################################################################
+## Create vector of predictor paths
 predictors_current <- c(
   '//sci-7910/f/data/narclim_from_c_drive/albers/1km/BIOCLIM/epoch_1990_2009/aus/bioclim_1990-2009_aus_p02_albers.tif',
   '//sci-7910/f/data/narclim_from_c_drive/albers/1km/BIOCLIM/epoch_1990_2009/aus/bioclim_1990-2009_aus_p04_albers.tif', 
@@ -124,9 +112,14 @@ predictors_current <- c(
 # rm(s); gc()
 # s_ff <- readRDS('data/current_all_Australia_ff_1000m.rds')
 
-source('fit_maxent_background_buffer.R') # load in the function to fit Maxent models
+
+
+
+
+#########################################################################################################################
+#source('fit_maxent_background_buffer.R') # load in the function to fit Maxent models
 # coerce bg to a SPDF so we can write it out as a shapefile
-bg <- SpatialPointsDataFrame(bg, data.frame(id=seq_len(length(bg))))
+bg <- SpatialPointsDataFrame(bg, data.frame(id = seq_len(length(bg))))
 
 lapply(c('clim_soil', 'clim_soil_wii', 'clim_soil_topo_wii'), function(x) {
   
@@ -135,9 +128,9 @@ lapply(c('clim_soil', 'clim_soil_wii', 'clim_soil_topo_wii'), function(x) {
   if(!dir.exists(outdir)) dir.create(outdir)
   
   preds <- switch(x,
-         clim_soil=c(sprintf('p%02d', c(2, 4, 5, 6, 13, 14, 15)), paste0('PC', 1:3)),
-         clim_soil_wii=c(sprintf('p%02d', c(2, 4, 5, 6, 13, 14, 15)), paste0('PC', 1:3), 'wii'),
-         clim_soil_wii=c(sprintf('p%02d', c(2, 4, 5, 6, 13, 14, 15)), paste0('PC', 1:3), 'wii', 'TPI', 'TWI'))
+         clim_soil     = c(sprintf('p%02d', c(2, 4, 5, 6, 13, 14, 15)), paste0('PC', 1:3)),
+         clim_soil_wii = c(sprintf('p%02d', c(2, 4, 5, 6, 13, 14, 15)), paste0('PC', 1:3), 'wii'),
+         clim_soil_wii = c(sprintf('p%02d', c(2, 4, 5, 6, 13, 14, 15)), paste0('PC', 1:3), 'wii', 'TPI', 'TWI'))
   
   mapply(function(occ, name) {
     
@@ -145,7 +138,7 @@ lapply(c('clim_soil', 'clim_soil_wii', 'clim_soil_topo_wii'), function(x) {
     
     name <- gsub('\\*', '', name) # remove asterisks from names
     
-    fit_maxent2(occ=occ, bg=bg, predictors=s_ff[, preds], name=name, 
+    fit_maxent2(occ   =occ, bg=bg, predictors=s_ff[, preds], name=name, 
                 outdir=outdir, 
                 template=r1000, shapefiles=TRUE, features='lpq',
                 replicates=5)
@@ -155,9 +148,12 @@ lapply(c('clim_soil', 'clim_soil_wii', 'clim_soil_topo_wii'), function(x) {
 })
 
 
-#############################################################################
 
-## Project models
+
+
+#########################################################################################################################
+## 3). PROJECT MODELS
+#########################################################################################################################
 
 library(ff)
 library(raster)
@@ -250,45 +246,55 @@ lapply(names(models_by_type), function(x) {
 })
 
 
-## FUTURE PROJECTIONS: need to fix and run this code vvvv
 
-# Create vector of predictor data directories
+
+
+#########################################################################################################################
+## 1). FUTURE PREDICTIONS
+#########################################################################################################################
+
+
+#########################################################################################################################
+## Create vector of predictor data directories
 dirs <- grep('\\d{4}$',
              list.dirs('f:/data/narclim_from_c_drive/albers/1km/BIOCLIM/Interpolated complete'),
-             value=TRUE)
-# Loop over climate scenarios, holding each swd in memory while looping over SDMs
+             value = TRUE)
 
+## Loop over climate scenarios, holding each swd in memory while looping over SDMs
 lapply(dirs, function(d) {
+  
   require(ff)
   
-  clim <- list.files(d, '\\.tif$', full=T)
+  clim <- list.files(d, '\\.tif$', full = T)
   soil <- c('c:/data/csiro/soil_spectra/1km/narclim/PC1.tif',
             'c:/data/csiro/soil_spectra/1km/narclim/PC2.tif',
             'c:/data/csiro/soil_spectra/1km/narclim/PC3.tif')
-  wii <- 'c:/data/weathering/wii_1km_albers_narclim.tif'
-  tpi <- 'f:/data/narclim/CSIRO_topo_AA/CSIRO_TPI_eMast_albers_narclim.tif'
-  twi <- 'f:/data/narclim/CSIRO_topo_AA/TWI_eMAST_albers_narclim.tif'
+  wii  <- 'c:/data/weathering/wii_1km_albers_narclim.tif'
+  tpi  <- 'f:/data/narclim/CSIRO_topo_AA/CSIRO_TPI_eMast_albers_narclim.tif'
+  twi  <- 'f:/data/narclim/CSIRO_topo_AA/TWI_eMAST_albers_narclim.tif'
   
   preds <- switch(
-    
     x,
-    clim_soil=c(clim, soil),
-    clim_soil_topo_wii=c(clim, soil, wii, tpi, twi),
-    clim_soil_wii=c(clim, soil, wii))
+    clim_soil = c(clim, soil),
+    clim_soil_topo_wii = c(clim, soil, wii, tpi, twi),
+    clim_soil_wii = c(clim, soil, wii))
   
   s <- stack(preds)
   gcm <- basename(dirname(dirname(d)))
   rcm <- basename(dirname(d))
   yr <- basename(d)
-  scen <- paste(gcm, rcm, yr, sep='_')
+  
+  scen <- paste(gcm, rcm, yr, sep = '_')
   names(s) <- sub('.*(p\\d{2})_?.*', '\\1', names(s))
   names(s) <- gsub("_eMast_albers|_1km_albers|_eMAST_albers|CSIRO_|_narclim","",names(s))
-
-  # create empty ff_matrix
   
-  s_ff <- ff(vmode="double", dim=c(length(cells), nlayers(s)),
-             filename=ff_swd <- tempfile(fileext='.ff'))
-  # fill ff_matrix with data
+  #########################################################################################################################
+  ## create empty ff_matrix
+  
+  s_ff <- ff(vmode = "double", dim = c(length(cells), nlayers(s)),
+             filename = ff_swd <- tempfile(fileext = '.ff'))
+  
+  ## fill ff_matrix with data
   for(i in 1:nlayers(s)) {
     
     s_ff[, i] <- s[[i]][][cells]
@@ -303,21 +309,25 @@ lapply(dirs, function(d) {
     outfile <- sprintf('%s/%s_%s_1000m_prediction.ff', 
                        dirname(model),
                        gsub(' +', '_', species), scen)
+    
     if(!file.exists(extension(outfile, '.tif'))) {
       
       r_pred <- r1000
       m <- readRDS(model)$me_full
       message('Doing species ', species)
-      preds_ff <- ff(vmode="double", dim=c(length(cells), 1),
-                     filename=outfile)
+      preds_ff <- ff(vmode = "double", dim = c(length(cells), 1),
+                     filename = outfile)
+      
       finalizer(preds_ff) <- 'close'
       
       preds_ff[, 1] <- 
+        
         round(rmaxent::project(m, s_ff[, seq_len(ncol(s_ff))])$prediction_logistic * 1000)
       
       r_pred[cells] <- preds_ff[, 1]
-      writeRaster(r_pred, extension(outfile, '.tif'), datatype='INT2S', NAflag=-9999)
+      writeRaster(r_pred, extension(outfile, '.tif'), datatype = 'INT2S', NAflag =-9999)
       #saveRDS(preds_ff, extension(outfile, 'rds'))
+      
       close(preds_ff)
       delete(preds_ff)
       rm(preds_ff, r_pred)
@@ -334,78 +344,109 @@ lapply(dirs, function(d) {
 
 
 
+#########################################################################################################################
+## 
+ff <- list.files('f:/output', '\\.tif$', full = TRUE, recursive = TRUE)
 
-
-```{r}
-ff <- list.files('f:/output', '\\.tif$', full=TRUE, recursive=TRUE)
 #occ <- file.path(dirname(ff), 'occ.rds')
 #spp_list <- read_csv('data/refugia2.csv')
 #aus <- ne_countries(country='Australia')
 #aus_albers <- spTransform(ne_countries(country='Australia'), CRS('+init=epsg:3577'))
 
+
+#########################################################################################################################
+## Plot 
 sapply(ff, function(f) {
+  
   nm <- gsub('_', ' ', basename(dirname(f)))
+  
   f_png <- sprintf('%s/%s_current.png', dirname(f), basename(dirname(f)))
+  
   if (!file.exists(f_png)) {
+    
     message('Making map for species: ', nm)  
-    png(f_png, 7, 4, units='in', res=300)
-    par(mfrow=c(1, 2), mar=c(0, 0, 0, 0), oma=c(1, 1, 3, 1))  
+    png(f_png, 7, 4, units = 'in', res = 300)
+    par(mfrow = c(1, 2), mar = c(0, 0, 0, 0), oma = c(1, 1, 3, 1))  
     xy <- list(NULL, readRDS(file.path(dirname(f), 'occ.rds')))
+    
     r <- raster(f)/1000
-    p <- levelplot(stack(r, r), col.regions=colorRampPalette(brewer.pal(11, 'Spectral')), 
-                   at=seq(0, 1, len=100), margin=FALSE, scales=list(draw=FALSE), 
-                   colorkey=list(height=0.6), main=list(nm, font=4), names.attr=c('', '')) + 
-      layer(sp.points(xy[[panel.number()]], pch=20, cex=0.7, col=1), data=list(xy=xy))
+    
+    p <- levelplot(stack(r, r), col.regions = colorRampPalette(brewer.pal(11, 'Spectral')), 
+                   at = seq(0, 1, len = 100), margin = FALSE, scales = list(draw = FALSE), 
+                   colorkey = list(height = 0.6), main = list(nm, font = 4), names.attr = c('', '')) + 
+      
+      layer(sp.points(xy[[panel.number()]], pch = 20, cex = 0.7, col = 1), data = list(xy = xy))
+    
     print(p)
-    dev.off()       
+    dev.off() 
+    
   }
+  
 })
 
-```
 
 
+#########################################################################################################################
+## 
 models_by_variable_set <- split(models, dirname(dirname(models)))
 
 results <- setNames(lapply(models_by_variable_set, function(mm) {
+  
   ff <- sub('maxent_fitted.rds', 'xval/maxentResults.csv', mm)
+  
   results <- sapply(ff, function(f) {
+    
     d <- read.csv(f)
     d <- d[nrow(d), ]
-    list(test_auc=d[, 'Test.AUC'],
-         contribution=unlist(d[, grep('contribution', names(d))]),
-         permutation=unlist(d[, grep('permutation', names(d))]))
+    list(test_auc = d[, 'Test.AUC'],
+         contribution = unlist(d[, grep('contribution', names(d))]),
+         permutation = unlist(d[, grep('permutation', names(d))]))
+    
   })
+  
   nm <- basename(dirname(dirname(colnames(results))))
-  list(test_auc=setNames(do.call(c, results[1, ]), nm), 
-       contribution=setNames(do.call(cbind.data.frame, results[2, ]), nm),
-       permutation=setNames(do.call(cbind.data.frame, results[3, ]), nm))
+  
+  list(test_auc = setNames(do.call(c, results[1, ]), nm), 
+       contribution = setNames(do.call(cbind.data.frame, results[2, ]), nm),
+       permutation = setNames(do.call(cbind.data.frame, results[3, ]), nm))
+  
 }), basename(names(models_by_variable_set)))
 
 
 
-#### Getting number of records per species from each set of predictors
+#########################################################################################################################
+## Getting number of records per species from each set of predictors
 
 models_by_variable_set <- split(models, dirname(dirname(models)))
 
 results2 <- setNames(lapply(models_by_variable_set, function(mm) {
+  
   ff <- sub('maxent_fitted.rds', 'xval/maxentResults.csv', mm)
+  
   results <- sapply(ff, function(f) {
+    
     d <- read.csv(f)
     d <- d[nrow(d), ]
     d2 <- read.csv(sub('xval', 'full', f))
+    
     list(test_auc=d[, 'Test.AUC'],
          contribution=unlist(d[, grep('contribution', names(d))]),
          permutation=unlist(d[, grep('permutation', names(d))]),
          #n_records_xval=unlist(d[, grep('X.Training.samples', names(d))]),
          n_records_full=unlist(d2[, grep('X.Training.samples', names(d2))]))
+    
   })
+  
   nm <- basename(dirname(dirname(colnames(results))))
+  
   list(test_auc=setNames(do.call(c, results[1, ]), nm), 
        contribution=setNames(do.call(cbind.data.frame, results[2, ]), nm),
        permutation=setNames(do.call(cbind.data.frame, results[3, ]), nm),
        #n_training_records_mean_xval=setNames(do.call(c, results['n_records_xval', ]), nm),
        n_training_records_full=setNames(do.call(c, results['n_records_full', ]), nm))
+  
 }), basename(names(models_by_variable_set)))
+
 
 
 n <- lapply(split(results2, sub('_clim.*', '', names(results2))), function(x) {

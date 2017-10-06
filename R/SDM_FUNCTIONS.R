@@ -51,8 +51,8 @@ fit_maxent2 <- function(occ, bg, predictors, name, outdir, template,
   
   ## Clean out duplicates and NAs (including points outside extent of predictor data)
   not_dupes <- which(!duplicated(cells) & !is.na(cells)) 
-  occ <- occ[not_dupes, ]
-  cells <- cells[not_dupes]
+  occ       <- occ[not_dupes, ]
+  cells     <- cells[not_dupes]
   message(nrow(occ), ' occurrence records (unique cells).')
   
   ## skip species with < 20 records
