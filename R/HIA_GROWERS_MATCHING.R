@@ -19,9 +19,9 @@
 ## up the data and cross-linked to growth form and exotic/native status and derived a list of ~1300 species that are the 
 ## Most commonly sold, covering the right ratio of growth forms, regional representation and native/exotis that are the 
 ## Most commonly sold, covering the right ratio of growth forms, regional representation and native/exotic
-CLEAN.list = read.csv("./data/base/HIA_LIST/HIA/HIA.CLEAN.csv",                         stringsAsFactors = FALSE)
-GROW.list  = read.csv("./data/base/HIA_LIST/HIA/database_aus_sp_growing.csv",           stringsAsFactors = FALSE) 
-top.200    = read.csv("./data/base/HIA_LIST/HIA/HIA_TOP_200_1309_2017.csv",             stringsAsFactors = FALSE)
+CLEAN.list = read.csv("./data/base/HIA_LIST/HIA/HIA.CLEAN.csv",                               stringsAsFactors = FALSE)
+GROW.list  = read.csv("./data/base/HIA_LIST/HIA/planted_and_growing_database_0910_2017.csv",  stringsAsFactors = FALSE) 
+top.200    = read.csv("./data/base/HIA_LIST/HIA/HIA_TOP_200_1309_2017.csv",                   stringsAsFactors = FALSE)
 
 
 #########################################################################################################################
