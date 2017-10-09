@@ -104,7 +104,6 @@ HIA.AVH.DIFF    = setdiff(HIA.FIN, AVH.SPP)
 ## set wd to where kates files are, eg LGA folder
 ## checked up to Hobart
 LGA.list  <- list.files(path = "./data/base/HIA_LIST/LGA/", pattern = ".csv")
-PORB.list <- list.files(path = "./data/base/HIA_LIST/LGA/", pattern = ".csv")
 test = read_bind_tables(LGA.list, "./data/base/HIA_LIST/LGA/") # Error: Can not automatically convert from character to integer in column "Catalog_Nu"
 
 
@@ -127,7 +126,6 @@ AVH.SUA <- point.in.poly(AVH.WGS, SUA.WGS)
 ## save
 save(AVH.LGA , file = paste("./data/base/HIA_LIST/ALA/SPECIES/AVH.LGA.RData", sep = ""))
 save(AVH.SUA , file = paste("./data/base/HIA_LIST/ALA/SPECIES/AVH.SUA.RData", sep = ""))
-
 ## load("./data/base/HIA_LIST/ALA/SPECIES/AVH_LGA.RData")
 
 
@@ -186,6 +184,18 @@ save(AVH.SUA , file = paste("./data/base/HIA_LIST/ALA/SPECIES/AVH.SUA.RData", se
 #########################################################################################################################
 ## 4). FIND SPECIES ON AVH AND GROWING LISTS
 #########################################################################################################################
+
+
+## Just match the species
+length(intersect(spp.grow, unique(AVH.OEH.VASC.XY$scientificname)))
+length(setdiff(spp.grow, unique(AVH.OEH.VASC.XY$scientificname)))
+length(setdiff(unique(AVH.OEH.VASC.XY$scientificname), spp.grow))
+
+
+
+## So most of the growing species are in the AVH database.Just download the data and and splice them together for now.
+## This means there will be duplicates between the GBIF and AVH sources.The other alternative is to just dowload the species
+## which are different. How big a dataset can the the extract and niche functions handle?
 
 
 
