@@ -132,52 +132,60 @@ save(AVH.SUA , file = paste("./data/base/HIA_LIST/ALA/SPECIES/AVH.SUA.RData", se
 
 
 #########################################################################################################################
-## 2). CREATE SPECIES LISTS FOR EACH LGA
+## 3). CREATE SPECIES LISTS FOR EACH LGA
 #########################################################################################################################
 
 
 ## How many LGAs?
-dim(AVH.LGA)
-length(unique(AVH.LGA$LGA_NAME16))
-length(unique(AVH.LGA$LGA_CODE16))
+# dim(AVH.LGA)
+# length(unique(AVH.LGA$LGA_NAME16))
+# length(unique(AVH.LGA$LGA_CODE16))
+# 
+# 
+# ## Sort by LGA?
+# AVH.LGA = AVH.LGA[with(AVH.LGA, order(AVH.LGA$LGA_NAME16)), ] 
+# 
+# 
+# ## create a list to use in a function?
+# LGA.CODES = as.character(unique(AVH.LGA$LGA_NAME16))
+# 
+# 
+# ## Do we want one data frame or many?
+# LGA.LIST.SORTED <- LGA.CODES[c(1:length(LGA.CODES))] %>% 
+#   
+#   ## Pipe the list into lapply
+#   lapply(function(x) {
+#     
+#     ## Now use the niche width function on each colname (so 8 environmental variables)
+#     ## Also, need to figure out how to make the aggregating column generic (species, genus, etc.)
+#     ## currently it only works hard-wired
+#     subset(AVH.LGA, LGA_NAME16 == x)
+#     
+#     ## would be good to remove the duplicate columns here
+#     
+#   }) %>% 
+#   
+#   ## finally, create one dataframe for all niches
+#   bind_rows
+# 
+# 
+# ## OR...
+# ## simple for loop can't seem to deal with different data types, slight differences in characters, etc.
+# ## also, use zoo(unique(DBVG5M.estuary$GENUS)), don't need two steps, just one
+# for(LGA in LGA.CODES) {
+#   
+#   ## For all the BVG's in the list, take the subset, then get the unique list...
+#   eval(parse(text = paste0("LGA.", LGA, " = ", "subset(", "AVH.LGA, LGA_NAME16 ==", LGA, ")")))
+# 
+# }
 
 
-## Sort by LGA?
-AVH.LGA = AVH.LGA[with(AVH.LGA, order(AVH.LGA$LGA_NAME16)), ] 
 
 
-## create a list to use in a function?
-LGA.CODES = as.character(unique(AVH.LGA$LGA_NAME16))
 
-
-## Do we want one data frame or many?
-LGA.LIST.SORTED <- LGA.CODES[c(1:length(LGA.CODES))] %>% 
-  
-  ## Pipe the list into lapply
-  lapply(function(x) {
-    
-    ## Now use the niche width function on each colname (so 8 environmental variables)
-    ## Also, need to figure out how to make the aggregating column generic (species, genus, etc.)
-    ## currently it only works hard-wired
-    subset(AVH.LGA, LGA_NAME16 == x)
-    
-    ## would be good to remove the duplicate columns here
-    
-  }) %>% 
-  
-  ## finally, create one dataframe for all niches
-  bind_rows
-
-
-## OR...
-## simple for loop can't seem to deal with different data types, slight differences in characters, etc.
-## also, use zoo(unique(DBVG5M.estuary$GENUS)), don't need two steps, just one
-for(LGA in LGA.CODES) {
-  
-  ## For all the BVG's in the list, take the subset, then get the unique list...
-  eval(parse(text = paste0("LGA.", LGA, " = ", "subset(", "AVH.LGA, LGA_NAME16 ==", LGA, ")")))
-
-}
+#########################################################################################################################
+## 4). FIND SPECIES ON AVH AND GROWING LISTS
+#########################################################################################################################
 
 
 
