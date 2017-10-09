@@ -103,8 +103,7 @@ source('./R/SDM_FUNCTIONS.R')
 source('./R/HIA_LIST_MATCHING.R')
 
 
-## run the download function on the species and genera lists
-## these functions need to download at least one file, or they will return NULL
+## Run the download function on the species and genera lists these functions need to download at least one file, or they will return NULL
 skipped.species = download_GBIF_all_species(spp)    ## saves each spp as .Rdata file, returning list of skipped spp 
 skipped.ALA     = download_ALA_all_species(spp)     ## saves each spp as .Rdata file, returning list of skipped spp 
 skipped.genera  = download_GBIF_all_genera(genera)  ## saves each gen as .Rdata file, returning list of skipped genera 
