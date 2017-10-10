@@ -4,10 +4,6 @@
 
 
 #########################################################################################################################
-## 1). ADD RASTER DATA TO GBIF RECORDS
-#########################################################################################################################
-
-
 ## First, consider the HIA brief again:
 
 # The first module will focus on fifty plant species identified in the project’s Target Species List, and will develop maps 
@@ -60,6 +56,9 @@
 
 
 
+#########################################################################################################################
+## 1). ADD RASTER DATA TO GBIF RECORDS
+#########################################################################################################################
 
 
 #########################################################################################################################
@@ -227,10 +226,51 @@ names(COMBO.RASTER)
 
 
 
+#########################################################################################################################
+## 2). INTERSECT WITH LGA/SUA
+#########################################################################################################################
+
+
+## Sally wants to know the count of species occur in n LGAs, across a range of climates. Read in LGA and SUA
+COMBO.RASTER.SP   = SpatialPointsDataFrame(coords = COMBO.RASTER[c("lon", "lat")], 
+                                           data    = COMBO.RASTER,
+                                           proj4string = CRS("+init=epsg:4326"))
+
+SUA      = readOGR("./data/base/CONTEXTUAL/SUA_2011_AUST.shp", layer = "SUA_2011_AUST")
+LGA      = readOGR("./data/base/CONTEXTUAL/LGA_2016_AUST.shp", layer = "LGA_2016_AUST")
+
+names(SUA)
+names(LGA)
+
+
+## Project
+CRS.new  <- CRS("+init=epsg:4326") # EPSG:3577
+LGA.WGS  = spTransform(LGA, CRS.new)
+SUA.WGS  = spTransform(SUA, CRS.new)
+
+projection(COMBO.RASTER.SP)
+projection(LGA.WGS)
+projection(LGA.WGS)
 
 
 #########################################################################################################################
-## 2). CREATE NICHES FOR SELECTED TAXA
+## Run test join
+LGA.JOIN   = over(COMBO.RASTER.SP, LGA.WGS)
+COMBO.LGA  = cbind.data.frame(COMBO.RASTER.SP, LGA.JOIN)
+
+
+#########################################################################################################################
+## AGGREGATE THE NUMBER OF LGAs EACH SPECIES IS FOUND IN 
+LGA.AGG   = tapply(LGA.JOIN$LGA_NAME16, LGA.JOIN$searchTaxon, function(x) length(unique(x))) ## group LGA by species name
+COMBO.LGA = cbind.data.frame(COMBO.RASTER.SP, LGA.AGG) ## The tapply needs to go where the niche summaries are
+names(COMBO.LGA)
+
+
+
+
+
+#########################################################################################################################
+## 3). CREATE NICHES FOR SELECTED TAXA
 #########################################################################################################################
 
 
@@ -260,16 +300,15 @@ env.variables = c("Annual_mean_temp",
 
 #########################################################################################################################
 ## CHANGE THE RASTER VALUES HERE: 
-## see http://worldclim.org/formats1
+## see http://worldclim.org/formats1 for description of the interger conversion
 
 COMBO.RASTER.CONVERT = as.data.table(COMBO.RASTER)
 COMBO.RASTER.CONVERT[, (env.variables[c(1:11)]) := lapply(.SD, function(x) 
   x / 10 ), .SDcols = env.variables[c(1:11)]]
+COMBO.RASTER.CONVERT = as.data.frame(COMBO.RASTER.CONVERT)
 
 
 ## Check Looks ok?
-COMBO.RASTER.CONVERT = as.data.frame(COMBO.RASTER.CONVERT)
-
 summary(COMBO.RASTER.CONVERT$Annual_mean_temp)
 summary(COMBO.RASTER$Annual_mean_temp)
 
@@ -287,7 +326,6 @@ head(niche_estimate (DF = COMBO.RASTER.CONVERT, colname = "Annual_mean_temp"))  
 
 ## So lets use lapply on the "Search Taxon". Note additonal flags are needed, and the taxonomic lists need to be managed better...
 ## test = run_function_concatenate(list, DF, "DF, colname = x") 
-##
 COMBO.NICHE <- env.variables[c(1:length(env.variables))] %>% 
   
   ## Pipe the list into lapply
@@ -327,7 +365,7 @@ names(COMBO.NICHE)
 
 
 #########################################################################################################################
-## 3). CALCULATE AREA OF OCCUPANCY RANGES 
+## 4). CALCULATE AREA OF OCCUPANCY RANGES 
 #########################################################################################################################
 
 
@@ -411,7 +449,7 @@ COMBO.NICHE$AREA_OCCUPANCY = GBIF.AOO$value
 
 
 #########################################################################################################################
-## 4). JOIN ON CONTEXTUAL DATA
+## 5). JOIN ON CONTEXTUAL DATA
 #########################################################################################################################
 
 
@@ -501,9 +539,11 @@ write.csv(COMBO.NICHE.CONTEXT, "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.c
 
 ## Check on species which seem to have been knocked out: E.G Fagus sylvatica. Individual filter doesn't knock them all out  
 
-## Convert WORLDCLIM values back into decimals            - multiply by 10
+## Convert WORLDCLIM values back into decimals            - done (multiplied by 10)
 
-## Check geographic range: doesn't look right for some species. Calc extent of occurrnece as well 
+## Check geographic range: doesn't look right for some species. Calc extent of occurrnece as well
+
+## Add Counts of LGA and SUA for each species 
 
 ## Return species EG:                                     -
 

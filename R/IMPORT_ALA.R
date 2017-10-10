@@ -103,8 +103,8 @@ HIA.AVH.DIFF    = setdiff(HIA.FIN, AVH.SPP)
 ## Read in Kate's data
 ## set wd to where kates files are, eg LGA folder
 ## checked up to Hobart
-LGA.list  <- list.files(path = "./data/base/HIA_LIST/LGA/", pattern = ".csv")
-test = read_bind_tables(LGA.list, "./data/base/HIA_LIST/LGA/") # Error: Can not automatically convert from character to integer in column "Catalog_Nu"
+# LGA.list  <- list.files(path = "./data/base/HIA_LIST/LGA/", pattern = ".csv")
+# test = read_bind_tables(LGA.list, "./data/base/HIA_LIST/LGA/") # Error: Can not automatically convert from character to integer in column "Catalog_Nu"
 
 
 
@@ -123,10 +123,20 @@ AVH.LGA <- point.in.poly(AVH.WGS, LGA.WGS)
 AVH.SUA <- point.in.poly(AVH.WGS, SUA.WGS)
 
 
+## 
+test = over(AVH.WGS[1:20,], LGA.WGS)
+test.join =cbind.data.frame(AVH.WGS[1:20,], test)
+
+##
+test.agg = tapply(test.join$LGA_NAME16, test.join$scientificname, function(x) length(unique(x))) ## group LGA by species name
+test.agg
+
+
 ## save
-save(AVH.LGA , file = paste("./data/base/HIA_LIST/ALA/SPECIES/AVH.LGA.RData", sep = ""))
-save(AVH.SUA , file = paste("./data/base/HIA_LIST/ALA/SPECIES/AVH.SUA.RData", sep = ""))
+save(AVH.LGA , file = paste("./data/base/HIA_LIST/ALA/SPECIES/AVH_LGA.RData", sep = ""))
+save(AVH.SUA , file = paste("./data/base/HIA_LIST/ALA/SPECIES/AVH_SUA.RData", sep = ""))
 ## load("./data/base/HIA_LIST/ALA/SPECIES/AVH_LGA.RData")
+## load("./data/base/HIA_LIST/ALA/SPECIES/AVH_SUA.RData")
 
 
 #########################################################################################################################

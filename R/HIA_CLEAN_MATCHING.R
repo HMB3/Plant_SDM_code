@@ -13,6 +13,9 @@
 ## All the cleaining methods will throw up some anomalies, which need to be tracked, and checked with the team for how
 ## each case is treated (see outstanding tasks at the bottom)
 
+## PAUL:
+## Merge the species native in the SUA with the clean records from ALA.
+
 
 #########################################################################################################################
 ## This list derives from all species and varieties sold anywhere in Australia in the last 5 years. Anthony Manea cleaned 
@@ -193,7 +196,8 @@ length(intersect(CLEAN.SPECIES, GROW.SPECIES))
 
 #########################################################################################################################
 ## What is the difference between the growers list and the 'clean'HIA list, excluding the varieties, etc.?
-
+length(setdiff(spp.grow, spp.clean))
+length(intersect(spp.grow, spp.clean))
 
 
 
