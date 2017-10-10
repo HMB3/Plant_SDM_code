@@ -255,8 +255,8 @@ projection(LGA.WGS)
 
 #########################################################################################################################
 ## Run test join
-LGA.JOIN   = over(COMBO.RASTER.SP[1:300,], LGA.WGS)
-COMBO.LGA  = cbind.data.frame(COMBO.RASTER.SP[1:300,], LGA.JOIN)
+LGA.JOIN   = over(COMBO.RASTER.SP, LGA.WGS)              ## [1:300,]
+COMBO.LGA  = cbind.data.frame(COMBO.RASTER.SP, LGA.JOIN) ## [1:300,]
 
 
 #########################################################################################################################
