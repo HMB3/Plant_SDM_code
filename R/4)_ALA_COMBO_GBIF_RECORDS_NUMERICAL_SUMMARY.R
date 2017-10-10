@@ -262,8 +262,8 @@ COMBO.LGA  = cbind.data.frame(COMBO.RASTER.SP, LGA.JOIN) ## [1:300,]
 #########################################################################################################################
 ## AGGREGATE THE NUMBER OF LGAs EACH SPECIES IS FOUND IN 
 LGA.AGG   = tapply(COMBO.LGA $LGA_NAME16, COMBO.LGA $searchTaxon, function(x) length(unique(x))) ## group LGA by species name
-
-
+LGA.AGG   = as.data.frame(LGA.AGG)
+head(LGA.AGG)
 
 
 
