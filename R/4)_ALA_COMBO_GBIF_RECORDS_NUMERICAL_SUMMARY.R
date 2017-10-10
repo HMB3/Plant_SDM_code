@@ -255,15 +255,13 @@ projection(LGA.WGS)
 
 #########################################################################################################################
 ## Run test join
-LGA.JOIN   = over(COMBO.RASTER.SP, LGA.WGS)
-COMBO.LGA  = cbind.data.frame(COMBO.RASTER.SP, LGA.JOIN)
+LGA.JOIN   = over(COMBO.RASTER.SP[1:300,], LGA.WGS)
+COMBO.LGA  = cbind.data.frame(COMBO.RASTER.SP[1:300,], LGA.JOIN)
 
 
 #########################################################################################################################
 ## AGGREGATE THE NUMBER OF LGAs EACH SPECIES IS FOUND IN 
-LGA.AGG   = tapply(LGA.JOIN$LGA_NAME16, LGA.JOIN$searchTaxon, function(x) length(unique(x))) ## group LGA by species name
-COMBO.LGA = cbind.data.frame(COMBO.RASTER.SP, LGA.AGG) ## The tapply needs to go where the niche summaries are
-names(COMBO.LGA)
+LGA.AGG   = tapply(COMBO.LGA $LGA_NAME16, COMBO.LGA $searchTaxon, function(x) length(unique(x))) ## group LGA by species name
 
 
 
@@ -445,6 +443,12 @@ COMBO.NICHE$AREA_OCCUPANCY = GBIF.AOO$value
 ## required by IUCN. A single value in km2.
 
 
+#########################################################################################################################
+## Add the counts of LGAs for each species in here
+COMBO.LGA = cbind.data.frame(COMBO.NICHE, LGA.AGG) ## The tapply needs to go where the niche summaries are
+names(COMBO.LGA)
+
+
 
 
 
@@ -460,7 +464,7 @@ COMBO.RASTER.CONTEXT = join(COMBO.RASTER, HIA.SPP.JOIN,
 
 
 ## Now join hort context to all the niche
-COMBO.NICHE.CONTEXT = join(COMBO.NICHE, HIA.SPP.JOIN, 
+COMBO.NICHE.CONTEXT = join(COMBO.LGA, HIA.SPP.JOIN, 
                            by = "searchTaxon", type = "left", match = "all")
 
 
@@ -471,8 +475,8 @@ names(COMBO.NICHE.CONTEXT)
 
 
 ## Rename...
-COMBO.RASTER.CONTEXT = COMBO.RASTER.CONTEXT[, c(1:5,  46:59, 7:45)]
-COMBO.NICHE.CONTEXT  = COMBO.NICHE.CONTEXT[,  c(175, 2, 1, 174, 176:188,  3:173)]
+COMBO.RASTER.CONTEXT = COMBO.RASTER.CONTEXT[, c(1:5,  46:59, 7:45)]                                       ## change order
+COMBO.NICHE.CONTEXT  = COMBO.NICHE.CONTEXT[,  c(175, 2, 1, 174, 176:188,  3:173)]                         ## change order
 
 
 ## Set NA to blank, then sort by no. of growers.
