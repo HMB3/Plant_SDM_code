@@ -12,8 +12,18 @@
 
 #########################################################################################################################
 ## Big function for getting background points...and fitting maxent? 
-fit_maxent2 <- function(occ, bg, predictors, name, outdir, template, 
+fit_maxent2 <- function(occ, 
+                        bg, # SPDF of candidate background points
+                        predictors, name, outdir, 
+                        template, 
+                        # template is a raster with extent, res and projection
+                        # of final output rasters. It is used to reduce
+                        # occurrences to a single point per cell.
+                        min_n=20,
+                        # min_n is the minimum number of records (unique cells)
+                        # required for a model to be fit
                         max_bg_size = 100000, 
+                        background_buffer_width = 200000,
                         shapefiles = TRUE, 
                         features, replicates, 
                         responsecurves = TRUE, 
@@ -37,26 +47,26 @@ fit_maxent2 <- function(occ, bg, predictors, name, outdir, template,
   if(!file.exists(outdir_sp)) dir.create(outdir_sp)
   features <- unlist(strsplit(features, ''))
   
-  ## What?
-  # if(length(setdiff(features, c('l', 'p', 'q', 'h', 't'))) > 1)
-  #   stop("features must be a vector of one or more of ',
-  #        'l', 'p', 'q', 'h', and 't'.")
+  ## Make sure user features are allowed
+  if(length(setdiff(features, c('l', 'p', 'q', 'h', 't'))) > 1)
+    stop("features must be a vector of one or more of ',
+         'l', 'p', 'q', 'h', and 't'.")
   
   ## aggregate
-  b <- aggregate(gBuffer(occ, width = 200000, byid = TRUE))
+  b <- aggregate(gBuffer(occ, width = background_buffer_width, byid = TRUE))
   
   #####################################################################
   ## Get unique cell numbers for species occurrences
   cells <- cellFromXY(template, occ)
   
-  ## Clean out duplicates and NAs (including points outside extent of predictor data)
+  ## Clean out duplicate cells and NAs (including points outside extent of predictor data)
   not_dupes <- which(!duplicated(cells) & !is.na(cells)) 
   occ       <- occ[not_dupes, ]
   cells     <- cells[not_dupes]
   message(nrow(occ), ' occurrence records (unique cells).')
   
-  ## skip species with < 20 records
-  if(length(occ) < min.spp) {
+  ## skip species with < min.spp records
+  if(nrow(occ) < min_n) {
     
     warning('Fewer occurrence records than the number of cross-validation ',
             'replicates for species ', name, 
