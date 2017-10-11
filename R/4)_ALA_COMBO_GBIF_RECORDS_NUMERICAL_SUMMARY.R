@@ -459,7 +459,7 @@ names(COMBO.LGA)
 
 #########################################################################################################################
 ## Now join the horticultural contextual data onto one or both tables ()
-COMBO.RASTER.CONTEXT = join(COMBO.RASTER, HIA.SPP.JOIN, 
+COMBO.RASTER.CONTEXT = join(COMBO.RASTER.CONVERT, HIA.SPP.JOIN, 
                             by = "searchTaxon", type = "left", match = "all")
 
 
