@@ -145,15 +145,15 @@ skipped.clean.df   <- cSplit(skipped.clean.df,   1:ncol(skipped.clean.df),   sep
 colnames(skipped.species.df)[1] <- "Reason_skipped"
 colnames(skipped.species.df)[2] <- "Species"
 colnames(skipped.grow.df)[1]    <- "Reason_skipped"
-colnames(skipped.grow.df)[2]    <- "Genus"  ## head(skipped.species.df), head(skipped.grow.df)
+colnames(skipped.grow.df)[2]    <- "Species"  ## head(skipped.species.df), head(skipped.grow.df)
 colnames(skipped.clean.df)[1]   <- "Reason_skipped"
-colnames(skipped.clean.df)[2]   <- "Genus" 
+colnames(skipped.clean.df)[2]   <- "Species" 
 
 
 ## Get subset for each type
 max.records.spp    <- skipped.species.df[ which(skipped.species.df$Reason_skipped == "Number of records > 200,000"), ]
 max.records.grow   <- skipped.grow.df[ which(skipped.grow.df$Reason_skipped       == "Number of records > 200,000"), ]
-max.records.clean  <- skipped.clean.df[ which(skipped.clean.df$Reason_skipped      == "Number of records > 200,000"), ]
+max.records.clean  <- skipped.clean.df[ which(skipped.clean.df$Reason_skipped     == "Number of records > 200,000"), ]
 
 
 name.records.spp    <- skipped.species.df[ which(skipped.species.df$Reason_skipped == "Possible incorrect nomenclature"), ]
@@ -182,8 +182,8 @@ no.records.clean.list   = unique(as.character(no.records.clean$Taxa))
 
 ## save lists just in case
 ## save(skipped.species.df, file = paste("./data/base/HIA_LIST/GBIF/skipped_species.RData", sep = ""))
-## save(skipped.genera.df,  file = paste("./data/base/HIA_LIST/GBIF/skipped_genera.RData",  sep = ""))
-## save(skipped.ALA.df,     file = paste("./data/base/HIA_LIST/GBIF/skipped_ALA.RData",     sep = ""))
+## save(skipped.grow.df,  file = paste("./data/base/HIA_LIST/GBIF/skipped_growing.RData",  sep = ""))
+## save(skipped.clean.df,     file = paste("./data/base/HIA_LIST/GBIF/skipped_clean.RData",     sep = ""))
 
 
 ## have a look at the list of skipped species

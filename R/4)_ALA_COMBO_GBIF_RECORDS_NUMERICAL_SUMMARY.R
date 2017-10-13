@@ -298,8 +298,8 @@ env.variables = c("Annual_mean_temp",
 
 #########################################################################################################################
 ## CHANGE THE RASTER VALUES HERE: 
-## see http://worldclim.org/formats1 for description of the interger conversion
-
+## See http://worldclim.org/formats1 for description of the interger conversion. All temperature variables wer multiplied 
+## by 10, so divide by 10 to reverse it.
 COMBO.RASTER.CONVERT = as.data.table(COMBO.RASTER)
 COMBO.RASTER.CONVERT[, (env.variables[c(1:11)]) := lapply(.SD, function(x) 
   x / 10 ), .SDcols = env.variables[c(1:11)]]

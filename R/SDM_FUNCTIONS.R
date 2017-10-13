@@ -11,28 +11,28 @@
 
 
 #########################################################################################################################
-## Big function for getting background points...and fitting maxent? 
-fit_maxent2 <- function(occ, 
-                        bg, # SPDF of candidate background points
-                        predictors, 
-                        # predictors is a vector of column names for predictors
-                        # that you want to include
-                        name, 
-                        outdir, 
-                        template, 
-                        # template is a raster with extent, res and projection
-                        # of final output rasters. It is used to reduce
-                        # occurrences to a single point per cell.
-                        min_n=20,
-                        # min_n is the minimum number of records (unique cells)
-                        # required for a model to be fit
-                        max_bg_size = 100000, 
-                        background_buffer_width = 200000,
-                        shapefiles = TRUE, 
-                        features, 
-                        replicates, # number of cross-validation replicates
-                        responsecurves = TRUE, 
-                        rep_args, full_args) {
+## Big function for getting background points and fitting maxent 
+FIT_MAX <- function(occ, 
+                    bg, # A Spatial points data frame (SPDF) of candidate background points
+                    predictors, 
+                    # predictors is a vector of column names for predictors
+                    # that you want to include
+                    name, 
+                    outdir, 
+                    template, 
+                    # template is an empty raster with extent, res and projection
+                    # of final output rasters. It is used to reduce
+                    # occurrences to a single point per cell.
+                    min_n=20,
+                    # min_n is the minimum number of records (unique cells)
+                    # required for a model to be fit
+                    max_bg_size = 100000, 
+                    background_buffer_width = 200000,
+                    shapefiles = TRUE, 
+                    features, 
+                    replicates, # number of cross-validation replicates
+                    responsecurves = TRUE, 
+                    rep_args, full_args) {
   
   ########################################################################
   ## predictors: the s_ff object containing predictors to use in the model
@@ -64,12 +64,13 @@ fit_maxent2 <- function(occ,
   cells <- cellFromXY(template, occ)
   
   ## Clean out duplicate cells and NAs (including points outside extent of predictor data)
+  ## Note this will get rid of a lot of duplicate records not filtered out by GBIF columns
   not_dupes <- which(!duplicated(cells) & !is.na(cells)) 
   occ       <- occ[not_dupes, ]
   cells     <- cells[not_dupes]
   message(nrow(occ), ' occurrence records (unique cells).')
   
-  ## skip species with < min.spp records: eg 20 species
+  ## Skip species that have less than a minimum number of records: eg 20 species
   if(nrow(occ) < min_n) {
     
     warning('Fewer occurrence records than the number of cross-validation ',
@@ -135,14 +136,14 @@ fit_maxent2 <- function(occ,
   swd_bg <- bg[, predictors]
   saveRDS(swd_bg, file.path(outdir_sp, 'bg_swd.rds'))
   
-  ## save shapefiles?
+  ## Save shapefiles of the...
   if(shapefiles) {
     writeOGR(swd_occ, outdir_sp,  'occ_swd', 'ESRI Shapefile', overwrite_layer = TRUE)
     writeOGR(swd_bg,  outdir_sp,   'bg_swd', 'ESRI Shapefile', overwrite_layer = TRUE)
   }
   
   #####################################################################
-  ## Combine occ and bg SWD data
+  ## Combine occurrence and bg SWD data
   swd <- as.data.frame(rbind(swd_occ@data, swd_bg@data))
   saveRDS(swd, file.path(outdir_sp, 'swd.rds'))
   pa <- rep(1:0, c(nrow(swd_occ), nrow(swd_bg)))
@@ -172,7 +173,7 @@ fit_maxent2 <- function(occ,
     
   }
   
-  ## 
+  ## And this is the samem but with a different argument 
   if(missing(full_args)) full_args <- NULL
   me_full <- maxent(swd, pa, path = file.path(outdir_sp, 'full'), 
                     args = c(off, paste(names(full_args), full_args, sep = '='),
@@ -197,64 +198,3 @@ fit_maxent2 <- function(occ,
 #########################################################################################################################
 #####################################################  TBC ############################################################## 
 #########################################################################################################################
-
-species <- unique(COMBO.RASTER.CONTEXT$searchTaxon)
-template <- raster(raster('data/base/RASTER/bio_01')) %>% 
-  projectRaster(res=1000, crs=CRS('+init=ESRI:54009'))
-
-# Above, create an empty raster with the desired properties (note
-# raster(raster(x)))
-
-COMBO.RASTER.CONTEXT <- select(COMBO.RASTER.CONTEXT, searchTaxon, 
-                               lon, lat, Mean_diurnal_range:Temp_seasonality)
-
-coordinates(COMBO.RASTER.CONTEXT) <- ~lon+lat
-proj4string(COMBO.RASTER.CONTEXT) <- '+init=epsg:4326'
-COMBO.RASTER.CONTEXT <- spTransform(
-  COMBO.RASTER.CONTEXT, CRS('+init=ESRI:54009'))
-
-COMBO.RASTER.CONTEXT <- split(COMBO.RASTER.CONTEXT, COMBO.RASTER.CONTEXT$searchTaxon)
-occurrence_cells <- lapply(COMBO.RASTER.CONTEXT, function(x) cellFromXY(template, x))
-
-dat <- mapply(function(x, cells) {
-  x[!duplicated(cells), ]
-}, COMBO.RASTER.CONTEXT, occurrence_cells, SIMPLIFY = FALSE) %>% do.call(rbind, .)
-
-
-library(parallel)
-cl <- makeCluster(3)
-clusterExport(cl, c('template', 'dat', 'fit_maxent2'))
-clusterEvalQ(cl, {
-  require(ff)
-  require(rgeos)
-  require(sp)
-  require(raster)
-  require(rJava)
-  require(dismo)
-  require(things)
-})
-
-
-#parLapply(cl, species[1:8], function(x) { # for parallel
-lapply(species[1], function(x) { # for serial
-  message('Doing ', x)
-  occurrence <- subset(dat, searchTaxon==x)
-  background <- subset(dat, searchTaxon != x)
-  predictors <- c("Mean_diurnal_range", "Isothermality", "Temp_seasonality")
-  # predictors is a vector of predictors that you want to use
-  fit_maxent2(occ=occurrence, bg=background, 
-              predictors=predictors, 
-              name=x, 
-              outdir='output/maxent', 
-              template=template,
-              min_n=20,
-              max_bg_size=100000,
-              background_buffer_width=200000,
-              shapefiles=TRUE,
-              features='lpq',
-              replicates=5,
-              responsecurves=TRUE)
-})
-
-
-stopCluster(cl)
