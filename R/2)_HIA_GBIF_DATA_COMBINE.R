@@ -34,82 +34,160 @@ memory.limit()
 gc()
 
 
-# #########################################################################################################################
-# ## Take the first 300 taxa
-# GBIF.300 <- spp.download[c(1:300)] %>% 
-#   
-#   ## pipe the list into lapply
-#   lapply(function(x) {
-#     
-#     ## create the character string
-#     f <- sprintf("./data/base/HIA_LIST/GBIF/SPECIES/%s_GBIF_records.RData", x)
-#     
-#     ## load each .RData file
-#     d <- get(load(f))
-#     
-#     ## now drop the columns which we don't need
-#     dat <- data.frame(searchTaxon = x, d[, !colnames(d) %in% gbifColsToDrop], 
-#                       stringsAsFactors = FALSE)
-#     if(!is.character(dat$gbifID)) {
-#       dat$gbifID <- as.character(dat$gbifID)
-#     }
-#     dat
-#   }) %>% 
-#   
-#   ## finally, bind all the rows together
-#   bind_rows
-# 
-# 
-# #########################################################################################################################
-# ## Take the second 300 taxa
-# GBIF.600 <- spp.download[c(301:600)] %>% 
-#   
-#   ## pipe the list into lapply
-#   lapply(function(x) {
-#     
-#     ## create the character string
-#     f <- sprintf("./data/base/HIA_LIST/GBIF/SPECIES/%s_GBIF_records.RData", x)
-#     
-#     ## load each .RData file
-#     d <- get(load(f))
-#     
-#     ## now drop the columns which we don't need
-#     dat <- data.frame(searchTaxon = x, d[, !colnames(d) %in% gbifColsToDrop], 
-#                       stringsAsFactors = FALSE)
-#     if(!is.character(dat$gbifID)) {
-#       dat$gbifID <- as.character(dat$gbifID)
-#     }
-#     dat
-#   }) %>% 
-#   
-#   ## finally, bind all the rows together
-#   bind_rows
-# 
-# 
-# #########################################################################################################################
-# ## take the last 300 taxa
-# GBIF.800 <- spp.download[c(601:length(spp.download))] %>% 
-#   
-#   ## pipe the list into lapply
-#   lapply(function(x) {
-#     
-#     ## create the character string
-#     f <- sprintf("./data/base/HIA_LIST/GBIF/SPECIES/%s_GBIF_records.RData", x)
-#     
-#     ## load each .RData file
-#     d <- get(load(f))
-#     
-#     ## now drop the columns which we don't need
-#     dat <- data.frame(searchTaxon = x, d[, !colnames(d) %in% gbifColsToDrop], 
-#                       stringsAsFactors = FALSE)
-#     if(!is.character(dat$gbifID)) {
-#       dat$gbifID <- as.character(dat$gbifID)
-#     }
-#     dat
-#   }) %>% 
-#   
-#   ## finally, bind all the rows together
-#   bind_rows
+#########################################################################################################################
+## Take the first 300 taxa
+GBIF.1000 <- spp.download[c(1:1000)] %>%
+
+  ## pipe the list into lapply
+  lapply(function(x) {
+
+    ## create the character string
+    f <- sprintf("./data/base/HIA_LIST/GBIF/SPECIES/%s_GBIF_records.RData", x)
+
+    ## load each .RData file
+    d <- get(load(f))
+
+    ## now drop the columns which we don't need
+    dat <- data.frame(searchTaxon = x, d[, !colnames(d) %in% gbifColsToDrop],
+                      stringsAsFactors = FALSE)
+    if(!is.character(dat$gbifID)) {
+      dat$gbifID <- as.character(dat$gbifID)
+    }
+    dat
+  }) %>%
+
+  ## finally, bind all the rows together
+  bind_rows
+
+
+#########################################################################################################################
+## Take the second 300 taxa
+GBIF.2000 <- spp.download[c(1001:2000)] %>%
+
+  ## pipe the list into lapply
+  lapply(function(x) {
+
+    ## create the character string
+    f <- sprintf("./data/base/HIA_LIST/GBIF/SPECIES/%s_GBIF_records.RData", x)
+
+    ## load each .RData file
+    d <- get(load(f))
+
+    ## now drop the columns which we don't need
+    dat <- data.frame(searchTaxon = x, d[, !colnames(d) %in% gbifColsToDrop],
+                      stringsAsFactors = FALSE)
+    if(!is.character(dat$gbifID)) {
+      dat$gbifID <- as.character(dat$gbifID)
+    }
+    dat
+  }) %>%
+
+  ## finally, bind all the rows together
+  bind_rows
+
+
+#########################################################################################################################
+## take the last 300 taxa
+GBIF.3000 <- spp.download[c(2001:3000)] %>%
+
+  ## pipe the list into lapply
+  lapply(function(x) {
+
+    ## create the character string
+    f <- sprintf("./data/base/HIA_LIST/GBIF/SPECIES/%s_GBIF_records.RData", x)
+
+    ## load each .RData file
+    d <- get(load(f))
+
+    ## now drop the columns which we don't need
+    dat <- data.frame(searchTaxon = x, d[, !colnames(d) %in% gbifColsToDrop],
+                      stringsAsFactors = FALSE)
+    if(!is.character(dat$gbifID)) {
+      dat$gbifID <- as.character(dat$gbifID)
+    }
+    dat
+  }) %>%
+
+  ## finally, bind all the rows together
+  bind_rows
+
+
+#########################################################################################################################
+## take the last 300 taxa
+GBIF.4000 <- spp.download[c(3001:4000)] %>%
+  
+  ## pipe the list into lapply
+  lapply(function(x) {
+    
+    ## create the character string
+    f <- sprintf("./data/base/HIA_LIST/GBIF/SPECIES/%s_GBIF_records.RData", x)
+    
+    ## load each .RData file
+    d <- get(load(f))
+    
+    ## now drop the columns which we don't need
+    dat <- data.frame(searchTaxon = x, d[, !colnames(d) %in% gbifColsToDrop],
+                      stringsAsFactors = FALSE)
+    if(!is.character(dat$gbifID)) {
+      dat$gbifID <- as.character(dat$gbifID)
+    }
+    dat
+  }) %>%
+  
+  ## finally, bind all the rows together
+  bind_rows
+
+
+#########################################################################################################################
+## take the last 300 taxa
+GBIF.5000 <- spp.download[c(4001:5000)] %>%
+  
+  ## pipe the list into lapply
+  lapply(function(x) {
+    
+    ## create the character string
+    f <- sprintf("./data/base/HIA_LIST/GBIF/SPECIES/%s_GBIF_records.RData", x)
+    
+    ## load each .RData file
+    d <- get(load(f))
+    
+    ## now drop the columns which we don't need
+    dat <- data.frame(searchTaxon = x, d[, !colnames(d) %in% gbifColsToDrop],
+                      stringsAsFactors = FALSE)
+    if(!is.character(dat$gbifID)) {
+      dat$gbifID <- as.character(dat$gbifID)
+    }
+    dat
+  }) %>%
+  
+  ## finally, bind all the rows together
+  bind_rows
+
+
+#########################################################################################################################
+## take the last 300 taxa
+GBIF.6000 <- spp.download[c(5001:length(spp.download))] %>%
+  
+  ## pipe the list into lapply
+  lapply(function(x) {
+    
+    ## create the character string
+    f <- sprintf("./data/base/HIA_LIST/GBIF/SPECIES/%s_GBIF_records.RData", x)
+    
+    ## load each .RData file
+    d <- get(load(f))
+    
+    ## now drop the columns which we don't need
+    dat <- data.frame(searchTaxon = x, d[, !colnames(d) %in% gbifColsToDrop],
+                      stringsAsFactors = FALSE)
+    if(!is.character(dat$gbifID)) {
+      dat$gbifID <- as.character(dat$gbifID)
+    }
+    dat
+  }) %>%
+  
+  ## finally, bind all the rows together
+  bind_rows
 
 
 #########################################################################################################################
@@ -150,9 +228,7 @@ GBIF.ALL <- spp.download[c(1:length(spp.download))] %>%
 
 
 ## store the total no.of records as a variable
-# GBIF.ALL = bind_rows(GBIF.300,
-#                      GBIF.600,
-#                      GBIF.800)
+# GBIF.ALL = bind_rows(GBIF.1000, GBIF.2000, GBIF.3000, GBIF.4000, GBIF.5000, GBIF.6000)
 total.records = dim(GBIF.ALL)[1]
 
 
