@@ -124,47 +124,60 @@ source("./R/4)_ALA_COMBO_GBIF_RECORDS_NUMERICAL_SUMMARY.R")
 #########################################################################################################################
 
 
-## now convert the lists of skipped species and genera into a dataframe
+## Now convert the lists of skipped species and genera into a dataframe
 length(skipped.species)   
 length(skipped.genera)
 
 
-## converting the lists of skipped species and genera into a dataframe
+## Converting the lists of skipped species and genera into a dataframe
 skipped.species.df <- data.frame(matrix(unlist(skipped.species), nrow = length(skipped.species), byrow = TRUE))
-skipped.genera.df  <- data.frame(matrix(unlist(skipped.genera),  nrow = length(skipped.genera),  byrow = TRUE))
-skipped.ALA.df     <- data.frame(matrix(unlist(skipped.ALA),     nrow = length(skipped.ALA),     byrow = TRUE))
-
-## split the reason and the species into separate columns
-skipped.species.df  <- cSplit(skipped.species.df, 1:ncol(skipped.species.df), sep = "|", stripWhite = TRUE, type.convert = FALSE)
-skipped.genera.df   <- cSplit(skipped.genera.df,  1:ncol(skipped.genera.df),  sep = "|", stripWhite = TRUE, type.convert = FALSE)
-skipped.ALA.df      <- cSplit(skipped.ALA.df,  1:ncol(skipped.ALA.df),        sep = "|", stripWhite = TRUE, type.convert = FALSE)
+skipped.grow.df    <- data.frame(matrix(unlist(skipped.grow),    nrow = length(skipped.grow),    byrow = TRUE))
+skipped.clean.df   <- data.frame(matrix(unlist(skipped.clean),   nrow = length(skipped.clean),   byrow = TRUE))
 
 
-## update names
+## Split the reason and the species into separate columns
+skipped.species.df <- cSplit(skipped.species.df, 1:ncol(skipped.species.df), sep = "|", stripWhite = TRUE, type.convert = FALSE)
+skipped.grow.df    <- cSplit(skipped.grow.df,    1:ncol(skipped.grow.df),    sep = "|", stripWhite = TRUE, type.convert = FALSE)
+skipped.clean.df   <- cSplit(skipped.clean.df,   1:ncol(skipped.clean.df),   sep = "|", stripWhite = TRUE, type.convert = FALSE)
+
+
+## Update names
 colnames(skipped.species.df)[1] <- "Reason_skipped"
 colnames(skipped.species.df)[2] <- "Species"
-colnames(skipped.genera.df)[1]  <- "Reason_skipped"
-colnames(skipped.genera.df)[2]  <- "Genus"  ## head(skipped.species.df), head(skipped.genera.df)
-colnames(skipped.ALA.df)[1]  <- "Reason_skipped"
-colnames(skipped.ALA.df)[2]  <- "Genus" 
+colnames(skipped.grow.df)[1]    <- "Reason_skipped"
+colnames(skipped.grow.df)[2]    <- "Genus"  ## head(skipped.species.df), head(skipped.grow.df)
+colnames(skipped.clean.df)[1]   <- "Reason_skipped"
+colnames(skipped.clean.df)[2]   <- "Genus" 
 
 
-## get subset for each type
-max.records.spp  <- skipped.species.df[ which(skipped.species.df$Reason_skipped == "Number of records > 200,000"), ]
-max.records.gen  <- skipped.genera.df[ which(skipped.genera.df$Reason_skipped   == "Number of records > 200,000"), ]
-
-name.records.spp <- skipped.species.df[ which(skipped.species.df$Reason_skipped == "Possible incorrect nomenclature"), ]
-name.records.gen <- skipped.genera.df[ which(skipped.genera.df$Reason_skipped   == "Possible incorrect nomenclature"), ]
-no.records.spp   <- skipped.species.df[ which(skipped.species.df$Reason_skipped == "No GBIF records"), ]
+## Get subset for each type
+max.records.spp    <- skipped.species.df[ which(skipped.species.df$Reason_skipped == "Number of records > 200,000"), ]
+max.records.grow   <- skipped.grow.df[ which(skipped.grow.df$Reason_skipped       == "Number of records > 200,000"), ]
+max.records.clean  <- skipped.clean.df[ which(skipped.clean.df$Reason_skipped      == "Number of records > 200,000"), ]
 
 
-## create lists for each category
+name.records.spp    <- skipped.species.df[ which(skipped.species.df$Reason_skipped == "Possible incorrect nomenclature"), ]
+name.records.grow   <- skipped.grow.df[ which(skipped.grow.df$Reason_skipped       == "Possible incorrect nomenclature"), ]
+name.records.clean  <- skipped.clean.df[ which(skipped.clean.df$Reason_skipped       == "Possible incorrect nomenclature"), ]
+
+
+no.records.spp     <- skipped.species.df[ which(skipped.species.df$Reason_skipped == "No GBIF records"), ]
+no.records.grow    <- skipped.grow.df[ which(skipped.grow.df$Reason_skipped == "No GBIF records"), ]
+no.records.clean   <- skipped.clean.df[ which(skipped.clean.df$Reason_skipped == "No GBIF records"), ]
+
+
+## Create lists for each category
 max.records.spp.list  = unique(as.character(max.records.spp$Taxa))
 name.records.spp.list = unique(as.character(name.records.spp$Taxa))
 no.records.spp.list   = unique(as.character(no.records.spp$Taxa))
 
-max.records.gen.list  = unique(as.character(max.records.gen$Taxa))
-name.records.gen.list = unique(as.character(name.records.gen$Taxa))
+max.records.grow.list  = unique(as.character(max.records.grow$Taxa))
+name.records.grow.list = unique(as.character(name.records.grow$Taxa))
+no.records.grow.list   = unique(as.character(no.records.grow$Taxa))
+
+max.records.clean.list  = unique(as.character(max.records.clean$Taxa))
+name.records.clean.list = unique(as.character(name.records.clean$Taxa))
+no.records.clean.list   = unique(as.character(no.records.clean$Taxa))
 
 
 ## save lists just in case
@@ -192,26 +205,26 @@ kable(skipped.200.spp)
 
 
 ## Read in each file as text?
-Magnolia.g = gbif('Magnolia grandiflora', download = TRUE)
-Magnolia.g.names = sort(names(Magnolia.g))
-
-
-Betula.p = read.csv("./data/base/HIA_LIST/GBIF/SPECIES/Betula_pendula.csv", stringsAsFactors = FALSE)
-Betula.p.names = sort(names(Betula.p))
-
-
-
-## How different are the manually downloaded species?
-setdiff(Magnolia.g.names, Betula.p.names)
-setdiff(Betula.p.names, Magnolia.g.names)
-setdiff(gbif.keep, Betula.p.names)
-
-
-##
-unique(Magnolia.g$country)
-unique(Betula.p$countryCode)
-unique(Betula.p$coordinateUncertaintyInMeters)
-unique(Betula.p$continent)
+# Magnolia.g = gbif('Magnolia grandiflora', download = TRUE)
+# Magnolia.g.names = sort(names(Magnolia.g))
+# 
+# 
+# Betula.p = read.csv("./data/base/HIA_LIST/GBIF/SPECIES/Betula_pendula.csv", stringsAsFactors = FALSE)
+# Betula.p.names = sort(names(Betula.p))
+# 
+# 
+# 
+# ## How different are the manually downloaded species?
+# setdiff(Magnolia.g.names, Betula.p.names)
+# setdiff(Betula.p.names, Magnolia.g.names)
+# setdiff(gbif.keep, Betula.p.names)
+# 
+# 
+# ##
+# unique(Magnolia.g$country)
+# unique(Betula.p$countryCode)
+# unique(Betula.p$coordinateUncertaintyInMeters)
+# unique(Betula.p$continent)
 
 
 ## Save all files as .Rdata, then try concatenating them.

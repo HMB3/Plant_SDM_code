@@ -28,6 +28,9 @@ packages <- c("ggplot2",   "plyr",      "reshape2",  "RColorBrewer",  "scales", 
 ## installr::installr() and pick MikTeX (at least).
 ## install.packages("climates",,"http://rforge.net/",type="source")
 
+## Find where R stores packages
+##  .libPaths()
+
 ## library(devtools)
 #install_github('johnbaums/rmaxent')
 #install_github('johnbaums/jagstools')
