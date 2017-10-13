@@ -21,9 +21,9 @@
 ## This list derives from all species and varieties sold anywhere in Australia in the last 5 years. Anthony Manea cleaned 
 ## up the data and cross-linked to growth form and exotic/native status and derived a list of ~1300 species that are the 
 ## Most commonly sold, covering the right ratio of growth forms, regional representation and native/exotic
-CLEAN.list = read.csv("./data/base/HIA_LIST/HIA/HIA.CLEAN.csv",                         stringsAsFactors = FALSE)
-GROW.list  = read.csv("./data/base/HIA_LIST/HIA/HIA.CLEAN.csv",                         stringsAsFactors = FALSE)
-top.200    = read.csv("./data/base/HIA_LIST/HIA/HIA_TOP_200_1309_2017.csv",             stringsAsFactors = FALSE)
+CLEAN.list = read.csv("./data/base/HIA_LIST/HIA/HIA.CLEAN.csv",                               stringsAsFactors = FALSE)
+GROW.list  = read.csv("./data/base/HIA_LIST/HIA/planted_and_growing_database_0910_2017.csv",  stringsAsFactors = FALSE)
+top.200    = read.csv("./data/base/HIA_LIST/HIA/HIA_TOP_200_1309_2017.csv",                   stringsAsFactors = FALSE)
 
 
 #########################################################################################################################
@@ -175,7 +175,7 @@ head(CLEAN.LOOKUP) ## Can merge on the bilogical data here...
 
 
 ## Record each list: Raw top 25 (1135), Varieties (948), Binomials (610) 
-## Check exceptions with Paul, Linda and Rach
+## Check exceptions with team
 length(unique(CLEAN.list$Species))   ## All 'things' being grown (13736)
 length(unique(HIA.VARIETY$Species))  ## Varieties  (8822), excluding "spp.", eg Philodendron spp. Congo, Nandina domestica Moon Bay
 length(unique(CLEAN.SPP$Binomial))     ## Binomials  (4303), keep Michelia yunnanensis Scented Pearl, exclude Spathiphyllum spp. Assorted
