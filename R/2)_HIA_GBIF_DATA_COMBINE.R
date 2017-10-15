@@ -263,7 +263,7 @@ GBIF.TRIM <- GBIF.ALL %>%
 gc()
 
 ## Remove working dataframes from memory
-save(GBIF.TRIM, file = paste(save(GBIF.TRIM, file = paste("./data/base/HIA_LIST/GBIF/GBIF_TRIM.RData"))))
+save(GBIF.TRIM, file = paste("./data/base/HIA_LIST/GBIF/GBIF_TRIM.RData"))
 
 
 

@@ -101,12 +101,13 @@ source('./R/GREEN_CITIES_FUNCTIONS.R')
 ## Now run loops to dowload species in the "spp" list from GBIF. Not including any data quality checks here, just 
 ## downloading everything
 source('./R/HIA_LIST_MATCHING.R')
+source('./R/HIA_CLEAN_MATCHING.R')
 
 
 ## Run the download function on the species and genera lists these functions need to download at least one file, or they will return NULL
 skipped.species = download_GBIF_all_species(spp)    ## saves each spp as .Rdata file, returning list of skipped spp 
-skipped.ALA     = download_ALA_all_species(spp)     ## saves each spp as .Rdata file, returning list of skipped spp 
-skipped.genera  = download_GBIF_all_genera(genera)  ## saves each gen as .Rdata file, returning list of skipped genera 
+skipped.grow    = download_ALA_all_species(spp.grow)     ## saves each spp as .Rdata file, returning list of skipped spp 
+skipped.clean   = download_GBIF_all_genera(spp.clean)  ## saves each gen as .Rdata file, returning list of skipped genera 
 
 
 #########################################################################################################################
