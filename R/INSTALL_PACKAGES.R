@@ -31,7 +31,14 @@ packages <- c("ggplot2",   "plyr",      "reshape2",  "RColorBrewer",  "scales", 
 ## Find where R stores packages
 ##  .libPaths()
 
-## library(devtools)
+
+## Remove all the packages
+## remove.packages()
+## rownames(installed.packages())
+
+
+#devtools::install_github("ropensci/rgbif")
+#library(devtools)
 #install_github('johnbaums/rmaxent')
 #install_github('johnbaums/jagstools')
 #install_github('johnbaums/hues')

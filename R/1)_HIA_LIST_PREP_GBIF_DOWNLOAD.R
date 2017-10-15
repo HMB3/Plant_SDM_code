@@ -12,16 +12,14 @@
 library(gtools)
 library(GISTools)
 library(devtools)
-#library(Rtools)
-#devtools::install_github("ropensci/rgbif")
-library(data.table)
 library(Rcpp)
 library(raster)
 library(rgdal)
-#library(plyr)
+library(plyr)
 library(dplyr)
 library(sfsmisc)
 library(spatstat)
+library(data.table)
 
 library(SDMTools)
 library(rmaxent)
@@ -105,9 +103,107 @@ source('./R/HIA_CLEAN_MATCHING.R')
 
 
 ## Run the download function on the species and genera lists these functions need to download at least one file, or they will return NULL
-skipped.species = download_GBIF_all_species(spp)    ## saves each spp as .Rdata file, returning list of skipped spp 
-skipped.grow    = download_ALA_all_species(spp.grow)     ## saves each spp as .Rdata file, returning list of skipped spp 
-skipped.clean   = download_GBIF_all_genera(spp.clean)  ## saves each gen as .Rdata file, returning list of skipped genera 
+skipped.taxa    = unique(c(spp, spp.grow, spp.clean))
+skipped.taxa    = download_GBIF_all_species(taxa)        ## saves each spp as .Rdata file, returning list of skipped spp 
+# skipped.grow    = download_ALA_all_species(spp.grow)     
+# skipped.clean   = download_GBIF_all_genera(spp.clean)  
+
+
+
+
+
+#########################################################################################################################
+## 2). CHECK THE SPECIES WHICH WERE SKIPPED? 
+#########################################################################################################################
+
+
+## Now convert the lists of skipped species and genera into a dataframe
+skipped.taxa = unique(c(spp, spp.grow, spp.clean))
+length(skipped.species)   
+length(skipped.genera)
+
+
+## Converting the lists of skipped species and genera into a dataframe
+skipped.taxa.df    <- data.frame(matrix(unlist(skipped.taxa), nrow = length(skipped.taxa), byrow = TRUE))
+# skipped.species.df <- data.frame(matrix(unlist(skipped.species), nrow = length(skipped.species), byrow = TRUE))
+# skipped.grow.df    <- data.frame(matrix(unlist(skipped.grow),    nrow = length(skipped.grow),    byrow = TRUE))
+# skipped.clean.df   <- data.frame(matrix(unlist(skipped.clean),   nrow = length(skipped.clean),   byrow = TRUE))
+
+
+## Split the reason and the species into separate columns
+skipped.taxa.df    <- cSplit(skipped.taxa.df,    1:ncol(skipped.taxa.df),    sep = "|", stripWhite = TRUE, type.convert = FALSE)
+# skipped.species.df <- cSplit(skipped.species.df, 1:ncol(skipped.species.df), sep = "|", stripWhite = TRUE, type.convert = FALSE)
+# skipped.grow.df    <- cSplit(skipped.grow.df,    1:ncol(skipped.grow.df),    sep = "|", stripWhite = TRUE, type.convert = FALSE)
+# skipped.clean.df   <- cSplit(skipped.clean.df,   1:ncol(skipped.clean.df),   sep = "|", stripWhite = TRUE, type.convert = FALSE)
+
+
+## Update names
+colnames(skipped.taxa.df)[1] <- "Reason_skipped"
+colnames(skipped.taxa.df)[2] <- "Species"
+
+# colnames(skipped.species.df)[1] <- "Reason_skipped"
+# colnames(skipped.species.df)[2] <- "Species"
+# 
+# colnames(skipped.grow.df)[1]    <- "Reason_skipped"
+# colnames(skipped.grow.df)[2]    <- "Species"  ## head(skipped.species.df), head(skipped.grow.df)
+# colnames(skipped.clean.df)[1]   <- "Reason_skipped"
+# colnames(skipped.clean.df)[2]   <- "Species" 
+
+
+## Get subset for each type
+max.records.taxa    <- skipped.taxa.df[ which(skipped.taxa.df$Reason_skipped == "Number of records > 200,000"), ]
+# max.records.spp    <- skipped.species.df[ which(skipped.species.df$Reason_skipped == "Number of records > 200,000"), ]
+# max.records.grow   <- skipped.grow.df[ which(skipped.grow.df$Reason_skipped       == "Number of records > 200,000"), ]
+# max.records.clean  <- skipped.clean.df[ which(skipped.clean.df$Reason_skipped     == "Number of records > 200,000"), ]
+
+name.records.taxa   <- skipped.taxa.df[ which(skipped.taxa.df$Reason_skipped == "Possible incorrect nomenclature"), ]
+# name.records.spp    <- skipped.species.df[ which(skipped.species.df$Reason_skipped == "Possible incorrect nomenclature"), ]
+# name.records.grow   <- skipped.grow.df[ which(skipped.grow.df$Reason_skipped       == "Possible incorrect nomenclature"), ]
+# name.records.clean  <- skipped.clean.df[ which(skipped.clean.df$Reason_skipped       == "Possible incorrect nomenclature"), ]
+
+
+no.records.taxa     <- skipped.taxa.df[ which(skipped.taxa.df$Reason_skipped == "No GBIF records"), ]
+# no.records.spp     <- skipped.species.df[ which(skipped.species.df$Reason_skipped == "No GBIF records"), ]
+# no.records.grow    <- skipped.grow.df[ which(skipped.grow.df$Reason_skipped == "No GBIF records"), ]
+# no.records.clean   <- skipped.clean.df[ which(skipped.clean.df$Reason_skipped == "No GBIF records"), ]
+
+
+## Create lists for each category
+max.records.spp.list  = unique(as.character(max.records.spp$Taxa))
+# name.records.spp.list = unique(as.character(name.records.spp$Taxa))
+# no.records.spp.list   = unique(as.character(no.records.spp$Taxa))
+
+max.records.grow.list  = unique(as.character(max.records.grow$Taxa))
+name.records.grow.list = unique(as.character(name.records.grow$Taxa))
+no.records.grow.list   = unique(as.character(no.records.grow$Taxa))
+
+max.records.clean.list  = unique(as.character(max.records.clean$Taxa))
+name.records.clean.list = unique(as.character(name.records.clean$Taxa))
+no.records.clean.list   = unique(as.character(no.records.clean$Taxa))
+
+
+## save lists just in case
+save(skipped.taxa.df, file = paste("./data/base/HIA_LIST/GBIF/skipped_taxa.RData", sep = ""))
+## save(skipped.species.df, file = paste("./data/base/HIA_LIST/GBIF/skipped_species.RData", sep = ""))
+## save(skipped.grow.df,  file = paste("./data/base/HIA_LIST/GBIF/skipped_growing.RData",  sep = ""))
+## save(skipped.clean.df,     file = paste("./data/base/HIA_LIST/GBIF/skipped_clean.RData",     sep = ""))
+
+
+## have a look at the list of skipped species
+View(skipped.taxa.df)
+
+
+## which of these species are on the top 200?
+skipped.200.spp = merge(spp.200, skipped.taxa.df, by = "Species", all = FALSE)
+kable(skipped.200.spp)
+
+
+
+
+
+#########################################################################################################################
+## 3). RUN GBIF CODE
+#########################################################################################################################
 
 
 #########################################################################################################################
@@ -121,95 +217,7 @@ source("./R/4)_ALA_COMBO_GBIF_RECORDS_NUMERICAL_SUMMARY.R")
 
 
 #########################################################################################################################
-## 4). CHECK THE SPECIES WHICH WERE SKIPPED? 
-#########################################################################################################################
-
-
-## Now convert the lists of skipped species and genera into a dataframe
-skipped.taxa = unique(c(spp, spp.grow, spp.clean))
-length(skipped.species)   
-length(skipped.genera)
-
-
-## Converting the lists of skipped species and genera into a dataframe
-skipped.taxa.df <- data.frame(matrix(unlist(skipped.taxa), nrow = length(skipped.taxa), byrow = TRUE))
-skipped.species.df <- data.frame(matrix(unlist(skipped.species), nrow = length(skipped.species), byrow = TRUE))
-skipped.grow.df    <- data.frame(matrix(unlist(skipped.grow),    nrow = length(skipped.grow),    byrow = TRUE))
-skipped.clean.df   <- data.frame(matrix(unlist(skipped.clean),   nrow = length(skipped.clean),   byrow = TRUE))
-
-
-## Split the reason and the species into separate columns
-skipped.taxa.df    <- cSplit(skipped.taxa.df,    1:ncol(skipped.taxa.df),    sep = "|", stripWhite = TRUE, type.convert = FALSE)
-skipped.species.df <- cSplit(skipped.species.df, 1:ncol(skipped.species.df), sep = "|", stripWhite = TRUE, type.convert = FALSE)
-skipped.grow.df    <- cSplit(skipped.grow.df,    1:ncol(skipped.grow.df),    sep = "|", stripWhite = TRUE, type.convert = FALSE)
-skipped.clean.df   <- cSplit(skipped.clean.df,   1:ncol(skipped.clean.df),   sep = "|", stripWhite = TRUE, type.convert = FALSE)
-
-
-## Update names
-colnames(skipped.taxa.df)[1] <- "Reason_skipped"
-colnames(skipped.taxa.df)[2] <- "Species"
-
-colnames(skipped.species.df)[1] <- "Reason_skipped"
-colnames(skipped.species.df)[2] <- "Species"
-
-colnames(skipped.grow.df)[1]    <- "Reason_skipped"
-colnames(skipped.grow.df)[2]    <- "Species"  ## head(skipped.species.df), head(skipped.grow.df)
-colnames(skipped.clean.df)[1]   <- "Reason_skipped"
-colnames(skipped.clean.df)[2]   <- "Species" 
-
-
-## Get subset for each type
-max.records.taxa    <- skipped.taxa.df[ which(skipped.taxa.df$Reason_skipped == "Number of records > 200,000"), ]
-max.records.spp    <- skipped.species.df[ which(skipped.species.df$Reason_skipped == "Number of records > 200,000"), ]
-max.records.grow   <- skipped.grow.df[ which(skipped.grow.df$Reason_skipped       == "Number of records > 200,000"), ]
-max.records.clean  <- skipped.clean.df[ which(skipped.clean.df$Reason_skipped     == "Number of records > 200,000"), ]
-
-name.records.taxa   <- skipped.taxa.df[ which(skipped.taxa.df$Reason_skipped == "Possible incorrect nomenclature"), ]
-name.records.spp    <- skipped.species.df[ which(skipped.species.df$Reason_skipped == "Possible incorrect nomenclature"), ]
-name.records.grow   <- skipped.grow.df[ which(skipped.grow.df$Reason_skipped       == "Possible incorrect nomenclature"), ]
-name.records.clean  <- skipped.clean.df[ which(skipped.clean.df$Reason_skipped       == "Possible incorrect nomenclature"), ]
-
-
-no.records.taxa     <- skipped.taxa.df[ which(skipped.taxa.df$Reason_skipped == "No GBIF records"), ]
-no.records.spp     <- skipped.species.df[ which(skipped.species.df$Reason_skipped == "No GBIF records"), ]
-no.records.grow    <- skipped.grow.df[ which(skipped.grow.df$Reason_skipped == "No GBIF records"), ]
-no.records.clean   <- skipped.clean.df[ which(skipped.clean.df$Reason_skipped == "No GBIF records"), ]
-
-
-## Create lists for each category
-max.records.spp.list  = unique(as.character(max.records.spp$Taxa))
-name.records.spp.list = unique(as.character(name.records.spp$Taxa))
-no.records.spp.list   = unique(as.character(no.records.spp$Taxa))
-
-max.records.grow.list  = unique(as.character(max.records.grow$Taxa))
-name.records.grow.list = unique(as.character(name.records.grow$Taxa))
-no.records.grow.list   = unique(as.character(no.records.grow$Taxa))
-
-max.records.clean.list  = unique(as.character(max.records.clean$Taxa))
-name.records.clean.list = unique(as.character(name.records.clean$Taxa))
-no.records.clean.list   = unique(as.character(no.records.clean$Taxa))
-
-
-## save lists just in case
-## save(skipped.species.df, file = paste("./data/base/HIA_LIST/GBIF/skipped_species.RData", sep = ""))
-## save(skipped.grow.df,  file = paste("./data/base/HIA_LIST/GBIF/skipped_growing.RData",  sep = ""))
-## save(skipped.clean.df,     file = paste("./data/base/HIA_LIST/GBIF/skipped_clean.RData",     sep = ""))
-
-
-## have a look at the list of skipped species
-View(skipped.species.df)
-
-
-## which of these species are on the top 200?
-skipped.200.spp = merge(spp.200, skipped.species.df, by = "Species", all = FALSE)
-kable(skipped.200.spp)
-
-
-
-
-
-#########################################################################################################################
-## 5). DOWNLOAD SPECIES WITH >200k RECORDS USING THE GBIF API
+## 4). DOWNLOAD SPECIES WITH >200k RECORDS USING THE GBIF API
 #########################################################################################################################
 
 
@@ -268,9 +276,9 @@ kable(skipped.200.spp)
 #########################################################################################################################
 
 
-## Got the species with > 200k records
+## Get the species with > 200k records
 
-## Keep in touch with Renee RE the list
+## Keep in touch with Paul and Renee RE the list
 
 
 

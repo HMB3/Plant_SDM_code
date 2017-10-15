@@ -29,34 +29,34 @@ length(unique(GBIF.TRIM$searchTaxon))  ## has the list update with extra species
 
 #########################################################################################################################
 ## Try 'Geoclean' : this provides several different tests to clean datasets with geographic coordinates...
-GBIF.TRIM.GEO = dplyr::rename(GBIF.TRIM, identifier = searchTaxon, 
-                              XCOOR = lat, YCOOR = lon)
-
-## 
-GBIF.GeoClean.table = GeoClean(GBIF.TRIM.GEO, #countrycentroid = TRUE, 
-                               outp = 'detailed') ## one column for each check
-GBIF.GeoClean       = GeoClean(GBIF.TRIM.GEO, outp = 'summary')
-save(GBIF.GeoClean.table, file = paste("./data/base/HIA_LIST/GBIF/GBIF_GEOCLEAN_TABLE.RData"))
-head(GBIF.GeoClean.table)                                                                ##  Too restrictive!
-unique(GBIF.GeoClean)                                                                    ##  FALSE = suspicious coordinates
-
-
-## Check the output
-length(GBIF.GeoClean)
-length(GBIF.GeoClean[GBIF.GeoClean == TRUE])
-length(GBIF.GeoClean[GBIF.GeoClean == FALSE])                                            ##  FALSE = suspicious coordinates
+# GBIF.TRIM.GEO = dplyr::rename(GBIF.TRIM, identifier = searchTaxon, 
+#                               XCOOR = lat, YCOOR = lon)
+# 
+# ## 
+# GBIF.GeoClean.table = GeoClean(GBIF.TRIM.GEO, #countrycentroid = TRUE, 
+#                                outp = 'detailed') ## one column for each check
+# GBIF.GeoClean       = GeoClean(GBIF.TRIM.GEO, outp = 'summary')
+# save(GBIF.GeoClean.table, file = paste("./data/base/HIA_LIST/GBIF/GBIF_GEOCLEAN_TABLE.RData"))
+# head(GBIF.GeoClean.table)                                                                ##  Too restrictive!
+# unique(GBIF.GeoClean)                                                                    ##  FALSE = suspicious coordinates
+# 
+# 
+# ## Check the output
+# length(GBIF.GeoClean)
+# length(GBIF.GeoClean[GBIF.GeoClean == TRUE])
+# length(GBIF.GeoClean[GBIF.GeoClean == FALSE])                                            ##  FALSE = suspicious coordinates
 
 
 #########################################################################################################################
 ## And 'duplicated'...returns a logical vector of which rows of a table are duplicates of a row with smaller subscripts.
-GBIF.dups <- duplicated(GBIF.TRIM)
-unique(GBIF.dups)                                                                ##  TRUE  = Duplicated
-
-
-## Check the output
-length(GBIF.dups)
-length(GBIF.dups[GBIF.dups == TRUE])
-length(GBIF.dups[GBIF.dups == FALSE])
+# GBIF.dups <- duplicated(GBIF.TRIM)
+# unique(GBIF.dups)                                                                ##  TRUE  = Duplicated
+# 
+# 
+# ## Check the output
+# length(GBIF.dups)
+# length(GBIF.dups[GBIF.dups == TRUE])
+# length(GBIF.dups[GBIF.dups == FALSE])
 
 
 #############################################################################################################################
@@ -86,9 +86,9 @@ length(GBIF.dups[GBIF.dups == FALSE])
 
 #############################################################################################################################
 ## Now add these two columns to the intial GBIF file
-GBIF.TRIM$GEOCLEAN    = GBIF.GeoClean
-GBIF.TRIM$DUPLICATED  = GBIF.dups
-names(GBIF.TRIM)
+# GBIF.TRIM$GEOCLEAN    = GBIF.GeoClean
+# GBIF.TRIM$DUPLICATED  = GBIF.dups
+# names(GBIF.TRIM)
 
 
 
@@ -107,10 +107,10 @@ GBIF.PROBLEMS <- with(GBIF.TRIM,
                    is.na(lon)|is.na(lat),
                    
                    ## Also add geoclean
-                   GEOCLEAN   == 'FALSE',
+                   #GEOCLEAN   == 'FALSE',
                    
                    ## Also add duplicated
-                   DUPLICATED == 'TRUE',
+                   #DUPLICATED == 'TRUE',
                    
                    ## Establishment means is "MANAGED", can change this:
                    establishmentMeans == 'MANAGED' & !is.na(establishmentMeans),
@@ -135,7 +135,7 @@ GBIF.PROBLEMS <- with(GBIF.TRIM,
   ## create a data frame and set the names
   as.data.frame %>%  
   
-  setNames(c('NO_COORD', 'GEOCLEAN', 'DUPLICATED', 
+  setNames(c('NO_COORD', #'GEOCLEAN', 'DUPLICATED', 
              'MANAGED',  'PRE_1950', 'NO_YEAR', 
              'COORD_UNCERT', 'COUNT'))
 
