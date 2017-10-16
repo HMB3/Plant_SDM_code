@@ -19,78 +19,18 @@
 ## fatal assertions         (ALA), GBIF no equivalent
 
 
+
+## GBIF issues? Not that helpful...
+# Abelia.geosp.t = gbif('Abelia grandiflora', args = list("hasGeospatialIssue=true"))
+# Abelia.geosp.f = gbif('Abelia grandiflora', args = list("hasGeospatialIssue=false"))
+# Abelia         = gbif('Abelia grandiflora', args = list("hasGeospatialIssue=false"))
+
+
 #########################################################################################################################
-## GET SPATIAL OUTLIERS AND DUPLICATES?
-#########################################################################################################################
+## LOAD
 load("./data/base/HIA_LIST/GBIF/GBIF_TRIM.RData")
 dim(GBIF.TRIM)
 length(unique(GBIF.TRIM$searchTaxon))  ## has the list update with extra species? YES!
-
-
-#########################################################################################################################
-## Try 'Geoclean' : this provides several different tests to clean datasets with geographic coordinates...
-# GBIF.TRIM.GEO = dplyr::rename(GBIF.TRIM, identifier = searchTaxon, 
-#                               XCOOR = lat, YCOOR = lon)
-# 
-# ## 
-# GBIF.GeoClean.table = GeoClean(GBIF.TRIM.GEO, #countrycentroid = TRUE, 
-#                                outp = 'detailed') ## one column for each check
-# GBIF.GeoClean       = GeoClean(GBIF.TRIM.GEO, outp = 'summary')
-# save(GBIF.GeoClean.table, file = paste("./data/base/HIA_LIST/GBIF/GBIF_GEOCLEAN_TABLE.RData"))
-# head(GBIF.GeoClean.table)                                                                ##  Too restrictive!
-# unique(GBIF.GeoClean)                                                                    ##  FALSE = suspicious coordinates
-# 
-# 
-# ## Check the output
-# length(GBIF.GeoClean)
-# length(GBIF.GeoClean[GBIF.GeoClean == TRUE])
-# length(GBIF.GeoClean[GBIF.GeoClean == FALSE])                                            ##  FALSE = suspicious coordinates
-
-
-#########################################################################################################################
-## And 'duplicated'...returns a logical vector of which rows of a table are duplicates of a row with smaller subscripts.
-# GBIF.dups <- duplicated(GBIF.TRIM)
-# unique(GBIF.dups)                                                                ##  TRUE  = Duplicated
-# 
-# 
-# ## Check the output
-# length(GBIF.dups)
-# length(GBIF.dups[GBIF.dups == TRUE])
-# length(GBIF.dups[GBIF.dups == FALSE])
-
-
-#############################################################################################################################
-## Try PPP? This is too restrictive. Needs to be run within each species, not across whole dataset
-# sp.n      = "Syzygium floribundum"
-# test      = subset(GBIF.RASTER.CONTEXT, searchTaxon == sp.n)[, c("lon", "lat")]
-
-# x    <- test$lon ; y<-test$lat
-# w    <- ripras(x, y)
-# wp   <- ppp(x,y, window = w)
-# dupv <- duplicated.ppp(wp)
-# 
-# 
-# ## Check
-# length(dupv[dupv == TRUE])          ## Run on each species, not the whole dataset
-# length(dupv[dupv == FALSE])         ## Check the maps: is it getting rid of good data?
-# 
-# 
-# ## Assing to
-# x2   <- x[which(dupv == FALSE)] 
-# y2   <- y[which(dupv == FALSE)]
-# 
-# 
-# ## coordinates of points with no duplicates
-# x2<-x[which(dupv==FALSE)] ; y2<-y[which(dupv == FALSE)]
-
-
-#############################################################################################################################
-## Now add these two columns to the intial GBIF file
-# GBIF.TRIM$GEOCLEAN    = GBIF.GeoClean
-# GBIF.TRIM$DUPLICATED  = GBIF.dups
-# names(GBIF.TRIM)
-
-
 
 
 #########################################################################################################################
@@ -132,7 +72,7 @@ GBIF.PROBLEMS <- with(GBIF.TRIM,
                  
 ) %>% 
   
-  ## create a data frame and set the names
+  ## Create a data frame and set the names
   as.data.frame %>%  
   
   setNames(c('NO_COORD', #'GEOCLEAN', 'DUPLICATED', 
@@ -140,17 +80,17 @@ GBIF.PROBLEMS <- with(GBIF.TRIM,
              'COORD_UNCERT', 'COUNT'))
 
 
-## print table to screen: in .Rmd file, no need to save
+## Print table to screen: in .Rmd file, no need to save
 ## Note that TRUE indicates there is a problem (e.g. no lat/long = TRUE)
 kable(GBIF.PROBLEMS)
 
 
-## quickly check the total record number matches the count of problems
+## Quickly check the total record number matches the count of problems
 Total.count = sum(GBIF.PROBLEMS$COUNT)
 identical(dim(GBIF.TRIM)[1], Total.count)  ## identical matches two objects
 
 
-## probably don't need this
+## Probably don't need this
 save(GBIF.PROBLEMS,  file = paste("./data/base/HIA_LIST/GBIF/GBIF_PROBLEMS.RData"))
 
 
@@ -158,10 +98,10 @@ save(GBIF.PROBLEMS,  file = paste("./data/base/HIA_LIST/GBIF/GBIF_PROBLEMS.RData
 GBIF.MANAGED <- GBIF.TRIM %>% 
   
   ## Note that these filters are very forgiving...
-  ## unless we include the NAs, very few records are returned!
+  ## Unless we include the NAs, very few records are returned!
   filter(establishmentMeans == 'MANAGED')
 
-## unique(GBIF.MANAGED$establishmentMeans)
+## Unique(GBIF.MANAGED$establishmentMeans)
 save(GBIF.MANAGED, file = paste("./data/base/HIA_LIST/GBIF/GBIF_MANAGED.RData"))
 
 
@@ -177,7 +117,7 @@ save(GBIF.MANAGED, file = paste("./data/base/HIA_LIST/GBIF/GBIF_MANAGED.RData"))
 GBIF.CLEAN <- GBIF.TRIM %>% 
   
   ## Note that these filters are very forgiving...
-  ## unless we include the NAs, very few records are returned!
+  ## Unless we include the NAs, very few records are returned!
   filter(!is.na(lon) & !is.na(lat),
          establishmentMeans!='MANAGED' | is.na(establishmentMeans),
          year >= 1950 & !is.na(year))
@@ -185,15 +125,15 @@ GBIF.CLEAN <- GBIF.TRIM %>%
          # GEOCLEAN   != 'FALSE')
 
 
-## The table above gives the details, but worth documenting how many records are knocked out by each
+## The table above gives the details, but worth documenting how many records are knocked out by each filter
 Remaining.records = dim(GBIF.CLEAN)[1] 
 Remaining.percent = dim(GBIF.CLEAN)[1]/Total.count*100
 Filters.applied = "NA COORD | MANAGED/NA | < 1950/NA"
-Remaining.percent ## 65% of records remain after cleaning 
+Remaining.percent ## 57% of records remain after cleaning 
 gc()
 
 
-## check
+## Check
 dim(GBIF.CLEAN)
 head(GBIF.CLEAN)
 
@@ -206,7 +146,7 @@ names(GBIF.CLEAN)
 
 
 #########################################################################################################################
-## 3). REMOVE POINTS OUTSIDE WORLDCLIM LAYERS
+## 3). REMOVE POINTS OUTSIDE WORLDCLIM LAYERS...
 #########################################################################################################################
 
 
@@ -231,13 +171,13 @@ xy <- cellFromXY(world.temp, GBIF.CLEAN[c("lon", "lat")]) %>%
   xyFromCell(world.temp, .)
 
 
-## take a look at xy: NA's should be removed...but the numbers are too big
+## Take a look at xy: NA's should be removed...
 summary(xy)
 str(xy)
 points(xy, pch = ".", col = "red")
 
 
-## For some reason, we need to convert the xy coords to a spatial points data frame, in order to avoid the error:
+## For some reason, we need to convert the xy coords to a spatial points data frame, in order to avoid this error:
 ## 'NAs introduced by coercion to integer range'
 xy <- SpatialPointsDataFrame(coords = xy, data = as.data.frame(xy),
                              proj4string = CRS("+proj=longlat +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +no_defs"))
@@ -272,19 +212,19 @@ records.ocean
 
 #########################################################################################################################
 ## Plot cleaned data
-plot(world.temp)
-points(GBIF.CLEAN[c("lon", "lat")], pch = ".", col = "red")
+#plot(world.temp)
+#points(GBIF.CLEAN[c("lon", "lat")], pch = ".", col = "red")
 
 
 ## Plot cleaned data that's in the worldclim raster
-plot(world.temp)
-points(GBIF.LAND[c("lon", "lat")], pch = ".", col = "blue")
+#plot(world.temp)
+#points(GBIF.LAND[c("lon", "lat")], pch = ".", col = "blue")
 gc()
 
 
 ## note that this still leaves lots of points in the Islands. So we need to decide if those are legitimate.
 WORLD <- readOGR("./data/base/CONTEXTUAL/TM_WORLD_BORDERS-0.3.shp", layer = "TM_WORLD_BORDERS-0.3")
-LAND  <- readOGR("./data/base/CONTEXTUAL/ne_10m_land.shp", layer = "ne_10m_land")
+LAND  <- readOGR("./data/base/CONTEXTUAL/ne_10m_land.shp",          layer = "ne_10m_land")
 plot(WORLD)
 plot(LAND)
 
@@ -315,7 +255,7 @@ gc()
 
 ## Keep managed records as a separate file                                        - Have them
 
-## GBIF duplicates                                                                - Maybe
+## GBIF duplicates                                                                - Check GBIF issues, but John's SDM code will get rid of more
 
 ## GBIF species match                                                             - Species summary will take care of it. 
 

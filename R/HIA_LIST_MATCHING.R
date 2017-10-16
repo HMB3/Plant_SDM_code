@@ -20,7 +20,7 @@
 ## Most commonly sold, covering the right ratio of growth forms, regional representation and native/exotic
 HIA.list   = read.csv("./data/base/HIA_LIST/HIA/GREEN_CITIES_DRAFT_LIST_2709_2017.csv", stringsAsFactors = FALSE)
 CLEAN.list = read.csv("./data/base/HIA_LIST/HIA/HIA.CLEAN.csv", stringsAsFactors = FALSE)
-GROWING      = read.csv("./data/base/HIA_LIST/HIA/database_aus_sp_growing.csv", stringsAsFactors = FALSE) 
+GROWING    = read.csv("./data/base/HIA_LIST/HIA/database_aus_sp_growing.csv", stringsAsFactors = FALSE) 
 
 
 top.200    = read.csv("./data/base/HIA_LIST/HIA/HIA_TOP_200_1309_2017.csv",             stringsAsFactors = FALSE)

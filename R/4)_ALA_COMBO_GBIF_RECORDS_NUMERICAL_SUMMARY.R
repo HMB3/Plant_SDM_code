@@ -123,8 +123,9 @@ head(HIA.SPP.JOIN[, c("searchTaxon", "Number.of.growers")])
 View(HIA.SPP.JOIN)
 
 
-## Get just those ALA species which are on the HIA
-ALA.LAND.HIA  = ALA.LAND[ALA.LAND$searchTaxon %in% HIA.SPP.JOIN$searchTaxon, ]
+## Get just those ALA species which are on the bigger HIA list
+ALA.LAND.HIA  = ALA.LAND[ALA.LAND$searchTaxon %in% HIA.SPP.JOIN$searchTaxon, ] 
+## This changes to include Paul's extra species. Can this just be all.taxa?
 str(unique(ALA.LAND.HIA$searchTaxon))   ## ok
 
 
