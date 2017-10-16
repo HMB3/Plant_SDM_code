@@ -155,8 +155,8 @@ FIT_MAXENT <- function(occ,
   ## 
   if(length(off) > 0) {
     
-    off <- c(l = 'linear = FALSE',    p = 'product = FALSE', q = 'quadratic = FALSE',
-             t = 'threshold = FALSE', h = 'hinge = FALSE')[off]
+    off <- c(l = 'linear=false',    p = 'product=false', q = 'quadratic=false',
+             t = 'threshold=false', h = 'hinge=false')[off]
   }
   
   off <- unname(off)
@@ -165,11 +165,13 @@ FIT_MAXENT <- function(occ,
     
     if(missing(rep_args)) rep_args <- NULL
     
-    ## This runs the MAXENT
+    ## This runs the MAXENT. This is where the argument errors are coming in
+    # Error in .local(x, p, ...) : args not understood:
+    #   replicates = 5, responsecurves = TRUE, threshold = FALSE, hinge = FALSE
     me_xval <- maxent(swd, pa, path = file.path(outdir_sp, 'xval'), 
-                      args = c(paste0('replicates = ', replicates),
-                               'responsecurves = TRUE', 
-                               'outputformat = logistic',
+                      args = c(paste0('replicates=', replicates),
+                               'responsecurves=true', 
+                               'outputformat=logistic',
                                off, paste(names(rep_args), rep_args, sep = '=')))
     
   }
@@ -178,8 +180,8 @@ FIT_MAXENT <- function(occ,
   if(missing(full_args)) full_args <- NULL
   me_full <- maxent(swd, pa, path = file.path(outdir_sp, 'full'), 
                     args = c(off, paste(names(full_args), full_args, sep = '='),
-                             'responsecurves = TRUE',
-                             'outputformat = logistic'))
+                             'responsecurves=true',
+                             'outputformat=logistic'))
   
   #####################################################################
   ## Save fitted model object, and the model-fitting data.
