@@ -12,27 +12,28 @@
 
 #########################################################################################################################
 ## Big function for getting background points and fitting maxent 
-FIT_MAX <- function(occ, 
-                    bg, # A Spatial points data frame (SPDF) of candidate background points
-                    predictors, 
-                    # predictors is a vector of column names for predictors
-                    # that you want to include
-                    name, 
-                    outdir, 
-                    template, 
-                    # template is an empty raster with extent, res and projection
-                    # of final output rasters. It is used to reduce
-                    # occurrences to a single point per cell.
-                    min_n=20,
-                    # min_n is the minimum number of records (unique cells)
-                    # required for a model to be fit
-                    max_bg_size = 100000, 
-                    background_buffer_width = 200000,
-                    shapefiles = TRUE, 
-                    features, 
-                    replicates, # number of cross-validation replicates
-                    responsecurves = TRUE, 
-                    rep_args, full_args) {
+FIT_MAXENT <- function(occ, 
+                       bg, # A Spatial points data frame (SPDF) of candidate background points
+                       predictors, 
+                       # predictors is a vector of column names for predictors
+                       # that you want to include
+                       name, 
+                       outdir, 
+                       template, 
+                       # template is an empty raster with extent, res and projection
+                       # of final output rasters. It is used to reduce
+                       # occurrences to a single point per cell.
+                       min_n                   = 20,
+                       # min_n is the minimum number of records (unique cells)
+                       # required for a model to be fit
+                       max_bg_size             = 100000, 
+                       background_buffer_width = 200000,
+                       shapefiles              = TRUE, 
+                       features, 
+                       replicates, # number of cross-validation replicates
+                       responsecurves          = TRUE, 
+                       rep_args, 
+                       full_args) {
   
   ########################################################################
   ## predictors: the s_ff object containing predictors to use in the model
@@ -168,17 +169,17 @@ FIT_MAX <- function(occ,
     me_xval <- maxent(swd, pa, path = file.path(outdir_sp, 'xval'), 
                       args = c(paste0('replicates = ', replicates),
                                'responsecurves = TRUE', 
-                               'outputformat=logistic',
+                               'outputformat = logistic',
                                off, paste(names(rep_args), rep_args, sep = '=')))
     
   }
   
-  ## And this is the samem but with a different argument 
+  ## And this is the same, but with a different argument 
   if(missing(full_args)) full_args <- NULL
   me_full <- maxent(swd, pa, path = file.path(outdir_sp, 'full'), 
                     args = c(off, paste(names(full_args), full_args, sep = '='),
                              'responsecurves = TRUE',
-                             'outputformat=logistic'))
+                             'outputformat = logistic'))
   
   #####################################################################
   ## Save fitted model object, and the model-fitting data.

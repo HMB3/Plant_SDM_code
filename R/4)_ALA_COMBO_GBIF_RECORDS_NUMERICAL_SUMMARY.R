@@ -97,8 +97,8 @@ str(ALA.LAND)
 
 
 #########################################################################################################################
-## Here is where we could merge on the ALA data. Consider that GBIF has data for both sources. So are we topping up the 
-## native ranges with the AVH. So it will be important to get rid of the duplicates. 
+## Merge on the ALA data. Consider that GBIF has data for both sources. We are topping up the native ranges with the AVH, 
+## so it will be important to get rid of the duplicates. 
 names(GBIF.LAND)
 names(ALA.LAND)
 setdiff(names(GBIF.LAND), names(ALA.LAND))
@@ -124,9 +124,10 @@ View(HIA.SPP.JOIN)
 
 
 ## Get just those ALA species which are on the bigger HIA list
-ALA.LAND.HIA  = ALA.LAND[ALA.LAND$searchTaxon %in% HIA.SPP.JOIN$searchTaxon, ] 
-## This changes to include Paul's extra species. Can this just be all.taxa?
-str(unique(ALA.LAND.HIA$searchTaxon))   ## ok
+## ALA.LAND.HIA  = ALA.LAND[ALA.LAND$searchTaxon %in% HIA.SPP.JOIN$searchTaxon, ] 
+ALA.LAND.HIA  = ALA.LAND[ALA.LAND$searchTaxon %in% all.taxa, ] ## This changes to include Paul's extra species
+str(unique(ALA.LAND$searchTaxon))       ## Ok
+str(unique(ALA.LAND.HIA$searchTaxon))   ## Reduced from 30k for 4K
 
 
 ## Bind the rows together?
@@ -141,12 +142,12 @@ str(unique(GBIF.ALA.COMBO.LAND$searchTaxon))   ## ok
 
 
 ## What species are unique to each dataset?
-setdiff(unique(GBIF.LAND$searchTaxon), unique(ALA.LAND$searchTaxon))
-length(setdiff(unique(ALA.LAND$searchTaxon), unique(GBIF.LAND$searchTaxon)))
-intersect(unique(ALA.LAND$searchTaxon), unique(GBIF.LAND$searchTaxon))
+length(setdiff(unique(GBIF.LAND$searchTaxon),  unique(ALA.LAND$searchTaxon)))
+length(setdiff(unique(ALA.LAND$searchTaxon),   unique(GBIF.LAND$searchTaxon)))
+length(intersect(unique(ALA.LAND$searchTaxon), unique(GBIF.LAND$searchTaxon)))
 
 
-## Create points
+## Create points: consider changing the coordinate system here to a global projected system?
 COMBO.POINTS   = SpatialPointsDataFrame(coords = GBIF.ALA.COMBO.LAND[c("lon", "lat")], 
                                         data    = GBIF.ALA.COMBO.LAND[c("lon", "lat")],
                                         proj4string = CRS("+proj=longlat +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +no_defs"))
@@ -186,8 +187,28 @@ env.grids = c("//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_01",
 s <- stack(env.grids)
 
 
-## Then use the extract function for all the rasters,
-## and finaly bind on the COMBO data to the left of the raster values 
+## Then use the extract function for all the rasters, and finaly bind on the COMBO data to the left of the raster values
+## Can we use a cluster to speed this up?
+
+
+## Best option to speed this up is to use only the unique cells
+# xy <- cellFromXY(world.temp, COMBO.POINTS) %>% 
+#   
+#   ## get the unique raster cells
+#   unique %>% 
+#   
+#   ## Get coordinates of the center of raster cells for a row, column, or cell number of WORLDCLIM raster
+#   xyFromCell(world.temp, .)
+
+
+
+## 
+beginCluster(n = 8)
+COMBO.RASTER <- extract(s, COMBO.POINTS) %>% 
+  cbind(GBIF.ALA.COMBO.LAND, .)
+endCluster()
+
+
 COMBO.RASTER <- extract(s, COMBO.POINTS) %>% 
   cbind(GBIF.ALA.COMBO.LAND, .)
 

@@ -78,7 +78,7 @@ library("bigtabulate")
 
 ## source functions
 source('./R/GREEN_CITIES_FUNCTIONS.R')
-#source('./R/SDM_FUNCTIONS.R')
+source('./R/SDM_FUNCTIONS.R')
 
 
 
@@ -105,6 +105,7 @@ source('./R/HIA_CLEAN_MATCHING.R')
 ## Run the download function on the species and genera lists these functions need to download at least one file, or they will return NULL
 all.taxa        = unique(c(spp, spp.grow, spp.clean))
 str(all.taxa)
+class(all.taxa)
 skipped.taxa    = download_GBIF_all_species(all.taxa)        ## saves each spp as .Rdata file, returning list of skipped spp 
 
 
