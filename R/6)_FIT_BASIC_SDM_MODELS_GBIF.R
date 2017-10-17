@@ -5,15 +5,13 @@
 
 #########################################################################################################################
 ## Load packages
-p <- c('ff', 'things', 'raster', 'dismo', 'sp', 'latticeExtra', 'data.table', 
-       'rgdal', 'rgeos', 'gdalUtils', 'rmaxent', 'readr', 'dplyr', 'tidyr',
-       'readr', 'rnaturalearth', 'rasterVis', 'RColorBrewer', 'latticeExtra', 'parallel')
+p <- c('ff',    'things',         'raster',    'dismo',        'sp',           'latticeExtra', 'data.table', 
+       'rgdal', 'rgeos',          'gdalUtils', 'rmaxent',      'readr',        'dplyr',        'tidyr',
+       'readr', 'rnaturalearth',  'rasterVis', 'RColorBrewer', 'latticeExtra', 'parallel')
 
-## Require
+
+## Require packages
 sapply(p, require, character.only = TRUE)
-
-
-
 
 
 #########################################################################################################################
@@ -30,7 +28,7 @@ species  <- unique(COMBO.RASTER.CONTEXT$searchTaxon)
 
 ## Create an empty raster with the desired properties, using raster(raster(x))
 ## Also change the coordinate system to a projected system, so that distance can be calculated... 
-template <- raster(raster("//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_01")) %>% 
+template.raster <- raster(raster("//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_01")) %>% 
   projectRaster(res = 1000, crs = CRS('+init=ESRI:54009'))
 
 
@@ -48,19 +46,20 @@ COMBO.RASTER.CONTEXT <- spTransform(
 
 
 ## Now split using the data using the species column, and get the unique occurrence cells
-COMBO.RASTER.CONTEXT <- split(COMBO.RASTER.CONTEXT, COMBO.RASTER.CONTEXT$searchTaxon)
-occurrence_cells     <- lapply(COMBO.RASTER.CONTEXT, function(x) cellFromXY(template, x))
+COMBO.RASTER.SPLIT <- split(COMBO.RASTER.CONTEXT, COMBO.RASTER.CONTEXT$searchTaxon)
+occurrence_cells     <- lapply(COMBO.RASTER.SPLIT, function(x) cellFromXY(template.raster, x))
 str(occurrence_cells)  ## this is a list of dataframes, where the number of rows for each being the species table
 
 
 ## Now get just one record within each 10*10km cell. This step should eliminate most, if not all, duplicate records
-analysis.data <- mapply(function(x, cells) {
+## A simple alternative to the extract problem could be to use this instead, before the extract?
+SDM.DATA <- mapply(function(x, cells) {
   x[!duplicated(cells), ]
-}, COMBO.RASTER.CONTEXT, occurrence_cells, SIMPLIFY = FALSE) %>% do.call(rbind, .)
+}, COMBO.RASTER.SPLIT, occurrence_cells, SIMPLIFY = FALSE) %>% do.call(rbind, .)
 
 
 ## Use the analysis data
-str(analysis.data)
+str(SDM.DATA)
 
 
 
@@ -73,9 +72,9 @@ str(analysis.data)
 
 
 #########################################################################################################################
-## We can run Maxent from a cluster...
-cl <- makeCluster(3)
-clusterExport(cl, c('template', 'dat', 'fit_maxent2'))
+## We can run Maxent from a cluster. Here we send all the necessary ingredients to the cluster. So that's the  
+cl <- makeCluster(5)
+clusterExport(cl, c('template', 'SDM.DATA', 'FIT_MAXENT'))
 clusterEvalQ(cl, {
   
   require(ff)
@@ -89,17 +88,17 @@ clusterEvalQ(cl, {
 })
 
 
-## Use lapply   
+## Use 'lapply' to run maxent for multiple species   
 lapply(species[1], function(x) { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel 
   
   ## Print the taxa being processed to screen
   message('Doing ', x)
   
   ## Split the records to the taxa being processed
-  occurrence <- subset(analysis.data, searchTaxon == x)
+  occurrence <- subset(SDM.DATA, searchTaxon == x)
   
   ## The background points can come from anywhere in the whole dataset
-  background <- subset(analysis.data, searchTaxon != x)
+  background <- subset(SDM.DATA, searchTaxon != x)
   
   ## Create a vector of the predictors used. This should be based on an ecological framework! 
   predictors <- c("Mean_diurnal_range", "Isothermality", "Temp_seasonality") # vector of used predictors 
@@ -146,12 +145,8 @@ stopCluster(cl)
 ## 2). PROJECT MODELS
 #########################################################################################################################
 
-library(ff)
-library(raster)
-library(data.table)
-library(dismo)
-library(things)
 
+## 
 models         <- list.files('F:/output', '^maxent_fitted\\.rds$', recursive = TRUE, full = TRUE)
 models_by_type <- split(models, sub('plants_|chordata_|nonchordata_', '', 
                                     basename(dirname(dirname(models)))))

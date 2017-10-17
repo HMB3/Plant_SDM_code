@@ -139,8 +139,10 @@ FIT_MAXENT <- function(occ,
   
   ## Save shapefiles of the...
   if(shapefiles) {
+    
     writeOGR(swd_occ, outdir_sp,  'occ_swd', 'ESRI Shapefile', overwrite_layer = TRUE)
     writeOGR(swd_bg,  outdir_sp,   'bg_swd', 'ESRI Shapefile', overwrite_layer = TRUE)
+    
   }
   
   #####################################################################
@@ -157,6 +159,7 @@ FIT_MAXENT <- function(occ,
     
     off <- c(l = 'linear=false',    p = 'product=false', q = 'quadratic=false',
              t = 'threshold=false', h = 'hinge=false')[off]
+    
   }
   
   off <- unname(off)
@@ -185,15 +188,26 @@ FIT_MAXENT <- function(occ,
   
   #####################################################################
   ## Save fitted model object, and the model-fitting data.
+  # if (file.exists (file)) {
+  #   
+  #   print (paste ("file exists for genera", gen.n, "skipping"))
+  #   next
+  
+  
   if(replicates > 1) {
+    
     saveRDS(list(me_xval = me_xval, me_full = me_full, swd = swd, pa = pa), 
             file.path(outdir_sp, 'maxent_fitted.rds'))
+    
   } else {
+    
     saveRDS(list(me_xval = NA, me_full = me_full, swd = swd, pa = pa), 
             file.path(outdir_sp, 'maxent_fitted.rds'))
+    
   }
   
 }
+
 
 
 

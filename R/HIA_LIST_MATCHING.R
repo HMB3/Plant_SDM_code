@@ -115,7 +115,7 @@ dim(DRAFT.HIA.TAXA)    ## 948 species after we cut out the "spp."
 ## Remove weird characters...
 DRAFT.HIA.TAXA$Species = gsub(" x",     "",  DRAFT.HIA.TAXA$Species)
 DRAFT.HIA.TAXA$Species = gsub("NA",     "",  DRAFT.HIA.TAXA$Species)
-DRAFT.HIA.TAXA$Species = gsub("  ",     " ",  DRAFT.HIA.TAXA$Species)
+DRAFT.HIA.TAXA$Species = gsub("  ",     " ", DRAFT.HIA.TAXA$Species)
 DRAFT.HIA.TAXA$Species = gsub(" $",     "",  DRAFT.HIA.TAXA$Species, perl = TRUE)
 DRAFT.HIA.TAXA$Species = gsub("    $",  "",  DRAFT.HIA.TAXA$Species, perl = TRUE)
 

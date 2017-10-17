@@ -75,6 +75,13 @@ library("bigmemory")
 library("biganalytics")
 library("bigtabulate")
 
+p <- c('ff',    'things',         'raster',    'dismo',        'sp',           'latticeExtra', 'data.table', 
+       'rgdal', 'rgeos',          'gdalUtils', 'rmaxent',      'readr',        'dplyr',        'tidyr',
+       'readr', 'rnaturalearth',  'rasterVis', 'RColorBrewer', 'latticeExtra', 'parallel')
+
+
+## Require packages
+sapply(p, require, character.only = TRUE)
 
 ## source functions
 source('./R/GREEN_CITIES_FUNCTIONS.R')

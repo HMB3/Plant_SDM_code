@@ -1,5 +1,5 @@
 #########################################################################################################################
-####################################### ESTIMATE SPECIES NICHES AND SUMMARISE RECORDS ################################### 
+############################################# ESTIMATE SPECIES NICHES ################################################### 
 #########################################################################################################################
 
 
@@ -51,13 +51,15 @@
 
 ## The broad niche stream informs the micro stream, based on two tables:
 
-## 1). All records, contextual data and environmnetal conditions
-## 2). One row for each species, contextual data and species attributes (niches, traits, etc.)
+## 1). A table with one row fore each species record
+## 2). A table with One row for each species, contextual data and species attributes (niches, traits, etc.)
+
+
 
 
 
 #########################################################################################################################
-## 1). ADD RASTER DATA TO GBIF RECORDS
+## WORLDCLIM VARIABLES 
 #########################################################################################################################
 
 
@@ -96,6 +98,14 @@ str(GBIF.LAND)
 str(ALA.LAND)
 
 
+
+
+
+#########################################################################################################################
+## 1). MERGE GBIF DATA WITH CLEANED AVH/ALA RECORDS
+#########################################################################################################################
+
+
 #########################################################################################################################
 ## Merge on the ALA data. Consider that GBIF has data for both sources. We are topping up the native ranges with the AVH, 
 ## so it will be important to get rid of the duplicates. 
@@ -110,8 +120,8 @@ ALA.LAND     = dplyr::rename(ALA.LAND,
                              coordinateUncertaintyInMeters = uncertainty_m)
 
 
-## Restrict ALA data to just those species on the existing list
-library(plyr)  ## detach plyr again if doing more renaming
+## Restrict ALA data to just those species on the big list
+library(plyr)
 HIA.SPP.JOIN     = HIA.SPP
 HIA.SPP.JOIN     = dplyr::rename(HIA.SPP.JOIN, searchTaxon = Binomial)
 
@@ -123,17 +133,17 @@ head(HIA.SPP.JOIN[, c("searchTaxon", "Number.of.growers")])
 View(HIA.SPP.JOIN)
 
 
-## Get just those ALA species which are on the bigger HIA list
+## Get just those ALA species which are on the combined list of HIA and planted/growing
 ## ALA.LAND.HIA  = ALA.LAND[ALA.LAND$searchTaxon %in% HIA.SPP.JOIN$searchTaxon, ] 
-ALA.LAND.HIA  = ALA.LAND[ALA.LAND$searchTaxon %in% all.taxa, ] ## This changes to include Paul's extra species
-str(unique(ALA.LAND$searchTaxon))       ## Ok
-str(unique(ALA.LAND.HIA$searchTaxon))   ## Reduced from 30k for 4K
+ALA.LAND.HIA  = ALA.LAND[ALA.LAND$searchTaxon %in% all.taxa, ] ## Including Paul's extra species
+str(unique(ALA.LAND$searchTaxon))       ##
+str(unique(ALA.LAND.HIA$searchTaxon))   ## Reduced from 30k to 4K
 
 
 ## Bind the rows together?
 GBIF.ALA.COMBO.LAND = bind_rows(GBIF.LAND, ALA.LAND.HIA)
 names(GBIF.ALA.COMBO.LAND)
-identical((dim(GBIF.LAND)[1]+dim(ALA.LAND)[1]),dim(GBIF.ALA.COMBO.LAND)[1])   ## no, only adding the ovelap...
+identical((dim(GBIF.LAND)[1]+dim(ALA.LAND)[1]),dim(GBIF.ALA.COMBO.LAND)[1])   ## only adding the ovelap...
 head(GBIF.ALA.COMBO.LAND)
 
 
@@ -158,6 +168,11 @@ summary(COMBO.POINTS)
 
 
 
+
+
+#########################################################################################################################
+## 2). EXTRACT RASTER DATA FOR SPECIES RECORDS
+#########################################################################################################################
 
 
 #########################################################################################################################
@@ -187,12 +202,12 @@ env.grids = c("//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_01",
 s <- stack(env.grids)
 
 
+#########################################################################################################################
 ## Then use the extract function for all the rasters, and finaly bind on the COMBO data to the left of the raster values
 ## Can we use a cluster to speed this up?
 
-
 ## Best option to speed this up is to use only the unique cells
-# xy <- cellFromXY(world.temp, COMBO.POINTS) %>% 
+# COMBO.XY <- cellFromXY(world.temp, COMBO.POINTS) %>% 
 #   
 #   ## get the unique raster cells
 #   unique %>% 
@@ -201,16 +216,12 @@ s <- stack(env.grids)
 #   xyFromCell(world.temp, .)
 
 
-
-## 
-beginCluster(n = 8)
+#########################################################################################################################
+## Probably best not to use a cluster like this
+#beginCluster(n = 8)
 COMBO.RASTER <- extract(s, COMBO.POINTS) %>% 
   cbind(GBIF.ALA.COMBO.LAND, .)
-endCluster()
-
-
-COMBO.RASTER <- extract(s, COMBO.POINTS) %>% 
-  cbind(GBIF.ALA.COMBO.LAND, .)
+#endCluster()
 
 
 ## Multiple rename using dplyr
@@ -248,12 +259,13 @@ names(COMBO.RASTER)
 
 
 
+
 #########################################################################################################################
-## 2). INTERSECT WITH LGA/SUA
+## 3). INTERSECT SPECIES RECORDS WITH LGA/SUA
 #########################################################################################################################
 
 
-## Sally wants to know the count of species occur in n LGAs, across a range of climates. Read in LGA and SUA
+## We want to know the count of species that occur in n LGAs, across a range of climates. Read in LGA and SUA
 COMBO.RASTER.SP   = SpatialPointsDataFrame(coords = COMBO.RASTER[c("lon", "lat")], 
                                            data    = COMBO.RASTER,
                                            proj4string = CRS("+init=epsg:4326"))
@@ -272,7 +284,7 @@ SUA.WGS  = spTransform(SUA, CRS.new)
 
 projection(COMBO.RASTER.SP)
 projection(LGA.WGS)
-projection(LGA.WGS)
+projection(SUA.WGS)
 
 
 #########################################################################################################################
@@ -283,14 +295,21 @@ COMBO.LGA  = cbind.data.frame(COMBO.RASTER.SP, LGA.JOIN) ## [1:300,]
 
 #########################################################################################################################
 ## AGGREGATE THE NUMBER OF LGAs EACH SPECIES IS FOUND IN 
-LGA.AGG   = tapply(COMBO.LGA $LGA_NAME16, COMBO.LGA $searchTaxon, function(x) length(unique(x))) ## group LGA by species name
+LGA.AGG   = tapply(COMBO.LGA$LGA_NAME16, COMBO.LGA$searchTaxon, function(x) length(unique(x))) ## group LGA by species name
 LGA.AGG   = as.data.frame(LGA.AGG)
 head(LGA.AGG)
 
 
+## Save
+save(COMBO.LGA, file = paste("./data/base/HIA_LIST/GBIF/COMBO_LGA.RData"))
+save(LGA.AGG,   file = paste("./data/base/HIA_LIST/GBIF/LGA_AGG.RData"))
+
+
+
+
 
 #########################################################################################################################
-## 3). CREATE NICHES FOR SELECTED TAXA
+## 4). CREATE NICHES FOR SELECTED TAXA
 #########################################################################################################################
 
 
@@ -319,30 +338,34 @@ env.variables = c("Annual_mean_temp",
 
 
 #########################################################################################################################
-## CHANGE THE RASTER VALUES HERE: 
-## See http://worldclim.org/formats1 for description of the interger conversion. All temperature variables wer multiplied 
-## by 10, so divide by 10 to reverse it.
-COMBO.RASTER.CONVERT = as.data.table(COMBO.RASTER)             ## Fix packages loaded into the workstation...
+## Change the raster values here: 
+## See http://worldclim.org/formats1 for description of the interger conversion. 
+## All temperature variables wer multiplied by 10, so divide by 10 to reverse it.
+COMBO.RASTER.CONVERT = as.data.table(COMBO.RASTER)                           ## This is inefficient
 COMBO.RASTER.CONVERT[, (env.variables[c(1:11)]) := lapply(.SD, function(x) 
   x / 10 ), .SDcols = env.variables[c(1:11)]]
-
-
-COMBO.RASTER.CONVERT = as.data.frame(COMBO.RASTER.CONVERT)
+COMBO.RASTER.CONVERT = as.data.frame(COMBO.RASTER.CONVERT)                   ## Find another method without using data.table
 
 
 ## Check Looks ok?
-summary(COMBO.RASTER.CONVERT$Annual_mean_temp)
+summary(COMBO.RASTER.CONVERT$Annual_mean_temp)  ## -23 looks too low/. Check where these are
 summary(COMBO.RASTER$Annual_mean_temp)
 
 summary(COMBO.RASTER.CONVERT$Isothermality)
 summary(COMBO.RASTER$Isothermality)
 
 
+## Plot a few points to see
+plot(LAND, col = 'grey', bg = 'sky blue')
+points(COMBO.RASTER.CONVERT[ which(COMBO.RASTER.CONVERT$Annual_mean_temp < -5), ][, c("lon", "lat")], 
+       pch = ".", col = "red", cex = 3, asp = 1)
+
+
+
 #########################################################################################################################
 ## Create niche summaries for each environmental condition like this...
 ## Here's what the function will produce :
 library(plyr)
-head(niche_estimate (DF = COMBO.RASTER.CONVERT, colname = "Annual_mean_temp"))
 head(niche_estimate (DF = COMBO.RASTER.CONVERT, colname = "Annual_mean_temp"))  ## including the q05 and q95
 
 
@@ -387,7 +410,7 @@ names(COMBO.NICHE)
 
 
 #########################################################################################################################
-## 4). CALCULATE AREA OF OCCUPANCY RANGES 
+## 5). CALCULATE AREA OF OCCUPANCY RANGES 
 #########################################################################################################################
 
 
@@ -402,6 +425,8 @@ data    = COMBO.RASTER
 
 #########################################################################################################################
 ## AREA OF OCCUPANCY 
+
+
 ## For every species in the list: calculate the AOO
 GBIF.AOO <- spp.geo[c(1:length(spp.geo))] %>% 
   
@@ -569,9 +594,13 @@ write.csv(COMBO.NICHE.CONTEXT, "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.c
 
 ## Convert WORLDCLIM values back into decimals            - done (multiplied by 10)
 
+## Improve raster extract: use an index of unique cell values, referring to a second matrix to do the extract 
+
 ## Check geographic range: doesn't look right for some species. Calc extent of occurrnece as well
 
-## Add Counts of LGA and SUA for each species 
+## Add traits: list
+
+## Can we get native/exotic list for all Australian species
 
 ## Return species EG:                                     -
 
