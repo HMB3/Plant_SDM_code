@@ -25,8 +25,10 @@
 
 ## Now run loops to dowload species in the "spp" list from GBIF. Not including any data quality checks here, just 
 ## downloading everything...
+load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData")
 source('./R/HIA_LIST_MATCHING.R')
 source('./R/HIA_CLEAN_MATCHING.R')
+
 
 ## Create one big list of all the taxa
 all.taxa = unique(c(spp, spp.grow, spp.clean))
@@ -56,6 +58,13 @@ head(HIA.SPP.TAXO.ERRORS)
 write.csv(HIA.SPP.LOOKUP,       "./data/base/TRAITS/HIA_SPP_LOOKUP.csv",       row.names = FALSE)
 write.csv(HIA.SPP.LOOKUP.MATCH, "./data/base/TRAITS/HIA_SPP_LOOKUP_MATCH.csv", row.names = FALSE)
 write.csv(HIA.SPP.TAXO.ERRORS,  "./data/base/TRAITS/HIA_SPP_TAXO.ERRORS.csv",  row.names = FALSE)
+
+
+########################################################################################################################
+## Finally, check the taxonomy for the data already downloaded against this list
+HIA.SPP.LOOKUP.MATCH$Binomial
+intersect(HIA.SPP.LOOKUP.MATCH$Binomial, COMBO.RASTER.CONTEXT$SearchTaxon)
+
 
 
 #########################################################################################################################
