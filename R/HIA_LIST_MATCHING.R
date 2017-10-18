@@ -4,6 +4,87 @@
 
 
 #########################################################################################################################
+## Setup for project 
+library(gtools)
+library(GISTools)
+library(devtools)
+library(Rcpp)
+library(raster)
+library(rgdal)
+library(plyr)
+library(dplyr)
+library(sfsmisc)
+library(spatstat)
+library(data.table)
+
+library(SDMTools)
+library(rmaxent)
+library(dismo)
+library(AdaptR)
+library(red)
+library(ConR)
+
+library(ff)
+library(rgeos)
+library(sp)
+library(raster)
+library(rJava)
+library(things)
+
+
+library(ALA4R)
+library(rgbif)
+library(scrubr)
+library(RCurl)
+library(httr)
+library(taxonlookup)
+library(speciesgeocodeR)
+library(raster)
+library(raster)
+library(rnaturalearth)
+library(gdalUtils)
+
+library(knitr)
+library(htmltools)
+library(yaml)
+library(caTools)
+library(bitops)
+library(rmarkdown)
+library(gsubfn)
+library(functional)
+library(splitstackshape)
+
+library(tidyverse)
+library(stringr)
+library(maptools)
+library(rgeos)
+library(magrittr)
+library(datastorr)
+library(baad.data)
+
+library(Cairo)
+library(lattice)
+library(latticeExtra)
+
+library("biglm")
+library("bigmemory")
+library("biganalytics")
+library("bigtabulate")
+
+p <- c('ff',    'things',         'raster',    'dismo',        'sp',           'latticeExtra', 'data.table', 
+       'rgdal', 'rgeos',          'gdalUtils', 'rmaxent',      'readr',        'dplyr',        'tidyr',
+       'readr', 'rnaturalearth',  'rasterVis', 'RColorBrewer', 'latticeExtra', 'parallel')
+
+
+## Require packages
+sapply(p, require, character.only = TRUE)
+
+## source functions
+source('./R/GREEN_CITIES_FUNCTIONS.R')
+source('./R/SDM_FUNCTIONS.R')
+
+
+#########################################################################################################################
 ## 1). READ IN DRAFT HIA LIST AND CLEAN
 #########################################################################################################################
 

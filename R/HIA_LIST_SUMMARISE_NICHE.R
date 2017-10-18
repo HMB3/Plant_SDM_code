@@ -85,8 +85,8 @@ names(COMBO.NICHE.CONTEXT)
 #########################################################################################################################
 ## Slice the big and small dataframes to just the ones on Renee's list.
 RENEE.SPP          = sort(as.character(unique(renee.full$Species)))
-GBIF.RASTER.RENEE  = COMBO.RASTER.CONTEXT[COMBO.RASTER.CONTEXT$searchTaxon %in% renee.50$Species, ]
-GBIF.NICHE.RENEE   = COMBO.NICHE.CONTEXT[COMBO.NICHE.CONTEXT$searchTaxon %in% renee.50$Species, ]
+GBIF.RASTER.RENEE  = COMBO.RASTER.CONTEXT[COMBO.RASTER.CONTEXT$searchTaxon %in% RENEE.SPP, ]
+GBIF.NICHE.RENEE   = COMBO.NICHE.CONTEXT[COMBO.NICHE.CONTEXT$searchTaxon %in% RENEE.SPP, ]
 
 
 ## 

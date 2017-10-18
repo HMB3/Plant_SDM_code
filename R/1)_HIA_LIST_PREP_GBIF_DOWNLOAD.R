@@ -5,88 +5,7 @@
 
 ## This code downloads all occurrence records for species on the Horticulture Australia list, from the GBIF database. 
 ## The trick here will be substituing the functions from the ALA4R package for the rgbif functions...
-## Matching the core fields could be tricky for some taxa. Also, 
-
-
-## setup 
-library(gtools)
-library(GISTools)
-library(devtools)
-library(Rcpp)
-library(raster)
-library(rgdal)
-library(plyr)
-library(dplyr)
-library(sfsmisc)
-library(spatstat)
-library(data.table)
-
-library(SDMTools)
-library(rmaxent)
-library(dismo)
-library(AdaptR)
-library(red)
-library(ConR)
-
-library(ff)
-library(rgeos)
-library(sp)
-library(raster)
-library(rJava)
-library(things)
-
-
-library(ALA4R)
-library(rgbif)
-library(scrubr)
-library(RCurl)
-library(httr)
-library(taxonlookup)
-library(speciesgeocodeR)
-library(raster)
-library(raster)
-library(rnaturalearth)
-library(gdalUtils)
-
-library(knitr)
-library(htmltools)
-library(yaml)
-library(caTools)
-library(bitops)
-library(rmarkdown)
-library(gsubfn)
-library(functional)
-library(splitstackshape)
-
-library(tidyverse)
-library(stringr)
-library(maptools)
-library(rgeos)
-library(magrittr)
-library(datastorr)
-library(baad.data)
-
-library(Cairo)
-library(lattice)
-library(latticeExtra)
-
-library("biglm")
-library("bigmemory")
-library("biganalytics")
-library("bigtabulate")
-
-p <- c('ff',    'things',         'raster',    'dismo',        'sp',           'latticeExtra', 'data.table', 
-       'rgdal', 'rgeos',          'gdalUtils', 'rmaxent',      'readr',        'dplyr',        'tidyr',
-       'readr', 'rnaturalearth',  'rasterVis', 'RColorBrewer', 'latticeExtra', 'parallel')
-
-
-## Require packages
-sapply(p, require, character.only = TRUE)
-
-## source functions
-source('./R/GREEN_CITIES_FUNCTIONS.R')
-source('./R/SDM_FUNCTIONS.R')
-
+## Matching the core fields could be tricky for some taxa.
 
 
 ###########################################################################################
@@ -98,22 +17,51 @@ source('./R/SDM_FUNCTIONS.R')
 
 
 
+
 #########################################################################################################################
 ## 1). DOWNLOAD RECORDS FROM GBIF USING HIA LIST
 #########################################################################################################################
 
 
 ## Now run loops to dowload species in the "spp" list from GBIF. Not including any data quality checks here, just 
-## downloading everything
+## downloading everything...
 source('./R/HIA_LIST_MATCHING.R')
 source('./R/HIA_CLEAN_MATCHING.R')
 
+## Create one big list of all the taxa
+all.taxa = unique(c(spp, spp.grow, spp.clean))
+length(all.taxa)   
 
-## Run the download function on the species and genera lists these functions need to download at least one file, or they will return NULL
-all.taxa        = unique(c(spp, spp.grow, spp.clean))
-str(all.taxa)
-class(all.taxa)
-skipped.taxa    = download_GBIF_all_species(all.taxa)        ## saves each spp as .Rdata file, returning list of skipped spp 
+
+########################################################################################################################
+## Try using taxonlookup to check the taxonomy
+HIA.SPP.LOOKUP = lookup_table(all.taxa, by_species = TRUE, missing_action = "NA")    ## convert rows to column and merge
+HIA.SPP.LOOKUP = setDT(HIA.SPP.LOOKUP , keep.rownames = TRUE)[]
+HIA.SPP.LOOKUP = dplyr::rename(HIA.SPP.LOOKUP, Binomial = rn)
+
+
+## So we have searched for every species on the list
+length(all.taxa) - dim(HIA.SPP.LOOKUP)[1]
+head(HIA.SPP.LOOKUP)                                                                 ## Can merge on the bilogical data here..
+View(HIA.SPP.LOOKUP)
+
+
+## But, just get the species that don't match (i.e. the NA rows...)
+HIA.SPP.LOOKUP.MATCH  = na.omit(HIA.SPP.LOOKUP)
+HIA.SPP.TAXO.ERRORS  <- HIA.SPP.LOOKUP[rowSums(is.na(HIA.SPP.LOOKUP)) > 0,]
+head(HIA.SPP.TAXO.ERRORS)
+
+
+## Write each table out to file:
+write.csv(HIA.SPP.LOOKUP,       "./data/base/TRAITS/HIA_SPP_LOOKUP.csv",       row.names = FALSE)
+write.csv(HIA.SPP.LOOKUP.MATCH, "./data/base/TRAITS/HIA_SPP_LOOKUP_MATCH.csv", row.names = FALSE)
+write.csv(HIA.SPP.TAXO.ERRORS,  "./data/base/TRAITS/HIA_SPP_TAXO.ERRORS.csv",  row.names = FALSE)
+
+
+#########################################################################################################################
+## Run the download function on the species and genera lists these functions need to download at least one file, or they 
+## will return NULL
+skipped.taxa    = download_GBIF_all_species(all.taxa)     ## saves each spp as .Rdata file, returning list of skipped spp
 
 
 
@@ -124,65 +72,61 @@ skipped.taxa    = download_GBIF_all_species(all.taxa)        ## saves each spp a
 #########################################################################################################################
 
 
-## Convert the list of skipped species and genera into a dataframe
-skipped.taxa.df    <- data.frame(matrix(unlist(skipped.taxa), nrow = length(skipped.taxa), byrow = TRUE))
+## Converting the lists of skipped species and genera into a dataframe
+skipped.taxa.df <- data.frame(matrix(unlist(skipped.taxa), nrow = length(skipped.taxa), byrow = TRUE))
 
-## Split the reason for skipping and the species into separate columns
+
+## Split the reason and the species into separate columns
 skipped.taxa.df    <- cSplit(skipped.taxa.df,    1:ncol(skipped.taxa.df),    sep = "|", stripWhite = TRUE, type.convert = FALSE)
 
 
-## Update the column names
+## Update names
 colnames(skipped.taxa.df)[1] <- "Reason_skipped"
 colnames(skipped.taxa.df)[2] <- "Species"
 
- 
+
 ## Get subset for each type
 max.records.taxa    <- skipped.taxa.df[ which(skipped.taxa.df$Reason_skipped == "Number of records > 200,000"), ]
 name.records.taxa   <- skipped.taxa.df[ which(skipped.taxa.df$Reason_skipped == "Possible incorrect nomenclature"), ]
 no.records.taxa     <- skipped.taxa.df[ which(skipped.taxa.df$Reason_skipped == "No GBIF records"), ]
 
+
 ## Create lists for each category
-max.records.taxa.list  = unique(as.character(max.records.taxa$Taxa))
+# max.records.spp.list  = unique(as.character(max.records.spp$Taxa))
+# name.records.spp.list = unique(as.character(name.records.spp$Taxa))
+# no.records.spp.list   = unique(as.character(no.records.spp$Taxa))
+
+## save lists just in case
+## save(skipped.species.df, file = paste("./data/base/HIA_LIST/GBIF/skipped_species.RData", sep = ""))
+## save(skipped.grow.df,  file = paste("./data/base/HIA_LIST/GBIF/skipped_growing.RData",  sep = ""))
+## save(skipped.clean.df,     file = paste("./data/base/HIA_LIST/GBIF/skipped_clean.RData",     sep = ""))
 
 
-## Save list just in case
-save(skipped.taxa.df, file = paste("./data/base/HIA_LIST/GBIF/skipped_taxa.RData", sep = ""))
+## have a look at the list of skipped species
+View(skipped.species.df)
 
 
-## Have a look at the list of skipped species
-View(skipped.taxa.df)
-View(max.records.taxa)
-
-
-## Which of these species are on the top 200? These species are all those which cannot be resolved to the species 
-## level by the GBIF taxonomy, only the geunus level. So we can't feasibly model them...
-intersect(skipped.taxa.df$Species, spp.200$Binomial)
-# skipped.200.spp = merge(spp.200, skipped.taxa.df, by = "Species", all = FALSE)
-# kable(skipped.200.spp)
-
-
+## which of these species are on the top 200?
+skipped.200.spp = merge(spp.200, skipped.species.df, by = "Species", all = FALSE)
+kable(skipped.200.spp)
 
 
 
-#########################################################################################################################
-## 3). RUN GBIF PROCESSING CODE
-#########################################################################################################################
 
 
 #########################################################################################################################
 ## Run all the GBIF code 
-source("./R/2)_HIA_GBIF_DATA_COMBINE.R")
-source("./R/3)_GBIF_DATA_FILTER.R")
-source("./R/4)_ALA_COMBO_GBIF_RECORDS_NUMERICAL_SUMMARY.R")
+# source("./R/2)_HIA_GBIF_DATA_COMBINE.R")
+# source("./R/3)_GBIF_DATA_FILTER.R")
+# source("./R/4)_ALA_COMBO_GBIF_RECORDS_NUMERICAL_SUMMARY.R")
 
 
 
 
 
 #########################################################################################################################
-## DOWNLOAD SPECIES WITH >200k RECORDS USING THE GBIF API
+## 3). DOWNLOAD SPECIES WITH >200k RECORDS USING THE GBIF API
 #########################################################################################################################
-
 
 
 ## Read in each file as text?
@@ -239,9 +183,9 @@ source("./R/4)_ALA_COMBO_GBIF_RECORDS_NUMERICAL_SUMMARY.R")
 #########################################################################################################################
 
 
-## Get the species with > 200k records
+## Get the extra species with > 200k records
 
-## Keep in touch with Paul and Renee RE the list
+## Keep in touch with Renee RE the list
 
 
 

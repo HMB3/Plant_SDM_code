@@ -87,6 +87,8 @@ str(SDM.DATA)
 ## apropos('debug')
 ## apropos('read')
 
+## 100 species takes about 4 hours...
+
 ## template raster, 
 ## data frame and 
 ## maxent function

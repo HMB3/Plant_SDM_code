@@ -49,16 +49,63 @@
 
 
 #########################################################################################################################
-## 1). READ IN AUSTRAITS DATA
+## 1). CREATE LIST FOR AUSTRAITS SEARCH
 #########################################################################################################################
 
 
 #########################################################################################################################
-# Austraits has at least one trait measured for 321 of these 'species' (90 different traits across all species (same 
+# Austraits has at least one trait measured for 321 of these 'species' (90 different traits across all species, same 
 # definitions as in TRY database) across roughly 17,000 observations (i.e. some species have many traits measured, sometimes 
 # multiple measures for the one trait). To do the merge I used the genus and species name only - leaving out all cultivar, 
 # var or subsp info. Please don't pass this data on to anyone else, including those in the project without checking with me 
 # (co-authors need to give express permission to use it at this point; it will be open access next year)
+
+
+## Load in the whole dataset
+source('./R/HIA_LIST_MATCHING.R')
+source('./R/HIA_CLEAN_MATCHING.R')
+
+
+## Create a big list of species 
+all.taxa        = unique(c(spp, spp.grow, spp.clean))
+str(all.taxa)
+
+
+########################################################################################################################
+## Try using taxonlookup to check the taxonomy
+HIA.SPP.LOOKUP = lookup_table(all.taxa, by_species = TRUE, missing_action = "NA")    ## convert rows to column and merge
+HIA.SPP.LOOKUP = setDT(HIA.SPP.LOOKUP , keep.rownames = TRUE)[]
+HIA.SPP.LOOKUP = dplyr::rename(HIA.SPP.LOOKUP, Binomial = rn)
+
+
+## So we have searched for every species on the list
+length(all.taxa) - dim(HIA.SPP.LOOKUP)[1]
+head(HIA.SPP.LOOKUP)                                                            ## Can merge on the bilogical data here..
+View(HIA.SPP.LOOKUP)
+
+
+## But, just get the species that don't match (i.e. the NA rows...)
+HIA.SPP.LOOKUP.MATCH  = na.omit(HIA.SPP.LOOKUP)
+HIA.SPP.TAXO.ERRORS  <- HIA.SPP.LOOKUP[rowSums(is.na(HIA.SPP.LOOKUP)) > 0,]
+head(HIA.SPP.TAXO.ERRORS)
+
+
+## Write each table out to file:
+write.csv(HIA.SPP.LOOKUP,       "./data/base/TRAITS/HIA_SPP_LOOKUP.csv",       row.names = FALSE)
+write.csv(HIA.SPP.LOOKUP.MATCH, "./data/base/TRAITS/HIA_SPP_LOOKUP_MATCH.csv", row.names = FALSE)
+write.csv(HIA.SPP.TAXO.ERRORS,  "./data/base/TRAITS/HIA_SPP_TAXO.ERRORS.csv",  row.names = FALSE)
+
+
+
+
+
+#########################################################################################################################
+## 2). READ IN AUSTRAITS MATCH 
+#########################################################################################################################
+
+
+#########################################################################################################################
+## Now look at the Austraits format
 HIA.AUST = read.csv("./data/base/TRAITS/HIA_austraits.csv", stringsAsFactors = FALSE)
 
 
@@ -109,38 +156,6 @@ AUST.JOIN <-
 View(AUST.LOOKUP)
 
 
-## Now try aggregating the data. This won't work, because of the duplicate rows
-# test.spread = spread(AUST.JOIN, key = trait_name, value = value) ## Key = the column we want to spread (e.g. trait name), value = variable value
-
-
-## Error: Duplicate identifiers for rows
-## So try an alternative approach
-# AUST.GROUP = AUST.JOIN %>%                                  ## We want 320 rows and 90 columns
-#   gather(variable, value, -(taxon:trait_name)) %>%
-#   unite(temp, trait_name, variable) %>%
-#   dcast(taxon ~ temp) %>%
-#   as.data.frame()
-
-
-#########################################################################################################################
-## For each species, the number of rows is the unique "study"...or not?  
-AUST.GROUP = AUST.JOIN %>% 
-  group_by(taxon, trait_name) %>% 
-  mutate(study = 1:n()) %>%
-  melt(id = c("taxon", "study", "trait_name")) %>%
-  dcast(... ~ trait_name + variable, value.var = "value") %>%
-  as.data.frame()
-
-AUST.GROUP <- data.frame(lapply(AUST.GROUP, function(x) {
-  gsub("_value", "", x) })) ## Get rid of the "_value"
-
-## Not sure if this has worked?
-nrow(AUST.GROUP)
-ncol(AUST.GROUP)
-View(AUST.GROUP)
-names(AUST.GROUP)
-
-
 #########################################################################################################################
 ## Just look at a select few traits
 AUST.GROUP <- 
@@ -156,7 +171,44 @@ AUST.GROUP <-
 ## life_history
 ## plant_height
 ## water_use_efficiency
-
 View(AUST.LOOKUP)
 
 
+## Now try aggregating the data. This won't work, because of the duplicate rows
+# test.spread = spread(AUST.JOIN, key = trait_name, value = value) ## Key = the column we want to spread (e.g. trait name), value = variable value
+
+
+## Error: Duplicate identifiers for rows
+## So try an alternative approach
+# AUST.GROUP = AUST.JOIN %>%                                  ## We want 320 rows and 90 columns
+#   gather(variable, value, -(taxon:trait_name)) %>%
+#   unite(temp, trait_name, variable) %>%
+#   dcast(taxon ~ temp) %>%
+#   as.data.frame()
+
+
+#########################################################################################################################
+## For each species, the number of rows is the unique "study"...or not?  
+# AUST.GROUP = AUST.JOIN %>% 
+#   group_by(taxon, trait_name) %>% 
+#   mutate(study = 1:n()) %>%
+#   melt(id = c("taxon", "study", "trait_name")) %>%
+#   dcast(... ~ trait_name + variable, value.var = "value") %>%
+#   as.data.frame()
+# 
+# AUST.GROUP <- data.frame(lapply(AUST.GROUP, function(x) {
+#   gsub("_value", "", x) })) ## Get rid of the "_value"
+# 
+# ## Not sure if this has worked?
+# nrow(AUST.GROUP)
+# ncol(AUST.GROUP)
+# View(AUST.GROUP)
+# names(AUST.GROUP)
+
+
+
+
+
+#########################################################################################################################
+#####################################################  TBC ############################################################## 
+#########################################################################################################################
