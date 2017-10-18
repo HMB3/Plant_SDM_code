@@ -416,8 +416,6 @@ names(COMBO.NICHE)
 
 ## These numbers don't look that accurate: Try converting data into a sp data frame and projecting into a projected
 ## coordinate system
-
-
 ## Create a species list: this should be from the "COMBO.RASTER" file...
 spp.geo = as.character(unique(COMBO.RASTER$searchTaxon)) 
 data    = COMBO.RASTER
@@ -447,6 +445,10 @@ GBIF.AOO <- spp.geo[c(1:length(spp.geo))] %>%
   
   ## Finally, create one dataframe for all niches
   as.data.frame
+
+
+# In rgdal::project(longlat, paste("+proj=utm +zone=", zone,  ... :
+#                                       6 projected point(s) not finite
 
 
 #########################################################################################################################
@@ -479,13 +481,12 @@ GBIF.AOO <- spp.geo[c(1:length(spp.geo))] %>%
 
 ## Clean it up. The order of species should be preserved
 GBIF.AOO = gather(GBIF.AOO)
-#GBIF.EOO = gather(GBIF.EOO)
 str(GBIF.AOO)
-#str(GBIF.EOO)
+str(unique(GBIF.ALA.COMBO.LAND$searchTaxon))   ## same number of species...
 
 
 ## Now join on the GEOGRAPHIC RANGE
-COMBO.NICHE$AREA_OCCUPANCY = GBIF.AOO$value
+COMBO.NICHE$AREA_OCCUPANCY = GBIF.AOO$value    ## vectors same length so don't need to match
 
 
 ## AOO is calculated as the area of all known or predicted cells for the species. The resolution will be 2x2km as 
@@ -524,8 +525,8 @@ names(COMBO.NICHE.CONTEXT)
 
 
 ## Rename...
-COMBO.RASTER.CONTEXT = COMBO.RASTER.CONTEXT[, c(1:5,  46:59, 7:45)]                                       ## change order
-COMBO.NICHE.CONTEXT  = COMBO.NICHE.CONTEXT[,  c(175, 2, 1, 174, 176:188,  3:173)]                         ## change order
+COMBO.RASTER.CONTEXT = COMBO.RASTER.CONTEXT[, c(1:5,  45:57, 6:43)]                                       ## change order
+COMBO.NICHE.CONTEXT  = COMBO.NICHE.CONTEXT[,  c(176, 2, 1, 174:175, 177:189, 3:173)]                      ## change order
 
 
 ## Set NA to blank, then sort by no. of growers.
@@ -569,6 +570,7 @@ missing.renee  = setdiff(unique(renee.50$Species),
 ## Overall list
 missing.taxa   = unique(c(missing.25, missing.200, missing.renee))
 missing.taxa   = as.data.frame(missing.taxa)
+missing.taxa
 
 
 ## The missing species are due to too few records, too many, or taxonomy problems. EG some of the species are varieties, so they 

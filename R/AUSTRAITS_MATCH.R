@@ -62,6 +62,29 @@
 HIA.AUST = read.csv("./data/base/TRAITS/HIA_austraits.csv", stringsAsFactors = FALSE)
 
 
+## About 90 traits. This should cover most of the traits we need. Then, if needed, we can get the chosen traits for the 
+## remainging species from TRY.
+sort(unique(HIA.AUST$trait_name))
+
+
+## HIA LIST:
+# Growth rate and form
+# height
+# canopy density
+# Ground cover
+# Longevity
+# Seasonality
+
+
+## Shortlist from Austraits:
+## flower_colour
+## flowering_time
+## specific_leaf_area
+## lifespan
+## life_history
+## plant_height
+## water_use_efficiency
+
 ## So, start by deciding which trait source is the most Authoritative (E.G. RSBG), then get unique trait values for that
 # AUST.UNIQUE = HIA.AUST[!duplicated(HIA.AUST$trait_name), ]
 # str(unique(AUST.UNIQUE$taxon))
@@ -71,6 +94,7 @@ HIA.AUST = read.csv("./data/base/TRAITS/HIA_austraits.csv", stringsAsFactors = F
 ## we get unique traits within each species
 
 
+#########################################################################################################################
 ## Just get the needed columns
 AUST.LOOKUP <- 
   HIA.AUST %>% 
@@ -85,23 +109,54 @@ AUST.JOIN <-
 View(AUST.LOOKUP)
 
 
-## 
-test.spread = spread(AUST.JOIN, key = trait_name, value = value) ## Key = the column we want to spread (e.g. trait name), value = variable value   
-
-##
-library(reshape2)
-dcast(melt(AUST.JOIN), taxon ~ Time + variable)
+## Now try aggregating the data. This won't work, because of the duplicate rows
+# test.spread = spread(AUST.JOIN, key = trait_name, value = value) ## Key = the column we want to spread (e.g. trait name), value = variable value
 
 
-##
-library(dplyr)
-library(tidyr)
-df %>%
-  group_by(start_end, id) %>%
-  mutate(ind = row_number()) %>%
-  spread(start_end, date) %>% 
-  select(start, end)
+## Error: Duplicate identifiers for rows
+## So try an alternative approach
+# AUST.GROUP = AUST.JOIN %>%                                  ## We want 320 rows and 90 columns
+#   gather(variable, value, -(taxon:trait_name)) %>%
+#   unite(temp, trait_name, variable) %>%
+#   dcast(taxon ~ temp) %>%
+#   as.data.frame()
 
 
-##
-View(test.spread)
+#########################################################################################################################
+## For each species, the number of rows is the unique "study"...or not?  
+AUST.GROUP = AUST.JOIN %>% 
+  group_by(taxon, trait_name) %>% 
+  mutate(study = 1:n()) %>%
+  melt(id = c("taxon", "study", "trait_name")) %>%
+  dcast(... ~ trait_name + variable, value.var = "value") %>%
+  as.data.frame()
+
+AUST.GROUP <- data.frame(lapply(AUST.GROUP, function(x) {
+  gsub("_value", "", x) })) ## Get rid of the "_value"
+
+## Not sure if this has worked?
+nrow(AUST.GROUP)
+ncol(AUST.GROUP)
+View(AUST.GROUP)
+names(AUST.GROUP)
+
+
+#########################################################################################################################
+## Just look at a select few traits
+AUST.GROUP <- 
+  AUST.GROUP %>% 
+  select(flower_colour, flowering_time, specific_leaf_area,
+         lifespan,      life_history,   plant_height,      water_use_efficiency) %>%
+  as.data.frame()
+
+## flower_colour
+## flowering_time
+## specific_leaf_area
+## lifespan
+## life_history
+## plant_height
+## water_use_efficiency
+
+View(AUST.LOOKUP)
+
+

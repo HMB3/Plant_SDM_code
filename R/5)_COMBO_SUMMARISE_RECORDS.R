@@ -14,7 +14,8 @@
 ## Also a table could be made for each source (COMBO, ALA, Council, etc.), But ideally it is just one table
 load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData")   ## All the environmental data, one row for each record
 load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")    ## The niches for each variable, one row for each species
-load("./data/base/HIA_LIST/GBIF/GBIF_TRIM.RData")
+load("./data/base/HIA_LIST/GBIF/GBIF_TRIM.RData")               ## Latest dataset, 19 million rows
+dim(COMBO.RASTER.CONTEXT)
 
 
 ## The table above gives the details, but worth documenting how many records are knocked out by each
@@ -65,7 +66,7 @@ table.columns = c(
 )
 
 
-## Create big matrices with n rows = n samples
+## Create big table to store the data, with n rows = n samples
 table.length                    = length(table.columns)
 COMBO.RECORD.SUMMARY            = matrix(0, n.samples, table.length)
 colnames(COMBO.RECORD.SUMMARY)  = table.columns 
@@ -73,8 +74,8 @@ COMBO.RECORD.SUMMARY            = as.data.frame(COMBO.RECORD.SUMMARY)
 
 
 #########################################################################################################################
-## Now put the data in. Could use "melt", etc?
-COMBO.RECORD.SUMMARY[1, "Dataset"]                 = "COMBO_occurrence"                          ## H1.ms[1, "Intercept"]
+## Now fill this table with data. Could use "melt", etc?
+COMBO.RECORD.SUMMARY[1, "Dataset"]                 = "COMBO_occurrence"                          
 COMBO.RECORD.SUMMARY[1, "Taxa processed"]          = Total.taxa.processed
 COMBO.RECORD.SUMMARY[1, "Rank"]                    = "Species"
 COMBO.RECORD.SUMMARY[1, "Total records"]           = Total.records
@@ -127,27 +128,45 @@ histogram(COMBO.NICHE.CONTEXT$COMBO.count,
 
 
 ## Find infrequently sold spp, big environmental & geographic range, but could have similar traits to popular species
+## Use the six figure summary to decide where to put the thresholds. Currently using the 3rd quartile
 summary(COMBO.NICHE.CONTEXT$AREA_OCCUPANCY)
+summary(COMBO.NICHE.CONTEXT$LGA.AGG)
 summary(COMBO.NICHE.CONTEXT$Annual_mean_temp_range)
 summary(COMBO.NICHE.CONTEXT$Number.of.growers)
 summary(COMBO.NICHE.CONTEXT$COMBO.count)
 
 
 ## Rare species we can't model?
-rare.spp = subset(COMBO.NICHE.CONTEXT, COMBO.count < 50)[ c("searchTaxon", "COMBO.count", "AREA_OCCUPANCY", "Annual_mean_temp_range",
-                                                             "Top_200", "Origin")]
+RARE.SPP = subset(COMBO.NICHE.CONTEXT, COMBO.count < 50)[ c("searchTaxon", "COMBO.count", "AREA_OCCUPANCY", "LGA.AGG",
+                                                            "Top_200", "Origin", "Annual_mean_temp_range")]
 
 
-## Potential new species
-new.spp = subset(COMBO.NICHE.CONTEXT, AREA_OCCUPANCY > 7900 & 
+## Reorder DF by species
+RARE.SPP = RARE.SPP[with(RARE.SPP, order(searchTaxon)), ] 
+
+
+## Potential new species: For some species, we could add in traits here too 
+NEW.SPP = subset(COMBO.NICHE.CONTEXT, AREA_OCCUPANCY > 4000 & LGA.AGG > 66 &
                    Annual_mean_temp_range > 18 & 
-                   Number.of.growers < 25)[ c("searchTaxon", "COMBO.count", "AREA_OCCUPANCY", "Annual_mean_temp_range",
-                                              "Top_200", "Origin")]
+                   Number.of.growers < 25)[ c("searchTaxon", "COMBO.count", "AREA_OCCUPANCY", "LGA.AGG",
+                                              "Top_200", "Origin", "Annual_mean_temp_range")]
+
+
+## Reorder DF by species
+NEW.SPP = NEW.SPP[with(NEW.SPP, order(searchTaxon)), ] 
 
 
 ## Other queries?
-dim(rare.spp)
-dim(new.spp)
+View(RARE.SPP)
+View(NEW.SPP)
+
+dim(RARE.SPP)
+dim(NEW.SPP)
+
+
+## Is there a relationship between count, occupancy and temp range?
+## Not at all, maybe the calcs are a bit suspect
+plot(RARE.SPP$AREA_OCCUPANCY, log(RARE.SPP$Annual_mean_temp_range))
 
 
 
@@ -156,9 +175,7 @@ dim(new.spp)
 #########################################################################################################################
 
 
-## Check on species which seem to have been knocked out: E.G Fagus sylvatica. Individual filter doesn't knock them all out  
-
-## Convert WORLDCLIM values back into decimals            - multiply by 10
+## Check WORLDCLIM values: some of these don't look right...
 
 ## Check geographic range: doesn't look right for some species. Calc extent of occurrnece as well 
 
