@@ -129,11 +129,20 @@ COMBO.APNI = COMBO.APNI[, c(1:18, 190, 191, 19:189)]
 View(COMBO.APNI[, c(1:20)])
 
 
+## Save merged
+save(COMBO.APNI, file = paste("./data/base/HIA_LIST/COMBO/COMBO_APNI.RData", sep = ""))
+
+
 
 
 #########################################################################################################################
 ## 4). QUERY TABLE TO CREATE GROWING LISTS FOR PAUL
 #########################################################################################################################
+
+
+## Load in the combined data frame
+load("./data/base/HIA_LIST/COMBO/COMBO_APNI.RData")
+names(COMBO.APNI)
 
 
 ########################################
@@ -207,8 +216,6 @@ dim(EXOTIC.BROAD)
 # f) native lowly produced; 
 # g) exotic highly produced; 
 # h) exotic lowly produced.
-summary(COMBO.APNI$Number.of.growers)
-
 
 
 #########################################################################################################################
@@ -234,7 +241,7 @@ dim(NATIVE.UNPOPULAR)
 #########################################################################################################################
 ## g). Exotic highly produced 
 EXOTIC.POPULAR = subset(COMBO.APNI, Number.of.growers > 200 &  PLANTED_GROWING == "TRUE" & 
-                          APNI == "TRUE")[ c("searchTaxon", "COMBO.count", "AREA_OCCUPANCY", "LGA.AGG",
+                          APNI == "FALSE")[ c("searchTaxon", "COMBO.count", "AREA_OCCUPANCY", "LGA.AGG",
                                              "Annual_mean_temp_range", "APNI", "PLANTED_GROWING", "Top_200")]
 
 ## Can check the maps for these species
@@ -249,6 +256,10 @@ EXOTIC.UNPOPULAR = subset(COMBO.APNI, Number.of.growers < 25 &  PLANTED_GROWING 
 
 ## Can check the maps for these species
 dim(EXOTIC.UNPOPULAR)
+
+
+## Save if you want
+write.csv(NATIVE.RESTRICTED, "NATIVE_RESTRICTED.csv", row.names = FALSE) ## ETC, ETC
 
 
 
@@ -282,7 +293,6 @@ NEW.SPP = subset(COMBO.APNI, AREA_OCCUPANCY > 4000 & LGA.AGG > 66 &
 ## Reorder DF by species
 NEW.SPP = NEW.SPP[with(NEW.SPP, order(searchTaxon)), ] 
 dim(NEW.SPP)
-
 
 
 
