@@ -226,24 +226,24 @@ COMBO.RASTER <- extract(s, COMBO.POINTS) %>%
 
 ## Multiple rename using dplyr
 COMBO.RASTER = dplyr::rename(COMBO.RASTER,
-                             Annual_mean_temp     = bio_01,
+                             Annual_mean_temp     = bio_01, ##
                              Mean_diurnal_range   = bio_02,
                              Isothermality        = bio_03,
-                             Temp_seasonality     = bio_04,
-                             Max_temp_warm_month  = bio_05,
-                             Min_temp_cold_month  = bio_06,
+                             Temp_seasonality     = bio_04, ##
+                             Max_temp_warm_month  = bio_05, ##
+                             Min_temp_cold_month  = bio_06, ##
                              Temp_annual_range    = bio_07,
                              Mean_temp_wet_qu     = bio_08,
                              Mean_temp_dry_qu     = bio_09,
                              Mean_temp_warm_qu    = bio_10,
                              Mean_temp_cold_qu    = bio_11,
                              
-                             Annual_precip        = bio_12,
-                             Precip_wet_month     = bio_13,
-                             Precip_dry_month     = bio_14,
-                             Precip_seasonality   = bio_15,
-                             Precip_wet_qu        = bio_16,
-                             Precip_dry_qu        = bio_17,
+                             Annual_precip        = bio_12, ##
+                             Precip_wet_month     = bio_13, ##
+                             Precip_dry_month     = bio_14, ##
+                             Precip_seasonality   = bio_15, ##
+                             Precip_wet_qu        = bio_16, ##
+                             Precip_dry_qu        = bio_17, ##
                              Precip_warm_qu       = bio_18,
                              Precip_col_qu        = bio_19)
 

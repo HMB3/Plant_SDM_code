@@ -155,6 +155,85 @@ str(SDM.DATA)
 
 
 ## Take a subset of the data for one well recorded species.
+Fagus.sylvatica = subset(COMBO.RASTER.CONTEXT, searchTaxon = "Fagus.sylvatica")
+Fagus.vars      = Fagus.sylvatica[,c("Annual_mean_temp", 
+                                     "Temp_seasonality", 
+                                     "Max_temp_warm_month",
+                                     "Min_temp_cold_month",
+                                     
+                                     "Annual_precip",
+                                     "Precip_wet_qu",
+                                     "Precip_dry_qu",
+                                     "Precip_wet_month",
+                                     "Precip_dry_month")]
+
+
+## Create a pearson correlation for all a-priori analysis variables
+FAGUS.COR = cor(Fagus.vars) # [,grep("^string", colnames(Fagus.vars))])
+FAGUS.MAT = FAGUS.COR
+FAGUS.MAT[lower.tri(FAGUS.MAT, diag = TRUE)] <- NA
+
+
+## Sort correlation matrix
+FAGUS.COR[lower.tri(FAGUS.COR, diag = TRUE)] = NA     # Prepare to drop duplicates and meaningless information
+FAGUS.COR = as.data.frame(as.table(FAGUS.COR))        # Turn into a 3-column table
+FAGUS.COR = na.omit(FAGUS.COR)                        # Get rid of the junk
+FAGUS.COR = FAGUS.COR[order(-abs(FAGUS.COR$Freq)),]   # Sort by highest correlation (whether +ve or -ve)
+
+
+## Rename : don't need the permutation number
+names(FAGUS.COR)[names(FAGUS.COR)=="Var1"] <- "LayerName"
+names(FAGUS.COR)[names(FAGUS.COR)=="Var2"] <- "Layer_2"
+names(FAGUS.COR)[names(FAGUS.COR)=="Freq"] <- "Pearson_R2"
+
+
+#########################################################################################################################
+## Have a look at the matrix, and also the ordered list of variable combinations:
+print(kable(FAGUS.MAT))
+print(kable(FAGUS.COR, row.names = FALSE))
+
+
+#########################################################################################################################
+## Try a 'chart correlation', showing the histograms:
+chart.Correlation(KOALA.VAR.CONTINUOUS.1[,grep("sfc_sum", 
+                                               colnames(KOALA.VAR.CONTINUOUS.1))], 
+                  histogram = TRUE, pch = 19, main = "Summer fractional cover (%)")
+
+
+#########################################################################################################################
+## Do a pairs plot of all the variables
+## scatterplots for all variables
+pairs(Fagus.vars,
+      #lower.panel = NULL, 
+      lower.panel = panel.cor,
+      col = "blue", pch = 19, cex = 0.7, main = "Worldclim variables")
+
+
+## All variables
+pairs(Fagus.sylvatica[,c("Annual_mean_temp", 
+                         "Temp_seasonality", 
+                         "Max_temp_warm_month",
+                         "Min_temp_cold_month",
+                         
+                         "Annual_precip",
+                         "Precip_wet_month",
+                         "Precip_dry_month")],  
+      lower.panel = panel.cor,
+      #diag.panel  = panel.hist,
+      upper.panel = panel.smooth, #function(...) smoothScatter(..., nrpoints = 0, add = TRUE))
+      cex.labels  = 5.5, cex.axis = 3, font.labels = 2)
+
+
+## The temperature variables
+pairs(Fagus.sylvatica[,c("Annual_precip",
+                         "Precip_wet_month",
+                         "Precip_dry_month",
+                         "Precip_wet_qu",
+                         "Precip_dry_qu")],  
+      lower.panel = panel.cor,
+      #diag.panel  = panel.hist,
+      upper.panel = panel.smooth, #function(...) smoothScatter(..., nrpoints = 0, add = TRUE))
+      cex.labels  = 5.5, cex.axis = 3, font.labels = 2)
 
 
 
