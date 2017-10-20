@@ -158,7 +158,6 @@ str(SDM.DATA)
 Fagus.sylvatica <- subset(COMBO.RASTER.CONTEXT, searchTaxon == "Fagus sylvatica") %>% 
   as.data.frame()
   
-Fagus.sylvatica = as.data.frame(subset(COMBO.RASTER.CONTEXT, searchTaxon == "Fagus sylvatica"))
 Fagus.vars      = Fagus.sylvatica[,c("Annual_mean_temp", 
                                      "Temp_seasonality", 
                                      "Max_temp_warm_month",
@@ -172,22 +171,37 @@ Fagus.vars      = Fagus.sylvatica[,c("Annual_mean_temp",
 
 
 ## Create a pearson correlation for all a-priori analysis variables
-FAGUS.COR = cor(Fagus.vars) # [,grep("^string", colnames(Fagus.vars))])
-FAGUS.MAT = FAGUS.COR
-FAGUS.MAT[lower.tri(FAGUS.MAT, diag = TRUE)] <- NA
+FAGUS.COR = cor(Fagus.vars) %>%
+  
+  ## Not all these steps are necessary
+  FAGUS.MAT %>% # [,grep("^string", colnames(Fagus.vars))])
+  FAGUS.MAT[lower.tri(FAGUS.MAT, diag = TRUE)] <- NA %>%
+  FAGUS.COR[lower.tri(FAGUS.COR, diag = TRUE)] = NA %>%
+  as.data.frame(as.table(FAGUS.COR)) %>%
+  na.omit(FAGUS.COR) %>%
+  FAGUS.COR[order(-abs(FAGUS.COR$Freq)),] %>%
+  
+  ## rename
+  dplyr::rename(FAGUS.COR, 
+                Variable      = Var1,
+                Layer_2       = Var2,
+                Pearson_R2    = Freq)
 
 
-## Sort correlation matrix
-FAGUS.COR[lower.tri(FAGUS.COR, diag = TRUE)] = NA     # Prepare to drop duplicates and meaningless information
-FAGUS.COR = as.data.frame(as.table(FAGUS.COR))        # Turn into a 3-column table
-FAGUS.COR = na.omit(FAGUS.COR)                        # Get rid of the junk
-FAGUS.COR = FAGUS.COR[order(-abs(FAGUS.COR$Freq)),]   # Sort by highest correlation (whether +ve or -ve)
-
-
-## Rename : don't need the permutation number
-names(FAGUS.COR)[names(FAGUS.COR)=="Var1"] <- "LayerName"
-names(FAGUS.COR)[names(FAGUS.COR)=="Var2"] <- "Layer_2"
-names(FAGUS.COR)[names(FAGUS.COR)=="Freq"] <- "Pearson_R2"
+# FAGUS.MAT = FAGUS.COR
+# FAGUS.MAT[lower.tri(FAGUS.MAT, diag = TRUE)] <- NA
+# 
+# ## Sort correlation matrix
+# FAGUS.COR[lower.tri(FAGUS.COR, diag = TRUE)] = NA     # Prepare to drop duplicates and meaningless information
+# FAGUS.COR = as.data.frame(as.table(FAGUS.COR))        # Turn into a 3-column table
+# FAGUS.COR = na.omit(FAGUS.COR)                        # Get rid of the junk
+# FAGUS.COR = FAGUS.COR[order(-abs(FAGUS.COR$Freq)),]   # Sort by highest correlation (whether +ve or -ve)
+# 
+# 
+# ## Rename : don't need the permutation number
+# names(FAGUS.COR)[names(FAGUS.COR)=="Var1"] <- "LayerName"
+# names(FAGUS.COR)[names(FAGUS.COR)=="Var2"] <- "Layer_2"
+# names(FAGUS.COR)[names(FAGUS.COR)=="Freq"] <- "Pearson_R2"
 
 
 #########################################################################################################################
