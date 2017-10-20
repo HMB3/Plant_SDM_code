@@ -184,7 +184,7 @@ FAGUS.COR = cor(Fagus.vars) %>%
   ## rename
   dplyr::rename(FAGUS.COR, 
                 Variable      = Var1,
-                Layer_2       = Var2,
+                Variable_2    = Var2,
                 Pearson_R2    = Freq)
 
 
@@ -212,9 +212,8 @@ print(kable(FAGUS.COR, row.names = FALSE))
 
 #########################################################################################################################
 ## Try a 'chart correlation', showing the histograms:
-chart.Correlation(KOALA.VAR.CONTINUOUS.1[,grep("sfc_sum", 
-                                               colnames(KOALA.VAR.CONTINUOUS.1))], 
-                  histogram = TRUE, pch = 19, main = "Summer fractional cover (%)")
+chart.Correlation(Fagus.vars, 
+                  histogram = TRUE, pch = 19, main = "all.vars")
 
 
 #########################################################################################################################
