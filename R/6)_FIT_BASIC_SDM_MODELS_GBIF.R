@@ -155,7 +155,10 @@ str(SDM.DATA)
 
 
 ## Take a subset of the data for one well recorded species.
-Fagus.sylvatica = subset(COMBO.RASTER.CONTEXT, searchTaxon = "Fagus.sylvatica")
+Fagus.sylvatica <- subset(COMBO.RASTER.CONTEXT, searchTaxon == "Fagus sylvatica") %>% 
+  as.data.frame()
+  
+Fagus.sylvatica = as.data.frame(subset(COMBO.RASTER.CONTEXT, searchTaxon == "Fagus sylvatica"))
 Fagus.vars      = Fagus.sylvatica[,c("Annual_mean_temp", 
                                      "Temp_seasonality", 
                                      "Max_temp_warm_month",
