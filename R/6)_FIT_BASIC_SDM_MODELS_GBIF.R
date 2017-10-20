@@ -3,6 +3,24 @@
 #########################################################################################################################
 
 
+## This code takes a table of species occurrences (rows) and environmental values "columns", and runs a maxent model 
+## for each species. 
+
+
+# The first module will focus on fifty plant species identified in the project’s Target Species List, and will develop maps 
+# that demonstrate each species’ suitability to both current and future climates across Australia.
+# 
+# These maps will be used to demonstrate how well or poorly a particular species will be able to tolerate future conditions 
+# in urban centres across Australia as the climate changes, based on our current understanding of species’ climatic 
+# requirements.
+
+## There are several points to consider here:
+
+## Which environmnetal variables are used
+## Which GCMs and RCPs
+## Can the maxent settings be the same for all species?
+
+
 #########################################################################################################################
 ## Load packages
 p <- c('ff',    'things',         'raster',    'dismo',        'sp',           'latticeExtra', 'data.table', 
@@ -65,6 +83,78 @@ SDM.DATA <- mapply(function(x, cells) {
 
 ## Use the analysis data
 str(SDM.DATA)
+
+
+
+
+
+#########################################################################################################################
+## WORLDCLIM VARIABLES 
+#########################################################################################################################
+
+
+#########################################################################################################################
+## WHICH WORLDCLIM VARIABLES TO USE?
+
+
+## Copy the ones which Rach and Stu have used for the niche finder website for now, ignore edaphic variables
+## Use Threshold based traits, use Dave Kendall's approach.
+
+# BIO1  = Annual Mean Temperature                                     ## 
+# BIO2  = Mean Diurnal Range (Mean of monthly (max temp - min temp))  
+# BIO3  = Isothermality (BIO2/BIO7) (* 100)
+# BIO4  = Temperature Seasonality (standard deviation *100)           ##
+# BIO5  = Max Temperature of Warmest Month                            ## 
+# BIO6  = Min Temperature of Coldest Month                            ##
+# BIO7  = Temperature Annual Range (BIO5-BIO6)
+# BIO8  = Mean Temperature of Wettest Quarter
+# BIO9  = Mean Temperature of Driest Quarter
+# BIO10 = Mean Temperature of Warmest Quarter
+# BIO11 = Mean Temperature of Coldest Quarter
+# BIO12 = Annual Precipitation                                        ##
+# BIO13 = Precipitation of Wettest Month                              ##
+# BIO14 = Precipitation of Driest Month                               ##
+# BIO15 = Precipitation Seasonality (Coefficient of Variation)        ##
+# BIO16 = Precipitation of Wettest Quarter
+# BIO17 = Precipitation of Driest Quarter
+# BIO18 = Precipitation of Warmest Quarter
+# BIO19 = Precipitation of Coldest Quarter
+
+
+#########################################################################################################################
+## Here we want an a-priori framework for choosing the variables. Following Guisan and zimmerman (2000), we want
+## to choose variables that directly inlfuence plant growth and reprodcution. In our case, that means proxies of
+
+## Nutrients, Soil air and water, heat sum and PAR
+
+## Additionally, the data-driven approach can be useful. E.G.
+
+# Bradie, J. and B. Leung (2017). 
+# "A quantitative synthesis of the importance of variables used in MaxEnt species distribution models." 
+# Journal of Biogeography 44(6): 1344-1361.
+
+# Over all MaxEnt models published, the ability to discriminate occurrence from reference sites was high 
+# (average AUC = 0.92). Much of this discriminatory ability was due to temperature and precipitation variables. 
+# Further, variability (temperature) and extremes (minimum precipitation) were the most predictive. More generally, 
+# the most commonly tested variables were not always the most predictive, with, for instance, ‘distance to water’ 
+# infrequently tested, but found to be very important when it was. Thus, the results from this study summarize the 
+# MaxEnt SDM literature, and can aid in variable selection by identifying underutilized, but potentially important 
+# variables, which could be incorporated in future modelling efforts.
+
+
+## So for the simple Worldclim variables, we will adopt this approach. For both temperature and precipitation, we can
+## choose measures of:
+
+## Average across the time period
+## variability across the time period
+## Extremes (e.g. warmest/coldest month)
+
+
+#########################################################################################################################
+## A simple correlation of which variables are related within this set seems wise.
+
+
+## Take a subset of the data for one well recorded species.
 
 
 
@@ -267,6 +357,23 @@ stopCluster(cl)
 # })
 
 
+
+
+
+#########################################################################################################################
+## OUTSTANDING SDM TASKS:
+#########################################################################################################################
+
+
+## Further mapping and cleaning of GBIF data needed for the important species
+
+## Can maxent setting be the same for all species?  
+
+## Which GCMs and RCPs? 
+
+## Create maps using prediction functions?
+
+## 
 
 
 
