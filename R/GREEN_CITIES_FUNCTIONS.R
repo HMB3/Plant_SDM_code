@@ -822,13 +822,13 @@ ColsToDrop <- c("altitudeNonNumeric",
 gbif.keep <- c("searchTaxon",
                "scientificName",
                "taxonRank",
-               "family",
                "genus",
+               "family",
                
                "institutionCode",
                "datasetName",
                "basisOfRecord",
-               #"identifiedBy",
+               "identifiedBy",
                "gbifID",
                "catalogNumber",
                "establishmentMeans",
@@ -838,7 +838,8 @@ gbif.keep <- c("searchTaxon",
                "country",
                "coordinateUncertaintyInMeters",
                "geodeticDatum",
-               "year")
+               "year",
+               "month")
 
 
 gbifColsToDrop <- c("cloc",

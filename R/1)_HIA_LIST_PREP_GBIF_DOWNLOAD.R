@@ -25,7 +25,7 @@
 
 ## Now run loops to dowload species in the "spp" list from GBIF. Not including any data quality checks here, just 
 ## downloading everything...
-load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData")
+load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")
 source('./R/HIA_LIST_MATCHING.R')
 source('./R/HIA_CLEAN_MATCHING.R')
 
@@ -51,6 +51,7 @@ View(HIA.SPP.LOOKUP)
 ## But, just get the species that don't match (i.e. the NA rows...)
 HIA.SPP.LOOKUP.MATCH  = na.omit(HIA.SPP.LOOKUP)
 HIA.SPP.TAXO.ERRORS  <- HIA.SPP.LOOKUP[rowSums(is.na(HIA.SPP.LOOKUP)) > 0,]
+dim(HIA.SPP.TAXO.ERRORS)
 head(HIA.SPP.TAXO.ERRORS)
 
 
@@ -62,8 +63,18 @@ write.csv(HIA.SPP.TAXO.ERRORS,  "./data/base/TRAITS/HIA_SPP_TAXO.ERRORS.csv",  r
 
 ########################################################################################################################
 ## Finally, check the taxonomy for the data already downloaded against this list
-HIA.SPP.LOOKUP.MATCH$Binomial
-intersect(HIA.SPP.LOOKUP.MATCH$Binomial, COMBO.RASTER.CONTEXT$SearchTaxon)
+## How can we confirm the taxonomy is ok? Load big dataset in and check
+taxon.match          = intersect(HIA.SPP.LOOKUP.MATCH$Binomial, COMBO.NICHE.CONTEXT$searchTaxon)
+popular.spp.match    = intersect(spp, HIA.SPP.LOOKUP.MATCH$Binomial)                             ## Check this with Rach 
+
+
+## So all the species on the downloadedlist are on the taxonomically matched list
+length(spp %in% HIA.SPP.LOOKUP.MATCH$Binomial) - length(spp)
+
+
+## Record the differences
+taxon.difference = setdiff(HIA.SPP.LOOKUP.MATCH$Binomial, COMBO.NICHE.CONTEXT$searchTaxon)
+
 
 
 
@@ -194,7 +205,7 @@ kable(skipped.200.spp)
 
 ## Get the extra species with > 200k records
 
-## Keep in touch with Renee RE the list
+## Get the missing species on Manuel's list.
 
 
 

@@ -51,7 +51,7 @@
 
 ## The broad niche stream informs the micro stream, based on two tables:
 
-## 1). A table with one row fore each species record
+## 1). A table with one row for each species record
 ## 2). A table with One row for each species, contextual data and species attributes (niches, traits, etc.)
 
 

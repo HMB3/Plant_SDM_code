@@ -187,7 +187,7 @@ EXCLUDED.VARIETIES   = setdiff(unique(HIA.VARIETY$Species), unique(CLEAN.SPP$HIA
 
 
 #########################################################################################################################
-## What is the difference between the growers list and the 'clean'HIA list, without excluding the varieties, etc.?
+## What is the difference between the growers list and the 'clean'HIA list, without excluding the varieties, etc........?
 source('./R/HIA_GROWERS_MATCHING.R')
 length(setdiff(CLEAN.SPECIES, GROW.SPECIES))
 length(intersect(CLEAN.SPECIES, GROW.SPECIES))

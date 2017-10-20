@@ -19,6 +19,11 @@
 ## fatal assertions         (ALA), GBIF no equivalent
 
 
+## Rach considers anything with the same lat/long to x decimal places, collected in the same month by the same person as
+## a duplicate. Collection month and collector could be added, but in most cases, they will be knocked out by using 
+## one record per cell.
+
+
 
 ## GBIF issues? Not that helpful...
 # Abelia.geosp.t = gbif('Abelia grandiflora', args = list("hasGeospatialIssue=true"))

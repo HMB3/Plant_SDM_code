@@ -8,6 +8,18 @@
 #########################################################################################################################
 
 
+## quickly check the GBIF names:
+sp.n = "Magnolia grandiflora"
+Magnolia.grandiflora = gbif(sp.n, download = TRUE)
+GBIF.names = sort(names(Magnolia.grandiflora))
+
+
+## Rachel uses month and identifier. We could add a final check inside the Maxent code that will look for these.
+## But the taxonomic problems are more important
+unique(Magnolia.grandiflora$month)
+unique(Magnolia.grandiflora$identifiedBy)
+
+
 ## The species list doesn't match the downloaded species, so create a list from the downloaded files
 spp.download = list.files("./data/base/HIA_LIST/GBIF/SPECIES/", pattern = ".RData")
 spp.download = gsub("_GBIF_records.RData", "", spp.download)
