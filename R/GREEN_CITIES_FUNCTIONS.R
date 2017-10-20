@@ -664,6 +664,7 @@ read_bind_tables = function (table.list, path) {
 #########################################################################################################################
 
 
+## Why don't these update?
 ala.keep <- c("searchTaxon",
                "scientificName",
                "taxonRank",
