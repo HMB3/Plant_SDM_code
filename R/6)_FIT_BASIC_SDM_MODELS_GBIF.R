@@ -7,12 +7,14 @@
 ## for each species. 
 
 
-# The first module will focus on fifty plant species identified in the project’s Target Species List, and will develop maps 
-# that demonstrate each species’ suitability to both current and future climates across Australia.
-# 
-# These maps will be used to demonstrate how well or poorly a particular species will be able to tolerate future conditions 
-# in urban centres across Australia as the climate changes, based on our current understanding of species’ climatic 
-# requirements.
+## The brief again:
+
+## The first module will focus on fifty plant species identified in the project’s Target Species List, and will develop maps 
+## that demonstrate each species’ suitability to both current and future climates across Australia.
+ 
+## These maps will be used to demonstrate how well or poorly a particular species will be able to tolerate future conditions 
+## in urban centres across Australia as the climate changes, based on our current understanding of species’ climatic 
+## requirements.
 
 ## There are several points to consider here:
 
@@ -34,62 +36,11 @@ source('./R/GREEN_CITIES_FUNCTIONS.R')
 source('./R/SDM_FUNCTIONS.R')
 
 
-#########################################################################################################################
-## 1). PREPARE DATA TABLE FOR SDM ANALYSIS
-#########################################################################################################################
-
-
-#########################################################################################################################
-## Create list of species from the GBIF data...
-load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData")
-dim(COMBO.RASTER.CONTEXT)    ## 19 million rows, the latest dataset 
-names(COMBO.RASTER.CONTEXT)
-species  <- unique(COMBO.RASTER.CONTEXT$searchTaxon)
-str(species)                 ## 6782
-
-
-## Create an empty raster with the desired properties, using raster(raster(x))
-## Also change the coordinate system to a projected system, so that distance can be calculated... 
-template.raster <- raster(raster("//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_01")) %>% 
-  projectRaster(res = 1000, crs = CRS('+init=ESRI:54009'))
-
-
-## Just get the columns needed for modelling...This changes based on the ecological framework
-COMBO.RASTER.CONTEXT <- select(COMBO.RASTER.CONTEXT, 
-                               searchTaxon, 
-                               lon, lat, Mean_diurnal_range:Temp_seasonality)
-
-
-## Create a spatial points object
-coordinates(COMBO.RASTER.CONTEXT) <- ~lon+lat
-proj4string(COMBO.RASTER.CONTEXT) <- '+init=epsg:4326'
-COMBO.RASTER.CONTEXT <- spTransform(
-  COMBO.RASTER.CONTEXT, CRS('+init=ESRI:54009'))
-
-
-## Now split using the data using the species column, and get the unique occurrence cells
-## So we only use one point per 1km*1km cell  
-COMBO.RASTER.SPLIT <- split(COMBO.RASTER.CONTEXT, COMBO.RASTER.CONTEXT$searchTaxon)
-occurrence_cells   <- lapply(COMBO.RASTER.SPLIT, function(x) cellFromXY(template.raster, x))
-str(occurrence_cells)  ## this is a list of dataframes, where the number of rows for each being the species table
-
-
-## Now get just one record within each 10*10km cell. This step should eliminate most, if not all, duplicate records
-## A simple alternative to the extract problem could be to use this instead, before the extract?
-SDM.DATA <- mapply(function(x, cells) {
-  x[!duplicated(cells), ]
-}, COMBO.RASTER.SPLIT, occurrence_cells, SIMPLIFY = FALSE) %>% do.call(rbind, .)
-
-
-## Use the analysis data
-str(SDM.DATA)
-
-
 
 
 
 #########################################################################################################################
-## WORLDCLIM VARIABLES 
+## 1). SELECT WORLDCLIM VARIABLES 
 #########################################################################################################################
 
 
@@ -97,8 +48,7 @@ str(SDM.DATA)
 ## WHICH WORLDCLIM VARIABLES TO USE?
 
 
-## Copy the ones which Rach and Stu have used for the niche finder website for now, ignore edaphic variables
-## Use Threshold based traits, use Dave Kendall's approach.
+## Ignoring edaphic variables for now
 
 # BIO1  = Annual Mean Temperature                                     ## 
 # BIO2  = Mean Diurnal Range (Mean of monthly (max temp - min temp))  
@@ -123,23 +73,23 @@ str(SDM.DATA)
 
 #########################################################################################################################
 ## Here we want an a-priori framework for choosing the variables. Following Guisan and zimmerman (2000), we want
-## to choose variables that directly inlfuence plant growth and reprodcution. In our case, that means proxies of
+## to choose variables that directly inlfuence plant growth and reprodcution. In our case, that means proxies of:
 
 ## Nutrients, Soil air and water, heat sum and PAR
 
-## Additionally, the data-driven approach can be useful. E.G.
+## Additionally, the data-driven approach can be useful (create this as markdown/html) E.G.
 
 # Bradie, J. and B. Leung (2017). 
 # "A quantitative synthesis of the importance of variables used in MaxEnt species distribution models." 
 # Journal of Biogeography 44(6): 1344-1361.
 
-# Over all MaxEnt models published, the ability to discriminate occurrence from reference sites was high 
+# "Over all MaxEnt models published, the ability to discriminate occurrence from reference sites was high 
 # (average AUC = 0.92). Much of this discriminatory ability was due to temperature and precipitation variables. 
 # Further, variability (temperature) and extremes (minimum precipitation) were the most predictive. More generally, 
 # the most commonly tested variables were not always the most predictive, with, for instance, ‘distance to water’ 
 # infrequently tested, but found to be very important when it was. Thus, the results from this study summarize the 
 # MaxEnt SDM literature, and can aid in variable selection by identifying underutilized, but potentially important 
-# variables, which could be incorporated in future modelling efforts.
+# variables, which could be incorporated in future modelling efforts."
 
 
 ## So for the simple Worldclim variables, we will adopt this approach. For both temperature and precipitation, we can
@@ -150,106 +100,175 @@ str(SDM.DATA)
 ## Extremes (e.g. warmest/coldest month)
 
 
+
 #########################################################################################################################
-## A simple correlation of which variables are related within this set seems wise.
+## Read in Raster data
+load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData")
+dim(COMBO.RASTER.CONTEXT)    ## 19 million rows, the latest dataset 
+names(COMBO.RASTER.CONTEXT)
 
 
+## These will change... 
+SDM.PREDICTORS <- c("Annual_mean_temp", "Temp_seasonality", "Max_temp_warm_month", "Min_temp_cold_month",
+                    "Annual_precip",    "Precip_wet_qu",    "Precip_dry_qu",       "Precip_wet_month",    "Precip_dry_month")
+
+
+#########################################################################################################################
+## Now quantify the correlations between these variables are related within this set seems wise.
 ## Take a subset of the data for one well recorded species.
-Fagus.sylvatica <- subset(COMBO.RASTER.CONTEXT, searchTaxon == "Fagus sylvatica") %>% 
+sp.n = "Fagus sylvatica"
+sp.subset <- subset(COMBO.RASTER.CONTEXT, searchTaxon == sp.n) %>%
+  
+  ## just get the SDM.PREDICTORS
+  select(one_of(SDM.PREDICTORS)) %>%
   as.data.frame()
+
+dim(sp.subset)
+head(sp.subset)
+
+
+## Try the correlation for everything
+combo.subset <- COMBO.RASTER.CONTEXT %>%
   
-Fagus.vars      = Fagus.sylvatica[,c("Annual_mean_temp", 
-                                     "Temp_seasonality", 
-                                     "Max_temp_warm_month",
-                                     "Min_temp_cold_month",
-                                     
-                                     "Annual_precip",
-                                     "Precip_wet_qu",
-                                     "Precip_dry_qu",
-                                     "Precip_wet_month",
-                                     "Precip_dry_month")]
+  ## just get the SDM.PREDICTORS
+  select(one_of(SDM.PREDICTORS)) %>%
+  as.data.frame()
+
+dim(combo.subset)
+head(combo.subset)
 
 
-## Create a pearson correlation for all a-priori analysis variables
-FAGUS.COR = cor(Fagus.vars) %>%
+
+#########################################################################################################################
+## Create a pearson correlation matrix between all a-priori analysis variables
+correlations <- cor(combo.subset, use = "pairwise.complete.obs") 
+
   
-  ## Not all these steps are necessary
-  FAGUS.MAT %>% # [,grep("^string", colnames(Fagus.vars))])
-  FAGUS.MAT[lower.tri(FAGUS.MAT, diag = TRUE)] <- NA %>%
-  FAGUS.COR[lower.tri(FAGUS.COR, diag = TRUE)] = NA %>%
-  as.data.frame(as.table(FAGUS.COR)) %>%
-  na.omit(FAGUS.COR) %>%
-  FAGUS.COR[order(-abs(FAGUS.COR$Freq)),] %>%
-  
-  ## rename
-  dplyr::rename(FAGUS.COR, 
-                Variable      = Var1,
-                Variable_2    = Var2,
-                Pearson_R2    = Freq)
+## Turn into a upper triangle
+upperTriangle <- upper.tri(correlations, diag = F)
 
 
-# FAGUS.MAT = FAGUS.COR
-# FAGUS.MAT[lower.tri(FAGUS.MAT, diag = TRUE)] <- NA
+## Take a copy of the original cor-mat
+correlations.upperTriangle <- correlations
+
+
+## Set everything not in upper triangle o NA
+correlations.upperTriangle[!upperTriangle]<-NA                   
+
+
+## Use melt to reshape the matrix into triplets, na.omit to get rid of the NA rows
+correlations.table <- na.omit(melt(correlations.upperTriangle, value.name = "correlationCoef")) 
+
+
+## Rename columns
+colnames(correlations.table) <- c("Var1", "Var2", "Correlation")  
+
+
+## Reorder by absolute correlation
+correlations.table = correlations.table[order(-abs(correlations.table["Correlation"])),]  
+
+
+#########################################################################################################################
+# FAGUS.COR <- sp.subset
+# FAGUS.COR %>%
+#   
+#   ## First get the pearson correlations...
+#   cor(sp.subset) %>%
+#   
+#   ## Not all these steps are necessary
+#   FAGUS.COR[lower.tri(FAGUS.COR, diag = TRUE)] <- NA %>%
+#   
+#   ## Create data table
+#   as.data.frame(as.table(FAGUS.COR)) %>%
 # 
-# ## Sort correlation matrix
-# FAGUS.COR[lower.tri(FAGUS.COR, diag = TRUE)] = NA     # Prepare to drop duplicates and meaningless information
-# FAGUS.COR = as.data.frame(as.table(FAGUS.COR))        # Turn into a 3-column table
-# FAGUS.COR = na.omit(FAGUS.COR)                        # Get rid of the junk
-# FAGUS.COR = FAGUS.COR[order(-abs(FAGUS.COR$Freq)),]   # Sort by highest correlation (whether +ve or -ve)
-# 
-# 
-# ## Rename : don't need the permutation number
-# names(FAGUS.COR)[names(FAGUS.COR)=="Var1"] <- "LayerName"
-# names(FAGUS.COR)[names(FAGUS.COR)=="Var2"] <- "Layer_2"
-# names(FAGUS.COR)[names(FAGUS.COR)=="Freq"] <- "Pearson_R2"
+#   ## Remove NAs
+#   na.omit(FAGUS.COR) %>%
+#   
+#   ## Order the table by the absolute correlation
+#   #FAGUS.COR[order(-abs(FAGUS.COR$Freq)),] %>%
+#   FAGUS.COR[order(-abs(FAGUS.COR["Freq"])),] %>%
+#   
+#   ## Rename the columns
+#   dplyr::rename(FAGUS.COR, 
+#                 Variable      = Var1,
+#                 Variable_2    = Var2,
+#                 Pearson_R2    = Freq)  %>%
+#   
+#   ## finally spit out a table
+#   as.data.frame()
 
 
 #########################################################################################################################
 ## Have a look at the matrix, and also the ordered list of variable combinations:
-print(kable(FAGUS.MAT))
-print(kable(FAGUS.COR, row.names = FALSE))
+print(kable(correlations.upperTriangle))
+print(kable(correlations.table, row.names = FALSE))
 
 
 #########################################################################################################################
 ## Try a 'chart correlation', showing the histograms:
-chart.Correlation(Fagus.vars, 
-                  histogram = TRUE, pch = 19, main = "all.vars")
+chart.Correlation(sp.subset, 
+                  histogram = TRUE, pch = 19, main = "Worldclim variables")
 
 
 #########################################################################################################################
 ## Do a pairs plot of all the variables
 ## scatterplots for all variables
 pairs(Fagus.vars,
-      #lower.panel = NULL, 
       lower.panel = panel.cor,
       col = "blue", pch = 19, cex = 0.7, main = "Worldclim variables")
 
 
-## All variables
-pairs(Fagus.sylvatica[,c("Annual_mean_temp", 
-                         "Temp_seasonality", 
-                         "Max_temp_warm_month",
-                         "Min_temp_cold_month",
-                         
-                         "Annual_precip",
-                         "Precip_wet_month",
-                         "Precip_dry_month")],  
-      lower.panel = panel.cor,
-      #diag.panel  = panel.hist,
-      upper.panel = panel.smooth, #function(...) smoothScatter(..., nrpoints = 0, add = TRUE))
-      cex.labels  = 5.5, cex.axis = 3, font.labels = 2)
+## Save correlations to file
+save(correlations.upperTriangle, file = paste("./output/tables/variable_selection/Worldclim_select_cormatrix.RData", sep = ""))
+save(correlations.table,         file = paste("./output/tables/variable_selection/Worldclim_select_cortable.RData",  sep = ""))
 
 
-## The temperature variables
-pairs(Fagus.sylvatica[,c("Annual_precip",
-                         "Precip_wet_month",
-                         "Precip_dry_month",
-                         "Precip_wet_qu",
-                         "Precip_dry_qu")],  
-      lower.panel = panel.cor,
-      #diag.panel  = panel.hist,
-      upper.panel = panel.smooth, #function(...) smoothScatter(..., nrpoints = 0, add = TRUE))
-      cex.labels  = 5.5, cex.axis = 3, font.labels = 2)
+
+
+#########################################################################################################################
+## 1). PREPARE DATA TABLE FOR SDM ANALYSIS
+#########################################################################################################################
+
+
+## Create an empty raster with the desired properties, using raster(raster(x))
+template.raster <- raster(raster("//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_01")) %>% 
+  projectRaster(res = 1000, crs = CRS('+init=ESRI:54009'))
+
+
+## Just get the columns needed for modelling...This changes based on the ecological framework
+COMBO.RASTER.SELECT <- select(COMBO.RASTER.CONTEXT, 
+                              searchTaxon, 
+                              lon, lat, Mean_diurnal_range:Temp_seasonality)
+
+
+## Create a spatial points object, and change to a projected system to calculate distance more accurately 
+coordinates(COMBO.RASTER.SELECT) <- ~lon+lat
+proj4string(COMBO.RASTER.SELECT) <- '+init=epsg:4326'
+COMBO.RASTER.SELECT <- spTransform(
+  COMBO.RASTER.SELECT, CRS('+init=ESRI:54009'))
+
+
+## Now split using the data using the species column, and get the unique occurrence cells
+COMBO.RASTER.SPLIT <- split(COMBO.RASTER.SELECT, COMBO.RASTER.SELECT$searchTaxon)
+occurrence_cells   <- lapply(COMBO.RASTER.SPLIT, function(x) cellFromXY(template.raster, x))
+str(occurrence_cells)  ## this is a list of dataframes, where the number of rows for each being the species table
+
+
+## Now get just one record within each 10*10km cell. This step should eliminate most, if not all, duplicate records
+## A simple alternative to the extract problem could be to run this process before the extract?
+SDM.DATA <- mapply(function(x, cells) {
+  x[!duplicated(cells), ]
+}, COMBO.RASTER.SPLIT, occurrence_cells, SIMPLIFY = FALSE) %>% do.call(rbind, .)
+
+
+## Use the analysis data
+str(SDM.DATA)
+
+
+
+
+
+
 
 
 
@@ -258,6 +277,29 @@ pairs(Fagus.sylvatica[,c("Annual_precip",
 #########################################################################################################################
 ## 2). RUN MODELS FOR MULTIPLE SPECIES USING TABLE OF RECORDS (ROWS) AND ENVIRONMENT (COLUMNS)
 #########################################################################################################################
+
+
+#########################################################################################################################
+## Create species subsets for analysis
+spp.all  <- unique(COMBO.RASTER.CONTEXT$searchTaxon)
+str(spp.all)                 ## 6782
+
+
+## Just the top 20 species
+top.200.spp     = subset(COMBO.RASTER.CONTEXT, Top_200 == TRUE)["searchTaxon"] %>%
+  unique() %>%
+  as.list()
+str(top.200)
+
+
+## Just the species with > 25 growers
+spp.25  = subset(COMBO.RASTER.CONTEXT, Number.of.growers >= 25)["searchTaxon"] %>%
+  unique() %>%
+  as.list()
+str(spp.25)
+
+
+## Could use other subsets too...
 
 
 ########################################################################################################################
@@ -305,16 +347,16 @@ lapply(species[1], function(x) { # for serial, parLapply(cl, species[1:8], funct
   ## other than the species used.
   background <- subset(SDM.DATA, searchTaxon != x)
   
-  ## The create a vector of the predictors used. 
+  ## The create a vector of the SDM.PREDICTORS used. 
   ## This should be based on an ecological framework! 
-  predictors <- c("Mean_diurnal_range", "Isothermality", "Temp_seasonality") # vector of used predictors 
+  SDM.PREDICTORS <- c("Mean_diurnal_range", "Isothermality", "Temp_seasonality") # vector of used SDM.PREDICTORS 
 
   ## Finally fit the models using FIT_MAXENT
   ## There is no switch in the function to skip outputs that exist.
   ## Given all the changes likely to be made to the models, this could be wise...
   FIT_MAXENT(occ                     = occurrence, 
              bg                      = background, 
-             predictors              = predictors, 
+             SDM.PREDICTORS              = SDM.PREDICTORS, 
              name                    = x, 
              outdir                  = 'output/maxent', 
              template                = template,
@@ -396,7 +438,7 @@ stopCluster(cl)
 #   names(s) <- sub('.*(p\\d{2})_?.*', '\\1', names(s))
 #   names(s) <- gsub("_eMast_albers|_1km_albers|_eMAST_albers|CSIRO_","",names(s))
 #   
-#   # Identify which cells have data for all predictors.
+#   # Identify which cells have data for all SDM.PREDICTORS.
 #   # locs contains cell numbers and corresponding coordinates of non-NA cells.
 #   locs  <- which(!is.na(sum(s)[]))
 #   locs  <- cbind(cell = locs, xyFromCell(s, locs))
@@ -460,11 +502,13 @@ stopCluster(cl)
 #########################################################################################################################
 
 
+## Create a switch to skip files that exist
+
 ## Further mapping and cleaning of GBIF data needed for the important species
 
 ## Can maxent setting be the same for all species?  
 
-## Which GCMs and RCPs? 
+## Which GCMs and RCPs? Need layers for 2030, 2050, etc.
 
 ## Create maps using prediction functions?
 

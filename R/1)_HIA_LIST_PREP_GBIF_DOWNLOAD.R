@@ -65,7 +65,8 @@ write.csv(HIA.SPP.TAXO.ERRORS,  "./data/base/TRAITS/HIA_SPP_TAXO.ERRORS.csv",  r
 ## Finally, check the taxonomy for the data already downloaded against this list
 ## How can we confirm the taxonomy is ok? Load big dataset in and check
 taxon.match          = intersect(HIA.SPP.LOOKUP.MATCH$Binomial, COMBO.NICHE.CONTEXT$searchTaxon)
-popular.spp.match    = intersect(spp, HIA.SPP.LOOKUP.MATCH$Binomial)                             ## Check this with Rach 
+popular.spp.match    = intersect(spp, HIA.SPP.LOOKUP.MATCH$Binomial)                             ## Check this with Rach
+Top.200.match        = intersect(top.200$Species, HIA.SPP.LOOKUP.MATCH$Binomial) 
 
 
 ## So all the species on the downloadedlist are on the taxonomically matched list

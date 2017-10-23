@@ -65,6 +65,7 @@ library(baad.data)
 library(Cairo)
 library(lattice)
 library(latticeExtra)
+library(PerformanceAnalytics)
 
 library("biglm")
 library("bigmemory")
