@@ -1058,7 +1058,7 @@ CLEAN_GBIF_MACQU <- function(x) {
 
 
 ## create simple maps of all GBIF records for selected taxa, in Australia and overseas
-map_GBIF_records = function (taxa.list) {
+map_GBIF_records = function (taxa.list, DF) {
   
   ###############################
   ## for all the taxa in the list
@@ -1067,8 +1067,8 @@ map_GBIF_records = function (taxa.list) {
     
     ################################################################
     ## If the dim = 0 for that taxa subset to Australia, skip to next
-    if (dim(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n 
-                                       & GBIF.RASTER.CONTEXT$country == "Australia"), ][[, c("lon", "lat")]])[1] == 0) {
+    if (dim(DF[ which(DF$searchTaxon == taxa.n 
+                                       & DF$country == "Australia"), ][[, c("lon", "lat")]])[1] == 0) {
       
       print (paste ("Possible no Australian records for ", taxa.n, "skipping"))
       
@@ -1090,7 +1090,7 @@ map_GBIF_records = function (taxa.list) {
       title(paste0("Global occurrences for ", taxa.n))
       
       ## add points
-      points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][[, c("lon", "lat")]], 
+      points(DF[ which(DF$searchTaxon == taxa.n), ][[, c("lon", "lat")]], 
              pch = ".", col = "red", cex = 3, asp = 1)
       
       
@@ -1110,7 +1110,7 @@ map_GBIF_records = function (taxa.list) {
            lwd = 1.8, asp = 1, col = 'grey', bg = 'sky blue')
       
       ## add points
-      points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][[, c("lon", "lat")]], 
+      points(DF[ which(DF$searchTaxon == taxa.n), ][[, c("lon", "lat")]], 
              pch = ".", cex = 7, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2, 
              main = paste0("Global occurrences for ", taxa.n), 
              xlab = "", ylab = "", asp = 1)
@@ -1144,12 +1144,12 @@ map_GBIF_records = function (taxa.list) {
       title(paste0("Global occurrences for ", taxa.n))
       
       ## add points
-      points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][[, c("lon", "lat")]], 
+      points(DF[ which(DF$searchTaxon == taxa.n), ][[, c("lon", "lat")]], 
              pch = ".", col = "red", cex = 3, asp = 1)
       
       ## PLot Australian occurrences to screen
-      plot(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n 
-                                      & GBIF.RASTER.CONTEXT$country == "Australia"), ][[, c("lon", "lat")]], 
+      plot(DF[ which(DF$searchTaxon == taxa.n 
+                                      & DF$country == "Australia"), ][[, c("lon", "lat")]], 
            pch = ".", cex = 5, col = "red", asp = 1)
       
       ## add title
@@ -1173,7 +1173,7 @@ map_GBIF_records = function (taxa.list) {
            lwd = 1.8, asp = 1, col = 'grey', bg = 'sky blue')
       
       ## add points
-      points(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][[, c("lon", "lat")]], 
+      points(DF[ which(DF$searchTaxon == taxa.n), ][[, c("lon", "lat")]], 
              pch = ".", cex = 7, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2, 
              main = paste0("Global occurrences for ", taxa.n), 
              xlab = "", ylab = "", asp = 1)
@@ -1198,8 +1198,8 @@ map_GBIF_records = function (taxa.list) {
           font.lab = 2)
       
       ## plot
-      plot(GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n 
-                                      & GBIF.RASTER.CONTEXT$country == "Australia"), ][[, c("lon", "lat")]], 
+      plot(DF[ which(DF$searchTaxon == taxa.n 
+                                      & DF$country == "Australia"), ][[, c("lon", "lat")]], 
            pch = ".", cex = 10, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2.5,
            font.main = 4, col.main = "blue",
            main = paste0("Australian occurrences for ", taxa.n), 
@@ -1359,7 +1359,7 @@ Print_global_histogram = function (taxa.list, DF, env.var.1, env.col.1, env.unit
 
 
 ## create simple maps of all GBIF records for selected taxa, in Australia and overseas
-histogram_GBIF_records = function (taxa.list, env.var.1, env.col.1, env.units.1,
+histogram_GBIF_records = function (DF, taxa.list, env.var.1, env.col.1, env.units.1,
                                    env.var.2, env.col.2, env.units.2) {
   
   ###############################
@@ -1387,7 +1387,7 @@ histogram_GBIF_records = function (taxa.list, env.var.1, env.col.1, env.units.1,
         oma = c(1.5, 1.5, 1.5, 1.5)) 
     
     ## create vector for the environmental dimenson, and set min and max for plotting
-    env.1 = GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][[env.var.1]]
+    env.1 = DF[ which(DF$searchTaxon == taxa.n), ][[env.var.1]]
     min.1 = min(env.1)
     max.1 = max(env.1)
     
@@ -1406,7 +1406,7 @@ histogram_GBIF_records = function (taxa.list, env.var.1, env.col.1, env.units.1,
         oma = c(1.5, 1.5, 1.5, 1.5)) 
     
     ## set min and max
-    env.2 = GBIF.RASTER.CONTEXT[ which(GBIF.RASTER.CONTEXT$searchTaxon == taxa.n), ][[env.var.2]]
+    env.2 = DF[ which(DF$searchTaxon == taxa.n), ][[env.var.2]]
     min.2  = min(env.2)
     max.2  = max(env.2)
     

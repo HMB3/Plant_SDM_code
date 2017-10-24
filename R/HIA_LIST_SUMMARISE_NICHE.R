@@ -14,8 +14,8 @@ source('./R/GREEN_CITIES_FUNCTIONS.R')
 load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData")   ## All the environmental data, one row for each record
 load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")    ## The niches for each variable, one row for each species
 renee.full = read.csv("./data/base/HIA_LIST/HIA/RENEE_FULL_LIST.csv", stringsAsFactors = FALSE)  ## Renee's list
-renee.50   = read.csv("./data/base/HIA_LIST/HIA/RENEE_TOP_50.csv", stringsAsFactors = FALSE)  ## Renee's list
-renee.25   = read.csv("./data/base/HIA_LIST/HIA/RENEE_TOP_25.csv", stringsAsFactors = FALSE)  ## Renee's list
+# renee.50   = read.csv("./data/base/HIA_LIST/HIA/RENEE_TOP_50.csv", stringsAsFactors = FALSE)  ## Renee's list
+# renee.25   = read.csv("./data/base/HIA_LIST/HIA/RENEE_TOP_25.csv", stringsAsFactors = FALSE)  ## Renee's list
 
 
 ## Check
@@ -84,6 +84,7 @@ names(COMBO.NICHE.CONTEXT)
 
 #########################################################################################################################
 ## Slice the big and small dataframes to just the ones on Renee's list.
+HIA.SPP            = sort(as.character(unique(COMBO.RASTER.CONTEXT$searchTaxon)))
 RENEE.SPP          = sort(as.character(unique(renee.full$Species)))
 GBIF.RASTER.RENEE  = COMBO.RASTER.CONTEXT[COMBO.RASTER.CONTEXT$searchTaxon %in% RENEE.SPP, ]
 GBIF.NICHE.RENEE   = COMBO.NICHE.CONTEXT[COMBO.NICHE.CONTEXT$searchTaxon %in% RENEE.SPP, ]
@@ -92,7 +93,7 @@ GBIF.NICHE.RENEE   = COMBO.NICHE.CONTEXT[COMBO.NICHE.CONTEXT$searchTaxon %in% RE
 ## 
 GBIF.200.RENEE     = GBIF.RASTER.RENEE[ which(GBIF.RASTER.RENEE$Top_200 == "TRUE"), ]
 All.spp.map        = unique(GBIF.RASTER.RENEE[["searchTaxon"]])
-taxa.n             = "Ficus brachypoda"                  ## EG...
+taxa.n             = "Ficus brachypoda"                                                         ## EG...
 
 
 ## Have a look 
@@ -126,18 +127,25 @@ LAND  <- readOGR("./data/base/CONTEXTUAL/ne_10m_land.shp", layer = "ne_10m_land"
 
 ## Plot global and Australian occurrences for all taxa on the list
 ## Might need to make plot window bigger
-print_occurrence_records(taxa.list = RENEE.SPP, DF = GBIF.RASTER.RENEE)
+print_occurrence_records(taxa.list = HIA.SPP[4444], DF = GBIF.RASTER.RENEE)
+
+
+## Save maps to file
+map_GBIF_records(taxa.list = RENEE.SPP, DF = GBIF.RASTER.RENEE)
 
 
 #########################################################################################################################
 ## And plot the histograms. Consider how to combine outputs. Might need to make plot window bigger
-Print_global_histogram(taxa.list    = RENEE.SPP[1:32], DF = GBIF.RASTER.RENEE,  ## 33 is a problem: Cupianopsis anacardiodes
+Print_global_histogram(taxa.list    = HIA.SPP[4444], DF = COMBO.RASTER.CONTEXT,  ## 33 is a problem: Cupianopsis anacardiodes
                        env.var.1    = "Annual_mean_temp",   
                        env.col.1    = "orange",  
-                       env.units.1  = "°K",
+                       env.units.1  = "°C",
                        env.var.2    = "Annual_precip",   
                        env.col.2    = "sky blue",     
                        env.units.2  = "mm")
+
+histogram_GBIF_records(taxa.list = HIA.SPP[4444], env.var.1 = "Annual_mean_temp",   env.col.1 = "orange",     env.units.1 = "°K",
+                       env.var.2 = "Annual_precip",   env.col.2 = "sky blue",     env.units.2 = "mm")
 
 
 ## Do these distributions look sensible? What visual/numerical outputs would be more useful for the other modules?
