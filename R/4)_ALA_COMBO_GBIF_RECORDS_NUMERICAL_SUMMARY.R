@@ -171,6 +171,14 @@ summary(COMBO.POINTS)
 
 
 #########################################################################################################################
+## CREATE NEW COLUMNS FOR NATIVE/INVASIVE 
+#########################################################################################################################
+
+## Need the ALA data to have the columns for cultivated/not
+
+
+
+#########################################################################################################################
 ## 2). EXTRACT RASTER DATA FOR SPECIES RECORDS
 #########################################################################################################################
 
@@ -267,7 +275,7 @@ names(COMBO.RASTER)
 
 ## We want to know the count of species that occur in n LGAs, across a range of climates. Read in LGA and SUA
 COMBO.RASTER.SP   = SpatialPointsDataFrame(coords = COMBO.RASTER[c("lon", "lat")], 
-                                           data    = COMBO.RASTER,
+                                           data   = COMBO.RASTER,
                                            proj4string = CRS("+init=epsg:4326"))
 
 SUA      = readOGR("./data/base/CONTEXTUAL/SUA_2011_AUST.shp", layer = "SUA_2011_AUST")
@@ -288,7 +296,7 @@ projection(SUA.WGS)
 
 
 #########################################################################################################################
-## Run test join
+## Run join
 LGA.JOIN   = over(COMBO.RASTER.SP, LGA.WGS)              ## [1:300,]
 COMBO.LGA  = cbind.data.frame(COMBO.RASTER.SP, LGA.JOIN) ## [1:300,]
 
@@ -348,7 +356,7 @@ COMBO.RASTER.CONVERT = as.data.frame(COMBO.RASTER.CONVERT)                   ## 
 
 
 ## Check Looks ok?
-summary(COMBO.RASTER.CONVERT$Annual_mean_temp)  ## -23 looks too low/. Check where these are
+summary(COMBO.RASTER.CONVERT$Annual_mean_temp)  ## -23 looks too low/. Check where these are ok
 summary(COMBO.RASTER$Annual_mean_temp)
 
 summary(COMBO.RASTER.CONVERT$Isothermality)
@@ -594,15 +602,11 @@ write.csv(COMBO.NICHE.CONTEXT, "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.c
 
 ## Check on species which seem to have been knocked out: E.G Fagus sylvatica. Individual filter doesn't knock them all out  
 
-## Convert WORLDCLIM values back into decimals            - done (multiplied by 10)
-
-## Improve raster extract: use an index of unique cell values, referring to a second matrix to do the extract 
+## Check WORLDCLIM values some of the numbers don't look right
 
 ## Check geographic range: doesn't look right for some species. Calc extent of occurrnece as well
 
-## Add traits: list
-
-## Can we get native/exotic list for all Australian species
+## Improve raster extract: use an index of unique cell values, referring to a second matrix to do the extract 
 
 ## Return species EG:                                     -
 

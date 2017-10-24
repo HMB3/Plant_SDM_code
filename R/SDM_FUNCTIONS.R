@@ -14,8 +14,8 @@
 ## Big function for getting background points and fitting maxent 
 FIT_MAXENT <- function(occ, 
                        bg, # A Spatial points data frame (SPDF) of candidate background points
-                       predictors, 
-                       # predictors is a vector of column names for predictors
+                       sdm.predictors, 
+                       # sdm.predictors is a vector of column names for sdm.predictors
                        # that you want to include
                        name, 
                        outdir, 
@@ -36,7 +36,7 @@ FIT_MAXENT <- function(occ,
                        full_args) {
   
   ########################################################################
-  ## predictors: the s_ff object containing predictors to use in the model
+  ## sdm.predictors: the s_ff object containing sdm.predictors to use in the model
   
   ## First, stop if the outdir file exists, 
   if(!file.exists(outdir)) stop('outdir does not exist :(', call. = FALSE)
@@ -130,11 +130,11 @@ FIT_MAXENT <- function(occ,
   saveRDS(occ, file.path(outdir_sp, 'occ.rds'))
   
   #####################################################################
-  ## Sample predictors at occurrence and background points
-  swd_occ <- occ[, predictors]
+  ## Sample sdm.predictors at occurrence and background points
+  swd_occ <- occ[, sdm.predictors]
   saveRDS(swd_occ, file.path(outdir_sp, 'occ_swd.rds'))
   
-  swd_bg <- bg[, predictors]
+  swd_bg <- bg[, sdm.predictors]
   saveRDS(swd_bg, file.path(outdir_sp, 'bg_swd.rds'))
   
   ## Save shapefiles of the...

@@ -36,7 +36,7 @@ length(all.taxa)
 
 
 ########################################################################################################################
-## Try using taxonlookup to check the taxonomy
+## Use taxonlookup to check the taxonomy
 HIA.SPP.LOOKUP = lookup_table(all.taxa, by_species = TRUE, missing_action = "NA")    ## convert rows to column and merge
 HIA.SPP.LOOKUP = setDT(HIA.SPP.LOOKUP , keep.rownames = TRUE)[]
 HIA.SPP.LOOKUP = dplyr::rename(HIA.SPP.LOOKUP, Binomial = rn)
@@ -76,6 +76,9 @@ length(spp %in% HIA.SPP.LOOKUP.MATCH$Binomial) - length(spp)
 ## Record the differences
 taxon.difference = setdiff(HIA.SPP.LOOKUP.MATCH$Binomial, COMBO.NICHE.CONTEXT$searchTaxon)
 
+
+## In future, use the checked taxa as the list for downloading
+taxon.search = as.list(HIA.SPP.LOOKUP.MATCH$Binomial)
 
 
 

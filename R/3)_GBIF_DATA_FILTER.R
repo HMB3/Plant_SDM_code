@@ -35,7 +35,8 @@
 ## LOAD
 load("./data/base/HIA_LIST/GBIF/GBIF_TRIM.RData")
 dim(GBIF.TRIM)
-length(unique(GBIF.TRIM$searchTaxon))  ## has the list update with extra species? YES!
+names(GBIF.TRIM)
+length(unique(GBIF.TRIM$searchTaxon))  ## has the list updated with extra species? YES!
 
 
 #########################################################################################################################
@@ -106,8 +107,16 @@ GBIF.MANAGED <- GBIF.TRIM %>%
   ## Unless we include the NAs, very few records are returned!
   filter(establishmentMeans == 'MANAGED')
 
+
 ## Unique(GBIF.MANAGED$establishmentMeans)
 save(GBIF.MANAGED, file = paste("./data/base/HIA_LIST/GBIF/GBIF_MANAGED.RData"))
+
+
+
+## Add field for managed/unmanaged 
+# COMBO.APNI = merge(COMBO.NICHE.CONTEXT, APNI, by = "searchTaxon", all.x = TRUE) 
+# COMBO.APNI$APNI[is.na(COMBO.APNI$APNI)] <- "FALSE"
+# unique(COMBO.APNI$APNI)
 
 
 
