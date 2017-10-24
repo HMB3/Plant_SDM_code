@@ -19,8 +19,8 @@ FIT_MAXENT <- function(occ,
                        # that you want to include
                        name, 
                        outdir, 
-                       raster.template, 
-                       # raster.template is an empty raster with extent, res and projection
+                       template.raster, 
+                       # template.raster is an empty raster with extent, res and projection
                        # of final output rasters. It is used to reduce
                        # occurrences to a single point per cell.
                        min_n                   = 20,
@@ -62,7 +62,7 @@ FIT_MAXENT <- function(occ,
   
   #####################################################################
   ## Get unique cell numbers for species occurrences
-  cells <- cellFromXY(raster.template, occ)
+  cells <- cellFromXY(template.raster, occ)
   
   ## Clean out duplicate cells and NAs (including points outside extent of predictor data)
   ## Note this will get rid of a lot of duplicate records not filtered out by GBIF columns
@@ -86,7 +86,7 @@ FIT_MAXENT <- function(occ,
   ## Now subset bg to the buffer polygon
   system.time(o <- over(bg, b))
   bg <- bg[which(!is.na(o)), ]
-  bg_cells <- cellFromXY(raster.template, bg)
+  bg_cells <- cellFromXY(template.raster, bg)
   
   ## Clean out duplicates and NAs (including points outside extent of predictor data)
   bg_not_dupes <- which(!duplicated(bg_cells) & !is.na(bg_cells)) 
@@ -107,7 +107,7 @@ FIT_MAXENT <- function(occ,
     
   }
   
-  bg_cells <- cellFromXY(raster.template, bg) # can probably move this into if {}
+  bg_cells <- cellFromXY(template.raster, bg) # can probably move this into if {}
   
   #####################################################################
   ## Save objects for future reference

@@ -28,9 +28,9 @@ str(spp.grow)
 str(COMBO.NICHE.CONTEXT$searchTaxon)
 
 
-## These are the weirdos
+## These are the weirdos: Yprunus cerasifera
 missing.grow = setdiff(spp.grow, COMBO.NICHE.CONTEXT$searchTaxon) 
-## These names could be fixed in the orginal database Manuel sent, then re-run the download (280 extra species.
+## These names could be fixed in the orginal database, then re-run the download (280 extra species.
 # APNI.SPECIES = gsub("(L.)",   "", APNI.list$Species)
 
 
@@ -125,15 +125,18 @@ COMBO.APNI = COMBO.APNI[with(COMBO.APNI, rev(order(Number.of.growers))), ]
 
 ## Reorder
 names(COMBO.APNI)
-COMBO.APNI = COMBO.APNI[, c(1:18, 190, 191, 19:189)]
+COMBO.APNI = COMBO.APNI[, c(1:18, 190, 191, 19:189)]  ## Dumb way to do this, but it's hard
 
 
-## Check
+## Here is the table of all the species summaries. I think all your species are in here (or almost all of them).
+## So, the problem is the filters, which comes back to the data quality.
+## Can look at your species individually, and then change the thresholds below
 View(COMBO.APNI[, c(1:20)])
 
 
-## Save merged
+## Save merged, just in case
 save(COMBO.APNI, file = paste("./data/base/HIA_LIST/COMBO/COMBO_APNI.RData", sep = ""))
+
 
 
 
@@ -143,7 +146,7 @@ save(COMBO.APNI, file = paste("./data/base/HIA_LIST/COMBO/COMBO_APNI.RData", sep
 #########################################################################################################################
 
 
-## Load in the combined data frame
+## Load in the combined data frame, just in case
 load("./data/base/HIA_LIST/COMBO/COMBO_APNI.RData")
 names(COMBO.APNI)
 
@@ -158,11 +161,11 @@ names(COMBO.APNI)
 
 #########################################################################################################################
 ## Use the six figure summary to decide what is "broad" and "restricted". Currently using the 3rd quartile
-summary(COMBO.APNI$AREA_OCCUPANCY)
-summary(COMBO.APNI$LGA.AGG)
-summary(COMBO.APNI$Annual_mean_temp_range)    ## I am suspicious of this...
-summary(COMBO.APNI$Number.of.growers)
-summary(COMBO.APNI$COMBO.count)               ## Looks weird
+summary(COMBO.APNI$AREA_OCCUPANCY)            ## Prob not accurate...
+summary(COMBO.APNI$LGA.AGG)                   ## Can check for an individual species
+summary(COMBO.APNI$Annual_mean_temp_range)    ## I am suspicious of these temperature values...
+summary(COMBO.APNI$Number.of.growers)         ## Looks weird, maybe an error
+summary(COMBO.APNI$COMBO.count)               ## Looks weird, maybe an erro
 
 
 #########################################################################################################################

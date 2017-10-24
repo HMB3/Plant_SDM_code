@@ -36,9 +36,6 @@ source('./R/GREEN_CITIES_FUNCTIONS.R')
 source('./R/SDM_FUNCTIONS.R')
 
 
-
-
-
 #########################################################################################################################
 ## 1). SELECT WORLDCLIM VARIABLES 
 #########################################################################################################################
@@ -100,18 +97,18 @@ source('./R/SDM_FUNCTIONS.R')
 ## Extremes (e.g. warmest/coldest month)
 
 
+## These will change... 
+sdm.predictors <- c("Annual_mean_temp", "Temp_seasonality",    "Max_temp_warm_month", "Min_temp_cold_month",
+                    "Annual_precip",    "Precip_seasonality",  "Precip_wet_qu",       "Precip_dry_qu",       
+                    "Precip_wet_month", "Precip_dry_month")
+
+
 
 #########################################################################################################################
 ## Read in Raster data
 load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData")
 dim(COMBO.RASTER.CONTEXT)    ## 19 million rows, the latest dataset 
 names(COMBO.RASTER.CONTEXT)
-
-
-## These will change... 
-sdm.predictors <- c("Annual_mean_temp", "Temp_seasonality",    "Max_temp_warm_month", "Min_temp_cold_month",
-                    "Annual_precip",    "Precip_seasonality",  "Precip_wet_qu",       "Precip_dry_qu",       
-                    "Precip_wet_month", "Precip_dry_month")
 
 
 #########################################################################################################################
@@ -137,7 +134,6 @@ combo.subset <- COMBO.RASTER.CONTEXT %>%
 
 dim(combo.subset)
 head(combo.subset)
-
 
 
 #########################################################################################################################
@@ -227,7 +223,7 @@ save(correlations.table,         file = paste("./output/tables/variable_selectio
 
 
 #########################################################################################################################
-## 1). PREPARE DATA TABLE FOR SDM ANALYSIS
+## 2). PREPARE DATA TABLE FOR SDM ANALYSIS
 #########################################################################################################################
 
 
@@ -237,7 +233,7 @@ sdm.predictors <- c("Annual_mean_temp", "Temp_seasonality",    "Max_temp_warm_mo
 
 
 ## Create an empty raster with the desired properties, using raster(raster(x))
-raster.template.raster <- raster(raster("//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_01")) %>% 
+template.raster <- raster(raster("//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_01")) %>% 
   projectRaster(res = 1000, crs = CRS('+init=ESRI:54009'))
 
 
@@ -258,7 +254,7 @@ COMBO.RASTER.SELECT <- spTransform(
 
 ## Now split using the data using the species column, and get the unique occurrence cells
 COMBO.RASTER.SPLIT <- split(COMBO.RASTER.SELECT, COMBO.RASTER.SELECT$searchTaxon)
-occurrence_cells   <- lapply(COMBO.RASTER.SPLIT, function(x) cellFromXY(raster.template.raster, x))
+occurrence_cells   <- lapply(COMBO.RASTER.SPLIT, function(x) cellFromXY(template.raster, x))
 str(occurrence_cells)  ## this is a list of dataframes, where the number of rows for each being the species table
 
 
@@ -303,7 +299,7 @@ str(spp.25)
 ## to the cluster. So that's the:
 
 
-## raster.template raster, 
+## template.raster raster, 
 ## data frame and 
 ## maxent function
 
@@ -315,9 +311,10 @@ str(spp.25)
 ## apropos('debug')
 ## apropos('read')
 
+
 ## 100 species takes about 4 hours...
-cl <- makeCluster(5)
-clusterExport(cl, c('raster.template', 'SDM.DATA', 'FIT_MAXENT'))
+cl <- makeCluster(6)
+clusterExport(cl, c('template.raster', 'SDM.DATA', 'FIT_MAXENT'))
 clusterEvalQ(cl, {
   
   require(ff)
@@ -331,7 +328,8 @@ clusterEvalQ(cl, {
 })
 
 
-## Now use 'lapply' to run maxent for multiple species   
+## Now use 'lapply' to run maxent for multiple species
+## Note that running the code in parallel causes problems
 lapply(spp.25[1:length(spp.25)], function(x) { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel 
   
   ## Print the taxa being processed to screen
@@ -346,17 +344,17 @@ lapply(spp.25[1:length(spp.25)], function(x) { # for serial, parLapply(cl, speci
   
   ## The create a vector of the sdm.predictors used. 
   ## This should be based on an ecological framework! 
-  sdm.predictors <- c("Mean_diurnal_range", "Isothermality", "Temp_seasonality") # vector of used sdm.predictors 
+  sdm.predictors <- sdm.predictors # vector of used sdm.predictors 
 
   ## Finally fit the models using FIT_MAXENT
   ## There is no switch in the function to skip outputs that exist.
   ## Given all the changes likely to be made to the models, this could be wise...
   FIT_MAXENT(occ                     = occurrence, 
              bg                      = background, 
-             sdm.predictors              = sdm.predictors, 
+             sdm.predictors          = sdm.predictors, 
              name                    = x, 
-             outdir                  = 'output/maxent', 
-             raster.template                = raster.template,
+             outdir                  = 'output/maxent/baseline', 
+             template.raster,
              min_n                   = 20,   ## This should be higher...
              max_bg_size             = 100000,
              background_buffer_width = 200000,
