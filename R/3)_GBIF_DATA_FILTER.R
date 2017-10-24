@@ -33,7 +33,7 @@
 
 #########################################################################################################################
 ## LOAD
-load("./data/base/HIA_LIST/GBIF/GBIF_TRIM.RData")
+load("./data/base/HIA_LIST/COMBO/GBIF_TRIM.RData")
 dim(GBIF.TRIM)
 names(GBIF.TRIM)
 length(unique(GBIF.TRIM$searchTaxon))  ## has the list updated with extra species? YES!

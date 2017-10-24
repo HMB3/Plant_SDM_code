@@ -294,6 +294,10 @@ spp.25     = as.character(unique(spp.25$searchTaxon))
 str(spp.25)
 
 
+## Now reverse the order, so we can start another R session from the other end
+spp.25.reverse = sort(spp.25, decreasing = TRUE)
+
+
 ########################################################################################################################
 ## We can run Maxent from a cluster of cores on the local computer. Here we send (i.e. export) all the necessary ingredients 
 ## to the cluster. So that's the:
