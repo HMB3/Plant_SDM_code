@@ -14,7 +14,7 @@
 ## Also a table could be made for each source (COMBO, ALA, Council, etc.), But ideally it is just one table
 load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData")   ## All the environmental data, one row for each record
 load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")    ## The niches for each variable, one row for each species
-load("./data/base/HIA_LIST/GBIF/GBIF_TRIM.RData")               ## Latest dataset, 19 million rows
+load("./data/base/HIA_LIST/COMBO/GBIF_TRIM.RData")               ## Latest dataset, 19 million rows
 dim(COMBO.RASTER.CONTEXT)
 
 

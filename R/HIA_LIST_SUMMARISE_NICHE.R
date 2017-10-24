@@ -127,11 +127,11 @@ LAND  <- readOGR("./data/base/CONTEXTUAL/ne_10m_land.shp", layer = "ne_10m_land"
 
 ## Plot global and Australian occurrences for all taxa on the list
 ## Might need to make plot window bigger
-print_occurrence_records(taxa.list = HIA.SPP[4444], DF = GBIF.RASTER.RENEE)
+print_occurrence_records(taxa.list = HIA.SPP[4444], DF = COMBO.RASTER.CONTEXT)
 
 
 ## Save maps to file
-map_GBIF_records(taxa.list = RENEE.SPP, DF = GBIF.RASTER.RENEE)
+map_GBIF_records(taxa.list = HIA.SPP[4444], DF = COMBO.RASTER.CONTEXT)
 
 
 #########################################################################################################################
@@ -144,7 +144,8 @@ Print_global_histogram(taxa.list    = HIA.SPP[4444], DF = COMBO.RASTER.CONTEXT, 
                        env.col.2    = "sky blue",     
                        env.units.2  = "mm")
 
-histogram_GBIF_records(taxa.list = HIA.SPP[4444], env.var.1 = "Annual_mean_temp",   env.col.1 = "orange",     env.units.1 = "°K",
+histogram_GBIF_records(taxa.list = HIA.SPP[4444], DF = COMBO.RASTER.CONTEXT,
+                       env.var.1 = "Annual_mean_temp",   env.col.1 = "orange", env.units.1 = "°c",
                        env.var.2 = "Annual_precip",   env.col.2 = "sky blue",     env.units.2 = "mm")
 
 

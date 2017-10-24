@@ -1068,7 +1068,7 @@ map_GBIF_records = function (taxa.list, DF) {
     ################################################################
     ## If the dim = 0 for that taxa subset to Australia, skip to next
     if (dim(DF[ which(DF$searchTaxon == taxa.n 
-                                       & DF$country == "Australia"), ][[, c("lon", "lat")]])[1] == 0) {
+                      & DF$country == "Australia"), ][, c("lon", "lat")])[1] == 0) {
       
       print (paste ("Possible no Australian records for ", taxa.n, "skipping"))
       
@@ -1110,7 +1110,7 @@ map_GBIF_records = function (taxa.list, DF) {
            lwd = 1.8, asp = 1, col = 'grey', bg = 'sky blue')
       
       ## add points
-      points(DF[ which(DF$searchTaxon == taxa.n), ][[, c("lon", "lat")]], 
+      points(DF[ which(DF$searchTaxon == taxa.n), ][, c("lon", "lat")], 
              pch = ".", cex = 7, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2, 
              main = paste0("Global occurrences for ", taxa.n), 
              xlab = "", ylab = "", asp = 1)
@@ -1144,12 +1144,12 @@ map_GBIF_records = function (taxa.list, DF) {
       title(paste0("Global occurrences for ", taxa.n))
       
       ## add points
-      points(DF[ which(DF$searchTaxon == taxa.n), ][[, c("lon", "lat")]], 
+      points(DF[ which(DF$searchTaxon == taxa.n), ][, c("lon", "lat")], 
              pch = ".", col = "red", cex = 3, asp = 1)
       
       ## PLot Australian occurrences to screen
       plot(DF[ which(DF$searchTaxon == taxa.n 
-                                      & DF$country == "Australia"), ][[, c("lon", "lat")]], 
+                                      & DF$country == "Australia"), ][, c("lon", "lat")], 
            pch = ".", cex = 5, col = "red", asp = 1)
       
       ## add title
@@ -1173,7 +1173,7 @@ map_GBIF_records = function (taxa.list, DF) {
            lwd = 1.8, asp = 1, col = 'grey', bg = 'sky blue')
       
       ## add points
-      points(DF[ which(DF$searchTaxon == taxa.n), ][[, c("lon", "lat")]], 
+      points(DF[ which(DF$searchTaxon == taxa.n), ][, c("lon", "lat")], 
              pch = ".", cex = 7, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2, 
              main = paste0("Global occurrences for ", taxa.n), 
              xlab = "", ylab = "", asp = 1)
@@ -1199,7 +1199,7 @@ map_GBIF_records = function (taxa.list, DF) {
       
       ## plot
       plot(DF[ which(DF$searchTaxon == taxa.n 
-                                      & DF$country == "Australia"), ][[, c("lon", "lat")]], 
+                                      & DF$country == "Australia"), ][, c("lon", "lat")], 
            pch = ".", cex = 10, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2.5,
            font.main = 4, col.main = "blue",
            main = paste0("Australian occurrences for ", taxa.n), 
@@ -1367,7 +1367,7 @@ histogram_GBIF_records = function (DF, taxa.list, env.var.1, env.col.1, env.unit
   for (taxa.n in taxa.list) {
     
     ## First, check if the file exists
-    file  = paste("./output/Figures/niche_summary/histograms/", taxa.n, "_", env.var.1, "_world_GBIF_histo.png", sep = "")
+    file  = paste("./output/figures/niche_summary/histograms/", taxa.n, "_", env.var.1, "_world_GBIF_histo.png", sep = "")
     
     ## If it's already downloaded, skip
     if (file.exists (file)) {
