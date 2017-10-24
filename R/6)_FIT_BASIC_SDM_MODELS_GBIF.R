@@ -109,8 +109,9 @@ names(COMBO.RASTER.CONTEXT)
 
 
 ## These will change... 
-SDM.PREDICTORS <- c("Annual_mean_temp", "Temp_seasonality", "Max_temp_warm_month", "Min_temp_cold_month",
-                    "Annual_precip",    "Precip_wet_qu",    "Precip_dry_qu",       "Precip_wet_month",    "Precip_dry_month")
+sdm.predictors <- c("Annual_mean_temp", "Temp_seasonality",    "Max_temp_warm_month", "Min_temp_cold_month",
+                    "Annual_precip",    "Precip_seasonality",  "Precip_wet_qu",       "Precip_dry_qu",       
+                    "Precip_wet_month", "Precip_dry_month")
 
 
 #########################################################################################################################
@@ -119,8 +120,8 @@ SDM.PREDICTORS <- c("Annual_mean_temp", "Temp_seasonality", "Max_temp_warm_month
 sp.n = "Fagus sylvatica"
 sp.subset <- subset(COMBO.RASTER.CONTEXT, searchTaxon == sp.n) %>%
   
-  ## just get the SDM.PREDICTORS
-  select(one_of(SDM.PREDICTORS)) %>%
+  ## just get the sdm.predictors
+  select(one_of(sdm.predictors)) %>%
   as.data.frame()
 
 dim(sp.subset)
@@ -130,8 +131,8 @@ head(sp.subset)
 ## Try the correlation for everything
 combo.subset <- COMBO.RASTER.CONTEXT %>%
   
-  ## just get the SDM.PREDICTORS
-  select(one_of(SDM.PREDICTORS)) %>%
+  ## just get the sdm.predictors
+  select(one_of(sdm.predictors)) %>%
   as.data.frame()
 
 dim(combo.subset)
@@ -230,15 +231,22 @@ save(correlations.table,         file = paste("./output/tables/variable_selectio
 #########################################################################################################################
 
 
+## Chose the minimum possible predictors
+sdm.predictors <- c("Annual_mean_temp", "Temp_seasonality",    "Max_temp_warm_month", "Min_temp_cold_month",
+                    "Annual_precip",    "Precip_seasonality",  "Precip_wet_month", "Precip_dry_month")
+
+
 ## Create an empty raster with the desired properties, using raster(raster(x))
-template.raster <- raster(raster("//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_01")) %>% 
+raster.template.raster <- raster(raster("//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_01")) %>% 
   projectRaster(res = 1000, crs = CRS('+init=ESRI:54009'))
 
 
 ## Just get the columns needed for modelling...This changes based on the ecological framework
 COMBO.RASTER.SELECT <- select(COMBO.RASTER.CONTEXT, 
                               searchTaxon, 
-                              lon, lat, Mean_diurnal_range:Temp_seasonality)
+                              lon, lat, 
+                              Annual_mean_temp, Temp_seasonality,   Max_temp_warm_month, Min_temp_cold_month,
+                              Annual_precip,    Precip_seasonality, Precip_wet_month,    Precip_dry_month)
 
 
 ## Create a spatial points object, and change to a projected system to calculate distance more accurately 
@@ -250,7 +258,7 @@ COMBO.RASTER.SELECT <- spTransform(
 
 ## Now split using the data using the species column, and get the unique occurrence cells
 COMBO.RASTER.SPLIT <- split(COMBO.RASTER.SELECT, COMBO.RASTER.SELECT$searchTaxon)
-occurrence_cells   <- lapply(COMBO.RASTER.SPLIT, function(x) cellFromXY(template.raster, x))
+occurrence_cells   <- lapply(COMBO.RASTER.SPLIT, function(x) cellFromXY(raster.template.raster, x))
 str(occurrence_cells)  ## this is a list of dataframes, where the number of rows for each being the species table
 
 
@@ -268,12 +276,6 @@ str(SDM.DATA)
 
 
 
-
-
-
-
-
-
 #########################################################################################################################
 ## 2). RUN MODELS FOR MULTIPLE SPECIES USING TABLE OF RECORDS (ROWS) AND ENVIRONMENT (COLUMNS)
 #########################################################################################################################
@@ -285,26 +287,25 @@ spp.all  <- unique(COMBO.RASTER.CONTEXT$searchTaxon)
 str(spp.all)                 ## 6782
 
 
-## Just the top 20 species
-top.200.spp     = subset(COMBO.RASTER.CONTEXT, Top_200 == TRUE)["searchTaxon"] %>%
-  unique() %>%
-  as.list()
-str(top.200)
-
+## Just the top 200 species
+top.200.spp     = subset(COMBO.RASTER.CONTEXT, Top_200 == TRUE)["searchTaxon"] 
+top.200.spp     = as.character(unique(top.200.spp$searchTaxon))
+str(top.200.spp)
 
 ## Just the species with > 25 growers
-spp.25  = subset(COMBO.RASTER.CONTEXT, Number.of.growers >= 25)["searchTaxon"] %>%
-  unique() %>%
-  as.list()
+spp.25     = subset(COMBO.RASTER.CONTEXT, Number.of.growers >= 25)["searchTaxon"]
+spp.25     = as.character(unique(spp.25$searchTaxon))
 str(spp.25)
-
-
-## Could use other subsets too...
 
 
 ########################################################################################################################
 ## We can run Maxent from a cluster of cores on the local computer. Here we send (i.e. export) all the necessary ingredients 
 ## to the cluster. So that's the:
+
+
+## raster.template raster, 
+## data frame and 
+## maxent function
 
 ## Use these functions to debug
 ## debugonce(FIT_MAXENT)
@@ -315,12 +316,8 @@ str(spp.25)
 ## apropos('read')
 
 ## 100 species takes about 4 hours...
-
-## template raster, 
-## data frame and 
-## maxent function
 cl <- makeCluster(5)
-clusterExport(cl, c('template', 'SDM.DATA', 'FIT_MAXENT'))
+clusterExport(cl, c('raster.template', 'SDM.DATA', 'FIT_MAXENT'))
 clusterEvalQ(cl, {
   
   require(ff)
@@ -335,7 +332,7 @@ clusterEvalQ(cl, {
 
 
 ## Now use 'lapply' to run maxent for multiple species   
-lapply(species[1], function(x) { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel 
+lapply(spp.25[1:length(spp.25)], function(x) { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel 
   
   ## Print the taxa being processed to screen
   message('Doing ', x)
@@ -347,19 +344,19 @@ lapply(species[1], function(x) { # for serial, parLapply(cl, species[1:8], funct
   ## other than the species used.
   background <- subset(SDM.DATA, searchTaxon != x)
   
-  ## The create a vector of the SDM.PREDICTORS used. 
+  ## The create a vector of the sdm.predictors used. 
   ## This should be based on an ecological framework! 
-  SDM.PREDICTORS <- c("Mean_diurnal_range", "Isothermality", "Temp_seasonality") # vector of used SDM.PREDICTORS 
+  sdm.predictors <- c("Mean_diurnal_range", "Isothermality", "Temp_seasonality") # vector of used sdm.predictors 
 
   ## Finally fit the models using FIT_MAXENT
   ## There is no switch in the function to skip outputs that exist.
   ## Given all the changes likely to be made to the models, this could be wise...
   FIT_MAXENT(occ                     = occurrence, 
              bg                      = background, 
-             SDM.PREDICTORS              = SDM.PREDICTORS, 
+             sdm.predictors              = sdm.predictors, 
              name                    = x, 
              outdir                  = 'output/maxent', 
-             template                = template,
+             raster.template                = raster.template,
              min_n                   = 20,   ## This should be higher...
              max_bg_size             = 100000,
              background_buffer_width = 200000,
@@ -438,7 +435,7 @@ stopCluster(cl)
 #   names(s) <- sub('.*(p\\d{2})_?.*', '\\1', names(s))
 #   names(s) <- gsub("_eMast_albers|_1km_albers|_eMAST_albers|CSIRO_","",names(s))
 #   
-#   # Identify which cells have data for all SDM.PREDICTORS.
+#   # Identify which cells have data for all sdm.predictors.
 #   # locs contains cell numbers and corresponding coordinates of non-NA cells.
 #   locs  <- which(!is.na(sum(s)[]))
 #   locs  <- cbind(cell = locs, xyFromCell(s, locs))
