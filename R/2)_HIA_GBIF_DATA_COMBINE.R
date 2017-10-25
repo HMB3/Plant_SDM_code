@@ -23,6 +23,14 @@ unique(Magnolia.grandiflora$eventDate)
 unique(Magnolia.grandiflora$eventID)
 
 
+## Fields which could identify "managed"
+unique(Magnolia.grandiflora$locality)
+
+
+## load managed data
+load("./data/base/HIA_LIST/GBIF/GBIF_MANAGED.RData")
+
+
 ## The species list doesn't match the downloaded species, so create a list from the downloaded files
 spp.download = list.files("./data/base/HIA_LIST/GBIF/SPECIES/", pattern = ".RData")
 spp.download = gsub("_GBIF_records.RData", "", spp.download)

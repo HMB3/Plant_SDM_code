@@ -231,7 +231,6 @@ COMBO.RASTER <- extract(s, COMBO.POINTS) %>%
   cbind(GBIF.ALA.COMBO.LAND, .)
 #endCluster()
 
-
 ## Multiple rename using dplyr
 COMBO.RASTER = dplyr::rename(COMBO.RASTER,
                              Annual_mean_temp     = bio_01, ##

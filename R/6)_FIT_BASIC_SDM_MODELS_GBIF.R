@@ -298,6 +298,10 @@ str(spp.25)
 spp.25.reverse = sort(spp.25, decreasing = TRUE)
 
 
+## Now save .RData file for the next session
+save.image("STEP_6_SDM.RData")
+
+
 ########################################################################################################################
 ## We can run Maxent from a cluster of cores on the local computer. Here we send (i.e. export) all the necessary ingredients 
 ## to the cluster. So that's the:
@@ -369,6 +373,8 @@ lapply(spp.25[1:length(spp.25)], function(x) { # for serial, parLapply(cl, speci
   
 })
 
+
+stopCluster(cl)
 
 
 ## Potential errors...
