@@ -257,6 +257,10 @@ save(GBIF.LAND, file = paste("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.RData")
 gc()
 
 
+## Now save .RData file for the next session
+save.image("STEP_3_GBIF_CLEAN.RData")
+
+
 
 
 

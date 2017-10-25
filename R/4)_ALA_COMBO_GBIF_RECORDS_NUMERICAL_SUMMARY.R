@@ -591,6 +591,10 @@ save(COMBO.NICHE.CONTEXT,  file = paste("./data/base/HIA_LIST/COMBO/COMBO_NICHE_
 write.csv(COMBO.NICHE.CONTEXT, "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.csv",       row.names = FALSE)
 
 
+## Now save .RData file for the next session
+save.image("STEP_4_NICHES.RData")
+
+
 
 
 

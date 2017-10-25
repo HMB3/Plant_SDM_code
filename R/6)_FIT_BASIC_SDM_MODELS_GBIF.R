@@ -3,7 +3,7 @@
 #########################################################################################################################
 
 
-## This code takes a table of species occurrences (rows) and environmental values "columns", and runs a maxent model 
+## This code takes a table of all species occurrences (rows) and environmental values "columns", and runs a maxent model 
 ## for each species. 
 
 
@@ -16,11 +16,13 @@
 ## in urban centres across Australia as the climate changes, based on our current understanding of species’ climatic 
 ## requirements.
 
-## There are several points to consider here:
+#########################################################################################################################
+## There are a few key facors we would like to vary across the model runs:
 
-## Which environmnetal variables are used
-## Which GCMs and RCPs
-## Can the maxent settings be the same for all species?
+## Environmnetal variables : run with the same core set, and also with variable selection
+## RECORDS                 : ALL, MANAGED & UNMANAGED
+## GCMs/RCPs               : the lowest prioritym but probably do them all in the end
+
 
 
 #########################################################################################################################
@@ -45,7 +47,7 @@ source('./R/SDM_FUNCTIONS.R')
 ## WHICH WORLDCLIM VARIABLES TO USE?
 
 
-## Ignoring edaphic variables for now
+## Ignoring edaphic and topographic variables for now
 
 # BIO1  = Annual Mean Temperature                                     ## 
 # BIO2  = Mean Diurnal Range (Mean of monthly (max temp - min temp))  
@@ -94,7 +96,7 @@ source('./R/SDM_FUNCTIONS.R')
 
 ## Average across the time period
 ## variability across the time period
-## Extremes (e.g. warmest/coldest month)
+## Extremes (e.g. most extreme months)
 
 
 ## These will change... 
@@ -269,7 +271,8 @@ SDM.DATA <- mapply(function(x, cells) {
 str(SDM.DATA)
 
 
-
+## Now save .RData file for the next session
+save.image("STEP_6_SDM.RData")
 
 
 #########################################################################################################################
@@ -298,8 +301,7 @@ str(spp.25)
 spp.25.reverse = sort(spp.25, decreasing = TRUE)
 
 
-## Now save .RData file for the next session
-save.image("STEP_6_SDM.RData")
+
 
 
 ########################################################################################################################

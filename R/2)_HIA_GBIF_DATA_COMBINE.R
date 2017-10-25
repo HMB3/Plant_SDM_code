@@ -140,6 +140,10 @@ gc()
 save(GBIF.TRIM, file = paste("./data/base/HIA_LIST/COMBO/GBIF_TRIM.RData"))
 
 
+## Now save .RData file for the next session
+save.image("STEP_2_GBIF_RAW.RData")
+
+
 
 
 
