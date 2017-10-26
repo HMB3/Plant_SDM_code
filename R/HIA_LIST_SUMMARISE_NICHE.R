@@ -119,34 +119,33 @@ GBIF_summary_slice(taxa.list = taxa.n,                       ## Could be a list
 
 
 #########################################################################################################################
-## Then plot global map
-## note that this still leaves lots of points in the Islands. So we need to decide if those are legitimate.
+## Load the global map
 WORLD <- readOGR("./data/base/CONTEXTUAL/TM_WORLD_BORDERS-0.3.shp", layer = "TM_WORLD_BORDERS-0.3")
-LAND  <- readOGR("./data/base/CONTEXTUAL/ne_10m_land.shp", layer = "ne_10m_land")
+LAND  <- readOGR("./data/base/CONTEXTUAL/ne_10m_land.shp",          layer = "ne_10m_land")
 
 
 ## Plot global and Australian occurrences for all taxa on the list
 ## Might need to make plot window bigger
-print_occurrence_records(taxa.list = HIA.SPP[4444], DF = COMBO.RASTER.CONTEXT)
+print_occurrence_records(taxa.list = HIA.SPP[4441], DF = COMBO.RASTER.CONTEXT)
 
 
 ## Save maps to file
-map_GBIF_records(taxa.list = HIA.SPP[4444], DF = COMBO.RASTER.CONTEXT)
+map_GBIF_records(taxa.list = HIA.SPP[4441], DF = COMBO.RASTER.CONTEXT)
 
 
 #########################################################################################################################
 ## And plot the histograms. Consider how to combine outputs. Might need to make plot window bigger
-Print_global_histogram(taxa.list    = HIA.SPP[4444], DF = COMBO.RASTER.CONTEXT,  ## 33 is a problem: Cupianopsis anacardiodes
+Print_global_histogram(taxa.list    = HIA.SPP[4441], DF = COMBO.RASTER.CONTEXT,  ## 33 is a problem: Cupianopsis anacardiodes
                        env.var.1    = "Annual_mean_temp",   
                        env.col.1    = "orange",  
                        env.units.1  = "°C",
-                       env.var.2    = "Annual_precip",   
+                       env.var.2    = "Precip_dry_month",   
                        env.col.2    = "sky blue",     
                        env.units.2  = "mm")
 
-histogram_GBIF_records(taxa.list = HIA.SPP[4444], DF = COMBO.RASTER.CONTEXT,
-                       env.var.1 = "Annual_mean_temp",   env.col.1 = "orange", env.units.1 = "°c",
-                       env.var.2 = "Annual_precip",   env.col.2 = "sky blue",     env.units.2 = "mm")
+histogram_GBIF_records(taxa.list = HIA.SPP[4441], DF = COMBO.RASTER.CONTEXT,
+                       env.var.1 = "Annual_mean_temp",   env.col.1 = "orange",   env.units.1 = "°c",
+                       env.var.2 = "Precip_dry_month",   env.col.2 = "sky blue", env.units.2 = "mm")
 
 
 ## Do these distributions look sensible? What visual/numerical outputs would be more useful for the other modules?

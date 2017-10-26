@@ -243,17 +243,56 @@ plot(WORLD)
 plot(LAND)
 
 
+
+
+
 #########################################################################################################################
-## So here we could add extra filters?
+## 4). CHECK TAXONOMY THAT GBIF RETURNED...
+#########################################################################################################################
 names(GBIF.LAND)
 
 
+## Get species list
+returned.taxa = unique(GBIF.LAND$scientificName)
+str(returned.taxa)
 
+
+## Use taxonlookup to check the taxonomy of the returned list
+GBIF.LOOKUP = lookup_table(returned.taxa, by_species = TRUE, missing_action = "NA")    
+GBIF.LOOKUP = setDT(GBIF.LOOKUP , keep.rownames = TRUE)[]
+GBIF.LOOKUP = dplyr::rename(GBIF.LOOKUP, scientificName = rn)
+GBIF.LOOKUP.MATCH  = na.omit(GBIF.LOOKUP)
+
+
+## Check out the match
+head(GBIF.LOOKUP.MATCH)
+
+
+## Get the errors
+GBIF.TAXO.ERRORS  <- GBIF.LOOKUP[rowSums(is.na(GBIF.LOOKUP)) > 0,]
+dim(GBIF.TAXO.ERRORS)
+head(GBIF.TAXO.ERRORS)
+
+
+## Merge these with the list from the original records
+GBIF.SEARCH = as.data.frame(unique(GBIF.LAND[, c("searchTaxon", "scientificName")]))
+names(GBIF.TAXO.ERRORS)
+names(GBIF.SEARCH)
+
+# dplyr::rename(GBIF.SEARCH, Binomial = "unique(GBIF.LAND[, c(\"searchTaxon\")])"
+GBIF.TAXO.ERRORS.JOIN = merge(GBIF.TAXO.ERRORS, GBIF.SEARCH, by = "scientificName", all = FALSE)
+View(GBIF.TAXO.ERRORS.JOIN)
+
+
+## Then get only the species which matched against the taxonomy on taxonlookup
+GBIF.LAND.TAXO = GBIF.LAND[GBIF.LAND$scientificName %in% GBIF.LOOKUP.MATCH$Binomial, ]
+dim(GBIF.LAND)[1] - dim(GBIF.LAND.TAXO)[1] ## A difference of 200k records
 
 
 #########################################################################################################################
 ## save data
-save(GBIF.LAND, file = paste("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.RData"))
+save(GBIF.LAND,        file = paste("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.RData"))
+save(GBIF.TAXO.ERRORS, file = paste("./data/base/HIA_LIST/GBIF/GBIF_TAXO_ERRORS.RData", sep = ""))
 gc()
 
 
