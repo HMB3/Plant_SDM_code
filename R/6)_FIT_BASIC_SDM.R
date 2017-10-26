@@ -271,8 +271,9 @@ SDM.DATA <- mapply(function(x, cells) {
 str(SDM.DATA)
 
 
-## Now save .RData file for the next session
+## Now save/load .RData file for the next session
 save.image("STEP_6_SDM.RData")
+load("STEP_6_SDM.RData")
 
 
 #########################################################################################################################

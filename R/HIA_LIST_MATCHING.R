@@ -72,6 +72,8 @@ library("bigmemory")
 library("biganalytics")
 library("bigtabulate")
 
+
+##
 p <- c('ff',    'things',         'raster',    'dismo',        'sp',           'latticeExtra', 'data.table', 
        'rgdal', 'rgeos',          'gdalUtils', 'rmaxent',      'readr',        'dplyr',        'tidyr',
        'readr', 'rnaturalearth',  'rasterVis', 'RColorBrewer', 'latticeExtra', 'parallel')
@@ -83,6 +85,9 @@ sapply(p, require, character.only = TRUE)
 ## source functions
 source('./R/GREEN_CITIES_FUNCTIONS.R')
 source('./R/SDM_FUNCTIONS.R')
+
+
+
 
 
 #########################################################################################################################
@@ -117,11 +122,8 @@ dim(renee.taxa)
 str(HIA.list)
 head(HIA.list)
 
-
 ##
 #intersect(CLEAN.list$Species, GROWING$scientific_name)
-
-
 
 ## Create a list of the raw HIA list, but removing the weird characters...
 ## Just use "TRIM(CELL)" in excel
