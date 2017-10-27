@@ -37,9 +37,10 @@ library(rgbif)
 library(scrubr)
 library(RCurl)
 library(httr)
+
 library(taxonlookup)
+library(Taxonstand)
 library(speciesgeocodeR)
-library(raster)
 library(raster)
 library(rnaturalearth)
 library(gdalUtils)
@@ -135,7 +136,7 @@ length(RAW.HIA.SPP)
 
 
 ## also, add the "Top 200" species in here
-spp.200          = top.200[c("Species", "t200_MATCH_25")]
+spp.200          = top.200[c("Species")]
 spp.200$Species  <- sub('(^\\S+ \\S+).*', '\\1', spp.200$Species) # \\s = white space; \\S = not white space
 
 spp.200$Species  = gsub("  ",     " ", spp.200$Species)
@@ -158,7 +159,6 @@ HIA.list$Binomial <- sub('(^\\S+ \\S+).*', '\\1', HIA.list$Species) # \\s = whit
 ## Check this reduces the number of Top 200 missing from this list
 HIA.list = merge(HIA.list, spp.200, by = "Binomial", all.x = TRUE) 
 HIA.list$Top_200[is.na(HIA.list$Top_200)] <- "FALSE"
-HIA.list$t200_MATCH_25[is.na(HIA.list$t200_MATCH_25)] <- "TRUE"
 HIA.list$Origin <- gsub(" ",  "", HIA.list$Origin)
 
 
@@ -166,7 +166,6 @@ HIA.list$Origin <- gsub(" ",  "", HIA.list$Origin)
 str(HIA.list)
 head(HIA.list)
 unique(HIA.list$Top_200)
-unique(HIA.list$t200_MATCH_25)
 unique(HIA.list$Origin)
 length(unique(HIA.list$Binomial)) ## 660 unique binomials
 names(HIA.list)

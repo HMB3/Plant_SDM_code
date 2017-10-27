@@ -3,13 +3,13 @@
 #########################################################################################################################
 
 
-#########################################################################################################################
-## 1). CREATE TABLE OF PRE-CLEAN FLAGS 
-#########################################################################################################################
+## Aim of this code is to filer the GBIF data to the most reliable recrods. Two sources of uncertainty:
+
+## Spatial 
+## Taxonomic
 
 
-## Which columns overlap between GBIF and ALA/AVH? The problem here is that we don't know what each GBIF field means, and 
-## the documentation is a bit dodgy.
+## Which columns overlap between GBIF and ALA/AVH? The problem here is that we don't know what each GBIF field means,
 
 ## dataProvider             (ALA), GBIF ?
 ## basisOfRecord            (ALA), basisOfRecord (GBIF)
@@ -19,16 +19,7 @@
 ## fatal assertions         (ALA), GBIF no equivalent
 
 
-## Rach considers anything with the same lat/long to x decimal places, collected in the same month by the same person as
-## a duplicate. Collection month and collector could be added, but in most cases, they will be knocked out by using 
-## one record per cell.
-
-
-
-## GBIF issues? Not that helpful...
-# Abelia.geosp.t = gbif('Abelia grandiflora', args = list("hasGeospatialIssue=true"))
-# Abelia.geosp.f = gbif('Abelia grandiflora', args = list("hasGeospatialIssue=false"))
-# Abelia         = gbif('Abelia grandiflora', args = list("hasGeospatialIssue=false"))
+## A record with the same lat/long to x decimal places, collected in the same month by the same person is a duplicate
 
 
 #########################################################################################################################
@@ -37,6 +28,85 @@ load("./data/base/HIA_LIST/COMBO/GBIF_TRIM.RData")
 dim(GBIF.TRIM)
 names(GBIF.TRIM)
 length(unique(GBIF.TRIM$searchTaxon))  ## has the list updated with extra species? YES!
+
+
+
+
+
+#########################################################################################################################
+#### 1). MARK CULTIVATED RECORDS AND CHECK TAXONOMY
+#########################################################################################################################
+
+
+## Try and make this one command: can these terms be searched for across the whole data frame (i.e. any column)
+GBIF.TRIM$CULTIVATED <- ifelse(grepl("garden",       GBIF.TRIM$locality, ignore.case = TRUE) | 
+                                 grepl("cultiva",    GBIF.TRIM$locality, ignore.case = TRUE) |
+                                 
+                                 grepl("garden",     GBIF.TRIM$habitat, ignore.case = TRUE) | 
+                                 grepl("cultiva",    GBIF.TRIM$habitat, ignore.case = TRUE) |
+                                 
+                                 
+                                 grepl("garden",     GBIF.TRIM$eventRemarks, ignore.case = TRUE) | 
+                                 grepl("cultiva",    GBIF.TRIM$eventRemarks, ignore.case = TRUE) |
+                                 
+                                 grepl("garden",     GBIF.TRIM$cloc, ignore.case = TRUE) | 
+                                 grepl("cultiva",    GBIF.TRIM$cloc, ignore.case = TRUE) |
+                                 
+                                 grepl("managed",    GBIF.TRIM$establishmentMeans, ignore.case = TRUE),
+                               
+                               "CULTIVATED", "UNKNOWN")
+
+
+## How many records are knocked out by using this definition?
+GBIF.CULTIVATED = subset(GBIF.TRIM, CULTIVATED == "CULTIVATED")
+dim(GBIF.CULTIVATED)[1]/dim(GBIF.TRIM)[1]
+
+
+#########################################################################################################################
+## CHECK TAXONOMY THAT GBIF RETURNED 
+
+## Use "Taxonstand"
+GBIF.TAXO <- TPL(unique(GBIF.TRIM$scientificName), infra = TRUE,
+                 corr = TRUE)
+sort(names(GBIF.TAXO))
+
+
+## Then join the GBIF data to the taxonomic check, using "scientificName" as the join field... 
+GBIF.TRIM <- GBIF.TRIM %>%
+  left_join(., GBIF.TAXO, by = c("scientificName" = "Taxon"))
+
+
+## So we can filter by the agreement between "scientificName", and "New.Taxonomic.status"?
+## Not sure if this completely checks the searched and returned species match, but maybe good enough...
+unique(GBIF.TAXO.CHECK$New.Taxonomic.status)
+
+
+## Also keep the managed records:
+GBIF.UNRESOLVED <- GBIF.TAXO.CHECK %>% 
+  
+  ## Note that these filters are very forgiving...
+  ## Unless we include the NAs, very few records are returned!
+  filter(New.Taxonomic.status == 'Unresolved')
+
+
+## Also keep the managed records:
+# GBIF.TAXO.CHECK <- GBIF.TAXO.CHECK %>% 
+#   
+#   ## Note that these filters are very forgiving...
+#   ## Unless we include the NAs, very few records are returned!
+#   filter(New.Taxonomic.status == 'Accepted')
+
+
+## Unique(GBIF.UNRESOLVED$New.Taxonomic.status)
+save(GBIF.UNRESOLVED, file = paste("./data/base/HIA_LIST/GBIF/GBIF_UNRESOLVED.RData"))
+
+
+
+
+
+#########################################################################################################################
+## 2). CREATE TABLE OF PRE-CLEAN FLAGS 
+#########################################################################################################################
 
 
 #########################################################################################################################
@@ -57,6 +127,15 @@ GBIF.PROBLEMS <- with(GBIF.TRIM,
                    
                    ## Also add duplicated
                    #DUPLICATED == 'TRUE',
+                   
+                   ## Taxon rank is genus/form?
+                   #taxonRank == 'GENUS' & 'FORM',
+                   
+                   ## Taxonomic status
+                   New.Taxonomic.status == 'Unresolved',
+                   
+                   ## Cultivated
+                   CULTIVATED == 'CULTIVATED',
                    
                    ## Establishment means is "MANAGED", can change this:
                    establishmentMeans == 'MANAGED' & !is.na(establishmentMeans),
@@ -81,7 +160,8 @@ GBIF.PROBLEMS <- with(GBIF.TRIM,
   ## Create a data frame and set the names
   as.data.frame %>%  
   
-  setNames(c('NO_COORD', #'GEOCLEAN', 'DUPLICATED', 
+  setNames(c('NO_COORD', 'TAXON_STATUS',
+             'CULTIVATED', #'GEOCLEAN', 'DUPLICATED', 
              'MANAGED',  'PRE_1950', 'NO_YEAR', 
              'COORD_UNCERT', 'COUNT'))
 
@@ -112,7 +192,6 @@ GBIF.MANAGED <- GBIF.TRIM %>%
 save(GBIF.MANAGED, file = paste("./data/base/HIA_LIST/GBIF/GBIF_MANAGED.RData"))
 
 
-
 ## Add field for managed/unmanaged 
 # COMBO.APNI = merge(COMBO.NICHE.CONTEXT, APNI, by = "searchTaxon", all.x = TRUE) 
 # COMBO.APNI$APNI[is.na(COMBO.APNI$APNI)] <- "FALSE"
@@ -123,7 +202,7 @@ save(GBIF.MANAGED, file = paste("./data/base/HIA_LIST/GBIF/GBIF_MANAGED.RData"))
 
 
 #########################################################################################################################
-## 2). FILTER RECORDS 
+## 3). FILTER RECORDS 
 #########################################################################################################################
 
 
@@ -244,51 +323,6 @@ plot(LAND)
 
 
 
-
-
-#########################################################################################################################
-## 4). CHECK TAXONOMY THAT GBIF RETURNED...
-#########################################################################################################################
-names(GBIF.LAND)
-
-
-## Get species list
-returned.taxa = unique(GBIF.LAND$scientificName)
-str(returned.taxa)
-
-
-## Use taxonlookup to check the taxonomy of the returned list
-GBIF.LOOKUP = lookup_table(returned.taxa, by_species = TRUE, missing_action = "NA")    
-GBIF.LOOKUP = setDT(GBIF.LOOKUP , keep.rownames = TRUE)[]
-GBIF.LOOKUP = dplyr::rename(GBIF.LOOKUP, scientificName = rn)
-GBIF.LOOKUP.MATCH  = na.omit(GBIF.LOOKUP)
-
-
-## Check out the match
-head(GBIF.LOOKUP.MATCH)
-
-
-## Get the errors
-GBIF.TAXO.ERRORS  <- GBIF.LOOKUP[rowSums(is.na(GBIF.LOOKUP)) > 0,]
-dim(GBIF.TAXO.ERRORS)
-head(GBIF.TAXO.ERRORS)
-
-
-## Merge these with the list from the original records
-GBIF.SEARCH = as.data.frame(unique(GBIF.LAND[, c("searchTaxon", "scientificName")]))
-names(GBIF.TAXO.ERRORS)
-names(GBIF.SEARCH)
-
-# dplyr::rename(GBIF.SEARCH, Binomial = "unique(GBIF.LAND[, c(\"searchTaxon\")])"
-GBIF.TAXO.ERRORS.JOIN = merge(GBIF.TAXO.ERRORS, GBIF.SEARCH, by = "scientificName", all = FALSE)
-View(GBIF.TAXO.ERRORS.JOIN)
-
-
-## Then get only the species which matched against the taxonomy on taxonlookup
-GBIF.LAND.TAXO = GBIF.LAND[GBIF.LAND$scientificName %in% GBIF.LOOKUP.MATCH$Binomial, ]
-dim(GBIF.LAND)[1] - dim(GBIF.LAND.TAXO)[1] ## A difference of 200k records
-
-
 #########################################################################################################################
 ## save data
 save(GBIF.LAND,        file = paste("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.RData"))
@@ -308,19 +342,19 @@ save.image("STEP_3_GBIF_CLEAN.RData")
 #########################################################################################################################
 
 
-## When should the additional filters be run in? Just after GBIF.TRIM?            -
+## When should the additional filters be run in? Just after GBIF.TRIM?            - Ask John
 
-## Keep managed records as a separate file                                        - Have them
+## GBIF taxonomic errors                                                          - Use taxonstand, check with John, Dave K.
+
+## Keep cultivated records as a separate column/file                              - Have them: check search with Rach, Linda
+
+## Estimate native ranges: as a separate colum too?                               - Ubran polygons for AUS, USA, EU? Ask Dave Kendall
 
 ## GBIF duplicates                                                                - Check GBIF issues, but John's SDM code will get rid of more
 
-## GBIF species match                                                             - Species summary will take care of it. 
+## GBIF spatial outliers: Ocean, middle of Australia, etc. pp? Duplicated?        - Check each map, email Alex Zika RE geoclean
 
-## GBIF spatial outliers: Ocean, middle of Australia, etc. ppp? Duplicated?       - Check each map, email Alex Zika
-
-## GBIF taxonomic errors?                                                         - Get GBIF issues uisng GBIF ID? Or redownload with occ_search
-
-## Duplicates between GBIF and ALA                                                - See email from CSIRO
+## Duplicates between GBIF and ALA                                                - See email from CSIRO, check in again with them
 
 
 

@@ -777,21 +777,29 @@ gbifColsToDrop <- c("cloc",
                     "organismScope")
 
 ## 
-gbif.keep <- c("searchTaxon",
+gbif.keep <- c(## TAXONOMY
+               "searchTaxon",
                "scientificName",
                "taxonRank",
                "genus",
                "family",
                
+               ## CULTIVATION
+               "cloc",
+               "basisOfRecord",
+               "locality",
                "institutionCode",
                "datasetName",
-               "basisOfRecord",
+               "habit",
+               "eventRemarks",
+               
+               ## RECORD ID
                "recordedBy",
                "identifiedBy",
                "gbifID",
                "catalogNumber",
-               "establishmentMeans",
-               
+
+               ## PLACE/TIME
                "lat",
                "lon",
                "country",
@@ -1090,7 +1098,7 @@ map_GBIF_records = function (taxa.list, DF) {
       title(paste0("Global occurrences for ", taxa.n))
       
       ## add points
-      points(DF[ which(DF$searchTaxon == taxa.n), ][[, c("lon", "lat")]], 
+      points(DF[ which(DF$searchTaxon == taxa.n), ][, c("lon", "lat")], 
              pch = ".", col = "red", cex = 3, asp = 1)
       
       

@@ -18,23 +18,40 @@ returned.taxa = unique(GBIF.LAND$scientificName)
 str(returned.taxa)
 
 
-########################################################################################################################
-## Use taxonlookup to check the taxonomy
+## Use taxonlookup to check the taxonomy of the returned list
 GBIF.LOOKUP = lookup_table(returned.taxa, by_species = TRUE, missing_action = "NA")    
 GBIF.LOOKUP = setDT(GBIF.LOOKUP , keep.rownames = TRUE)[]
-GBIF.LOOKUP = dplyr::rename(GBIF.LOOKUP, Binomial = rn)
-
-
-## So we have searched for every species on the list
-head(GBIF.LOOKUP)                                                               
-View(GBIF.LOOKUP)
-
-
-## But, just get the species that don't match (i.e. the NA rows...)
+GBIF.LOOKUP = dplyr::rename(GBIF.LOOKUP, scientificName = rn)
 GBIF.LOOKUP.MATCH  = na.omit(GBIF.LOOKUP)
+
+
+## Check out the match
+head(GBIF.LOOKUP.MATCH)
+
+
+## Get the errors
 GBIF.TAXO.ERRORS  <- GBIF.LOOKUP[rowSums(is.na(GBIF.LOOKUP)) > 0,]
 dim(GBIF.TAXO.ERRORS)
 head(GBIF.TAXO.ERRORS)
+
+
+## Merge these with the list from the original records
+GBIF.SEARCH = as.data.frame(unique(GBIF.LAND[, c("searchTaxon", "scientificName")]))
+names(GBIF.TAXO.ERRORS)
+names(GBIF.SEARCH)
+
+# dplyr::rename(GBIF.SEARCH, Binomial = "unique(GBIF.LAND[, c(\"searchTaxon\")])"
+GBIF.TAXO.ERRORS.JOIN = merge(GBIF.TAXO.ERRORS, GBIF.SEARCH, by = "scientificName", all = FALSE)
+View(GBIF.TAXO.ERRORS.JOIN)
+
+
+## Most of the taxonomic mis-matches look ok...could add a column that flags these as ok?
+## Or, use the taxon rank to get rid of those that don't match properly 
+
+
+## Then get only the species which matched against the taxonomy on taxonlookup
+GBIF.LAND.TAXO = GBIF.LAND[GBIF.LAND$scientificName %in% GBIF.LOOKUP.MATCH$Binomial, ]
+dim(GBIF.LAND)[1] - dim(GBIF.LAND.TAXO)[1] ## A difference of 200k records
 
 
 ## Write each table out to file:

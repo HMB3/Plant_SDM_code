@@ -22,7 +22,8 @@ packages <- c('ggplot2',   'plyr',      'reshape2',  'RColorBrewer',  'scales', 
               'gdalUtils', 'rvest',     'ConR',      'rvest',         'rasterVis',  'latticeExtra',
               'ff',        'things',    'raster',    'rgdal',         'data.table', 'RColorBrewer',
               'sp',        'rgeos',     'gdalUtils', 'rmaxent',       'dplyr',      'rasterVis',
-              'readr',     'readr',     'parallel',  'dismo',         'tidyr',      'envirem') # class(packages)
+              'readr',     'readr',     'parallel',  'dismo',         'tidyr',      'envirem',
+              'Taxonstand') # class(packages)
 
 
 ## also to create pdf/html documents, you need to install a latex program. EG MiKtex for windows.

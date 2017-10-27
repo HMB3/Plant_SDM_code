@@ -25,12 +25,47 @@ unique(Magnolia.grandiflora$eventID)
 
 ## Fields which could identify "managed"
 unique(Magnolia.grandiflora$locality)
+unique(Magnolia.grandiflora$basisOfRecord)
+unique(Magnolia.grandiflora$cloc)
+unique(Magnolia.grandiflora$habitat)
+unique(Magnolia.grandiflora$eventRemarks)
 
 
-## load managed data
-load("./data/base/HIA_LIST/GBIF/GBIF_MANAGED.RData")
+#########################################################################################################################
+## Try and find terms "garden" and "cultivated" in particular columns
+grepl("kite|cars|box kites", Magnolia.grandiflora$locality, ignore.case = TRUE)
 
 
+Magnolia.grandiflora$CULTIVATED <- ifelse(grepl("garden",       Magnolia.grandiflora$locality, ignore.case = TRUE) | 
+                                            grepl("cultiva",    Magnolia.grandiflora$locality, ignore.case = TRUE) |
+                                            
+                                            grepl("garden",     Magnolia.grandiflora$habitat, ignore.case = TRUE) | 
+                                            grepl("cultiva",    Magnolia.grandiflora$habitat, ignore.case = TRUE) |
+                                            
+                                            
+                                            grepl("garden",     Magnolia.grandiflora$eventRemarks, ignore.case = TRUE) | 
+                                            grepl("cultiva",    Magnolia.grandiflora$eventRemarks, ignore.case = TRUE) |
+                                            
+                                            grepl("garden",     Magnolia.grandiflora$cloc, ignore.case = TRUE) | 
+                                            grepl("cultiva",    Magnolia.grandiflora$cloc, ignore.case = TRUE) |
+                                            
+                                            grepl("managed",    Magnolia.grandiflora$establishmentMeans, ignore.case = TRUE),
+                                          
+                                          "CULTIVATED", "UNKNOWN")
+
+
+Magnolia.cult = subset(Magnolia.grandiflora, CULTIVATED == "CULTIVATED")
+dim(Magnolia.cult)[1]/dim(Magnolia.grandiflora)[1]
+
+
+#########################################################################################################################
+## GBIF issues? Not that helpful...
+# Abelia.geosp.t = gbif('Abelia grandiflora', args = list("hasGeospatialIssue=true"))
+# Abelia.geosp.f = gbif('Abelia grandiflora', args = list("hasGeospatialIssue=false"))
+# Abelia         = gbif('Abelia grandiflora', args = list("hasGeospatialIssue=false"))
+
+
+#########################################################################################################################
 ## The species list doesn't match the downloaded species, so create a list from the downloaded files
 spp.download = list.files("./data/base/HIA_LIST/GBIF/SPECIES/", pattern = ".RData")
 spp.download = gsub("_GBIF_records.RData", "", spp.download)
