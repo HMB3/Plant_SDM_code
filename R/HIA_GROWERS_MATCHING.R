@@ -64,7 +64,7 @@ GROW_TAXO_ERRORS  <- GROW.LOOKUP[rowSums(is.na(GROW.LOOKUP)) > 0,]
 
 
 ## Also, add the "Top 200" species in here
-spp.200          = top.200[c("Species", "t200_MATCH_25")]
+spp.200          = top.200[c("Species")]
 spp.200$Species  <- sub('(^\\S+ \\S+).*', '\\1', spp.200$Species) # \\s = white space; \\S = not white space
 
 spp.200$Species  = gsub("  ",     " ", spp.200$Species)
