@@ -10,6 +10,7 @@
 
 ## Load data
 EURO.RANGES = read.csv("./data/base/TRAITS/EURO_RANGE_SPECIES.csv", stringsAsFactors = FALSE)
+load("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.RData")
 
 
 ## Get species list which have ranges, and restrict big data frame to just those species
@@ -25,7 +26,11 @@ GBIF.RANGE    = GBIF.LAND[GBIF.LAND$searchTaxon %in% HIA.RANGE.SPP, ]
 
 
 #########################################################################################################################
-## Read in range maps
+## Create a list of shapefile and read them in
+Fagus.sylv = readOGR("./data/base/CONTEXTUAL/RANGES/Fagus_sylvatica_EUFORGEN.shp", layer = "Fagus_sylvatica_EUFORGEN")
+names(Fagus.sylv)
+
+
 range.list <- list.files(path      = "./data/base/CONTEXTUAL/RANGES/",  ## include the $ to stop the XML's being included
                          pattern   = "*.shp$", full.names = TRUE,
                          recursive = TRUE,     include.dirs = FALSE)
@@ -37,14 +42,12 @@ range.shp <- lapply(range.list, function(x) {readOGR(dsn = x,
 
 ## Can access each shapefile by indexing the list
 class(range.shp[[1]])
-Acer.campestre = range.shp[[1]]
-class(Acer.campestre)
 range.list = 2:5
 
 
 ## Plot each shapefile
 lapply(range.list, function(x) {plot(range.shp[[x]], 
-                                     #col = "light blue", 
+                                     col = "light blue", 
                                      main = range.shp[[x]]$Species)
   
   points(GBIF.RANGE[ which(GBIF.RANGE$searchTaxon == range.shp[[x]]$Species), ][, c("lon", "lat")],
@@ -77,8 +80,18 @@ Betula.pendula.range  = spTransform(Betula.pendula.range, CRS.new)
 
 
 ## Now what is the easiest way to record the native range? By checking if points are in the polygon?
+class(Betula.pendula.range)
+class(Betula.pendula)
+names(Betula.pendula.range)
+
+
 Betula.pendula = GBIF.RANGE.SP[GBIF.RANGE.SP@data$searchTaxon == "Betula pendula", ]
-Betula.over    = over(Betula.pendula, Betula.pendula.range)
+Betula.over    = over(GBIF.RANGE.SP, #Betula.pendula, 
+                      Betula.pendula.range)
+
+
+## Not sure why this is not working...
+str(Betula.over)
 
 
 

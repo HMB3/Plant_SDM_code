@@ -33,29 +33,21 @@ unique(Magnolia.grandiflora$eventRemarks)
 
 #########################################################################################################################
 ## Try and find terms "garden" and "cultivated" in particular columns
-grepl("kite|cars|box kites", Magnolia.grandiflora$locality, ignore.case = TRUE)
-
-
-Magnolia.grandiflora$CULTIVATED <- ifelse(grepl("garden",       Magnolia.grandiflora$locality, ignore.case = TRUE) | 
-                                            grepl("cultiva",    Magnolia.grandiflora$locality, ignore.case = TRUE) |
-                                            
-                                            grepl("garden",     Magnolia.grandiflora$habitat, ignore.case = TRUE) | 
-                                            grepl("cultiva",    Magnolia.grandiflora$habitat, ignore.case = TRUE) |
-                                            
-                                            
-                                            grepl("garden",     Magnolia.grandiflora$eventRemarks, ignore.case = TRUE) | 
-                                            grepl("cultiva",    Magnolia.grandiflora$eventRemarks, ignore.case = TRUE) |
-                                            
-                                            grepl("garden",     Magnolia.grandiflora$cloc, ignore.case = TRUE) | 
-                                            grepl("cultiva",    Magnolia.grandiflora$cloc, ignore.case = TRUE) |
-                                            
-                                            grepl("managed",    Magnolia.grandiflora$establishmentMeans, ignore.case = TRUE),
+Magnolia.grandiflora$CULTIVATED <- ifelse(grepl("garden|cultiva",   Magnolia.grandiflora$locality,  ignore.case = TRUE) | 
+                                            grepl("garden|cultiva", Magnolia.grandiflora$habitat, ignore.case = TRUE) | 
+                                            grepl("garden|cultiva", Magnolia.grandiflora$eventRemarks, ignore.case = TRUE) |
+                                            grepl("garden|cultiva", Magnolia.grandiflora$cloc, ignore.case = TRUE) |
+                                            grepl("managed",        Magnolia.grandiflora$establishmentMeans, ignore.case = TRUE),
                                           
                                           "CULTIVATED", "UNKNOWN")
 
 
+## This is probably a bit strict, in that for some of the fields, garden doesn't = cultivated
+unique(Magnolia.grandiflora$CULTIVATED)
 Magnolia.cult = subset(Magnolia.grandiflora, CULTIVATED == "CULTIVATED")
 dim(Magnolia.cult)[1]/dim(Magnolia.grandiflora)[1]
+View(Magnolia.cult)
+
 
 
 #########################################################################################################################

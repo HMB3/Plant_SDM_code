@@ -34,25 +34,16 @@ length(unique(GBIF.TRIM$searchTaxon))  ## has the list updated with extra specie
 
 
 #########################################################################################################################
-#### 1). MARK CULTIVATED RECORDS AND CHECK TAXONOMY
+## 1). MARK CULTIVATED RECORDS AND CHECK TAXONOMY
 #########################################################################################################################
 
 
 ## Try and make this one command: can these terms be searched for across the whole data frame (i.e. any column)
-GBIF.TRIM$CULTIVATED <- ifelse(grepl("garden",       GBIF.TRIM$locality, ignore.case = TRUE) | 
-                                 grepl("cultiva",    GBIF.TRIM$locality, ignore.case = TRUE) |
-                                 
-                                 grepl("garden",     GBIF.TRIM$habitat, ignore.case = TRUE) | 
-                                 grepl("cultiva",    GBIF.TRIM$habitat, ignore.case = TRUE) |
-                                 
-                                 
-                                 grepl("garden",     GBIF.TRIM$eventRemarks, ignore.case = TRUE) | 
-                                 grepl("cultiva",    GBIF.TRIM$eventRemarks, ignore.case = TRUE) |
-                                 
-                                 grepl("garden",     GBIF.TRIM$cloc, ignore.case = TRUE) | 
-                                 grepl("cultiva",    GBIF.TRIM$cloc, ignore.case = TRUE) |
-                                 
-                                 grepl("managed",    GBIF.TRIM$establishmentMeans, ignore.case = TRUE),
+GBIF.TRIM$CULTIVATED <- ifelse(grepl("garden|cultiva",   GBIF.TRIM$locality,           ignore.case = TRUE) | 
+                                 grepl("garden|cultiva", GBIF.TRIM$habitat,            ignore.case = TRUE) | 
+                                 grepl("garden|cultiva", GBIF.TRIM$eventRemarks,       ignore.case = TRUE) |
+                                 grepl("garden|cultiva", GBIF.TRIM$cloc,               ignore.case = TRUE) |
+                                 grepl("managed",        GBIF.TRIM$establishmentMeans, ignore.case = TRUE),
                                
                                "CULTIVATED", "UNKNOWN")
 
@@ -64,7 +55,6 @@ dim(GBIF.CULTIVATED)[1]/dim(GBIF.TRIM)[1]
 
 #########################################################################################################################
 ## CHECK TAXONOMY THAT GBIF RETURNED 
-
 ## Use "Taxonstand"
 GBIF.TAXO <- TPL(unique(GBIF.TRIM$scientificName), infra = TRUE,
                  corr = TRUE)
@@ -239,7 +229,7 @@ names(GBIF.CLEAN)
 
 
 #########################################################################################################################
-## 3). REMOVE POINTS OUTSIDE WORLDCLIM LAYERS...
+## 4). REMOVE POINTS OUTSIDE WORLDCLIM LAYERS...
 #########################################################################################################################
 
 
