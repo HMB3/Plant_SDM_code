@@ -665,14 +665,13 @@ read_bind_tables = function (table.list, path) {
 
 
 ## Keep
-gbifColsToDrop <- c("cloc",
+gbifColsToDrop <- c(
                     "crawlId",
                     "disposition",
                     "dynamicProperties",
                     "elevationAccuracy",
                     "endDayOfYear",
                     "startDayOfYear",
-                    "eventRemarks",
                     
                     "class",
                     "kingdom",
@@ -692,7 +691,6 @@ gbifColsToDrop <- c("cloc",
                     
                     "coordinatePrecision",
                     "georeferenceVerificationStatus",
-                    "eventID",
                     "lastCrawled",
                     "higherGeography",
                     "municipality",
@@ -727,7 +725,6 @@ gbifColsToDrop <- c("cloc",
                     "identificationID", 
                     "identificationQualifier", 
                     "identificationRemarks",                   
-                    "identifiedBy", 
                     "identifier", 
                     "individualCount",
                     
@@ -788,9 +785,10 @@ gbif.keep <- c(## TAXONOMY
                "cloc",
                "basisOfRecord",
                "locality",
+               "establishmentMeans",
                "institutionCode",
                "datasetName",
-               "habit",
+               "habitat",
                "eventRemarks",
                
                ## RECORD ID

@@ -112,6 +112,7 @@ GROWING    = read.csv("./data/base/HIA_LIST/HIA/database_aus_sp_growing.csv", st
 
 
 top.200    = read.csv("./data/base/HIA_LIST/HIA/HIA_TOP_200_1309_2017.csv",             stringsAsFactors = FALSE)
+renee.full = read.csv("./data/base/HIA_LIST/HIA/RENEE_FULL_LIST.csv", stringsAsFactors = FALSE) 
 renee.taxa = read.csv("./data/base/HIA_LIST/HIA/RENEE_TAXA.csv",                        stringsAsFactors = FALSE)
 renee.50   = read.csv("./data/base/HIA_LIST/HIA/RENEE_TOP_50.csv", stringsAsFactors = FALSE)
 

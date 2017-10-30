@@ -8,57 +8,8 @@
 #########################################################################################################################
 
 
-## quickly check the GBIF names:
-sp.n = "Magnolia grandiflora"
-Magnolia.grandiflora = gbif(sp.n, download = TRUE)
-GBIF.names = sort(names(Magnolia.grandiflora))
-
-
-## Rachel uses month and identifier. We could add a final check inside the Maxent code that will look for these.
-## But the taxonomic problems are more important...
-unique(Magnolia.grandiflora$month)
-unique(Magnolia.grandiflora$identifiedBy)
-
-unique(Magnolia.grandiflora$eventDate)
-unique(Magnolia.grandiflora$eventID)
-
-
-## Fields which could identify "managed"
-unique(Magnolia.grandiflora$locality)
-unique(Magnolia.grandiflora$basisOfRecord)
-unique(Magnolia.grandiflora$cloc)
-unique(Magnolia.grandiflora$habitat)
-unique(Magnolia.grandiflora$eventRemarks)
-
-
 #########################################################################################################################
-## Try and find terms "garden" and "cultivated" in particular columns
-Magnolia.grandiflora$CULTIVATED <- ifelse(grepl("garden|cultiva",   Magnolia.grandiflora$locality,  ignore.case = TRUE) | 
-                                            grepl("garden|cultiva", Magnolia.grandiflora$habitat, ignore.case = TRUE) | 
-                                            grepl("garden|cultiva", Magnolia.grandiflora$eventRemarks, ignore.case = TRUE) |
-                                            grepl("garden|cultiva", Magnolia.grandiflora$cloc, ignore.case = TRUE) |
-                                            grepl("managed",        Magnolia.grandiflora$establishmentMeans, ignore.case = TRUE),
-                                          
-                                          "CULTIVATED", "UNKNOWN")
-
-
-## This is probably a bit strict, in that for some of the fields, garden doesn't = cultivated
-unique(Magnolia.grandiflora$CULTIVATED)
-Magnolia.cult = subset(Magnolia.grandiflora, CULTIVATED == "CULTIVATED")
-dim(Magnolia.cult)[1]/dim(Magnolia.grandiflora)[1]
-View(Magnolia.cult)
-
-
-
-#########################################################################################################################
-## GBIF issues? Not that helpful...
-# Abelia.geosp.t = gbif('Abelia grandiflora', args = list("hasGeospatialIssue=true"))
-# Abelia.geosp.f = gbif('Abelia grandiflora', args = list("hasGeospatialIssue=false"))
-# Abelia         = gbif('Abelia grandiflora', args = list("hasGeospatialIssue=false"))
-
-
-#########################################################################################################################
-## The species list doesn't match the downloaded species, so create a list from the downloaded files
+## Create a list of species from the downloaded files
 spp.download = list.files("./data/base/HIA_LIST/GBIF/SPECIES/", pattern = ".RData")
 spp.download = gsub("_GBIF_records.RData", "", spp.download)
 
@@ -76,8 +27,10 @@ memory.limit()
 gc()
 
 
-## Check names:
+## Check GBIF column names:
 sort(unique(gbifColsToDrop))
+sort(unique(gbif.keep))
+intersect(unique(gbifColsToDrop), unique(gbif.keep))     ## don't get rid of any of the columns we want to keep
  
  
 #########################################################################################################################
@@ -141,9 +94,9 @@ names(GBIF.TRIM)
 
 
 ## Have a quick look at date values
-sort(unique(GBIF.TRIM$year))
-sort(unique(GBIF.TRIM$month))
-sort(unique(GBIF.TRIM$eventDate))
+# sort(unique(GBIF.TRIM$year))
+# sort(unique(GBIF.TRIM$month))
+# sort(unique(GBIF.TRIM$eventDate))
 
 
 ## Remove the varieties, etc., from the scientific name returned by GBIF: probably get rid of this!

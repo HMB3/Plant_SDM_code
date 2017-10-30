@@ -3,8 +3,75 @@
 #########################################################################################################################
 
 
+
 #########################################################################################################################
-## 1). READ IN SPECIES RANGES
+## 1). CHOOSE SPECIES
+#########################################################################################################################
+
+
+## Also when doing a subset, need to decide on the factors for choosing species:
+## Mix of families
+## Mix of % cultivated/non
+## Spatial data available for native vs. non-native
+## Mix of natives/exotic
+
+
+## The top 50
+HIA.SORT = HIA.SPP[order(HIA.SPP$Number.of.growers, rev(HIA.SPP$Top_200), decreasing = TRUE), ]
+View(HIA.SORT)
+
+
+## From the top 50, choose
+View(head(HIA.SORT, 50)) 
+TEST.SPP = head(HIA.SORT$Binomial, 50) 
+
+
+## What is the overlap between
+intersect(renee.full$Species, TEST.SPP)
+intersect(GBIF.RANGE$searchTaxon, TEST.SPP)
+
+
+## Add on the species which have geographic ranges
+TEST.SPP = c(TEST.SPP, "Betula pendula", "Fraxinus excelsior", "Quercus robur")
+TEST.SPP
+
+
+## quickly check the GBIF names:
+sp.n = TEST.SPP[10]
+sp.n
+
+taxa.test = gbif(sp.n, download = TRUE)
+GBIF.names = sort(names(taxa.test))
+
+
+#########################################################################################################################
+## Try and find terms "garden" and "cultivated" in particular columns
+taxa.test$CULTIVATED <- ifelse(grepl("garden|cultiva",   taxa.test$locality,           ignore.case = TRUE) | 
+                                 grepl("garden|cultiva", taxa.test$habitat,            ignore.case = TRUE) | 
+                                 grepl("garden|cultiva", taxa.test$eventRemarks,       ignore.case = TRUE) |
+                                 grepl("garden|cultiva", taxa.test$cloc,               ignore.case = TRUE) |
+                                 grepl("managed",        taxa.test$establishmentMeans, ignore.case = TRUE),
+                               
+                               "CULTIVATED", "UNKNOWN")
+
+
+## This is probably a bit strict, in that for some of the fields, garden doesn't = cultivated
+unique(taxa.test$CULTIVATED)
+test.cult = subset(taxa.test, CULTIVATED == "CULTIVATED")
+dim(test.cult)[1]/dim(taxa.test)[1]
+View(test.cult)
+
+
+
+#########################################################################################################################
+## GBIF issues? Not that helpful...
+# Abelia.geosp.t = gbif('Abelia grandiflora', args = list("hasGeospatialIssue=true"))
+# Abelia.geosp.f = gbif('Abelia grandiflora', args = list("hasGeospatialIssue=false"))
+# Abelia         = gbif('Abelia grandiflora', args = list("hasGeospatialIssue=false"))
+
+
+#########################################################################################################################
+## 2). READ IN SPECIES RANGES
 #########################################################################################################################
 
 
@@ -15,34 +82,31 @@ load("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.RData")
 
 ## Get species list which have ranges, and restrict big data frame to just those species
 HIA.RANGE.SPP = intersect(HIA.SPP$Binomial, EURO.RANGES$Species)
-GBIF.RANGE    = GBIF.LAND[GBIF.LAND$searchTaxon %in% HIA.RANGE.SPP, ] 
-
-
-## Also when doing a subset, need to decide on the factors for choosing species:
-## Mix of families
-## Mix of % cultivated/non
-## Spatial data available for native vs. non-native
-## Mix of natives/exotic
+GBIF.RANGE    = GBIF.LAND[GBIF.LAND$searchTaxon %in% HIA.RANGE.SPP, ]
+unique(GBIF.RANGE$searchTaxon)
 
 
 #########################################################################################################################
 ## Create a list of shapefile and read them in
-Fagus.sylv = readOGR("./data/base/CONTEXTUAL/RANGES/Fagus_sylvatica_EUFORGEN.shp", layer = "Fagus_sylvatica_EUFORGEN")
-names(Fagus.sylv)
+# Fagus.sylv = readOGR("./data/base/CONTEXTUAL/RANGES/Fagus_sylvatica_EUFORGEN.shp", layer = "Fagus_sylvatica_EUFORGEN")
+# names(Fagus.sylv)
+## The computer is running very slowly...
 
 
+## List the .shp
 range.list <- list.files(path      = "./data/base/CONTEXTUAL/RANGES/",  ## include the $ to stop the XML's being included
                          pattern   = "*.shp$", full.names = TRUE,
                          recursive = TRUE,     include.dirs = FALSE)
 
 
-## Create a list of all the data frames
+## Read them in
 range.shp <- lapply(range.list, function(x) {readOGR(dsn = x, 
                                                      layer = ogrListLayers(x))})
 
+
 ## Can access each shapefile by indexing the list
 class(range.shp[[1]])
-range.list = 2:5
+shp.list = 2:5
 
 
 ## Plot each shapefile
@@ -60,7 +124,7 @@ lapply(range.list, function(x) {plot(range.shp[[x]],
 
 
 #########################################################################################################################
-## 2). CHECK IF SPECIES ARE IN THE RANGE OR NOT
+## 3). CHECK IF SPECIES ARE IN THE RANGE OR NOT
 #########################################################################################################################
 
 
@@ -75,6 +139,14 @@ GBIF.RANGE.SP   = SpatialPointsDataFrame(coords = GBIF.RANGE[c("lon", "lat")],
 
 ## Project
 Betula.pendula.range = range.shp[[2]]
+Betula.pendula.range = range.shp[[3]]
+Betula.pendula.range = range.shp[[4]]
+Betula.pendula.range = range.shp[[5]]
+
+
+
+
+
 CRS.new  <- CRS("+init=epsg:4326") # EPSG:3577
 Betula.pendula.range  = spTransform(Betula.pendula.range, CRS.new)
 
@@ -90,9 +162,11 @@ Betula.over    = over(GBIF.RANGE.SP, #Betula.pendula,
                       Betula.pendula.range)
 
 
-## Not sure why this is not working...
+## So over returns the species name if the point is inside that species range.
+## but this would make the table too big, because you would need a column for each species
 str(Betula.over)
-
+unique(Betula.over$Species)
+count(Betula.over, Species)
 
 
 

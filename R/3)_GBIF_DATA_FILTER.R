@@ -49,6 +49,7 @@ GBIF.TRIM$CULTIVATED <- ifelse(grepl("garden|cultiva",   GBIF.TRIM$locality,    
 
 
 ## How many records are knocked out by using this definition?
+## This is probably a bit strict, in that for some of the fields, garden doesn't = cultivated
 GBIF.CULTIVATED = subset(GBIF.TRIM, CULTIVATED == "CULTIVATED")
 dim(GBIF.CULTIVATED)[1]/dim(GBIF.TRIM)[1]
 
