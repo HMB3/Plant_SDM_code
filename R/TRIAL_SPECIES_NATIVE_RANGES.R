@@ -24,7 +24,7 @@ intersect(renee.full$Species, HIA.SORT)
 
 ## Or, just use Renee's shortlist, and add on the the species which have geographic ranges.
 ## Renee and Dave have done a selection process which
-test.spp = sort(unique(c(renee.full$Species, "Betula pendula", "Fraxinus excelsior", "Quercus robur")))
+test.spp = sort(unique(c(renee.full$Species, "Betula pendula", "Fraxinus excelsior", "Quercus robur", "Fagus sylvatica")))
 test.spp 
 
 
@@ -81,7 +81,7 @@ names(GBIF.RANGE)
 
 ## Check these species
 dim(GBIF.RANGE)
-unique(GBIF.RANGE$searchTaxon)  ## 1.1 million records for 15 species, very well recorded!
+unique(GBIF.RANGE$searchTaxon)  ## 900k records for 54 species
 
 
 ## Plot this restricted dataset, just to check that it covers the whole world, rather than just Europe
@@ -106,6 +106,7 @@ range.shp <- lapply(range.list, function(x) {readOGR(dsn = x,
 
 
 ## Can access each shapefile by indexing the list
+names(range.shp)
 class(range.shp[[1]])
 shp.list = 2:5
 
@@ -130,7 +131,11 @@ lapply(shp.list, function(x) {plot(range.shp[[x]],
 #########################################################################################################################
 
 
-## Can we achieve the native calculation by just adding a column for native range? This will be 
+## Can we achieve the native calculation by just adding a column for native range? Also can we do this for n species, 
+## rather than one species? This is just a question of the size/time to run the over calculation. Or, can we 
+
+
+
 ## Convert to spatial points data frame
 GBIF.RANGE.SP   = SpatialPointsDataFrame(coords = GBIF.RANGE[c("lon", "lat")], 
                                          data   = GBIF.RANGE,
@@ -158,32 +163,19 @@ names(Betula.pendula.range);names(Betula.pendula)
 #########################################################################################################################
 ## Now what is the easiest way to record the native range? By checking if points are in the polygon?
 ## Use the over function to see which points are in the polygon
-Betula.pendula = GBIF.RANGE.SP[GBIF.RANGE.SP@data$searchTaxon == "Betula pendula", ]
-Betula.over    = over(GBIF.RANGE.SP, #Betula.pendula, 
+Betula.over    = over(GBIF.RANGE.SP, 
                       Betula.pendula.range)
 
 
-## rename and reassign so the meaning is less cryptic
+## Rename and reassign so the meaning is less cryptic
 Betula.over = Betula.over %>%
-  setNames(c('Betula_pendula_range')) %>%
-  as.data.frame(as.character(Betula.over$Betula_pendula_range)) %>%
-  setNames(c('Betula_pendula_range'))
-
-
-
-
+  setNames(c('Betula_pendula_range')) 
 str(Betula.over)
-Betula.over = as.data.frame(as.character(Betula.over$Betula_pendula_range))
 
 
-## Change the species to "inside" and others to "outside": reassign factor levels
-## levels(data1$c) <- sub("_", "-", levels(data1$c))
-`levels<-`(addNA(Betula.over$Betula_pendula_range), c(levels(Betula.over$Betula_pendula_range), "OUTSIDE_RANGE"))
-#levels(Betula.over$Betula_pendula_range)[levels(Betula.over$Betula_pendula_range)== "Betula pendula"] <- "INSIDE_RANGE"
-
-## Check
-names(Betula.over)
-str(Betula.over$Betula_pendula_range)
+## Change the NAs to "outside", not sure how to reassign factor levels
+## levels(Betula.over$Betula_pendula_range) <- sub("Betula pendula", "INSIDE_RANGE", levels(Betula.over$Betula_pendula_range))
+#`levels<-`(addNA(Betula.over$Betula_pendula_range), c(levels(Betula.over$Betula_pendula_range), "OUTSIDE_RANGE"))
 
 
 ## So using 'over' with this data returns the species name if the point is inside that species range, and NA if the point is 
@@ -203,17 +195,41 @@ names(GBIF.RANGE)
 
 ## Plot the Betula points inside the range
 plot(LAND)
-points(GBIF.RANGE[ which(GBIF.RANGE$Betula_pendula_range == "INSIDE_RANGE"), ][, c("lon", "lat")],
+points(GBIF.RANGE[ which(GBIF.RANGE$Betula_pendula_range == "Betula pendula"), ][, c("lon", "lat")],
        pch = ".", col = "red",
        cex = 1.3, asp = 1)
 
 
 ## Plot the Betula points outside the range
 plot(LAND)
-points(GBIF.RANGE[ is.na(GBIF.RANGE$Betula_pendula_range), ][, c("lon", "lat")],
+points(GBIF.RANGE[ which(GBIF.RANGE$Betula_pendula_range == "OUTSIDE_RANGE"), ][, c("lon", "lat")],
        pch = ".", col = "red",
        cex = 1.3, asp = 1)
 
+
+
+## So, of this code works, how would I put it in the workflow? I could create a loop or function that would use "sp.n" to generate 
+## the out/in column for each species. 
+
+## A dataframe with just these species is probably easier, using the clean records and ignoring the other contextual data.
+## This could then be passed to the SDM maxent and prediction code as a separate analysis. So just replace SDM.DATA with the
+## native range dataframe...
+
+
+## So not all analyses will be replicated all they way through. For any species subset, we can do culivated / uncultivated, for
+## All scenarios. However, we can't do this for inside / outside native range, except for a small subset of species. These analyses
+## Are just for exploration/publication, so probably not crucial to the industry tool.
+
+
+
+
+
+#########################################################################################################################
+## 4). OVERLAY POLYGONS FOR MULTIPLE SPECIES
+#########################################################################################################################
+
+
+## Can we just use the list of shapefiles?
 
 
 
