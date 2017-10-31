@@ -151,6 +151,7 @@ Quercus.robur.range       = range.shp[[5]]
 
 ## Project, and check they are the same
 CRS.new  <- CRS("+init=epsg:4326") # EPSG:3577
+
 Betula.pendula.range  = spTransform(Betula.pendula.range, CRS.new)
 projection(GBIF.RANGE.SP);projection(Betula.pendula.range)
 

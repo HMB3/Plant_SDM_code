@@ -68,6 +68,8 @@ GBIF.CULTIVATED <- GBIF.TRIM %>%
 
 ## Unique(GBIF.UNRESOLVED$New.Taxonomic.status)
 dim(GBIF.CULTIVATED)
+names(GBIF.CULTIVATED)
+unique(GBIF.CULTIVATED$CULTIVATED)
 save(GBIF.CULTIVATED, file = paste("./data/base/HIA_LIST/GBIF/GBIF_CULTIVATED.RData"))
 
 
@@ -97,12 +99,17 @@ GBIF.TRIM <- GBIF.TRIM %>%
 
 
 ## So we can filter by the agreement between "scientificName", and "New.Taxonomic.status"?
-## Not sure if this completely checks the searched and returned species match, but maybe good enough...
-unique(GBIF.TAXO.CHECK$New.Taxonomic.status)
+## A better way could be to create a new filter for agreement between the search taxon genus and species,
+## and the new genus and species.
+unique(GBIF.TRIM$New.Taxonomic.status)
+
+
+## Create a column for the agreement between the new genus and the old genus
+test = strsplit(head(GBIF.TRIM$searchTaxon, 5), " ")
 
 
 ## Also keep the managed records:
-GBIF.UNRESOLVED <- GBIF.TAXO.CHECK %>% 
+GBIF.UNRESOLVED <- GBIF.TRIM %>% 
   
   ## Note that these filters are very forgiving...
   ## Unless we include the NAs, very few records are returned!
@@ -110,7 +117,8 @@ GBIF.UNRESOLVED <- GBIF.TAXO.CHECK %>%
 
 
 ## Also keep the managed records:
-dim(GBIF.UNRESOLVED)
+unique(GBIF.UNRESOLVED$New.Taxonomic.status)
+dim(GBIF.UNRESOLVED)   ## 1.2 million unresolved records, quite a lot!
 
 
 ## Unique(GBIF.UNRESOLVED$New.Taxonomic.status)
@@ -132,29 +140,22 @@ GBIF.PROBLEMS <- with(GBIF.TRIM,
                  
                  table(
                    
-                   ## Note this list could be exanded for other data types
-                   ## ALA/AVH, council data, etc.
+                   ## Note this list is incomplete
                    
                    ## No coordinates
                    is.na(lon)|is.na(lat),
                    
-                   ## Also add geoclean
-                   #GEOCLEAN   == 'FALSE',
-                   
-                   ## Also add duplicated
-                   #DUPLICATED == 'TRUE',
-                   
                    ## Taxon rank is genus/form?
                    #taxonRank == 'GENUS' & 'FORM',
                    
-                   ## Taxonomic status
+                   ## Taxonomic status: consider if this is the right filter, it seems to restrictive
                    New.Taxonomic.status == 'Unresolved',
                    
                    ## Cultivated
                    CULTIVATED == 'CULTIVATED',
                    
-                   ## Establishment means is "MANAGED", can change this:
-                   establishmentMeans == 'MANAGED' & !is.na(establishmentMeans),
+                   ## Establishment means is "MANAGED" is included in the above
+                   #establishmentMeans == 'MANAGED' & !is.na(establishmentMeans),
                    
                    ## Collected before 1950 or na.year
                    year < 1950 & !is.na(year),
@@ -176,14 +177,14 @@ GBIF.PROBLEMS <- with(GBIF.TRIM,
   ## Create a data frame and set the names
   as.data.frame %>%  
   
-  setNames(c('NO_COORD', 'TAXON_STATUS',
-             'CULTIVATED', #'GEOCLEAN', 'DUPLICATED', #'MANAGED',  
-             'PRE_1950', 'NO_YEAR', 
+  setNames(c('NO_COORD',     'TAXON_STATUS', 'CULTIVATED', 
+             'PRE_1950',     'NO_YEAR', 
              'COORD_UNCERT', 'COUNT'))
 
 
 ## Print table to screen: in .Rmd file, no need to save
 ## Note that TRUE indicates there is a problem (e.g. no lat/long = TRUE)
+str(GBIF.PROBLEMS)
 kable(GBIF.PROBLEMS)
 
 
@@ -201,23 +202,26 @@ identical(dim(GBIF.TRIM)[1], Total.count)  ## identical matches two objects
 
 
 ## Filter the GBIF records using conditions which are not too restrictive
+dim(GBIF.TRIM)
 GBIF.CLEAN <- GBIF.TRIM %>% 
   
   ## Note that these filters are very forgiving...
   ## Unless we include the NAs, very few records are returned!
   filter(!is.na(lon) & !is.na(lat),
-         #establishmentMeans!='MANAGED' | is.na(establishmentMeans),
          
+         ## CULTIVATED == 'CULTIVATED', 
+         ## #establishmentMeans!='MANAGED' | is.na(establishmentMeans),
+
          year >= 1950 & !is.na(year),
-         New.Taxonomic.status == 'Unresolved')
-         # DUPLICATED != 'TRUE',
-         # GEOCLEAN   != 'FALSE')
+         New.Taxonomic.status == 'Accepted')
 
 
 ## The table above gives the details, but worth documenting how many records are knocked out by each filter
-Remaining.records = dim(GBIF.CLEAN)[1] 
+## Consider what these filters accomplish. Is it really worth knocking out that many records automatically?
+dim(GBIF.CLEAN)
+
 Remaining.percent = dim(GBIF.CLEAN)[1]/Total.count*100
-Filters.applied = "NA COORD | CULTIVATED | < 1950/NA | UNRESOLVED TAXONOMY"
+Filters.applied = "NA COORD | < 1950/NA | UNRESOLVED TAXONOMY" ## INCLUDE CULTIVATED RECORDS
 Remaining.percent ## 57% of records remain after cleaning 
 gc()
 
