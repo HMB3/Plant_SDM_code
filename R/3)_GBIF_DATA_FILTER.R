@@ -75,8 +75,20 @@ save(GBIF.CULTIVATED, file = paste("./data/base/HIA_LIST/GBIF/GBIF_CULTIVATED.RD
 ## CHECK TAXONOMY THAT GBIF RETURNED 
 ## Use "Taxonstand". This also assumes that the ALA data is clean
 GBIF.TAXO <- TPL(unique(GBIF.TRIM$scientificName), infra = TRUE,
-                 corr = TRUE)
+                 corr = TRUE, repeats = 100)
 sort(names(GBIF.TAXO))
+
+
+# Error in TPLck(sp = d, infra = infra, corr = corr, diffchar = diffchar,  : 
+#                  Cannot read TPL website.
+# : 'The operation timed out'
+
+
+# The procedure used for taxonomic standardization is based on function TPLck. A progress bar
+# indicates the proportion of taxon names processed so far. In case the TPL website cannot be reached
+# temporarily, the function returns an error but repeats trying to match the given taxon multiple times
+# (see repeats). If standardization is still not successful, the input taxon is returned in field ’Taxon’
+# with NA in all other fields
 
 
 ## Then join the GBIF data to the taxonomic check, using "scientificName" as the join field... 

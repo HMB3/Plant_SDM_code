@@ -142,36 +142,66 @@ Fraxinus.excelsior.range  = range.shp[[4]]
 Quercus.robur.range       = range.shp[[5]]
 
 
-## Project...
+## Project, and check they are the same
 CRS.new  <- CRS("+init=epsg:4326") # EPSG:3577
 Betula.pendula.range  = spTransform(Betula.pendula.range, CRS.new)
+projection(GBIF.RANGE.SP);projection(Betula.pendula.range)
 
 
 ## Now what is the easiest way to record the native range? By checking if points are in the polygon?
-class(Betula.pendula.range)
-class(Betula.pendula)
-names(Betula.pendula.range)
+class(Betula.pendula.range);class(Betula.pendula)
+names(Betula.pendula.range);names(Betula.pendula)
 
 
 #########################################################################################################################
+## Now what is the easiest way to record the native range? By checking if points are in the polygon?
+## Use the over function to see which points are in the polygon
 Betula.pendula = GBIF.RANGE.SP[GBIF.RANGE.SP@data$searchTaxon == "Betula pendula", ]
 Betula.over    = over(GBIF.RANGE.SP, #Betula.pendula, 
                       Betula.pendula.range)
 
 
-## So over returns the species name if the point is inside that species range, and NA if the point is outside the range
-## 
-## But this would make the table too big, because you would need a column for each species
-str(Betula.over)
-unique(Betula.over$Species)
-count(Betula.over, Species)
+## rename and reassign so the meaning is less cryptic
+Betula.over = Betula.over %>%
+  setNames(c('Betula_pendula_range'))
 
 
-## So 58367/ 177219, or ~30% of the points are inside the native species range according to the polygon, and ~70% are outside...
+## Change the species to "inside" and others to "outside": reassign factor levels
+`levels<-`(addNA(Betula.over$Betula_pendula_range), c(levels(Betula.over$Betula_pendula_range), "OUTSIDE_RANGE"))
+levels(Betula.over$Betula_pendula_range)[levels(Betula.over$Betula_pendula_range)== "Betula pendula"] <- "INSIDE_RANGE"
+
+## Check
+str(Betula.over$Betula_pendula_range)
+
+
+## So using 'over' with this data returns the species name if the point is inside that species range, and NA if the point is 
+## outside the range. But would this make the table too big, because you would need a column for each species?
+## Potentially, the ranges could be stored as a lookup table, not in the main table. Then a row index could be used to return
+## the rows which. 
+
+
+## So 58367/177219, or ~30% of the points are inside the native species range according to the polygon, and ~70% are outside...
 count(Betula.over, Species)[2, 2]/ dim(Betula.pendula)[1]
 
 
-## Do a visual check
+## Do a visual check to see if the "species/NA" split makes sense
+GBIF.RANGE = cbind.data.frame(GBIF.RANGE, Betula.over)
+names(GBIF.RANGE)
+
+
+## Plot the Betula points inside the range
+plot(LAND)
+points(GBIF.RANGE[ which(GBIF.RANGE$Betula_pendula_range == "INSIDE_RANGE"), ][, c("lon", "lat")],
+       pch = ".", col = "red",
+       cex = 1.3, asp = 1)
+
+
+## Plot the Betula points outside the range
+plot(LAND)
+points(GBIF.RANGE[ which(GBIF.RANGE$Betula_pendula_range == "OUTSIDE_RANGE"), ][, c("lon", "lat")],
+       pch = ".", col = "red",
+       cex = 1.3, asp = 1)
+
 
 
 
