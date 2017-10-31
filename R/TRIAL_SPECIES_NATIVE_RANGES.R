@@ -75,6 +75,7 @@ load("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.RData")
 ## Get species list which have ranges, and restrict big data frame to just those species
 HIA.RANGE.SPP = intersect(HIA.SPP$Binomial, EURO.RANGES$Species)
 GBIF.RANGE    = GBIF.LAND[GBIF.LAND$searchTaxon %in% test.spp, ]
+names(GBIF.RANGE)
 #GBIF.RANGE    = COMBO.RASTER.CONTEXT[COMBO.RASTER.CONTEXT$searchTaxon %in% test.spp, ]
 
 
@@ -117,6 +118,7 @@ lapply(shp.list, function(x) {plot(range.shp[[x]],
   points(GBIF.RANGE[ which(GBIF.RANGE$searchTaxon == range.shp[[x]]$Species), ][, c("lon", "lat")],
          pch = ".", col = "red",
          cex = 1.3, asp = 1)
+  
 })
 
 
@@ -163,14 +165,24 @@ Betula.over    = over(GBIF.RANGE.SP, #Betula.pendula,
 
 ## rename and reassign so the meaning is less cryptic
 Betula.over = Betula.over %>%
+  setNames(c('Betula_pendula_range')) %>%
+  as.data.frame(as.character(Betula.over$Betula_pendula_range)) %>%
   setNames(c('Betula_pendula_range'))
 
 
+
+
+str(Betula.over)
+Betula.over = as.data.frame(as.character(Betula.over$Betula_pendula_range))
+
+
 ## Change the species to "inside" and others to "outside": reassign factor levels
+## levels(data1$c) <- sub("_", "-", levels(data1$c))
 `levels<-`(addNA(Betula.over$Betula_pendula_range), c(levels(Betula.over$Betula_pendula_range), "OUTSIDE_RANGE"))
-levels(Betula.over$Betula_pendula_range)[levels(Betula.over$Betula_pendula_range)== "Betula pendula"] <- "INSIDE_RANGE"
+#levels(Betula.over$Betula_pendula_range)[levels(Betula.over$Betula_pendula_range)== "Betula pendula"] <- "INSIDE_RANGE"
 
 ## Check
+names(Betula.over)
 str(Betula.over$Betula_pendula_range)
 
 
@@ -181,7 +193,7 @@ str(Betula.over$Betula_pendula_range)
 
 
 ## So 58367/177219, or ~30% of the points are inside the native species range according to the polygon, and ~70% are outside...
-count(Betula.over, Species)[2, 2]/ dim(Betula.pendula)[1]
+count(Betula.over, Betula_pendula_range)[2, 2]/ dim(Betula.pendula)[1] *100
 
 
 ## Do a visual check to see if the "species/NA" split makes sense
@@ -198,7 +210,7 @@ points(GBIF.RANGE[ which(GBIF.RANGE$Betula_pendula_range == "INSIDE_RANGE"), ][,
 
 ## Plot the Betula points outside the range
 plot(LAND)
-points(GBIF.RANGE[ which(GBIF.RANGE$Betula_pendula_range == "OUTSIDE_RANGE"), ][, c("lon", "lat")],
+points(GBIF.RANGE[ is.na(GBIF.RANGE$Betula_pendula_range), ][, c("lon", "lat")],
        pch = ".", col = "red",
        cex = 1.3, asp = 1)
 
