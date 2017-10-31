@@ -5,35 +5,31 @@
 
 
 #########################################################################################################################
-## 1). CHOOSE SPECIES
+## 1). CHOOSE SPECIES FOR SDM TEST
 #########################################################################################################################
 
 
-## Also when doing a subset, need to decide on the factors for choosing species:
+## When doing a subset, need to decide on the factors for choosing species:
 ## Mix of families
 ## Mix of % cultivated/non
 ## Spatial data available for native vs. non-native
 ## Mix of natives/exotic
 
 
-## The top 50
+## The top 50?
 HIA.SORT = HIA.SPP[order(HIA.SPP$Number.of.growers, rev(HIA.SPP$Top_200), decreasing = TRUE), ]
-View(HIA.SORT)
-
-
-## From the top 50, choose
-View(head(HIA.SORT, 50)) 
 HIA.SORT = head(HIA.SORT$Binomial, 50) 
 intersect(renee.full$Species, HIA.SORT)
 
 
-## Or, just use Renee's shortlist, and add on the the species which have geographic ranges
-TEST.SPP = sort(unique(c(renee.full$Species, "Betula pendula", "Fraxinus excelsior", "Quercus robur")))
-TEST.SPP 
+## Or, just use Renee's shortlist, and add on the the species which have geographic ranges.
+## Renee and Dave have done a selection process which
+test.spp = sort(unique(c(renee.full$Species, "Betula pendula", "Fraxinus excelsior", "Quercus robur")))
+test.spp 
 
 
 ## Quickly check the GBIF names:
-sp.n = TEST.SPP[1]
+sp.n = test.spp[1]
 sp.n
 
 
@@ -61,10 +57,9 @@ View(test.cult)
 
 
 #########################################################################################################################
-## GBIF issues? Not that helpful...
-# Abelia.geosp.t = gbif('Abelia grandiflora', args = list("hasGeospatialIssue=true"))
-# Abelia.geosp.f = gbif('Abelia grandiflora', args = list("hasGeospatialIssue=false"))
-# Abelia         = gbif('Abelia grandiflora', args = list("hasGeospatialIssue=false"))
+## Get just the records on the trial list
+COMBO.RASTER.TRIAL = COMBO.RASTER.CONTEXT[COMBO.RASTER.CONTEXT$searchTaxon %in% test.spp, ]
+
 
 
 #########################################################################################################################
@@ -79,18 +74,26 @@ load("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.RData")
 
 ## Get species list which have ranges, and restrict big data frame to just those species
 HIA.RANGE.SPP = intersect(HIA.SPP$Binomial, EURO.RANGES$Species)
-GBIF.RANGE    = GBIF.LAND[GBIF.LAND$searchTaxon %in% HIA.RANGE.SPP, ]
-unique(GBIF.RANGE$searchTaxon)
+GBIF.RANGE    = GBIF.LAND[GBIF.LAND$searchTaxon %in% test.spp, ]
+#GBIF.RANGE    = COMBO.RASTER.CONTEXT[COMBO.RASTER.CONTEXT$searchTaxon %in% test.spp, ]
+
+
+## Check these species
+dim(GBIF.RANGE)
+unique(GBIF.RANGE$searchTaxon)  ## 1.1 million records for 15 species, very well recorded!
+
+
+## Plot this restricted dataset, just to check that it covers the whole world, rather than just Europe
+LAND  <- readOGR("./data/base/CONTEXTUAL/ne_10m_land.shp", layer = "ne_10m_land")
+plot(LAND)
+points(GBIF.RANGE[c("lon", "lat")], pch = ".", col = "red")
+
+
 
 
 #########################################################################################################################
 ## Create a list of shapefile and read them in
-# Fagus.sylv = readOGR("./data/base/CONTEXTUAL/RANGES/Fagus_sylvatica_EUFORGEN.shp", layer = "Fagus_sylvatica_EUFORGEN")
-# names(Fagus.sylv)
-## The computer is running very slowly...
-
-
-## List the .shp
+## List the .shp's
 range.list <- list.files(path      = "./data/base/CONTEXTUAL/RANGES/",  ## include the $ to stop the XML's being included
                          pattern   = "*.shp$", full.names = TRUE,
                          recursive = TRUE,     include.dirs = FALSE)
@@ -107,7 +110,7 @@ shp.list = 2:5
 
 
 ## Plot each shapefile
-lapply(range.list, function(x) {plot(range.shp[[x]], 
+lapply(shp.list, function(x) {plot(range.shp[[x]], 
                                      col = "light blue", 
                                      main = range.shp[[x]]$Species)
   
@@ -126,8 +129,6 @@ lapply(range.list, function(x) {plot(range.shp[[x]],
 
 
 ## Can we achieve the native calculation by just adding a column for native range? This will be 
-
-
 ## Convert to spatial points data frame
 GBIF.RANGE.SP   = SpatialPointsDataFrame(coords = GBIF.RANGE[c("lon", "lat")], 
                                          data   = GBIF.RANGE,
@@ -135,15 +136,13 @@ GBIF.RANGE.SP   = SpatialPointsDataFrame(coords = GBIF.RANGE[c("lon", "lat")],
 
 
 ## Project
-Betula.pendula.range = range.shp[[2]]
-Betula.pendula.range = range.shp[[3]]
-Betula.pendula.range = range.shp[[4]]
-Betula.pendula.range = range.shp[[5]]
+Betula.pendula.range      = range.shp[[2]]
+Fagus.sylvatica.range     = range.shp[[3]]
+Fraxinus.excelsior.range  = range.shp[[4]]
+Quercus.robur.range       = range.shp[[5]]
 
 
-
-
-
+## Project...
 CRS.new  <- CRS("+init=epsg:4326") # EPSG:3577
 Betula.pendula.range  = spTransform(Betula.pendula.range, CRS.new)
 
@@ -154,16 +153,26 @@ class(Betula.pendula)
 names(Betula.pendula.range)
 
 
+#########################################################################################################################
 Betula.pendula = GBIF.RANGE.SP[GBIF.RANGE.SP@data$searchTaxon == "Betula pendula", ]
 Betula.over    = over(GBIF.RANGE.SP, #Betula.pendula, 
                       Betula.pendula.range)
 
 
-## So over returns the species name if the point is inside that species range.
-## but this would make the table too big, because you would need a column for each species
+## So over returns the species name if the point is inside that species range, and NA if the point is outside the range
+## 
+## But this would make the table too big, because you would need a column for each species
 str(Betula.over)
 unique(Betula.over$Species)
 count(Betula.over, Species)
+
+
+## So 58367/ 177219, or ~30% of the points are inside the native species range according to the polygon, and ~70% are outside...
+count(Betula.over, Species)[2, 2]/ dim(Betula.pendula)[1]
+
+
+## Do a visual check
+
 
 
 

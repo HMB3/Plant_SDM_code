@@ -38,7 +38,11 @@ length(unique(GBIF.TRIM$searchTaxon))  ## has the list updated with extra specie
 #########################################################################################################################
 
 
+## Consider whether this should be done before or after merging with ALA? Same applies for the taxonomic check
+
+
 ## Try and make this one command: can these terms be searched for across the whole data frame (i.e. any column)
+## Also lot's of Australian species don't have these columns, which might make it tricky to run the clean 
 GBIF.TRIM$CULTIVATED <- ifelse(grepl("garden|cultiva",   GBIF.TRIM$locality,           ignore.case = TRUE) | 
                                  grepl("garden|cultiva", GBIF.TRIM$habitat,            ignore.case = TRUE) | 
                                  grepl("garden|cultiva", GBIF.TRIM$eventRemarks,       ignore.case = TRUE) |
@@ -52,11 +56,24 @@ GBIF.TRIM$CULTIVATED <- ifelse(grepl("garden|cultiva",   GBIF.TRIM$locality,    
 ## This is probably a bit strict, in that for some of the fields, garden doesn't = cultivated
 GBIF.CULTIVATED = subset(GBIF.TRIM, CULTIVATED == "CULTIVATED")
 dim(GBIF.CULTIVATED)[1]/dim(GBIF.TRIM)[1]
+View(GBIF.CULTIVATED)
+
+
+## Also keep the cultivated records:
+GBIF.CULTIVATED <- GBIF.TRIM %>% 
+  
+  ## Note that these filters are very forgiving...
+  filter(CULTIVATED == "CULTIVATED")
+
+
+## Unique(GBIF.UNRESOLVED$New.Taxonomic.status)
+dim(GBIF.CULTIVATED)
+save(GBIF.CULTIVATED, file = paste("./data/base/HIA_LIST/GBIF/GBIF_CULTIVATED.RData"))
 
 
 #########################################################################################################################
 ## CHECK TAXONOMY THAT GBIF RETURNED 
-## Use "Taxonstand"
+## Use "Taxonstand". This also assumes that the ALA data is clean
 GBIF.TAXO <- TPL(unique(GBIF.TRIM$scientificName), infra = TRUE,
                  corr = TRUE)
 sort(names(GBIF.TAXO))
@@ -81,11 +98,7 @@ GBIF.UNRESOLVED <- GBIF.TAXO.CHECK %>%
 
 
 ## Also keep the managed records:
-# GBIF.TAXO.CHECK <- GBIF.TAXO.CHECK %>% 
-#   
-#   ## Note that these filters are very forgiving...
-#   ## Unless we include the NAs, very few records are returned!
-#   filter(New.Taxonomic.status == 'Accepted')
+dim(GBIF.UNRESOLVED)
 
 
 ## Unique(GBIF.UNRESOLVED$New.Taxonomic.status)
@@ -152,8 +165,8 @@ GBIF.PROBLEMS <- with(GBIF.TRIM,
   as.data.frame %>%  
   
   setNames(c('NO_COORD', 'TAXON_STATUS',
-             'CULTIVATED', #'GEOCLEAN', 'DUPLICATED', 
-             'MANAGED',  'PRE_1950', 'NO_YEAR', 
+             'CULTIVATED', #'GEOCLEAN', 'DUPLICATED', #'MANAGED',  
+             'PRE_1950', 'NO_YEAR', 
              'COORD_UNCERT', 'COUNT'))
 
 
@@ -165,28 +178,6 @@ kable(GBIF.PROBLEMS)
 ## Quickly check the total record number matches the count of problems
 Total.count = sum(GBIF.PROBLEMS$COUNT)
 identical(dim(GBIF.TRIM)[1], Total.count)  ## identical matches two objects
-
-
-## Probably don't need this
-save(GBIF.PROBLEMS,  file = paste("./data/base/HIA_LIST/GBIF/GBIF_PROBLEMS.RData"))
-
-
-## Also keep the managed records:
-GBIF.MANAGED <- GBIF.TRIM %>% 
-  
-  ## Note that these filters are very forgiving...
-  ## Unless we include the NAs, very few records are returned!
-  filter(establishmentMeans == 'MANAGED')
-
-
-## Unique(GBIF.MANAGED$establishmentMeans)
-save(GBIF.MANAGED, file = paste("./data/base/HIA_LIST/GBIF/GBIF_MANAGED.RData"))
-
-
-## Add field for managed/unmanaged 
-# COMBO.APNI = merge(COMBO.NICHE.CONTEXT, APNI, by = "searchTaxon", all.x = TRUE) 
-# COMBO.APNI$APNI[is.na(COMBO.APNI$APNI)] <- "FALSE"
-# unique(COMBO.APNI$APNI)
 
 
 
@@ -203,8 +194,10 @@ GBIF.CLEAN <- GBIF.TRIM %>%
   ## Note that these filters are very forgiving...
   ## Unless we include the NAs, very few records are returned!
   filter(!is.na(lon) & !is.na(lat),
-         establishmentMeans!='MANAGED' | is.na(establishmentMeans),
-         year >= 1950 & !is.na(year))
+         #establishmentMeans!='MANAGED' | is.na(establishmentMeans),
+         
+         year >= 1950 & !is.na(year),
+         New.Taxonomic.status == 'Unresolved')
          # DUPLICATED != 'TRUE',
          # GEOCLEAN   != 'FALSE')
 
@@ -212,7 +205,7 @@ GBIF.CLEAN <- GBIF.TRIM %>%
 ## The table above gives the details, but worth documenting how many records are knocked out by each filter
 Remaining.records = dim(GBIF.CLEAN)[1] 
 Remaining.percent = dim(GBIF.CLEAN)[1]/Total.count*100
-Filters.applied = "NA COORD | MANAGED/NA | < 1950/NA"
+Filters.applied = "NA COORD | CULTIVATED | < 1950/NA | UNRESOLVED TAXONOMY"
 Remaining.percent ## 57% of records remain after cleaning 
 gc()
 
@@ -317,7 +310,6 @@ plot(LAND)
 #########################################################################################################################
 ## save data
 save(GBIF.LAND,        file = paste("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.RData"))
-save(GBIF.TAXO.ERRORS, file = paste("./data/base/HIA_LIST/GBIF/GBIF_TAXO_ERRORS.RData", sep = ""))
 gc()
 
 
@@ -333,7 +325,7 @@ save.image("STEP_3_GBIF_CLEAN.RData")
 #########################################################################################################################
 
 
-## When should the additional filters be run in? Just after GBIF.TRIM?            - Ask John
+## When should the additional filters be run in? before or after ALA merge?       - Ask John
 
 ## GBIF taxonomic errors                                                          - Use taxonstand, check with John, Dave K.
 

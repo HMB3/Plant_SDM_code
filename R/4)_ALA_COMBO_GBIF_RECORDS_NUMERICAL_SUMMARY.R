@@ -171,10 +171,16 @@ summary(COMBO.POINTS)
 
 
 #########################################################################################################################
-## CREATE NEW COLUMNS FOR NATIVE/INVASIVE 
+## CREATE NEW COLUMNS FOR ALA CULTIVATED/NOT 
 #########################################################################################################################
 
-## Need the ALA data to have the columns for cultivated/not
+
+## Need the ALA data to have the columns for cultivated/not: Need the original data frame. Also we don't need to worry
+## that much about the duplicate recrods between GBIF and ALA, given we will just take one records per grid cell. Having
+## duplicate records when estimating the niche won't make much difference either, assuming the are close together in space.
+
+## Multiple records of the same specimen from different herbaria could be a problem though. Rachel's criteria of same month,
+## year, lat/long could help here though. Ask Stu for this code.
 
 
 
@@ -603,9 +609,8 @@ save.image("STEP_4_NICHES.RData")
 #########################################################################################################################
 
 
-## Check on species which seem to have been knocked out: E.G Fagus sylvatica. Individual filter doesn't knock them all out  
 
-## Check WORLDCLIM values some of the numbers don't look right
+## Check WORLDCLIM values: some of the numbers don't look right
 
 ## Check geographic range: doesn't look right for some species. Calc extent of occurrnece as well
 

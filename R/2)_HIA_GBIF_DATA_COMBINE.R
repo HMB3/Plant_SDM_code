@@ -133,7 +133,6 @@ save.image("STEP_2_GBIF_RAW.RData")
 
 
 ## Get the species with > 200k records
-
 ## Keep checking the taxonomy
 
 

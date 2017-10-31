@@ -36,6 +36,7 @@ p <- c('ff',    'things',         'raster',    'dismo',        'sp',           '
 sapply(p, require, character.only = TRUE)
 source('./R/GREEN_CITIES_FUNCTIONS.R')
 source('./R/SDM_FUNCTIONS.R')
+source('./R/TRIAL_SPECIES_NATIVE_RANGES.R')
 
 
 #########################################################################################################################
@@ -283,23 +284,28 @@ load("STEP_6_SDM.RData")
 
 #########################################################################################################################
 ## Create species subsets for analysis
+## All species
 spp.all  <- unique(COMBO.RASTER.CONTEXT$searchTaxon)
 str(spp.all)                 ## 6782
 
 
-## Just the top 200 species
-top.200.spp     = subset(COMBO.RASTER.CONTEXT, Top_200 == TRUE)["searchTaxon"] 
-top.200.spp     = as.character(unique(top.200.spp$searchTaxon))
-str(top.200.spp)
+## The trial species
+str(test.spp)
 
-## Just the species with > 25 growers
-spp.25     = subset(COMBO.RASTER.CONTEXT, Number.of.growers >= 25)["searchTaxon"]
-spp.25     = as.character(unique(spp.25$searchTaxon))
-str(spp.25)
+
+# ## Just the top 200 species
+# top.200.spp     = subset(COMBO.RASTER.CONTEXT, Top_200 == TRUE)["searchTaxon"] 
+# top.200.spp     = as.character(unique(top.200.spp$searchTaxon))
+# str(top.200.spp)
+# 
+# ## Just the species with > 25 growers
+# spp.25     = subset(COMBO.RASTER.CONTEXT, Number.of.growers >= 25)["searchTaxon"]
+# spp.25     = as.character(unique(spp.25$searchTaxon))
+# str(spp.25)
 
 
 ## Now reverse the order, so we can start another R session from the other end
-spp.25.reverse = sort(spp.25, decreasing = TRUE)
+test.reverse = sort(test.spp, decreasing = TRUE)
 
 
 
@@ -341,7 +347,7 @@ clusterEvalQ(cl, {
 
 ## Now use 'lapply' to run maxent for multiple species
 ## Note that running the code in parallel causes problems
-lapply(spp.25[1:length(spp.25)], function(x) { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel 
+lapply(test.spp[1:length(test.spp)], function(x) { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel 
   
   ## Print the taxa being processed to screen
   message('Doing ', x)
@@ -518,9 +524,6 @@ stopCluster(cl)
 
 ## Which GCMs and RCPs? Need layers for 2030, 2050, etc.
 
-## Create maps using prediction functions?
-
-## 
 
 
 
