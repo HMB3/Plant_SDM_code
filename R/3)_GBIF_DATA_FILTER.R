@@ -100,12 +100,22 @@ GBIF.TRIM <- GBIF.TRIM %>%
 
 ## So we can filter by the agreement between "scientificName", and "New.Taxonomic.status"?
 ## A better way could be to create a new filter for agreement between the search taxon genus and species,
-## and the new genus and species.
-unique(GBIF.TRIM$New.Taxonomic.status)
+## and the new genus and species. Which of these columns to keep?
 
 
-## Create a column for the agreement between the new genus and the old genus
-test = strsplit(head(GBIF.TRIM$searchTaxon, 5), " ")
+#########################################################################################################################
+## Now create a column for the agreement between the new genus and the old genus
+## First, trim the spaces out
+GBIF.TRIM$searchTaxon  = trim.space(GBIF.TRIM$searchTaxon)
+
+
+## Then combine the genus and species returned by TPL into
+GBIF.TRIM$TPL_binomial  = with(GBIF.TRIM, paste(New.Genus, New.Species, sep = " "))
+
+
+## Now match the searchTaxon with the binomial returned by TPL
+GBIF.TRIM$taxo_agree <- ifelse(
+  GBIF.TRIM$searchTaxon == GBIF.TRIM$New_binomial, TRUE, FALSE)
 
 
 ## Also keep the managed records:
@@ -125,6 +135,13 @@ dim(GBIF.UNRESOLVED)   ## 1.2 million unresolved records, quite a lot!
 save(GBIF.UNRESOLVED, file = paste("./data/base/HIA_LIST/GBIF/GBIF_UNRESOLVED.RData"))
 
 
+## Just keep these columns:
+## Taxonomic.status, Infraspecific.rank, New.Taxonomic.status, New.ID, New_binomial, taxo_agree
+GBIF.TRIM <- GBIF.TIM %>% 
+  select(one_of(TPL.keep))
+names(GBIF.TRIM)
+
+
 
 
 
@@ -137,41 +154,41 @@ save(GBIF.UNRESOLVED, file = paste("./data/base/HIA_LIST/GBIF/GBIF_UNRESOLVED.RD
 ## Then create a table which counts the number of records meeting each criteria:
 ## Note that TRUE indicates there is a problem (e.g. if a record has no lat/long, it will = TRUE)
 GBIF.PROBLEMS <- with(GBIF.TRIM,
-                 
-                 table(
-                   
-                   ## Note this list is incomplete
-                   
-                   ## No coordinates
-                   is.na(lon)|is.na(lat),
-                   
-                   ## Taxon rank is genus/form?
-                   #taxonRank == 'GENUS' & 'FORM',
-                   
-                   ## Taxonomic status: consider if this is the right filter, it seems to restrictive
-                   New.Taxonomic.status == 'Unresolved',
-                   
-                   ## Cultivated
-                   CULTIVATED == 'CULTIVATED',
-                   
-                   ## Establishment means is "MANAGED" is included in the above
-                   #establishmentMeans == 'MANAGED' & !is.na(establishmentMeans),
-                   
-                   ## Collected before 1950 or na.year
-                   year < 1950 & !is.na(year),
-                   
-                   ## No year
-                   is.na(year),
-                   
-                   ## Coordinate uncertainty is > 100 or is not NA
-                   coordinateUncertaintyInMeters > 1000 & 
-                     !is.na(coordinateUncertaintyInMeters)
-                   
-                   ## Add maybe the centre of Australia?
-                   ## Lamber centre of Aus: 25.610111, 134.354806
-                   
-                 )
-                 
+                      
+                      table(
+                        
+                        ## Note this list is incomplete
+                        
+                        ## No coordinates
+                        is.na(lon)|is.na(lat),
+                        
+                        ## Taxon rank is genus/form?
+                        #taxonRank == 'GENUS' & 'FORM',
+                        
+                        ## Taxonomic status: consider if this is the right filter, it seems to restrictive
+                        New.Taxonomic.status == 'Unresolved',
+                        
+                        ## Cultivated
+                        CULTIVATED == 'CULTIVATED',
+                        
+                        ## Establishment means is "MANAGED" is included in the above
+                        #establishmentMeans == 'MANAGED' & !is.na(establishmentMeans),
+                        
+                        ## Collected before 1950 or na.year
+                        year < 1950 & !is.na(year),
+                        
+                        ## No year
+                        is.na(year),
+                        
+                        ## Coordinate uncertainty is > 100 or is not NA
+                        coordinateUncertaintyInMeters > 1000 & 
+                          !is.na(coordinateUncertaintyInMeters)
+                        
+                        ## Add maybe the centre of Australia?
+                        ## Lamber centre of Aus: 25.610111, 134.354806
+                        
+                      )
+                      
 ) %>% 
   
   ## Create a data frame and set the names
@@ -211,7 +228,7 @@ GBIF.CLEAN <- GBIF.TRIM %>%
          
          ## CULTIVATED == 'CULTIVATED', 
          ## #establishmentMeans!='MANAGED' | is.na(establishmentMeans),
-
+         
          year >= 1950 & !is.na(year),
          New.Taxonomic.status == 'Accepted')
 
@@ -259,7 +276,7 @@ xy <- cellFromXY(world.temp, GBIF.CLEAN[c("lon", "lat")]) %>%
   
   ## get the unique raster cells
   unique %>% 
-
+  
   ## Get coordinates of the center of raster cells for a row, column, or cell number of WORLDCLIM raster
   xyFromCell(world.temp, .)
 
@@ -303,15 +320,7 @@ records.ocean = dim(GBIF.CLEAN)[1] - dim(GBIF.LAND)[1]  ## 91575 records are in 
 records.ocean
 
 
-#########################################################################################################################
-## Plot cleaned data
-#plot(world.temp)
-#points(GBIF.CLEAN[c("lon", "lat")], pch = ".", col = "red")
-
-
-## Plot cleaned data that's in the worldclim raster
-#plot(world.temp)
-#points(GBIF.LAND[c("lon", "lat")], pch = ".", col = "blue")
+## Free some memory
 gc()
 
 
@@ -360,5 +369,5 @@ save.image("STEP_3_GBIF_CLEAN.RData")
 
 
 #########################################################################################################################
-#####################################################  END ############################################################## 
+###################################################### TBC ############################################################## 
 #########################################################################################################################

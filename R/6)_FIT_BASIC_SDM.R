@@ -3,7 +3,7 @@
 #########################################################################################################################
 
 
-## This code takes a table of all species occurrences (rows) and environmental values "columns", and runs a maxent model 
+## This code takes a table of all species occurrences (rows) and environmental values (columns), and runs a maxent model 
 ## for each species. 
 
 
@@ -16,11 +16,13 @@
 ## in urban centres across Australia as the climate changes, based on our current understanding of species’ climatic 
 ## requirements.
 
+
 #########################################################################################################################
 ## There are a few key facors we would like to vary across the model runs:
 
 ## Environmnetal variables : run with the same core set, and also with variable selection
-## RECORDS                 : ALL, MANAGED & UNMANAGED
+## RECORDS                 : ALL, CULTIVATED & UNCULT
+## RANGES                  : ALL, NATIVE RANGE & NON-NATIVE
 ## GCMs/RCPs               : the lowest prioritym but probably do them all in the end
 
 
@@ -40,7 +42,7 @@ source('./R/TRIAL_SPECIES_NATIVE_RANGES.R')
 
 
 #########################################################################################################################
-## 1). SELECT WORLDCLIM VARIABLES 
+## 1). SELECT WORLDCLIM VARIABLES FOR STANDARD MODELS
 #########################################################################################################################
 
 
@@ -116,18 +118,6 @@ names(COMBO.RASTER.CONTEXT)
 
 #########################################################################################################################
 ## Now quantify the correlations between these variables are related within this set seems wise.
-## Take a subset of the data for one well recorded species.
-sp.n = "Fagus sylvatica"
-sp.subset <- subset(COMBO.RASTER.CONTEXT, searchTaxon == sp.n) %>%
-  
-  ## just get the sdm.predictors
-  select(one_of(sdm.predictors)) %>%
-  as.data.frame()
-
-dim(sp.subset)
-head(sp.subset)
-
-
 ## Try the correlation for everything
 combo.subset <- COMBO.RASTER.CONTEXT %>%
   
@@ -152,11 +142,11 @@ upperTriangle <- upper.tri(correlations, diag = F)
 correlations.upperTriangle <- correlations
 
 
-## Set everything not in upper triangle o NA
+## Set everything not in upper triangle to NA
 correlations.upperTriangle[!upperTriangle]<-NA                   
 
 
-## Use melt to reshape the matrix into triplets, na.omit to get rid of the NA rows
+## Use melt to reshape the matrix into triplets, and na.omit to get rid of the NA rows
 correlations.table <- na.omit(melt(correlations.upperTriangle, value.name = "correlationCoef")) 
 
 
@@ -166,36 +156,6 @@ colnames(correlations.table) <- c("Var1", "Var2", "Correlation")
 
 ## Reorder by absolute correlation
 correlations.table = correlations.table[order(-abs(correlations.table["Correlation"])),]  
-
-
-#########################################################################################################################
-# FAGUS.COR <- sp.subset
-# FAGUS.COR %>%
-#   
-#   ## First get the pearson correlations...
-#   cor(sp.subset) %>%
-#   
-#   ## Not all these steps are necessary
-#   FAGUS.COR[lower.tri(FAGUS.COR, diag = TRUE)] <- NA %>%
-#   
-#   ## Create data table
-#   as.data.frame(as.table(FAGUS.COR)) %>%
-# 
-#   ## Remove NAs
-#   na.omit(FAGUS.COR) %>%
-#   
-#   ## Order the table by the absolute correlation
-#   #FAGUS.COR[order(-abs(FAGUS.COR$Freq)),] %>%
-#   FAGUS.COR[order(-abs(FAGUS.COR["Freq"])),] %>%
-#   
-#   ## Rename the columns
-#   dplyr::rename(FAGUS.COR, 
-#                 Variable      = Var1,
-#                 Variable_2    = Var2,
-#                 Pearson_R2    = Freq)  %>%
-#   
-#   ## finally spit out a table
-#   as.data.frame()
 
 
 #########################################################################################################################
@@ -392,7 +352,7 @@ stopCluster(cl)
 
 ## Potential errors...
 
-## this is because you don't have maxent correctly installed yet 
+## This is because you don't have maxent correctly installed yet 
 # Error in .local(x, p, ...) : args not understood:
 #   replicates = 5, responsecurves = TRUE, threshold = FALSE, hinge = FALSE
 
@@ -404,112 +364,7 @@ stopCluster(cl)
 #   Field names abbreviated for ESRI Shapefile driver
 
 stopCluster(cl)
-
-
 ## Look at the output...
-
-
-
-
-
-#########################################################################################################################
-## 3). PROJECT MODELS
-#########################################################################################################################
-
-
-#########################################################################################################################
-## Here we needs to choose RCPs and emission senarios. This data should be stored locally, so we can access from
-
-
-
-# models         <- list.files('F:/output', '^maxent_fitted\\.rds$', recursive = TRUE, full = TRUE)
-# models_by_type <- split(models, sub('plants_|chordata_|nonchordata_', '', 
-#                                     basename(dirname(dirname(models)))))
-# 
-# # Project to current climate, all of Australia, for each of three predictor 
-# # sets: clim+soil, clim+soil+weathering, clim+soil+weathering+topography
-# lapply(names(models_by_type), function(x) {
-#   
-#   clim <- sprintf(
-#     
-#     'f:/data/narclim_from_c_drive/albers/1km/BIOCLIM/epoch_1990_2009/aus/bioclim_1990-2009_aus_%s_albers.tif', 
-#     c('p02', 'p04', 'p05', 'p06', 'p13', 'p14', 'p15'))
-#   
-#   soil <- c('c:/data/csiro/soil_spectra/1km/aus/PC1.tif',
-#             'c:/data/csiro/soil_spectra/1km/aus/PC2.tif',
-#             'c:/data/csiro/soil_spectra/1km/aus/PC3.tif')
-#   
-#   wii <- 'c:/data/weathering/wii_1km_albers.tif'
-#   tpi <- 'f:/data/narclim/CSIRO_topo_AA/CSIRO_TPI_eMast_albers.tif'
-#   twi <- 'f:/data/narclim/CSIRO_topo_AA/TWI_eMAST_albers.tif'
-#   
-#   preds <- switch(
-#     
-#     x,
-#     clim_soil = c(clim, soil),
-#     clim_soil_topo_wii = c(clim, soil, wii, tpi, twi),
-#     clim_soil_wii = c(clim, soil, wii))
-#   
-#   s <- stack(preds)
-#   
-#   scen <- 'current'
-#   names(s) <- sub('.*(p\\d{2})_?.*', '\\1', names(s))
-#   names(s) <- gsub("_eMast_albers|_1km_albers|_eMAST_albers|CSIRO_","",names(s))
-#   
-#   # Identify which cells have data for all sdm.predictors.
-#   # locs contains cell numbers and corresponding coordinates of non-NA cells.
-#   locs  <- which(!is.na(sum(s)[]))
-#   locs  <- cbind(cell = locs, xyFromCell(s, locs))
-#   cells <- locs[, 'cell']
-#   r     <- raster(s)
-#   
-#   # Using ff_matrix objects (this will make calculating the mean and sd a lot easier).
-#   s_ff <- ff(vmode = "double", dim = c(length(cells), nlayers(s)),
-#              filename = ff_swd <- tempfile(fileext = '.ff'))
-#   # fill ff_matrix with data
-#   for(i in 1:nlayers(s)) {
-#     
-#     s_ff[, i] <- s[[i]][][cells]
-#     
-#   }
-#   
-#   colnames(s_ff) <- names(s)
-#   rm(s); gc()
-#   lapply(models_by_type[[x]], function(model) {
-#     
-#     species <- basename(dirname(model))
-#     outfile <- sprintf('%s/%s_%s_1000m_prediction.ff', 
-#                        dirname(model),
-#                        gsub(' +', '_', species), scen)
-#     
-#     if(!file.exists(extension(outfile, '.tif'))) {
-#       
-#       r_pred <- r
-#       m <- readRDS(model)$me_full
-#       message('Doing species ', species)
-#       preds_ff <- ff(vmode = "double", dim = c(length(cells), 1),
-#                      filename = outfile)
-#       finalizer(preds_ff) <- 'close'
-#       
-#       preds_ff[, 1] <- 
-#         round(rmaxent::project(m, s_ff[, seq_len(ncol(s_ff))])$prediction_logistic * 1000)
-#       
-#       r_pred[cells] <- preds_ff[, 1]
-#       writeRaster(r_pred, extension(outfile, '.tif'), datatype='INT2S', NAflag = -9999)
-#       #saveRDS(preds_ff, extension(outfile, 'rds')) 
-#       close(preds_ff)
-#       delete(preds_ff)
-#       rm(preds_ff, r_pred)
-#       
-#     }
-#     
-#   })
-#   
-#   delete(s_ff)
-#   rm(s_ff)
-#   gc()
-#   
-# })
 
 
 
@@ -527,6 +382,7 @@ stopCluster(cl)
 ## Can maxent setting be the same for all species?  
 
 ## Which GCMs and RCPs? Need layers for 2030, 2050, etc.
+
 
 
 

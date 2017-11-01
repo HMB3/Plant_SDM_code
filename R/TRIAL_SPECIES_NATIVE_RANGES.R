@@ -108,7 +108,7 @@ range.shp <- lapply(range.list, function(x) {readOGR(dsn = x,
 ## Can access each shapefile by indexing the list
 names(range.shp)
 class(range.shp[[1]])
-shp.list = 2:5
+shps = 2:5
 
 
 ## Plot each shapefile
@@ -142,7 +142,7 @@ GBIF.RANGE.SP   = SpatialPointsDataFrame(coords = GBIF.RANGE[c("lon", "lat")],
                                          proj4string = CRS("+init=epsg:4326"))
 
 
-## Project
+## Individual shapefiles: should loop this
 Betula.pendula.range      = range.shp[[2]]
 Fagus.sylvatica.range     = range.shp[[3]]
 Fraxinus.excelsior.range  = range.shp[[4]]
@@ -152,7 +152,13 @@ Quercus.robur.range       = range.shp[[5]]
 ## Project, and check they are the same
 CRS.new  <- CRS("+init=epsg:4326") # EPSG:3577
 
-Betula.pendula.range  = spTransform(Betula.pendula.range, CRS.new)
+Betula.pendula.range      = spTransform(Betula.pendula.range, CRS.new)
+Fagus.sylvatica.range     = spTransform(Fagus.sylvatica.range, CRS.new)
+Fraxinus.excelsior.range  = spTransform(Fraxinus.excelsior.range, CRS.new)
+Quercus.robur.range       = spTransform(Quercus.robur.range, CRS.new)
+
+
+## 
 projection(GBIF.RANGE.SP);projection(Betula.pendula.range)
 
 
@@ -161,22 +167,68 @@ class(Betula.pendula.range);class(Betula.pendula)
 names(Betula.pendula.range);names(Betula.pendula)
 
 
+## Comgine into one data frame
+combined.ranges = rbind(Betula.pendula.range,
+                        Fagus.sylvatica.range,
+                        Fraxinus.excelsior.range,
+                        Quercus.robur.range)
+
+##
+class(combined.ranges)
+
+
+
+
+
+#########################################################################################################################
+## 4). OVERLAY POLYGONS FOR MULTIPLE SPECIES
+#########################################################################################################################
+
+
 #########################################################################################################################
 ## Now what is the easiest way to record the native range? By checking if points are in the polygon?
-## Use the over function to see which points are in the polygon
+## Use the over function to see which points are in the polygon. One at a time...
 Betula.over    = over(GBIF.RANGE.SP, 
                       Betula.pendula.range)
 
+Fagus.over     = over(GBIF.RANGE.SP, 
+                      Fagus.range)
+
+Fraxinus.over  = over(GBIF.RANGE.SP, 
+                      Fraxinus.range)
+
+Quercus.over   = over(GBIF.RANGE.SP, 
+                      Quercus.range)
+
 
 ## Rename and reassign so the meaning is less cryptic
-Betula.over = Betula.over %>%
+Betula.over = Species.over %>%
   setNames(c('Betula_pendula_range')) 
-str(Betula.over)
+str(Species.over)
+
+Fagus.over = Fagus.over %>%
+  setNames(c('Fagus_sylvatica_range')) 
+str(Fagus.over)
+
+Fraxinus.over = Fraxinus.over %>%
+  setNames(c('Fraxinus_excelsior_range')) 
+str(Fraxinus.over)
+
+Quercus.over = Quercus.over %>%
+  setNames(c('Quercus_robur_range')) 
+str(Quercus.over)
 
 
-## Change the NAs to "outside", not sure how to reassign factor levels
-## levels(Betula.over$Betula_pendula_range) <- sub("Betula pendula", "INSIDE_RANGE", levels(Betula.over$Betula_pendula_range))
-#`levels<-`(addNA(Betula.over$Betula_pendula_range), c(levels(Betula.over$Betula_pendula_range), "OUTSIDE_RANGE"))
+## What are the new columns for this dataset? If there is only one, we can't differentiate...
+## Change the NAs to "outside". To reassign factor levels, we might need to actually assign the column.
+test = Species.over
+## test$Betula_pendula_range = levels(test$Betula_pendula_range) <- sub("Betula pendula", "INSIDE_RANGE", levels(test$Betula_pendula_range))
+Species.over$Betula_pendula_range = `levels<-`(addNA(Species.over$Betula_pendula_range), c(levels(Species.over$Betula_pendula_range), "OUTSIDE_RANGE"))
+
+
+
+
+unique(Species.over$Betula_pendula_range)
 
 
 ## So using 'over' with this data returns the species name if the point is inside that species range, and NA if the point is 
@@ -186,24 +238,24 @@ str(Betula.over)
 
 
 ## So 58367/177219, or ~30% of the points are inside the native species range according to the polygon, and ~70% are outside...
-count(Betula.over, Betula_pendula_range)[2, 2]/ dim(Betula.pendula)[1] *100
+count(Species.over, Betula_pendula_range)[2, 2]/ dim(Betula.pendula)[1] *100
 
 
 ## Do a visual check to see if the "species/NA" split makes sense
-GBIF.RANGE = cbind.data.frame(GBIF.RANGE, Betula.over)
-names(GBIF.RANGE)
+GBIF.RANGE = cbind.data.frame(GBIF.RANGE, Species.over)
+head(GBIF.RANGE)
 
 
 ## Plot the Betula points inside the range
 plot(LAND)
-points(GBIF.RANGE[ which(GBIF.RANGE$Betula_pendula_range == "Betula pendula"), ][, c("lon", "lat")],
+points(GBIF.RANGE[ which(GBIF.RANGE[20] == "Betula pendula"), ][, c("lon", "lat")],
        pch = ".", col = "red",
        cex = 1.3, asp = 1)
 
 
-## Plot the Betula points outside the range
+## Plot the Betula points outside the range ok, it works
 plot(LAND)
-points(GBIF.RANGE[ which(GBIF.RANGE$Betula_pendula_range == "OUTSIDE_RANGE"), ][, c("lon", "lat")],
+points(GBIF.RANGE[ which(GBIF.RANGE[20] == "OUTSIDE_RANGE"), ][, c("lon", "lat")],
        pch = ".", col = "red",
        cex = 1.3, asp = 1)
 
@@ -222,15 +274,9 @@ points(GBIF.RANGE[ which(GBIF.RANGE$Betula_pendula_range == "OUTSIDE_RANGE"), ][
 ## Are just for exploration/publication, so probably not crucial to the industry tool.
 
 
-
-
-
-#########################################################################################################################
-## 4). OVERLAY POLYGONS FOR MULTIPLE SPECIES
-#########################################################################################################################
-
-
-## Can we just use the list of shapefiles?
+## Now save .RData file for the next session
+save(Species.over, file = paste("./data/base/HIA_LIST/GBIF/GBIF_SPECIES_RANGES.RData"))
+save.image("SPECIES_RANGES.RData")
 
 
 
