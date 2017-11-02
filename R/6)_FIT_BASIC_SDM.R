@@ -9,7 +9,7 @@
 
 ## The brief again:
 
-## The first module will focus on fifty plant species identified in the project’s Target Species List, and will develop maps 
+## The first module will focus on x plant species identified in the project’s Target Species List, and will develop maps 
 ## that demonstrate each species’ suitability to both current and future climates across Australia.
  
 ## These maps will be used to demonstrate how well or poorly a particular species will be able to tolerate future conditions 
@@ -38,7 +38,10 @@ p <- c('ff',    'things',         'raster',    'dismo',        'sp',           '
 sapply(p, require, character.only = TRUE)
 source('./R/GREEN_CITIES_FUNCTIONS.R')
 source('./R/SDM_FUNCTIONS.R')
-source('./R/TRIAL_SPECIES_NATIVE_RANGES.R')
+#source('./R/TRIAL_SPECIES_NATIVE_RANGES.R')
+
+
+
 
 
 #########################################################################################################################
@@ -235,7 +238,7 @@ str(SDM.DATA)
 
 ## Now save/load .RData file for the next session
 save.image("STEP_6_SDM.RData")
-load("STEP_6_SDM.RData")
+#load("STEP_6_SDM.RData")
 
 
 
@@ -254,18 +257,8 @@ str(spp.all)                 ## 6782
 
 
 ## The trial species
-str(test.spp)
-
-
-# ## Just the top 200 species
-# top.200.spp     = subset(COMBO.RASTER.CONTEXT, Top_200 == TRUE)["searchTaxon"] 
-# top.200.spp     = as.character(unique(top.200.spp$searchTaxon))
-# str(top.200.spp)
-# 
-# ## Just the species with > 25 growers
-# spp.25     = subset(COMBO.RASTER.CONTEXT, Number.of.growers >= 25)["searchTaxon"]
-# spp.25     = as.character(unique(spp.25$searchTaxon))
-# str(spp.25)
+test.spp = sort(unique(c(renee.full$Species, "Betula pendula", "Fraxinus excelsior", "Quercus robur", "Fagus sylvatica")))
+test.spp 
 
 
 ## Now reverse the order, so we can start another R session from the other end
@@ -381,7 +374,7 @@ stopCluster(cl)
 
 ## Can maxent setting be the same for all species?  
 
-## Which GCMs and RCPs? Need layers for 2030, 2050, etc.
+## Create code to harvest the output from the maxent models: for all species, need the summary stats
 
 
 

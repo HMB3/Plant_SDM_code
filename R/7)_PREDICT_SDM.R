@@ -14,54 +14,31 @@
 
 #########################################################################################################################
 ## create scenario list first: or just one at a time
+#load("STEP_6_SDM.RData")
+
+
 scen = c("ip85bi50", "mc85bi50", "mg85bi50", "mi85bi50", "mp85bi50", 
          "mr85bi50", "no85bi50", "ac85bi50", "bc85bi50", "cc85bi50", 
          "cn85bi50", "gf85bi50", "gs85bi50", "hd85bi50", "he85bi50",
          "hg85bi50", "in85bi50")
 
 
-
-## Create raster stacks:
-## sprintf has two arguments here: the main path, then the places that species is inserted to complete the path 
+## Create raster stacks using files in John's directories:
+## sprintf has two arguments here: the main path, then the places that the bioclim number is inserted to complete the path 
 env.grids.current = stack(
   file.path('//SCI-7910/F/data/worldclim/aus/0.5/bio/current',
             sprintf('bio_%02d.tif', 1:19)))
 
 
-## Future: the problem is occurring in here...
-## printf has three arguments here: the main path, then the two places that species is inserted to complete the path 
+## Future: just running code for one scenario at a time
 env.grids.future = stack(
   sprintf('//SCI-7910/F/data/worldclim/aus/0.5/bio/2050/%s/%s%s.tif',
-          scen, scen, 1:19))
+          scen[1], scen[1], 1:19))
 
 
-# env.grids.future  = c("//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi501.tif",
-#                       "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi502.tif",
-#                       "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi503.tif",
-#                       "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi504.tif",
-#                       "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi505.tif",
-#                       "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi506.tif",
-#                       "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi507.tif",
-#                       "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi508.tif",
-#                       "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi509.tif",
-#                       "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi5010.tif",
-#                       "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi5011.tif",
-#                       "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi5012.tif",
-#                       "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi5013.tif",
-#                       "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi5014.tif",
-#                       "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi5015.tif",
-#                       "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi5016.tif",
-#                       "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi5017.tif",
-#                       "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi5018.tif",
-#                       "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi5019.tif")
-
-
-## Convert all the rasters to a stack
-# env.grids.future <- stack(env.grids.future)
-
-
-## str(env.grids.current)
-## str(env.grids.future)
+##
+str(env.grids.current)
+str(env.grids.future)
 
 
 #########################################################################################################################
@@ -96,7 +73,7 @@ names(env.grids.current) <- names(env.grids.future) <- c(
   'Precip_dry_qu',       'Precip_warm_qu',    'Precip_col_qu')
 
 
-## Check the rasters
+## Check the rasters: list of 19 with 11 slots
 str(env.grids.current)
 str(env.grids.future)
 
@@ -109,6 +86,11 @@ aus <- ne_states(country = 'Australia') %>%
 ## Create a list of all the species folders which contain the fitted models: these were run in the previous step
 species_list  <- basename(list.dirs('F:/green_cities_sdm/output/maxent/baseline',   recursive = FALSE))
 scenario_list <- basename(list.dirs('//sci-7910/F/data/worldclim/aus/0.5/bio/2050', recursive = FALSE))
+
+
+## The trial species based on Renee's species
+test.spp = sort(unique(c(renee.full$Species, "Betula pendula", "Fraxinus excelsior", "Quercus robur", "Fagus sylvatica")))
+test.spp[35]
 
 
 #########################################################################################################################
@@ -125,7 +107,7 @@ load("STEP_7_PREDICT_SDM.RData")
 #########################################################################################################################
 
 
-## These values don't look right?
+## Are these values right?
 env.grids.current[[colnames(m$me_full@presence)]]
 env.grids.future[[colnames(m$me_full@presence)]]
 
@@ -140,7 +122,7 @@ env.grids.future[[colnames(m$me_full@presence)]]
 #########################################################################################################################
 ## Use lappy to loop over a list of species
 ## Test on one species:
-species = species_list[320] # [1] "Lomandra_longifolia"
+species = species_list[458] # [1] "Lomandra_longifolia"
 
 
 ##
@@ -158,7 +140,7 @@ lapply(species_list, function(species) {
     # env.grids.current[[colnames(m$me_full@presence)]]
     # env.grids.future[[colnames(m$me_full@presence)]]
     
-    ## Read in the occurrence files using sprintf
+    ## Read in the occurrence files from the output directory using sprintf
     occ <- readRDS(sprintf('F:/green_cities_sdm/output/maxent/baseline/%s/occ.rds', species)) %>% 
       spTransform(CRS('+init=epsg:4326'))
     
@@ -174,19 +156,19 @@ lapply(species_list, function(species) {
     ## str(pred.future)
     
     ## Write the current raster out
-    ## printf has three arguments here: the main path, then the two places that species is inserted to complete the path 
     ## The folders will need to change as I add model runs for all variables vs select, 
     ## all records vs. cultivated and non-cultivated
-    writeRaster(pred.current, sprintf('F:/green_cities_sdm/output/maxent/baseline/%s/full/%s_current.tif', 
-                                      species, species))
-    
-    # Warning message:
-    #   In unlist(lapply(elist, findLocals1, shadowed, cntxt)) :
-    #   closing unused connection 3 (F:/green_cities_sdm/RTEMP/RtmpQxrX5c/raster/r_tmp_2017-11-01_165316_9480_78386.gri)
-    
-    ## Write the future raster out
-    writeRaster(pred.future, sprintf('F:/green_cities_sdm/output/maxent/baseline/%s/full/%s_%s.tif', 
-                                     species, species, scen))
+    ## does this need to be indexed? pred.current[[1]]
+    # writeRaster(pred.current, sprintf('F:/green_cities_sdm/output/maxent/baseline/%s/full/%s_current.tif', 
+    #                                   species, species))
+    # 
+    # # Warning message:
+    # #   In unlist(lapply(elist, findLocals1, shadowed, cntxt)) :
+    # #   closing unused connection 3 (F:/green_cities_sdm/RTEMP/RtmpQxrX5c/raster/r_tmp_2017-11-01_165316_9480_78386.gri)
+    # 
+    # ## Write the future raster out: does this need to be indexed? pred.future[[1]]
+    # writeRaster(pred.future, sprintf('F:/green_cities_sdm/output/maxent/baseline/%s/full/%s_%s.tif', 
+    #                                  species, species, scen))
     
     ## Create an empty raster based on the future prediction
     empty <- init(pred.future$prediction_logistic, function(x) NA)
@@ -207,7 +189,7 @@ lapply(species_list, function(species) {
                     pred.current$prediction_logistic,
                     pred.future$prediction_logistic), margin = FALSE, 
               
-              ## Create a colour scheme using colbrewer
+              ## Create a colour scheme using colbrewer: 100 is to make it continuos
               scales      = list(draw = FALSE), at = seq(0, 1, length = 100),
               col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
               
@@ -221,8 +203,6 @@ lapply(species_list, function(species) {
       layer(sp.points(occ, pch = 20, cex = 0.5, 
                       col = c('red', 'transparent', 'transparent')[panel.number()]))
     
-    ## Error in compareRaster(x) : different extent
-    
     ## finish the PNG device
     dev.off()
     
@@ -232,11 +212,26 @@ lapply(species_list, function(species) {
   
   
   
+  
 ## Now save .RData file for the next session
-#save.image('STEP_7_SDM.RData')
+save.image('STEP_7_SDM.RData')
   
   
-## What is the output?
+
+
+
+#########################################################################################################################
+## OUTSTANDING PREDICTION TASKS:
+#########################################################################################################################
+
+
+## Create a switch to skip files that exist
+
+## Create folder structure to hold the output
+
+## 
+
+
   
   
   
@@ -244,4 +239,3 @@ lapply(species_list, function(species) {
 #########################################################################################################################
 #####################################################  TBC ############################################################## 
 #########################################################################################################################
-  
