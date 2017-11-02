@@ -62,6 +62,7 @@ library(rgeos)
 library(magrittr)
 library(datastorr)
 library(baad.data)
+library(rapportools)
 
 library(Cairo)
 library(lattice)

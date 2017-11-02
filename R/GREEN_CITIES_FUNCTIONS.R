@@ -811,6 +811,87 @@ gbif.keep <- c(## TAXONOMY
 
 
 
+gbif.keep <- c(## TAXONOMY
+  "searchTaxon",
+  "scientificName",
+  "taxonRank",
+  "genus",
+  "family",
+  
+  ## CULTIVATION
+  "cloc",
+  "basisOfRecord",
+  "locality",
+  "establishmentMeans",
+  "institutionCode",
+  "datasetName",
+  "habitat",
+  "eventRemarks",
+  
+  ## RECORD ID
+  "recordedBy",
+  "identifiedBy",
+  "gbifID",
+  "catalogNumber",
+  
+  ## PLACE/TIME
+  "lat",
+  "lon",
+  "country",
+  "coordinateUncertaintyInMeters",
+  "geodeticDatum",
+  "year",
+  "month",
+  "day",
+  "eventDate",
+  "eventID")
+
+
+TPL.keep <- c(## GBIF TAXONOMY
+  "searchTaxon",
+  "scientificName",
+  "taxonRank",
+  "genus",
+  "family",
+  
+  ## TPL fields
+  "Taxonomic.status",
+  "Infraspecific.rank",
+  "New.Taxonomic.status",
+  "New.ID",
+  "TPL_binomial",
+  "taxo_agree",
+  
+  ## CULTIVATION
+  "cloc",
+  "basisOfRecord",
+  "locality",
+  "establishmentMeans",
+  "institutionCode",
+  "datasetName",
+  "habitat",
+  "eventRemarks",
+  
+  ## RECORD ID
+  "recordedBy",
+  "identifiedBy",
+  "gbifID",
+  "catalogNumber",
+  
+  ## PLACE/TIME
+  "lat",
+  "lon",
+  "country",
+  "coordinateUncertaintyInMeters",
+  "geodeticDatum",
+  "year",
+  "month",
+  "day",
+  "eventDate",
+  "eventID")
+
+
+
 #########################################################################################################################
 ## NICHE BREADTH CALCULATIONS
 #########################################################################################################################

@@ -17,12 +17,15 @@
 
 
 
-## Create raster stacks: 
+## Create raster stacks:
+## sprintf has two arguments here: the main path, then the places that species is inserted to complete the path 
 env.grids.current = stack(
   file.path('//sci-7910/F/data/worldclim/aus/0.5/bio/current',
             sprintf('bio_%02d.tif', 1:19)))
 
+
 ## Future: the problem is occurring in here...
+## printf has three arguments here: the main path, then the two places that species is inserted to complete the path 
 env.grids.future = stack(
   sprintf('//sci-7910/F/data/worldclim/aus/0.5/bio/2050/%s/%s%s.tif',
           scen, scen, 1:19))
@@ -118,13 +121,7 @@ load("STEP_7_PREDICT_SDM.RData")
 #########################################################################################################################
 
 
-# Error in m[, i] <- getValues(x@layers[[i]]) : 
-#   number of items to replace is not a multiple of replacement length
-## debugonce(project)
-load("STEP_7_PREDICT_SDM.RData")
-
-
-##
+## These values don't look right?
 env.grids.current[[colnames(m$me_full@presence)]]
 env.grids.future[[colnames(m$me_full@presence)]]
 
@@ -153,6 +150,7 @@ lapply(species_list, function(species) {
     m <- readRDS(sprintf('F:/green_cities_sdm/output/maxent/baseline/%s/maxent_fitted.rds', species))
     
     # ## These numbers don't look right 
+    # str(m)
     # env.grids.current[[colnames(m$me_full@presence)]]
     # env.grids.future[[colnames(m$me_full@presence)]]
     
@@ -160,6 +158,7 @@ lapply(species_list, function(species) {
     occ <- readRDS(sprintf('F:/green_cities_sdm/output/maxent/baseline/%s/occ.rds', species)) %>% 
       spTransform(CRS('+init=epsg:4326'))
     
+    ## str(occ)
     ## Create rasters for the current and future climate
     ## Calculating contribution of feature 11 of 11..............why 11 and not 19?
     ## Or are features the maxent setting
@@ -167,16 +166,19 @@ lapply(species_list, function(species) {
     pred.current <- rmaxent::project(m$me_full, env.grids.current[[colnames(m$me_full@presence)]])
     pred.future  <- rmaxent::project(m$me_full, env.grids.future[[colnames(m$me_full@presence)]])
     
-    ## What is going wrong here?
-    # Error in m[, i] <- getValues(x@layers[[i]]) : 
-    #   number of items to replace is not a multiple of replacement length
-    ## debugonce(project)
-    
+    ## str(pred.current)
+    ## str(pred.future)
     
     ## Write the current raster out
-    ## printf has three function arguments here. The folders will need to change
+    ## printf has three arguments here: the main path, then the two places that species is inserted to complete the path 
+    ## The folders will need to change as I add model runs for all variables vs select, 
+    ## all records vs. cultivated and non-cultivated
     writeRaster(pred.current, sprintf('F:/green_cities_sdm/output/maxent/baseline/%s/full/%s_current.tif', 
                                       species, species))
+    
+    # Warning message:
+    #   In unlist(lapply(elist, findLocals1, shadowed, cntxt)) :
+    #   closing unused connection 3 (F:/green_cities_sdm/RTEMP/RtmpQxrX5c/raster/r_tmp_2017-11-01_165316_9480_78386.gri)
     
     ## Write the future raster out
     writeRaster(pred.future, sprintf('F:/green_cities_sdm/output/maxent/baseline/%s/full/%s_%s.tif', 
@@ -185,7 +187,6 @@ lapply(species_list, function(species) {
     ## Create an empty raster based on the future prediction
     empty <- init(pred.future$prediction_logistic, function(x) NA)
     
-    
     # Warning message:
     #   In .rasterFromRasterFile(grdfile, band = band, objecttype, ...) :
     #   size of values file does not match the number of cells (given the data type)
@@ -193,9 +194,7 @@ lapply(species_list, function(species) {
     
     #########################################################################################################################
     ## Create map of habitat suitability...the first line starts the PNG device
-    
     # Error in compareRaster(x) : different extent
-    
     png(sprintf('F:/green_cities_sdm/output/maxent/baseline/%s/full/%s.png', species, species), 
         11, 4, units = 'in', res = 300)
     
@@ -217,6 +216,8 @@ lapply(species_list, function(species) {
       layer(sp.polygons(aus)) +
       layer(sp.points(occ, pch = 20, cex = 0.5, 
                       col = c('red', 'transparent', 'transparent')[panel.number()]))
+    
+    ## Error in compareRaster(x) : different extent
     
     ## finish the PNG device
     dev.off()

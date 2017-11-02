@@ -38,11 +38,22 @@ length(unique(GBIF.TRIM$searchTaxon))  ## has the list updated with extra specie
 #########################################################################################################################
 
 
-## Consider whether this should be done before or after merging with ALA? Same applies for the taxonomic check
+## To create search terms, we can look for keywords in differemt languages 
+GBIF.COUNTRY = GBIF.TRIM[, c("country")]
+GBIF.COUNTRY = as.data.frame(table(GBIF.COUNTRY))
+names(GBIF.COUNTRY) <-  c('country', 'count')
+GBIF.COUNTRY = GBIF.COUNTRY[order(GBIF.COUNTRY$count, decreasing = TRUE), ]
+
+
+## Look for synonyms in the most popular countries
+GBIF.COUNTRY
+write.csv(GBIF.COUNTRY, "./data/base/HIA_LIST/GBIF/SPECIES/GBIF_COUNTRY.csv", row.names = FALSE)
+
 
 
 ## Try and make this one command: can these terms be searched for across the whole data frame (i.e. any column)
 ## Also lot's of Australian species don't have these columns, which might make it tricky to run the clean 
+## unique(GBIF.TRIM$country)
 GBIF.TRIM$CULTIVATED <- ifelse(grepl("garden|cultiva",   GBIF.TRIM$locality,           ignore.case = TRUE) | 
                                  grepl("garden|cultiva", GBIF.TRIM$habitat,            ignore.case = TRUE) | 
                                  grepl("garden|cultiva", GBIF.TRIM$eventRemarks,       ignore.case = TRUE) |
@@ -96,6 +107,7 @@ sort(names(GBIF.TAXO))
 ## Then join the GBIF data to the taxonomic check, using "scientificName" as the join field... 
 GBIF.TRIM <- GBIF.TRIM %>%
   left_join(., GBIF.TAXO, by = c("scientificName" = "Taxon"))
+names(GBIF.TRIM)
 
 
 ## So we can filter by the agreement between "scientificName", and "New.Taxonomic.status"?
@@ -115,7 +127,7 @@ GBIF.TRIM$TPL_binomial  = with(GBIF.TRIM, paste(New.Genus, New.Species, sep = " 
 
 ## Now match the searchTaxon with the binomial returned by TPL
 GBIF.TRIM$taxo_agree <- ifelse(
-  GBIF.TRIM$searchTaxon == GBIF.TRIM$New_binomial, TRUE, FALSE)
+  GBIF.TRIM$searchTaxon == GBIF.TRIM$TPL_binomial, TRUE, FALSE)
 
 
 ## Also keep the managed records:
@@ -137,9 +149,9 @@ save(GBIF.UNRESOLVED, file = paste("./data/base/HIA_LIST/GBIF/GBIF_UNRESOLVED.RD
 
 ## Just keep these columns:
 ## Taxonomic.status, Infraspecific.rank, New.Taxonomic.status, New.ID, New_binomial, taxo_agree
-GBIF.TRIM <- GBIF.TIM %>% 
+GBIF.TRIM.TAXO <- GBIF.TRIM %>% 
   select(one_of(TPL.keep))
-names(GBIF.TRIM)
+names(GBIF.TRIM.TAXO)
 
 
 
@@ -153,7 +165,7 @@ names(GBIF.TRIM)
 #########################################################################################################################
 ## Then create a table which counts the number of records meeting each criteria:
 ## Note that TRUE indicates there is a problem (e.g. if a record has no lat/long, it will = TRUE)
-GBIF.PROBLEMS <- with(GBIF.TRIM,
+GBIF.PROBLEMS <- with(GBIF.TRIM.TAXO,
                       
                       table(
                         
@@ -207,7 +219,7 @@ kable(GBIF.PROBLEMS)
 
 ## Quickly check the total record number matches the count of problems
 Total.count = sum(GBIF.PROBLEMS$COUNT)
-identical(dim(GBIF.TRIM)[1], Total.count)  ## identical matches two objects
+identical(dim(GBIF.TRIM.TAXO)[1], Total.count)  ## identical matches two objects
 
 
 
@@ -219,8 +231,8 @@ identical(dim(GBIF.TRIM)[1], Total.count)  ## identical matches two objects
 
 
 ## Filter the GBIF records using conditions which are not too restrictive
-dim(GBIF.TRIM)
-GBIF.CLEAN <- GBIF.TRIM %>% 
+dim(GBIF.TRIM.TAXO)
+GBIF.CLEAN <- GBIF.TRIM.TAXO %>% 
   
   ## Note that these filters are very forgiving...
   ## Unless we include the NAs, very few records are returned!
@@ -228,9 +240,9 @@ GBIF.CLEAN <- GBIF.TRIM %>%
          
          ## CULTIVATED == 'CULTIVATED', 
          ## #establishmentMeans!='MANAGED' | is.na(establishmentMeans),
+         ## New.Taxonomic.status == 'Accepted'
          
-         year >= 1950 & !is.na(year),
-         New.Taxonomic.status == 'Accepted')
+         year >= 1950 & !is.na(year))
 
 
 ## The table above gives the details, but worth documenting how many records are knocked out by each filter
