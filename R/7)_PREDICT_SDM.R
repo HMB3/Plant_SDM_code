@@ -13,47 +13,51 @@
 
 
 #########################################################################################################################
-## create scenario list first
+## create scenario list first: or just one at a time
+scen = c("ip85bi50", "mc85bi50", "mg85bi50", "mi85bi50", "mp85bi50", 
+         "mr85bi50", "no85bi50", "ac85bi50", "bc85bi50", "cc85bi50", 
+         "cn85bi50", "gf85bi50", "gs85bi50", "hd85bi50", "he85bi50",
+         "hg85bi50", "in85bi50")
 
 
 
 ## Create raster stacks:
 ## sprintf has two arguments here: the main path, then the places that species is inserted to complete the path 
 env.grids.current = stack(
-  file.path('//sci-7910/F/data/worldclim/aus/0.5/bio/current',
+  file.path('//SCI-7910/F/data/worldclim/aus/0.5/bio/current',
             sprintf('bio_%02d.tif', 1:19)))
 
 
 ## Future: the problem is occurring in here...
 ## printf has three arguments here: the main path, then the two places that species is inserted to complete the path 
 env.grids.future = stack(
-  sprintf('//sci-7910/F/data/worldclim/aus/0.5/bio/2050/%s/%s%s.tif',
+  sprintf('//SCI-7910/F/data/worldclim/aus/0.5/bio/2050/%s/%s%s.tif',
           scen, scen, 1:19))
 
 
-env.grids.future  = c("//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi501.tif",
-                      "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi502.tif",
-                      "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi503.tif",
-                      "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi504.tif",
-                      "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi505.tif",
-                      "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi506.tif",
-                      "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi507.tif",
-                      "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi508.tif",
-                      "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi509.tif",
-                      "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi5010.tif",
-                      "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi5011.tif",
-                      "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi5012.tif",
-                      "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi5013.tif",
-                      "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi5014.tif",
-                      "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi5015.tif",
-                      "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi5016.tif",
-                      "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi5017.tif",
-                      "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi5018.tif",
-                      "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi5019.tif")
+# env.grids.future  = c("//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi501.tif",
+#                       "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi502.tif",
+#                       "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi503.tif",
+#                       "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi504.tif",
+#                       "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi505.tif",
+#                       "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi506.tif",
+#                       "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi507.tif",
+#                       "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi508.tif",
+#                       "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi509.tif",
+#                       "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi5010.tif",
+#                       "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi5011.tif",
+#                       "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi5012.tif",
+#                       "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi5013.tif",
+#                       "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi5014.tif",
+#                       "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi5015.tif",
+#                       "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi5016.tif",
+#                       "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi5017.tif",
+#                       "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi5018.tif",
+#                       "//SCI-7910/f/data/worldclim/world/0.5/bio/2050/ac85bi50/ac85bi5019.tif")
 
 
 ## Convert all the rasters to a stack
-env.grids.future <- stack(env.grids.future)
+# env.grids.future <- stack(env.grids.future)
 
 
 ## str(env.grids.current)

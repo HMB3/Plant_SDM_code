@@ -249,7 +249,7 @@ class(combined.ranges)
 #########################################################################################################################
 ## Now what is the easiest way to record the native range? By checking if points are in the polygon?
 ## Use the over function to see which points are in the polygon. One at a time...
-#Betula.over    = over(GBIF.RANGE.SP, 
+Betula.over    = over(GBIF.RANGE.SP, 
                       Betula.pendula.range)
 
 Fagus.over     = over(GBIF.RANGE.SP, 
@@ -338,7 +338,7 @@ points(GBIF.RANGE[ which(GBIF.RANGE$Betula_pendula_range == "OUTSIDE_RANGE"), ][
 
 
 ## Now save .RData file for the next session
-save(GBIF.RANGE, file = paste("./data/base/HIA_LIST/GBIF/GBIF_RANGE.RData"))
+save(GBIF.RANGE, file = paste("./data/base/HIA_LIST/GBIF/GBIF_SPECIES_RANGES.RData"))
 save.image("SPECIES_RANGES.RData")
 
 
