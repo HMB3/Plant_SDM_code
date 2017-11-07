@@ -194,9 +194,16 @@ save(correlations.table,         file = paste("./output/tables/variable_selectio
 #########################################################################################################################
 
 
-## Chose the minimum possible predictors
-sdm.predictors <- c("Annual_mean_temp", "Temp_seasonality",    "Max_temp_warm_month", "Min_temp_cold_month",
-                    "Annual_precip",    "Precip_seasonality",  "Precip_wet_month", "Precip_dry_month")
+\#########################################################################################################################
+## Chose a-priori worldclim predictors
+sdm.predictors    <- c("Annual_mean_temp", "Temp_seasonality",    "Max_temp_warm_month", "Min_temp_cold_month",
+                       "Annual_precip",    "Precip_seasonality",  "Precip_wet_month", "Precip_dry_month")
+
+
+## Chose all worldclim predictors
+sdm.predictors.all <- c("Annual_mean_temp",  "Mean_diurnal_range",  "Isothermality",       "Temp_seasonality",  "Max_temp_warm_month", "Min_temp_cold_month", 
+                        "Temp_annual_range", "Mean_temp_wet_qu",    "Mean_temp_dry_qu",    "Mean_temp_warm_qu", "Mean_temp_cold_qu",   "Annual_precip", 
+                        "Precip_wet_month",  "Precip_dry_month",    "Precip_seasonality",  "Precip_wet_qu",     "Precip_dry_qu",       "Precip_warm_qu", "Precip_col_qu")  
 
 
 ## Create an empty raster with the desired properties, using raster(raster(x))
@@ -204,25 +211,47 @@ template.raster <- raster(raster("//sci-7910/F/data/worldclim/world/0.5/bio/curr
   projectRaster(res = 1000, crs = CRS('+init=ESRI:54009'))
 
 
-## Just get the columns needed for modelling...This changes based on the ecological framework
+#########################################################################################################################
+## Just get the columns needed for modelling: this would include cultivated/non, and inside/outside
 COMBO.RASTER.SELECT <- select(COMBO.RASTER.CONTEXT, 
                               searchTaxon, 
                               lon, lat, 
                               Annual_mean_temp, Temp_seasonality,   Max_temp_warm_month, Min_temp_cold_month,
                               Annual_precip,    Precip_seasonality, Precip_wet_month,    Precip_dry_month)
 
+COMBO.RASTER.ALL    <- select(COMBO.RASTER.CONTEXT, 
+                              searchTaxon, 
+                              lon, lat, 
+                              Annual_mean_temp,  Mean_diurnal_range,  Isothermality,       Temp_seasonality,  Max_temp_warm_month, Min_temp_cold_month, 
+                              Temp_annual_range, Mean_temp_wet_qu,    Mean_temp_dry_qu,    Mean_temp_warm_qu, Mean_temp_cold_qu,   Annual_precip, 
+                              Precip_wet_month,  Precip_dry_month,    Precip_seasonality,  Precip_wet_qu,     Precip_dry_qu,       Precip_warm_qu, Precip_col_qu)
 
+
+#########################################################################################################################
 ## Create a spatial points object, and change to a projected system to calculate distance more accurately 
 coordinates(COMBO.RASTER.SELECT) <- ~lon+lat
+coordinates(COMBO.RASTER.ALL)    <- ~lon+lat
+
+
 proj4string(COMBO.RASTER.SELECT) <- '+init=epsg:4326'
+proj4string(COMBO.RASTER.ALL)    <- '+init=epsg:4326'
+
 COMBO.RASTER.SELECT <- spTransform(
   COMBO.RASTER.SELECT, CRS('+init=ESRI:54009'))
+COMBO.RASTER.ALL    <- spTransform(
+  COMBO.RASTER.ALL, CRS('+init=ESRI:54009'))
 
 
 ## Now split using the data using the species column, and get the unique occurrence cells
-COMBO.RASTER.SPLIT <- split(COMBO.RASTER.SELECT, COMBO.RASTER.SELECT$searchTaxon)
-occurrence_cells   <- lapply(COMBO.RASTER.SPLIT, function(x) cellFromXY(template.raster, x))
+COMBO.RASTER.SPLIT     <- split(COMBO.RASTER.SELECT, COMBO.RASTER.SELECT$searchTaxon)
+COMBO.RASTER.SPLIT.ALL <- split(COMBO.RASTER.SELECT, COMBO.RASTER.SELECT$searchTaxon)
+
+
+occurrence_cells       <- lapply(COMBO.RASTER.SPLIT,     function(x) cellFromXY(template.raster, x))
+occurrence_cells_all   <- lapply(COMBO.RASTER.SPLIT.ALL, function(x) cellFromXY(template.raster, x))
+
 str(occurrence_cells)  ## this is a list of dataframes, where the number of rows for each being the species table
+str(occurrence_cells_all)
 
 
 ## Now get just one record within each 10*10km cell. This step should eliminate most, if not all, duplicate records
@@ -231,9 +260,14 @@ SDM.DATA <- mapply(function(x, cells) {
   x[!duplicated(cells), ]
 }, COMBO.RASTER.SPLIT, occurrence_cells, SIMPLIFY = FALSE) %>% do.call(rbind, .)
 
+SDM.DATA.ALL <- mapply(function(x, cells) {
+  x[!duplicated(cells), ]
+}, COMBO.RASTER.SPLIT.ALL, occurrence_cells_all, SIMPLIFY = FALSE) %>% do.call(rbind, .)
+
 
 ## Use the analysis data
 str(SDM.DATA)
+str(SDM.DATA.ALL)
 
 
 ## Now save/load .RData file for the next session
@@ -245,7 +279,7 @@ save.image("STEP_6_SDM.RData")
 
 
 #########################################################################################################################
-## 2). RUN MODELS FOR MULTIPLE SPECIES USING TABLE OF RECORDS (ROWS) AND ENVIRONMENT (COLUMNS)
+## 2). RUN SDM FOR SELECTED VARIABLES
 #########################################################################################################################
 
 
@@ -263,9 +297,6 @@ test.spp
 
 ## Now reverse the order, so we can start another R session from the other end
 test.reverse = sort(test.spp, decreasing = TRUE)
-
-
-
 
 
 ########################################################################################################################
@@ -370,16 +401,10 @@ stopCluster(cl)
 
 ## Create a switch to skip files that exist
 
+## need to add code to do variable selection, using all 19 variables
+
 ## Further mapping and cleaning of GBIF data needed for the important species
 
 ## Can maxent setting be the same for all species?  
 
 ## Create code to harvest the output from the maxent models: for all species, need the summary stats
-
-
-
-
-
-#########################################################################################################################
-#####################################################  TBC ############################################################## 
-#########################################################################################################################

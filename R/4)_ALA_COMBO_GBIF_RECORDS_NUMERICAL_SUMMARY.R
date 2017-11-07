@@ -114,10 +114,14 @@ names(ALA.LAND)
 setdiff(names(GBIF.LAND), names(ALA.LAND))
 
 
-## Rename a few fields
+#########################################################################################################################
+## Rename a few fields: Add rename of cultivated field, and make the values the same as mine "CULT" or "UNKNOWN"
 ALA.LAND     = dplyr::rename(ALA.LAND, 
                              searchTaxon                   = scientificname,
                              coordinateUncertaintyInMeters = uncertainty_m)
+
+
+
 
 
 ## Restrict ALA data to just those species on the big list
@@ -535,6 +539,12 @@ COMBO.NICHE.CONTEXT = join(COMBO.LGA, HIA.SPP.JOIN,
 ## For pedantry, reroder columns...
 names(COMBO.RASTER.CONTEXT)
 names(COMBO.NICHE.CONTEXT)
+
+
+## 
+save(COMBO.RASTER.CONTEXT, file = paste("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData", sep = ""))
+save(COMBO.NICHE.CONTEXT,  file = paste("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData",  sep = ""))
+write.csv(COMBO.NICHE.CONTEXT, "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.csv",       row.names = FALSE)
 
 
 ## Rename...

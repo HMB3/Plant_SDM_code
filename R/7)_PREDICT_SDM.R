@@ -4,7 +4,7 @@
 
 
 ## This code takes the output of the SDM models and generates a prediction of habitat suitability for current and future
-## conditions. 
+## environmental conditions. 
 
 
 #########################################################################################################################
@@ -15,8 +15,6 @@
 #########################################################################################################################
 ## create scenario list first: or just one at a time
 #load("STEP_6_SDM.RData")
-
-
 scen = c("ip85bi50", "mc85bi50", "mg85bi50", "mi85bi50", "mp85bi50", 
          "mr85bi50", "no85bi50", "ac85bi50", "bc85bi50", "cc85bi50", 
          "cn85bi50", "gf85bi50", "gs85bi50", "hd85bi50", "he85bi50",
@@ -107,16 +105,7 @@ load("STEP_7_PREDICT_SDM.RData")
 #########################################################################################################################
 
 
-## Are these values right?
-env.grids.current[[colnames(m$me_full@presence)]]
-env.grids.future[[colnames(m$me_full@presence)]]
-
-
-## Ok so why does R need to save a version of each raster to a temporary folder?
-# Error in file(fn, "rb") : cannot open the connection
-# In addition: Warning message:
-#   In file(fn, "rb") :
-#   cannot open file 'C:\Users\user\AppData\Local\Temp\Rtmpiwken9\raster\r_tmp_2017-10-26_143723_11284_83052.gri': No such file or directory
+## Currenlty, this code is not working on a single value,  
 
 
 #########################################################################################################################
@@ -125,7 +114,7 @@ env.grids.future[[colnames(m$me_full@presence)]]
 species = species_list[458] # [1] "Lomandra_longifolia"
 
 
-##
+## Now run the code over a list of species...
 lapply(species_list, function(species) {
   message('Doing ', species)
   

@@ -34,78 +34,14 @@ length(unique(GBIF.TRIM$searchTaxon))  ## has the list updated with extra specie
 
 
 #########################################################################################################################
-## 1). MARK CULTIVATED RECORDS AND CHECK TAXONOMY
-#########################################################################################################################
+## 1). CHECK TAXONOMY RETURNED BY GBIF
+######################################################################################################################### 
 
 
-## To create search terms, we can look for keywords in differemt languages 
-GBIF.COUNTRY = GBIF.TRIM[, c("country")]
-GBIF.COUNTRY = as.data.frame(table(GBIF.COUNTRY))
-names(GBIF.COUNTRY) <-  c('country', 'count')
-GBIF.COUNTRY = GBIF.COUNTRY[order(GBIF.COUNTRY$count, decreasing = TRUE), ]
-
-
-## Look for synonyms in the most popular countries
-GBIF.COUNTRY
-write.csv(GBIF.COUNTRY, "./data/base/HIA_LIST/GBIF/SPECIES/GBIF_COUNTRY.csv", row.names = FALSE)
-
-
-
-## Try and make this one command: can these terms be searched for across the whole data frame (i.e. any column)
-## Also lot's of Australian species don't have these columns, which might make it tricky to run the clean 
-## unique(GBIF.TRIM$country)
-## test = apply(df, 1, function(r) any(r %in% c("M017", "M018")))
-# GBIF.TRIM$CULTIVATED <- ifelse(grepl("garden|cultiva",   GBIF.TRIM$locality,           ignore.case = TRUE) | 
-#                                  grepl("garden|cultiva", GBIF.TRIM$habitat,            ignore.case = TRUE) | 
-#                                  grepl("garden|cultiva", GBIF.TRIM$eventRemarks,       ignore.case = TRUE) |
-#                                  grepl("garden|cultiva", GBIF.TRIM$cloc,               ignore.case = TRUE) |
-#                                  grepl("managed",        GBIF.TRIM$establishmentMeans, ignore.case = TRUE),
-#                                
-#                                "CULTIVATED", "UNKNOWN")
-
-
-## Try using the big list of synonyms across all the data
-GBIF.TRIM$CULTIVATED <- ifelse(grepl(cultivated.synonyms,   GBIF.TRIM$locality,           ignore.case = TRUE) | 
-                                 grepl(cultivated.synonyms, GBIF.TRIM$habitat,            ignore.case = TRUE) | 
-                                 grepl(cultivated.synonyms, GBIF.TRIM$eventRemarks,       ignore.case = TRUE) |
-                                 grepl(cultivated.synonyms, GBIF.TRIM$cloc,               ignore.case = TRUE) |
-                                 grepl("managed",           GBIF.TRIM$establishmentMeans, ignore.case = TRUE),
-                               
-                               "CULTIVATED", "UNKNOWN")
-
-
-## How many records are knocked out by using this definition?
-## This is probably a bit strict, in that for some of the fields, garden doesn't = cultivated
-GBIF.CULTIVATED = subset(GBIF.TRIM, CULTIVATED == "CULTIVATED")
-dim(GBIF.CULTIVATED)[1]/dim(GBIF.TRIM)[1]
-View(GBIF.CULTIVATED)
-
-
-## Also keep the cultivated records:
-GBIF.CULTIVATED <- GBIF.TRIM %>% 
-  
-  ## Note that these filters are very forgiving...
-  filter(CULTIVATED == "CULTIVATED")
-
-
-## Unique(GBIF.UNRESOLVED$New.Taxonomic.status)
-dim(GBIF.CULTIVATED)
-names(GBIF.CULTIVATED)
-unique(GBIF.CULTIVATED$CULTIVATED)
-save(GBIF.CULTIVATED, file = paste("./data/base/HIA_LIST/GBIF/GBIF_CULTIVATED.RData"))
-
-
-#########################################################################################################################
-## CHECK TAXONOMY THAT GBIF RETURNED 
 ## Use "Taxonstand". This also assumes that the ALA data is clean
 GBIF.TAXO <- TPL(unique(GBIF.TRIM$scientificName), infra = TRUE,
-                 corr = TRUE, repeats = 100)
+                 corr = TRUE, repeats = 100)  ## to stop it timing out...
 sort(names(GBIF.TAXO))
-
-
-# Error in TPLck(sp = d, infra = infra, corr = corr, diffchar = diffchar,  : 
-#                  Cannot read TPL website.
-# : 'The operation timed out'
 
 
 # The procedure used for taxonomic standardization is based on function TPLck. A progress bar
@@ -165,11 +101,83 @@ GBIF.TRIM.TAXO <- GBIF.TRIM %>%
 names(GBIF.TRIM.TAXO)
 
 
+## Unique(GBIF.UNRESOLVED$New.Taxonomic.status)
+save(GBIF.TAXO,       file = paste("./data/base/HIA_LIST/GBIF/GBIF_TAXO.RData"))
+save(GBIF.TRIM.TAXO,  file = paste("./data/base/HIA_LIST/GBIF/GBIF_TRIM_TAXO.RData"))
+
+
 
 
 
 #########################################################################################################################
-## 2). CREATE TABLE OF PRE-CLEAN FLAGS 
+## 2). MARK CULTIVATED RECORDS
+#########################################################################################################################
+
+
+## To create search terms, we can look for keywords in differemt languages: e.g. garden cultivated, etc.
+GBIF.COUNTRY = GBIF.TRIM.TAXO[, c("country")]
+GBIF.COUNTRY = as.data.frame(table(GBIF.COUNTRY))
+names(GBIF.COUNTRY) <-  c('country', 'count')
+GBIF.COUNTRY = GBIF.COUNTRY[order(GBIF.COUNTRY$count, decreasing = TRUE), ]
+
+
+## Look for synonyms in the countries which have the most GBIF records
+GBIF.COUNTRY
+#write.csv(GBIF.COUNTRY, "./data/base/HIA_LIST/GBIF/SPECIES/GBIF_COUNTRY.csv", row.names = FALSE)
+
+
+## This creates a list of synonyms:
+cultivated.synonyms
+
+
+#########################################################################################################################
+## Now search for these words in particular columns
+## Can these terms be searched for across the whole data frame (i.e. any column)?
+## Also lot's of Australian species don't have these columns, which might make it tricky to run the clean 
+## unique(GBIF.TRIM.TAXO$country)
+## test = apply(df, 1, function(r) any(r %in% c("M017", "M018")))
+
+## Try using the big list of synonyms across all the data
+## grepl("garden|cultiva",   GBIF.TRIM.TAXO$locality,           ignore.case = TRUE) | 
+GBIF.TRIM.TAXO$CULTIVATED <- ifelse(grepl(cultivated.synonyms,   GBIF.TRIM.TAXO$locality,           ignore.case = TRUE) | 
+                                 grepl(cultivated.synonyms, GBIF.TRIM.TAXO$habitat,            ignore.case = TRUE) | 
+                                 grepl(cultivated.synonyms, GBIF.TRIM.TAXO$eventRemarks,       ignore.case = TRUE) |
+                                 grepl(cultivated.synonyms, GBIF.TRIM.TAXO$cloc,               ignore.case = TRUE) |
+                                 grepl("managed",           GBIF.TRIM.TAXO$establishmentMeans, ignore.case = TRUE),
+                               
+                               "CULTIVATED", "UNKNOWN")
+
+
+## How many records are knocked out by using this definition?
+## This is probably a bit strict, in that for some of the fields, garden doesn't = cultivated
+GBIF.CULTIVATED = subset(GBIF.TRIM.TAXO, CULTIVATED == "CULTIVATED")
+dim(GBIF.CULTIVATED)[1]
+
+
+## Still very few records being returned as "cultivated"?
+dim(GBIF.CULTIVATED)[1]/dim(GBIF.TRIM.TAXO)[1]
+View(GBIF.CULTIVATED)
+
+
+## Also keep the cultivated records:
+GBIF.CULTIVATED <- GBIF.TRIM.TAXO %>% 
+  
+  ## Note that these filters are very forgiving...
+  filter(CULTIVATED == "CULTIVATED")
+
+
+## Unique(GBIF.UNRESOLVED$New.Taxonomic.status)
+dim(GBIF.CULTIVATED)
+names(GBIF.CULTIVATED)
+unique(GBIF.CULTIVATED$CULTIVATED)
+save(GBIF.CULTIVATED, file = paste("./data/base/HIA_LIST/GBIF/GBIF_CULTIVATED.RData"))
+
+
+
+
+
+#########################################################################################################################
+## 3). CREATE TABLE OF PRE-CLEAN FLAGS 
 #########################################################################################################################
 
 
@@ -237,7 +245,7 @@ identical(dim(GBIF.TRIM.TAXO)[1], Total.count)  ## identical matches two objects
 
 
 #########################################################################################################################
-## 3). FILTER RECORDS 
+## 4). FILTER RECORDS 
 #########################################################################################################################
 
 
@@ -279,7 +287,7 @@ names(GBIF.CLEAN)
 
 
 #########################################################################################################################
-## 4). REMOVE POINTS OUTSIDE WORLDCLIM LAYERS...
+## 5). REMOVE POINTS OUTSIDE WORLDCLIM LAYERS...
 #########################################################################################################################
 
 
@@ -363,7 +371,7 @@ gc()
 
 ## Now save .RData file for the next session
 save.image("STEP_3_GBIF_CLEAN.RData")
-
+load("STEP_3_GBIF_CLEAN.RData")
 
 
 
@@ -373,13 +381,11 @@ save.image("STEP_3_GBIF_CLEAN.RData")
 #########################################################################################################################
 
 
-## When should the additional filters be run in? before or after ALA merge?       - Ask John
+## Estimate native ranges: as a separate colum too?                               - Ubran polygons for AUS, USA, EU? Ask Dave Kendall
 
 ## GBIF taxonomic errors                                                          - Use taxonstand, check with John, Dave K.
 
-## Keep cultivated records as a separate column/file                              - Have them: check search with Rach, Linda
-
-## Estimate native ranges: as a separate colum too?                               - Ubran polygons for AUS, USA, EU? Ask Dave Kendall
+## Keep cultivated records as a separate column/file                              - Get cultivated column from ALA data...
 
 ## GBIF duplicates                                                                - Check GBIF issues, but John's SDM code will get rid of more
 
