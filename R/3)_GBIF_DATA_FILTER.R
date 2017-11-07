@@ -54,11 +54,22 @@ write.csv(GBIF.COUNTRY, "./data/base/HIA_LIST/GBIF/SPECIES/GBIF_COUNTRY.csv", ro
 ## Try and make this one command: can these terms be searched for across the whole data frame (i.e. any column)
 ## Also lot's of Australian species don't have these columns, which might make it tricky to run the clean 
 ## unique(GBIF.TRIM$country)
-GBIF.TRIM$CULTIVATED <- ifelse(grepl("garden|cultiva",   GBIF.TRIM$locality,           ignore.case = TRUE) | 
-                                 grepl("garden|cultiva", GBIF.TRIM$habitat,            ignore.case = TRUE) | 
-                                 grepl("garden|cultiva", GBIF.TRIM$eventRemarks,       ignore.case = TRUE) |
-                                 grepl("garden|cultiva", GBIF.TRIM$cloc,               ignore.case = TRUE) |
-                                 grepl("managed",        GBIF.TRIM$establishmentMeans, ignore.case = TRUE),
+## test = apply(df, 1, function(r) any(r %in% c("M017", "M018")))
+# GBIF.TRIM$CULTIVATED <- ifelse(grepl("garden|cultiva",   GBIF.TRIM$locality,           ignore.case = TRUE) | 
+#                                  grepl("garden|cultiva", GBIF.TRIM$habitat,            ignore.case = TRUE) | 
+#                                  grepl("garden|cultiva", GBIF.TRIM$eventRemarks,       ignore.case = TRUE) |
+#                                  grepl("garden|cultiva", GBIF.TRIM$cloc,               ignore.case = TRUE) |
+#                                  grepl("managed",        GBIF.TRIM$establishmentMeans, ignore.case = TRUE),
+#                                
+#                                "CULTIVATED", "UNKNOWN")
+
+
+## Try using the big list of synonyms across all the data
+GBIF.TRIM$CULTIVATED <- ifelse(grepl(cultivated.synonyms,   GBIF.TRIM$locality,           ignore.case = TRUE) | 
+                                 grepl(cultivated.synonyms, GBIF.TRIM$habitat,            ignore.case = TRUE) | 
+                                 grepl(cultivated.synonyms, GBIF.TRIM$eventRemarks,       ignore.case = TRUE) |
+                                 grepl(cultivated.synonyms, GBIF.TRIM$cloc,               ignore.case = TRUE) |
+                                 grepl("managed",           GBIF.TRIM$establishmentMeans, ignore.case = TRUE),
                                
                                "CULTIVATED", "UNKNOWN")
 

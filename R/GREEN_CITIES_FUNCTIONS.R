@@ -810,43 +810,6 @@ gbif.keep <- c(## TAXONOMY
                "eventID")
 
 
-
-gbif.keep <- c(## TAXONOMY
-  "searchTaxon",
-  "scientificName",
-  "taxonRank",
-  "genus",
-  "family",
-  
-  ## CULTIVATION
-  "cloc",
-  "basisOfRecord",
-  "locality",
-  "establishmentMeans",
-  "institutionCode",
-  "datasetName",
-  "habitat",
-  "eventRemarks",
-  
-  ## RECORD ID
-  "recordedBy",
-  "identifiedBy",
-  "gbifID",
-  "catalogNumber",
-  
-  ## PLACE/TIME
-  "lat",
-  "lon",
-  "country",
-  "coordinateUncertaintyInMeters",
-  "geodeticDatum",
-  "year",
-  "month",
-  "day",
-  "eventDate",
-  "eventID")
-
-
 TPL.keep <- c(## GBIF TAXONOMY
   "searchTaxon",
   "scientificName",
@@ -889,6 +852,16 @@ TPL.keep <- c(## GBIF TAXONOMY
   "day",
   "eventDate",
   "eventID")
+
+
+cultivated.synonyms <- "garden|afgrøde|bebauen|bebouwen|beskärs|çiftçilik|crescătorie|cultiv|Ernte|frø|gefokt|gepropageerd|însămânțat|kırpılmış|kylvetään|odlad|oogsten|opdrættede|propagate|propagé|propagiert|récolt|seribaşı|viljellyn|viljelykasvi|yayılır|yönetilen|выращиваемых|размножают|allevat|ausgesät|avl|avlet|beskjæres|bewerkt|bred|coltiv|conduce|cortad|crescut|criad|crop|cultiva|cultivé|decupată|dirigid|dyrk|ekili|élevé|ensemencé|farm|fikk til|former|forplantet|fortplantas|förvaltade|frø|gestit|gezaaid|gezüchtet|gospodarować|hodowlany|kasvatetaan|kultiv|manag|manage|manejad|oppdretts|o'stiriladi|propaga|seed|sembrad|semead|seminat|siewny|uppfödda|upraw|uprawiać ziemię|viljel|wychowany|ympades|засевали|культура|культурный|разводятся|удалось|לִזרוֹעַ|מְתוּרבָּת|מופץ|מעובדים|תְבוּאָה|المزارع|م|حصول|مزروع|مزروع|نشر|ولدت|교양 있는|씨를 뿌린|양식장|자란|전파 된|伝播|传播|养殖|孕育|栽培された|種まき|繁殖した"
+
+
+
+
+
+
+
 
 
 
