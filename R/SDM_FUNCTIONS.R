@@ -348,7 +348,7 @@ FIT_MAXENT_SELECT <- function(occ,
   #####################################################################
   ## Sample sdm.predictors.all at occurrence and background points
   swd_occ <- occ[, sdm.predictors.all]
-  swd_bg <- bg[, sdm.predictors.all]
+  swd_bg  <- bg[, sdm.predictors.all]
 
   #####################################################################
   ## Here is where we need to reduce the predictors to a candidate set
@@ -366,18 +366,20 @@ FIT_MAXENT_SELECT <- function(occ,
   #####################################################################
   ## Recreate occ and bg with new predictors
   swd_occ <- occ[, sdm.predictors.all]
-  swd_bg <- bg[, sdm.predictors.all]
+  swd_bg  <- bg[, sdm.predictors.all]
   
   ## Then save them...
   saveRDS(swd_occ, file.path(outdir_sp, 'occ_swd.rds'))
   saveRDS(swd_bg, file.path(outdir_sp, 'bg_swd.rds'))
   
+  ## drop some memory?
+  gc()
   
   ## Save shapefiles of the...
   if(shapefiles) {
     
     writeOGR(swd_occ, outdir_sp,  'occ_swd', 'ESRI Shapefile', overwrite_layer = TRUE)
-    writeOGR(swd_bg,  outdir_sp,   'bg_swd', 'ESRI Shapefile', overwrite_layer = TRUE)
+    writeOGR(swd_bg,  outdir_sp,  'bg_swd',  'ESRI Shapefile', overwrite_layer = TRUE)
     
   }
   
@@ -429,7 +431,6 @@ FIT_MAXENT_SELECT <- function(occ,
   #   print (paste ("file exists for genera", gen.n, "skipping"))
   #   next
   
-  
   if(replicates > 1) {
     
     saveRDS(list(me_xval = me_xval, me_full = me_full, swd = swd, pa = pa), 
@@ -441,6 +442,9 @@ FIT_MAXENT_SELECT <- function(occ,
             file.path(outdir_sp, 'maxent_fitted.rds'))
     
   }
+  
+  ## drop some memory?
+  gc()
   
 }
 

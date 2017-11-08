@@ -234,47 +234,53 @@ coordinates(COMBO.RASTER.SELECT) <- ~lon+lat
 coordinates(COMBO.RASTER.ALL)    <- ~lon+lat
 
 
-proj4string(COMBO.RASTER.SELECT) <- '+init=epsg:4326'
+#proj4string(COMBO.RASTER.SELECT) <- '+init=epsg:4326'
 proj4string(COMBO.RASTER.ALL)    <- '+init=epsg:4326'
 
-COMBO.RASTER.SELECT <- spTransform(
-  COMBO.RASTER.SELECT, CRS('+init=ESRI:54009'))
+# COMBO.RASTER.SELECT <- spTransform(
+#   COMBO.RASTER.SELECT, CRS('+init=ESRI:54009'))
 
 COMBO.RASTER.ALL    <- spTransform(
   COMBO.RASTER.ALL, CRS('+init=ESRI:54009'))
 
 
 ## Now split using the data using the species column, and get the unique occurrence cells
-COMBO.RASTER.SPLIT     <- split(COMBO.RASTER.SELECT, COMBO.RASTER.SELECT$searchTaxon)
-COMBO.RASTER.SPLIT.ALL <- split(COMBO.RASTER.SELECT, COMBO.RASTER.SELECT$searchTaxon)
+#COMBO.RASTER.SPLIT     <- split(COMBO.RASTER.SELECT, COMBO.RASTER.SELECT$searchTaxon)
+COMBO.RASTER.SPLIT.ALL <- split(COMBO.RASTER.ALL, COMBO.RASTER.ALL$searchTaxon)
 
 
-occurrence_cells       <- lapply(COMBO.RASTER.SPLIT,     function(x) cellFromXY(template.raster, x))
+#occurrence_cells       <- lapply(COMBO.RASTER.SPLIT,     function(x) cellFromXY(template.raster, x))
 occurrence_cells_all   <- lapply(COMBO.RASTER.SPLIT.ALL, function(x) cellFromXY(template.raster, x))
 
-str(occurrence_cells)  ## this is a list of dataframes, where the number of rows for each being the species table
+#str(occurrence_cells)  ## this is a list of dataframes, where the number of rows for each being the species table
 str(occurrence_cells_all)
 
 
 ## Now get just one record within each 10*10km cell. This step should eliminate most, if not all, duplicate records
 ## A simple alternative to the extract problem could be to run this process before the extract?
-SDM.DATA <- mapply(function(x, cells) {
-  x[!duplicated(cells), ]
-}, COMBO.RASTER.SPLIT, occurrence_cells, SIMPLIFY = FALSE) %>% do.call(rbind, .)
+# SDM.DATA <- mapply(function(x, cells) {
+#   x[!duplicated(cells), ]
+# }, COMBO.RASTER.SPLIT, occurrence_cells, SIMPLIFY = FALSE) %>% do.call(rbind, .)
 
 SDM.DATA.ALL <- mapply(function(x, cells) {
   x[!duplicated(cells), ]
 }, COMBO.RASTER.SPLIT.ALL, occurrence_cells_all, SIMPLIFY = FALSE) %>% do.call(rbind, .)
 
 
-## Use the analysis data
+## Check to see we have 8 variables + the species for the standard predictors, and 19 for all predictors
+## works ok
 str(SDM.DATA)
 str(SDM.DATA.ALL)
 
 
 ## Now save/load .RData file for the next session
-save.image("STEP_6_SDM.RData")
+save.image("STEP_6_SDM_ALL_DATA.RData")
 #load("STEP_6_SDM.RData")
+
+
+## Save big tables to keep memory spare
+save(SDM.DATA, file = paste("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_STD_VAR.RData"))
+save(SDM.DATA, file = paste("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_ALL_VAR.RData"))
 
 
 

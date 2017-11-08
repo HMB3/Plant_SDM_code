@@ -20,8 +20,9 @@
 
 
 ## 100 species takes about 4 hours...
+source('./R/SDM_FUNCTIONS.R')
 cl <- makeCluster(6)
-clusterExport(cl, c('template.raster', 'SDM.DATA.ALL', 'FIT_MAXENT'))
+clusterExport(cl, c('template.raster', 'SDM.DATA.ALL', 'FIT_MAXENT_SELECT'))
 clusterEvalQ(cl, {
   
   require(ff)
@@ -74,6 +75,20 @@ lapply(test.spp[1:length(test.spp)], function(x) { # for serial, parLapply(cl, s
 
 
 stopCluster(cl)
+
+
+
+## R is not working very efficiently with memory. Maybe put another condition to drop memory on each run? 
+
+## Warning messages for the models with all variables
+# Error in rJava::.jcall(mxe, "S", "fit", c("autorun", "-e", afn, "-o",  : 
+#                                             java.lang.OutOfMemoryError: Java heap space
+
+
+# ##
+# Warning messages:
+#   1: In writeOGR(swd_occ, outdir_sp, "occ_swd", "ESRI Shapefile",  ... :
+#                    Field names abbreviated for ESRI Shapefile driver
 
 
 
