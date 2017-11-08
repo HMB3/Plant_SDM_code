@@ -94,6 +94,10 @@
 ## To save time, load in previous data
 load("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.RData")
 load("./data/base/HIA_LIST/ALA/ALA_LAND_POINTS.RData")
+
+
+## New names are in the database...
+names(GBIF.LAND)
 str(GBIF.LAND)
 str(ALA.LAND)
 
@@ -610,7 +614,7 @@ save(COMBO.NICHE.CONTEXT,  file = paste("./data/base/HIA_LIST/COMBO/COMBO_NICHE_
 write.csv(COMBO.NICHE.CONTEXT, "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.csv",       row.names = FALSE)
 
 
-## Now save .RData file for the next session
+## Now save .RData file for the next session...
 save.image("STEP_4_NICHES.RData")
 
 
@@ -623,6 +627,9 @@ save.image("STEP_4_NICHES.RData")
 
 
 
+
+## Run the niche calculations again for culivated records, as well as native vs. non-native if possible
+
 ## Check WORLDCLIM values: some of the numbers don't look right
 
 ## Check geographic range: doesn't look right for some species. Calc extent of occurrnece as well
@@ -631,7 +638,7 @@ save.image("STEP_4_NICHES.RData")
 
 ## Return species EG:                                     -
 
-## Find infrequently sold spp., big environmental & geographic range, but could have similar traits to popular species
+## Find infrequently sold spp., big environmental & geographic range, but could have similar traits to popular species?
 
 ## Find rarest species (are there popular species with not many records?)
 

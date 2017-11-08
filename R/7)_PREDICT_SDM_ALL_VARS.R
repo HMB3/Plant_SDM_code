@@ -124,7 +124,7 @@ lapply(species_list, function(species) {
     message('  Doing ', scen)
     
     ## Read in the fitted models using sprintf
-    m <- readRDS(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/maxent_fitted.rds', species))    ## Change dir
+    m <- readRDS(sprintf('F:/green_cities_sdm/output/maxent/SEL_VAR_ALL/%s/maxent_fitted.rds', species))    ## Change dir
     
     # ## These numbers don't look right 
     # str(m)
@@ -132,7 +132,7 @@ lapply(species_list, function(species) {
     # env.grids.future[[colnames(m$me_full@presence)]]
     
     ## Read in the occurrence files from the output directory using sprintf
-    occ <- readRDS(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/occ.rds', species)) %>%        ## Change dir
+    occ <- readRDS(sprintf('F:/green_cities_sdm/output/maxent/SEL_VAR_ALL/%s/occ.rds', species)) %>%        ## Change dir
       spTransform(CRS('+init=epsg:4326'))
     
     ## str(occ)
@@ -150,7 +150,7 @@ lapply(species_list, function(species) {
     ## The folders will need to change as I add model runs for all variables vs select, 
     ## all records vs. cultivated and non-cultivated
     ## does this need to be indexed? pred.current[[1]]
-    # writeRaster(pred.current, sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_current.tif',  ## Change dir
+    # writeRaster(pred.current, sprintf('F:/green_cities_sdm/output/maxent/SEL_VAR_ALL/%s/full/%s_current.tif',  ## Change dir
     #                                   species, species))
     # 
     # # Warning message:
@@ -158,7 +158,7 @@ lapply(species_list, function(species) {
     # #   closing unused connection 3 (F:/green_cities_sdm/RTEMP/RtmpQxrX5c/raster/r_tmp_2017-11-01_165316_9480_78386.gri)
     # 
     # ## Write the future raster out: does this need to be indexed? pred.future[[1]]
-    # writeRaster(pred.future, sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif',        ## Change dir
+    # writeRaster(pred.future, sprintf('F:/green_cities_sdm/output/maxent/SEL_VAR_ALL/%s/full/%s_%s.tif',        ## Change dir
     #                                  species, species, scen))
     
     ## Create an empty raster based on the future prediction
@@ -172,7 +172,7 @@ lapply(species_list, function(species) {
     #########################################################################################################################
     ## Create map of habitat suitability...the first line starts the PNG device
     # Error in compareRaster(x) : different extent
-    png(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s.png', species, species),              ## Change dir
+    png(sprintf('F:/green_cities_sdm/output/maxent/SEL_VAR_ALL/%s/full/%s.png', species, species),              ## Change dir
         11, 4, units = 'in', res = 300)
     
     ## Use the levelplot function to make a multipanel output

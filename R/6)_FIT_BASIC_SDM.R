@@ -36,6 +36,7 @@ p <- c('ff',    'things',         'raster',    'dismo',        'sp',           '
 
 ## Require packages
 sapply(p, require, character.only = TRUE)
+load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")
 source('./R/GREEN_CITIES_FUNCTIONS.R')
 source('./R/SDM_FUNCTIONS.R')
 #source('./R/TRIAL_SPECIES_NATIVE_RANGES.R')
@@ -238,6 +239,7 @@ proj4string(COMBO.RASTER.ALL)    <- '+init=epsg:4326'
 
 COMBO.RASTER.SELECT <- spTransform(
   COMBO.RASTER.SELECT, CRS('+init=ESRI:54009'))
+
 COMBO.RASTER.ALL    <- spTransform(
   COMBO.RASTER.ALL, CRS('+init=ESRI:54009'))
 
@@ -293,6 +295,16 @@ str(spp.all)                 ## 6782
 ## The trial species
 test.spp = sort(unique(c(renee.full$Species, "Betula pendula", "Fraxinus excelsior", "Quercus robur", "Fagus sylvatica")))
 test.spp 
+
+
+## Combine with 45 from the main list
+HIA.SAMPLE = head(COMBO.NICHE.CONTEXT, 53)[, c("searchTaxon")]
+test.spp   = sort(unique(c(test.spp, HIA.SAMPLE)))
+
+
+## Have a look at the breakdown:
+TEST.CONTEXT  = COMBO.NICHE.CONTEXT[COMBO.NICHE.CONTEXT$searchTaxon %in% test.spp, ][, c(2:18)]
+kable(TEST.CONTEXT)
 
 
 ## Now reverse the order, so we can start another R session from the other end

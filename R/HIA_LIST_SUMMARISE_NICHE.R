@@ -24,6 +24,28 @@ View(COMBO.NICHE.CONTEXT)
 renee.missing = setdiff(renee.full$Species, renee.50$Species)
 
 
+## The trial species
+test.spp = sort(unique(c(renee.full$Species, "Betula pendula", "Fraxinus excelsior", "Quercus robur", "Fagus sylvatica")))
+test.spp 
+
+
+## Combine with 45 from the main list
+HIA.SAMPLE = head(COMBO.NICHE.CONTEXT, 53)[, c("searchTaxon")]
+test.spp   = sort(unique(c(test.spp, HIA.SAMPLE)))
+
+
+## Have a look at the breakdown:
+TEST.CONTEXT  = COMBO.NICHE.CONTEXT[COMBO.NICHE.CONTEXT$searchTaxon %in% test.spp, ][, c(2:18)]
+kable(TEST.CONTEXT)
+
+
+## Save as .csv to check the mapping:
+write.csv(TEST.CONTEXT, "./data/base/HIA_LIST/COMBO/TEST_SPECIES.csv", row.names = FALSE)
+
+
+
+
+
 #########################################################################################################################
 ## WORLDCLIM VARIABLES: WHICH ARE MOST RELEVANT TO THE EXPERIMENTS?
 #########################################################################################################################
@@ -126,16 +148,16 @@ LAND  <- readOGR("./data/base/CONTEXTUAL/ne_10m_land.shp",          layer = "ne_
 
 ## Plot global and Australian occurrences for all taxa on the list
 ## Might need to make plot window bigger
-print_occurrence_records(taxa.list = HIA.SPP[4441], DF = COMBO.RASTER.CONTEXT)
+print_occurrence_records(taxa.list = test.spp[1], DF = COMBO.RASTER.CONTEXT)
 
 
 ## Save maps to file
-map_GBIF_records(taxa.list = HIA.SPP[4441], DF = COMBO.RASTER.CONTEXT)
+map_GBIF_records(taxa.list = test.spp, DF = COMBO.RASTER.CONTEXT)
 
 
 #########################################################################################################################
 ## And plot the histograms. Consider how to combine outputs. Might need to make plot window bigger
-Print_global_histogram(taxa.list    = HIA.SPP[4441], DF = COMBO.RASTER.CONTEXT,  ## 33 is a problem: Cupianopsis anacardiodes
+Print_global_histogram(taxa.list    = test.spp[1], DF = COMBO.RASTER.CONTEXT,  ## 33 is a problem: Cupianopsis anacardiodes
                        env.var.1    = "Annual_mean_temp",   
                        env.col.1    = "orange",  
                        env.units.1  = "°C",
@@ -143,7 +165,8 @@ Print_global_histogram(taxa.list    = HIA.SPP[4441], DF = COMBO.RASTER.CONTEXT, 
                        env.col.2    = "sky blue",     
                        env.units.2  = "mm")
 
-histogram_GBIF_records(taxa.list = HIA.SPP[4441], DF = COMBO.RASTER.CONTEXT,
+
+histogram_GBIF_records(taxa.list = test.spp, DF = COMBO.RASTER.CONTEXT,
                        env.var.1 = "Annual_mean_temp",   env.col.1 = "orange",   env.units.1 = "°c",
                        env.var.2 = "Precip_dry_month",   env.col.2 = "sky blue", env.units.2 = "mm")
 
@@ -188,15 +211,13 @@ plot(log(new.spp$AREA_OCCUPANCY), new.spp$Annual_mean_temp_range)
 #########################################################################################################################
 
 
+## Create a spreadhseet of taxa which have been checked manually
+
 ## Clean the GBIF data and merge with ALA to avoid duplicates, spatial outliers, etc.
 
 ## Check on the missing species
 
 ## Improve mapping functions to be more useful: Combine maps and historgrams in one
-
-## Correct the worldclim raster values
-
-## Use different rasters too: Manuel?
 
 ## Lots more...
 
