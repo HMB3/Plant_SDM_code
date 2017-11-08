@@ -348,10 +348,30 @@ FIT_MAXENT_SELECT <- function(occ,
   #####################################################################
   ## Sample sdm.predictors.all at occurrence and background points
   swd_occ <- occ[, sdm.predictors.all]
-  saveRDS(swd_occ, file.path(outdir_sp, 'occ_swd.rds'))
-  
   swd_bg <- bg[, sdm.predictors.all]
+
+  #####################################################################
+  ## Here is where we need to reduce the predictors to a candidate set
+  sdm.predictors.all = rmaxent::simplify(swd_occ, swd_bg, path, ## Don't think we want this one?
+                                         species_column  = "searchTaxon", 
+                                         response_curves = FALSE,
+                                         logistic_format = TRUE, 
+                                         type            = "PI", 
+                                         cor_thr         = 0.7, 
+                                         pct_thr         = 5, 
+                                         k_thr           = 4,
+                                         quiet           = FALSE)
+  
+  
+  #####################################################################
+  ## Recreate occ and bg with new predictors
+  swd_occ <- occ[, sdm.predictors.all]
+  swd_bg <- bg[, sdm.predictors.all]
+  
+  ## Then save them...
+  saveRDS(swd_occ, file.path(outdir_sp, 'occ_swd.rds'))
   saveRDS(swd_bg, file.path(outdir_sp, 'bg_swd.rds'))
+  
   
   ## Save shapefiles of the...
   if(shapefiles) {

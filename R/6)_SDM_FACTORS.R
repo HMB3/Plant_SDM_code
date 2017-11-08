@@ -16,6 +16,9 @@
 ## maxent function
 
 
+## the simplify function rmaxent::simplify
+
+
 ## 100 species takes about 4 hours...
 cl <- makeCluster(6)
 clusterExport(cl, c('template.raster', 'SDM.DATA.ALL', 'FIT_MAXENT'))
