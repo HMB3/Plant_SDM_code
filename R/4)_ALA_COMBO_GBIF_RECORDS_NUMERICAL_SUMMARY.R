@@ -116,12 +116,15 @@ setdiff(names(GBIF.LAND), names(ALA.LAND))
 
 #########################################################################################################################
 ## Rename a few fields: Add rename of cultivated field, and make the values the same as mine "CULT" or "UNKNOWN"
+## X = CULTIVATED
 ALA.LAND     = dplyr::rename(ALA.LAND, 
                              searchTaxon                   = scientificname,
                              coordinateUncertaintyInMeters = uncertainty_m)
 
 
-
+## Rename the field values: cultivated and uncultivated?
+#ALA.LAND$CULT  = gsub("x", "CULTIVATED",   ALA.LAND$CULT)
+#ALA.LAND$CULT  = gsub("x", "UNCULTIVATED", ALA.LAND$CULT)
 
 
 ## Restrict ALA data to just those species on the big list

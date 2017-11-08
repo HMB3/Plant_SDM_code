@@ -101,7 +101,7 @@ load("STEP_7_PREDICT_SDM.RData")
 
 
 #########################################################################################################################
-## 2). CREATE MAPS OF CURRENT AND FUTURE HABITAT SUITABILITY
+## 2). CREATE MAPS OF CURRENT AND FUTURE HABITAT SUITABILITY FOR ALL RECORDS AND SELECTED VARIABLES
 #########################################################################################################################
 
 
@@ -114,6 +114,8 @@ load("STEP_7_PREDICT_SDM.RData")
 species = species_list[458] # [1] "Lomandra_longifolia"
 
 
+#########################################################################################################################
+## Also, create a list of directories to loop over
 ## Now run the code over a list of species...
 lapply(species_list, function(species) {
   message('Doing ', species)
@@ -122,7 +124,7 @@ lapply(species_list, function(species) {
     message('  Doing ', scen)
     
     ## Read in the fitted models using sprintf
-    m <- readRDS(sprintf('F:/green_cities_sdm/output/maxent/baseline/%s/maxent_fitted.rds', species))
+    m <- readRDS(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/maxent_fitted.rds', species))    ## Change dir
     
     # ## These numbers don't look right 
     # str(m)
@@ -130,7 +132,7 @@ lapply(species_list, function(species) {
     # env.grids.future[[colnames(m$me_full@presence)]]
     
     ## Read in the occurrence files from the output directory using sprintf
-    occ <- readRDS(sprintf('F:/green_cities_sdm/output/maxent/baseline/%s/occ.rds', species)) %>% 
+    occ <- readRDS(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/occ.rds', species)) %>%        ## Change dir
       spTransform(CRS('+init=epsg:4326'))
     
     ## str(occ)
@@ -170,7 +172,7 @@ lapply(species_list, function(species) {
     #########################################################################################################################
     ## Create map of habitat suitability...the first line starts the PNG device
     # Error in compareRaster(x) : different extent
-    png(sprintf('F:/green_cities_sdm/output/maxent/baseline/%s/full/%s.png', species, species), 
+    png(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s.png', species, species),              ## Change dir
         11, 4, units = 'in', res = 300)
     
     ## Use the levelplot function to make a multipanel output
@@ -202,8 +204,7 @@ lapply(species_list, function(species) {
   
   
   
-## Now save .RData file for the next session
-save.image('STEP_7_SDM.RData')
+
   
   
 

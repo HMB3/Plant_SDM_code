@@ -194,7 +194,7 @@ save(correlations.table,         file = paste("./output/tables/variable_selectio
 #########################################################################################################################
 
 
-\#########################################################################################################################
+#########################################################################################################################
 ## Chose a-priori worldclim predictors
 sdm.predictors    <- c("Annual_mean_temp", "Temp_seasonality",    "Max_temp_warm_month", "Min_temp_cold_month",
                        "Annual_precip",    "Precip_seasonality",  "Precip_wet_month", "Precip_dry_month")
@@ -358,7 +358,7 @@ lapply(test.spp[1:length(test.spp)], function(x) { # for serial, parLapply(cl, s
              bg                      = background, 
              sdm.predictors          = sdm.predictors, 
              name                    = x, 
-             outdir                  = 'output/maxent/baseline', 
+             outdir                  = 'output/maxent/STD_VAR_ALL', 
              template.raster,
              min_n                   = 20,   ## This should be higher...
              max_bg_size             = 100000,
@@ -387,7 +387,7 @@ stopCluster(cl)
 # 2: In writeOGR(swd_bg, outdir_sp, "bg_swd", "ESRI Shapefile", overwrite_layer = TRUE) :
 #   Field names abbreviated for ESRI Shapefile driver
 
-stopCluster(cl)
+
 ## Look at the output...
 
 
