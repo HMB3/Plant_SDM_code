@@ -858,9 +858,34 @@ cultivated.synonyms <- "garden|afgrøde|bebauen|bebouwen|beskärs|çiftçilik|cr
 
 
 
+#########################################################################################################################
+## NICHE BREADTH CALCULATIONS
+#########################################################################################################################
 
 
-
+## Loop over a list of subfolders
+read_bind_tables = function (table.list, path) {
+  
+  READ.BIND.TABLE <- table.list[c(1:length(table.list))] %>% 
+    
+    ## pipe the list into lapply
+    lapply(function(x) {
+      
+      ## create the character string
+      f <- paste0(path, x)
+      
+      ## read each .csv file
+      d <- read.csv(f)
+      
+      ## now add the new columns
+      d <- d[, columns]
+      
+    }) %>% 
+    
+    ## finally, bind all the rows together
+    bind_rows
+  
+}
 
 
 

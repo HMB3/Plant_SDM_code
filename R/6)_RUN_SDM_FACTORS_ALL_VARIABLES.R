@@ -21,6 +21,7 @@
 ## Load packages
 load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")
 load("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_ALL_VAR.RData")
+load("./data/base/HIA_LIST/COMBO/SDM_TEMPLATE_RASTER.RData")
 source('./R/HIA_LIST_MATCHING.R')
 source('./R/HIA_CLEAN_MATCHING.R')
 source('./R/GREEN_CITIES_FUNCTIONS.R')
@@ -123,19 +124,19 @@ lapply(test.spp[1:length(test.spp)], function(x) { # for serial, parLapply(cl, s
   ## Finally fit the models using FIT_MAXENT
   ## There is no switch in the function to skip outputs that exist.
   ## Given all the changes likely to be made to the models, this could be wise...
-  FIT_MAXENT(occ                     = occurrence, 
-             bg                      = background, 
-             sdm.predictors          = sdm.predictors.all, 
-             name                    = x, 
-             outdir                  = 'output/maxent/SEL_VAR_ALL', 
-             template.raster,
-             min_n                   = 20,   ## This should be higher...
-             max_bg_size             = 100000,
-             background_buffer_width = 200000,
-             shapefiles              = TRUE,
-             features                = 'lpq',
-             replicates              = 5,
-             responsecurves          = TRUE)
+  FIT_MAXENT_SELECT(occ                     = occurrence, 
+                    bg                      = background, 
+                    sdm.predictors          = sdm.predictors.all, 
+                    name                    = x, 
+                    outdir                  = 'output/maxent/SEL_VAR_ALL', 
+                    template.raster,
+                    min_n                   = 20,   ## This should be higher...
+                    max_bg_size             = 100000,
+                    background_buffer_width = 200000,
+                    shapefiles              = TRUE,
+                    features                = 'lpq',
+                    replicates              = 5,
+                    responsecurves          = TRUE)
   
 })
 
@@ -217,19 +218,19 @@ lapply(test.spp[1:length(test.spp)], function(x) { # for serial, parLapply(cl, s
   ## Finally fit the models using FIT_MAXENT
   ## There is no switch in the function to skip outputs that exist.
   ## Given all the changes likely to be made to the models, this could be wise...
-  FIT_MAXENT(occ                     = occurrence, 
-             bg                      = background, 
-             sdm.predictors          = sdm.predictors.all, 
-             name                    = x, 
-             outdir                  = 'output/maxent/SEL_VAR_CULT', 
-             template.raster,
-             min_n                   = 20,   ## This should be higher...
-             max_bg_size             = 100000,
-             background_buffer_width = 200000,
-             shapefiles              = TRUE,
-             features                = 'lpq',
-             replicates              = 5,
-             responsecurves          = TRUE)
+  FIT_MAXENT_SELECT(occ                     = occurrence, 
+                    bg                      = background, 
+                    sdm.predictors          = sdm.predictors.all, 
+                    name                    = x, 
+                    outdir                  = 'output/maxent/SEL_VAR_CULT', 
+                    template.raster,
+                    min_n                   = 20,   ## This should be higher...
+                    max_bg_size             = 100000,
+                    background_buffer_width = 200000,
+                    shapefiles              = TRUE,
+                    features                = 'lpq',
+                    replicates              = 5,
+                    responsecurves          = TRUE)
   
 })
 

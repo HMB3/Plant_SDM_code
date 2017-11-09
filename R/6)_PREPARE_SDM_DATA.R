@@ -269,8 +269,9 @@ str(SDM.DATA.ALL)
 
 
 ## Save big tables to keep memory spare
-save(SDM.DATA,     file = paste("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_STD_VAR.RData"))
-save(SDM.DATA.ALL, file = paste("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_ALL_VAR.RData"))
+save(template.raster,  file = paste("./data/base/HIA_LIST/COMBO/SDM_TEMPLATE_RASTER.RData"))
+save(SDM.DATA,         file = paste("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_STD_VAR.RData"))
+save(SDM.DATA.ALL,     file = paste("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_ALL_VAR.RData"))
 
 
 ## Remove the other data
@@ -278,6 +279,9 @@ rm(COMBO.RASTER.ALL)
 rm(COMBO.RASTER.SELECT)
 rm(COMBO.RASTER.SPLIT.ALL)
 rm(COMBO.RASTER.SPLIT)
+
+
+
 
 
 #########################################################################################################################
