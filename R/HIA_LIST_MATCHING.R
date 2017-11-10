@@ -16,6 +16,7 @@ library(dplyr)
 library(sfsmisc)
 library(spatstat)
 library(data.table)
+library(rvest)
 
 library(SDMTools)
 library(rmaxent)

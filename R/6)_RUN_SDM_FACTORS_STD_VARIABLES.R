@@ -17,6 +17,22 @@
 ## requirements.
 
 
+
+
+
+
+#########################################################################################################################
+## OUTSTANDING SDM TASKS
+
+## Further mapping and cleaning of GBIF data needed for the important species
+
+## Need a condition in the loop to skip folders in the list, can this be an argument in the loop set to "TRUE" OR "FALSE"?
+
+## 
+
+
+
+
 #########################################################################################################################
 ## Load packages, functions and data
 source('./R/HIA_LIST_MATCHING.R')
@@ -50,8 +66,8 @@ sapply(p, require, character.only = TRUE)
 #########################################################################################################################
 ## Create species subsets for analysis
 ## All species
-spp.all  <- unique(COMBO.NICHE.CONTEXT$searchTaxon)
-str(spp.all)                 ## 6782
+spp.all  <- unique(HIA.SPP$Binomial)
+str(spp.all)                 ## 605
 
 
 ## The trial species
@@ -107,9 +123,17 @@ clusterEvalQ(cl, {
 })
 
 
+## first check if the outdir exists. Could wrap in a function to create true/false skipping condition
+#check.outdir   = 'output/maxent/STD_VAR_ALL'
+
+
+########################################################################################################################
 ## Now use 'lapply' to run maxent for multiple species
-## Note that running the code in parallel causes problems
-lapply(test.spp[1:length(test.spp)], function(x) { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel 
+lapply(spp.all[1:length(spp.all)], function(x) { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel 
+  
+  
+  ## The skipping step needs to come here!
+  outdir_sp <- file.path(check.outdir, gsub(' ', '_', x))
   
   ## Print the taxa being processed to screen
   message('Doing ', x)
@@ -143,6 +167,7 @@ lapply(test.spp[1:length(test.spp)], function(x) { # for serial, parLapply(cl, s
              responsecurves          = TRUE)
   
 })
+  
 
 
 stopCluster(cl)

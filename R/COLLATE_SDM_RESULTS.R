@@ -26,11 +26,14 @@ sel.var.all   = list.files("./output/maxent/SEL_VAR_ALL/")
 
 
 #########################################################################################################################
-## 3). RE-CREATE FIGURES 4 and 5
+## 2). CREATE SUMMARY TABLE OF MAXENT RESULTS
 #########################################################################################################################
 
 
 ## Loop over a list of subfolders
+## table.list = table.list[1]
+## table.list = std.var.all 
+## path = "./output/maxent/STD_VAR_ALL/"
 read_bind_maxent = function (table.list, path) {
   
   READ.BIND.TABLE <- table.list[c(1:length(table.list))] %>% 
@@ -39,33 +42,46 @@ read_bind_maxent = function (table.list, path) {
     lapply(function(x) {
       
       ## create the character string
+      # need to skip each file of it doesn't exist
+      # if (file.exists(f))
       f <- paste0(path, x, "/full/maxentResults.csv")
       
-      ## read each .csv file
-      d <- read.csv(f)
-      
-      ## now add a model column
-      cbind(GBIF_Taxon = x,
-            Model_run  = path, 
-            d)
-      
-      ## Remove path gunk, and species
-      d$GBIF_Taxon = gsub("_", " ", d$GBIF_Taxon)
-      d$Model_run  = gsub("./output/maxent/", "", d$Model_run)
-      d$Model_run  = gsub("/", "", d$Model_run)
-      
-      
-    }) %>% 
+      ## If inusufficent records, skip
+      if(!file.exists(f)) {
+        
+        print('Insufficient records to run ', x, "skipping", call. = FALSE)
+        
+      } else {
+        
+        ## Otherwise, read each .csv file
+        d <- read.csv(f)
+        
+        ## now add a model column
+        # d = cbind(GBIF_Taxon = table.list, Model_run  = path, d) 
+        
+        cbind(GBIF_Taxon = x,
+              Model_run  = path, 
+              d)
+        
+        ## Remove path gunk, and species
+        d$GBIF_Taxon = gsub("_", " ", d$GBIF_Taxon)
+        d$Model_run  = gsub("./output/maxent/", "", d$Model_run)
+        d$Model_run  = gsub("/", "", d$Model_run)
+        
+      }) %>% 
     
     ## finally, bind all the rows together
     bind_rows
   
+    }
 }
+
+
 
 
 ## Plot the observed coeficient and t-value over the random ones? First, get the values for the histogram
 ## T2 random histos 
-MAXENT.SUM.STD.VAR.ALL = read_bind_tables(table.list = sel.var.all, 
+MAXENT.SUM.STD.VAR.ALL = read_bind_tables(table.list = sel.var.all[1:2], 
                                           path = "./output/maxent/STD_VAR_ALL/")
 
 

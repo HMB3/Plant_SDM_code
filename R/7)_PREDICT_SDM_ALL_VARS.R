@@ -13,15 +13,14 @@
 
 
 #########################################################################################################################
-## create scenario list first: or just one at a time
-#load("STEP_6_SDM.RData")
+## create scenario list first: 
 scen = c("ip85bi50", "mc85bi50", "mg85bi50", "mi85bi50", "mp85bi50", 
          "mr85bi50", "no85bi50", "ac85bi50", "bc85bi50", "cc85bi50", 
          "cn85bi50", "gf85bi50", "gs85bi50", "hd85bi50", "he85bi50",
          "hg85bi50", "in85bi50")
 
-## create lookup table
-library(rvest)
+
+## Create a lookup table of GCMs
 h <- read_html('http://www.worldclim.org/cmip5_30s')
 gcms <- h %>% 
   html_node('table') %>% 
@@ -37,6 +36,7 @@ id <- h %>%
 
 gcms <- cbind(gcms, id)
 gcms$GCM = sub(" \\(#\\)", "", gcms$GCM)  ## sub replaces first instance in a string, gsub = global
+gcms
 
 
 #########################################################################################################################
