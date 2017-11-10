@@ -93,7 +93,7 @@ test.spp[35]
 
 #########################################################################################################################
 ## Now save/load .RData file for the next session
-save.image("STEP_7_PREDICT_SDM.RData")
+save.image("STEP_7_PREDICT_SDM.RData")  ## raster objects are just pointers to files: so loading back in won't work
 load("STEP_7_PREDICT_SDM.RData")
 
 
@@ -150,16 +150,16 @@ lapply(species_list, function(species) {
     ## The folders will need to change as I add model runs for all variables vs select, 
     ## all records vs. cultivated and non-cultivated
     ## does this need to be indexed? pred.current[[1]]
-    # writeRaster(pred.current, sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_current.tif',  ## Change dir
-    #                                   species, species))
+    writeRaster(pred.current, sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_current.tif',  ## Change dir
+                                      species, species))
     # 
     # # Warning message:
     # #   In unlist(lapply(elist, findLocals1, shadowed, cntxt)) :
     # #   closing unused connection 3 (F:/green_cities_sdm/RTEMP/RtmpQxrX5c/raster/r_tmp_2017-11-01_165316_9480_78386.gri)
     # 
     # ## Write the future raster out: does this need to be indexed? pred.future[[1]]
-    # writeRaster(pred.future, sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif',        ## Change dir
-    #                                  species, species, scen))
+    writeRaster(pred.future, sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif',        ## Change dir
+                                     species, species, scen))
     
     ## Create an empty raster based on the future prediction
     empty <- init(pred.future$prediction_logistic, function(x) NA)
@@ -197,10 +197,9 @@ lapply(species_list, function(species) {
     ## finish the PNG device
     dev.off()
     
-  }
-  
-  )}
-  
+  })
+})
+
   
  
 

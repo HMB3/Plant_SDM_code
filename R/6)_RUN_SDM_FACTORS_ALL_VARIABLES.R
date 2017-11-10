@@ -18,14 +18,15 @@
 
 
 #########################################################################################################################
-## Load packages
-load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")
-load("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_ALL_VAR.RData")
-load("./data/base/HIA_LIST/COMBO/SDM_TEMPLATE_RASTER.RData")
+## Load packages, functions and data
 source('./R/HIA_LIST_MATCHING.R')
 source('./R/HIA_CLEAN_MATCHING.R')
 source('./R/GREEN_CITIES_FUNCTIONS.R')
 source('./R/SDM_FUNCTIONS.R')
+
+load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")
+load("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_ALL_VAR.RData")
+load("./data/base/HIA_LIST/COMBO/SDM_TEMPLATE_RASTER.RData")
 
 
 ## Require packages
@@ -46,6 +47,9 @@ sapply(p, require, character.only = TRUE)
 
 #########################################################################################################################
 ## Create species subsets for analysis
+spp.all  <- unique(COMBO.NICHE.CONTEXT$searchTaxon)
+str(spp.all) 
+
 ## The trial species
 test.spp = sort(unique(c(renee.full$Species, "Betula pendula", "Fraxinus excelsior", "Quercus robur", "Fagus sylvatica")))
 
@@ -88,7 +92,7 @@ test.spp.reverse = sort(test.spp, decreasing = TRUE)
 
 
 ## 100 species takes about 4 hours...
-cl <- makeCluster(6)
+cl <- makeCluster(4)
 clusterExport(cl, c('template.raster', 'SDM.DATA.ALL', 'FIT_MAXENT_SELECT'))
 clusterEvalQ(cl, {
   

@@ -604,6 +604,39 @@ read_bind_tables = function (table.list, path) {
 }
 
 
+## Loop over a list of subfolders
+read_bind_maxent = function (table.list, path) {
+  
+  READ.BIND.TABLE <- table.list[c(1:length(table.list))] %>% 
+    
+    ## pipe the list into lapply
+    lapply(function(x) {
+      
+      ## create the character string
+      f <- paste0(path, x, "/full/maxentResults.csv")
+      
+      ## read each .csv file
+      d <- read.csv(f)
+      
+      ## now add a model column
+      cbind(GBIF_Taxon = x,
+            Model_run  = path, 
+            d)
+      
+      ## Remove path gunk, and species
+      d$GBIF_Taxon = gsub("_", " ", d$GBIF_Taxon)
+      d$Model_run  = gsub("./output/maxent/", "", d$Model_run)
+      d$Model_run  = gsub("/", "", d$Model_run)
+      
+      
+    }) %>% 
+    
+    ## finally, bind all the rows together
+    bind_rows
+  
+}
+
+
 # dfl <- list(df1,df2)
 # 
 # # This would generate your error

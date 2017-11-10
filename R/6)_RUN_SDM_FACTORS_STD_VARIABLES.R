@@ -18,17 +18,27 @@
 
 
 #########################################################################################################################
-## Load packages
-p <- c('ff',    'things',         'raster',    'dismo',        'sp',           'latticeExtra', 'data.table', 
-       'rgdal', 'rgeos',          'gdalUtils', 'rmaxent',      'readr',        'dplyr',        'tidyr',
-       'readr', 'rnaturalearth',  'rasterVis', 'RColorBrewer', 'latticeExtra', 'parallel')
+## Load packages, functions and data
+source('./R/HIA_LIST_MATCHING.R')
+source('./R/HIA_CLEAN_MATCHING.R')
+source('./R/GREEN_CITIES_FUNCTIONS.R')
+source('./R/SDM_FUNCTIONS.R')
+
+load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")
+load("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_STD_VAR.RData")
+load("./data/base/HIA_LIST/COMBO/SDM_TEMPLATE_RASTER.RData")
+
+
+## Check data 
+str(template.raster)
+str(SDM.DATA)
 
 
 ## Require packages
+p <- c('ff',    'things',         'raster',    'dismo',        'sp',           'latticeExtra', 'data.table', 
+       'rgdal', 'rgeos',          'gdalUtils', 'rmaxent',      'readr',        'dplyr',        'tidyr',
+       'readr', 'rnaturalearth',  'rasterVis', 'RColorBrewer', 'latticeExtra', 'parallel')
 sapply(p, require, character.only = TRUE)
-load("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_STD_VAR.RData")
-source('./R/GREEN_CITIES_FUNCTIONS.R')
-source('./R/SDM_FUNCTIONS.R')
 
 
 
@@ -40,7 +50,7 @@ source('./R/SDM_FUNCTIONS.R')
 #########################################################################################################################
 ## Create species subsets for analysis
 ## All species
-spp.all  <- unique(COMBO.RASTER.CONTEXT$searchTaxon)
+spp.all  <- unique(COMBO.NICHE.CONTEXT$searchTaxon)
 str(spp.all)                 ## 6782
 
 
@@ -82,7 +92,7 @@ test.reverse = sort(test.spp, decreasing = TRUE)
 
 
 ## 100 species takes about 4 hours...
-cl <- makeCluster(6)
+cl <- makeCluster(4)
 clusterExport(cl, c('template.raster', 'SDM.DATA', 'FIT_MAXENT'))
 clusterEvalQ(cl, {
   

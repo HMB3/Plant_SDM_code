@@ -19,8 +19,8 @@ dim(RESULTS.EG)
 
 
 ## Read in the list of 
-sel.var.all   = list.files("./output/maxent/SEL_VAR_ALL/")
 std.var.all   = list.files("./output/maxent/STD_VAR_ALL/")
+sel.var.all   = list.files("./output/maxent/SEL_VAR_ALL/")
 
 
 
@@ -31,7 +31,7 @@ std.var.all   = list.files("./output/maxent/STD_VAR_ALL/")
 
 
 ## Loop over a list of subfolders
-read_bind_tables = function (table.list, path) {
+read_bind_maxent = function (table.list, path) {
   
   READ.BIND.TABLE <- table.list[c(1:length(table.list))] %>% 
     
