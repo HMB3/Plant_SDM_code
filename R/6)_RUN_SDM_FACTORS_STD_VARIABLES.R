@@ -153,8 +153,11 @@ lapply(spp.all[1:length(spp.all)], function(x) { # for serial, parLapply(cl, spe
                responsecurves          = TRUE)
     
   } else {
-    message(x, ' skipped - no data.')
+    
+    message(x, ' skipped - no data.')         ## This condition ignores species which have no data
+    
   }  
+  
 })
   
 
@@ -223,7 +226,8 @@ clusterEvalQ(cl, {
 lapply(test.spp[1:length(test.spp)], function(x) { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel 
   
   ## Print the taxa being processed to screen
-  message('Doing ', x)
+  if(x %in% SDM.DATA$searchTaxon) {
+    message('Doing ', x)
   
   ## Subset the records to only the taxa being processed
   ## Here, add condition for cultivated
@@ -254,6 +258,12 @@ lapply(test.spp[1:length(test.spp)], function(x) { # for serial, parLapply(cl, s
              features                = 'lpq',
              replicates              = 5,
              responsecurves          = TRUE)
+  
+  } else {
+    
+    message(x, ' skipped - no data.')         ## This condition ignores species which have no data
+    
+  }  
   
 })
 
@@ -305,37 +315,44 @@ clusterEvalQ(cl, {
 lapply(test.spp[1:length(test.spp)], function(x) { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel 
   
   ## Print the taxa being processed to screen
-  message('Doing ', x)
-  
-  ## Subset the records to only the taxa being processed
-  ## Here, add condition for cultivated
-  ## occurrence <- subset(SDM.DATA, searchTaxon == x & CULTIVATED == "CULTIVATED")
-  occurrence <- subset(SDM.DATA, searchTaxon == x & CULTIVATED == "UNKNOWN")
-  
-  ## Now get the background points. These can come from anywhere in the whole dataset,
-  ## other than the species used.
-  background <- subset(SDM.DATA, searchTaxon != x & CULTIVATED == "UNKNOWN")
-  
-  ## The create a vector of the sdm.predictors used. 
-  ## This should be based on an ecological framework! 
-  sdm.predictors <- sdm.predictors # vector of used sdm.predictors 
-  
-  ## Finally fit the models using FIT_MAXENT
-  ## There is no switch in the function to skip outputs that exist.
-  ## Given all the changes likely to be made to the models, this could be wise...
-  FIT_MAXENT(occ                     = occurrence, 
-             bg                      = background, 
-             sdm.predictors          = sdm.predictors, 
-             name                    = x, 
-             outdir                  = 'output/maxent/STD_VAR_UNCULT', 
-             template.raster,
-             min_n                   = 20,   ## This should be higher...
-             max_bg_size             = 100000,
-             background_buffer_width = 200000,
-             shapefiles              = TRUE,
-             features                = 'lpq',
-             replicates              = 5,
-             responsecurves          = TRUE)
+  if(x %in% SDM.DATA$searchTaxon) {
+    message('Doing ', x)
+    
+    ## Subset the records to only the taxa being processed
+    ## Here, add condition for cultivated
+    ## occurrence <- subset(SDM.DATA, searchTaxon == x & CULTIVATED == "CULTIVATED")
+    occurrence <- subset(SDM.DATA, searchTaxon == x & CULTIVATED == "UNKNOWN")
+    
+    ## Now get the background points. These can come from anywhere in the whole dataset,
+    ## other than the species used.
+    background <- subset(SDM.DATA, searchTaxon != x & CULTIVATED == "UNKNOWN")
+    
+    ## The create a vector of the sdm.predictors used. 
+    ## This should be based on an ecological framework! 
+    sdm.predictors <- sdm.predictors # vector of used sdm.predictors 
+    
+    ## Finally fit the models using FIT_MAXENT
+    ## There is no switch in the function to skip outputs that exist.
+    ## Given all the changes likely to be made to the models, this could be wise...
+    FIT_MAXENT(occ                     = occurrence, 
+               bg                      = background, 
+               sdm.predictors          = sdm.predictors, 
+               name                    = x, 
+               outdir                  = 'output/maxent/STD_VAR_UNCULT', 
+               template.raster,
+               min_n                   = 20,   ## This should be higher...
+               max_bg_size             = 100000,
+               background_buffer_width = 200000,
+               shapefiles              = TRUE,
+               features                = 'lpq',
+               replicates              = 5,
+               responsecurves          = TRUE)
+    
+  } else {
+    
+    message(x, ' skipped - no data.')         ## This condition ignores species which have no data
+    
+  }  
   
 })
 

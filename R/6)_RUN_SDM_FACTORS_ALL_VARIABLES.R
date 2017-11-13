@@ -36,7 +36,9 @@ p <- c('ff',    'things',         'raster',    'dismo',        'sp',           '
 sapply(p, require, character.only = TRUE)
 
 
-
+## Check data 
+str(template.raster)
+str(SDM.DATA.ALL)
 
 
 
@@ -67,6 +69,10 @@ kable(TEST.CONTEXT)
 
 ## Now reverse the order, so we can start another R session from the other end
 test.spp.reverse = sort(test.spp, decreasing = TRUE)
+
+
+## Now, check which species are not in the data...go back and check these from the start...
+test.spp [!test.spp %in% SDM.DATA$searchTaxon]
 
 
 ## These will change... 
@@ -121,7 +127,8 @@ clusterEvalQ(cl, {
 lapply(test.spp.reverse[1:length(test.spp.reverse)], function(x) { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel 
   
   ## Print the taxa being processed to screen
-  message('Doing ', x)
+  if(x %in% SDM.DATA$searchTaxon) {
+    message('Doing ', x)
   
   ## Subset the records to only the taxa being processed
   occurrence <- subset(SDM.DATA.ALL, searchTaxon == x)
@@ -150,6 +157,12 @@ lapply(test.spp.reverse[1:length(test.spp.reverse)], function(x) { # for serial,
                     features                = 'lpq',
                     replicates              = 5,
                     responsecurves          = TRUE)
+  
+  } else {
+    
+    message(x, ' skipped - no data.')         ## This condition ignores species which have no data
+    
+  }  
   
 })
 

@@ -176,8 +176,6 @@ FIT_MAXENT <- function(occ,
         if(missing(rep_args)) rep_args <- NULL
         
         ## This runs the MAXENT. This is where the argument errors are coming in
-        # Error in .local(x, p, ...) : args not understood:
-        #   replicates = 5, responsecurves = TRUE, threshold = FALSE, hinge = FALSE
         me_xval <- maxent(swd, pa, path = file.path(outdir_sp, 'xval'), 
                           args = c(paste0('replicates=', replicates),
                                    'responsecurves=true', 
@@ -218,6 +216,10 @@ FIT_MAXENT <- function(occ,
   }
 
 }
+
+
+
+
 
 #########################################################################################################################
 ## GET BACKGROUND POINTS AND FIT MAXENT FOR ALL VARIABLES, USE MODEL SELECTION
@@ -280,10 +282,8 @@ FIT_MAXENT_SELECT <- function(occ,
       stop("features must be a vector of one or more of ',
          'l', 'p', 'q', 'h', and 't'.")
     
-    
     ## Aggregate
     b <- aggregate(gBuffer(occ, width = background_buffer_width, byid = TRUE))
-    
     
     #####################################################################
     ## Get unique cell numbers for species occurrences
@@ -347,15 +347,15 @@ FIT_MAXENT_SELECT <- function(occ,
         
       }
       
-      
       ## Save the background and occurrence points as objects
       saveRDS(bg,  file.path(outdir_sp, 'bg.rds'))
       saveRDS(occ, file.path(outdir_sp, 'occ.rds'))
       
       #####################################################################
       ## Sample sdm.predictors.all at occurrence and background points
-      swd_occ <- occ[, sdm.predictors.all]
-      swd_bg  <- bg[, sdm.predictors.all]
+      ## Also, you need the 'species' column here...
+      swd_occ <- occ[, c('searchTaxon', sdm.predictors.all)]
+      swd_bg  <- bg[, c('searchTaxon',  sdm.predictors.all)]
       
       #####################################################################
       ## Here is where we need to reduce the predictors to a candidate set
@@ -368,7 +368,6 @@ FIT_MAXENT_SELECT <- function(occ,
                                              pct_thr         = 5, 
                                              k_thr           = 4,
                                              quiet           = FALSE)
-      
       
       #####################################################################
       ## Recreate occ and bg with new predictors
