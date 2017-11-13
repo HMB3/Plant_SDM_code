@@ -29,12 +29,16 @@ load("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_ALL_VAR.RData")
 load("./data/base/HIA_LIST/COMBO/SDM_TEMPLATE_RASTER.RData")
 
 
+## Check data 
+str(template.raster)
+str(SDM.DATA.ALL)
+
+
 ## Require packages
 p <- c('ff',    'things',         'raster',    'dismo',        'sp',           'latticeExtra', 'data.table', 
        'rgdal', 'rgeos',          'gdalUtils', 'rmaxent',      'readr',        'dplyr',        'tidyr',
        'readr', 'rnaturalearth',  'rasterVis', 'RColorBrewer', 'latticeExtra', 'parallel')
 sapply(p, require, character.only = TRUE)
-
 
 
 
@@ -49,6 +53,7 @@ sapply(p, require, character.only = TRUE)
 ## Create species subsets for analysis
 spp.all  <- unique(COMBO.NICHE.CONTEXT$searchTaxon)
 str(spp.all) 
+
 
 ## The trial species
 test.spp = sort(unique(c(renee.full$Species, "Betula pendula", "Fraxinus excelsior", "Quercus robur", "Fagus sylvatica")))
@@ -67,6 +72,14 @@ kable(TEST.CONTEXT)
 ## Now reverse the order, so we can start another R session from the other end
 test.spp.reverse = sort(test.spp, decreasing = TRUE)
 
+
+## These will change... 
+## Chose all worldclim predictors
+sdm.predictors.all <- c("Annual_mean_temp",    "Mean_diurnal_range",  "Isothermality",      "Temp_seasonality",  
+                        "Max_temp_warm_month", "Min_temp_cold_month", "Temp_annual_range",  "Mean_temp_wet_qu",    
+                        "Mean_temp_dry_qu",    "Mean_temp_warm_qu",   "Mean_temp_cold_qu",  "Annual_precip", 
+                        "Precip_wet_month",    "Precip_dry_month",    "Precip_seasonality", "Precip_wet_qu",     
+                        "Precip_dry_qu",       "Precip_warm_qu",      "Precip_col_qu")
 
 
 
@@ -183,7 +196,7 @@ stopCluster(cl)
 
 ## 100 species takes about 4 hours...
 cl <- makeCluster(6)
-clusterExport(cl, c('template.raster', 'SDM.DATA.ALL', 'FIT_MAXENT'))
+clusterExport(cl, c('template.raster', 'SDM.DATA.ALL', 'FIT_MAXENT_SELECT'))
 clusterEvalQ(cl, {
   
   require(ff)
@@ -265,7 +278,7 @@ stopCluster(cl)
 
 ## 100 species takes about 4 hours...
 cl <- makeCluster(6)
-clusterExport(cl, c('template.raster', 'SDM.DATA.ALL', 'FIT_MAXENT'))
+clusterExport(cl, c('template.raster', 'SDM.DATA.ALL', 'FIT_MAXENT_SELECT'))
 clusterEvalQ(cl, {
   
   require(ff)
@@ -322,6 +335,15 @@ lapply(test.spp[1:length(test.spp)], function(x) { # for serial, parLapply(cl, s
 
 
 stopCluster(cl)
+
+
+
+#########################################################################################################################
+## OUTSTANDING SDM TASKS:
+#########################################################################################################################
+
+
+## Further mapping and cleaning of GBIF data needed for the important species
 
 
 

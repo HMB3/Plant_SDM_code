@@ -17,22 +17,6 @@
 ## requirements.
 
 
-
-
-
-
-#########################################################################################################################
-## OUTSTANDING SDM TASKS
-
-## Further mapping and cleaning of GBIF data needed for the important species
-
-## Need a condition in the loop to skip folders in the list, can this be an argument in the loop set to "TRUE" OR "FALSE"?
-
-## 
-
-
-
-
 #########################################################################################################################
 ## Load packages, functions and data
 source('./R/HIA_LIST_MATCHING.R')
@@ -89,6 +73,11 @@ kable(TEST.CONTEXT)
 test.reverse = sort(test.spp, decreasing = TRUE)
 
 
+## Chose a-priori worldclim predictors
+sdm.predictors    <- c("Annual_mean_temp", "Temp_seasonality",    "Max_temp_warm_month", "Min_temp_cold_month",
+                       "Annual_precip",    "Precip_seasonality",  "Precip_wet_month", "Precip_dry_month")
+
+
 ########################################################################################################################
 ## We can run Maxent from a cluster of cores on the local computer. Here we send (i.e. export) all the necessary ingredients 
 ## to the cluster. So that's the:
@@ -130,10 +119,6 @@ clusterEvalQ(cl, {
 ########################################################################################################################
 ## Now use 'lapply' to run maxent for multiple species
 lapply(spp.all[1:length(spp.all)], function(x) { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel 
-  
-  
-  ## The skipping step needs to come here!
-  outdir_sp <- file.path(check.outdir, gsub(' ', '_', x))
   
   ## Print the taxa being processed to screen
   message('Doing ', x)
@@ -352,6 +337,19 @@ lapply(test.spp[1:length(test.spp)], function(x) { # for serial, parLapply(cl, s
 
 
 stopCluster(cl)
+
+
+
+#########################################################################################################################
+## OUTSTANDING SDM TASKS:
+#########################################################################################################################
+
+
+## Further mapping and cleaning of GBIF data needed for the important species: Use worldview?
+
+## Need a condition in the loop to skip folders in the list, can this be an argument in the loop set to "TRUE" OR "FALSE"? Can be time-stamped
+
+## Store the list of skipped species...
 
 
 
