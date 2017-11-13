@@ -29,16 +29,12 @@ load("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_ALL_VAR.RData")
 load("./data/base/HIA_LIST/COMBO/SDM_TEMPLATE_RASTER.RData")
 
 
-## Check data 
-str(template.raster)
-str(SDM.DATA.ALL)
-
-
 ## Require packages
 p <- c('ff',    'things',         'raster',    'dismo',        'sp',           'latticeExtra', 'data.table', 
        'rgdal', 'rgeos',          'gdalUtils', 'rmaxent',      'readr',        'dplyr',        'tidyr',
        'readr', 'rnaturalearth',  'rasterVis', 'RColorBrewer', 'latticeExtra', 'parallel')
 sapply(p, require, character.only = TRUE)
+
 
 
 
@@ -122,7 +118,7 @@ clusterEvalQ(cl, {
 
 ## Now use 'lapply' to run maxent for multiple species
 ## Note that running the code in parallel causes problems
-lapply(test.spp[1:length(test.spp)], function(x) { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel 
+lapply(test.spp.reverse[1:length(test.spp.reverse)], function(x) { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel 
   
   ## Print the taxa being processed to screen
   message('Doing ', x)
