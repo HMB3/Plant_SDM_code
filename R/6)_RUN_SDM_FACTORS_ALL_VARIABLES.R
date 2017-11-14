@@ -72,7 +72,7 @@ test.spp.reverse = sort(test.spp, decreasing = TRUE)
 
 
 ## Now, check which species are not in the data...go back and check these from the start...
-test.spp [!test.spp %in% SDM.DATA$searchTaxon]
+test.spp [!test.spp %in% SDM.DATA.ALL$searchTaxon]
 
 
 ## These will change... 

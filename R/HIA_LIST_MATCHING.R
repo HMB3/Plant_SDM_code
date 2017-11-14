@@ -82,6 +82,8 @@ p <- c('ff',    'things',         'raster',    'dismo',        'sp',           '
        'readr', 'rnaturalearth',  'rasterVis', 'RColorBrewer', 'latticeExtra', 'parallel')
 
 
+
+
 ## Require packages
 sapply(p, require, character.only = TRUE)
 
@@ -151,6 +153,22 @@ spp.200          = dplyr::rename(spp.200, Binomial = Species)
 
 ## Just get the species renee selected that are not on the top 1000 or 200
 renee.list       = renee.taxa[c("Species", "Growth_Form")]
+
+
+##
+Manuel.test =  c("Acacia melanoxylon", 
+                 "Brachychiton acerifolius",
+                 "Callistemon viminalis",
+                 "Fraxinus angustifolia",
+                 "Jacaranda mimosifolia",
+                 "Magnolia grandiflora",
+                 "Olea europaea",
+                 "Pistacia chinensis",
+                 "Platanus hispanica",
+                 "Populus nigra",
+                 "Schinus molle", 
+                 "Syzygium floribundum",
+                 "Ulmus parvifolia")
 
 
 #########################################################################################################################

@@ -359,20 +359,23 @@ FIT_MAXENT_SELECT <- function(occ,
       
       #####################################################################
       ## Here is where we need to reduce the predictors to a candidate set
-      sdm.predictors.all = rmaxent::simplify(swd_occ, swd_bg, path, ## Don't think we want this one?
-                                             species_column  = "searchTaxon", 
-                                             response_curves = FALSE,
-                                             logistic_format = TRUE, 
-                                             type            = "PI", 
-                                             cor_thr         = 0.7, 
-                                             pct_thr         = 5, 
-                                             k_thr           = 4,
-                                             quiet           = FALSE)
+      ## The same set of species names must exist in occ and bg...really? 
+      ## Not how the rest of code has been set up...
+      sdm.predictors.all = HIA_SIMPLIFY(swd_occ, swd_bg, path,
+                                        species_column  = "searchTaxon", 
+                                        response_curves = FALSE,
+                                        logistic_format = TRUE, 
+                                        type            = "PI", 
+                                        cor_thr         = 0.7, 
+                                        pct_thr         = 5, 
+                                        k_thr           = 4,
+                                        quiet           = FALSE)
+      
       
       #####################################################################
       ## Recreate occ and bg with new predictors
-      swd_occ <- occ[, sdm.predictors.all]
-      swd_bg  <- bg[, sdm.predictors.all]
+      #swd_occ <- swd_occ[, sdm.predictors.all]
+      #swd_bg  <- swd_bg[, sdm.predictors.all]
       
       ## Then save them...
       saveRDS(swd_occ, file.path(outdir_sp, 'occ_swd.rds'))
@@ -455,6 +458,138 @@ FIT_MAXENT_SELECT <- function(occ,
     }
     
   }
+  
+}
+
+
+
+
+
+#########################################################################################################################
+## GET BACKGROUND POINTS AND FIT MAXENT FOR ALL VARIABLES, USE MODEL SELECTION
+#########################################################################################################################
+
+
+## This should replace John's code
+HIA_SIMPLIFY = function (occ, bg, path, species_column = "species", response_curves = FALSE, 
+                         logistic_format = TRUE, type = "PI", cor_thr, pct_thr, k_thr, 
+                         quiet = TRUE) 
+  
+{
+  if (missing(path)) {
+    
+    save <- FALSE
+    path <- tempdir()
+    
+  }
+  
+  else save <- TRUE
+  occ_by_species <- split(occ, occ[[species_column]])
+  bg_by_species <- split(bg, bg[[species_column]])
+  
+  
+  ## This code breaks on my data, because the background points are taken from points that are not the species 
+  ## background <- subset(SDM.DATA.ALL, searchTaxon != x)
+  
+  if (!identical(sort(names(occ_by_species)), sort(names(bg_by_species)))) {    ##
+    print(paste0("The same set of species names must exist in occ and bg"))
+  }
+  
+  ## 
+  type <- switch(type, PI = "permutation.importance", PC = "contribution", 
+                 stop("type must be either \"PI\" or \"PC\".", call. = FALSE))
+  
+  ## Maxent args?
+  args <- c("threshold=false", "hinge=false")
+  if (isTRUE(response_curves)) 
+    args <- c(args, "responsecurves=TRUE")
+  
+  if (isTRUE(logistic_format)) 
+    args <- c(args, "outputformat=logistic")
+  
+  
+  ## Explain
+  lapply(names(occ_by_species), function(name) {
+    if (!quiet) 
+      message("\n\nDoing ", name)
+    
+    ##
+    name_ <- gsub(" ", "_", name)
+    swd <- rbind(occ_by_species[[name]], bg_by_species[[name]])
+    swd <- swd[, -match(species_column, names(swd))]
+    
+    ##
+    if (ncol(swd) < k_thr) 
+      stop("Initial number of variables < k_thr")
+    
+    ##
+    round(cor(swd, use = "pairwise"), 2)
+    pa <- rep(1:0, c(nrow(occ_by_species[[name]]), nrow(bg_by_species[[name]])))
+    ok <- as.character(usdm::vifcor(swd, maxobservations = nrow(swd), 
+                                    th = cor_thr)@results$Variables)
+    
+    ##
+    swd_uncor <- swd[, ok]
+    d <- file.path(path, name_, "full")
+    m <- dismo::maxent(swd_uncor, pa, args = args, path = d)
+    
+    ##
+    if (isTRUE(save)) 
+      saveRDS(m, file.path(d, "model.rds"))
+    
+    pct <- m@results[grep(type, rownames(m@results)), ]
+    pct <- sort(pct[pct > 0])
+    
+    names(pct) <- sub(paste0("\\.", type), "", names(pct))
+    
+    
+    
+    if (min(pct) >= pct_thr || length(pct) <= k_thr) {
+      if (isTRUE(save)) {
+        d_out <- file.path(path, name_, "final")
+        dir.create(d_out)
+        file.copy(list.files(d, full.names = TRUE), 
+                  d_out, recursive = TRUE)
+        
+      }
+      
+      return(m)
+      
+    }
+    
+    ## Explain
+    while (min(pct) < pct_thr && length(pct) > k_thr) {
+      
+      message("Dropping ", names(pct)[1])
+      swd_uncor <- swd_uncor[, -match(names(pct)[1], names(swd_uncor))]
+      tmp <- tempfile()
+      
+      if (!quiet) 
+        message(sprintf("%s variables: %s", ncol(swd_uncor), 
+                        paste0(colnames(swd_uncor), collapse = ", ")))
+      m <- dismo::maxent(swd_uncor, pa, args = args, path = tmp)
+      pct <- m@results[grep(type, rownames(m@results)), 
+                       ]
+      pct <- sort(pct)
+      names(pct) <- sub(paste0("\\.", type), "", names(pct))
+      
+    }
+    
+    ## Explain
+    if (isTRUE(save)) {
+      
+      d_out <- file.path(path, name_, "final")
+      file.copy(tmp, file.path(path, name_), recursive = TRUE)
+      file.rename(file.path(path, name_, basename(tmp)), 
+                  d_out)
+      saveRDS(m, file.path(path, name_, "final/model.rds"))
+      
+    }
+    
+    ## return the set of predictors which are less correlated
+    return(m)
+    
+  })
   
 }
 
