@@ -55,7 +55,9 @@ str(spp.all)                 ## 605
 
 
 ## The trial species
-test.spp = sort(unique(c(renee.full$Species, "Betula pendula", "Fraxinus excelsior", "Quercus robur", "Fagus sylvatica")))
+test.spp = sort(unique(c(renee.full$Species, 
+                         "Betula pendula", "Fraxinus excelsior", "Quercus robur", "Fagus sylvatica",
+                         Manuel.test)))
 test.spp 
 
 

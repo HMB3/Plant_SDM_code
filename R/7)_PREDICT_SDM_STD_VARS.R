@@ -154,7 +154,7 @@ load("STEP_7_PREDICT_SDM.RData")
 #########################################################################################################################
 ## Use lappy to loop over a list of species
 ## Test on one species:
-species = species_list[458] # [1] "Lomandra_longifolia"
+species = species_list[457] # [1] "Lomandra_longifolia"
 
 
 #########################################################################################################################

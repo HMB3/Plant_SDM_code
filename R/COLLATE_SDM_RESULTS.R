@@ -31,7 +31,7 @@ sel.var.all   = list.files("./output/maxent/SEL_VAR_ALL/")
 
 
 ## Loop over a list of subfolders
-## table.list = table.list[1]
+## table.list = std.var.all [1:2]
 ## table.list = std.var.all 
 ## path = "./output/maxent/STD_VAR_ALL/"
 read_bind_maxent = function (table.list, path) {
@@ -57,25 +57,20 @@ read_bind_maxent = function (table.list, path) {
         d <- read.csv(f)
         
         ## now add a model column
-        # d = cbind(GBIF_Taxon = table.list, Model_run  = path, d) 
-        
-        cbind(GBIF_Taxon = x,
-              Model_run  = path, 
-              d)
+        d = cbind(GBIF_Taxon = table.list, Model_run  = path, d) 
         
         ## Remove path gunk, and species
         d$GBIF_Taxon = gsub("_", " ", d$GBIF_Taxon)
         d$Model_run  = gsub("./output/maxent/", "", d$Model_run)
         d$Model_run  = gsub("/", "", d$Model_run)
         
-      }) %>% 
-    
-    ## finally, bind all the rows together
-    bind_rows
-  
+      } %>% 
+        
+        ## finally, bind all the rows together
+        bind_rows
+      
     }
 }
-
 
 
 
