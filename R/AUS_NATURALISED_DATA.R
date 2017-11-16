@@ -90,8 +90,16 @@ setdiff(test.spp, NAT.SPP)            ## 21
 
 #########################################################################################################################
 ## Try filtering the records: is there a way of using these filters to generate the native lists, rather than per row?
-APC.NAT.DIST = APC.NAT[!duplicated(APC.NAT$canonicalName), ][, c("canonicalName", "taxonDistribution")]
+# Don't use the `taxonDistribution` column - this is the raw and often messy data that was 
+# originally in the APC dataset. Most of what I tried to do was to parse that field and put the information contained 
+# in there into some sort of standard structure. I only put that column in the final output for reference actually, 
+# so one could see what the raw data was. What I suggest you do is to instead use the `canonicalName`, `regionName` and 
+# the flags (such as `native` etc) to do what you want. If you have dataset A with `searchTaxon`, `lon`, `lat` and 
+# `STATE_NAME`, and dataset B being `canonicalName`, `regionName` and `native` etc, then merge A and B by a combination 
+# of taxon name and state, like:
 
+APC.NAT.DIST = APC.NAT[!duplicated(APC.NAT$canonicalName), ][, c("canonicalName", "regionName", "native", "naturalised")]
+names(APC.NAT.DIST)
 
 
 
@@ -104,7 +112,7 @@ APC.NAT.DIST = APC.NAT[!duplicated(APC.NAT$canonicalName), ][, c("canonicalName"
 #########################################################################################################################
 ## First, restrict the dataset to just the target species
 APC.RECORDS = COMBO.RASTER.CONTEXT[COMBO.RASTER.CONTEXT$searchTaxon %in% intersect(test.spp, NAT.SPP), ]
-APC.RECORDS = APC.RECORDS[, c("searchTaxon", "lon", "lat")]
+APC.RECORDS = head(APC.RECORDS, 10000)[, c("searchTaxon", "lon", "lat")]
 unique(APC.RECORDS$searchTaxon)
 
 
@@ -139,7 +147,7 @@ head(APC.GEO, 30)
 
 
 #########################################################################################################################
-## 3). CHANGE STU's DATA to SUIT
+## 3). MERGE WITH STU'S NATURALISED DATA
 #########################################################################################################################
 
 
@@ -156,8 +164,12 @@ dim(APC.RECORDS)
 ## Join the data
 unique(APC.RECORDS$searchTaxon)
 unique(APC.NAT.DIST$searchTaxon)
+names(APC.GEO)
+names(APC.NAT.DIST)
 
-GBIF.APC = merge(APC.GEO, APC.NAT.DIST, by = "searchTaxon", all = FALSE)
+
+#GBIF.APC = merge(APC.GEO, APC.NAT.DIST, by = "searchTaxon", all = FALSE)
+GBIF.APC = APC.RECORDS
 dim(GBIF.APC)
 head(GBIF.APC)
 
@@ -184,6 +196,9 @@ head(GBIF.APC$STATE_NAME, 20)
 ## We just want one row for each record - taxonDistribution - to link to the state occurrence.
 ## EG If STATE_NAME = NSW, and the plant is naturalised in NSW, another column would say "naturalised".
 ## So we would need to scrape the taxonDistribution column for which state's in is naturlaised in.
+##
+x <- merge(APC.GEO, APC.NAT.DIST, by.x = c("searchTaxon", "STATE_NAME"), by.y = c("searchTaxon", "regionName"), all.x = TRUE)
+
 
 ## This might need another column with "naturalised" or the like
 View(GBIF.APC)
@@ -198,6 +213,7 @@ unique(GBIF.APC$taxonDistribution)
 
 #########################################################################################################################
 ## Write to file
+save(GBIF.APC, file = paste("./data/base/TRAITS/GBIF_APC_NATIVE_RANGE.RData", sep = ""))
 write.csv(GBIF.APC, "./data/base/TRAITS/GBIF_APC_NATIVE_RANGE.csv", row.names = FALSE)
 
 
