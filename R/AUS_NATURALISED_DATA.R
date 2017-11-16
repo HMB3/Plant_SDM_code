@@ -97,9 +97,9 @@ setdiff(test.spp, NAT.SPP)            ## 21
 # the flags (such as `native` etc) to do what you want. If you have dataset A with `searchTaxon`, `lon`, `lat` and 
 # `STATE_NAME`, and dataset B being `canonicalName`, `regionName` and `native` etc, then merge A and B by a combination 
 # of taxon name and state, like:
-
 APC.NAT.DIST = APC.NAT[!duplicated(APC.NAT$canonicalName), ][, c("canonicalName", "regionName", "native", "naturalised")]
 names(APC.NAT.DIST)
+
 
 
 
@@ -169,16 +169,16 @@ names(APC.NAT.DIST)
 
 
 #GBIF.APC = merge(APC.GEO, APC.NAT.DIST, by = "searchTaxon", all = FALSE)
-GBIF.APC = APC.RECORDS
-dim(GBIF.APC)
-head(GBIF.APC)
+## How could these be matched to the taxondistribution column?
+unique(APC.GEO$STATE_NAME)
+unique(APC.NAT.DIST$STATE_NAME)
+head(GBIF.APC$STATE_NAME, 20)
 
-unique(GBIF.APC$taxonDistribution)
-unique(GBIF.APC$STATE_NAME)
+
 
 
 ## Rename state factors to match Stu's names
-GBIF.APC$STATE_NAME = revalue(TEST$STATE_NAME, c("Australian Capital Territory" = "act", 
+APC.GEO$STATE_NAME = revalue(TEST$STATE_NAME, c("Australian Capital Territory" = "act", 
                                                  "New South Wales"              = "nsw",
                                                  "Northern Territory"           = "nt",
                                                  "Queensland"                   = "qld",
@@ -188,15 +188,9 @@ GBIF.APC$STATE_NAME = revalue(TEST$STATE_NAME, c("Australian Capital Territory" 
                                                  "Western Australia"            = "wa"))
 
 
-## How could these be matched to the taxondistribution column?
-unique(GBIF.APC$STATE_NAME)
-head(GBIF.APC$STATE_NAME, 20)
-
-
 ## We just want one row for each record - taxonDistribution - to link to the state occurrence.
 ## EG If STATE_NAME = NSW, and the plant is naturalised in NSW, another column would say "naturalised".
 ## So we would need to scrape the taxonDistribution column for which state's in is naturlaised in.
-##
 x <- merge(APC.GEO, APC.NAT.DIST, by.x = c("searchTaxon", "STATE_NAME"), by.y = c("searchTaxon", "regionName"), all.x = TRUE)
 
 

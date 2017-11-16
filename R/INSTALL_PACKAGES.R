@@ -85,8 +85,8 @@ ipak(packages)
 
 
 ## check that R maxent is installed
-list.files(system.file("java", package = "dismo"))
-ENMevaluate
+# list.files(system.file("java", package = "dismo"))
+# ENMevaluate
 
 
 ## Also, update R here too
