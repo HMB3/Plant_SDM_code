@@ -56,6 +56,11 @@ source('./R/HIA_LIST_MATCHING.R')
 source('./R/HIA_CLEAN_MATCHING.R')
 
 
+## Now crunch the big dataset down to just the species we need
+COMBO.RASTER.TEST.SPP = COMBO.RASTER.CONTEXT[COMBO.RASTER.CONTEXT$searchTaxon %in% test.spp, ]
+COMBO.RASTER.HIA.SPP  = COMBO.RASTER.CONTEXT[COMBO.RASTER.CONTEXT$searchTaxon %in% HIA.SPP$Binomial, ]
+
+
 ##
 APC.NAT   = read.csv("./data/base/TRAITS/apc_taxon_distribution.csv", stringsAsFactors = FALSE)
 View(APC.NAT)
@@ -84,8 +89,13 @@ test.spp   = sort(unique(c(test.spp, HIA.SAMPLE)))
 intersect(HIA.SPP$Binomial, NAT.SPP)  ## 380
 setdiff(HIA.SPP$Binomial, NAT.SPP)
 
-intersect(test.spp, NAT.SPP)  ## 84
-setdiff(test.spp, NAT.SPP)    ## 21
+intersect(test.spp, NAT.SPP)          ## 84
+setdiff(test.spp, NAT.SPP)            ## 21
+
+
+#########################################################################################################################
+## Try filtering the records: is there a way of using these filters to generate the native lists, rather than per row?
+APC.NAT.DIST = APC.NAT[!duplicated(APC.NAT$canonicalName), ][, c("canonicalName", "taxonDistribution")]
 
 
 
@@ -96,44 +106,38 @@ setdiff(test.spp, NAT.SPP)    ## 21
 #########################################################################################################################
 
 
+#########################################################################################################################
 ## First, restrict the dataset to just the target species
 APC.RECORDS = COMBO.RASTER.CONTEXT[COMBO.RASTER.CONTEXT$searchTaxon %in% intersect(test.spp, NAT.SPP), ]
-APC.RECORDS = head(RECORDS.APC, 500)[, c("searchTaxon", "lon", "lat")]
-unique(APC.TEST$searchTaxon)
+APC.RECORDS = head(APC.RECORDS, 10000)[, c("searchTaxon", "lon", "lat")]
+unique(APC.RECORDS$searchTaxon)
 
 
 ## We want to know the count of species that occur in n LGAs, across a range of climates. Read in LGA and SUA
-APC.TEST.SP   = SpatialPointsDataFrame(coords = APC.RECORDS[c("lon", "lat")], 
-                                       data   = APC.RECORDS,
-                                       proj4string = CRS("+init=epsg:4326"))
+APC.RECORDS = SpatialPointsDataFrame(coords = APC.RECORDS[c("lon", "lat")], 
+                                     data   = APC.RECORDS,
+                                     proj4string = CRS("+init=epsg:4326"))
 
 
 ## Read in the state boundaries
 AUS.STATE = readOGR("./data/base/CONTEXTUAL/STE11aAust.shp", layer = "STE11aAust")
-
-
-## Project
-CRS.new  <- CRS("+init=epsg:4326") # EPSG:3577
-AUS.WGS  = spTransform(AUS.STATE, CRS.new)
-
-
-projection(AUS.WGS)
-projection(APC.TEST.SP)
-
-
-## Now try intersecting the recrods with the states
-names(AUS.WGS)
+CRS.new   = CRS("+init=epsg:4326") # EPSG:3577
+AUS.WGS   = spTransform(AUS.STATE, CRS.new)
+identical(projection(AUS.WGS), projection(APC.RECORDS))
 AUS.WGS$STATE_NAME
 
 
+#########################################################################################################################
 ## This should be a simple intersect
-APC.JOIN   = over(APC.TEST.SP, AUS.WGS)   
+APC.JOIN   = over(APC.RECORDS, AUS.WGS)[c("STATE_NAME")]
 head(APC.JOIN, 30)
 
 
 ## Now join this data back on to the original
-APC.RECORDS  = cbind.data.frame(APC.RECORDS, APC.JOIN) 
-unique(APC.RECORDS$STATE_NAME)
+APC.GEO  = cbind.data.frame(APC.RECORDS, APC.JOIN) 
+drops  <- c("lon.1",  "lat.1",  "optional")
+APC.GEO = APC.GEO[ , !(names(APC.GEO) %in% drops)]
+head(APC.GEO, 30)
 
 
 
@@ -144,63 +148,50 @@ unique(APC.RECORDS$STATE_NAME)
 #########################################################################################################################
 
 
+## Just using the taxondistribution column
+APC.NAT.DIST = dplyr::rename(APC.NAT.DIST, searchTaxon = canonicalName)
+names(APC.NAT.DIST)
+names(APC.RECORDS)
+dim(APC.NAT.DIST)
+dim(APC.RECORDS)
+
+
+
+#########################################################################################################################
+## Join the data
+unique(APC.RECORDS$searchTaxon)
+unique(APC.NAT.DIST$searchTaxon)
+
+GBIF.APC = merge(APC.GEO, APC.NAT.DIST, by = "searchTaxon", all = FALSE)
+dim(GBIF.APC)
+head(GBIF.APC)
+
+unique(GBIF.APC$taxonDistribution)
+unique(GBIF.APC$STATE_NAME)
+
+
+## Rename state factors to match Stu's names
+GBIF.APC$STATE_NAME = revalue(TEST$STATE_NAME, c("Australian Capital Territory" = "act", 
+                                                 "New South Wales"              = "nsw",
+                                                 "Northern Territory"           = "nt",
+                                                 "Queensland"                   = "qld",
+                                                 "South Australia"              = "sa",
+                                                 "Tasmania"                     = "tas",
+                                                 "Victoria"                     = "vic",
+                                                 "Western Australia"            = "wa"))
+
+
+## How could these be matched to the taxondistribution column?
+unique(GBIF.APC$STATE_NAME)
+head(GBIF.APC$STATE_NAME, 20)
+
+
 ## Which columns to use?
 ## We just want one row for each record - taxonDistribution - to say link to the state occurrence.
 ## If location state = NSW and the plant is naturalised in NSW, then this record would have "naturalised" associated with the
 ## lat/long. So we would need to scrape the taxonDistribution column for which state it's naturlaised in.
 
 ## This might need another column with "naturalised" or the like
-
-names(APC.NAT)
-unique(APC.NAT$regionName)
-
-
-## Subset and rename
-APC.NAT = APC.NAT[, c("canonicalName", "taxonDistribution", "regionName",
-                       "native", "naturalised")]
-
-APC.NAT = dplyr::rename(APC.NAT, 
-                        native_region      = native,
-                        naturalised_region = naturalised,
-                        searchTaxon        = canonicalName)
-
-## Check the names..
-names(APC.NAT)
-names(APC.RECORDS)
-dim(APC.NAT)
-dim(APC.RECORDS)
-unique(APC.NAT$taxonDistribution)
-
-
-#########################################################################################################################
-## Join the data
-unique(APC.RECORDS$searchTaxon)
-unique(APC.NAT$searchTaxon)
-
-
-
-TEST = merge(APC.RECORDS, APC.NAT, by = "searchTaxon", all = FALSE)
-dim(TEST)
-head(TEST)
-
-
-unique(TEST$region)
-unique(TEST$STATE_NAME)
-
-## rename factor?
-TEST$STATE_NAME = revalue(TEST$STATE_NAME, c("Australian Capital Territory" = "act", 
-                                             "New South Wales"              = "nsw",
-                                             "Northern Territory"           = "nt",
-                                             "Queensland"                   = "qld",
-                                             "South Australia"              = "sa",
-                                             "Tasmania"                     = "tas",
-                                             "Victoria"                     = "vic",
-                                             "Western Australia"            = "wa"))
-unique(TEST$STATE_NAME)
-head(TEST$STATE_NAME, 20)
-
-
-
-
+View(GBIF.APC)
 
 

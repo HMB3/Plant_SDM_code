@@ -178,6 +178,11 @@ COMBO.POINTS   = SpatialPointsDataFrame(coords = GBIF.ALA.COMBO.LAND[c("lon", "l
 summary(COMBO.POINTS)
 
 
+#########################################################################################################################
+## Now crunch the big dataset down to just the species we need: the extras are just overkill
+COMBO.POINTS  = COMBO.POINTS[COMBO.RASTER.CONTEXT$searchTaxon %in% HIA.SPP$Binomial, ]
+
+
 
 
 
@@ -192,6 +197,7 @@ summary(COMBO.POINTS)
 
 ## Multiple records of the same specimen from different herbaria could be a problem though. Rachel's criteria of same month,
 ## year, lat/long could help here though. Ask Stu for this code.
+
 
 
 
