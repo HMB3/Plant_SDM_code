@@ -56,11 +56,6 @@ source('./R/HIA_LIST_MATCHING.R')
 source('./R/HIA_CLEAN_MATCHING.R')
 
 
-## Now crunch the big dataset down to just the species we need
-COMBO.RASTER.TEST.SPP = COMBO.RASTER.CONTEXT[COMBO.RASTER.CONTEXT$searchTaxon %in% test.spp, ]
-COMBO.RASTER.HIA.SPP  = COMBO.RASTER.CONTEXT[COMBO.RASTER.CONTEXT$searchTaxon %in% HIA.SPP$Binomial, ]
-
-
 ##
 APC.NAT   = read.csv("./data/base/TRAITS/apc_taxon_distribution.csv", stringsAsFactors = FALSE)
 View(APC.NAT)
@@ -109,7 +104,7 @@ APC.NAT.DIST = APC.NAT[!duplicated(APC.NAT$canonicalName), ][, c("canonicalName"
 #########################################################################################################################
 ## First, restrict the dataset to just the target species
 APC.RECORDS = COMBO.RASTER.CONTEXT[COMBO.RASTER.CONTEXT$searchTaxon %in% intersect(test.spp, NAT.SPP), ]
-APC.RECORDS = head(APC.RECORDS, 10000)[, c("searchTaxon", "lon", "lat")]
+APC.RECORDS = APC.RECORDS[, c("searchTaxon", "lon", "lat")]
 unique(APC.RECORDS$searchTaxon)
 
 
@@ -129,7 +124,7 @@ AUS.WGS$STATE_NAME
 
 #########################################################################################################################
 ## This should be a simple intersect
-APC.JOIN   = over(APC.RECORDS, AUS.WGS)[c("STATE_NAME")]
+APC.JOIN = over(APC.RECORDS, AUS.WGS)[c("STATE_NAME")]
 head(APC.JOIN, 30)
 
 
@@ -186,12 +181,26 @@ unique(GBIF.APC$STATE_NAME)
 head(GBIF.APC$STATE_NAME, 20)
 
 
-## Which columns to use?
-## We just want one row for each record - taxonDistribution - to say link to the state occurrence.
-## If location state = NSW and the plant is naturalised in NSW, then this record would have "naturalised" associated with the
-## lat/long. So we would need to scrape the taxonDistribution column for which state it's naturlaised in.
+## We just want one row for each record - taxonDistribution - to link to the state occurrence.
+## EG If STATE_NAME = NSW, and the plant is naturalised in NSW, another column would say "naturalised".
+## So we would need to scrape the taxonDistribution column for which state's in is naturlaised in.
 
 ## This might need another column with "naturalised" or the like
 View(GBIF.APC)
+unique(GBIF.APC$taxonDistribution)
+
+## Some kind of if/else statement? 
+## frame$twohouses <- ifelse(frame$data>=2, 2, 1)
+#GBIF.APC$native_region      = 
+#GBIF.APC$naturalised_region =
 
 
+
+#########################################################################################################################
+## Write to file
+write.csv(GBIF.APC, "./data/base/TRAITS/GBIF_APC_NATIVE_RANGE.csv", row.names = FALSE)
+
+
+#########################################################################################################################
+#########################################################  TBC ########################################################## 
+#########################################################################################################################
