@@ -112,7 +112,7 @@ names(APC.NAT.DIST)
 #########################################################################################################################
 ## First, restrict the dataset to just the target species
 APC.RECORDS = COMBO.RASTER.CONTEXT[COMBO.RASTER.CONTEXT$searchTaxon %in% intersect(test.spp, NAT.SPP), ]
-APC.RECORDS = head(APC.RECORDS, 10000)[, c("searchTaxon", "lon", "lat")]
+APC.RECORDS = APC.RECORDS[, c("searchTaxon", "lon", "lat")]
 unique(APC.RECORDS$searchTaxon)
 
 
@@ -168,47 +168,43 @@ names(APC.GEO)
 names(APC.NAT.DIST)
 
 
-#GBIF.APC = merge(APC.GEO, APC.NAT.DIST, by = "searchTaxon", all = FALSE)
 ## How could these be matched to the taxondistribution column?
 unique(APC.GEO$STATE_NAME)
-unique(APC.NAT.DIST$STATE_NAME)
-head(GBIF.APC$STATE_NAME, 20)
-
-
+unique(APC.NAT.DIST$regionName)
 
 
 ## Rename state factors to match Stu's names
-APC.GEO$STATE_NAME = revalue(TEST$STATE_NAME, c("Australian Capital Territory" = "act", 
-                                                 "New South Wales"              = "nsw",
-                                                 "Northern Territory"           = "nt",
-                                                 "Queensland"                   = "qld",
-                                                 "South Australia"              = "sa",
-                                                 "Tasmania"                     = "tas",
-                                                 "Victoria"                     = "vic",
-                                                 "Western Australia"            = "wa"))
+APC.GEO$STATE_NAME = revalue(APC.GEO$STATE_NAME, c("Australian Capital Territory" = "act", 
+                                                   "New South Wales"              = "nsw",
+                                                   "Northern Territory"           = "nt",
+                                                   "Queensland"                   = "qld",
+                                                   "South Australia"              = "sa",
+                                                   "Tasmania"                     = "tas",
+                                                   "Victoria"                     = "vic",
+                                                   "Western Australia"            = "wa"))
+unique(APC.GEO$STATE_NAME)
 
 
-## We just want one row for each record - taxonDistribution - to link to the state occurrence.
-## EG If STATE_NAME = NSW, and the plant is naturalised in NSW, another column would say "naturalised".
-## So we would need to scrape the taxonDistribution column for which state's in is naturlaised in.
-x <- merge(APC.GEO, APC.NAT.DIST, by.x = c("searchTaxon", "STATE_NAME"), by.y = c("searchTaxon", "regionName"), all.x = TRUE)
+#########################################################################################################################
+## If you have dataset a with `searchTaxon`, `lon`, `lat` and `STATE_NAME`, and dataset B being `canonicalName`, 
+## `regionName` and `native` etc, then merge A and B by a combination of taxon name and state. 
+## This will in effect append the native/naturalised/etc flags to your lonlat data, so you should then be able to determine 
+## whether a particular occurrence is in the native range or whatnot. I hope this makes sense! 
+GBIF.APC <- merge(APC.GEO, APC.NAT.DIST, by.x = c("searchTaxon", "STATE_NAME"), by.y = c("searchTaxon", "regionName"), all.x = TRUE)
 
 
 ## This might need another column with "naturalised" or the like
 View(GBIF.APC)
 unique(GBIF.APC$taxonDistribution)
 
-## Some kind of if/else statement? 
-## frame$twohouses <- ifelse(frame$data>=2, 2, 1)
-#GBIF.APC$native_region      = 
-#GBIF.APC$naturalised_region =
-
-
 
 #########################################################################################################################
 ## Write to file
 save(GBIF.APC, file = paste("./data/base/TRAITS/GBIF_APC_NATIVE_RANGE.RData", sep = ""))
 write.csv(GBIF.APC, "./data/base/TRAITS/GBIF_APC_NATIVE_RANGE.csv", row.names = FALSE)
+
+
+
 
 
 #########################################################################################################################
