@@ -208,25 +208,25 @@ COMBO.POINTS  = COMBO.POINTS[COMBO.RASTER.CONTEXT$searchTaxon %in% HIA.SPP$Binom
 
 #########################################################################################################################
 ## Create a stack of rasters to sample: get all the World clim variables just for good measure
-env.grids = c("//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_01",
-              "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_02", 
-              "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_03",
-              "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_04",        
-              "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_05",
-              "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_06",
-              "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_07",
-              "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_08",
-              "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_09",
-              "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_10", 
-              "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_11",
-              "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_12",        
-              "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_13",
-              "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_14",
-              "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_15",
-              "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_16",
-              "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_17",
-              "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_18",
-              "//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_19")
+env.grids = c("//sci-7910/worldclim/world/0.5/bio/current/bio_01",
+              "//sci-7910/worldclim/world/0.5/bio/current/bio_02", 
+              "//sci-7910/worldclim/world/0.5/bio/current/bio_03",
+              "//sci-7910/worldclim/world/0.5/bio/current/bio_04",        
+              "//sci-7910/worldclim/world/0.5/bio/current/bio_05",
+              "//sci-7910/worldclim/world/0.5/bio/current/bio_06",
+              "//sci-7910/worldclim/world/0.5/bio/current/bio_07",
+              "//sci-7910/worldclim/world/0.5/bio/current/bio_08",
+              "//sci-7910/worldclim/world/0.5/bio/current/bio_09",
+              "//sci-7910/worldclim/world/0.5/bio/current/bio_10", 
+              "//sci-7910/worldclim/world/0.5/bio/current/bio_11",
+              "//sci-7910/worldclim/world/0.5/bio/current/bio_12",        
+              "//sci-7910/worldclim/world/0.5/bio/current/bio_13",
+              "//sci-7910/worldclim/world/0.5/bio/current/bio_14",
+              "//sci-7910/worldclim/world/0.5/bio/current/bio_15",
+              "//sci-7910/worldclim/world/0.5/bio/current/bio_16",
+              "//sci-7910/worldclim/world/0.5/bio/current/bio_17",
+              "//sci-7910/worldclim/world/0.5/bio/current/bio_18",
+              "//sci-7910/worldclim/world/0.5/bio/current/bio_19")
 
 
 ## Convert all the rasters to a stack

@@ -10,7 +10,8 @@
 
 ###########################################################################################
 ## remote directoty for raster data
-## login from workstation: ## mqauth.uni.mq.edu.au\MQ20174568 ## Popple2016
+## login from workstation: 
+## mqauth.uni.mq.edu.au\MQ20174568 ## Popple2016
 ## \\SCI-7910
 ## \\sci-7910\F\data\worldclim\world\0.5\bio
 
