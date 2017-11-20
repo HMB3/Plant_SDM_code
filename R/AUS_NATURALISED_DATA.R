@@ -50,9 +50,6 @@
 
 
 ## Read naturalised list in
-save.image("./data/base/TRAITS/AUS_NATURALISED.RData")
-load("STEP_3_GBIF_CLEAN.RData")
-
 load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")
 load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData")
 source('./R/HIA_LIST_MATCHING.R')
@@ -144,6 +141,10 @@ APC.GEO = APC.GEO[ , !(names(APC.GEO) %in% drops)]
 head(APC.GEO, 30)
 
 
+## Save the intersection which took ages to create...
+save(APC.GEO, file = paste("./data/base/TRAITS/APC_GEO.RData", sep = ""))
+
+
 
 
 
@@ -154,24 +155,18 @@ head(APC.GEO, 30)
 
 ## Just using the taxondistribution column
 APC.NAT.DIST = dplyr::rename(APC.NAT.DIST, searchTaxon = canonicalName)
-names(APC.NAT.DIST)
-names(APC.RECORDS)
-dim(APC.NAT.DIST)
-dim(APC.RECORDS)
-
+names(APC.NAT.DIST);names(APC.RECORDS)
+dim(APC.NAT.DIST);dim(APC.RECORDS)
 
 
 #########################################################################################################################
 ## Join the data
-unique(APC.RECORDS$searchTaxon)
-unique(APC.NAT.DIST$searchTaxon)
-names(APC.GEO)
-names(APC.NAT.DIST)
+unique(APC.RECORDS$searchTaxon);unique(APC.NAT.DIST$searchTaxon)
+names(APC.GEO);names(APC.NAT.DIST)
 
 
 ## How could these be matched to the taxondistribution column?
-unique(APC.GEO$STATE_NAME)
-unique(APC.NAT.DIST$regionName)
+unique(APC.GEO$STATE_NAME);unique(APC.NAT.DIST$regionName)
 
 
 ## Rename state factors to match Stu's names
@@ -187,27 +182,43 @@ unique(APC.GEO$STATE_NAME)
 
 
 #########################################################################################################################
-## If you have dataset a with `searchTaxon`, `lon`, `lat` and `STATE_NAME`, and dataset B being `canonicalName`, 
+## If you have dataset A with `searchTaxon`, `lon`, `lat` and `STATE_NAME`, and dataset B being `canonicalName`, 
 ## `regionName` and `native` etc, then merge A and B by a combination of taxon name and state. 
 ## This will in effect append the native/naturalised/etc flags to your lonlat data, so you should then be able to determine 
-## whether a particular occurrence is in the native range or whatnot. I hope this makes sense! 
+## whether a particular occurrence is in the native range or whatnot. I hope this makes sense!
+names(APC.GEO);names(APC.NAT.DIST)
+
+
+## Why does this code create so many NA records? Is it to do with the column names?
 GBIF.APC <- merge(APC.GEO, APC.NAT.DIST, by.x = c("searchTaxon", "STATE_NAME"), by.y = c("searchTaxon", "regionName"), all.x = TRUE)
+dim(GBIF.APC);dim(APC.GEO);dim(APC.NAT.DIST)
 
 
-## This might need another column with "naturalised" or the like
+##
 head(GBIF.APC)
 unique(GBIF.APC$STATE_NAME)
 
 
 #########################################################################################################################
-## Consider the exceptions:
+## Consider the exceptions: Problems to do with the merge, column naming?
+## Also, records outside AUS will have "NA" for naturalised... 
+## Other Territories	150.6586	-35.1311	NA	NA
+## qld	142.3	-10.6	NA	NA
+
+
+
 GBIF.APC.NA = GBIF.APC[rowSums(is.na(GBIF.APC)) > 0,]
-dim(GBIF.APC[rowSums(is.na(GBIF.APC)) > 0,])[1] /dim(GBIF.APC)[1] ## 87$ of records are NA?
+dim(GBIF.APC[rowSums(is.na(GBIF.APC)) > 0,])[1] /dim(GBIF.APC)[1] ## 87% of records are NA naturalised?
 
 
 ## Plot them
 plot(AUS.STATE)
-points(GBIF.APC.NA[c("lon", "lat")],  pch = ".", col = "red") 
+points(GBIF.APC.NA[c("lon", "lat")],  pch = ".", col = "red")
+
+
+## Why are there so many NA records?
+head(GBIF.APC.NA)
+str(unique(GBIF.APC.NA$searchTaxon));str(unique(GBIF.APC$searchTaxon))
 
 
 #########################################################################################################################
@@ -216,8 +227,7 @@ save(GBIF.APC, file = paste("./data/base/TRAITS/GBIF_APC_NATIVE_RANGE.RData", se
 write.csv(GBIF.APC, "./data/base/TRAITS/GBIF_APC_NATIVE_RANGE.csv", row.names = FALSE)
 
 
-## Now save .RData file for the next session
-save.image("AUS_NATURALISED.RData")
+
 
 
 
