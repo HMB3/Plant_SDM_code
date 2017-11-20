@@ -363,7 +363,6 @@ FIT_MAXENT_SELECT <- function(occ,
       ## Not how the rest of code has been set up...
       
       ## background <- subset(SDM.DATA.ALL, searchTaxon != x) conflicts with:
-      ## 
       sdm.predictors.all = HIA_SIMPLIFY(swd_occ, swd_bg, 
                                         path            = outdir_sp,
                                         species_column  = "searchTaxon", 
@@ -492,11 +491,16 @@ HIA_SIMPLIFY = function (occ, bg, path, species_column = "species", response_cur
   bg_by_species  <- split(bg, bg[[species_column]])
   
   
+  ## Why does this object only have one name? Shouldn't it have the species and all the environmental variables?
+  ## str(occ_by_species);str(bg_by_species)
+  ## names(occ_by_species);names(bg_by_species)
+  
+  
   ## This code breaks on my data, because the background points are taken from points that are not the species 
   ## background <- subset(SDM.DATA.ALL, searchTaxon != x)
   
   if (!identical(sort(names(occ_by_species)), sort(names(bg_by_species)))) {    ##
-    print(paste0("Why must the same set of species names must exist in occ and bg?"))
+    print(paste0("Why must the same set of species names exist in occ and bg?"))
   }
   
   ## 
@@ -519,7 +523,7 @@ HIA_SIMPLIFY = function (occ, bg, path, species_column = "species", response_cur
     
     ## Code breaks here
     name_ <- gsub(" ", "_", name)
-    swd <- rbind(occ_by_species[[name]], bg_by_species[[name]]) ## should only need the columns to be the same...
+    swd <- rbind(occ_by_species[[name]], bg_by_species[[name]]) ## should only need the column name to be the same...
     swd <- swd[, -match(species_column, names(swd))]
     
     ##

@@ -143,6 +143,7 @@ head(APC.GEO, 30)
 
 ## Save the intersection which took ages to create...
 save(APC.GEO, file = paste("./data/base/TRAITS/APC_GEO.RData", sep = ""))
+load("./data/base/TRAITS/APC_GEO.RData")
 
 
 
