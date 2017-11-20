@@ -330,7 +330,7 @@ FIT_MAXENT_SELECT <- function(occ,
         
       }
       
-      bg_cells <- cellFromXY(template.raster, bg) ## tail(bg$searchTaxon, 2)
+      bg_cells <- cellFromXY(template.raster, bg) ## tail(bg$searchTaxon)
       
       #####################################################################
       ## Save objects for future reference
@@ -364,7 +364,8 @@ FIT_MAXENT_SELECT <- function(occ,
       
       ## background <- subset(SDM.DATA.ALL, searchTaxon != x) conflicts with:
       ## 
-      sdm.predictors.all = HIA_SIMPLIFY(swd_occ, swd_bg, path,
+      sdm.predictors.all = HIA_SIMPLIFY(swd_occ, swd_bg, 
+                                        path            = outdir_sp,
                                         species_column  = "searchTaxon", 
                                         response_curves = FALSE,
                                         logistic_format = TRUE, 
@@ -382,7 +383,7 @@ FIT_MAXENT_SELECT <- function(occ,
       
       ## Then save them...
       saveRDS(swd_occ, file.path(outdir_sp, 'occ_swd.rds'))
-      saveRDS(swd_bg, file.path(outdir_sp, 'bg_swd.rds'))
+      saveRDS(swd_bg,  file.path(outdir_sp, 'bg_swd.rds'))
       
       ## drop some memory?
       gc()
@@ -518,21 +519,25 @@ HIA_SIMPLIFY = function (occ, bg, path, species_column = "species", response_cur
     
     ## Code breaks here
     name_ <- gsub(" ", "_", name)
-    swd <- rbind(occ_by_species[[name]], bg_by_species[[name]])
+    swd <- rbind(occ_by_species[[name]], bg_by_species[[name]]) ## should only need the columns to be the same...
     swd <- swd[, -match(species_column, names(swd))]
     
     ##
     if (ncol(swd) < k_thr) 
       stop("Initial number of variables < k_thr")
     
-    ##
-    round(cor(swd, use = "pairwise"), 2)                                                    ## error
+    ## Now take the correlation: risky using numbers not names...
+    swd.cor = as.data.frame(swd)[1:19] 
+    round(cor(swd.cor, use = "pairwise"), 2)  ## Ok this is breaking now...
+    # Error in cor(swd, use = "pairwise") : 
+    #   supply both 'x' and 'y' or a matrix-like 'x'
+    
     pa <- rep(1:0, c(nrow(occ_by_species[[name]]), nrow(bg_by_species[[name]])))
-    ok <- as.character(usdm::vifcor(swd, maxobservations = nrow(swd), 
+    ok <- as.character(usdm::vifcor(swd.cor, maxobservations = nrow(swd.cor), 
                                     th = cor_thr)@results$Variables)
     
     ##
-    swd_uncor <- swd[, ok]
+    swd_uncor <- swd.cor[, ok]
     d <- file.path(path, name_, "full")
     m <- dismo::maxent(swd_uncor, pa, args = args, path = d)
     
