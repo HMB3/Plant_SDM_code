@@ -156,17 +156,28 @@ save(APC.GEO, file = paste("./data/base/TRAITS/APC_GEO.RData", sep = ""))
 ## Just using the taxondistribution column
 APC.NAT.DIST = dplyr::rename(APC.NAT.DIST, searchTaxon = canonicalName)
 names(APC.NAT.DIST);names(APC.RECORDS)
-dim(APC.NAT.DIST);dim(APC.RECORDS)
+dim(APC.NAT.DIST)[1];dim(APC.RECORDS)[1]
 
 
 #########################################################################################################################
 ## Join the data
-unique(APC.RECORDS$searchTaxon);unique(APC.NAT.DIST$searchTaxon)
+str(unique(APC.RECORDS$searchTaxon));str(unique(APC.NAT.DIST$searchTaxon)) ## How many species in each?
 names(APC.GEO);names(APC.NAT.DIST)
 
 
 ## How could these be matched to the taxondistribution column?
+class(APC.GEO$STATE_NAME);class(APC.NAT.DIST$regionName)
 unique(APC.GEO$STATE_NAME);unique(APC.NAT.DIST$regionName)
+
+
+## Try turning the factor column into a character?
+test = as.character(APC.GEO$STATE_NAME)
+setdiff(unique(APC.NAT.DIST$regionName), unique(test))
+intersect(unique(APC.NAT.DIST$regionName), unique(test))
+
+
+## So the join code seems to be working. However, 87% of the records are NA. I think this is due to differences in the 
+## names for states between my ABS shapefile and the names from the naturalised data
 
 
 ## Rename state factors to match Stu's names
@@ -178,14 +189,17 @@ APC.GEO$STATE_NAME = revalue(APC.GEO$STATE_NAME, c("Australian Capital Territory
                                                    "Tasmania"                     = "tas",
                                                    "Victoria"                     = "vic",
                                                    "Western Australia"            = "wa"))
-unique(APC.GEO$STATE_NAME)
+
+
+## Don't I need to make sure that all the state categories are the same in both data sets?
+unique(APC.GEO$STATE_NAME);unique(APC.GEO$STATE_NAME)
 
 
 #########################################################################################################################
 ## If you have dataset A with `searchTaxon`, `lon`, `lat` and `STATE_NAME`, and dataset B being `canonicalName`, 
 ## `regionName` and `native` etc, then merge A and B by a combination of taxon name and state. 
-## This will in effect append the native/naturalised/etc flags to your lonlat data, so you should then be able to determine 
-## whether a particular occurrence is in the native range or whatnot. I hope this makes sense!
+## This will in effect append the native/naturalised/etc flags to your lonlat data, so you should can then determine 
+## whether a particular occurrence is in the native range or not. I hope this makes sense!
 names(APC.GEO);names(APC.NAT.DIST)
 
 
@@ -200,10 +214,14 @@ unique(GBIF.APC$STATE_NAME)
 
 
 #########################################################################################################################
-## Consider the exceptions: Problems to do with the merge, column naming?
-## Also, records outside AUS will have "NA" for naturalised... 
+## Consider the exceptions: 
+## Records outside AUS will have "NA" for naturalised, but which problems are to do with the merge, column naming?
+
 ## Other Territories	150.6586	-35.1311	NA	NA
 ## qld	142.3	-10.6	NA	NA
+## nsw	147.927347	-30.14320403	TRUE	FALSE
+## nt	132.816667	-23.71666702	NA	NA
+## sa	132.221771	-30.912699	NA	NA
 
 
 

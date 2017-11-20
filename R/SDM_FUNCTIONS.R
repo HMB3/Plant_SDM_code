@@ -113,7 +113,7 @@ FIT_MAXENT <- function(occ,
         
       }
       
-      bg_cells <- cellFromXY(template.raster, bg) # can probably move this into if {}
+      bg_cells <- cellFromXY(template.raster, bg) # can probably move this into?
       
       
       #####################################################################
@@ -144,7 +144,7 @@ FIT_MAXENT <- function(occ,
       swd_bg <- bg[, sdm.predictors]
       saveRDS(swd_bg, file.path(outdir_sp, 'bg_swd.rds'))
       
-      ## Save shapefiles of the...
+      ## Save shapefiles of the occurrence and background points
       if(shapefiles) {
         
         writeOGR(swd_occ, outdir_sp,  'occ_swd', 'ESRI Shapefile', overwrite_layer = TRUE)
@@ -330,7 +330,7 @@ FIT_MAXENT_SELECT <- function(occ,
         
       }
       
-      bg_cells <- cellFromXY(template.raster, bg) ##
+      bg_cells <- cellFromXY(template.raster, bg) ## tail(bg$searchTaxon, 2)
       
       #####################################################################
       ## Save objects for future reference
@@ -488,7 +488,7 @@ HIA_SIMPLIFY = function (occ, bg, path, species_column = "species", response_cur
   
   else save <- TRUE
   occ_by_species <- split(occ, occ[[species_column]])
-  bg_by_species <- split(bg, bg[[species_column]])
+  bg_by_species  <- split(bg, bg[[species_column]])
   
   
   ## This code breaks on my data, because the background points are taken from points that are not the species 
