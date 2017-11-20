@@ -330,7 +330,7 @@ FIT_MAXENT_SELECT <- function(occ,
         
       }
       
-      bg_cells <- cellFromXY(template.raster, bg) # can probably move this into if {}
+      bg_cells <- cellFromXY(template.raster, bg) ##
       
       #####################################################################
       ## Save objects for future reference
@@ -361,6 +361,9 @@ FIT_MAXENT_SELECT <- function(occ,
       ## Here is where we need to reduce the predictors to a candidate set
       ## The same set of species names must exist in occ and bg...really? 
       ## Not how the rest of code has been set up...
+      
+      ## background <- subset(SDM.DATA.ALL, searchTaxon != x) conflicts with:
+      ## 
       sdm.predictors.all = HIA_SIMPLIFY(swd_occ, swd_bg, path,
                                         species_column  = "searchTaxon", 
                                         response_curves = FALSE,
@@ -373,9 +376,9 @@ FIT_MAXENT_SELECT <- function(occ,
       
       
       #####################################################################
-      ## Recreate occ and bg with new predictors
-      #swd_occ <- swd_occ[, sdm.predictors.all]
-      #swd_bg  <- swd_bg[, sdm.predictors.all]
+      ## Re-create occ and bg with new predictors: is 
+      swd_occ <- swd_occ[, sdm.predictors.all]
+      swd_bg  <- swd_bg[, sdm.predictors.all]
       
       ## Then save them...
       saveRDS(swd_occ, file.path(outdir_sp, 'occ_swd.rds'))
@@ -492,7 +495,7 @@ HIA_SIMPLIFY = function (occ, bg, path, species_column = "species", response_cur
   ## background <- subset(SDM.DATA.ALL, searchTaxon != x)
   
   if (!identical(sort(names(occ_by_species)), sort(names(bg_by_species)))) {    ##
-    print(paste0("The same set of species names must exist in occ and bg"))
+    print(paste0("Why must the same set of species names must exist in occ and bg?"))
   }
   
   ## 
@@ -513,7 +516,7 @@ HIA_SIMPLIFY = function (occ, bg, path, species_column = "species", response_cur
     if (!quiet) 
       message("\n\nDoing ", name)
     
-    ##
+    ## Code breaks here
     name_ <- gsub(" ", "_", name)
     swd <- rbind(occ_by_species[[name]], bg_by_species[[name]])
     swd <- swd[, -match(species_column, names(swd))]
@@ -523,7 +526,7 @@ HIA_SIMPLIFY = function (occ, bg, path, species_column = "species", response_cur
       stop("Initial number of variables < k_thr")
     
     ##
-    round(cor(swd, use = "pairwise"), 2)
+    round(cor(swd, use = "pairwise"), 2)                                                    ## error
     pa <- rep(1:0, c(nrow(occ_by_species[[name]]), nrow(bg_by_species[[name]])))
     ok <- as.character(usdm::vifcor(swd, maxobservations = nrow(swd), 
                                     th = cor_thr)@results$Variables)

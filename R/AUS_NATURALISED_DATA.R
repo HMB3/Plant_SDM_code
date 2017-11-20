@@ -50,6 +50,9 @@
 
 
 ## Read naturalised list in
+save.image("./data/base/TRAITS/AUS_NATURALISED.RData")
+load("STEP_3_GBIF_CLEAN.RData")
+
 load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")
 load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData")
 source('./R/HIA_LIST_MATCHING.R')
@@ -93,10 +96,7 @@ setdiff(test.spp, NAT.SPP)            ## 21
 # Don't use the `taxonDistribution` column - this is the raw and often messy data that was 
 # originally in the APC dataset. Most of what I tried to do was to parse that field and put the information contained 
 # in there into some sort of standard structure. I only put that column in the final output for reference actually, 
-# so one could see what the raw data was. What I suggest you do is to instead use the `canonicalName`, `regionName` and 
-# the flags (such as `native` etc) to do what you want. If you have dataset A with `searchTaxon`, `lon`, `lat` and 
-# `STATE_NAME`, and dataset B being `canonicalName`, `regionName` and `native` etc, then merge A and B by a combination 
-# of taxon name and state, like:
+# so one could see what the raw data was.
 APC.NAT.DIST = APC.NAT[!duplicated(APC.NAT$canonicalName), ][, c("canonicalName", "regionName", "native", "naturalised")]
 names(APC.NAT.DIST)
 
@@ -131,8 +131,9 @@ AUS.WGS$STATE_NAME
 
 
 #########################################################################################################################
-## This should be a simple intersect
+## This should be a simple intersect between the APC records and the AUS states. The states and records line up
 APC.JOIN = over(APC.RECORDS, AUS.WGS)[c("STATE_NAME")]
+dim(APC.JOIN)
 head(APC.JOIN, 30)
 
 
@@ -194,14 +195,40 @@ GBIF.APC <- merge(APC.GEO, APC.NAT.DIST, by.x = c("searchTaxon", "STATE_NAME"), 
 
 
 ## This might need another column with "naturalised" or the like
-View(GBIF.APC)
-unique(GBIF.APC$taxonDistribution)
+head(GBIF.APC)
+unique(GBIF.APC$STATE_NAME)
+
+
+#########################################################################################################################
+## Consider the exceptions:
+GBIF.APC.NA = GBIF.APC[rowSums(is.na(GBIF.APC)) > 0,]
+dim(GBIF.APC[rowSums(is.na(GBIF.APC)) > 0,])[1] /dim(GBIF.APC)[1] ## 87$ of records are NA?
+
+
+## Plot them
+plot(AUS.STATE)
+points(GBIF.APC.NA[c("lon", "lat")],  pch = ".", col = "red") 
 
 
 #########################################################################################################################
 ## Write to file
 save(GBIF.APC, file = paste("./data/base/TRAITS/GBIF_APC_NATIVE_RANGE.RData", sep = ""))
 write.csv(GBIF.APC, "./data/base/TRAITS/GBIF_APC_NATIVE_RANGE.csv", row.names = FALSE)
+
+
+## Now save .RData file for the next session
+save.image("AUS_NATURALISED.RData")
+
+
+
+#########################################################################################################################
+## OUTSTANDING NATURALISED TASKS:
+#########################################################################################################################
+
+
+## Consider the exceptions...
+
+
 
 
 
