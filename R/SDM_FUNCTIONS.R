@@ -116,19 +116,12 @@ FIT_MAXENT <- function(occ,
       
       #####################################################################
       ## Here is where we need to reduce the predictors to a candidate set
-      sdm.predictors.all = COR_VARIABLES(occ, bg,
-                                         path,
-                                         species_column  = "species",
-                                         type            = "PI",
-                                         cor_thr         = 0.7,
-                                         quiet           = FALSE)
-      
-      
-      #####################################################################
-      ## Re-create occ and bg with new predictors: is 
-      swd_occ <- swd_occ[, sdm.predictors.all]
-      swd_bg  <- swd_bg[, sdm.predictors.all]
-      
+      sdm.predictors = COR_VARIABLES(occ, bg,
+                                     path,
+                                     species_column  = "species",
+                                     type            = "PI",
+                                     cor_thr         = 0.7,
+                                     quiet           = FALSE)
       
       #####################################################################
       ## Save objects for future reference
@@ -152,6 +145,7 @@ FIT_MAXENT <- function(occ,
       #####################################################################
       ## sdm.predictors: the s_ff object containing sdm.predictors to use in the model
       ## Sample sdm.predictors at occurrence and background points
+      #####################################################################
       swd_occ <- occ[, sdm.predictors]
       saveRDS(swd_occ, file.path(outdir_sp, 'occ_swd.rds'))
       
@@ -531,8 +525,8 @@ COR_VARIABLES = function (occ, bg, path, species_column = "species",
     swd <- swd[, -match(species_column, names(swd))]
     
     ##
-    if (ncol(swd) < k_thr) 
-      stop("Initial number of variables < k_thr")
+    # if (ncol(swd) < k_thr) 
+    #   stop("Initial number of variables < k_thr")
     
     ## what does round do?
     round(cor(as.data.frame(swd)[2:20], use = "pairwise"), 2)

@@ -129,7 +129,7 @@ clusterEvalQ(cl, {
 lapply(spp.all[1:length(spp.all)], function(x) { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel 
   
   ## Print the taxa being processed to screen
-  if(x %in% SDM.DATA$searchTaxon) {
+  if(x %in% SDM.DATA.ALL$searchTaxon) {
     message('Doing ', x)
     
     ## Subset the records to only the taxa being processed
@@ -214,7 +214,7 @@ stopCluster(cl)
 
 ## 100 species takes about 4 hours...
 cl <- makeCluster(6)
-clusterExport(cl, c('template.raster', 'SDM.DATA', 'FIT_MAXENT'))
+clusterExport(cl, c('template.raster', 'SDM.DATA.ALL', 'FIT_MAXENT'))
 clusterEvalQ(cl, {
   
   require(ff)
@@ -235,17 +235,17 @@ clusterEvalQ(cl, {
 lapply(test.spp[1:length(test.spp)], function(x) { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel 
   
   ## Print the taxa being processed to screen
-  if(x %in% SDM.DATA$searchTaxon) {
+  if(x %in% SDM.DATA.ALL$searchTaxon) {
     message('Doing ', x)
   
   ## Subset the records to only the taxa being processed
   ## Here, add condition for cultivated
-  ## occurrence <- subset(SDM.DATA, searchTaxon == x & CULTIVATED == "CULTIVATED")
-  occurrence <- subset(SDM.DATA, searchTaxon == x & CULTIVATED == "CULTIVATED")
+  ## occurrence <- subset(SDM.DATA.ALL, searchTaxon == x & CULTIVATED == "CULTIVATED")
+  occurrence <- subset(SDM.DATA.ALL, searchTaxon == x & CULTIVATED == "CULTIVATED")
   
   ## Now get the background points. These can come from anywhere in the whole dataset,
   ## other than the species used.
-  background <- subset(SDM.DATA, searchTaxon != x & CULTIVATED == "CULTIVATED")
+  background <- subset(SDM.DATA.ALL, searchTaxon != x & CULTIVATED == "CULTIVATED")
   
   ## The create a vector of the sdm.predictors used. 
   ## This should be based on an ecological framework! 
@@ -303,7 +303,7 @@ stopCluster(cl)
 
 ## 100 species takes about 4 hours...
 cl <- makeCluster(6)
-clusterExport(cl, c('template.raster', 'SDM.DATA', 'FIT_MAXENT'))
+clusterExport(cl, c('template.raster', 'SDM.DATA.ALL', 'FIT_MAXENT'))
 clusterEvalQ(cl, {
   
   require(ff)
@@ -324,17 +324,17 @@ clusterEvalQ(cl, {
 lapply(test.spp[1:length(test.spp)], function(x) { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel 
   
   ## Print the taxa being processed to screen
-  if(x %in% SDM.DATA$searchTaxon) {
+  if(x %in% SDM.DATA.ALL$searchTaxon) {
     message('Doing ', x)
     
     ## Subset the records to only the taxa being processed
     ## Here, add condition for cultivated
-    ## occurrence <- subset(SDM.DATA, searchTaxon == x & CULTIVATED == "CULTIVATED")
-    occurrence <- subset(SDM.DATA, searchTaxon == x & CULTIVATED == "UNKNOWN")
+    ## occurrence <- subset(SDM.DATA.ALL, searchTaxon == x & CULTIVATED == "CULTIVATED")
+    occurrence <- subset(SDM.DATA.ALL, searchTaxon == x & CULTIVATED == "UNKNOWN")
     
     ## Now get the background points. These can come from anywhere in the whole dataset,
     ## other than the species used.
-    background <- subset(SDM.DATA, searchTaxon != x & CULTIVATED == "UNKNOWN")
+    background <- subset(SDM.DATA.ALL, searchTaxon != x & CULTIVATED == "UNKNOWN")
     
     ## The create a vector of the sdm.predictors used. 
     ## This should be based on an ecological framework! 
