@@ -364,7 +364,7 @@ FIT_MAXENT_SELECT <- function(occ,
       
       ## background <- subset(SDM.DATA.ALL, searchTaxon != x) conflicts with:
       sdm.predictors.all = HIA_SIMPLIFY(swd_occ, swd_bg, 
-                                        path            = outdir_sp,
+                                        path,
                                         species_column  = "searchTaxon", 
                                         response_curves = FALSE,
                                         logistic_format = TRUE, 
@@ -539,6 +539,10 @@ HIA_SIMPLIFY = function (occ, bg, path, species_column = "species", response_cur
     pa <- rep(1:0, c(nrow(occ_by_species[[name]]), nrow(bg_by_species[[name]])))
     ok <- as.character(usdm::vifcor(swd.cor, maxobservations = nrow(swd.cor), 
                                     th = cor_thr)@results$Variables)
+    
+    # Warning message:
+    #   In summary.lm(lm(as.formula(paste(colnames(y)[w[i]], "~.", sep = "")),  :
+    #                      essentially perfect fit: summary may be unreliable
     
     ##
     swd_uncor <- swd.cor[, ok]

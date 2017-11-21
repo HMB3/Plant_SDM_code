@@ -14,7 +14,8 @@
 ## RECORDS                 : ALL, CULTIVATED & UNCULT
 ## RANGES                  : ALL, NATIVE RANGE & NON-NATIVE
 ## GCMs/RCPs               : the lowest prioritym but probably do them all in the end
-
+## UHI 
+## WUE
 
 
 #########################################################################################################################
@@ -29,7 +30,6 @@ sapply(p, require, character.only = TRUE)
 load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")
 source('./R/GREEN_CITIES_FUNCTIONS.R')
 source('./R/SDM_FUNCTIONS.R')
-#source('./R/TRIAL_SPECIES_NATIVE_RANGES.R')
 
 
 
@@ -97,9 +97,11 @@ source('./R/SDM_FUNCTIONS.R')
 
 
 ## These will change... 
-sdm.predictors <- c("Annual_mean_temp", "Temp_seasonality",    "Max_temp_warm_month", "Min_temp_cold_month",
-                    "Annual_precip",    "Precip_seasonality",  "Precip_wet_qu",       "Precip_dry_qu",       
-                    "Precip_wet_month", "Precip_dry_month")
+sdm.predictors.all <- c("Annual_mean_temp",    "Mean_diurnal_range",  "Isothermality",      "Temp_seasonality",  
+                        "Max_temp_warm_month", "Min_temp_cold_month", "Temp_annual_range",  "Mean_temp_wet_qu",    
+                        "Mean_temp_dry_qu",    "Mean_temp_warm_qu",   "Mean_temp_cold_qu",  "Annual_precip", 
+                        "Precip_wet_month",    "Precip_dry_month",    "Precip_seasonality", "Precip_wet_qu",     
+                        "Precip_dry_qu",       "Precip_warm_qu",      "Precip_col_qu")
 
 
 
@@ -116,7 +118,7 @@ names(COMBO.RASTER.CONTEXT)
 combo.subset <- COMBO.RASTER.CONTEXT %>%
   
   ## just get the sdm.predictors
-  select(one_of(sdm.predictors)) %>%
+  select(one_of(sdm.predictors.all)) %>%
   as.data.frame()
 
 dim(combo.subset)
@@ -186,11 +188,6 @@ save(correlations.table,         file = paste("./output/tables/variable_selectio
 
 
 #########################################################################################################################
-## Chose a-priori worldclim predictors
-sdm.predictors    <- c("Annual_mean_temp", "Temp_seasonality",    "Max_temp_warm_month", "Min_temp_cold_month",
-                       "Annual_precip",    "Precip_seasonality",  "Precip_wet_month", "Precip_dry_month")
-
-
 ## Chose all worldclim predictors
 sdm.predictors.all <- c("Annual_mean_temp",  "Mean_diurnal_range",  "Isothermality",       "Temp_seasonality",  "Max_temp_warm_month", "Min_temp_cold_month", 
                         "Temp_annual_range", "Mean_temp_wet_qu",    "Mean_temp_dry_qu",    "Mean_temp_warm_qu", "Mean_temp_cold_qu",   "Annual_precip", 
@@ -204,12 +201,6 @@ template.raster <- raster(raster("//sci-7910/F/data/worldclim/world/0.5/bio/curr
 
 #########################################################################################################################
 ## Just get the columns needed for modelling: this would include cultivated/non, and inside/outside
-COMBO.RASTER.SELECT <- select(COMBO.RASTER.CONTEXT, 
-                              searchTaxon, 
-                              lon, lat, 
-                              Annual_mean_temp, Temp_seasonality,   Max_temp_warm_month, Min_temp_cold_month,
-                              Annual_precip,    Precip_seasonality, Precip_wet_month,    Precip_dry_month)
-
 COMBO.RASTER.ALL    <- select(COMBO.RASTER.CONTEXT, 
                               searchTaxon, 
                               lon, lat, 
@@ -220,44 +211,28 @@ COMBO.RASTER.ALL    <- select(COMBO.RASTER.CONTEXT,
 
 #########################################################################################################################
 ## Create a spatial points object, and change to a projected system to calculate distance more accurately 
-coordinates(COMBO.RASTER.SELECT) <- ~lon+lat
 coordinates(COMBO.RASTER.ALL)    <- ~lon+lat
-
-
-#proj4string(COMBO.RASTER.SELECT) <- '+init=epsg:4326'
 proj4string(COMBO.RASTER.ALL)    <- '+init=epsg:4326'
-
-# COMBO.RASTER.SELECT <- spTransform(
-#   COMBO.RASTER.SELECT, CRS('+init=ESRI:54009'))
 
 COMBO.RASTER.ALL    <- spTransform(
   COMBO.RASTER.ALL, CRS('+init=ESRI:54009'))
 
 
 ## Now split using the data using the species column, and get the unique occurrence cells
-#COMBO.RASTER.SPLIT     <- split(COMBO.RASTER.SELECT, COMBO.RASTER.SELECT$searchTaxon)
 COMBO.RASTER.SPLIT.ALL <- split(COMBO.RASTER.ALL, COMBO.RASTER.ALL$searchTaxon)
-
-
-#occurrence_cells       <- lapply(COMBO.RASTER.SPLIT,     function(x) cellFromXY(template.raster, x))
 occurrence_cells_all   <- lapply(COMBO.RASTER.SPLIT.ALL, function(x) cellFromXY(template.raster, x))
-
-#str(occurrence_cells)  ## this is a list of dataframes, where the number of rows for each being the species table
-str(occurrence_cells_all)
+str(occurrence_cells_all)   ## this is a list of dataframes, where the number of rows for each being the species table
 
 
+#########################################################################################################################
 ## Now get just one record within each 10*10km cell. This step should eliminate most, if not all, duplicate records
 ## A simple alternative to the extract problem could be to run this process before the extract?
-# SDM.DATA <- mapply(function(x, cells) {
-#   x[!duplicated(cells), ]
-# }, COMBO.RASTER.SPLIT, occurrence_cells, SIMPLIFY = FALSE) %>% do.call(rbind, .)
-
 SDM.DATA.ALL <- mapply(function(x, cells) {
   x[!duplicated(cells), ]
 }, COMBO.RASTER.SPLIT.ALL, occurrence_cells_all, SIMPLIFY = FALSE) %>% do.call(rbind, .)
 
 
-## Check to see we have 8 variables + the species for the standard predictors, and 19 for all predictors
+## Check to see we have 19 variables + the species for the standard predictors, and 19 for all predictors
 ## works ok
 str(SDM.DATA)
 str(SDM.DATA.ALL)
@@ -270,15 +245,13 @@ str(SDM.DATA.ALL)
 
 ## Save big tables to keep memory spare
 save(template.raster,  file = paste("./data/base/HIA_LIST/COMBO/SDM_TEMPLATE_RASTER.RData"))
-save(SDM.DATA,         file = paste("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_STD_VAR.RData"))
 save(SDM.DATA.ALL,     file = paste("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_ALL_VAR.RData"))
 
 
 ## Remove the other data
 rm(COMBO.RASTER.ALL)
-rm(COMBO.RASTER.SELECT)
 rm(COMBO.RASTER.SPLIT.ALL)
-rm(COMBO.RASTER.SPLIT)
+save.image("STEP_6_PREPARE_SDM.RData")
 
 
 

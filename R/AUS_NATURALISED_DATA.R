@@ -162,21 +162,6 @@ dim(APC.NAT.DIST)[1];dim(APC.RECORDS)[1]
 
 #########################################################################################################################
 ## Join the data
-str(unique(APC.RECORDS$searchTaxon));str(unique(APC.NAT.DIST$searchTaxon)) ## How many species in each?
-names(APC.GEO);names(APC.NAT.DIST)
-
-
-## How could these be matched to the taxondistribution column?
-class(APC.GEO$STATE_NAME);class(APC.NAT.DIST$regionName)
-unique(APC.GEO$STATE_NAME);unique(APC.NAT.DIST$regionName)
-
-
-## Try turning the factor column into a character?
-test = as.character(APC.GEO$STATE_NAME)
-setdiff(unique(APC.NAT.DIST$regionName), unique(test))
-intersect(unique(APC.NAT.DIST$regionName), unique(test))
-
-
 ## So the join code seems to be working. However, 87% of the records are NA. I think this is due to differences in the 
 ## names for states between my ABS shapefile and the names from the naturalised data
 
@@ -191,6 +176,31 @@ APC.GEO$STATE_NAME = revalue(APC.GEO$STATE_NAME, c("Australian Capital Territory
                                                    "Victoria"                     = "vic",
                                                    "Western Australia"            = "wa"))
 
+## Rename state factors to match Stu's names
+APC.NAT.DIST$regionName = revalue(APC.NAT.DIST$regionName, c("Australian Capital Territory" = "act", 
+                                                             "New South Wales"              = "nsw",
+                                                             "Northern Territory"           = "nt",
+                                                             "Queensland"                   = "qld",
+                                                             "South Australia"              = "sa",
+                                                             "Tasmania"                     = "tas",
+                                                             "Victoria"                     = "vic",
+                                                             "Western Australia"            = "wa"))
+
+
+str(unique(APC.RECORDS$searchTaxon));str(unique(APC.NAT.DIST$searchTaxon)) ## How many species in each?
+names(APC.GEO);names(APC.NAT.DIST)
+
+
+## How could these be matched to the taxondistribution column?
+class(APC.GEO$STATE_NAME);class(APC.NAT.DIST$regionName)
+unique(APC.GEO$STATE_NAME);unique(APC.NAT.DIST$regionName)
+
+
+## Try turning the factor column into a character?
+APC.GEO$STATE_NAME = as.character(APC.GEO$STATE_NAME)
+setdiff(unique(APC.NAT.DIST$regionName), unique(APC.GEO$STATE_NAME))
+intersect(unique(APC.NAT.DIST$regionName), unique(APC.GEO$STATE_NAME))
+
 
 ## Don't I need to make sure that all the state categories are the same in both data sets?
 unique(APC.GEO$STATE_NAME);unique(APC.GEO$STATE_NAME)
@@ -202,7 +212,7 @@ unique(APC.GEO$STATE_NAME);unique(APC.GEO$STATE_NAME)
 ## This will in effect append the native/naturalised/etc flags to your lonlat data, so you should can then determine 
 ## whether a particular occurrence is in the native range or not. I hope this makes sense!
 names(APC.GEO);names(APC.NAT.DIST)
-
+str(APC.GEO);str(APC.NAT.DIST)
 
 ## Why does this code create so many NA records? Is it to do with the column names?
 GBIF.APC <- merge(APC.GEO, APC.NAT.DIST, by.x = c("searchTaxon", "STATE_NAME"), by.y = c("searchTaxon", "regionName"), all.x = TRUE)

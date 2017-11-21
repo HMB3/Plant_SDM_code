@@ -103,9 +103,6 @@ sdm.predictors.all <- c("Annual_mean_temp",    "Mean_diurnal_range",  "Isotherma
 ## maxent function
 
 
-## the simplify function rmaxent::simplify
-
-
 ## 100 species takes about 4 hours...
 cl <- makeCluster(4)
 clusterExport(cl, c('template.raster', 'SDM.DATA.ALL', 'FIT_MAXENT_SELECT'))
