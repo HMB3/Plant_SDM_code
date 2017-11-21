@@ -128,17 +128,24 @@ lapply(test.spp.reverse[1:length(test.spp.reverse)], function(x) { # for serial,
     message('Doing ', x)
   
   ## Subset the records to only the taxa being processed
-  occurrence <- subset(SDM.DATA.ALL, searchTaxon == x)
+  occurrence         <- subset(SDM.DATA.ALL, searchTaxon == x)
+  occurrence$species <- x
   
   ## Now get the background points. These can come from anywhere in the whole dataset,other than the species used.
+  background         <- subset(SDM.DATA.ALL, searchTaxon != x)
+  background$species <- x
+  
   ## This code conflicts with: swd <- rbind(occ_by_species[[name]], bg_by_species[[name]])
   ## Instead, can this be changed to a random selection from the whole dataset other than the species, but including a few of the species
   ## records? Say maybe 5% of them?
   
-  ## x = "Quercus palustris": include 10% of records from the occurrence dataset 
-  spp.subset <- SDM.DATA.ALL[ sample( which( SDM.DATA.ALL$searchTaxon == "Quercus palustris" ) , dim(occurrence)[1]*0.1 ) , ]
-  spp.bg     <- subset(SDM.DATA.ALL, searchTaxon != x)
-  background <- rbind(spp.bg, spp.subset) ## tail(background$searchTaxon)
+  ## x = "Quercus palustris": include 10% of records from the occurrence dataset
+  
+  
+  # spp.subset <- SDM.DATA.ALL[ sample( which( SDM.DATA.ALL$searchTaxon == "Quercus palustris" ) , dim(occurrence)[1]*0.1 ) , ]
+  # spp.bg     <- subset(SDM.DATA.ALL, searchTaxon != x)
+  # background <- rbind(spp.bg, spp.subset) ## tail(background$searchTaxon)
+  # background$species = x
   
   ## The create a vector of the sdm.predictors used. 
   ## This should be based on an ecological framework! 

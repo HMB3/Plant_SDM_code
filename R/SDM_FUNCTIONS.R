@@ -18,8 +18,7 @@
 FIT_MAXENT <- function(occ, 
                        bg, # A Spatial points data frame (SPDF) of candidate background points
                        sdm.predictors, 
-                       # sdm.predictors is a vector of column names for sdm.predictors
-                       # that you want to include
+                       # sdm.predictors is a vector of enviro conditions that you want to include
                        name, 
                        outdir, 
                        template.raster, 
@@ -114,6 +113,21 @@ FIT_MAXENT <- function(occ,
       }
       
       bg_cells <- cellFromXY(template.raster, bg) # can probably move this into?
+      
+      #####################################################################
+      ## Here is where we need to reduce the predictors to a candidate set
+      sdm.predictors.all = COR_VARIABLES(occ, bg,
+                                         path,
+                                         species_column  = "species",
+                                         type            = "PI",
+                                         cor_thr         = 0.7,
+                                         quiet           = FALSE)
+      
+      
+      #####################################################################
+      ## Re-create occ and bg with new predictors: is 
+      swd_occ <- swd_occ[, sdm.predictors.all]
+      swd_bg  <- swd_bg[, sdm.predictors.all]
       
       
       #####################################################################
@@ -214,7 +228,7 @@ FIT_MAXENT <- function(occ,
     }
     
   }
-
+  
 }
 
 
@@ -354,8 +368,13 @@ FIT_MAXENT_SELECT <- function(occ,
       #####################################################################
       ## Sample sdm.predictors.all at occurrence and background points
       ## Also, you need the 'species' column here...
-      swd_occ <- occ[, c('searchTaxon', sdm.predictors.all)]
-      swd_bg  <- bg[, c('searchTaxon',  sdm.predictors.all)]
+      occ <- occ[, c('species', 'searchTaxon',  sdm.predictors.all)]
+      bg  <- bg[,  c('species', 'searchTaxon',  sdm.predictors.all)]
+      
+      swd_occ <- occ[, c('species', 'searchTaxon',  sdm.predictors.all)]
+      swd_bg  <- bg[,  c('species', 'searchTaxon',  sdm.predictors.all)]
+      
+      ## names(swd_occ);names(swd_bg)
       
       #####################################################################
       ## Here is where we need to reduce the predictors to a candidate set
@@ -363,29 +382,26 @@ FIT_MAXENT_SELECT <- function(occ,
       ## Not how the rest of code has been set up...
       
       ## background <- subset(SDM.DATA.ALL, searchTaxon != x) conflicts with:
-      sdm.predictors.all = HIA_SIMPLIFY(swd_occ, swd_bg, 
-                                        path,
-                                        species_column  = "searchTaxon", 
-                                        response_curves = FALSE,
-                                        logistic_format = TRUE, 
-                                        type            = "PI", 
-                                        cor_thr         = 0.7, 
-                                        pct_thr         = 5, 
-                                        k_thr           = 4,
-                                        quiet           = FALSE)
+      test = HIA_SIMPLIFY(occ, bg,
+                          path            = outdir,
+                          species_column  = "species",
+                          response_curves = FALSE,
+                          logistic_format = TRUE,
+                          type            = "PI",
+                          cor_thr         = 0.7,
+                          pct_thr         = 5,
+                          k_thr           = 4,
+                          quiet           = FALSE)
       
       
       #####################################################################
       ## Re-create occ and bg with new predictors: is 
-      swd_occ <- swd_occ[, sdm.predictors.all]
-      swd_bg  <- swd_bg[, sdm.predictors.all]
+      # swd_occ <- swd_occ[, sdm.predictors.all]
+      # swd_bg  <- swd_bg[, sdm.predictors.all]
       
       ## Then save them...
       saveRDS(swd_occ, file.path(outdir_sp, 'occ_swd.rds'))
       saveRDS(swd_bg,  file.path(outdir_sp, 'bg_swd.rds'))
-      
-      ## drop some memory?
-      gc()
       
       ## Save shapefiles of the...
       if(shapefiles) {
@@ -455,8 +471,6 @@ FIT_MAXENT_SELECT <- function(occ,
         
       }
       
-      ## drop some memory?
-      gc()
       
     }
     
@@ -469,16 +483,15 @@ FIT_MAXENT_SELECT <- function(occ,
 
 
 #########################################################################################################################
-## GET BACKGROUND POINTS AND FIT MAXENT FOR ALL VARIABLES, USE MODEL SELECTION
+## GET UNCORRELATED VARIABLES
 #########################################################################################################################
 
 
 ## This should replace John's code
-HIA_SIMPLIFY = function (occ, bg, path, species_column = "species", response_curves = FALSE, 
-                         logistic_format = TRUE, type = "PI", cor_thr, pct_thr, k_thr, 
-                         quiet = TRUE) 
+COR_VARIABLES = function (occ, bg, path, species_column = "species", 
+                          type = "PI", cor_thr,
+                          quiet = TRUE) {
   
-{
   if (missing(path)) {
     
     save <- FALSE
@@ -490,17 +503,85 @@ HIA_SIMPLIFY = function (occ, bg, path, species_column = "species", response_cur
   occ_by_species <- split(occ, occ[[species_column]])
   bg_by_species  <- split(bg, bg[[species_column]])
   
-  
-  ## Why does this object only have one name? Shouldn't it have the species and all the environmental variables?
-  ## str(occ_by_species);str(bg_by_species)
-  ## names(occ_by_species);names(bg_by_species)
-  
+  ## head(occ)
+  ## head(occ_by_species)
+  ## str(bg_by_species)
   
   ## This code breaks on my data, because the background points are taken from points that are not the species 
-  ## background <- subset(SDM.DATA.ALL, searchTaxon != x)
+  ## background <- subset(SDM.DATA.ALL, searchTaxon != x) ## what species is 
   
   if (!identical(sort(names(occ_by_species)), sort(names(bg_by_species)))) {    ##
-    print(paste0("Why must the same set of species names exist in occ and bg?"))
+    print(paste0("The same set of species names must exist in occ and bg"))
+  }
+  
+  ## 
+  type <- switch(type, PI = "permutation.importance", PC = "contribution", 
+                 stop("type must be either \"PI\" or \"PC\".", call. = FALSE))
+  
+  ## Explain
+  lapply(names(occ_by_species), function(name) {
+    if (!quiet) 
+      message("\n\nDoing ", name)
+    
+    ## The problem is in here: conflict between these lines and the main background argument:
+    ## background <- subset(SDM.DATA.ALL, searchTaxon != x)
+    ## Not sure why this dataframe needs to be matched?
+    name_ <- gsub(" ", "_", name)
+    swd <- rbind(occ_by_species[[name]], bg_by_species[[name]])
+    swd <- swd[, -match(species_column, names(swd))]
+    
+    ##
+    if (ncol(swd) < k_thr) 
+      stop("Initial number of variables < k_thr")
+    
+    ## what does round do?
+    round(cor(as.data.frame(swd)[2:20], use = "pairwise"), 2)
+    swd.cor = as.data.frame(swd)[2:20]
+    pa <- rep(1:0, c(nrow(occ_by_species[[name]]), nrow(bg_by_species[[name]])))  ## problem here
+    ok <- as.character(usdm::vifcor(swd.cor, maxobservations = nrow(swd), 
+                                    th = cor_thr)@results$Variables)              ## ok
+    
+    ## return the set of predictors which are less correlated than the threshold (e.g. 0.7)
+    return(ok)
+    
+  })
+  
+}
+
+
+
+
+
+#########################################################################################################################
+## RUN BACKWARDS SELECTION
+#########################################################################################################################
+
+
+## This should replace John's code
+HIA_SIMPLIFY = function (occ, bg, path, species_column = "species", response_curves = FALSE, 
+                         logistic_format = TRUE, type = "PI", cor_thr, pct_thr, k_thr, 
+                         quiet = TRUE) 
+  
+{
+  
+  if (missing(path)) {
+    
+    save <- FALSE
+    path <- tempdir()
+    
+  }
+  
+  else save <- TRUE
+  occ_by_species <- split(occ, occ[[species_column]])
+  bg_by_species  <- split(bg, bg[[species_column]])
+  
+  names(occ);names(bg)
+  names(occ_by_species);names(bg_by_species)
+  
+  ## This code breaks on my data, because the background points are taken from points that are not the species 
+  ## background <- subset(SDM.DATA.ALL, searchTaxon != x) ## what species is 
+  if (!identical(sort(names(occ_by_species)), sort(names(bg_by_species)))) {    ##
+    print(paste0("The same set of species names must exist in occ and bg"))
   }
   
   ## 
@@ -521,33 +602,36 @@ HIA_SIMPLIFY = function (occ, bg, path, species_column = "species", response_cur
     if (!quiet) 
       message("\n\nDoing ", name)
     
-    ## Code breaks here
+    ## The problem is in here: conflict between these lines and the main background argument:
+    ## background <- subset(SDM.DATA.ALL, searchTaxon != x)
+    ## Not sure why this dataframe needs to be matched?
     name_ <- gsub(" ", "_", name)
-    swd <- rbind(occ_by_species[[name]], bg_by_species[[name]]) ## should only need the column name to be the same...
+    swd <- rbind(occ_by_species[[name]], bg_by_species[[name]])
     swd <- swd[, -match(species_column, names(swd))]
+    ## str(swd)
     
     ##
     if (ncol(swd) < k_thr) 
       stop("Initial number of variables < k_thr")
     
-    ## Now take the correlation: risky using numbers not names...
-    swd.cor = as.data.frame(swd)[1:19] 
-    round(cor(swd.cor, use = "pairwise"), 2)  ## Ok this is breaking now...
-    # Error in cor(swd, use = "pairwise") : 
-    #   supply both 'x' and 'y' or a matrix-like 'x'
+    ## What does round do? This would not work by itself
+    round(cor(as.data.frame(swd)[2:20], use = "pairwise"), 2)
+    swd.cor = as.data.frame(swd)[2:20]
+    pa <- rep(1:0, c(nrow(occ_by_species[[name]]), nrow(bg_by_species[[name]])))  ## problem here
+    ok <- as.character(usdm::vifcor(swd.cor, maxobservations = nrow(swd), 
+                                    th = cor_thr)@results$Variables)              ## ok
     
-    pa <- rep(1:0, c(nrow(occ_by_species[[name]]), nrow(bg_by_species[[name]])))
-    ok <- as.character(usdm::vifcor(swd.cor, maxobservations = nrow(swd.cor), 
-                                    th = cor_thr)@results$Variables)
+    ## why did I need to change from a spatial points to DF to get it working
+    # Error in (function (classes, fdef, mtable)  : 
+    #             unable to find an inherited method for function ‘maxent’ for signature ‘"SpatialPointsDataFrame", "integer"’
     
-    # Warning message:
-    #   In summary.lm(lm(as.formula(paste(colnames(y)[w[i]], "~.", sep = "")),  :
-    #                      essentially perfect fit: summary may be unreliable
+    swd_uncor     <- as.data.frame(swd[, ok])                     ##
+    swd_uncor$lon <- NULL
+    swd_uncor$lat <- NULL
+    str(swd_uncor)
     
-    ##
-    swd_uncor <- swd.cor[, ok]
     d <- file.path(path, name_, "full")
-    m <- dismo::maxent(swd_uncor, pa, args = args, path = d)
+    m <- dismo::maxent(swd_uncor, pa, args = args, path = d)  ## Seems to work, but why is lat/long being used?
     
     ##
     if (isTRUE(save)) 
@@ -557,8 +641,6 @@ HIA_SIMPLIFY = function (occ, bg, path, species_column = "species", response_cur
     pct <- sort(pct[pct > 0])
     
     names(pct) <- sub(paste0("\\.", type), "", names(pct))
-    
-    
     
     if (min(pct) >= pct_thr || length(pct) <= k_thr) {
       if (isTRUE(save)) {

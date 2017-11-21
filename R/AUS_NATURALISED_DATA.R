@@ -35,11 +35,6 @@
 # three regions (e.g. "qld, nsw, vic"), then there will be three records for that taxon in the output, one for each region. 
 # The distribution flags apply to the given region.
 
-# In order to retrieve, for example, all taxa native in NSW, you could do something like:
-   
-# x <- data[data$regionName == "nsw" & data$native, ]
-# x <- data %>% filter(regionName == "nsw", native)
-
 
 
 
@@ -150,7 +145,7 @@ load("./data/base/TRAITS/APC_GEO.RData")
 
 
 #########################################################################################################################
-## 3). MERGE WITH STU'S NATURALISED DATA
+## 3). MERGE WITH STU / RACH'S NATURALISED DATA
 #########################################################################################################################
 
 
@@ -163,7 +158,15 @@ dim(APC.NAT.DIST)[1];dim(APC.RECORDS)[1]
 #########################################################################################################################
 ## Join the data
 ## So the join code seems to be working. However, 87% of the records are NA. I think this is due to differences in the 
-## names for states between my ABS shapefile and the names from the naturalised data
+## names for states between my ABS shapefile and the names from the naturalised data.
+
+
+## How could these be matched to the taxondistribution column?
+class(APC.GEO$STATE_NAME);class(APC.NAT.DIST$regionName)
+APC.NAT.DIST$regionName = as.factor(APC.NAT.DIST$regionName)
+
+str(APC.GEO$STATE_NAME);str(APC.NAT.DIST$regionName)
+unique(APC.GEO$STATE_NAME);unique(APC.NAT.DIST$regionName)
 
 
 ## Rename state factors to match Stu's names
@@ -176,34 +179,36 @@ APC.GEO$STATE_NAME = revalue(APC.GEO$STATE_NAME, c("Australian Capital Territory
                                                    "Victoria"                     = "vic",
                                                    "Western Australia"            = "wa"))
 
-## Rename state factors to match Stu's names
-APC.NAT.DIST$regionName = revalue(APC.NAT.DIST$regionName, c("Australian Capital Territory" = "act", 
-                                                             "New South Wales"              = "nsw",
-                                                             "Northern Territory"           = "nt",
-                                                             "Queensland"                   = "qld",
-                                                             "South Australia"              = "sa",
-                                                             "Tasmania"                     = "tas",
-                                                             "Victoria"                     = "vic",
-                                                             "Western Australia"            = "wa"))
+## Don't I need to make sure that all the state categories are the same in both data sets?
+APC.NAT.DIST$regionName = revalue(APC.NAT.DIST$regionName, c("?nsw" = "nsw",
+                                                             "?nt"  = "nt",
+                                                             "?qld" = "qld",
+                                                             "?sa"  = "sa",
+                                                             "?tas" = "tas",
+                                                             "?vic" = "vic",
+                                                             "?wa"  = "wa",
+                                                             "chi"  = "Other Territories",
+                                                             "ni"   = "Other Territories",
+                                                             "csi"  = "Other Territories",
+                                                             "hi"   = "Other Territories",
+                                                             "lhi"  = "Other Territories",
+                                                             "coi"  = "Other Territories",
+                                                             "mi"   = "Other Territories",
+                                                             "ar"   = "Other Territories",
+                                                             "?lhi" = "Other Territories",
+                                                             "?chi" = "Other Territories"))
 
 
+## Check the species
 str(unique(APC.RECORDS$searchTaxon));str(unique(APC.NAT.DIST$searchTaxon)) ## How many species in each?
-names(APC.GEO);names(APC.NAT.DIST)
+APC.GEO$STATE_NAME       = as.character(APC.GEO$STATE_NAME)
+APC.NAT.DIST$regionName  = as.character(APC.NAT.DIST$regionName)
 
 
-## How could these be matched to the taxondistribution column?
-class(APC.GEO$STATE_NAME);class(APC.NAT.DIST$regionName)
-unique(APC.GEO$STATE_NAME);unique(APC.NAT.DIST$regionName)
-
-
-## Try turning the factor column into a character?
-APC.GEO$STATE_NAME = as.character(APC.GEO$STATE_NAME)
+## What is the difference between these columns...
 setdiff(unique(APC.NAT.DIST$regionName), unique(APC.GEO$STATE_NAME))
 intersect(unique(APC.NAT.DIST$regionName), unique(APC.GEO$STATE_NAME))
-
-
-## Don't I need to make sure that all the state categories are the same in both data sets?
-unique(APC.GEO$STATE_NAME);unique(APC.GEO$STATE_NAME)
+unique(APC.GEO$STATE_NAME);unique(APC.NAT.DIST$regionName)
 
 
 #########################################################################################################################
@@ -214,13 +219,15 @@ unique(APC.GEO$STATE_NAME);unique(APC.GEO$STATE_NAME)
 names(APC.GEO);names(APC.NAT.DIST)
 str(APC.GEO);str(APC.NAT.DIST)
 
+
 ## Why does this code create so many NA records? Is it to do with the column names?
 GBIF.APC <- merge(APC.GEO, APC.NAT.DIST, by.x = c("searchTaxon", "STATE_NAME"), by.y = c("searchTaxon", "regionName"), all.x = TRUE)
-dim(GBIF.APC);dim(APC.GEO);dim(APC.NAT.DIST)
+dim(GBIF.APC);dim(APC.GEO);dim(APC.NAT.DIST)  ## dimensions are ok?
 
 
-##
+## Check the join fields: not sure why "regionName" disappears?
 head(GBIF.APC)
+unique(GBIF.APC$STATE_NAME)
 unique(GBIF.APC$STATE_NAME)
 
 
@@ -233,9 +240,6 @@ unique(GBIF.APC$STATE_NAME)
 ## nsw	147.927347	-30.14320403	TRUE	FALSE
 ## nt	132.816667	-23.71666702	NA	NA
 ## sa	132.221771	-30.912699	NA	NA
-
-
-
 GBIF.APC.NA = GBIF.APC[rowSums(is.na(GBIF.APC)) > 0,]
 dim(GBIF.APC[rowSums(is.na(GBIF.APC)) > 0,])[1] /dim(GBIF.APC)[1] ## 87% of records are NA naturalised?
 

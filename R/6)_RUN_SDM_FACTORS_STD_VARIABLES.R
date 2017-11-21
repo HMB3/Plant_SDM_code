@@ -25,13 +25,13 @@ source('./R/GREEN_CITIES_FUNCTIONS.R')
 source('./R/SDM_FUNCTIONS.R')
 
 load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")
-load("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_STD_VAR.RData")
+load("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_ALL_VAR.RData")
 load("./data/base/HIA_LIST/COMBO/SDM_TEMPLATE_RASTER.RData")
 
 
 ## Check data 
 str(template.raster)
-str(SDM.DATA)
+str(SDM.DATA.ALL)
 
 
 ## Require packages
@@ -51,7 +51,9 @@ sapply(p, require, character.only = TRUE)
 ## Create species subsets for analysis
 ## All species
 spp.all  <- unique(HIA.SPP$Binomial)
-str(spp.all)                 ## 605
+str(spp.all)
+all.reverse = sort(spp.all, decreasing = TRUE)
+
 
 
 ## The trial species
@@ -76,8 +78,12 @@ test.reverse = sort(test.spp, decreasing = TRUE)
 
 
 ## Chose a-priori worldclim predictors
-sdm.predictors    <- c("Annual_mean_temp", "Temp_seasonality",    "Max_temp_warm_month", "Min_temp_cold_month",
-                       "Annual_precip",    "Precip_seasonality",  "Precip_wet_month",    "Precip_dry_month")
+sdm.predictors <- c("Annual_mean_temp",    "Mean_diurnal_range",  "Isothermality",      "Temp_seasonality",  
+                    "Max_temp_warm_month", "Min_temp_cold_month", "Temp_annual_range",  "Mean_temp_wet_qu",    
+                    "Mean_temp_dry_qu",    "Mean_temp_warm_qu",   "Mean_temp_cold_qu",  "Annual_precip", 
+                    "Precip_wet_month",    "Precip_dry_month",    "Precip_seasonality", "Precip_wet_qu",     
+                    "Precip_dry_qu",       "Precip_warm_qu",      "Precip_col_qu")
+
 
 
 ########################################################################################################################
@@ -100,7 +106,7 @@ sdm.predictors    <- c("Annual_mean_temp", "Temp_seasonality",    "Max_temp_warm
 
 ## 100 species takes about 4 hours...
 cl <- makeCluster(4)
-clusterExport(cl, c('template.raster', 'SDM.DATA', 'FIT_MAXENT'))
+clusterExport(cl, c('template.raster', 'SDM.DATA.ALL', 'FIT_MAXENT'))
 clusterEvalQ(cl, {
   
   require(ff)
@@ -127,11 +133,12 @@ lapply(spp.all[1:length(spp.all)], function(x) { # for serial, parLapply(cl, spe
     message('Doing ', x)
     
     ## Subset the records to only the taxa being processed
-    occurrence <- subset(SDM.DATA, searchTaxon == x)
+    occurrence         <- subset(SDM.DATA.ALL, searchTaxon == x)
+    occurrence$species <- x
     
-    ## Now get the background points. These can come from anywhere in the whole dataset,
-    ## other than the species used.
-    background <- subset(SDM.DATA, searchTaxon != x)
+    ## Now get the background points. These can come from anywhere in the whole dataset,other than the species used.
+    background         <- subset(SDM.DATA.ALL, searchTaxon != x)
+    background$species <- x
     
     ## The create a vector of the sdm.predictors used. 
     ## This should be based on an ecological framework! 

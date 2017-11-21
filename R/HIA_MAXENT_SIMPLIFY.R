@@ -1,9 +1,10 @@
 ## This should replace John's code
-HIA_SIMPLIFY = function (occ, bg, path, species_column = "searchTaxon", response_curves = FALSE, 
+HIA_SIMPLIFY = function (occ, bg, path, species_column = "species", response_curves = FALSE, 
                          logistic_format = TRUE, type = "PI", cor_thr, pct_thr, k_thr, 
                          quiet = TRUE) 
   
 {
+  
   if (missing(path)) {
     
     save <- FALSE
@@ -14,15 +15,12 @@ HIA_SIMPLIFY = function (occ, bg, path, species_column = "searchTaxon", response
   else save <- TRUE
   occ_by_species <- split(occ, occ[[species_column]])
   bg_by_species  <- split(bg, bg[[species_column]])
-  
-  
-  ## 
-  # str(occ_by_species)
-  # str(bg_by_species)
+
+  names(occ);names(bg)
+  names(occ_by_species);names(bg_by_species)
   
   ## This code breaks on my data, because the background points are taken from points that are not the species 
-  ## background <- subset(SDM.DATA.ALL, searchTaxon != x)
-  
+  ## background <- subset(SDM.DATA.ALL, searchTaxon != x) ## what species is 
   if (!identical(sort(names(occ_by_species)), sort(names(bg_by_species)))) {    ##
     print(paste0("The same set of species names must exist in occ and bg"))
   }
@@ -50,7 +48,7 @@ HIA_SIMPLIFY = function (occ, bg, path, species_column = "searchTaxon", response
     ## Not sure why this dataframe needs to be matched?
     name_ <- gsub(" ", "_", name)
     swd <- rbind(occ_by_species[[name]], bg_by_species[[name]])
-    #swd <- swd[, -match(species_column, names(swd))]
+    swd <- swd[, -match(species_column, names(swd))]
     ## str(swd)
     
     ##
@@ -65,10 +63,17 @@ HIA_SIMPLIFY = function (occ, bg, path, species_column = "searchTaxon", response
                                     th = cor_thr)@results$Variables)              ## ok
     
     ##
-    swd_uncor             <- swd@data[, ok]
-    swd_uncor$searchTaxon <- swd@data$searchTaxon                                 ## 
+    #swd_uncor             <- swd@data[, ok]
+    # Error in (function (classes, fdef, mtable)  : 
+    #             unable to find an inherited method for function ‘maxent’ for signature ‘"SpatialPointsDataFrame", "integer"’
+    
+    swd_uncor     <- as.data.frame(swd[, ok])                     ##
+    swd_uncor$lon <- NULL
+    swd_uncor$lat <- NULL
+    str(swd_uncor)
+    
     d <- file.path(path, name_, "full")
-    m <- dismo::maxent(swd_uncor, pa, args = args, path = d)  ## problem here
+    m <- dismo::maxent(swd_uncor, pa, args = args, path = d)  ## Seems to work, but why is lat/long being used?
     
     ##
     if (isTRUE(save)) 
@@ -78,8 +83,6 @@ HIA_SIMPLIFY = function (occ, bg, path, species_column = "searchTaxon", response
     pct <- sort(pct[pct > 0])
     
     names(pct) <- sub(paste0("\\.", type), "", names(pct))
-    
-    
     
     if (min(pct) >= pct_thr || length(pct) <= k_thr) {
       if (isTRUE(save)) {
