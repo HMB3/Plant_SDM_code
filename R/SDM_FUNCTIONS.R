@@ -7,8 +7,6 @@
 ## MAXENT FUNCTIONS
 #########################################################################################################################
 
-## Need an example of actually runnin the code
-
 
 #########################################################################################################################
 ## GET BACKGROUND POINTS AND THEN FIT MAXENT USING DISMO FUNCTIONS 
@@ -157,7 +155,7 @@ FIT_MAXENT <- function(occ,
       ## Have a look at the correlation structure
       chart.Correlation(swd_occ@data, 
                         histogram = TRUE, pch = 19, 
-                        main = paste0("Predictor subset < ", cor_thr, " correlated for ", x))
+                        main = paste0("Uncorrelated predictor subset"))
       
       ## Save shapefiles of the occurrence and background points
       if(shapefiles) {
@@ -190,7 +188,8 @@ FIT_MAXENT <- function(occ,
         
         if(missing(rep_args)) rep_args <- NULL
         
-        ## This runs the MAXENT. This is where the argument errors are coming in: just sub the backwards selection code in here
+        ## This runs the MAXENT for for the cross validation: so 5 replicaes, 0-4
+        ## EG xval = cross validation : "OUT_DIR\Acacia_boormanii\xval\maxent_0.html"
         me_xval <- maxent(swd, pa, path = file.path(outdir_sp, 'xval'), 
                           args = c(paste0('replicates=', replicates),
                                    'responsecurves=true', 

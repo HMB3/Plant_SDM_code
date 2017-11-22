@@ -67,22 +67,22 @@ gcms
 ## Create raster stacks using files in John's directories:
 ## sprintf has two arguments here: the main path, then the places that the bioclim number is inserted to complete the path 
 env.grids.current = stack(
-  file.path('//SCI-7910/F/data/worldclim/aus/0.5/bio/current',
-            sprintf('bio_%02d.tif', 1:19)))
+  file.path('./data/base/worldclim/aus/0.5/bio/current',
+            sprintf('bio_%02d', 1:19)))
 
 
-## Future: just running code for one scenario at a time
+## Future: making maps for one time period, 
 env.grids.future = lapply(scen, function(x) {
   stack(
-    sprintf('//SCI-7910/F/data/worldclim/aus/0.5/bio/2050/%s/%s%s.tif',
+    sprintf('./data/base/worldclim/aus/0.5/bio/2050/%s/%s%s.tif',
             x, x, 1:19))
 })
+
+
+## Now rename the list of current rasters and future rasters
 names(env.grids.future) <- scen
-
-
-##
-str(env.grids.current)
-str(env.grids.future)
+class(env.grids.current);class(env.grids.future)
+names(env.grids.current);names(env.grids.future)
 
 
 #########################################################################################################################

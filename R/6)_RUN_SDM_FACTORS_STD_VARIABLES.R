@@ -126,7 +126,7 @@ lapply(spp.all[1:length(spp.all)], function(x) { # for serial, parLapply(cl, spe
   
   ## Print the taxa being processed to screen
   if(x %in% SDM.DATA.ALL$searchTaxon) {
-    message('Doing ', x)
+    message('Doing ', x) 
     
     ## Subset the records to only the taxa being processed
     occurrence         <- subset(SDM.DATA.ALL, searchTaxon == x)
@@ -138,7 +138,16 @@ lapply(spp.all[1:length(spp.all)], function(x) { # for serial, parLapply(cl, spe
     
     ## The create a vector of the sdm.predictors used. 
     ## This should be based on an ecological framework! 
-    sdm.predictors <- sdm.predictors # vector of used sdm.predictors 
+    sdm.predictors <- sdm.predictors # vector of used sdm.predictors
+    min_n          = 20
+    
+    ## Skip species that have less than a minimum number of records: eg 20 species
+    # if(dim(occurrence)[1] < min_n) {
+    #   
+    #   print (paste ('Fewer than ', min_n, ' records for species ', x, 
+    #                 ' Model not fit for this species'))
+    #   
+    # } else {
     
     ## Finally fit the models using FIT_MAXENT
     ## There is no switch in the function to skip outputs that exist.
@@ -168,23 +177,6 @@ lapply(spp.all[1:length(spp.all)], function(x) { # for serial, parLapply(cl, spe
 
 
 stopCluster(cl)
-
-
-## Potential errors...
-
-## This is because you don't have maxent correctly installed yet 
-# Error in .local(x, p, ...) : args not understood:
-#   replicates = 5, responsecurves = TRUE, threshold = FALSE, hinge = FALSE
-
-## Ignore this error, doesn't mean anything
-# In addition: Warning messages:
-#   1: In writeOGR(swd_occ, outdir_sp, "occ_swd", "ESRI Shapefile", overwrite_layer = TRUE) :
-#   Field names abbreviated for ESRI Shapefile driver
-# 2: In writeOGR(swd_bg, outdir_sp, "bg_swd", "ESRI Shapefile", overwrite_layer = TRUE) :
-#   Field names abbreviated for ESRI Shapefile driver
-
-
-## Look at the output...
 
 
 

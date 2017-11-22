@@ -66,37 +66,34 @@ gcms
 #########################################################################################################################
 ## Create raster stacks using files in John's directories:
 ## sprintf has two arguments here: the main path, then the places that the bioclim number is inserted to complete the path 
+## ./data/base/worldclim/aus/0.5/bio/current
 env.grids.current = stack(
-  file.path('//SCI-7910/F/data/worldclim/aus/0.5/bio/current',
+  file.path('./data/base/worldclim/aus/0.5/bio/current',
             sprintf('bio_%02d.tif', 1:19)))
 
 
-## Future: just running code for one scenario at a time
+## Future: making maps for one time period, 
 env.grids.future = lapply(scen, function(x) {
   stack(
-    sprintf('//SCI-7910/F/data/worldclim/aus/0.5/bio/2050/%s/%s%s.tif',
+    sprintf('./data/base/worldclim/aus/0.5/bio/2050/%s/%s%s.tif',
             x, x, 1:19))
 })
+
+
+## Now rename the list of current rasters and future rasters
 names(env.grids.future) <- scen
-
-
-##
-str(env.grids.current)
-str(env.grids.future)
+class(env.grids.current);class(env.grids.future)
+names(env.grids.current);names(env.grids.future)
 
 
 #########################################################################################################################
 ## Divide the temperature values by 10, because Worldclim layers are multiplied by 10 to reduced file size.
-
-
 ## R is writing a version of these files to memory for some reason...in this directory:
 ## C:\Users\user\AppData\Local\Temp\Rtmpiwken9\raster
 ## tempdir() ## set.tempdir("F:/RTEMP") does not work
 
 ## Create a file called .Renviron in the directory given by Sys.getenv('R_USER') and save it with the line TMP = '<your-desired-tempdir>'
 ## write("TMP = '<your-desired-tempdir>'", file=file.path(Sys.getenv('R_USER'), '.Renviron'))
-
-
 ## Is there a faster way to divide the rasters?
 env.grids.current[[1:11]] <- env.grids.current[[1:11]]/10
 for(i in seq_along(env.grids.future)) {
