@@ -11,7 +11,7 @@
 
 
 #########################################################################################################################
-## GET BACKGROUND POINTS AND FIT MAXENT 
+## GET BACKGROUND POINTS AND THEN FIT MAXENT USING DISMO FUNCTIONS 
 #########################################################################################################################
 
 
@@ -112,7 +112,7 @@ FIT_MAXENT <- function(occ,
         
       }
       
-      bg_cells <- cellFromXY(template.raster, bg) # can probably move this into?
+      #bg_cells <- cellFromXY(template.raster, bg) ## returns just the unique cells which have background points 
       
       #####################################################################
       ## Here is where we need to reduce the predictors to a candidate set
@@ -152,11 +152,16 @@ FIT_MAXENT <- function(occ,
       swd_bg <- bg[, sdm.predictors]
       saveRDS(swd_bg, file.path(outdir_sp, 'bg_swd.rds'))
       
+      ## Have a look at the correlation structure
+      chart.Correlation(swd_occ@data, 
+                        histogram = TRUE, pch = 19, 
+                        main = paste0("Predictor subset <0.6 correlation for ", x))
+      
       ## Save shapefiles of the occurrence and background points
       if(shapefiles) {
         
         writeOGR(swd_occ, outdir_sp,  'occ_swd', 'ESRI Shapefile', overwrite_layer = TRUE)
-        writeOGR(swd_bg,  outdir_sp,   'bg_swd', 'ESRI Shapefile', overwrite_layer = TRUE)
+        writeOGR(swd_bg,  outdir_sp,  'bg_swd',  'ESRI Shapefile', overwrite_layer = TRUE)
         
       }
       
@@ -166,7 +171,7 @@ FIT_MAXENT <- function(occ,
       saveRDS(swd, file.path(outdir_sp, 'swd.rds'))
       pa <- rep(1:0, c(nrow(swd_occ), nrow(swd_bg)))
       
-      ## Now fit model?
+      ## Now check the features and cross validation arguments are correct
       off <- setdiff(c('l', 'p', 'q', 't', 'h'), features)
       
       ## 
