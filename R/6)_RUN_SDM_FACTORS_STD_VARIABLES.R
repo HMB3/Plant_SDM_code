@@ -106,7 +106,7 @@ sdm.predictors <- c("Annual_mean_temp",    "Mean_diurnal_range",  "Isothermality
 
 ## 100 species takes about 4 hours...
 cl <- makeCluster(4)
-clusterExport(cl, c('template.raster', 'SDM.DATA.ALL', 'FIT_MAXENT'))
+clusterExport(cl, c('template.raster', 'SDM.DATA.ALL', 'FIT_MAXENT', 'COR_VARIABLES'))
 clusterEvalQ(cl, {
   
   require(ff)
@@ -118,10 +118,6 @@ clusterEvalQ(cl, {
   require(things)
   
 })
-
-
-## first check if the outdir exists. Could wrap in a function to create true/false skipping condition
-#check.outdir   = 'output/maxent/STD_VAR_ALL'
 
 
 ########################################################################################################################

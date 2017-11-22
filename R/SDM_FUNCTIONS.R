@@ -120,8 +120,10 @@ FIT_MAXENT <- function(occ,
                                      path,
                                      species_column  = "species",
                                      type            = "PI",
-                                     cor_thr         = 0.7,
+                                     cor_thr         = 0.6,
                                      quiet           = FALSE)
+      
+      sdm.predictors = sdm.predictors[[1]]
       
       #####################################################################
       ## Save objects for future reference
@@ -155,7 +157,7 @@ FIT_MAXENT <- function(occ,
       ## Have a look at the correlation structure
       chart.Correlation(swd_occ@data, 
                         histogram = TRUE, pch = 19, 
-                        main = paste0("Predictor subset <0.6 correlation for ", x))
+                        main = paste0("Predictor subset < ", cor_thr, " correlated for ", x))
       
       ## Save shapefiles of the occurrence and background points
       if(shapefiles) {
@@ -188,7 +190,7 @@ FIT_MAXENT <- function(occ,
         
         if(missing(rep_args)) rep_args <- NULL
         
-        ## This runs the MAXENT. This is where the argument errors are coming in
+        ## This runs the MAXENT. This is where the argument errors are coming in: just sub the backwards selection code in here
         me_xval <- maxent(swd, pa, path = file.path(outdir_sp, 'xval'), 
                           args = c(paste0('replicates=', replicates),
                                    'responsecurves=true', 
@@ -197,7 +199,7 @@ FIT_MAXENT <- function(occ,
         
       }
       
-      ## And this is the same, but with a different argument 
+      ## Not sure why we need all these switches...is this stuff John needs for other purposes? 
       if(missing(full_args)) full_args <- NULL
       me_full <- maxent(swd, pa, path = file.path(outdir_sp, 'full'), 
                         args = c(off, paste(names(full_args), full_args, sep = '='),
@@ -206,12 +208,6 @@ FIT_MAXENT <- function(occ,
       
       #####################################################################
       ## Save fitted model object, and the model-fitting data.
-      # if (file.exists (file)) {
-      #   
-      #   print (paste ("file exists for genera", gen.n, "skipping"))
-      #   next
-      
-      
       if(replicates > 1) {
         
         saveRDS(list(me_xval = me_xval, me_full = me_full, swd = swd, pa = pa), 
