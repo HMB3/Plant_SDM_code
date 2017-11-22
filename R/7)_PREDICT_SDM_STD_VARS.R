@@ -80,7 +80,7 @@ env.grids.future = lapply(scen, function(x) {
 })
 
 
-## Now rename the list of current rasters and future rasters
+## Now rename the list of current rasters and future rasters: names look ok
 names(env.grids.future) <- scen
 class(env.grids.current);class(env.grids.future)
 names(env.grids.current);names(env.grids.future)
@@ -88,16 +88,11 @@ names(env.grids.current);names(env.grids.future)
 
 #########################################################################################################################
 ## Divide the temperature values by 10, because Worldclim layers are multiplied by 10 to reduced file size.
-## R is writing a version of these files to memory for some reason...in this directory:
-## C:\Users\user\AppData\Local\Temp\Rtmpiwken9\raster
-## tempdir() ## set.tempdir("F:/RTEMP") does not work
-
-## Create a file called .Renviron in the directory given by Sys.getenv('R_USER') and save it with the line TMP = '<your-desired-tempdir>'
-## write("TMP = '<your-desired-tempdir>'", file=file.path(Sys.getenv('R_USER'), '.Renviron'))
-## Is there a faster way to divide the rasters?
 env.grids.current[[1:11]] <- env.grids.current[[1:11]]/10
 for(i in seq_along(env.grids.future)) {
+  
   env.grids.future[[i]][[1:11]] <- env.grids.future[[i]][[1:11]]/10
+  
 }
 
 
@@ -127,8 +122,15 @@ species_list  <- basename(list.dirs('F:/green_cities_sdm/output/maxent/baseline'
 
 
 ## The trial species based on Renee's species
-test.spp = sort(unique(c(renee.full$Species, "Betula pendula", "Fraxinus excelsior", "Quercus robur", "Fagus sylvatica")))
-test.spp[35]
+test.spp = sort(unique(c(renee.full$Species, 
+                         "Betula pendula", "Fraxinus excelsior", "Quercus robur", "Fagus sylvatica",
+                         Manuel.test)))
+test.spp 
+
+
+## Combine with 45 from the main list
+HIA.SAMPLE = head(COMBO.NICHE.CONTEXT, 53)[, c("searchTaxon")]
+test.spp   = sort(unique(c(test.spp, HIA.SAMPLE)))
 
 
 #########################################################################################################################
@@ -145,13 +147,11 @@ load("STEP_7_PREDICT_SDM.RData")
 #########################################################################################################################
 
 
-## Currenlty, this code is not working on a single value,  
-
-
 #########################################################################################################################
 ## Use lappy to loop over a list of species
 ## Test on one species:
-species = species_list[457] # [1] "Lomandra_longifolia"
+species = species_list[1] # [1] "Lomandra_longifolia"
+scen_i = scen[1]
 
 
 #########################################################################################################################
@@ -168,7 +168,7 @@ lapply(species_list, function(species) {
     ## Read in the fitted models using sprintf
     m <- readRDS(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/maxent_fitted.rds', species))    ## Change dir
     
-    # ## These numbers don't look right 
+    # ## These numbers don't look right.... 
     # str(m)
     # env.grids.current[[colnames(m$me_full@presence)]]
     # env.grids.future[[colnames(m$me_full@presence)]]
@@ -177,21 +177,14 @@ lapply(species_list, function(species) {
     occ <- readRDS(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/occ.rds', species)) %>%        ## Change dir
       spTransform(CRS('+init=epsg:4326'))
     
-    ## str(occ)
     ## Create rasters for the current and future climate
-    ## Calculating contribution of feature 11 of 11..............why 11 and not 19?
-    ## Or are features the maxent setting
-    ## Also this takes a lot of time...why is the future prediction so slow?
     pred.current <- rmaxent::project(m$me_full, env.grids.current[[colnames(m$me_full@presence)]])$prediction_logistic
     pred.future  <- rmaxent::project(m$me_full, env.grids.future[[scen_i]][[colnames(m$me_full@presence)]])$prediction_logistic
     
     ## str(pred.current)
     ## str(pred.future)
     
-    ## Write the current raster out
-    ## The folders will need to change as I add model runs for all variables vs select, 
-    ## all records vs. cultivated and non-cultivated
-    ## does this need to be indexed? pred.current[[1]]
+    ## Write the current raster out. The folders will need to change as I add model runs for all variables vs select, etc.
     writeRaster(pred.current, sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_current.tif',  ## Change dir
                                       species, species))
     # 
@@ -199,17 +192,12 @@ lapply(species_list, function(species) {
     # #   In unlist(lapply(elist, findLocals1, shadowed, cntxt)) :
     # #   closing unused connection 3 (F:/green_cities_sdm/RTEMP/RtmpQxrX5c/raster/r_tmp_2017-11-01_165316_9480_78386.gri)
     # 
-    # ## Write the future raster out: does this need to be indexed? pred.future[[1]]
+    ## Write the future raster out: does this need to be indexed? pred.future[[1]]
     writeRaster(pred.future, sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif',        ## Change dir
                                      species, species, scen_i))
     
     ## Create an empty raster based on the future prediction
     empty <- init(pred.future, function(x) NA)
-    
-    # Warning message:
-    #   In .rasterFromRasterFile(grdfile, band = band, objecttype, ...) :
-    #   size of values file does not match the number of cells (given the data type)
-    
     
     #########################################################################################################################
     ## Create map of habitat suitability...the first line starts the PNG device

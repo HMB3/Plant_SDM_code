@@ -16,6 +16,7 @@
 ## Look at the output
 RESULTS.EG = read.csv("./output/maxent/SEL_VAR_ALL/Yucca_elephantipes/full/maxentResults.csv", stringsAsFactors = FALSE)
 dim(RESULTS.EG)
+names(RESULTS.EG)
 
 
 ## Read in the list of 
@@ -31,77 +32,56 @@ sel.var.all   = list.files("./output/maxent/SEL_VAR_ALL/")
 
 
 ## Loop over a list of subfolders
-## table.list = std.var.all [1:2]
-## table.list = std.var.all 
-## path = "./output/maxent/STD_VAR_ALL/"
-read_bind_maxent = function (table.list, path) {
+table.list = std.var.all [1:2]
+path = "./output/maxent/STD_VAR_ALL/"
+
+
+## Could turn this into a function
+MAXENT.SUMMARY <- table.list[c(1:length(table.list))] %>%
   
-  READ.BIND.TABLE <- table.list[c(1:length(table.list))] %>% 
+  ## pipe the list into lapply
+  lapply(function(x) {
     
-    ## pipe the list into lapply
-    lapply(function(x) {
-      
-      ## create the character string
-      # need to skip each file of it doesn't exist
-      # if (file.exists(f))
-      f <- paste0(path, x, "/full/maxentResults.csv")
-      
-      ## If inusufficent records, skip
-      if(!file.exists(f)) {
-        
-        print('Insufficient records to run ', x, "skipping", call. = FALSE)
-        
-      } else {
-        
-        ## Otherwise, read each .csv file
-        d <- read.csv(f)
-        
-        ## now add a model column
-        d = cbind(GBIF_Taxon = table.list, Model_run  = path, d) 
-        
-        ## Remove path gunk, and species
-        d$GBIF_Taxon = gsub("_", " ", d$GBIF_Taxon)
-        d$Model_run  = gsub("./output/maxent/", "", d$Model_run)
-        d$Model_run  = gsub("/", "", d$Model_run)
-        
-      } %>% 
-        
-        ## finally, bind all the rows together
-        bind_rows
-      
-    }
-}
+    ## create the character string
+    f <- paste0(path, x, "/full/maxentResults.csv")
+    
+    ## load each .RData file
+    d <- read.csv(f)
+    
+    ## now add a model column
+    d = cbind(GBIF_Taxon = table.list, Model_run  = path, d) 
+    
+    ## Remove path gunk, and species
+    d$GBIF_Taxon = gsub("_", " ", d$GBIF_Taxon)
+    d$Model_run  = gsub("./output/maxent/", "", d$Model_run)
+    d$Model_run  = gsub("/", "", d$Model_run)
+    head(d)[1:8]
+    
+    ## Not sure why it is not returning only one row per species...
+    d = d[!duplicated(d$GBIF_Taxon), ]
+    
+    ## need to return d from the function
+    return(d)
+
+  
+  }) %>%
+  
+  ## finally, bind all the rows together
+  bind_rows
 
 
+## Not sure why it is not returning only one row per species...
+MAXENT.SUMMARY = MAXENT.SUMMARY[!duplicated(MAXENT.SUMMARY$GBIF_Taxon), ]
+head(MAXENT.SUMMARY)[1:8]
+View(MAXENT.SUMMARY)
 
-## Plot the observed coeficient and t-value over the random ones? First, get the values for the histogram
-## T2 random histos 
-MAXENT.SUM.STD.VAR.ALL = read_bind_tables(table.list = sel.var.all[1:2], 
-                                          path = "./output/maxent/STD_VAR_ALL/")
+## Run as a function?
+# MAXENT.SUM.STD.VAR.ALL = read_bind_tables(table.list = sel.var.all[1:2], 
+#                                           path = "./output/maxent/STD_VAR_ALL/")
 
-
-
-
-
-## Check: 
-dim(T2.RANDOM.HISTO)   ## 18 results rows for each table *1000 randomisations = 18000 rows
-
-
-
-
-
-
-
-## Then, what is the easiest way to re-create the figures? Probably avoid all the other code, and just plot the randomised
-## results on the right panel: 
-
-## 1). Take the existing figure in Arcmap and just sub in the new code. Code to make the panels starts on line 400 of:
-## FIGURE_4_MEDIAN_NICHES_GPP_DELTA_20_SUBSETS_SEPARATE_NICHE_PANELS.R
-
-## 2). Or sub th new code into
 
 
 
 #########################################################################################################################
-################################################# END  ################################################################## 
+################################################# TBC  ################################################################## 
 #########################################################################################################################
