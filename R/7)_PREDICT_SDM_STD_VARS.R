@@ -72,7 +72,7 @@ env.grids.current = stack(
             sprintf('bio_%02d.tif', 1:19)))
 
 
-## Future: making maps for one time period, 
+## Future: this list is causing problems here 
 env.grids.future = lapply(scen, function(x) {
   stack(
     sprintf('./data/base/worldclim/aus/0.5/bio/2050/%s/%s%s.tif',
@@ -105,6 +105,7 @@ for(i in 1:11) {
 
 
 ## give the current and future environmental grids the same names
+## Still a problem with the raster stack vs. the list
 names(env.grids.current) <- names(env.grids.future) <- c(
   'Annual_mean_temp',    'Mean_diurnal_range',
   'Isothermality',       'Temp_seasonality',  'Max_temp_warm_month',
@@ -125,26 +126,7 @@ aus <- ne_states(country = 'Australia') %>%
 
 
 ## Create a list of all the species folders which contain the fitted models: these were run in the previous step
-species_list  <- basename(list.dirs('F:/green_cities_sdm/output/maxent/baseline',   recursive = FALSE))
-# scenario_list <- basename(list.dirs('//sci-7910/F/data/worldclim/aus/0.5/bio/2050', recursive = FALSE))
-
-
-## The trial species based on Renee's species
-test.spp = sort(unique(c(renee.full$Species, 
-                         "Betula pendula", "Fraxinus excelsior", "Quercus robur", "Fagus sylvatica",
-                         Manuel.test)))
-test.spp 
-
-
-## Combine with 45 from the main list
-HIA.SAMPLE = head(COMBO.NICHE.CONTEXT, 53)[, c("searchTaxon")]
-test.spp   = sort(unique(c(test.spp, HIA.SAMPLE)))
-
-
-#########################################################################################################################
-## Now save/load .RData file for the next session
-save.image("STEP_7_PREDICT_SDM.RData")
-load("STEP_7_PREDICT_SDM.RData")
+species_list  <- basename(list.dirs('F:/green_cities_sdm/output/maxent/STD_VAR_ALL',   recursive = FALSE))
 
 
 
@@ -157,8 +139,8 @@ load("STEP_7_PREDICT_SDM.RData")
 
 #########################################################################################################################
 ## Use lappy to loop over a list of species
-## Test on one species:
-species = species_list[1] # [1] "Lomandra_longifolia"
+## Test on one species and scenario:
+species = species_list[1]
 scen_i = scen[1]
 
 
