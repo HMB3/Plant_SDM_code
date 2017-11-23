@@ -121,7 +121,7 @@ FIT_MAXENT <- function(occ,
                                      cor_thr         = 0.6,
                                      quiet           = FALSE)
       
-      sdm.predictors = sdm.predictors[[1]]
+      sdm.predictors = sdm.predictors[[1]]  ## Note this must be a character vector, not a list
       
       #####################################################################
       ## Save objects for future reference

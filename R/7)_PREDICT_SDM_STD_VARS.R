@@ -88,10 +88,18 @@ names(env.grids.current);names(env.grids.future)
 
 #########################################################################################################################
 ## Divide the temperature values by 10, because Worldclim layers are multiplied by 10 to reduced file size.
-env.grids.current[[1:11]] <- env.grids.current[[1:11]]/10
-for(i in seq_along(env.grids.future)) {
+
+## The faster way doesn't seem to be working
+##env.grids.current[[1:11]] <- env.grids.current[[1:11]]/10
+# for(i in seq_along(env.grids.future)) {
+#   env.grids.future[[i]][[1:11]] <- env.grids.future[[i]][[1:11]]/10
+# }
+
+for(i in 1:11) {
   
-  env.grids.future[[i]][[1:11]] <- env.grids.future[[i]][[1:11]]/10
+  message(i)
+  env.grids.current[[i]] <- env.grids.current[[i]]/10
+  env.grids.future[[i]]  <- env.grids.future[[i]]/10  
   
 }
 
@@ -177,7 +185,7 @@ lapply(species_list, function(species) {
     occ <- readRDS(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/occ.rds', species)) %>%        ## Change dir
       spTransform(CRS('+init=epsg:4326'))
     
-    ## Create rasters for the current and future climate
+    ## Create rasters for the current and future climate:
     pred.current <- rmaxent::project(m$me_full, env.grids.current[[colnames(m$me_full@presence)]])$prediction_logistic
     pred.future  <- rmaxent::project(m$me_full, env.grids.future[[scen_i]][[colnames(m$me_full@presence)]])$prediction_logistic
     
