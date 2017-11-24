@@ -4,7 +4,7 @@
 
 
 ## This code takes the output of the SDM models and generates a prediction of habitat suitability for current and future
-## environmental conditions. 
+## environmental conditions. The data is the format of all species occurrences (rows) and environmental variables (columns)
 
 
 #########################################################################################################################
@@ -18,15 +18,10 @@ source('./R/HIA_LIST_MATCHING.R')
 source('./R/HIA_CLEAN_MATCHING.R')
 source('./R/GREEN_CITIES_FUNCTIONS.R')
 source('./R/SDM_FUNCTIONS.R')
-
 load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")
-load("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_STD_VAR.RData")
-load("./data/base/HIA_LIST/COMBO/SDM_TEMPLATE_RASTER.RData")
-
-
-## Check data 
-str(template.raster)
-str(SDM.DATA)
+load("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_ALL_VAR.RData")
+load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData")
+occ.data = COMBO.RASTER.CONTEXT
 
 
 ## Require packages
@@ -72,18 +67,22 @@ env.grids.current = stack(
             sprintf('bio_%02d.tif', 1:19)))
 
 
-## Future: this list is causing problems here 
-env.grids.future = lapply(scen, function(x) {
-  stack(
-    sprintf('./data/base/worldclim/aus/0.5/bio/2050/%s/%s%s.tif',
-            x, x, 1:19))
-})
+## Future: this list is causing problems 
+env.grids.future = stack(
+  sprintf('./data/base/worldclim/aus/0.5/bio/2050/%s/%s%s.tif',
+          scen[1], scen[1], 1:19))
+
+# env.grids.future = lapply(scen, function(x) {
+#   stack(
+#     sprintf('./data/base/worldclim/aus/0.5/bio/2050/%s/%s%s.tif',
+#             x, x, 1:19))
+# })
 
 
 ## Now rename the list of current rasters and future rasters: names look ok
-names(env.grids.future) <- scen
-class(env.grids.current);class(env.grids.future)
-names(env.grids.current);names(env.grids.future)
+# names(env.grids.future) <- scen
+# class(env.grids.current);class(env.grids.future)
+# names(env.grids.current);names(env.grids.future)
 
 
 #########################################################################################################################
@@ -104,6 +103,35 @@ for(i in 1:11) {
 }
 
 
+#########################################################################################################################
+## Also check the environmental data...
+## Have a look at the values: do they seem ok?
+summary(env.grids.current[[1]]);summary(env.grids.future[[1]])
+summary(env.grids.current[[5]]);summary(env.grids.future[[5]])
+summary(env.grids.current[[15]]);summary(env.grids.future[[15]])
+
+
+## Current
+png('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/env_grids_current.png',              
+    15, 15, units = 'in', res = 600)
+
+## Use the levelplot function to make a multipanel output
+plot(env.grids.current, pch = 20, cex = 0.5) 
+
+## finish the PNG device
+dev.off()
+
+## Future
+png('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/env_grids_future.png',              
+    15, 15, units = 'in', res = 600)
+
+## Use the levelplot function to make a multipanel output
+plot(env.grids.future, pch = 20, cex = 0.5) 
+
+## finish the PNG device
+dev.off()
+
+
 ## give the current and future environmental grids the same names
 ## Still a problem with the raster stack vs. the list
 names(env.grids.current) <- names(env.grids.future) <- c(
@@ -116,8 +144,7 @@ names(env.grids.current) <- names(env.grids.future) <- c(
 
 
 ## Check the rasters: list of 19 with 11 slots
-str(env.grids.current)
-str(env.grids.future)
+names(env.grids.current);names(env.grids.future)
 
 
 ## Read in a shapefile for Australia, but exclude the Islands
@@ -140,86 +167,95 @@ species_list  <- basename(list.dirs('F:/green_cities_sdm/output/maxent/STD_VAR_A
 #########################################################################################################################
 ## Use lappy to loop over a list of species
 ## Test on one species and scenario:
-species = species_list[1]
-scen_i = scen[1]
+species = species_list[17]
+scen_i = scen[10]
 
 
 #########################################################################################################################
 ## Also, create a list of directories to loop over
 ## Now run the code over a list of species...
-lapply(species_list, function(species) {
+lapply(species_list[1:10], function(species) {
   message('Doing ', species)
   
-  lapply(scen, function(scen_i) {
-    message('  Doing ', scen_i)
+  # lapply(scen, function(scen_i) {
+  #   message('  Doing ', scen_i)
+  
+  ## Assign the scenario name to the final plot
+  scen_name = gcms$GCM[gcms$id == scen_i] 
+  
+  ## Read in the fitted models using sprintf
+  m <- readRDS(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/maxent_fitted.rds', species))    ## Change dir
+  
+  # ## These numbers don't look right for precip wet month and Precip_seasonality
+  # str(m);names(m)
+  # env.grids.current[[colnames(m$me_full@presence)]]
+  # env.grids.future[[colnames(m$me_full@presence)]]
+  
+  ## Read in the occurrence files from the output directory using sprintf
+  occ <- readRDS(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/occ.rds', species)) %>%        ## Change dir
+    spTransform(CRS('+init=epsg:4326'))
+  
+  ## 
+  spp.df  = gsub("_", " ", species)
+  occ.spp = subset(occ.data, searchTaxon == spp.df) 
+  
+  ## Create rasters for the current and future climate: 
+  ## problems are to do with the indexing of raster vs a list of rasters...
+  
+  ## Also, why are there different numbers of features each time? Is this because of model selection?
+  ## So 6 predictors * n features, etc?
+  pred.current <- rmaxent::project(m$me_full, env.grids.current[[colnames(m$me_full@presence)]])$prediction_logistic
+  pred.future  <- rmaxent::project(m$me_full, env.grids.future[[colnames(m$me_full@presence)]])$prediction_logistic
+  #pred.future  <- rmaxent::project(m$me_full, env.grids.future[[scen_i]][[colnames(m$me_full@presence)]])$prediction_logistic
+  
+  ## Write the raster of suitability to current conditions out to file
+  writeRaster(pred.current, sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_current.tif',  ## Change dir
+                                    species, species), overwrite = TRUE)
+
+  ## Write the raster of suitability to future conditions out to file
+  writeRaster(pred.future, sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif',        ## Change dir
+                                   species, species, scen_i), overwrite = TRUE)
+  
+  ## Create an empty raster based on the future prediction
+  empty <- init(pred.future, function(x) NA)
+  
+  #########################################################################################################################
+  ## Create map of habitat suitability...the first line starts the PNG device
+  ## This won't workd in the loop, but it works when run individually
+  png(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s.png', species, species),              ## Change dir
+      11, 4, units = 'in', res = 300)
+  
+  ## Use the levelplot function to make a multipanel output
+  print(levelplot(stack(empty,
+                  pred.current,
+                  pred.future), margin = FALSE, 
+            
+            ## Create a colour scheme using colbrewer: 100 is to make it continuos
+            ## Also, make it a one-directional colour scheme
+            scales      = list(draw = FALSE), 
+            at = seq(0, 1, length = 100),
+            col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
+            
+            ## Give each plot a name
+            names.attr = c('Occurrence', 'Current', sprintf('%s, 2050, RCP8.5', scen_name)),
+            colorkey   = list(height = 0.6, width = 3), xlab = '', ylab = '',
+            main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
     
-    scen_name = gcms$GCM[gcms$id == scen_i] 
-    
-    ## Read in the fitted models using sprintf
-    m <- readRDS(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/maxent_fitted.rds', species))    ## Change dir
-    
-    # ## These numbers don't look right.... 
-    # str(m)
-    # env.grids.current[[colnames(m$me_full@presence)]]
-    # env.grids.future[[colnames(m$me_full@presence)]]
-    
-    ## Read in the occurrence files from the output directory using sprintf
-    occ <- readRDS(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/occ.rds', species)) %>%        ## Change dir
-      spTransform(CRS('+init=epsg:4326'))
-    
-    ## Create rasters for the current and future climate:
-    pred.current <- rmaxent::project(m$me_full, env.grids.current[[colnames(m$me_full@presence)]])$prediction_logistic
-    pred.future  <- rmaxent::project(m$me_full, env.grids.future[[scen_i]][[colnames(m$me_full@presence)]])$prediction_logistic
-    
-    ## str(pred.current)
-    ## str(pred.future)
-    
-    ## Write the current raster out. The folders will need to change as I add model runs for all variables vs select, etc.
-    writeRaster(pred.current, sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_current.tif',  ## Change dir
-                                      species, species))
-    # 
-    # # Warning message:
-    # #   In unlist(lapply(elist, findLocals1, shadowed, cntxt)) :
-    # #   closing unused connection 3 (F:/green_cities_sdm/RTEMP/RtmpQxrX5c/raster/r_tmp_2017-11-01_165316_9480_78386.gri)
-    # 
-    ## Write the future raster out: does this need to be indexed? pred.future[[1]]
-    writeRaster(pred.future, sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif',        ## Change dir
-                                     species, species, scen_i))
-    
-    ## Create an empty raster based on the future prediction
-    empty <- init(pred.future, function(x) NA)
-    
-    #########################################################################################################################
-    ## Create map of habitat suitability...the first line starts the PNG device
-    # Error in compareRaster(x) : different extent
-    png(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s.png', species, species),              ## Change dir
-        11, 4, units = 'in', res = 300)
-    
-    ## Use the levelplot function to make a multipanel output
-    levelplot(stack(empty,
-                    pred.current,
-                    pred.future), margin = FALSE, 
-              
-              ## Create a colour scheme using colbrewer: 100 is to make it continuos
-              scales      = list(draw = FALSE), at = seq(0, 1, length = 100),
-              col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
-              
-              ## Give each plot a name
-              names.attr = c('Occurrence', 'Current', sprintf('%s, 2050, RCP8.5', scen_name)),
-              colorkey   = list(height = 0.6, width = 3), xlab = '', ylab = '',
-              main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
-      
-      ## Plot the Aus shapefile with the occurrence points for reference
-      layer(sp.polygons(aus)) +
-      layer(sp.points(occ, pch = 20, cex = 0.5, 
-                      col = c('red', 'transparent', 'transparent')[panel.number()]))
-    
-    ## finish the PNG device
-    dev.off()
-    
-  })
+    ## Plot the Aus shapefile with the occurrence points for reference
+    layer(sp.polygons(aus)) +
+    layer(sp.points(occ, pch = 20, cex = 0.5, 
+                    col = c('red', 'transparent', 'transparent')[panel.number()])))
+  
+  # Why this Warning messages? And, why doesn
+  #   1: In min(x) : no non-missing arguments to min; returning Inf  ##
+  # 2: In max(x) : no non-missing arguments to max; returning -Inf
+  
+  ## finish the PNG device
+  dev.off()
   
 })
+  
+# })
   
   
  
@@ -236,15 +272,12 @@ lapply(species_list, function(species) {
 #########################################################################################################################
 
 
-## Create a switch to skip files that exist
+## Fix raster lists so all scenarios can be iterated over: indexing cause problems
 
-## Create folder structure to hold the output
+## Figure out why some species produce weird-looking maps. Is this because the values are curren/future environmental 
+## values wrong, the scenarios are weird or there aren't enough records...or all 3?
 
-## 
 
-
-  
-  
   
   
 #########################################################################################################################
