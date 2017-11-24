@@ -226,6 +226,8 @@ lapply(species_list[1:10], function(species) {
       11, 4, units = 'in', res = 300)
   
   ## Use the levelplot function to make a multipanel output
+  ## Error in .Call.graphics(C_palette2, .Call(C_palette2, NULL)) : 
+  ## invalid graphics state
   print(levelplot(stack(empty,
                   pred.current,
                   pred.future), margin = FALSE, 
