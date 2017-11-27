@@ -253,6 +253,7 @@ GBIF.APC.STATE.VALID = subset(GBIF.APC, (!is.na(GBIF.APC$STATE_NAME)))
 
 
 ## What are the percentages?
+dim(GBIF.APC.NA)[1]/dim(GBIF.APC)[1]
 dim(GBIF.APC.VALID)[1]/dim(GBIF.APC)[1]
 dim(GBIF.APC.STATE.NA)[1]/dim(GBIF.APC)[1]
 dim(GBIF.APC.STATE.VALID)[1]/dim(GBIF.APC)[1]
@@ -271,6 +272,19 @@ unique(GBIF.APC.NA$STATE_NAME)
 ## Why are there so many NA records, and why are they concentrated in NSW?
 head(GBIF.APC.NA)
 str(unique(GBIF.APC.NA$searchTaxon));str(unique(GBIF.APC$searchTaxon))
+
+
+
+
+
+#########################################################################################################################
+## 4). CREATE A FIELD FOR OUTSIDE AUS
+#########################################################################################################################
+
+
+## Not sure if this will do the job...
+GBIF.APC$OUT_SIDE_AUS = ifelse(is.na(GBIF.APC$STATE_NAME), "TRUE", "FALSE")
+unique(GBIF.APC$OUT_SIDE_AUS)
 
 
 #########################################################################################################################

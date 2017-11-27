@@ -298,6 +298,23 @@ projection(LGA.WGS)
 projection(SUA.WGS)
 
 
+## Now create a shapefile which is just the SUA: in or out...
+IN.SUA <- SUA[ !(SUA$SUA_NAME11 %in% c("Not in any Significant Urban Area (NSW)", 
+                                       "Not in any Significant Urban Area (Vic.)",
+                                       "Not in any Significant Urban Area (Qld)",
+                                       "Not in any Significant Urban Area (SA)",
+                                       "Not in any Significant Urban Area (WA)",
+                                       "Not in any Significant Urban Area (Tas.)",
+                                       "Not in any Significant Urban Area (NT)",
+                                       "Not in any Significant Urban Area (OT)",
+                                       "Not in any Significant Urban Area (ACT)")), ]
+
+
+## Then, we want to create a layer which is just in the urban area, or not. This would need to combine the above fields into one
+
+
+
+
 #########################################################################################################################
 ## Run join
 LGA.JOIN   = over(COMBO.RASTER.SP, LGA.WGS)              ## [1:300,]
