@@ -82,8 +82,6 @@ p <- c('ff',    'things',         'raster',    'dismo',        'sp',           '
        'readr', 'rnaturalearth',  'rasterVis', 'RColorBrewer', 'latticeExtra', 'parallel')
 
 
-
-
 ## Require packages
 sapply(p, require, character.only = TRUE)
 

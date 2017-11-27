@@ -3,10 +3,12 @@
 #########################################################################################################################
 
 
-# The purpose of this code is to use the Australian Plant Census taxon distribution data to compute for each taxon the 
-# native and/or naturalised status in each Australian state & territory.The data source is the Australian Plant Census, 
-# which can be freely downloaded (currently ~100,000 records). Relevant fields are canonicalName and taxonDistribution. 
-# The latter contains distribution data indicating native range on a state-by-state basis 
+# The purpose of this code is to use the Australian Plant Census taxon distribution data to compute for each record the 
+# native and/or naturalised status, based on the Australian state & territory data.
+
+# The data source is the Australian Plant Census, which can be freely downloaded (currently ~100,000 records). Relevant 
+# fields are canonicalName and taxonDistribution. The latter contains distribution data indicating native range on 
+# a state-by-state basis 
 
   
 # NSW, ACT, Vic, Tas, SA, Vic (naturalised) WA, NT, Qld, NSW, Vic (extinct, see https://github.com/snubian/native_range)
@@ -108,7 +110,7 @@ APC.RECORDS = APC.RECORDS[, c("searchTaxon", "lon", "lat")]
 unique(APC.RECORDS$searchTaxon)
 
 
-## We want to know the count of species that occur in n LGAs, across a range of climates. Read in LGA and SUA
+## Convert the records to a spatial points data frame
 APC.RECORDS = SpatialPointsDataFrame(coords = APC.RECORDS[c("lon", "lat")], 
                                      data   = APC.RECORDS,
                                      proj4string = CRS("+init=epsg:4326"))
@@ -123,7 +125,7 @@ AUS.WGS$STATE_NAME
 
 
 #########################################################################################################################
-## This should be a simple intersect between the APC records and the AUS states. The states and records line up
+## Run the intersect between the APC records and the AUS states. The states and records line up
 APC.JOIN = over(APC.RECORDS, AUS.WGS)[c("STATE_NAME")]
 dim(APC.JOIN)
 head(APC.JOIN, 30)
@@ -157,8 +159,7 @@ dim(APC.NAT.DIST)[1];dim(APC.RECORDS)[1]
 
 #########################################################################################################################
 ## Join the data
-## So the join code seems to be working. However, 87% of the records are NA. I think this is due to differences in the 
-## names for states between my ABS shapefile and the names from the naturalised data.
+## So the join code seems to be working. However, 87% of the records are NA. Not sure why this is occurring...
 
 
 ## How could these be matched to the taxondistribution column?
@@ -208,7 +209,7 @@ APC.NAT.DIST$regionName  = as.character(APC.NAT.DIST$regionName)
 ## What is the difference between these columns...
 setdiff(unique(APC.NAT.DIST$regionName), unique(APC.GEO$STATE_NAME))
 intersect(unique(APC.NAT.DIST$regionName), unique(APC.GEO$STATE_NAME))
-unique(APC.GEO$STATE_NAME);unique(APC.NAT.DIST$regionName)
+setdiff(unique(APC.GEO$STATE_NAME), unique(APC.NAT.DIST$regionName))
 
 
 #########################################################################################################################
@@ -221,14 +222,14 @@ str(APC.GEO);str(APC.NAT.DIST)
 
 
 ## Why does this code create so many NA records? Is it to do with the column names?
+## When common ids have different names, use by.x and by.y to match them. R will keep the name of the first dataset (by.x) 
 GBIF.APC <- merge(APC.GEO, APC.NAT.DIST, by.x = c("searchTaxon", "STATE_NAME"), by.y = c("searchTaxon", "regionName"), all.x = TRUE)
 dim(GBIF.APC);dim(APC.GEO);dim(APC.NAT.DIST)  ## dimensions are ok?
 
 
 ## Check the join fields: not sure why "regionName" disappears?
 head(GBIF.APC)
-unique(GBIF.APC$STATE_NAME)
-unique(GBIF.APC$STATE_NAME)
+setdiff(unique(GBIF.APC$STATE_NAME), unique(GBIF.APC$STATE_NAME))
 
 
 #########################################################################################################################
@@ -244,19 +245,38 @@ GBIF.APC.NA = GBIF.APC[rowSums(is.na(GBIF.APC)) > 0,]
 dim(GBIF.APC[rowSums(is.na(GBIF.APC)) > 0,])[1] /dim(GBIF.APC)[1] ## 87% of records are NA naturalised?
 
 
+## Get the non-NA rows
+GBIF.APC.VALID       = subset(GBIF.APC, (!is.na(GBIF.APC$native))) 
+GBIF.APC.STATE.NA    = subset(GBIF.APC, (is.na(GBIF.APC$STATE_NAME))) 
+GBIF.APC.STATE.VALID = subset(GBIF.APC, (!is.na(GBIF.APC$STATE_NAME))) 
+
+
+## What are the percentages?
+dim(GBIF.APC.VALID)[1]/dim(GBIF.APC)[1]
+dim(GBIF.APC.STATE.NA)[1]/dim(GBIF.APC)[1]
+dim(GBIF.APC.STATE.VALID)[1]/dim(GBIF.APC)[1]
+
+
 ## Plot them
 plot(AUS.STATE)
-points(GBIF.APC.NA[c("lon", "lat")],  pch = ".", col = "red")
+points(GBIF.APC.NA[c("lon", "lat")],  pch = ".", col = "red", cex = 0.5)
+points(GBIF.APC.VALID [c("lon", "lat")],  pch = ".", col = "blue")
 
 
-## Why are there so many NA records?
+## Could there be a mis-match between the state where the record was located, and where it is supposed to be naturalised?
+unique(GBIF.APC.NA$STATE_NAME)
+
+
+## Why are there so many NA records, and why are they concentrated in NSW?
 head(GBIF.APC.NA)
 str(unique(GBIF.APC.NA$searchTaxon));str(unique(GBIF.APC$searchTaxon))
 
 
 #########################################################################################################################
 ## Write to file
-save(GBIF.APC, file = paste("./data/base/TRAITS/GBIF_APC_NATIVE_RANGE.RData", sep = ""))
+#save(GBIF.APC, file = paste("./data/base/TRAITS/GBIF_APC.RData", sep = ""))
+save.image("GBIF_APC_NATIVE_RANGE.RData")
+#load("./data/base/TRAITS/GBIF_APC_NATIVE_RANGE.RData")
 write.csv(GBIF.APC, "./data/base/TRAITS/GBIF_APC_NATIVE_RANGE.csv", row.names = FALSE)
 
 
