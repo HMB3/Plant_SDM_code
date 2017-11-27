@@ -78,7 +78,7 @@ test.spp   = sort(unique(c(test.spp, HIA.SAMPLE)))
 
 #########################################################################################################################
 ## How many species are already on our list?
-intersect(HIA.SPP$Binomial, NAT.SPP)  ## 380
+intersect(HIA.SPP$Binomial, NAT.SPP)  ## 380 native species
 setdiff(HIA.SPP$Binomial, NAT.SPP)
 
 intersect(test.spp, NAT.SPP)          ## 84
@@ -116,8 +116,9 @@ APC.RECORDS = SpatialPointsDataFrame(coords = APC.RECORDS[c("lon", "lat")],
                                      proj4string = CRS("+init=epsg:4326"))
 
 
-## Read in the state boundaries
-AUS.STATE = readOGR("./data/base/CONTEXTUAL/STE11aAust.shp", layer = "STE11aAust")
+## Read in the state boundaries and the world
+LAND      = readOGR("./data/base/CONTEXTUAL/ne_10m_land.shp",            layer = "ne_10m_land")
+AUS.STATE = readOGR("./data/base/CONTEXTUAL/STE11aAust_BUFFER_1KM.shp",  layer = "STE11aAust_BUFFER_1KM")
 CRS.new   = CRS("+init=epsg:4326") # EPSG:3577
 AUS.WGS   = spTransform(AUS.STATE, CRS.new)
 identical(projection(AUS.WGS), projection(APC.RECORDS))
