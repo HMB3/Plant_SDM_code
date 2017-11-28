@@ -42,7 +42,7 @@
 
 
 #########################################################################################################################
-## 1). Read in naturalised data
+## 1). Read in naturalised data and create a species list
 #########################################################################################################################
 
 
@@ -51,17 +51,16 @@ load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")
 load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData")
 source('./R/HIA_LIST_MATCHING.R')
 source('./R/HIA_CLEAN_MATCHING.R')
+source('./R/APC_SPP_MATCHING.R')
 
 
 ##
 APC.NAT   = read.csv("./data/base/TRAITS/apc_taxon_distribution.csv", stringsAsFactors = FALSE)
-View(APC.NAT)
-unique(APC.NAT$taxonDistribution)
-
-
-## how many species?
-NAT.SPP = unique(APC.NAT$canonicalName)
+NAT.SPP   = unique(APC.NAT$canonicalName)
 str(NAT.SPP)
+
+## Now clean these up to increase the match
+
 
 
 ## How many species are on the target list?
@@ -125,7 +124,6 @@ identical(projection(AUS.WGS), projection(APC.RECORDS))
 AUS.WGS$STATE_NAME
 
 
-#########################################################################################################################
 ## Run the intersect between the APC records and the AUS states. The states and records line up
 APC.JOIN = over(APC.RECORDS, AUS.WGS)[c("STATE_NAME")]
 dim(APC.JOIN)
@@ -152,8 +150,10 @@ load("./data/base/TRAITS/APC_GEO.RData")
 #########################################################################################################################
 
 
-## Just using the taxondistribution column
+## Rename the columns
 APC.NAT.DIST = dplyr::rename(APC.NAT.DIST, searchTaxon = canonicalName)
+APC.NAT.DIST = dplyr::rename(APC.NAT.DIST, STATE_NAME  = regionName)
+
 names(APC.NAT.DIST);names(APC.RECORDS)
 dim(APC.NAT.DIST)[1];dim(APC.RECORDS)[1]
 
@@ -207,10 +207,9 @@ APC.GEO$STATE_NAME       = as.character(APC.GEO$STATE_NAME)
 APC.NAT.DIST$regionName  = as.character(APC.NAT.DIST$regionName)
 
 
-## What is the difference between these columns...
-setdiff(unique(APC.NAT.DIST$regionName), unique(APC.GEO$STATE_NAME))
-intersect(unique(APC.NAT.DIST$regionName), unique(APC.GEO$STATE_NAME))
-setdiff(unique(APC.GEO$STATE_NAME), unique(APC.NAT.DIST$regionName))
+## Now the state names are the same in both...
+setdiff(unique(APC.NAT.DIST$STATE_NAME), unique(APC.GEO$STATE_NAME))
+intersect(unique(APC.NAT.DIST$STATE_NAME), unique(APC.GEO$STATE_NAME))
 
 
 #########################################################################################################################
@@ -222,15 +221,21 @@ names(APC.GEO);names(APC.NAT.DIST)
 str(APC.GEO);str(APC.NAT.DIST)
 
 
+
+## Could some of the NA's be coming from spelling errors between the two species lists?
+setdiff(unique(APC.GEO$searchTaxon), unique(APC.NAT.DIST$searchTaxon))
+
+
+
 ## Why does this code create so many NA records? Is it to do with the column names?
 ## When common ids have different names, use by.x and by.y to match them. R will keep the name of the first dataset (by.x) 
-GBIF.APC <- merge(APC.GEO, APC.NAT.DIST, by.x = c("searchTaxon", "STATE_NAME"), by.y = c("searchTaxon", "regionName"), all.x = TRUE)
+GBIF.APC <- merge(APC.GEO, APC.NAT.DIST, by.x = c("searchTaxon", "STATE_NAME"), by.y = c("searchTaxon", "STATE_NAME"), all.x = TRUE)
 dim(GBIF.APC);dim(APC.GEO);dim(APC.NAT.DIST)  ## dimensions are ok?
 
 
 ## Check the join fields: not sure why "regionName" disappears?
 head(GBIF.APC)
-setdiff(unique(GBIF.APC$STATE_NAME), unique(GBIF.APC$STATE_NAME))
+str(unique(GBIF.APC$searchTaxon))
 
 
 #########################################################################################################################
@@ -262,7 +267,7 @@ dim(GBIF.APC.STATE.VALID)[1]/dim(GBIF.APC)[1]
 ## Plot them
 plot(AUS.STATE)
 points(GBIF.APC.NA[c("lon", "lat")],  pch = ".", col = "red", cex = 0.5)
-points(GBIF.APC.VALID [c("lon", "lat")],  pch = ".", col = "blue")
+points(GBIF.APC.VALID [c("lon", "lat")],  pch = ".", col = "blue", cex = 0.5)
 
 
 ## Could there be a mis-match between the state where the record was located, and where it is supposed to be naturalised?
@@ -284,14 +289,14 @@ str(unique(GBIF.APC.NA$searchTaxon));str(unique(GBIF.APC$searchTaxon))
 
 ## Not sure if this will do the job...
 GBIF.APC$OUT_SIDE_AUS = ifelse(is.na(GBIF.APC$STATE_NAME), "TRUE", "FALSE")
-unique(GBIF.APC$OUT_SIDE_AUS)
+unique(GBIF.APC$naturalised_outside_Aus)
 
 
 #########################################################################################################################
 ## Write to file
 #save(GBIF.APC, file = paste("./data/base/TRAITS/GBIF_APC.RData", sep = ""))
 save.image("GBIF_APC_NATIVE_RANGE.RData")
-#load("./data/base/TRAITS/GBIF_APC_NATIVE_RANGE.RData")
+#load("GBIF_APC_NATIVE_RANGE.RData")
 write.csv(GBIF.APC, "./data/base/TRAITS/GBIF_APC_NATIVE_RANGE.csv", row.names = FALSE)
 
 

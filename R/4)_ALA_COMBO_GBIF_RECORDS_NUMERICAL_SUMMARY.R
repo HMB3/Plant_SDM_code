@@ -6,6 +6,7 @@
 #########################################################################################################################
 ## First, consider the HIA brief again:
 
+
 # The first module will focus on fifty plant species identified in the project’s Target Species List, and will develop maps 
 # that demonstrate each species’ suitability to both current and future climates across Australia.
 # 
@@ -23,74 +24,19 @@
 # Planting Successes and Failures module of the research programme to ensure that the Interactive Plant Features Tool 
 # matches the right plant in the right region with an eye on the future.
 
-# We will also be working with growers, nurseries, landscape architects and many others to capture their recordings of 
-# major plant traits including:
 
-
-# Growth rate and form
-# height
-# canopy density
-# Ground cover
-# Longevity
-# Seasonality
-# Water quality
-# Allergenicity
-# Air and water quality influences and urban temperatures
-# Insect resistance
-# Ornamental and amenity features
-# and biodiversity impacts.
-
-
-## First step is to estimate the current global realised niche, using the best available data. This will give us 
+#########################################################################################################################
+## The aim of this code is to estimate the current global realised niche, using the best available data. This will give us 
 ## a broad indication of the currernt climatic toleance of each species.
 
-## There are two streams here: 
 
-## The broad niches for each species (ie. macroscale env and bio data)
-## The bespoke microscale approach (e.g. ecological framework, solar surfaces, etc.)
-
-## The broad niche stream informs the micro stream, based on two tables:
+## This code creates two tables:
 
 ## 1). A table with one row for each species record
 ## 2). A table with One row for each species, contextual data and species attributes (niches, traits, etc.)
 
 
-
-
-
 #########################################################################################################################
-## WORLDCLIM VARIABLES 
-#########################################################################################################################
-
-
-#########################################################################################################################
-## WHICH WORLDCLIM VARIABLES TO ESTIMATE?
-
-
-## Copy the ones which Rach and Stu have used for the niche finder website for now, ignore edaphic variables
-## Use Threshold based traits, use Dave Kendall's approach.
-
-# BIO1  = Annual Mean Temperature                                     ## 
-# BIO2  = Mean Diurnal Range (Mean of monthly (max temp - min temp))  ##
-# BIO3  = Isothermality (BIO2/BIO7) (* 100)
-# BIO4  = Temperature Seasonality (standard deviation *100)           ##
-# BIO5  = Max Temperature of Warmest Month                            ## Take out max of max
-# BIO6  = Min Temperature of Coldest Month                            ## Take out min of min, use threshold variables 
-# BIO7  = Temperature Annual Range (BIO5-BIO6)
-# BIO8  = Mean Temperature of Wettest Quarter
-# BIO9  = Mean Temperature of Driest Quarter
-# BIO10 = Mean Temperature of Warmest Quarter
-# BIO11 = Mean Temperature of Coldest Quarter
-# BIO12 = Annual Precipitation                                        ##
-# BIO13 = Precipitation of Wettest Month                              ##
-# BIO14 = Precipitation of Driest Month                               ##
-# BIO15 = Precipitation Seasonality (Coefficient of Variation)        ##
-# BIO16 = Precipitation of Wettest Quarter
-# BIO17 = Precipitation of Driest Quarter
-# BIO18 = Precipitation of Warmest Quarter
-# BIO19 = Precipitation of Coldest Quarter
-
-
 ## To save time, load in previous data
 load("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.RData")
 load("./data/base/HIA_LIST/ALA/ALA_LAND_POINTS.RData")
@@ -179,7 +125,7 @@ summary(COMBO.POINTS)
 
 
 #########################################################################################################################
-## Now crunch the big dataset down to just the species we need: the extras are just overkill
+## Now crunch the big dataset down to just the species on the 25 growers or more list: the extras are just overkill
 COMBO.POINTS  = COMBO.POINTS[COMBO.RASTER.CONTEXT$searchTaxon %in% HIA.SPP$Binomial, ]
 
 
@@ -201,9 +147,35 @@ COMBO.POINTS  = COMBO.POINTS[COMBO.RASTER.CONTEXT$searchTaxon %in% HIA.SPP$Binom
 
 
 
+
 #########################################################################################################################
-## 2). EXTRACT RASTER DATA FOR SPECIES RECORDS
+## 2). EXTRACT ALL WORLDCLIM DATA FOR SPECIES RECORDS
 #########################################################################################################################
+
+
+#########################################################################################################################
+## Ignore edaphic variables
+
+
+# BIO1  = Annual Mean Temperature                                     ## 
+# BIO2  = Mean Diurnal Range (Mean of monthly (max temp - min temp))  ##
+# BIO3  = Isothermality (BIO2/BIO7) (* 100)
+# BIO4  = Temperature Seasonality (standard deviation *100)           ##
+# BIO5  = Max Temperature of Warmest Month                            ## Take out max of max
+# BIO6  = Min Temperature of Coldest Month                            ## Take out min of min, use threshold variables 
+# BIO7  = Temperature Annual Range (BIO5-BIO6)
+# BIO8  = Mean Temperature of Wettest Quarter
+# BIO9  = Mean Temperature of Driest Quarter
+# BIO10 = Mean Temperature of Warmest Quarter
+# BIO11 = Mean Temperature of Coldest Quarter
+# BIO12 = Annual Precipitation                                        ##
+# BIO13 = Precipitation of Wettest Month                              ##
+# BIO14 = Precipitation of Driest Month                               ##
+# BIO15 = Precipitation Seasonality (Coefficient of Variation)        ##
+# BIO16 = Precipitation of Wettest Quarter
+# BIO17 = Precipitation of Driest Quarter
+# BIO18 = Precipitation of Warmest Quarter
+# BIO19 = Precipitation of Coldest Quarter
 
 
 #########################################################################################################################
@@ -228,11 +200,10 @@ env.grids.current = stack(
 
 
 #########################################################################################################################
-## Probably best not to use a cluster like this
-#beginCluster(n = 8)
+## Is there a way to speed this up?
 COMBO.RASTER <- extract(env.grids.current, COMBO.POINTS) %>% 
   cbind(GBIF.ALA.COMBO.LAND, .)
-#endCluster()
+
 
 ## Multiple rename using dplyr
 COMBO.RASTER = dplyr::rename(COMBO.RASTER,
@@ -313,8 +284,6 @@ IN.SUA <- SUA[ !(SUA$SUA_NAME11 %in% c("Not in any Significant Urban Area (NSW)"
 ## Then, we want to create a layer which is just in the urban area, or not. This would need to combine the above fields into one
 
 
-
-
 #########################################################################################################################
 ## Run join
 LGA.JOIN   = over(COMBO.RASTER.SP, LGA.WGS)              ## [1:300,]
@@ -366,8 +335,7 @@ env.variables = c("Annual_mean_temp",
 
 
 #########################################################################################################################
-## Change the raster values here: 
-## See http://worldclim.org/formats1 for description of the interger conversion. 
+## Change the raster values here: See http://worldclim.org/formats1 for description of the interger conversion. 
 ## All temperature variables wer multiplied by 10, so divide by 10 to reverse it.
 COMBO.RASTER.CONVERT = as.data.table(COMBO.RASTER)                           ## This is inefficient
 COMBO.RASTER.CONVERT[, (env.variables[c(1:11)]) := lapply(.SD, function(x) 
@@ -522,7 +490,7 @@ COMBO.NICHE$AREA_OCCUPANCY = GBIF.AOO$value    ## vectors same length so don't n
 
 
 #########################################################################################################################
-## Add the counts of LGAs for each species in here
+## Add the counts of LGAs for each species in here:
 COMBO.LGA = cbind.data.frame(COMBO.NICHE, LGA.AGG) ## The tapply needs to go where the niche summaries are
 names(COMBO.LGA)
 
@@ -646,9 +614,9 @@ save.image("STEP_4_NICHES.RData")
 
 ## Find rarest species (are there popular species with not many records?)
 
-## Ask Linda and others about the kind of queries they want to run...
+
 
 
 #########################################################################################################################
-#####################################################  END ############################################################## 
+#####################################################  TBC ############################################################## 
 #########################################################################################################################
