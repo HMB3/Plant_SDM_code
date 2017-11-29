@@ -232,6 +232,7 @@ COMBO.RASTER = dplyr::rename(COMBO.RASTER,
 ## Save/load
 save(COMBO.RASTER, file = paste("./data/base/HIA_LIST/GBIF/COMBO_GBIF_ALA_RASTER.RData"))
 #load("./data/base/HIA_LIST/GBIF/COMBO_GBIF_ALA_RASTER.RData")
+#COMBO.RASTER  = COMBO.RASTER[COMBO.RASTER$searchTaxon %in% HIA.SPP$Binomial, ]
 
 
 ## check
@@ -289,20 +290,24 @@ IN.SUA   = readOGR("./data/base/CONTEXTUAL/INSIDE_AUS_SUA.shp", layer = "INSIDE_
 IN.SUA   = IN.SUA[,-(1)];
 IN.SUA   = IN.SUA[,-(2)]
 names(IN.SUA)
-SUA.WGS  = spTransform(IN.SUA, CRS.new)
+IN.SUA  = spTransform(IN.SUA, CRS.new)
 plot(IN.SUA)
 
 
 #########################################################################################################################
 ## Run join
-LGA.JOIN   = over(COMBO.RASTER.SP, LGA.WGS)              ## [1:300,] ## also, add 
-SUA.JOIN   = over(LGA.JOIN, LGA.WGS)  
-COMBO.LGA  = cbind.data.frame(COMBO.RASTER.SP, LGA.JOIN) ## [1:300,]
+SUA.JOIN   = over(COMBO.RASTER.SP, IN.SUA)  
+LGA.JOIN   = over(COMBO.RASTER.SP, LGA.WGS)   
+COMBO.LGA  = cbind.data.frame(COMBO.RASTER.SP, SUA.JOIN, LGA.JOIN)
+
+head(SUA.JOIN)
+head(LGA.JOIN)
 
 
 #########################################################################################################################
 ## AGGREGATE THE NUMBER OF LGAs EACH SPECIES IS FOUND IN 
 LGA.AGG   = tapply(COMBO.LGA$LGA_NAME16, COMBO.LGA$searchTaxon, function(x) length(unique(x))) ## group LGA by species name
+SUA.AGG   = tapply(COMBO.LGA$LGA_NAME16, COMBO.LGA$searchTaxon, function(x) length(unique(x))) ## group LGA by species name
 LGA.AGG   = as.data.frame(LGA.AGG)
 head(LGA.AGG)
 
@@ -311,7 +316,9 @@ head(LGA.AGG)
 save(COMBO.LGA, file = paste("./data/base/HIA_LIST/GBIF/COMBO_LGA.RData"))
 save(LGA.AGG,   file = paste("./data/base/HIA_LIST/GBIF/LGA_AGG.RData"))
 
-
+##
+str(COMBO.LGA)
+head(COMBO.LGA)
 
 
 

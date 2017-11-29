@@ -59,16 +59,8 @@ source('./R/APC_SPP_MATCHING.R')
 intersect(HIA.SPP$Binomial, SPP.APC)  ## 381 species overlapping
 setdiff(HIA.SPP$Binomial, SPP.APC)    ## Stu's taxonomy is ok, perhaps a few errors on my list but probably real omissions
 
-intersect(test.spp, SPP.APC)          ## 84
-setdiff(test.spp,   SPP.APC)          ## 21
 
-
-#########################################################################################################################
-## Try filtering the records: is there a way of using these filters to generate the native lists, rather than per row?
-# Don't use the `taxonDistribution` column - this is the raw and often messy data that was 
-# originally in the APC dataset. Most of what I tried to do was to parse that field and put the information contained 
-# in there into some sort of standard structure. I only put that column in the final output for reference actually, 
-# so one could see what the raw data was.
+## Just get a few of the columns
 APC.NAT.DIST = APC.SPP[!duplicated(APC.SPP$Binomial), ][, c("Binomial", "regionName", "native", "naturalised")]
 names(APC.NAT.DIST)
 
@@ -132,22 +124,11 @@ save(APC.GEO, file = paste("./data/base/TRAITS/APC_GEO.RData", sep = ""))
 
 ## Rename the columns                                                                               ## resume from here
 APC.NAT.DIST = dplyr::rename(APC.NAT.DIST, searchTaxon = Binomial)
-#APC.NAT.DIST = dplyr::rename(APC.NAT.DIST, STATE_NAME  = regionName)
 
-names(APC.NAT.DIST);names(APC.RECORDS)
-dim(APC.NAT.DIST)[1];dim(APC.RECORDS)[1]
-
-
-#########################################################################################################################
-## Join the data
-## So the join code seems to be working. However, 87% of the records are NA. Not sure why this is occurring...
-
-
-## How could these be matched to the taxondistribution column?
 class(APC.GEO$STATE_NAME);class(APC.NAT.DIST$regionName)
-APC.NAT.DIST$STATE_NAME = as.factor(APC.NAT.DIST$STATE_NAME)
+APC.NAT.DIST$regionName = as.factor(APC.NAT.DIST$regionName)
 
-str(APC.GEO$STATE_NAME);str(APC.NAT.DIST$STATE_NAME)
+str(APC.GEO$STATE_NAME);str(APC.NAT.DIST$regionName)
 unique(APC.GEO$STATE_NAME);unique(APC.NAT.DIST$regionName)
 
 
@@ -161,35 +142,36 @@ APC.GEO$STATE_NAME = revalue(APC.GEO$STATE_NAME, c("Australian Capital Territory
                                                    "Victoria"                     = "vic",
                                                    "Western Australia"            = "wa"))
 
+
 ## Don't I need to make sure that all the state categories are the same in both data sets?
-APC.NAT.DIST$STATE_NAME = revalue(APC.NAT.DIST$regionName, c("?nsw" = "nsw",
-                                                             "?nt"  = "nt",
-                                                             "?qld" = "qld",
-                                                             "?sa"  = "sa",
-                                                             "?tas" = "tas",
-                                                             "?vic" = "vic",
-                                                             "?wa"  = "wa",
-                                                             "chi"  = "Other Territories",
-                                                             "ni"   = "Other Territories",
-                                                             "csi"  = "Other Territories",
-                                                             "hi"   = "Other Territories",
-                                                             "lhi"  = "Other Territories",
-                                                             "coi"  = "Other Territories",
-                                                             "mi"   = "Other Territories",
-                                                             "ar"   = "Other Territories",
-                                                             "?lhi" = "Other Territories",
-                                                             "?chi" = "Other Territories"))
+# APC.NAT.DIST$regionName = revalue(APC.NAT.DIST$regionName, c("?nsw" = "nsw",
+#                                                              "?nt"  = "nt",
+#                                                              "?qld" = "qld",
+#                                                              "?sa"  = "sa",
+#                                                              "?tas" = "tas",
+#                                                              "?vic" = "vic",
+#                                                              "?wa"  = "wa",
+#                                                              "chi"  = "Other Territories",
+#                                                              "ni"   = "Other Territories",
+#                                                              "csi"  = "Other Territories",
+#                                                              "hi"   = "Other Territories",
+#                                                              "lhi"  = "Other Territories",
+#                                                              "coi"  = "Other Territories",
+#                                                              "mi"   = "Other Territories",
+#                                                              "ar"   = "Other Territories",
+#                                                              "?lhi" = "Other Territories",
+#                                                              "?chi" = "Other Territories"))
 
 
 ## Check the species
 str(unique(APC.RECORDS$searchTaxon));str(unique(APC.NAT.DIST$searchTaxon)) ## How many species in each?
 APC.GEO$STATE_NAME       = as.character(APC.GEO$STATE_NAME)
-APC.NAT.DIST$STATE_NAME  = as.character(APC.NAT.DIST$STATE_NAME)
+APC.NAT.DIST$regionName  = as.character(APC.NAT.DIST$regionName)
 
 
 ## Now the state names are the same in both...
-setdiff(unique(APC.NAT.DIST$STATE_NAME), unique(APC.GEO$STATE_NAME))
-intersect(unique(APC.NAT.DIST$STATE_NAME), unique(APC.GEO$STATE_NAME))
+setdiff(unique(APC.NAT.DIST$regionName), unique(APC.GEO$STATE_NAME))
+intersect(unique(APC.NAT.DIST$regionName), unique(APC.GEO$STATE_NAME))
 
 
 #########################################################################################################################
@@ -199,9 +181,6 @@ intersect(unique(APC.NAT.DIST$STATE_NAME), unique(APC.GEO$STATE_NAME))
 ## whether a particular occurrence is in the native range or not. I hope this makes sense!
 names(APC.GEO);names(APC.NAT.DIST)
 str(APC.GEO);str(APC.NAT.DIST)
-
-
-
 ## Could some of the NA's be coming from spelling errors between the two species lists?
 setdiff(unique(APC.GEO$searchTaxon), unique(APC.NAT.DIST$searchTaxon))
 
@@ -209,7 +188,7 @@ setdiff(unique(APC.GEO$searchTaxon), unique(APC.NAT.DIST$searchTaxon))
 
 ## Why does this code create so many NA records? Is it to do with the column names?
 ## When common ids have different names, use by.x and by.y to match them. R will keep the name of the first dataset (by.x) 
-GBIF.APC <- merge(APC.GEO, APC.NAT.DIST, by.x = c("searchTaxon", "STATE_NAME"), by.y = c("searchTaxon", "STATE_NAME"), all.x = TRUE)
+GBIF.APC <- merge(APC.GEO, APC.NAT.DIST, by.x = c("searchTaxon", "STATE_NAME"), by.y = c("searchTaxon", "regionName"), all.x = TRUE)
 dim(GBIF.APC);dim(APC.GEO);dim(APC.NAT.DIST)  ## dimensions are ok?
 
 
@@ -228,7 +207,7 @@ str(unique(GBIF.APC$searchTaxon))
 ## nt	132.816667	-23.71666702	NA	NA
 ## sa	132.221771	-30.912699	NA	NA
 GBIF.APC.NA = GBIF.APC[rowSums(is.na(GBIF.APC)) > 0,]
-dim(GBIF.APC[rowSums(is.na(GBIF.APC)) > 0,])[1] /dim(GBIF.APC)[1] ## 87% of records are NA naturalised?
+dim(GBIF.APC[rowSums(is.na(GBIF.APC)) > 0,])[1] /dim(GBIF.APC)[1] ## 77% of records are NA?
 
 
 ## Get the non-NA rows
@@ -238,14 +217,19 @@ GBIF.APC.STATE.VALID = subset(GBIF.APC, (!is.na(GBIF.APC$STATE_NAME)))
 
 
 ## What are the percentages?
-dim(GBIF.APC.NA)[1]/dim(GBIF.APC)[1]
+dim(GBIF.APC.NA)[1]/dim(GBIF.APC)[1]          ## 77% of records are NA for naturalised
 dim(GBIF.APC.VALID)[1]/dim(GBIF.APC)[1]
-dim(GBIF.APC.STATE.NA)[1]/dim(GBIF.APC)[1]
-dim(GBIF.APC.STATE.VALID)[1]/dim(GBIF.APC)[1]
+dim(GBIF.APC.STATE.NA)[1]/dim(GBIF.APC)[1]    ## 48% of records have no state
+dim(GBIF.APC.STATE.VALID)[1]/dim(GBIF.APC)[1] ## 51% of records have a sate
 
 
 ## Plot them
-plot(AUS.STATE)
+plot(LAND)
+points(GBIF.APC.NA[c("lon", "lat")],  pch = ".", col = "red", cex = 0.5)
+points(GBIF.APC.VALID [c("lon", "lat")],  pch = ".", col = "blue", cex = 0.5)
+
+
+plot(AUS.WGS)
 points(GBIF.APC.NA[c("lon", "lat")],  pch = ".", col = "red", cex = 0.5)
 points(GBIF.APC.VALID [c("lon", "lat")],  pch = ".", col = "blue", cex = 0.5)
 
@@ -263,13 +247,24 @@ str(unique(GBIF.APC.NA$searchTaxon));str(unique(GBIF.APC$searchTaxon))
 
 
 #########################################################################################################################
-## 4). CREATE A FIELD FOR OUTSIDE AUS
+## 4). SAVE TO SHAPEFILE FOR MORE CHECKING
 #########################################################################################################################
 
 
-## Not sure if this will do the job...
-GBIF.APC$OUT_SIDE_AUS = ifelse(is.na(GBIF.APC$STATE_NAME), "TRUE", "FALSE")
-unique(GBIF.APC$naturalised_outside_Aus)
+## Not sure if this will do the job...this assumes that records with no state name are Australian...
+# GBIF.APC$naturalised_outside_Aus = ifelse(is.na(GBIF.APC$STATE_NAME), "TRUE", "FALSE")
+# unique(GBIF.APC$naturalised_outside_Aus)
+
+
+## Convert merge results to shapefile
+GBIF.APC.SHP = SpatialPointsDataFrame(coords = GBIF.APC[c("lon", "lat")], 
+                                      data   = GBIF.APC,
+                                      proj4string = CRS("+init=epsg:4326"))
+
+
+## Save to GIS
+writeOGR(obj = GBIF.APC.SHP , dsn = "./data/base/CONTEXTUAL", layer = "GBIF.APC.SHP ", driver = "ESRI Shapefile")
+
 
 
 #########################################################################################################################
