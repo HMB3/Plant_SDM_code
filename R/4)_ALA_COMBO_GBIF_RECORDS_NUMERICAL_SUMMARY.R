@@ -126,7 +126,7 @@ summary(COMBO.POINTS)
 
 #########################################################################################################################
 ## Now crunch the big dataset down to just the species on the 25 growers or more list: the extras are just overkill
-COMBO.POINTS  = COMBO.POINTS[COMBO.RASTER.CONTEXT$searchTaxon %in% HIA.SPP$Binomial, ]
+COMBO.POINTS  = COMBO.POINTS[COMBO.POINTS$searchTaxon %in% HIA.SPP$Binomial, ]
 
 
 

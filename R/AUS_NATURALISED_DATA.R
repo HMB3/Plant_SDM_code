@@ -55,33 +55,33 @@ source('./R/APC_SPP_MATCHING.R')
 
 
 ##
-APC.NAT   = read.csv("./data/base/TRAITS/apc_taxon_distribution.csv", stringsAsFactors = FALSE)
-NAT.SPP   = unique(APC.NAT$canonicalName)
-str(NAT.SPP)
-
-## Now clean these up to increase the match
-
-
-
-## How many species are on the target list?
-## The trial species
-test.spp = sort(unique(c(renee.full$Species, 
-                         "Betula pendula", "Fraxinus excelsior", "Quercus robur", "Fagus sylvatica",
-                         Manuel.test)))
-
-
-## Combine with 45 from the main list
-HIA.SAMPLE = head(COMBO.NICHE.CONTEXT, 53)[, c("searchTaxon")]
-test.spp   = sort(unique(c(test.spp, HIA.SAMPLE)))
+# APC.NAT   = read.csv("./data/base/TRAITS/apc_taxon_distribution.csv", stringsAsFactors = FALSE)
+# NAT.SPP   = unique(APC.NAT$canonicalName)
+# str(NAT.SPP)
+# 
+# ## Now clean these up to increase the match
+# 
+# 
+# 
+# ## How many species are on the target list?
+# ## The trial species
+# test.spp = sort(unique(c(renee.full$Species, 
+#                          "Betula pendula", "Fraxinus excelsior", "Quercus robur", "Fagus sylvatica",
+#                          Manuel.test)))
+# 
+# 
+# ## Combine with 45 from the main list
+# HIA.SAMPLE = head(COMBO.NICHE.CONTEXT, 53)[, c("searchTaxon")]
+# test.spp   = sort(unique(c(test.spp, HIA.SAMPLE)))
 
 
 #########################################################################################################################
 ## How many species are already on our list?
-intersect(HIA.SPP$Binomial, NAT.SPP)  ## 380 native species
-setdiff(HIA.SPP$Binomial, NAT.SPP)
+intersect(HIA.SPP$Binomial, SPP.APC)  ## 381 species overlapping
+setdiff(HIA.SPP$Binomial, SPP.APC)    ## Stu's taxonomy is ok, perhaps a few errors on my list but probably real omissions
 
-intersect(test.spp, NAT.SPP)          ## 84
-setdiff(test.spp, NAT.SPP)            ## 21
+intersect(test.spp, SPP.APC)          ## 84
+setdiff(test.spp,   SPP.APC)          ## 21
 
 
 #########################################################################################################################
@@ -104,8 +104,9 @@ names(APC.NAT.DIST)
 
 #########################################################################################################################
 ## First, restrict the dataset to just the target species
-APC.RECORDS = COMBO.RASTER.CONTEXT[COMBO.RASTER.CONTEXT$searchTaxon %in% intersect(test.spp, NAT.SPP), ]
-APC.RECORDS = APC.RECORDS[, c("searchTaxon", "lon", "lat")]
+GBIF.RECORDS = COMBO.RASTER.CONTEXT[COMBO.RASTER.CONTEXT$searchTaxon %in% HIA.SPP$Binomial, ]
+APC.RECORDS  = GBIF.RECORDS[GBIF.RECORDS$searchTaxon %in% SPP.APC, ]
+APC.RECORDS  = APC.RECORDS[, c("searchTaxon", "lon", "lat")]
 unique(APC.RECORDS$searchTaxon)
 
 
@@ -139,7 +140,7 @@ head(APC.GEO, 30)
 
 ## Save the intersection which took ages to create...
 save(APC.GEO, file = paste("./data/base/TRAITS/APC_GEO.RData", sep = ""))
-load("./data/base/TRAITS/APC_GEO.RData")
+#load("./data/base/TRAITS/APC_GEO.RData")
 
 
 
@@ -150,7 +151,7 @@ load("./data/base/TRAITS/APC_GEO.RData")
 #########################################################################################################################
 
 
-## Rename the columns
+## Rename the columns                                                                               ## resume from here
 APC.NAT.DIST = dplyr::rename(APC.NAT.DIST, searchTaxon = canonicalName)
 APC.NAT.DIST = dplyr::rename(APC.NAT.DIST, STATE_NAME  = regionName)
 
