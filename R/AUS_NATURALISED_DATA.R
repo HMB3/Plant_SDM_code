@@ -54,27 +54,6 @@ source('./R/HIA_CLEAN_MATCHING.R')
 source('./R/APC_SPP_MATCHING.R')
 
 
-##
-# APC.NAT   = read.csv("./data/base/TRAITS/apc_taxon_distribution.csv", stringsAsFactors = FALSE)
-# NAT.SPP   = unique(APC.NAT$canonicalName)
-# str(NAT.SPP)
-# 
-# ## Now clean these up to increase the match
-# 
-# 
-# 
-# ## How many species are on the target list?
-# ## The trial species
-# test.spp = sort(unique(c(renee.full$Species, 
-#                          "Betula pendula", "Fraxinus excelsior", "Quercus robur", "Fagus sylvatica",
-#                          Manuel.test)))
-# 
-# 
-# ## Combine with 45 from the main list
-# HIA.SAMPLE = head(COMBO.NICHE.CONTEXT, 53)[, c("searchTaxon")]
-# test.spp   = sort(unique(c(test.spp, HIA.SAMPLE)))
-
-
 #########################################################################################################################
 ## How many species are already on our list?
 intersect(HIA.SPP$Binomial, SPP.APC)  ## 381 species overlapping
@@ -90,7 +69,7 @@ setdiff(test.spp,   SPP.APC)          ## 21
 # originally in the APC dataset. Most of what I tried to do was to parse that field and put the information contained 
 # in there into some sort of standard structure. I only put that column in the final output for reference actually, 
 # so one could see what the raw data was.
-APC.NAT.DIST = APC.NAT[!duplicated(APC.NAT$canonicalName), ][, c("canonicalName", "regionName", "native", "naturalised")]
+APC.NAT.DIST = APC.SPP[!duplicated(APC.SPP$Binomial), ][, c("Binomial", "regionName", "native", "naturalised")]
 names(APC.NAT.DIST)
 
 
@@ -152,8 +131,8 @@ save(APC.GEO, file = paste("./data/base/TRAITS/APC_GEO.RData", sep = ""))
 
 
 ## Rename the columns                                                                               ## resume from here
-APC.NAT.DIST = dplyr::rename(APC.NAT.DIST, searchTaxon = canonicalName)
-APC.NAT.DIST = dplyr::rename(APC.NAT.DIST, STATE_NAME  = regionName)
+APC.NAT.DIST = dplyr::rename(APC.NAT.DIST, searchTaxon = Binomial)
+#APC.NAT.DIST = dplyr::rename(APC.NAT.DIST, STATE_NAME  = regionName)
 
 names(APC.NAT.DIST);names(APC.RECORDS)
 dim(APC.NAT.DIST)[1];dim(APC.RECORDS)[1]
@@ -166,9 +145,9 @@ dim(APC.NAT.DIST)[1];dim(APC.RECORDS)[1]
 
 ## How could these be matched to the taxondistribution column?
 class(APC.GEO$STATE_NAME);class(APC.NAT.DIST$regionName)
-APC.NAT.DIST$regionName = as.factor(APC.NAT.DIST$regionName)
+APC.NAT.DIST$STATE_NAME = as.factor(APC.NAT.DIST$STATE_NAME)
 
-str(APC.GEO$STATE_NAME);str(APC.NAT.DIST$regionName)
+str(APC.GEO$STATE_NAME);str(APC.NAT.DIST$STATE_NAME)
 unique(APC.GEO$STATE_NAME);unique(APC.NAT.DIST$regionName)
 
 
@@ -183,7 +162,7 @@ APC.GEO$STATE_NAME = revalue(APC.GEO$STATE_NAME, c("Australian Capital Territory
                                                    "Western Australia"            = "wa"))
 
 ## Don't I need to make sure that all the state categories are the same in both data sets?
-APC.NAT.DIST$regionName = revalue(APC.NAT.DIST$regionName, c("?nsw" = "nsw",
+APC.NAT.DIST$STATE_NAME = revalue(APC.NAT.DIST$regionName, c("?nsw" = "nsw",
                                                              "?nt"  = "nt",
                                                              "?qld" = "qld",
                                                              "?sa"  = "sa",
@@ -205,7 +184,7 @@ APC.NAT.DIST$regionName = revalue(APC.NAT.DIST$regionName, c("?nsw" = "nsw",
 ## Check the species
 str(unique(APC.RECORDS$searchTaxon));str(unique(APC.NAT.DIST$searchTaxon)) ## How many species in each?
 APC.GEO$STATE_NAME       = as.character(APC.GEO$STATE_NAME)
-APC.NAT.DIST$regionName  = as.character(APC.NAT.DIST$regionName)
+APC.NAT.DIST$STATE_NAME  = as.character(APC.NAT.DIST$STATE_NAME)
 
 
 ## Now the state names are the same in both...

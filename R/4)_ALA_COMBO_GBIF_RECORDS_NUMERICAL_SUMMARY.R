@@ -252,7 +252,7 @@ COMBO.RASTER.SP   = SpatialPointsDataFrame(coords = COMBO.RASTER[c("lon", "lat")
                                            data   = COMBO.RASTER,
                                            proj4string = CRS("+init=epsg:4326"))
 
-SUA      = readOGR("./data/base/CONTEXTUAL/SUA_2011_AUST.shp", layer = "SUA_2011_AUST")
+SUA      = readOGR("./data/base/CONTEXTUAL/SUA_2011_AUST.shp",      layer = "SUA_2011_AUST")
 LGA      = readOGR("./data/base/CONTEXTUAL/LGA_2016_AUST.shp", layer = "LGA_2016_AUST")
 
 names(SUA)
@@ -270,23 +270,33 @@ projection(SUA.WGS)
 
 
 ## Now create a shapefile which is just the SUA: in or out...
-IN.SUA <- SUA[ !(SUA$SUA_NAME11 %in% c("Not in any Significant Urban Area (NSW)", 
-                                       "Not in any Significant Urban Area (Vic.)",
-                                       "Not in any Significant Urban Area (Qld)",
-                                       "Not in any Significant Urban Area (SA)",
-                                       "Not in any Significant Urban Area (WA)",
-                                       "Not in any Significant Urban Area (Tas.)",
-                                       "Not in any Significant Urban Area (NT)",
-                                       "Not in any Significant Urban Area (OT)",
-                                       "Not in any Significant Urban Area (ACT)")), ]
+# IN.SUA <- SUA[ !(SUA$SUA_NAME11 %in% c("Not in any Significant Urban Area (NSW)", 
+#                                        "Not in any Significant Urban Area (Vic.)",
+#                                        "Not in any Significant Urban Area (Qld)",
+#                                        "Not in any Significant Urban Area (SA)",
+#                                        "Not in any Significant Urban Area (WA)",
+#                                        "Not in any Significant Urban Area (Tas.)",
+#                                        "Not in any Significant Urban Area (NT)",
+#                                        "Not in any Significant Urban Area (OT)",
+#                                        "Not in any Significant Urban Area (ACT)")), ]
+# 
+# plot(IN.SUA)
+# writeOGR(obj = IN.SUA, dsn = "./data/base/CONTEXTUAL", layer = "IN.SUA", driver = "ESRI Shapefile")
 
 
 ## Then, we want to create a layer which is just in the urban area, or not. This would need to combine the above fields into one
+IN.SUA   = readOGR("./data/base/CONTEXTUAL/INSIDE_AUS_SUA.shp", layer = "INSIDE_AUS_SUA")
+IN.SUA   = IN.SUA[,-(1)];
+IN.SUA   = IN.SUA[,-(2)]
+names(IN.SUA)
+SUA.WGS  = spTransform(IN.SUA, CRS.new)
+plot(IN.SUA)
 
 
 #########################################################################################################################
 ## Run join
-LGA.JOIN   = over(COMBO.RASTER.SP, LGA.WGS)              ## [1:300,]
+LGA.JOIN   = over(COMBO.RASTER.SP, LGA.WGS)              ## [1:300,] ## also, add 
+SUA.JOIN   = over(LGA.JOIN, LGA.WGS)  
 COMBO.LGA  = cbind.data.frame(COMBO.RASTER.SP, LGA.JOIN) ## [1:300,]
 
 
