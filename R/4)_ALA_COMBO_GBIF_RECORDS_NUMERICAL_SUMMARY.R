@@ -244,7 +244,7 @@ names(COMBO.RASTER)
 
 
 #########################################################################################################################
-## 3). INTERSECT SPECIES RECORDS WITH LGA/SUA
+## 3). INTERSECT SPECIES RECORDS WITH LOCAL GOV AREAS AND SIGNIFICANT URBAN AREAS
 #########################################################################################################################
 
 
@@ -268,6 +268,10 @@ SUA.WGS  = spTransform(SUA, CRS.new)
 projection(COMBO.RASTER.SP)
 projection(LGA.WGS)
 projection(SUA.WGS)
+
+
+## remove the LGA columns we don't need
+LGA.WGS = LGA.WGS[, c("LGA_CODE16", "LGA_NAME16")] 
 
 
 ## Now create a shapefile which is just the SUA: in or out...
@@ -295,10 +299,10 @@ plot(IN.SUA)
 
 
 #########################################################################################################################
-## Run join
-SUA.JOIN   = over(COMBO.RASTER.SP, IN.SUA)  
-LGA.JOIN   = over(COMBO.RASTER.SP, LGA.WGS)   
-COMBO.LGA  = cbind.data.frame(COMBO.RASTER.SP, SUA.JOIN, LGA.JOIN)
+## Run join between species records and LGAs/SUAs
+SUA.JOIN      = over(COMBO.RASTER.SP, IN.SUA)  
+LGA.JOIN      = over(COMBO.RASTER.SP, LGA.WGS)   
+COMBO.SUA.LGA = cbind.data.frame(COMBO.RASTER.SP, SUA.JOIN, LGA.JOIN) ## Include below, just get the LGA columns?  
 
 head(SUA.JOIN)
 head(LGA.JOIN)
@@ -306,18 +310,17 @@ head(LGA.JOIN)
 
 #########################################################################################################################
 ## AGGREGATE THE NUMBER OF LGAs EACH SPECIES IS FOUND IN 
-LGA.AGG   = tapply(COMBO.LGA$LGA_NAME16, COMBO.LGA$searchTaxon, function(x) length(unique(x))) ## group LGA by species name
-SUA.AGG   = tapply(COMBO.LGA$LGA_NAME16, COMBO.LGA$searchTaxon, function(x) length(unique(x))) ## group LGA by species name
+LGA.AGG   = tapply(COMBO.SUA.LGA$LGA_NAME16, COMBO.SUA.LGA$searchTaxon, function(x) length(unique(x))) ## group LGA by species name
 LGA.AGG   = as.data.frame(LGA.AGG)
 head(LGA.AGG)
 
 
 ## Save
-save(COMBO.LGA, file = paste("./data/base/HIA_LIST/GBIF/COMBO_LGA.RData"))
+save(COMBO.SUA.LGA, file = paste("./data/base/HIA_LIST/GBIF/COMBO_SUA_LGA.RData"))
 save(LGA.AGG,   file = paste("./data/base/HIA_LIST/GBIF/LGA_AGG.RData"))
 
 ##
-str(COMBO.LGA)
+str(COMBO.SUA.LGA)
 head(COMBO.LGA)
 
 
@@ -516,12 +519,13 @@ names(COMBO.LGA)
 
 
 #########################################################################################################################
-## 5). JOIN ON CONTEXTUAL DATA
+## 6). JOIN ON CONTEXTUAL DATA
 #########################################################################################################################
 
 
 #########################################################################################################################
 ## Now join the horticultural contextual data onto one or both tables ()
+## Here insert the relevant columns from the COMBO.SUA.LGA data frame 
 COMBO.RASTER.CONTEXT = join(COMBO.RASTER.CONVERT, HIA.SPP.JOIN, 
                             by = "searchTaxon", type = "left", match = "all")
 

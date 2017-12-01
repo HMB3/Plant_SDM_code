@@ -181,13 +181,17 @@ intersect(unique(APC.NAT.DIST$regionName), unique(APC.GEO$STATE_NAME))
 ## whether a particular occurrence is in the native range or not. I hope this makes sense!
 names(APC.GEO);names(APC.NAT.DIST)
 str(APC.GEO);str(APC.NAT.DIST)
+
+
 ## Could some of the NA's be coming from spelling errors between the two species lists?
 setdiff(unique(APC.GEO$searchTaxon), unique(APC.NAT.DIST$searchTaxon))
-
+intersect(unique(APC.GEO$searchTaxon), unique(APC.NAT.DIST$searchTaxon))
+length(setdiff(unique(APC.NAT.DIST$searchTaxon), unique(APC.GEO$searchTaxon)))
 
 
 ## Why does this code create so many NA records? Is it to do with the column names?
-## When common ids have different names, use by.x and by.y to match them. R will keep the name of the first dataset (by.x) 
+## When common ids have different names, use by.x and by.y to match them. R will keep the name of the first dataset (by.x)
+## Can we drop the non-matching APC species using all.y = FALSE?
 GBIF.APC <- merge(APC.GEO, APC.NAT.DIST, by.x = c("searchTaxon", "STATE_NAME"), by.y = c("searchTaxon", "regionName"), all.x = TRUE)
 dim(GBIF.APC);dim(APC.GEO);dim(APC.NAT.DIST)  ## dimensions are ok?
 
@@ -207,20 +211,16 @@ str(unique(GBIF.APC$searchTaxon))
 ## nt	132.816667	-23.71666702	NA	NA
 ## sa	132.221771	-30.912699	NA	NA
 GBIF.APC.NA = GBIF.APC[rowSums(is.na(GBIF.APC)) > 0,]
-dim(GBIF.APC[rowSums(is.na(GBIF.APC)) > 0,])[1] /dim(GBIF.APC)[1] ## 77% of records are NA?
 
 
 ## Get the non-NA rows
 GBIF.APC.VALID       = subset(GBIF.APC, (!is.na(GBIF.APC$native))) 
 GBIF.APC.STATE.NA    = subset(GBIF.APC, (is.na(GBIF.APC$STATE_NAME))) 
-GBIF.APC.STATE.VALID = subset(GBIF.APC, (!is.na(GBIF.APC$STATE_NAME))) 
 
 
 ## What are the percentages?
-dim(GBIF.APC.NA)[1]/dim(GBIF.APC)[1]          ## 77% of records are NA for naturalised
-dim(GBIF.APC.VALID)[1]/dim(GBIF.APC)[1]
-dim(GBIF.APC.STATE.NA)[1]/dim(GBIF.APC)[1]    ## 48% of records have no state
-dim(GBIF.APC.STATE.VALID)[1]/dim(GBIF.APC)[1] ## 51% of records have a sate
+dim(GBIF.APC[rowSums(is.na(GBIF.APC)) > 0,])[1] /dim(GBIF.APC)[1]   ## 77% of records are NA for naturalised
+dim(GBIF.APC.STATE.NA)[1]/dim(GBIF.APC)[1]                          ## 48% of records have no state
 
 
 ## Plot them
@@ -230,8 +230,10 @@ points(GBIF.APC.VALID [c("lon", "lat")],  pch = ".", col = "blue", cex = 0.5)
 
 
 plot(AUS.WGS)
-points(GBIF.APC.NA[c("lon", "lat")],  pch = ".", col = "red", cex = 0.5)
 points(GBIF.APC.VALID [c("lon", "lat")],  pch = ".", col = "blue", cex = 0.5)
+
+plot(AUS.WGS)
+points(GBIF.APC.NA[c("lon", "lat")],  pch = ".", col = "red", cex = 0.5)
 
 
 ## Could there be a mis-match between the state where the record was located, and where it is supposed to be naturalised?
@@ -271,11 +273,9 @@ writeOGR(obj = GBIF.APC.SHP , dsn = "./data/base/CONTEXTUAL", layer = "GBIF.APC.
 ## Write to file
 #save(GBIF.APC, file = paste("./data/base/TRAITS/GBIF_APC.RData", sep = ""))
 save.image("GBIF_APC_NATIVE_RANGE.RData")
+save(APC.GEO, file = paste("./data/base/TRAITS/GBIF_APC_TAXA.RData", sep = ""))
 #load("GBIF_APC_NATIVE_RANGE.RData")
 write.csv(GBIF.APC, "./data/base/TRAITS/GBIF_APC_NATIVE_RANGE.csv", row.names = FALSE)
-
-
-
 
 
 
@@ -284,7 +284,11 @@ write.csv(GBIF.APC, "./data/base/TRAITS/GBIF_APC_NATIVE_RANGE.csv", row.names = 
 #########################################################################################################################
 
 
+## what columns do I need in the final table? 
+
 ## Consider the exceptions...
+
+## what to do with records outside Australia?
 
 
 
