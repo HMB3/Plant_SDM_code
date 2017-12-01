@@ -357,7 +357,7 @@ env.variables = c("Annual_mean_temp",
 #########################################################################################################################
 ## Change the raster values here: See http://worldclim.org/formats1 for description of the interger conversion. 
 ## All temperature variables wer multiplied by 10, so divide by 10 to reverse it.
-COMBO.RASTER.CONVERT = as.data.table(COMBO.RASTER)                           ## This is inefficient
+COMBO.RASTER.CONVERT = as.data.table(COMBO.SUA.LGA)                           ## Check this works, also inefficient
 COMBO.RASTER.CONVERT[, (env.variables[c(1:11)]) := lapply(.SD, function(x) 
   x / 10 ), .SDcols = env.variables[c(1:11)]]
 COMBO.RASTER.CONVERT = as.data.frame(COMBO.RASTER.CONVERT)                   ## Find another method without using data.table
@@ -525,7 +525,6 @@ names(COMBO.LGA)
 
 #########################################################################################################################
 ## Now join the horticultural contextual data onto one or both tables ()
-## Here insert the relevant columns from the COMBO.SUA.LGA data frame 
 COMBO.RASTER.CONTEXT = join(COMBO.RASTER.CONVERT, HIA.SPP.JOIN, 
                             by = "searchTaxon", type = "left", match = "all")
 
