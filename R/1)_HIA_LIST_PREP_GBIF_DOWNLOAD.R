@@ -207,7 +207,6 @@ kable(skipped.200.spp)
 
 ## Get the extra species with > 200k records
 
-## Get the missing species on Manuel's list.
 
 
 

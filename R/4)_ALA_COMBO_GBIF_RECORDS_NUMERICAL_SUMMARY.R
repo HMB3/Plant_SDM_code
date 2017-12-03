@@ -129,9 +129,6 @@ summary(COMBO.POINTS)
 COMBO.POINTS  = COMBO.POINTS[COMBO.POINTS$searchTaxon %in% HIA.SPP$Binomial, ]
 
 
-
-
-
 #########################################################################################################################
 ## CREATE NEW COLUMNS FOR ALA CULTIVATED/NOT 
 #########################################################################################################################
@@ -325,6 +322,8 @@ head(COMBO.LGA)
 
 
 
+
+
 #########################################################################################################################
 ## 4). CREATE NICHES FOR SELECTED TAXA
 #########################################################################################################################
@@ -430,17 +429,14 @@ names(COMBO.NICHE)
 #########################################################################################################################
 
 
-## These numbers don't look that accurate: Try converting data into a sp data frame and projecting into a projected
-## coordinate system
-## Create a species list: this should be from the "COMBO.RASTER" file...
+## These numbers don't look that accurate: Try convert into a sp data frame and projecting into a projected system?
+## Create a species list to estimate the ranges for
 spp.geo = as.character(unique(COMBO.RASTER$searchTaxon)) 
 data    = COMBO.RASTER
 
 
 #########################################################################################################################
-## AREA OF OCCUPANCY 
-
-
+## AREA OF OCCUPANCY (AOO)
 ## For every species in the list: calculate the AOO
 GBIF.AOO <- spp.geo[c(1:length(spp.geo))] %>% 
   
@@ -461,10 +457,6 @@ GBIF.AOO <- spp.geo[c(1:length(spp.geo))] %>%
   
   ## Finally, create one dataframe for all niches
   as.data.frame
-
-
-# In rgdal::project(longlat, paste("+proj=utm +zone=", zone,  ... :
-#                                       6 projected point(s) not finite
 
 
 #########################################################################################################################
@@ -495,6 +487,7 @@ GBIF.AOO <- spp.geo[c(1:length(spp.geo))] %>%
 #   as.data.frame
 
 
+#########################################################################################################################
 ## Clean it up. The order of species should be preserved
 GBIF.AOO = gather(GBIF.AOO)
 str(GBIF.AOO)
@@ -507,9 +500,6 @@ COMBO.NICHE$AREA_OCCUPANCY = GBIF.AOO$value    ## vectors same length so don't n
 
 ## AOO is calculated as the area of all known or predicted cells for the species. The resolution will be 2x2km as 
 ## required by IUCN. A single value in km2.
-
-
-#########################################################################################################################
 ## Add the counts of LGAs for each species in here:
 COMBO.LGA = cbind.data.frame(COMBO.NICHE, LGA.AGG) ## The tapply needs to go where the niche summaries are
 names(COMBO.LGA)
@@ -534,20 +524,8 @@ COMBO.NICHE.CONTEXT = join(COMBO.LGA, HIA.SPP.JOIN,
                            by = "searchTaxon", type = "left", match = "all")
 
 
-#########################################################################################################################
-## For pedantry, reroder columns...
-names(COMBO.RASTER.CONTEXT)
-names(COMBO.NICHE.CONTEXT)
-
-
-## 
-save(COMBO.RASTER.CONTEXT, file = paste("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData", sep = ""))
-save(COMBO.NICHE.CONTEXT,  file = paste("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData",  sep = ""))
-write.csv(COMBO.NICHE.CONTEXT, "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.csv",       row.names = FALSE)
-
-
-## Rename...
-COMBO.RASTER.CONTEXT = COMBO.RASTER.CONTEXT[, c(1:5,  45:57, 6:43)]                                       ## change order
+## Changing the order is not needed for the raster data
+#COMBO.RASTER.CONTEXT = COMBO.RASTER.CONTEXT[, c(1:5,  45:57, 6:43)]                                      ## change order
 COMBO.NICHE.CONTEXT  = COMBO.NICHE.CONTEXT[,  c(176, 2, 1, 174:175, 177:189, 3:173)]                      ## change order
 
 
@@ -562,9 +540,6 @@ names(COMBO.RASTER.CONTEXT)
 names(COMBO.NICHE.CONTEXT)
 dim(COMBO.RASTER.CONTEXT)
 dim(COMBO.NICHE.CONTEXT)
-
-View(COMBO.RASTER.CONTEXT)
-View(COMBO.NICHE.CONTEXT)
 
 
 #########################################################################################################################
@@ -618,22 +593,15 @@ save.image("STEP_4_NICHES.RData")
 #########################################################################################################################
 
 
+## Check geographic range: doesn't look right for some species        - Keep a spreadsheet of all species...
 
+## Estimate native/naturalised ranges as a separate colum             - APC data + Ubran polygons for AUS, USA, EU: only a subset
 
-## Run the niche calculations again for culivated records, as well as native vs. non-native if possible
+## GBIF taxonomic errors                                              - Use taxonstand
 
-## Check WORLDCLIM values: some of the numbers don't look right
+## Keep cultivated records as a separate column/file                  - Get cultivated column from ALA data...
 
-## Check geographic range: doesn't look right for some species. Calc extent of occurrnece as well
-
-## Improve raster extract: use an index of unique cell values, referring to a second matrix to do the extract 
-
-## Return species EG:                                     -
-
-## Find infrequently sold spp., big environmental & geographic range, but could have similar traits to popular species?
-
-## Find rarest species (are there popular species with not many records?)
-
+## Duplicates between GBIF and ALA                                    - See email from CSIRO - only a problem for niches...
 
 
 

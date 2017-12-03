@@ -202,8 +202,7 @@ lapply(species_list[1:10], function(species) {
   ## Create rasters for the current and future climate: 
   ## problems are to do with the indexing of raster vs a list of rasters...
   
-  ## Also, why are there different numbers of features each time? Is this because of model selection?
-  ## So 6 predictors * n features, etc?
+  ## Also, why are there different numbers of features each time? Is this because of model selection? So 6 predictors * n features, etc?
   pred.current <- rmaxent::project(m$me_full, env.grids.current[[colnames(m$me_full@presence)]])$prediction_logistic
   pred.future  <- rmaxent::project(m$me_full, env.grids.future[[colnames(m$me_full@presence)]])$prediction_logistic
   #pred.future  <- rmaxent::project(m$me_full, env.grids.future[[scen_i]][[colnames(m$me_full@presence)]])$prediction_logistic

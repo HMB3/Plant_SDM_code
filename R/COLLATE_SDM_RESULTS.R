@@ -9,29 +9,19 @@
 
 
 #########################################################################################################################
-## 1). Read in observed results, and get contextual columns to join on
-#########################################################################################################################
-
-
-## Read in the list of files for the standard variables
+## Read in the list of files for the standard variables, and specify the file path
 std.var.all = list.files("./output/maxent/STD_VAR_ALL/")
+sel.var.all   = list.files("./output/maxent/SEL_VAR_ALL/")
 table.list = std.var.all
 path = "./output/maxent/STD_VAR_ALL/"
 
 
-## All variables...
-sel.var.all   = list.files("./output/maxent/SEL_VAR_ALL/")
-
-
-
-
-
 #########################################################################################################################
-## 2). CREATE SUMMARY TABLE OF MAXENT RESULTS
+## 1). CREATE SUMMARY TABLE OF MAXENT RESULTS
 #########################################################################################################################
 
 
-## Loop over a list of subfolders...Could turn this into a function
+## Could turn this into a function, and loop over a list of subfolders...
 MAXENT.STD.VAR.SUMMARY <- table.list[c(1:length(table.list))] %>%
   
   ## pipe the list into lapply
@@ -59,11 +49,10 @@ MAXENT.STD.VAR.SUMMARY <- table.list[c(1:length(table.list))] %>%
   bind_rows
 
 
-## Not sure why it is not returning only one row per species...
+## If there are multiple model runs, how would we compare them? Could have a row for each species and model run? 
 dim(MAXENT.STD.VAR.SUMMARY)
-names(MAXENT.STD.VAR.SUMMARY)
 head(MAXENT.STD.VAR.SUMMARY)[1:8]
-View(MAXENT.STD.VAR.SUMMARY)
+
 
 ## Run as a function?
 # MAXENT.SUM.STD.VAR.ALL = read_bind_tables(table.list = sel.var.all[1:2], 
@@ -75,12 +64,21 @@ View(MAXENT.STD.VAR.SUMMARY)
 write.csv(MAXENT.STD.VAR.SUMMARY, "./output/maxent/MAXENT_STD_VAR_SUMMARY.csv", row.names = FALSE)
 
 
+
+
+
 #########################################################################################################################
-## OUTSTANDING SDM RESULTS TASKS:
+## OUTSTANDING RESULTS TASKS:
 #########################################################################################################################
 
 
-## Can we compare the model runs? 
+## What are the most sensible ways to compare model fits (i.e. what do good and bad models look like)? 
+
+## Can we calculate TSS from the existing Maxent code?
+
+## We should record global settings of the SDMs too - e.g. variable correlation, background points, cross vaildation settings, etc.
+
+## What is the best way to summarise the results into a final table - which results columns, and which format?
 
 
 

@@ -110,8 +110,6 @@ FIT_MAXENT <- function(occ,
         
       }
       
-      #bg_cells <- cellFromXY(template.raster, bg) ## returns just the unique cells which have background points 
-      
       #####################################################################
       ## Here is where we need to reduce the predictors to a candidate set
       sdm.predictors = COR_VARIABLES(occ, bg,

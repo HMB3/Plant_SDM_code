@@ -381,17 +381,15 @@ load("STEP_3_GBIF_CLEAN.RData")
 #########################################################################################################################
 
 
-## Estimate native ranges: as a separate colum too?                               - Ubran polygons for AUS, USA, EU? Ask Dave Kendall
+## Check distribution maps for each species for spatial outliers                  - Keep a spreasheet of all species...
 
-## GBIF taxonomic errors                                                          - Use taxonstand, check with John, Dave K.
+## Estimate native/naturalised ranges as a separate colum                         - APC data + Ubran polygons for AUS, USA, EU: only a subset
+
+## GBIF taxonomic errors                                                          - Use taxonstand
 
 ## Keep cultivated records as a separate column/file                              - Get cultivated column from ALA data...
 
-## GBIF duplicates                                                                - Check GBIF issues, but John's SDM code will get rid of more
-
-## GBIF spatial outliers: Ocean, middle of Australia, etc. pp? Duplicated?        - Check each map, email Alex Zika RE geoclean
-
-## Duplicates between GBIF and ALA                                                - See email from CSIRO, check in again with them
+## Duplicates between GBIF and ALA                                                - See email from CSIRO - only a problem for niches...
 
 
 
