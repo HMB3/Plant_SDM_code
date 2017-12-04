@@ -233,7 +233,7 @@ lapply(species_list[1:5], function(species) {
   
   #########################################################################################################################
   ## Create map of habitat suitability...the first line starts the PNG device
-  ## This won't workd in the loop, but it works when run individually
+  ## This won't work in the loop, but it works when run individually
   png(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.png', species, species, scen_i),      ## add scenario to file name
       11, 4, units = 'in', res = 300)
   
