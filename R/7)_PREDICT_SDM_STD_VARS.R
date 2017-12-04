@@ -14,12 +14,8 @@
 
 #########################################################################################################################
 ## Load packages, functions and data
-source('./R/HIA_LIST_MATCHING.R')
-#source('./R/HIA_CLEAN_MATCHING.R')
-#source('./R/GREEN_CITIES_FUNCTIONS.R')
-# source('./R/SDM_FUNCTIONS.R')
-# load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")
-# load("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_ALL_VAR.RData")
+#source('./R/HIA_LIST_MATCHING.R')
+load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData")
 
 
 ## Require packages
@@ -205,8 +201,10 @@ lapply(species_list[1:5], function(species) {
   # env.grids.future[[colnames(m$me_full@presence)]]
   
   ## Read in the occurrence files from the output directory using sprintf
-  occ <- readRDS(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/occ.rds', species)) %>%        
-    spTransform(CRS('+init=epsg:4326'))
+  taxa = gsub("_", " ", species)
+  occ  = subset(COMBO.RASTER.CONTEXT, searchTaxon == taxa)[, c("lon", "lat")]
+  # occ <- readRDS(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/occ.rds', species)) %>%        
+  #   spTransform(CRS('+init=epsg:4326'))
 
   ## Create rasters for the current and future climate: 
   ## problems are to do with the indexing of raster vs a list of rasters...
@@ -244,7 +242,7 @@ lapply(species_list[1:5], function(species) {
   ## invalid graphics state
   print(levelplot(stack(empty,
                   pred.current,
-                  pred.future), margin = FALSE, 
+                  pred.future), margin = FALSE,
             
             ## Create a colour scheme using colbrewer: 100 is to make it continuos
             ## Also, make it a one-directional colour scheme
