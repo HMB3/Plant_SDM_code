@@ -15,13 +15,11 @@
 #########################################################################################################################
 ## Load packages, functions and data
 source('./R/HIA_LIST_MATCHING.R')
-source('./R/HIA_CLEAN_MATCHING.R')
-source('./R/GREEN_CITIES_FUNCTIONS.R')
-source('./R/SDM_FUNCTIONS.R')
-load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")
-load("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_ALL_VAR.RData")
-load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData")
-occ.data = COMBO.RASTER.CONTEXT
+#source('./R/HIA_CLEAN_MATCHING.R')
+#source('./R/GREEN_CITIES_FUNCTIONS.R')
+# source('./R/SDM_FUNCTIONS.R')
+# load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")
+# load("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_ALL_VAR.RData")
 
 
 ## Require packages
@@ -32,7 +30,7 @@ sapply(p, require, character.only = TRUE)
 
 
 #########################################################################################################################
-## create scenario list first: 
+## create a list of GCM scenarios 
 scen = c("ip85bi50", "mc85bi50", "mg85bi50", "mi85bi50", "mp85bi50", 
          "mr85bi50", "no85bi50", "ac85bi50", "bc85bi50", "cc85bi50", 
          "cn85bi50", "gf85bi50", "gs85bi50", "hd85bi50", "he85bi50",
@@ -58,42 +56,48 @@ gcms$GCM = sub(" \\(#\\)", "", gcms$GCM)  ## sub replaces first instance in a st
 gcms
 
 
+## Create a stack of all the scenarios, then take the AV and SD of the stack. This could provide the confidence interval?
+## Or, we could use the AV for the main maps instead?
+
+
 #########################################################################################################################
 ## Create raster stacks using files in John's directories:
 ## sprintf has two arguments here: the main path, then the places that the bioclim number is inserted to complete the path 
-## ./data/base/worldclim/aus/0.5/bio/current
 env.grids.current = stack(
   file.path('./data/base/worldclim/aus/0.5/bio/current',
             sprintf('bio_%02d.tif', 1:19)))
 
 
-## Future: this list is causing problems 
+# Future: this list is causing problems
 env.grids.future = stack(
   sprintf('./data/base/worldclim/aus/0.5/bio/2050/%s/%s%s.tif',
           scen[1], scen[1], 1:19))
 
 # env.grids.future = lapply(scen, function(x) {
+#   
 #   stack(
 #     sprintf('./data/base/worldclim/aus/0.5/bio/2050/%s/%s%s.tif',
 #             x, x, 1:19))
+#   
 # })
 
 
 ## Now rename the list of current rasters and future rasters: names look ok
-# names(env.grids.future) <- scen
-# class(env.grids.current);class(env.grids.future)
-# names(env.grids.current);names(env.grids.future)
+class(env.grids.current);class(env.grids.future[[1]])    #[[1:19]])
+names(env.grids.current);names(env.grids.future[[1:19]]) #[[1:19]])
+
+
+## save(GBIF.UNRESOLVED, file = paste("./data/base/HIA_LIST/GBIF/GBIF_UNRESOLVED.RData"))
 
 
 #########################################################################################################################
 ## Divide the temperature values by 10, because Worldclim layers are multiplied by 10 to reduced file size.
+## The faster way doesn't seem to be working, because the indexing is wrong.How can we fix this?
 
-## The faster way doesn't seem to be working
-##env.grids.current[[1:11]] <- env.grids.current[[1:11]]/10
-# for(i in seq_along(env.grids.future)) {
-#   env.grids.future[[i]][[1:11]] <- env.grids.future[[i]][[1:11]]/10
-# }
 
+## Current ennvironmental conditons. 
+## The alternative code fails: 
+## env.grids.current[[1:11]] <- env.grids.current[[1:11]]/10
 for(i in 1:11) {
   
   message(i)
@@ -103,37 +107,46 @@ for(i in 1:11) {
 }
 
 
+## The alternative code fails:
+# for(i in seq_along(env.grids.future)) {
+#   
+#   env.grids.future[[i]][[1:11]] <- env.grids.future[[i]][[1:11]]/10
+#   
+# }
+
+
 #########################################################################################################################
-## Also check the environmental data...
-## Have a look at the values: do they seem ok?
-summary(env.grids.current[[1]]);summary(env.grids.future[[1]])
-summary(env.grids.current[[5]]);summary(env.grids.future[[5]])
-summary(env.grids.current[[15]]);summary(env.grids.future[[15]])
+## Also check the environmental data
+summary(env.grids.current[[1]]);summary(env.grids.future[[1]]) #[[1:19]])
 
 
 ## Current
-png('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/env_grids_current.png',              
-    15, 15, units = 'in', res = 600)
+# png('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/env_grids_current.png',              
+#     15, 15, units = 'in', res = 600)
+# 
+# 
+# ## Use the levelplot function to make a multipanel output
+# plot(env.grids.current, pch = 20, cex = 0.5) 
+# 
+# 
+# ## finish the PNG device
+# dev.off()
+# 
+# 
+# ## Future
+# png('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/env_grids_future.png',              
+#     15, 15, units = 'in', res = 600)
+# 
+# 
+# ## Use the levelplot function to make a multipanel output
+# plot(env.grids.future, pch = 20, cex = 0.5) 
+# 
+# ## finish the PNG device
+# dev.off()
 
-## Use the levelplot function to make a multipanel output
-plot(env.grids.current, pch = 20, cex = 0.5) 
 
-## finish the PNG device
-dev.off()
-
-## Future
-png('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/env_grids_future.png',              
-    15, 15, units = 'in', res = 600)
-
-## Use the levelplot function to make a multipanel output
-plot(env.grids.future, pch = 20, cex = 0.5) 
-
-## finish the PNG device
-dev.off()
-
-
-## give the current and future environmental grids the same names
-## Still a problem with the raster stack vs. the list
+## Give the current and future environmental grids the same names. 
+## But we can't use the same command for a raster stack vs. the list?
 names(env.grids.current) <- names(env.grids.future) <- c(
   'Annual_mean_temp',    'Mean_diurnal_range',
   'Isothermality',       'Temp_seasonality',  'Max_temp_warm_month',
@@ -167,14 +180,14 @@ species_list  <- basename(list.dirs('F:/green_cities_sdm/output/maxent/STD_VAR_A
 #########################################################################################################################
 ## Use lappy to loop over a list of species
 ## Test on one species and scenario:
-species = species_list[17]
-scen_i = scen[10]
+#species = species_list[17]
+scen_i = scen[1]
 
 
 #########################################################################################################################
 ## Also, create a list of directories to loop over
 ## Now run the code over a list of species...
-lapply(species_list[1:10], function(species) {
+lapply(species_list[1:5], function(species) {
   message('Doing ', species)
   
   # lapply(scen, function(scen_i) {
@@ -184,7 +197,7 @@ lapply(species_list[1:10], function(species) {
   scen_name = gcms$GCM[gcms$id == scen_i] 
   
   ## Read in the fitted models using sprintf
-  m <- readRDS(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/maxent_fitted.rds', species))    ## Change dir
+  m <- readRDS(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/maxent_fitted.rds', species))    
   
   # ## These numbers don't look right for precip wet month and Precip_seasonality
   # str(m);names(m)
@@ -192,36 +205,38 @@ lapply(species_list[1:10], function(species) {
   # env.grids.future[[colnames(m$me_full@presence)]]
   
   ## Read in the occurrence files from the output directory using sprintf
-  occ <- readRDS(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/occ.rds', species)) %>%        ## Change dir
+  occ <- readRDS(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/occ.rds', species)) %>%        
     spTransform(CRS('+init=epsg:4326'))
-  
-  ## 
-  spp.df  = gsub("_", " ", species)
-  occ.spp = subset(occ.data, searchTaxon == spp.df) 
-  
+
   ## Create rasters for the current and future climate: 
   ## problems are to do with the indexing of raster vs a list of rasters...
   
-  ## Also, why are there different numbers of features each time? Is this because of model selection? So 6 predictors * n features, etc?
+  ## Also, why are there different numbers of features each time? Is this because of model selection? 
+  ## So n predictors selected by the model * n features, etc?
   pred.current <- rmaxent::project(m$me_full, env.grids.current[[colnames(m$me_full@presence)]])$prediction_logistic
   pred.future  <- rmaxent::project(m$me_full, env.grids.future[[colnames(m$me_full@presence)]])$prediction_logistic
+  
+  
+  ## The indexing here with scen_i is not working
   #pred.future  <- rmaxent::project(m$me_full, env.grids.future[[scen_i]][[colnames(m$me_full@presence)]])$prediction_logistic
   
   ## Write the raster of suitability to current conditions out to file
-  writeRaster(pred.current, sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_current.tif',  ## Change dir
+  writeRaster(pred.current, sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_current.tif',  ## add scenario to file name
                                     species, species), overwrite = TRUE)
 
   ## Write the raster of suitability to future conditions out to file
-  writeRaster(pred.future, sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif',        ## Change dir
+  writeRaster(pred.future, sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif',        ## add scenario to file name
                                    species, species, scen_i), overwrite = TRUE)
+  
   
   ## Create an empty raster based on the future prediction
   empty <- init(pred.future, function(x) NA)
   
+  
   #########################################################################################################################
   ## Create map of habitat suitability...the first line starts the PNG device
   ## This won't workd in the loop, but it works when run individually
-  png(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s.png', species, species),              ## Change dir
+  png(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.png', species, species, scen_i),      ## add scenario to file name
       11, 4, units = 'in', res = 300)
   
   ## Use the levelplot function to make a multipanel output
@@ -243,13 +258,14 @@ lapply(species_list[1:10], function(species) {
             main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
     
     ## Plot the Aus shapefile with the occurrence points for reference
+    ## Why don't the points print out inside the loop?
     layer(sp.polygons(aus)) +
-    layer(sp.points(occ, pch = 20, cex = 0.5, 
+    layer(sp.points(occ, pch = 20, cex = 0.8, 
                     col = c('red', 'transparent', 'transparent')[panel.number()])))
   
-  # Why this Warning messages? And, why doesn
+  # Why this Warning messages? 
   #   1: In min(x) : no non-missing arguments to min; returning Inf  ##
-  # 2: In max(x) : no non-missing arguments to max; returning -Inf
+  #   2: In max(x) : no non-missing arguments to max; returning -Inf
   
   ## finish the PNG device
   dev.off()
@@ -273,10 +289,14 @@ lapply(species_list[1:10], function(species) {
 #########################################################################################################################
 
 
-## Fix raster lists so all scenarios can be iterated over: indexing cause problems
+## Fix raster lists so all scenarios can be iterated over, indexing is causing problems
 
-## Figure out why some species produce weird-looking maps. Is this because the values are curren/future environmental 
+
+## Why do some species produce weird-looking maps. Is this because the values are curren/future environmental 
 ## values wrong, the scenarios are weird or there aren't enough records...or all 3?
+
+
+## How can we take an average of all the scenarios to create a confidence interval?
 
 
   
