@@ -14,8 +14,8 @@
 
 #########################################################################################################################
 ## Load packages, functions and data
-#source('./R/HIA_LIST_MATCHING.R')
-load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData")
+source('./R/HIA_LIST_MATCHING.R')
+#load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData")
 
 
 ## Require packages
@@ -163,7 +163,7 @@ aus <- ne_states(country = 'Australia') %>%
 
 ## Create a list of all the species folders which contain the fitted models: these were run in the previous step
 species_list  <- basename(list.dirs('F:/green_cities_sdm/output/maxent/STD_VAR_ALL',   recursive = FALSE))
-
+save.image("STEP_7_PREDICT.RData")
 
 
 
@@ -176,14 +176,15 @@ species_list  <- basename(list.dirs('F:/green_cities_sdm/output/maxent/STD_VAR_A
 #########################################################################################################################
 ## Use lappy to loop over a list of species
 ## Test on one species and scenario:
-#species = species_list[17]
+load("STEP_7_PREDICT.RData")
+#species = species_list[55]
 scen_i = scen[1]
 
 
 #########################################################################################################################
 ## Also, create a list of directories to loop over
 ## Now run the code over a list of species...
-lapply(species_list[1:5], function(species) {
+lapply(species_list, function(species) {
   message('Doing ', species)
   
   # lapply(scen, function(scen_i) {
@@ -195,16 +196,16 @@ lapply(species_list[1:5], function(species) {
   ## Read in the fitted models using sprintf
   m <- readRDS(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/maxent_fitted.rds', species))    
   
-  # ## These numbers don't look right for precip wet month and Precip_seasonality
+  # ## These numbers don't look right for precip wet month and Precip_seasonality?
   # str(m);names(m)
   # env.grids.current[[colnames(m$me_full@presence)]]
   # env.grids.future[[colnames(m$me_full@presence)]]
   
   ## Read in the occurrence files from the output directory using sprintf
-  taxa = gsub("_", " ", species)
-  occ  = subset(COMBO.RASTER.CONTEXT, searchTaxon == taxa)[, c("lon", "lat")]
-  # occ <- readRDS(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/occ.rds', species)) %>%        
-  #   spTransform(CRS('+init=epsg:4326'))
+  # taxa = gsub("_", " ", species)
+  # occ  = subset(COMBO.RASTER.CONTEXT, searchTaxon == taxa)[, c("lon", "lat")]
+  occ <- readRDS(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/occ.rds', species)) %>%
+    spTransform(CRS('+init=epsg:4326'))
 
   ## Create rasters for the current and future climate: 
   ## problems are to do with the indexing of raster vs a list of rasters...
@@ -259,7 +260,7 @@ lapply(species_list[1:5], function(species) {
     ## Why don't the points print out inside the loop?
     layer(sp.polygons(aus)) +
     layer(sp.points(occ, pch = 20, cex = 0.8, 
-                    col = c('red', 'transparent', 'transparent')[panel.number()])))
+                    col = c('red', 'transparent', 'transparent')[panel.number()])), data = list(occ = occ))
   
   # Why this Warning messages? 
   #   1: In min(x) : no non-missing arguments to min; returning Inf  ##
