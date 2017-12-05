@@ -184,7 +184,7 @@ scen_i = scen[1]
 #########################################################################################################################
 ## Also, create a list of directories to loop over
 ## Now run the code over a list of species...
-lapply(species_list, function(species) {
+lapply(species_list[1:3], function(species) {
   message('Doing ', species)
   
   # lapply(scen, function(scen_i) {
@@ -260,7 +260,7 @@ lapply(species_list, function(species) {
     ## Why don't the points print out inside the loop?
     layer(sp.polygons(aus)) +
     layer(sp.points(occ, pch = 20, cex = 0.8, 
-                    col = c('red', 'transparent', 'transparent')[panel.number()])), data = list(occ = occ))
+                    col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
   
   # Why this Warning messages? 
   #   1: In min(x) : no non-missing arguments to min; returning Inf  ##
