@@ -163,7 +163,7 @@ aus <- ne_states(country = 'Australia') %>%
 
 ## Create a list of all the species folders which contain the fitted models: these were run in the previous step
 species_list  <- basename(list.dirs('F:/green_cities_sdm/output/maxent/STD_VAR_ALL',   recursive = FALSE))
-save.image("STEP_7_PREDICT.RData")
+#save.image("STEP_7_PREDICT.RData")
 
 
 
@@ -176,7 +176,7 @@ save.image("STEP_7_PREDICT.RData")
 #########################################################################################################################
 ## Use lappy to loop over a list of species
 ## Test on one species and scenario:
-load("STEP_7_PREDICT.RData")
+#load("STEP_7_PREDICT.RData")
 #species = species_list[55]
 scen_i = scen[1]
 
@@ -184,7 +184,7 @@ scen_i = scen[1]
 #########################################################################################################################
 ## Also, create a list of directories to loop over
 ## Now run the code over a list of species...
-lapply(species_list[1:3], function(species) {
+lapply(species_list, function(species) {
   message('Doing ', species)
   
   # lapply(scen, function(scen_i) {
@@ -259,7 +259,7 @@ lapply(species_list[1:3], function(species) {
     ## Plot the Aus shapefile with the occurrence points for reference
     ## Why don't the points print out inside the loop?
     layer(sp.polygons(aus)) +
-    layer(sp.points(occ, pch = 20, cex = 0.8, 
+    layer(sp.points(occ, pch = 20, cex = 0.6, 
                     col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
   
   # Why this Warning messages? 
@@ -270,6 +270,7 @@ lapply(species_list[1:3], function(species) {
   dev.off()
   
 })
+
   
 # })
   

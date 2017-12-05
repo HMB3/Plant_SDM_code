@@ -26,21 +26,51 @@ packages <- c('ggplot2',   'plyr',      'reshape2',  'RColorBrewer',  'scales', 
               'Taxonstand', 'rapportools') # class(packages)
 
 
-## also to create pdf/html documents, you need to install a latex program. EG MiKtex for windows.
+#########################################################################################################################
+## This function from the internet that takes a list of packages, installs and loads them:
+## See https://gist.github.com/stevenworthington/3178163 
+ipak <- function(pkg){
+  
+  new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+  
+  if (length(new.pkg)) 
+    install.packages(new.pkg, dependencies = TRUE)
+  
+  sapply(pkg, require, character.only = TRUE)
+  
+}
+
+
+## Run the function on the list.....
+ipak(packages)
+
+
+
+
+#########################################################################################################################
+## EXTRA PACKAGES...
+#########################################################################################################################
+
+
+## Also to create pdf/html documents, you need to install a latex program. EG MiKtex for windows.
 ## easiest to use the installr function, see:
 ## https://stackoverflow.com/questions/24239420/tex-package-not-installing-in-r-version-3-1-0
 ## installr::installr() and pick MikTeX (at least).
 ## install.packages("climates",,"http://rforge.net/",type="source")
 
+
+#########################################################################################################################
 ## Find where R stores packages
 ##  .libPaths()
 
 
 ## Remove all the packages
-## remove.packages()
 ## rownames(installed.packages())
+## remove.packages()
 
 
+#########################################################################################################################
+## github packages...
 #devtools::install_github("ropensci/rgbif")
 #library(devtools)
 #install_github('johnbaums/rmaxent')
@@ -58,44 +88,15 @@ packages <- c('ggplot2',   'plyr',      'reshape2',  'RColorBrewer',  'scales', 
 #devtools::install_github("traitecoevo/baad.data")
 
 
-# install.packages("bigmemory",
-#                  dependencies = c("Depends", "Suggests", "Enhances"))
-
-
-#########################################################################################################################
-## this function from the internet that takes a list of packages, installs and loads them
-#########################################################################################################################
-
-
-## 
-ipak <- function(pkg){
-  
-  new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
-  
-  if (length(new.pkg)) 
-    install.packages(new.pkg, dependencies = TRUE)
-  
-  sapply(pkg, require, character.only = TRUE)
-  
-}
-
-
-## run the function on the list.....
-ipak(packages)
-
-
 ## check that R maxent is installed
 # list.files(system.file("java", package = "dismo"))
 # ENMevaluate
 
 
-## Also, update R here too
+## Also, update R here too: https://cran.r-project.org/web/packages/installr/index.html
 # installing/loading the package:
 if(!require(installr)) {
-  install.packages("installr"); require(installr)} #load / install+load installr
-
-##
-## https://cran.r-project.org/web/packages/installr/index.html
+  install.packages("installr"); require(installr)} ## load / install+load installr
 
 
 ## Check the settings again
