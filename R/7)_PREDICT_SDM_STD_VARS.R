@@ -15,7 +15,7 @@
 #########################################################################################################################
 ## Load packages, functions and data
 source('./R/HIA_LIST_MATCHING.R')
-#load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData")
+load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")
 
 
 ## Require packages
@@ -26,15 +26,22 @@ sapply(p, require, character.only = TRUE)
 
 
 #########################################################################################################################
-## create a list of GCM scenarios 
-scen = c("ip85bi50", "mc85bi50", "mg85bi50", "mi85bi50", "mp85bi50", 
-         "mr85bi50", "no85bi50", "ac85bi50", "bc85bi50", "cc85bi50", 
-         "cn85bi50", "gf85bi50", "gs85bi50", "hd85bi50", "he85bi50",
-         "hg85bi50", "in85bi50")
+## create a list of GCM scenarios: 
+## Eight of the 40 CMIP5 models assessed in this project have been selected for use in provision of application-ready data. 
+## This facilitates efficient exploration of climate projections for Australia.
+## https://www.climatechangeinaustralia.gov.au/en/support-and-guidance/faqs/eight-climate-models-data/
+# scen = c("ip85bi50", "mc85bi50", "mg85bi50", "mi85bi50", "mp85bi50", 
+#          "mr85bi50", "no85bi50", "ac85bi50", "bc85bi50", "cc85bi50", 
+#          "cn85bi50", "gf85bi50", "gs85bi50", "hd85bi50", "he85bi50",
+#          "hg85bi50", "in85bi50")
+
+
+## Just get the 8 models picked by CSIRO for Australia
+scen = c("mc85bi50", "no85bi50", "ac85bi50", "cn85bi50", "gf85bi50", "hg85bi50")
 
 
 ## Create a lookup table of GCMs
-h <- read_html('http://www.worldclim.org/cmip5_30s')
+h <- read_html('http://www.worldclim.org/cmip5_30s') # Also https://www.climatechangeinaustralia.gov.au/en/support-and-guidance/faqs/eight-climate-models-data/
 gcms <- h %>% 
   html_node('table') %>% 
   html_table(header=TRUE) %>% 
@@ -168,8 +175,34 @@ species_list  <- basename(list.dirs('F:/green_cities_sdm/output/maxent/STD_VAR_A
 
 
 
+
 #########################################################################################################################
-## 2). CREATE MAPS OF CURRENT AND FUTURE HABITAT SUITABILITY FOR ALL RECORDS AND SELECTED VARIABLES
+## 2). CREATE LISTS FOR MODEL RUNS 
+#########################################################################################################################
+spp.all  <- unique(COMBO.NICHE.CONTEXT$searchTaxon)
+str(spp.all)                 ## 6782
+
+
+## The trial species
+test.spp = sort(unique(c(renee.full$Species, "Betula pendula", "Fraxinus excelsior", "Quercus robur", "Fagus sylvatica")))
+test.spp 
+
+
+## Combine with 45 from the main list
+HIA.SAMPLE = head(COMBO.NICHE.CONTEXT, 53)[, c("searchTaxon")]
+test.spp   = sort(unique(c(test.spp, HIA.SAMPLE)))
+
+
+## Now restrict the species_list to the test.spp
+test_spp = gsub(" ", "_", test.spp)
+test_spp = intersect(test_spp, species_list)
+
+
+
+
+
+#########################################################################################################################
+## 3). CREATE MAPS OF CURRENT AND FUTURE HABITAT SUITABILITY FOR ALL RECORDS AND SELECTED VARIABLES
 #########################################################################################################################
 
 
@@ -182,11 +215,15 @@ scen_i = scen[1]
 
 
 #########################################################################################################################
-## Also, create a list of directories to loop over
-## Now run the code over a list of species...
-lapply(species_list, function(species) {
-  message('Doing ', species)
+## Now run the code over a list of species (not enough memory for extra directories)
+lapply(test_spp, function(species) {
+
+  ## First check if the species projection has already been run...
+  if(!file.exists(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif',
+                                                   species, species, scen_i))) {
+    message('Doing ', species) 
   
+  ## Get the scenario looping code working eventually  
   # lapply(scen, function(scen_i) {
   #   message('  Doing ', scen_i)
   
@@ -215,8 +252,7 @@ lapply(species_list, function(species) {
   pred.current <- rmaxent::project(m$me_full, env.grids.current[[colnames(m$me_full@presence)]])$prediction_logistic
   pred.future  <- rmaxent::project(m$me_full, env.grids.future[[colnames(m$me_full@presence)]])$prediction_logistic
   
-  
-  ## The indexing here with scen_i is not working
+  ## The indexing below using scen_i is not working...
   #pred.future  <- rmaxent::project(m$me_full, env.grids.future[[scen_i]][[colnames(m$me_full@presence)]])$prediction_logistic
   
   ## Write the raster of suitability to current conditions out to file
@@ -227,10 +263,8 @@ lapply(species_list, function(species) {
   writeRaster(pred.future, sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif',        ## add scenario to file name
                                    species, species, scen_i), overwrite = TRUE)
   
-  
   ## Create an empty raster based on the future prediction
   empty <- init(pred.future, function(x) NA)
-  
   
   #########################################################################################################################
   ## Create map of habitat suitability...the first line starts the PNG device
@@ -269,6 +303,12 @@ lapply(species_list, function(species) {
   ## finish the PNG device
   dev.off()
   
+  } else {
+    
+    message(species, ' skipped - prediction already run')         ## This condition ignores species which have no data
+    
+  } 
+  
 })
 
   
@@ -296,7 +336,7 @@ lapply(species_list, function(species) {
 ## values wrong, the scenarios are weird or there aren't enough records...or all 3?
 
 
-## How can we take an average of all the scenarios to create a confidence interval?
+## How can we take an consensus layer of all the scenarios to create a confidence interval?
 
 
   

@@ -6,24 +6,24 @@
 #########################################################################################################################
 ## create a big list of all the packages needed for a project
 ## can't do the special github ones like this though...
-packages <- c('ggplot2',   'plyr',      'reshape2',  'RColorBrewer',  'scales',     'grid',
-              'raster',    'spdep',     'rgdal',     'GISTools',      'data.table', 'dtplyr',
-              'Hmisc',     'Cairo',     'lattice',   'gtools',        'ggplot2',    'sjPlot',
-              'gridExtra', 'grid',      'sqldf',     'knitr',         'mgcv',       'MuMIn',
-              'mvabund',   'asbio',     'mvtnorm',   'testthat',      'rgl',        'R.matlab',
-              'ENMeval',   'lavaan',    'semPlot',   'rgdal',         'sp',         'formula.tools',
-              'dismo',     'mctest',    'rJava',     'ENMeval',       'SDMTools',   'ALA4R',
-              'maxent',    'devtools',  'knitr',     'yaml',          'htmltools',  'microbenchmark',
-              'knitr',     'yaml',      'caTools',   'bitops',        'rmarkdown',  'speciesgeocodeR',                  
-              'bitops',    'rmarkdown', 'cluster',   'gsubfn',        'functional', 'splitstackshape',
-              'EML',       'taxize',    'geonames',  'rWBclimate',    'rfigshare',  'tidyverse',
-              'jsonlite',  'zoom',      'bigmemory', 'installr',      'sfsmisc',    'Rtools',
-              'RCurl',     'httr',      'scrubr',    'red',           'spatialEco', 'rnaturalearth',
-              'gdalUtils', 'rvest',     'ConR',      'rvest',         'rasterVis',  'latticeExtra',
-              'ff',        'things',    'raster',    'rgdal',         'data.table', 'RColorBrewer',
-              'sp',        'rgeos',     'gdalUtils', 'rmaxent',       'dplyr',      'rasterVis',
-              'readr',     'readr',     'parallel',  'dismo',         'tidyr',      'envirem',
-              'Taxonstand', 'rapportools') # class(packages)
+packages <- c('ggplot2',    'plyr',      'reshape2',  'RColorBrewer',  'scales',     'grid',
+              'raster',     'spdep',     'rgdal',     'GISTools',      'data.table', 'dtplyr',
+              'Hmisc',      'Cairo',     'lattice',   'gtools',        'ggplot2',    'sjPlot',
+              'gridExtra',  'grid',      'sqldf',     'knitr',         'mgcv',       'MuMIn',
+              'mvabund',    'asbio',     'mvtnorm',   'testthat',      'rgl',        'R.matlab',
+              'ENMeval',    'lavaan',    'semPlot',   'rgdal',         'sp',         'formula.tools',
+              'dismo',      'mctest',    'rJava',     'ENMeval',       'SDMTools',   'ALA4R',
+              'maxent',     'devtools',  'knitr',     'yaml',          'htmltools',  'microbenchmark',
+              'knitr',      'yaml',      'caTools',   'bitops',        'rmarkdown',  'speciesgeocodeR',                  
+              'bitops',     'rmarkdown', 'cluster',   'gsubfn',        'functional', 'splitstackshape',
+              'EML',        'taxize',    'geonames',  'rWBclimate',    'rfigshare',  'tidyverse',
+              'jsonlite',   'zoom',      'bigmemory', 'installr',      'sfsmisc',    'Rtools',
+              'RCurl',      'httr',      'scrubr',    'red',           'spatialEco', 'rnaturalearth',
+              'gdalUtils',  'rvest',     'ConR',      'rvest',         'rasterVis',  'latticeExtra',
+              'ff',         'things',    'raster',    'rgdal',         'data.table', 'RColorBrewer',
+              'sp',         'rgeos',     'gdalUtils', 'rmaxent',       'dplyr',      'rasterVis',
+              'readr',      'readr',     'parallel',  'dismo',         'tidyr',      'envirem',
+              'Taxonstand', 'biomod2',   'rapportools') # class(packages)
 
 
 #########################################################################################################################
