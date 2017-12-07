@@ -76,13 +76,13 @@ env.grids.future = stack(
   sprintf('./data/base/worldclim/aus/0.5/bio/2050/%s/%s%s.tif',
           scen[1], scen[1], 1:19))
 
-# env.grids.future = lapply(scen, function(x) {
-#   
-#   stack(
-#     sprintf('./data/base/worldclim/aus/0.5/bio/2050/%s/%s%s.tif',
-#             x, x, 1:19))
-#   
-# })
+env.grids.future = lapply(scen, function(x) {
+
+  stack(
+    sprintf('./data/base/worldclim/aus/0.5/bio/2050/%s/%s%s.tif',
+            x, x, 1:19))
+
+})
 
 
 ## Now rename the list of current rasters and future rasters: names look ok
@@ -179,6 +179,10 @@ species_list  <- basename(list.dirs('F:/green_cities_sdm/output/maxent/STD_VAR_A
 #########################################################################################################################
 ## 2). CREATE LISTS FOR MODEL RUNS 
 #########################################################################################################################
+
+
+## All species on the growers list, and also a test
+species_list  <- basename(list.dirs('F:/green_cities_sdm/output/maxent/STD_VAR_ALL',   recursive = FALSE))
 spp.all  <- unique(COMBO.NICHE.CONTEXT$searchTaxon)
 str(spp.all)                 ## 6782
 
