@@ -274,8 +274,12 @@ env.grids.2070 = lapply(scen_2070, function(x) {
   scen_name = gcms.70$GCM[gcms$id == x]
   
   ## Create a raster stack for each 2050 GCM - also an empty raster for the final plot
-  ## ext = raster("F:/green_cities_sdm/data/base/worldclim/aus/0.5/bio/2050/ac85bi50/ac85bi501.tif")
+  ## aus.ras = raster("F:/green_cities_sdm/data/base/worldclim/aus/0.5/bio/2070/ac85bi70/ac85bi701.tif")
+  ## ext = extent(aus.ras)
+  ## aus.ext = extent(ext[1], ext[2], ext[3], ext[4])
+  ## extent(s) = ext
   ## s <- setExtent(s, ext)
+  ## s_crop <- crop(s, ext)
   ## setExtent(s, ext, keepres=FALSE, snap=FALSE)
   s <- stack(
     sprintf('./data/base/worldclim/aus/0.5/bio/2070/%s/%s%s.tif',
@@ -309,7 +313,7 @@ env.grids.2070 = lapply(scen_2070, function(x) {
   s[[11]] = s[[11]]/10
   
   ## Now loop over the species...   
-  lapply(species_rev, function(species) {
+  lapply(test_spp, function(species) {
     
     ## First check if the species projection has already been run...
     if(!file.exists(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif',
