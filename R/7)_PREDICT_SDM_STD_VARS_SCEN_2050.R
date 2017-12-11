@@ -142,17 +142,17 @@ test_rev = sort(test_spp, decreasing = TRUE)
 
 
 #########################################################################################################################
-## Now run a loop over each scenario
+## Now run a loop over each scenario: options(error = recover)
 env.grids.2050 = lapply(scen_2050, function(x) {
   
   ## Assign the scenario name (to use later in the plot)
-  scen_name = gcms.50$GCM[gcms$id == x]
+  scen_name = gcms.50$GCM[gcms.50$id == x]
   
   ## Create a raster stack for each 2050 GCM - also an empty raster for the final plot
   s <- stack(
     sprintf('./data/base/worldclim/aus/0.5/bio/2050/%s/%s%s.tif',
             x, x, 1:19))
-  empty <- init(s[[1]], function(x) NA)
+  #empty <- init(s[[1]], function(x) NA)
   
   # nm <- sub('.*bi\\d0(.*)', '\\1', names(s))
   # names(s) <- sprintf('bio%02d', as.numeric(nm))
@@ -182,6 +182,9 @@ env.grids.2050 = lapply(scen_2050, function(x) {
   
   ## Now loop over the species...   
   lapply(species_rev, function(species) {
+    
+    ##
+    #browser()
     
     ## First check if the species projection has already been run...
     if(!file.exists(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif',
@@ -218,6 +221,9 @@ env.grids.2050 = lapply(scen_2050, function(x) {
         pred.future <- rmaxent::project(
           m$me_full, s[[colnames(m$me_full@presence)]])$prediction_logistic
         writeRaster(pred.future, f_future, overwrite = TRUE)
+        
+        ## Now create the empty panel just before plotting...this may have been causing problems!
+        empty <- init(pred.future, function(x) NA)
         
         ## Use the levelplot function to make a multipanel output: occurrence points, current raster and future raster
         png(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.png', species, species, x),      
