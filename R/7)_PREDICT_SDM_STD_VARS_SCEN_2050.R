@@ -281,28 +281,33 @@ env.grids.2050 = lapply(scen_2050, function(x) {
 
 #########################################################################################################################
 ## First, cropped all the 2070 rasters, because it is too slow to the raster brick in the main analysis loop
-ext = extent(raster("F:/green_cities_sdm/data/base/worldclim/aus/0.5/bio/2050/ac85bi50/ac85bi501.tif"))
-ext = alignExtent(ext, raster("F:/green_cities_sdm/data/base/worldclim/aus/0.5/bio/2050/ac85bi50/ac85bi501.tif"), 
-                  snap ='near')
+aus.ras  = raster("F:/green_cities_sdm/data/base/worldclim/aus/0.5/bio/2050/ac85bi50/ac85bi501.tif")
+ext      = extent(raster("F:/green_cities_sdm/data/base/worldclim/aus/0.5/bio/2050/ac85bi50/ac85bi501.tif"))
+ext      = alignExtent(ext, raster("F:/green_cities_sdm/data/base/worldclim/aus/0.5/bio/2050/ac85bi50/ac85bi501.tif"), 
+                       snap ='near')
 
-rasters_2070 = list.files("F:/green_cities_sdm/data/base/worldclim/aus/0.5/bio/2070/",
+rasters_2070 = list.files("F:/green_cities_sdm/data/base/worldclim/aus/0.5/bio/2070",
                          pattern = ".tif", full.names = TRUE, recursive = TRUE)
 
 
+#########################################################################################################################
 lapply(rasters_2070, function(x) {
 
-  ## say which species we are doing
+  ## Say which raster is being processed
   message('Doing ', x)
 
-  ## read raster
+  ## Read in raster
   s = raster(x)
 
-  ##
-  #ext = extent(raster("F:/green_cities_sdm/data/base/worldclim/aus/0.5/bio/2050/ac85bi50/ac85bi501.tif"))
-  # alignExtent(extent, object, snap='near')
+  ## Snap, or resample?
+  #s = resample(s, aus.ras, method = "ngb")
+  s = setExtent(s, ext, keepres = FALSE, snap = TRUE)
 
-  ## crop using Australian extent
+  ## Crop using Australian extent
   s <- crop(s, ext) ## extent(112.9167, 155.55, -43.86667, -9.216667))
+  
+  ## mask
+  #s = mask(s, aus.ras)
 
   ## Write raster out over the top
   writeRaster(s, filename = x, overwrite = TRUE)
