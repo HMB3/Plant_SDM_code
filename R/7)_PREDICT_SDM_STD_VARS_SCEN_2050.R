@@ -166,6 +166,7 @@ env.grids.2050 = lapply(scen_2050, function(x) {
     'Precip_wet_month',    'Precip_dry_month',  'Precip_seasonality', 'Precip_wet_qu',
     'Precip_dry_qu',       'Precip_warm_qu',    'Precip_col_qu')
   
+  ########################################################################################################################
   ## Divide the temperature rasters by 10: 11 million NA values?
   ## s[[1:11]] <- s[[1:11]]/10 ## that code doesn't work, this is a work-around...
   s[[1]]  = s[[1]]/10
@@ -180,11 +181,9 @@ env.grids.2050 = lapply(scen_2050, function(x) {
   s[[10]] = s[[10]]/10
   s[[11]] = s[[11]]/10
   
+  ########################################################################################################################
   ## Now loop over the species...   
   lapply(species_rev, function(species) {
-    
-    ##
-    #browser()
     
     ## First check if the species projection has already been run...
     if(!file.exists(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif',
@@ -199,19 +198,25 @@ env.grids.2050 = lapply(scen_2050, function(x) {
         sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/occ.rds', 
                 species)) %>%
         
+        ########################################################################################################################
         ## If the current raster doesn't exist, create it
         spTransform(CRS('+init=epsg:4326'))
       f_current <- sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_current.tif', 
                            species, species)
       
       if(!file.exists(f_current)) {
+      
+      pred.current <- rmaxent::project(
+        m$me_full, env.grids.current[[colnames(m$me_full@presence)]])$prediction_logistic
+      #writeRaster(pred.current, f_current, overwrite = TRUE)
+      
+      } else {
         
-        pred.current <- rmaxent::project(
-          m$me_full, env.grids.current[[colnames(m$me_full@presence)]])$prediction_logistic
-        writeRaster(pred.current, f_current, overwrite = TRUE)
-        
+        pred.current = raster(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_current.tif', 
+                               species, species))
       }
       
+      ########################################################################################################################
       ## If the future raster doesn't exist, create it 
       f_future <- sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif', 
                           species, species, x)
@@ -225,6 +230,7 @@ env.grids.2050 = lapply(scen_2050, function(x) {
         ## Now create the empty panel just before plotting...this may have been causing problems!
         empty <- init(pred.future, function(x) NA)
         
+        ########################################################################################################################
         ## Use the levelplot function to make a multipanel output: occurrence points, current raster and future raster
         png(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.png', species, species, x),      
             11, 4, units = 'in', res = 300)
@@ -256,7 +262,7 @@ env.grids.2050 = lapply(scen_2050, function(x) {
       
     } else {
       
-      message(species, ' skipped - prediction already run')         ## This condition ignores species which have no data
+      message(species, ' ', x, ' skipped - prediction already run')   ## Ignore species which have already been run - maybe remove
       
     }
     
@@ -336,15 +342,16 @@ env.grids.2070 = lapply(scen_2070, function(x) {
   s[[10]] = s[[10]]/10
   s[[11]] = s[[11]]/10
   
+  ########################################################################################################################
   ## Now loop over the species...   
-  lapply(test_rev, function(species) {
+  lapply(species_rev, function(species) {
     
     ## First check if the species projection has already been run...
     if(!file.exists(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif',
                             species, species, x))) {
       message('Doing ', species) 
       
-      ## If not, read in the SDM model calibrated on current conditions
+      ## Read in the SDM model calibrated on current conditions
       m <- readRDS(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/maxent_fitted.rds', species)) 
       
       ## Read in the occurrence points used to create the SDM
@@ -352,8 +359,9 @@ env.grids.2070 = lapply(scen_2070, function(x) {
         sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/occ.rds', 
                 species)) %>%
         
-        ## If the current suitability raster doesn't exist, create it
-        spTransform(CRS('+init=epsg:4326'))
+        ########################################################################################################################
+      ## If the current raster doesn't exist, create it
+      spTransform(CRS('+init=epsg:4326'))
       f_current <- sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_current.tif', 
                            species, species)
       
@@ -361,11 +369,16 @@ env.grids.2070 = lapply(scen_2070, function(x) {
         
         pred.current <- rmaxent::project(
           m$me_full, env.grids.current[[colnames(m$me_full@presence)]])$prediction_logistic
-        writeRaster(pred.current, f_current, overwrite = TRUE)
+        #writeRaster(pred.current, f_current, overwrite = TRUE)
         
+      } else {
+        
+        pred.current = raster(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_current.tif', 
+                                      species, species))
       }
       
-      ## If the future suitability raster doesn't exist, create it 
+      ########################################################################################################################
+      ## If the future raster doesn't exist, create it 
       f_future <- sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif', 
                           species, species, x)
       
@@ -375,6 +388,10 @@ env.grids.2070 = lapply(scen_2070, function(x) {
           m$me_full, s[[colnames(m$me_full@presence)]])$prediction_logistic
         writeRaster(pred.future, f_future, overwrite = TRUE)
         
+        ## Now create the empty panel just before plotting...this may have been causing problems!
+        empty <- init(pred.future, function(x) NA)
+        
+        ########################################################################################################################
         ## Use the levelplot function to make a multipanel output: occurrence points, current raster and future raster
         png(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.png', species, species, x),      
             11, 4, units = 'in', res = 300)
@@ -391,7 +408,7 @@ env.grids.2070 = lapply(scen_2070, function(x) {
                         col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
                         
                         ## Give each plot a name
-                        names.attr = c('Occurrences', 'Current', sprintf('%s, 2070, RCP8.5', scen_name)),
+                        names.attr = c('Occurrence', 'Current', sprintf('%s, 2050, RCP8.5', scen_name)),
                         colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
                         main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
                 
@@ -400,16 +417,13 @@ env.grids.2070 = lapply(scen_2070, function(x) {
                 layer(sp.polygons(aus)) +
                 layer(sp.points(occ, pch = 20, cex = 0.4, 
                                 col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
-        
-        ## finish the device
         dev.off()
         
       }
       
     } else {
       
-      ## Skip the species which have already been run
-      message(species, ' skipped - prediction already run')
+      message(species, ' ', x, ' skipped - prediction already run')   ## Ignore species which have already been run - maybe remove
       
     }
     
