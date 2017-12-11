@@ -242,7 +242,7 @@ env.grids.2050 = lapply(scen_2050, function(x) {
                 ## Plot the Aus shapefile with the occurrence points for reference
                 ## Can the points be made more legible for both poorly and well recorded species?
                 layer(sp.polygons(aus)) +
-                layer(sp.points(occ, pch = 20, cex = 0.2, 
+                layer(sp.points(occ, pch = 20, cex = 0.4, 
                                 col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
         dev.off()
         
@@ -346,7 +346,7 @@ env.grids.2070 = lapply(scen_2070, function(x) {
         sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/occ.rds', 
                 species)) %>%
         
-        ## If the current raster doesn't exist, create it
+        ## If the current suitability raster doesn't exist, create it
         spTransform(CRS('+init=epsg:4326'))
       f_current <- sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_current.tif', 
                            species, species)
@@ -385,15 +385,17 @@ env.grids.2070 = lapply(scen_2070, function(x) {
                         col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
                         
                         ## Give each plot a name
-                        names.attr = c('Occurrence', 'Current', sprintf('%s, 2070, RCP8.5', scen_name)),
+                        names.attr = c('Occurrences', 'Current', sprintf('%s, 2070, RCP8.5', scen_name)),
                         colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
                         main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
                 
                 ## Plot the Aus shapefile with the occurrence points for reference
                 ## Can the points be made more legible for both poorly and well recorded species?
                 layer(sp.polygons(aus)) +
-                layer(sp.points(occ, pch = 20, cex = 0.2, 
+                layer(sp.points(occ, pch = 20, cex = 0.4, 
                                 col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
+        
+        ## finish the device
         dev.off()
         
       }
