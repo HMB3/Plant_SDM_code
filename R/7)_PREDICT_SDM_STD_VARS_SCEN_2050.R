@@ -3,8 +3,9 @@
 #########################################################################################################################
 
 
-## This code takes the output of the SDM models and generates a prediction of habitat suitability for current and future
-## environmental conditions. The data is the format of all species occurrences (rows) and environmental variables (columns)
+## This code takes the output of the Maxent species distribution models and generates a prediction of habitat suitability 
+## for current and future environmental conditions. The data table is the format of all species occurrences (rows) and 
+## environmental variables (columns)
 
 
 #########################################################################################################################
@@ -27,6 +28,8 @@ sapply(p, require, character.only = TRUE)
 
 #########################################################################################################################
 ## create a list of GCM scenarios: 
+
+
 ## Eight of the 40 CMIP5 models assessed in this project have been selected for use in provision of application-ready data. 
 ## This facilitates efficient exploration of climate projections for Australia.
 ## https://www.climatechangeinaustralia.gov.au/en/support-and-guidance/faqs/eight-climate-models-data/
@@ -34,7 +37,6 @@ sapply(p, require, character.only = TRUE)
 #          "mr85bi50", "no85bi50", "ac85bi50", "bc85bi50", "cc85bi50", 
 #          "cn85bi50", "gf85bi50", "gs85bi50", "hd85bi50", "he85bi50",
 #          "hg85bi50", "in85bi50")
-
 
 
 ## Create a lookup table of GCMs
@@ -76,7 +78,7 @@ scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cn85bi70", "gf85bi70", "hg85b
 
 
 #########################################################################################################################
-## Create an Australia shapefile, and a stack of current environmental conditions
+## Then create a stack of current environmental conditions, and an Australia shapefile for mapping
 aus <- ne_states(country = 'Australia') %>% 
   subset(!grepl('Island', name))
 
@@ -112,7 +114,6 @@ species_list  <- basename(list.dirs('F:/green_cities_sdm/output/maxent/STD_VAR_A
 species_rev   = sort(species_list, decreasing = TRUE)
 
 
-
 spp.all  <- unique(COMBO.NICHE.CONTEXT$searchTaxon)
 str(spp.all)                 ## 6782
 
@@ -136,7 +137,7 @@ test_spp = intersect(test_spp, species_list)
 
 
 #########################################################################################################################
-## 3). PROJECT MODELS FOR 2050
+## 3). PROJECT MAXNET MODELS FOR 2050
 #########################################################################################################################
 
 
@@ -166,7 +167,7 @@ env.grids.2050 = lapply(scen_2050, function(x) {
     'Precip_dry_qu',       'Precip_warm_qu',    'Precip_col_qu')
   
   ## Divide the temperature rasters by 10: 11 million NA values?
-  ## s[[1:11]] <- s[[1:11]]/10
+  ## s[[1:11]] <- s[[1:11]]/10 ## that code doesn't work, this is a work-around...
   s[[1]]  = s[[1]]/10
   s[[2]]  = s[[2]]/10
   s[[3]]  = s[[3]]/10
@@ -267,23 +268,40 @@ env.grids.2050 = lapply(scen_2050, function(x) {
 
 
 #########################################################################################################################
+## Cropped all the 2070 rasters because it is too slow to crop them in the main analysis loop
+# rasters_2070 = list.files("F:/green_cities_sdm/data/base/worldclim/aus/0.5/bio/2070/",
+#                          pattern = ".tif", full.names = TRUE, recursive = TRUE)
+# 
+# lapply(list.raster, function(x) {
+#   
+#   ## say which species we are doing
+#   message('Doing ', x) 
+#   
+#   ## read raster
+#   s = raster(x)
+#   
+#   ## crop using Australian extent
+#   s <- crop(s, extent(112.9167, 155.55, -43.86667, -9.216667)) 
+#   
+#   ## Write raster out over the top
+#   writeRaster(s, filename = x, overwrite = TRUE)
+#   
+# })
+
+
+#########################################################################################################################
 ## Now run a loop over each 2070 scenario
 env.grids.2070 = lapply(scen_2070, function(x) {
   
   ## Assign the scenario name (to use later in the plot)
   scen_name = gcms.70$GCM[gcms$id == x]
   
-  ## Create a raster stack for each 2050 GCM - also an empty raster for the final plot
-  ## aus.ras = raster("F:/green_cities_sdm/data/base/worldclim/aus/0.5/bio/2070/ac85bi70/ac85bi701.tif")
-  ## ext = extent(aus.ras)
-  ## aus.ext = extent(ext[1], ext[2], ext[3], ext[4])
-  ## extent(s) = ext
-  ## s <- setExtent(s, ext)
-  ## s_crop <- crop(s, ext)
-  ## setExtent(s, ext, keepres=FALSE, snap=FALSE)
+  ## Create a raster stack for each 2050 GCM 
   s <- stack(
     sprintf('./data/base/worldclim/aus/0.5/bio/2070/%s/%s%s.tif',
             x, x, 1:19))
+  
+  ## Also create an empty raster for the final plot
   empty <- init(s[[1]], function(x) NA)
   
   # nm <- sub('.*bi\\d0(.*)', '\\1', names(s))
