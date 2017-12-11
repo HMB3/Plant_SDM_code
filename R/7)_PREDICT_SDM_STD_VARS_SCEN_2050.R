@@ -131,7 +131,7 @@ test.spp   = sort(unique(c(test.spp, HIA.SAMPLE)))
 ## Now restrict the species_list to the test.spp
 test_spp = gsub(" ", "_", test.spp)
 test_spp = intersect(test_spp, species_list)
-
+test_rev = sort(test_spp, decreasing = TRUE)
 
 
 
@@ -268,7 +268,7 @@ env.grids.2050 = lapply(scen_2050, function(x) {
 
 
 #########################################################################################################################
-## Cropped all the 2070 rasters because it is too slow to crop them in the main analysis loop
+## First, cropped all the 2070 rasters, because it is too slow to the raster brick in the main analysis loop
 # rasters_2070 = list.files("F:/green_cities_sdm/data/base/worldclim/aus/0.5/bio/2070/",
 #                          pattern = ".tif", full.names = TRUE, recursive = TRUE)
 # 
@@ -294,7 +294,7 @@ env.grids.2050 = lapply(scen_2050, function(x) {
 env.grids.2070 = lapply(scen_2070, function(x) {
   
   ## Assign the scenario name (to use later in the plot)
-  scen_name = gcms.70$GCM[gcms$id == x]
+  scen_name = gcms.70$GCM[gcms.70$id == x]
   
   ## Create a raster stack for each 2050 GCM 
   s <- stack(
@@ -317,7 +317,7 @@ env.grids.2070 = lapply(scen_2070, function(x) {
     'Precip_dry_qu',       'Precip_warm_qu',    'Precip_col_qu')
   
   ## Divide the temperature rasters by 10: 11 million NA values?
-  ## s[[1:11]] <- s[[1:11]]/10
+  ## s[[1:11]] <- s[[1:11]]/10 ## that code doesn't work, this is a work-around...
   s[[1]]  = s[[1]]/10
   s[[2]]  = s[[2]]/10
   s[[3]]  = s[[3]]/10
@@ -331,7 +331,7 @@ env.grids.2070 = lapply(scen_2070, function(x) {
   s[[11]] = s[[11]]/10
   
   ## Now loop over the species...   
-  lapply(test_spp, function(species) {
+  lapply(test_rev, function(species) {
     
     ## First check if the species projection has already been run...
     if(!file.exists(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif',
@@ -341,12 +341,12 @@ env.grids.2070 = lapply(scen_2070, function(x) {
       ## If not, read in the SDM model calibrated on current conditions
       m <- readRDS(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/maxent_fitted.rds', species)) 
       
-      ## The read in the occurrence points used to create the SDM
+      ## Read in the occurrence points used to create the SDM
       occ <- readRDS(
         sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/occ.rds', 
                 species)) %>%
         
-        ## If the current suitability raster doesn't exist, create it
+        ## If the current raster doesn't exist, create it
         spTransform(CRS('+init=epsg:4326'))
       f_current <- sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_current.tif', 
                            species, species)
@@ -407,8 +407,29 @@ env.grids.2070 = lapply(scen_2070, function(x) {
     
   })
   
-  
 })
+
+
+
+
+
+#########################################################################################################################
+## OUTSTANDING PREDICTION TASKS:
+#########################################################################################################################
+
+
+## We are missing two scenarios recommended for Australia: CanESM2 & CESM1-CAM5 - Compare:
+
+## https://www.climatechangeinaustralia.gov.au/en/support-and-guidance/faqs/eight-climate-models-data/
+
+## http://www.worldclim.org/cmip5_30s
+  
+
+
+## Consider the final format needed: which files: table, plots/maps, files. Space important for both local and web 
+
+
+## How can we take an consensus layer of all the scenarios, to create a confidence interval? See ensemble.raster
 
 
 
