@@ -207,7 +207,7 @@ env.grids.2050 = lapply(scen_2050, function(x) {
       if(!file.exists(f_current)) {
         
         ## Report which prediction is in progress
-        message('Running current prediction for', species) 
+        message('Running current prediction for ', species) 
         
         pred.current <- rmaxent::project(
           m$me_full, env.grids.current[[colnames(m$me_full@presence)]])$prediction_logistic
@@ -227,7 +227,7 @@ env.grids.2050 = lapply(scen_2050, function(x) {
       if(!file.exists(f_future)) {
         
         ## Report which prediction is in progress
-        message('Running future prediction for', species, ' ', x) 
+        message('Running future prediction for ', species, ' ', x) 
         
         pred.future <- rmaxent::project(
           m$me_full, s[[colnames(m$me_full@presence)]])$prediction_logistic
@@ -362,7 +362,7 @@ env.grids.2070 = lapply(scen_2070, function(x) {
       if(!file.exists(f_current)) {
         
         ## Report which prediction is in progress
-        message('Running future prediction for', species, ' ', x) 
+        message('Running current prediction for ', species) 
         
         pred.current <- rmaxent::project(
           m$me_full, env.grids.current[[colnames(m$me_full@presence)]])$prediction_logistic
@@ -383,7 +383,7 @@ env.grids.2070 = lapply(scen_2070, function(x) {
       if(!file.exists(f_future)) {
         
         ## Report which prediction is in progress
-        message('Doing future prediction for', species, ' ', x) 
+        message('Running future prediction for ', species, ' ', x) 
         
         pred.future <- rmaxent::project(
           m$me_full, s[[colnames(m$me_full@presence)]])$prediction_logistic
@@ -393,7 +393,7 @@ env.grids.2070 = lapply(scen_2070, function(x) {
         empty <- init(pred.future, function(x) NA)
         
         ########################################################################################################################
-        ## Use the levelplot function to make a multipanel output: occurrence points, current raster and future raster
+        ## Use the levelplot function to make a multipanel output: occurrence points, current raster and future raster...
         png(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.png', species, species, x),      
             11, 4, units = 'in', res = 300)
         
