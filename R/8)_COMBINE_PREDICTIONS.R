@@ -144,111 +144,95 @@ test_rev = sort(test_spp, decreasing = TRUE)
 
 #########################################################################################################################
 ## Now run a loop over each 2070 scenario
-ensemble.grids.2070 = lapply(scen_2070, function(x) {
+ensemble.grids.2070 = lapply(test_rev, function(species) {
   
-  
-  ## First, read in all the rasters for one spp
-  #scen_name = gcms.70$GCM[gcms.70$id == x]
-  
-  ## Create a raster stack for each 2050 GCM 
-  s <- stack(
-    sprintf('./data/base/worldclim/aus/0.5/bio/2070/%s/%s%s.tif',
-            x, x, 1:19))
-  
-  
-  ########################################################################################################################
-  ## Now loop over the species...   
-  lapply(test_rev, function(species) {
+  ## First check if the species projection has already been run...
+  if(!file.exists(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif',
+                          species, species, x))) {
+    message('Doing ', species) 
     
-    ## First check if the species projection has already been run...
-    if(!file.exists(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif',
-                            species, species, x))) {
-      message('Doing ', species) 
-      
-      ## Read in the SDM model calibrated on current conditions
-      m <- readRDS(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/maxent_fitted.rds', species)) 
-      
-      ## Read in the occurrence points used to create the SDM
-      occ <- readRDS(
-        sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/occ.rds', 
-                species)) %>%
-        
-        ########################################################################################################################
-      ## If the current raster doesn't exist, create it
-      spTransform(CRS('+init=epsg:4326'))
-      f_current <- sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_current.tif', 
-                           species, species)
-      
-      if(!file.exists(f_current)) {
-        
-        ## Report which prediction is in progress
-        message('Running current prediction for ', species) 
-        
-        pred.current <- rmaxent::project(
-          m$me_full, env.grids.current[[colnames(m$me_full@presence)]])$prediction_logistic
-        writeRaster(pred.current, f_current, overwrite = TRUE)
-        
-      } else {
-        
-        ## Otherwise just read it in
-        pred.current = raster(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_current.tif', 
-                                      species, species))
-      }
+    ## Read in the SDM model calibrated on current conditions
+    m <- readRDS(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/maxent_fitted.rds', species)) 
+    
+    ## Read in the occurrence points used to create the SDM
+    occ <- readRDS(
+      sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/occ.rds', 
+              species)) %>%
       
       ########################################################################################################################
-      ## If the future raster doesn't exist, create it 
-      f_future <- sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif', 
-                          species, species, x)
+    ## If the current raster doesn't exist, create it
+    spTransform(CRS('+init=epsg:4326'))
+    f_current <- sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_current.tif', 
+                         species, species)
+    
+    if(!file.exists(f_current)) {
       
-      if(!file.exists(f_future)) {
-        
-        ## Report which prediction is in progress
-        message('Running future prediction for ', species, ' ', x) 
-        
-        pred.future <- rmaxent::project(
-          m$me_full, s[[colnames(m$me_full@presence)]])$prediction_logistic
-        writeRaster(pred.future, f_future, overwrite = TRUE)
-        
-        ## Now create the empty panel just before plotting...this may have been causing problems!
-        empty <- init(pred.future, function(x) NA)
-        
-        ########################################################################################################################
-        ## Use the levelplot function to make a multipanel output: occurrence points, current raster and future raster...
-        png(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.png', species, species, x),      
-            11, 4, units = 'in', res = 300)
-        
-        ## Need an empty frame
-        print(levelplot(stack(empty,
-                              pred.current,
-                              pred.future), margin = FALSE,
-                        
-                        ## Create a colour scheme using colbrewer: 100 is to make it continuos
-                        ## Also, make it a one-directional colour scheme
-                        scales      = list(draw = FALSE), 
-                        at = seq(0, 1, length = 100),
-                        col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
-                        
-                        ## Give each plot a name
-                        names.attr = c('Occurrence', 'Current', sprintf('%s, 2070, RCP8.5', scen_name)),
-                        colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
-                        main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
-                
-                ## Plot the Aus shapefile with the occurrence points for reference
-                ## Can the points be made more legible for both poorly and well recorded species?
-                layer(sp.polygons(aus)) +
-                layer(sp.points(occ, pch = 20, cex = 0.4, 
-                                col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
-        dev.off()
-        
-      }
+      ## Report which prediction is in progress
+      message('Running current prediction for ', species) 
+      
+      pred.current <- rmaxent::project(
+        m$me_full, env.grids.current[[colnames(m$me_full@presence)]])$prediction_logistic
+      writeRaster(pred.current, f_current, overwrite = TRUE)
       
     } else {
       
-      message(species, ' ', x, ' skipped - prediction already run')   ## Ignore species which have already been run - maybe remove
+      ## Otherwise just read it in
+      pred.current = raster(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_current.tif', 
+                                    species, species))
+    }
+    
+    ########################################################################################################################
+    ## If the future raster doesn't exist, create it 
+    f_future <- sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif', 
+                        species, species, x)
+    
+    if(!file.exists(f_future)) {
+      
+      ## Report which prediction is in progress
+      message('Running future prediction for ', species, ' ', x) 
+      
+      pred.future <- rmaxent::project(
+        m$me_full, s[[colnames(m$me_full@presence)]])$prediction_logistic
+      writeRaster(pred.future, f_future, overwrite = TRUE)
+      
+      ## Now create the empty panel just before plotting...this may have been causing problems!
+      empty <- init(pred.future, function(x) NA)
+      
+      ########################################################################################################################
+      ## Use the levelplot function to make a multipanel output: occurrence points, current raster and future raster...
+      png(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.png', species, species, x),      
+          11, 4, units = 'in', res = 300)
+      
+      ## Need an empty frame
+      print(levelplot(stack(empty,
+                            pred.current,
+                            pred.future), margin = FALSE,
+                      
+                      ## Create a colour scheme using colbrewer: 100 is to make it continuos
+                      ## Also, make it a one-directional colour scheme
+                      scales      = list(draw = FALSE), 
+                      at = seq(0, 1, length = 100),
+                      col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
+                      
+                      ## Give each plot a name
+                      names.attr = c('Occurrence', 'Current', sprintf('%s, 2070, RCP8.5', scen_name)),
+                      colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
+                      main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
+              
+              ## Plot the Aus shapefile with the occurrence points for reference
+              ## Can the points be made more legible for both poorly and well recorded species?
+              layer(sp.polygons(aus)) +
+              layer(sp.points(occ, pch = 20, cex = 0.4, 
+                              col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
+      dev.off()
       
     }
     
-  })
+  } else {
+    
+    message(species, ' ', x, ' skipped - prediction already run')   ## Ignore species which have already been run - maybe remove
+    
+  }
   
 })
 

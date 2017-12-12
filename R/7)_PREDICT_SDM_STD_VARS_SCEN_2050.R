@@ -183,7 +183,7 @@ env.grids.2050 = lapply(scen_2050, function(x) {
   
   ########################################################################################################################
   ## Now loop over the species...   
-  lapply(species_rev, function(species) {
+  lapply(test_rev, function(species) {
     
     ## First check if the species projection has already been run...
     if(!file.exists(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif',
