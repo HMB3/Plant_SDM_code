@@ -27,7 +27,7 @@ sapply(p, require, character.only = TRUE)
 
 
 #########################################################################################################################
-## create a list of GCM scenarios: 
+## create a list of GCM scenarios (below is from CSIRO): 
 
 
 ## Eight of the 40 CMIP5 models assessed in this project have been selected for use in provision of application-ready data. 
@@ -128,7 +128,7 @@ HIA.SAMPLE = head(COMBO.NICHE.CONTEXT, 53)[, c("searchTaxon")]
 test.spp   = sort(unique(c(test.spp, HIA.SAMPLE)))
 
 
-## Now restrict the species_list to the test.spp
+## Now make the test species directory names
 test_spp = gsub(" ", "_", test.spp)
 test_spp = intersect(test_spp, species_list)
 test_rev = sort(test_spp, decreasing = TRUE)
@@ -142,7 +142,7 @@ test_rev = sort(test_spp, decreasing = TRUE)
 
 
 #########################################################################################################################
-## Now run a loop over each scenario: options(error = recover)
+## First, run a loop over each scenario: options(error = recover)
 env.grids.2050 = lapply(scen_2050, function(x) {
   
   ## Assign the scenario name (to use later in the plot)
@@ -198,22 +198,25 @@ env.grids.2050 = lapply(scen_2050, function(x) {
         sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/occ.rds', 
                 species)) %>%
         
-        ########################################################################################################################
-        ## If the current raster doesn't exist, create it
-        spTransform(CRS('+init=epsg:4326'))
+      ########################################################################################################################
+      ## If the current raster doesn't exist, create it
+      spTransform(CRS('+init=epsg:4326'))
       f_current <- sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_current.tif', 
                            species, species)
       
       if(!file.exists(f_current)) {
-      
-      pred.current <- rmaxent::project(
-        m$me_full, env.grids.current[[colnames(m$me_full@presence)]])$prediction_logistic
-      #writeRaster(pred.current, f_current, overwrite = TRUE)
-      
+        
+        ## Report which prediction is in progress
+        message('Running current prediction for', species) 
+        
+        pred.current <- rmaxent::project(
+          m$me_full, env.grids.current[[colnames(m$me_full@presence)]])$prediction_logistic
+        writeRaster(pred.current, f_current, overwrite = TRUE)
+        
       } else {
         
         pred.current = raster(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_current.tif', 
-                               species, species))
+                                      species, species))
       }
       
       ########################################################################################################################
@@ -223,11 +226,14 @@ env.grids.2050 = lapply(scen_2050, function(x) {
       
       if(!file.exists(f_future)) {
         
+        ## Report which prediction is in progress
+        message('Running future prediction for', species, ' ', x) 
+        
         pred.future <- rmaxent::project(
           m$me_full, s[[colnames(m$me_full@presence)]])$prediction_logistic
         writeRaster(pred.future, f_future, overwrite = TRUE)
         
-        ## Now create the empty panel just before plotting...this may have been causing problems!
+        ## Now create the empty panel just before plotting
         empty <- init(pred.future, function(x) NA)
         
         ########################################################################################################################
@@ -347,7 +353,7 @@ env.grids.2070 = lapply(scen_2070, function(x) {
         sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/occ.rds', 
                 species)) %>%
         
-        ########################################################################################################################
+      ########################################################################################################################
       ## If the current raster doesn't exist, create it
       spTransform(CRS('+init=epsg:4326'))
       f_current <- sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_current.tif', 
@@ -355,12 +361,16 @@ env.grids.2070 = lapply(scen_2070, function(x) {
       
       if(!file.exists(f_current)) {
         
+        ## Report which prediction is in progress
+        message('Running future prediction for', species, ' ', x) 
+        
         pred.current <- rmaxent::project(
           m$me_full, env.grids.current[[colnames(m$me_full@presence)]])$prediction_logistic
-        #writeRaster(pred.current, f_current, overwrite = TRUE)
+        writeRaster(pred.current, f_current, overwrite = TRUE)
         
       } else {
         
+        ## Otherwise just read it in
         pred.current = raster(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_current.tif', 
                                       species, species))
       }
@@ -371,6 +381,9 @@ env.grids.2070 = lapply(scen_2070, function(x) {
                           species, species, x)
       
       if(!file.exists(f_future)) {
+        
+        ## Report which prediction is in progress
+        message('Doing future prediction for', species, ' ', x) 
         
         pred.future <- rmaxent::project(
           m$me_full, s[[colnames(m$me_full@presence)]])$prediction_logistic
