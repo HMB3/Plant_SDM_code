@@ -275,44 +275,18 @@ env.grids.2050 = lapply(scen_2050, function(x) {
 
 
 #########################################################################################################################
-## 4). PROJECT MODELS FOR 2050
+## 4). PROJECT MODELS FOR 2070
 #########################################################################################################################
 
 
-#########################################################################################################################
-## First, cropped all the 2070 rasters, because it is too slow to the raster brick in the main analysis loop
-aus.ras  = raster("F:/green_cities_sdm/data/base/worldclim/aus/0.5/bio/2050/ac85bi50/ac85bi501.tif")
-ext      = extent(raster("F:/green_cities_sdm/data/base/worldclim/aus/0.5/bio/2050/ac85bi50/ac85bi501.tif"))
-ext      = alignExtent(ext, raster("F:/green_cities_sdm/data/base/worldclim/aus/0.5/bio/2050/ac85bi50/ac85bi501.tif"), 
-                       snap ='near')
+## First, check the extents of the 2050 and 2070 grids match
+ras.50  = raster("F:/green_cities_sdm/data/base/worldclim/aus/0.5/bio/2050/ac85bi50/ac85bi501.tif")
+ras.70  = raster("F:/green_cities_sdm/data/base/worldclim/aus/0.5/bio/2070/ac85bi70/ac85bi701.tif")
 
-rasters_2070 = list.files("F:/green_cities_sdm/data/base/worldclim/aus/0.5/bio/2070",
-                         pattern = ".tif", full.names = TRUE, recursive = TRUE)
+## The extents are now identical, and the number of cells matches
+identical(extent(ras.50), extent(ras.70))
+ras.50;ras.70
 
-
-#########################################################################################################################
-lapply(rasters_2070, function(x) {
-
-  ## Say which raster is being processed
-  message('Doing ', x)
-
-  ## Read in raster
-  s = raster(x)
-
-  ## Snap, or resample?
-  #s = resample(s, aus.ras, method = "ngb")
-  s = setExtent(s, ext, keepres = FALSE, snap = TRUE)
-
-  ## Crop using Australian extent
-  s <- crop(s, ext) ## extent(112.9167, 155.55, -43.86667, -9.216667))
-  
-  ## mask
-  #s = mask(s, aus.ras)
-
-  ## Write raster out over the top
-  writeRaster(s, filename = x, overwrite = TRUE)
-
-})
 
 
 #########################################################################################################################
@@ -358,7 +332,7 @@ env.grids.2070 = lapply(scen_2070, function(x) {
   
   ########################################################################################################################
   ## Now loop over the species...   
-  lapply(species_rev, function(species) {
+  lapply(test_rev, function(species) {
     
     ## First check if the species projection has already been run...
     if(!file.exists(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif',
