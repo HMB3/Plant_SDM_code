@@ -4,13 +4,12 @@
 
 
 ## The aim of this code is to combine multiple maxent predictions into a single suitability raster for each species
-## See the ensemble.raster package https://www.rdocumentation.org/packages/BiodiversityR/versions/2.8-4/topics/ensemble.raster 
+## The ensemble.raster package creates a weighted average, and a consensus layer.
 
-
-
-#########################################################################################################################
-## 1). READ IN THE CURRENT AND FUTURE ENVIRONMENTAL DATA
-#########################################################################################################################
+## Lots of different definitions of a consensus. Could start by getting a layer which is has 1 where all cells meet a
+## threshold, 
+## e.g. above 0.5, above 0.7, above 0.9
+## e.g. below 0.5, below 0.3, etc
 
 
 #########################################################################################################################
@@ -26,9 +25,16 @@ p <- c('ff',    'things',         'raster',    'dismo',        'sp',           '
 sapply(p, require, character.only = TRUE)
 
 
+
+
+
+#########################################################################################################################
+## 1). CREATE LISTS OF GCMs AND SPECIES FOR MODEL RUNS 
+#########################################################################################################################
+
+
 #########################################################################################################################
 ## create a list of GCM scenarios (below is from CSIRO): 
-
 
 ## Eight of the 40 CMIP5 models assessed in this project have been selected for use in provision of application-ready data. 
 ## This facilitates efficient exploration of climate projections for Australia.
@@ -76,38 +82,7 @@ gcms.50 ; gcms.70
 scen_2050 = c("mc85bi50", "no85bi50", "ac85bi50", "cn85bi50", "gf85bi50", "hg85bi50")
 scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cn85bi70", "gf85bi70", "hg85bi70")
 
-
 #########################################################################################################################
-## Then create a stack of current environmental conditions, and an Australia shapefile for mapping
-aus <- ne_states(country = 'Australia') %>% 
-  subset(!grepl('Island', name))
-
-env.grids.current <- stack(
-  file.path('./data/base/worldclim/aus/0.5/bio/current',
-            sprintf('bio_%02d.tif', 1:19)))
-
-## Now divide the current temperature grids by 10
-for(i in 1:11) {
-  
-  message(i)
-  env.grids.current[[i]] <- env.grids.current[[i]]/10
-  
-}
-
-
-## What do the grids look like? 11,177,684 NAs???!!!!!
-summary(env.grids.current[[1]])
-summary(env.grids.current[[5]])
-summary(env.grids.current[[11]])
-
-
-
-
-
-#########################################################################################################################
-## 2). CREATE SPECIES LISTS FOR MODEL RUNS 
-#########################################################################################################################
-
 
 ## All species on the growers list, and also a test list which includes Renee's species
 species_list  <- basename(list.dirs('F:/green_cities_sdm/output/maxent/STD_VAR_ALL',   recursive = FALSE))
@@ -134,107 +109,75 @@ test_spp = intersect(test_spp, species_list)
 test_rev = sort(test_spp, decreasing = TRUE)
 
 
+## Also create a list of thresholds:
 
 
 
 #########################################################################################################################
-## 3). CREATE A CONSENSUS SUITABILITY RASTER FOR EACH SPECIES
+## 2). CREATE AN AVERAGE AND A CONSENSUS SUITABILITY RASTER FOR EACH SPECIES
 #########################################################################################################################
 
 
 #########################################################################################################################
-## Now run a loop over each 2070 scenario
-ensemble.grids.2070 = lapply(test_rev, function(species) {
+## First, iterate over each species, then each scenario EG: x = scen_2050[1];species = test_rev[1]
+env.grids.2050 = lapply(test_rev, function(species) { ## lapply(scen_2050, function(x)
   
-  ## First check if the species projection has already been run...
-  if(!file.exists(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif',
-                          species, species, x))) {
-    message('Doing ', species) 
+  lapply(scen_2050, function(x) {
     
-    ## Read in the SDM model calibrated on current conditions
-    m <- readRDS(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/maxent_fitted.rds', species)) 
+    ## Create a raster stack for each 2050 GCM - also an empty raster for the final plot
+    # sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif', 
+    #         species, species, x)
     
-    ## Read in the occurrence points used to create the SDM
-    occ <- readRDS(
-      sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/occ.rds', 
-              species)) %>%
-      
-      ########################################################################################################################
-    ## If the current raster doesn't exist, create it
-    spTransform(CRS('+init=epsg:4326'))
-    f_current <- sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_current.tif', 
-                         species, species)
+    ########################################################################################################################
+    ## First read in each prediction
+    m <-   sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif', 
+                   species, species, x)
     
-    if(!file.exists(f_current)) {
-      
-      ## Report which prediction is in progress
-      message('Running current prediction for ', species) 
-      
-      pred.current <- rmaxent::project(
-        m$me_full, env.grids.current[[colnames(m$me_full@presence)]])$prediction_logistic
-      writeRaster(pred.current, f_current, overwrite = TRUE)
-      
-    } else {
-      
-      ## Otherwise just read it in
-      pred.current = raster(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_current.tif', 
-                                    species, species))
-    }
+    ########################################################################################################################
+    ## Take the average
+    #print(m)
+    # mean <- overlay(r2000, r2001, r2002, r2003, r2004, r2005, fun=meanIgnoringZeroes)
+    
     
     ########################################################################################################################
     ## If the future raster doesn't exist, create it 
-    f_future <- sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif', 
-                        species, species, x)
     
-    if(!file.exists(f_future)) {
-      
-      ## Report which prediction is in progress
-      message('Running future prediction for ', species, ' ', x) 
-      
-      pred.future <- rmaxent::project(
-        m$me_full, s[[colnames(m$me_full@presence)]])$prediction_logistic
-      writeRaster(pred.future, f_future, overwrite = TRUE)
-      
-      ## Now create the empty panel just before plotting...this may have been causing problems!
-      empty <- init(pred.future, function(x) NA)
-      
-      ########################################################################################################################
-      ## Use the levelplot function to make a multipanel output: occurrence points, current raster and future raster...
-      png(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.png', species, species, x),      
-          11, 4, units = 'in', res = 300)
-      
-      ## Need an empty frame
-      print(levelplot(stack(empty,
-                            pred.current,
-                            pred.future), margin = FALSE,
-                      
-                      ## Create a colour scheme using colbrewer: 100 is to make it continuos
-                      ## Also, make it a one-directional colour scheme
-                      scales      = list(draw = FALSE), 
-                      at = seq(0, 1, length = 100),
-                      col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
-                      
-                      ## Give each plot a name
-                      names.attr = c('Occurrence', 'Current', sprintf('%s, 2070, RCP8.5', scen_name)),
-                      colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
-                      main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
-              
-              ## Plot the Aus shapefile with the occurrence points for reference
-              ## Can the points be made more legible for both poorly and well recorded species?
-              layer(sp.polygons(aus)) +
-              layer(sp.points(occ, pch = 20, cex = 0.4, 
-                              col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
-      dev.off()
-      
-    }
     
-  } else {
+    ########################################################################################################################
+    ## Use the levelplot function to make a multipanel output: average, threshold 1, threshold 2
+    png(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.png', species, species, x),      
+        11, 4, units = 'in', res = 300)
     
-    message(species, ' ', x, ' skipped - prediction already run')   ## Ignore species which have already been run - maybe remove
+    ## Need an empty frame
+    print(levelplot(stack(pred.average,
+                          pred.thresh.05,
+                          pred.thresh.05), margin = FALSE,
+                    
+                    ## Create a colour scheme using colbrewer: 100 is to make it continuos
+                    ## Also, make it a one-directional colour scheme
+                    scales      = list(draw = FALSE), 
+                    at = seq(0, 1, length = 100),
+                    col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
+                    
+                    ## Give each plot a name
+                    names.attr = c('Occurrence', 'Current', sprintf('%s, 2050, RCP8.5', scen_name)),
+                    colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
+                    main       = list(gsub('_', ' ', species), font = 4, cex = 2)))
+            
+            ## Plot the Aus shapefile with the occurrence points for reference
+            ## Can the points be made more legible for both poorly and well recorded species?
+            # layer(sp.polygons(aus)) +
+            # layer(sp.points(occ, pch = 20, cex = 0.4, 
+            #                 col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
     
-  }
+    ##
+    dev.off()
+    
+  })
+  
   
 })
+
 
 
 
