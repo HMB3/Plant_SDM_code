@@ -82,8 +82,8 @@ gcms.50 ; gcms.70
 scen_2050 = c("mc85bi50", "no85bi50", "ac85bi50", "cn85bi50", "gf85bi50", "hg85bi50")
 scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cn85bi70", "gf85bi70", "hg85bi70")
 
-#########################################################################################################################
 
+#########################################################################################################################
 ## All species on the growers list, and also a test list which includes Renee's species
 species_list  <- basename(list.dirs('F:/green_cities_sdm/output/maxent/STD_VAR_ALL',   recursive = FALSE))
 species_rev   = sort(species_list, decreasing = TRUE)
@@ -109,7 +109,32 @@ test_spp = intersect(test_spp, species_list)
 test_rev = sort(test_spp, decreasing = TRUE)
 
 
-## Also create a list of thresholds:
+
+
+
+#########################################################################################################################
+## 2). CREATE A LISTS OF DIRECTORIES
+#########################################################################################################################
+
+
+#########################################################################################################################
+## Combine all the taxa at once
+RESULTS.DIR <- test_rev[c(1:length(test_rev))] %>%
+  
+  ## pipe the list into lapply
+  lapply(function(species) {
+    
+    ## create the character string
+    m <-   sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/', 
+                   species)
+    
+    ## load each .RData file - e.g. list.files(m, pattern = "bi50.tif")
+    m 
+    
+  }) %>%
+  
+  ## Bind the list together
+  c()
 
 
 
@@ -120,7 +145,7 @@ test_rev = sort(test_spp, decreasing = TRUE)
 
 #########################################################################################################################
 ## First, iterate over each species, then each scenario EG: x = scen_2050[1];species = test_rev[1]
-env.grids.2050 = lapply(test_rev, function(species) { ## lapply(scen_2050, function(x)
+env.grids.2050 = lapply(RESULTS.DIR, function(species) { ## lapply(scen_2050, function(x)
   
   lapply(scen_2050, function(x) {
     
