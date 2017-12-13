@@ -480,8 +480,12 @@ FIT_MAXENT_SELECT <- function(occ,
 
 
 ## This should replace John's code
-COR_VARIABLES = function (occ, bg, path, species_column = "species", 
-                          type = "PI", cor_thr,
+COR_VARIABLES = function (occ, 
+                          bg, 
+                          path, 
+                          species_column = "species", 
+                          type = "PI", 
+                          cor_thr,
                           quiet = TRUE) {
   
   if (missing(path)) {
@@ -503,10 +507,12 @@ COR_VARIABLES = function (occ, bg, path, species_column = "species",
   ## background <- subset(SDM.DATA.ALL, searchTaxon != x) ## what species is 
   
   if (!identical(sort(names(occ_by_species)), sort(names(bg_by_species)))) {    ##
+    
     print(paste0("The same set of species names must exist in occ and bg"))
+    
   }
   
-  ## 
+  ## This sets the contribution of each variable before dropping each one...
   type <- switch(type, PI = "permutation.importance", PC = "contribution", 
                  stop("type must be either \"PI\" or \"PC\".", call. = FALSE))
   
@@ -522,11 +528,11 @@ COR_VARIABLES = function (occ, bg, path, species_column = "species",
     swd <- rbind(occ_by_species[[name]], bg_by_species[[name]])
     swd <- swd[, -match(species_column, names(swd))]
     
-    ##
-    # if (ncol(swd) < k_thr) 
-    #   stop("Initial number of variables < k_thr")
+    ## Stop if there are an insufficent number of variables
+    if (ncol(swd) < k_thr)
+      stop("Initial number of variables < k_thr")
     
-    ## what does round do?
+    ## What does round do?
     round(cor(as.data.frame(swd)[2:20], use = "pairwise"), 2)
     swd.cor = as.data.frame(swd)[2:20]
     pa <- rep(1:0, c(nrow(occ_by_species[[name]]), nrow(bg_by_species[[name]])))  ## problem here
@@ -534,7 +540,10 @@ COR_VARIABLES = function (occ, bg, path, species_column = "species",
                                     th = cor_thr)@results$Variables)              ## ok
     
     ## return the set of predictors which are less correlated than the threshold (e.g. 0.7)
-    return(ok)
+    return(m)
+    
+    
+    
     
   })
   
@@ -550,8 +559,16 @@ COR_VARIABLES = function (occ, bg, path, species_column = "species",
 
 
 ## This should replace John's code
-HIA_SIMPLIFY = function (occ, bg, path, species_column = "species", response_curves = FALSE, 
-                         logistic_format = TRUE, type = "PI", cor_thr, pct_thr, k_thr, 
+HIA_SIMPLIFY = function (occ, 
+                         bg, 
+                         path, ## is path the same as outdir?
+                         species_column = "species", 
+                         response_curves = FALSE, 
+                         logistic_format = TRUE, 
+                         type = "PI", 
+                         cor_thr, 
+                         pct_thr, 
+                         k_thr, 
                          quiet = TRUE) 
   
 {
@@ -573,14 +590,17 @@ HIA_SIMPLIFY = function (occ, bg, path, species_column = "species", response_cur
   ## This code breaks on my data, because the background points are taken from points that are not the species 
   ## background <- subset(SDM.DATA.ALL, searchTaxon != x) ## what species is 
   if (!identical(sort(names(occ_by_species)), sort(names(bg_by_species)))) {    ##
+    
     print(paste0("The same set of species names must exist in occ and bg"))
+    
   }
   
   ## 
-  type <- switch(type, PI = "permutation.importance", PC = "contribution", 
+  type <- switch(type, PI = "permutation.importance", 
+                 PC = "contribution", 
                  stop("type must be either \"PI\" or \"PC\".", call. = FALSE))
   
-  ## Maxent args?
+  ## This is the maxent arguments
   args <- c("threshold=false", "hinge=false")
   if (isTRUE(response_curves)) 
     args <- c(args, "responsecurves=TRUE")
@@ -589,7 +609,7 @@ HIA_SIMPLIFY = function (occ, bg, path, species_column = "species", response_cur
     args <- c(args, "outputformat=logistic")
   
   
-  ## Explain
+  ## Show which species is being used
   lapply(names(occ_by_species), function(name) {
     if (!quiet) 
       message("\n\nDoing ", name)
@@ -597,9 +617,9 @@ HIA_SIMPLIFY = function (occ, bg, path, species_column = "species", response_cur
     ## The problem is in here: conflict between these lines and the main background argument:
     ## background <- subset(SDM.DATA.ALL, searchTaxon != x)
     ## Not sure why this dataframe needs to be matched?
-    name_ <- gsub(" ", "_", name)
-    swd <- rbind(occ_by_species[[name]], bg_by_species[[name]])
-    swd <- swd[, -match(species_column, names(swd))]
+    name_ <- gsub(" ", "_", name)                              
+    swd <- rbind(occ_by_species[[name]], bg_by_species[[name]]) ## Error in occ_by_species[[name]] :
+    swd <- swd[, -match(species_column, names(swd))]            ## no [[ method for object without attributes
     ## str(swd)
     
     ##
@@ -607,25 +627,16 @@ HIA_SIMPLIFY = function (occ, bg, path, species_column = "species", response_cur
       stop("Initial number of variables < k_thr")
     
     ## What does round do? This would not work by itself
-    round(cor(as.data.frame(swd)[2:20], use = "pairwise"), 2)
-    swd.cor = as.data.frame(swd)[2:20]
-    pa <- rep(1:0, c(nrow(occ_by_species[[name]]), nrow(bg_by_species[[name]])))  ## problem here
-    ok <- as.character(usdm::vifcor(swd.cor, maxobservations = nrow(swd), 
-                                    th = cor_thr)@results$Variables)              ## ok
-    
-    ## why did I need to change from a spatial points to DF to get it working
-    # Error in (function (classes, fdef, mtable)  : 
-    #             unable to find an inherited method for function ‘maxent’ for signature ‘"SpatialPointsDataFrame", "integer"’
-    
-    swd_uncor     <- as.data.frame(swd[, ok])                     ##
-    swd_uncor$lon <- NULL
-    swd_uncor$lat <- NULL
-    str(swd_uncor)
-    
-    d <- file.path(path, name_, "full")
-    m <- dismo::maxent(swd_uncor, pa, args = args, path = d)  ## Seems to work, but why is lat/long being used?
+    round(cor(swd, use = "pairwise"), 2)
+    pa <- rep(1:0, c(nrow(occ_by_species[[name]]), nrow(bg_by_species[[name]])))
+    ok <- as.character(usdm::vifcor(swd, maxobservations = nrow(swd), 
+                                    th = cor_thr)@results$Variables)
     
     ##
+    swd_uncor <- swd[, ok]
+    d <- file.path(path, name_, "full")
+    m <- dismo::maxent(swd_uncor, pa, args = args, path = d)
+    
     if (isTRUE(save)) 
       saveRDS(m, file.path(d, "model.rds"))
     
@@ -635,11 +646,13 @@ HIA_SIMPLIFY = function (occ, bg, path, species_column = "species", response_cur
     names(pct) <- sub(paste0("\\.", type), "", names(pct))
     
     if (min(pct) >= pct_thr || length(pct) <= k_thr) {
+      
       if (isTRUE(save)) {
+        
         d_out <- file.path(path, name_, "final")
         dir.create(d_out)
-        file.copy(list.files(d, full.names = TRUE), 
-                  d_out, recursive = TRUE)
+        file.copy(list.files(d, full.names = TRUE), d_out, 
+                  recursive = TRUE)
         
       }
       
@@ -647,7 +660,6 @@ HIA_SIMPLIFY = function (occ, bg, path, species_column = "species", response_cur
       
     }
     
-    ## Explain
     while (min(pct) < pct_thr && length(pct) > k_thr) {
       
       message("Dropping ", names(pct)[1])
@@ -657,6 +669,7 @@ HIA_SIMPLIFY = function (occ, bg, path, species_column = "species", response_cur
       if (!quiet) 
         message(sprintf("%s variables: %s", ncol(swd_uncor), 
                         paste0(colnames(swd_uncor), collapse = ", ")))
+      
       m <- dismo::maxent(swd_uncor, pa, args = args, path = tmp)
       pct <- m@results[grep(type, rownames(m@results)), 
                        ]
@@ -665,18 +678,17 @@ HIA_SIMPLIFY = function (occ, bg, path, species_column = "species", response_cur
       
     }
     
-    ## Explain
     if (isTRUE(save)) {
       
       d_out <- file.path(path, name_, "final")
       file.copy(tmp, file.path(path, name_), recursive = TRUE)
       file.rename(file.path(path, name_, basename(tmp)), 
                   d_out)
+      
       saveRDS(m, file.path(path, name_, "final/model.rds"))
       
     }
     
-    ## return the set of predictors which are less correlated
     return(m)
     
   })

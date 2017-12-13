@@ -179,6 +179,19 @@ lapply(spp.all[1:length(spp.all)], function(x) { # for serial, parLapply(cl, spe
 stopCluster(cl)
 
 
+TEST = rmaxent::simplify (occ              = occurrence,
+                          bg               = background, 
+                          path             = 'output/maxent/STD_VAR_ALL', 
+                          species_column   = "species", 
+                          response_curves  = FALSE, 
+                          logistic_format  = TRUE, 
+                          type             = "PI", 
+                          cor_thr, 
+                          pct_thr, 
+                          k_thr, 
+                          quiet            = TRUE) 
+  
+
 
 
 
