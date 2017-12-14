@@ -112,14 +112,20 @@ source('./R/SDM_FUNCTIONS.R')
 ## Up the data and cross-linked to growth form and exotic/native status and derived a list of ~1000 species that are the 
 ## Most commonly sold, covering the right ratio of growth forms, regional representation and native/exotic
 HIA.list   = read.csv("./data/base/HIA_LIST/HIA/GREEN_CITIES_DRAFT_LIST_2709_2017.csv", stringsAsFactors = FALSE)
-CLEAN.list = read.csv("./data/base/HIA_LIST/HIA/HIA.CLEAN.csv", stringsAsFactors = FALSE)
-GROWING    = read.csv("./data/base/HIA_LIST/HIA/database_aus_sp_growing.csv", stringsAsFactors = FALSE) 
+CLEAN.list = read.csv("./data/base/HIA_LIST/HIA/HIA.CLEAN.csv",                         stringsAsFactors = FALSE)
+GROWING    = read.csv("./data/base/HIA_LIST/HIA/database_aus_sp_growing.csv",           stringsAsFactors = FALSE) 
 
 
-top.200    = read.csv("./data/base/HIA_LIST/HIA/HIA_TOP_200_1309_2017.csv",             stringsAsFactors = FALSE)
-renee.full = read.csv("./data/base/HIA_LIST/HIA/RENEE_FULL_LIST.csv", stringsAsFactors = FALSE) 
-renee.taxa = read.csv("./data/base/HIA_LIST/HIA/RENEE_TAXA.csv",                        stringsAsFactors = FALSE)
-renee.50   = read.csv("./data/base/HIA_LIST/HIA/RENEE_TOP_50.csv", stringsAsFactors = FALSE)
+top.200        = read.csv("./data/base/HIA_LIST/HIA/HIA_TOP_200_1309_2017.csv", stringsAsFactors = FALSE)
+renee.full     = read.csv("./data/base/HIA_LIST/HIA/RENEE_FULL_LIST.csv",       stringsAsFactors = FALSE) 
+renee.taxa     = read.csv("./data/base/HIA_LIST/HIA/RENEE_TAXA.csv",            stringsAsFactors = FALSE)
+renee.50       = read.csv("./data/base/HIA_LIST/HIA/RENEE_TOP_50.csv",          stringsAsFactors = FALSE)
+MQ.glasshouse  = read.csv("./data/base/HIA_LIST/HIA/MQ_glasshouse.csv",         stringsAsFactors = FALSE)
+
+
+##
+head(renee.taxa)
+head(MQ.glasshouse)
 
 
 ## have a look

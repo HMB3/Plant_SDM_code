@@ -94,41 +94,39 @@ str(spp.all)                 ## 6782
 
 
 ## The trial species
-test.spp = sort(unique(c(renee.full$Species, "Betula pendula", "Fraxinus excelsior", "Quercus robur", "Fagus sylvatica")))
-test.spp 
+test.spp = sort(unique(c(renee.full$Species, MQ.glasshouse$Species,
+                         "Betula pendula", "Fraxinus excelsior", "Quercus robur", "Fagus sylvatica")))
+test.spp   
 
 
 ## Combine with 45 from the main list
 HIA.SAMPLE = head(COMBO.NICHE.CONTEXT, 53)[, c("searchTaxon")]
-test.spp   = sort(unique(c(test.spp, HIA.SAMPLE)))
+test.spp   = sort(unique(c(test.spp, HIA.SAMPLE)))  ## intersect(test.spp, MQ.glasshouse$Species) 
 
 
 ## Now make the test species directory names
 test_spp = gsub(" ", "_", test.spp)
-test_spp = intersect(test_spp, species_list)
-test_rev = sort(test_spp, decreasing = TRUE)
+#test_spp = intersect(test_spp, species_list)
+#test_rev = sort(test_spp, decreasing = TRUE)
 
 
 
 
 
 #########################################################################################################################
-## 2). CREATE A LISTS OF DIRECTORIES
+## 2). CREATE LISTS OF DIRECTORIES
 #########################################################################################################################
 
 
 #########################################################################################################################
 ## Combine all the taxa at once
-RESULTS.DIR <- test_rev[c(1:length(test_rev))] %>%
+SDM.RESULTS.DIR <- test_spp[c(1:length(test_spp))] %>%
   
   ## pipe the list into lapply
   lapply(function(species) {
     
     ## create the character string
-    m <-   sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/', 
-                   species)
-    
-    ## load each .RData file - e.g. list.files(m, pattern = "bi50.tif")
+    m <-   sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/', species)
     m 
     
   }) %>%
@@ -137,71 +135,115 @@ RESULTS.DIR <- test_rev[c(1:length(test_rev))] %>%
   c()
 
 
-
-#########################################################################################################################
-## 2). CREATE AN AVERAGE AND A CONSENSUS SUITABILITY RASTER FOR EACH SPECIES
-#########################################################################################################################
+## Check the output
+str(SDM.RESULTS.DIR)
 
 
+
+
+
 #########################################################################################################################
-## First, iterate over each species, then each scenario EG: x = scen_2050[1];species = test_rev[1]
-env.grids.2050 = lapply(RESULTS.DIR, function(species) { ## lapply(scen_2050, function(x)
+## 3). CREATE AN AVERAGE AND A CONSENSUS SUITABILITY RASTER FOR EACH SPECIES, 2050 
+#########################################################################################################################
+
+
+#########################################################################################################################
+## Iterate over each directory
+## Need a way of assigning the species name to the raster file
+ensmemble.2050 = lapply(SDM.RESULTS.DIR, function(DIR) { ## lapply(scen_2050, function(x)
   
-  lapply(scen_2050, function(x) {
-    
-    ## Create a raster stack for each 2050 GCM - also an empty raster for the final plot
-    # sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif', 
-    #         species, species, x)
-    
-    ########################################################################################################################
-    ## First read in each prediction
-    m <-   sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif', 
-                   species, species, x)
-    
-    ########################################################################################################################
-    ## Take the average
-    #print(m)
-    # mean <- overlay(r2000, r2001, r2002, r2003, r2004, r2005, fun=meanIgnoringZeroes)
-    
-    
-    ########################################################################################################################
-    ## If the future raster doesn't exist, create it 
-    
-    
-    ########################################################################################################################
-    ## Use the levelplot function to make a multipanel output: average, threshold 1, threshold 2
-    png(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.png', species, species, x),      
-        11, 4, units = 'in', res = 300)
-    
-    ## Need an empty frame
-    print(levelplot(stack(pred.average,
-                          pred.thresh.05,
-                          pred.thresh.05), margin = FALSE,
-                    
-                    ## Create a colour scheme using colbrewer: 100 is to make it continuos
-                    ## Also, make it a one-directional colour scheme
-                    scales      = list(draw = FALSE), 
-                    at = seq(0, 1, length = 100),
-                    col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
-                    
-                    ## Give each plot a name
-                    names.attr = c('Occurrence', 'Current', sprintf('%s, 2050, RCP8.5', scen_name)),
-                    colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
-                    main       = list(gsub('_', ' ', species), font = 4, cex = 2)))
-            
-            ## Plot the Aus shapefile with the occurrence points for reference
-            ## Can the points be made more legible for both poorly and well recorded species?
-            # layer(sp.polygons(aus)) +
-            # layer(sp.points(occ, pch = 20, cex = 0.4, 
-            #                 col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
-    
-    ##
-    dev.off()
-    
-  })
+  #lapply(test_spp, function(species) {
   
+  ########################################################################################################################
+  ## First create a list of the rasters in each directory, then take the mean and the thresholds
+  raster.list = list.files(dir, pattern = "bi50.tif")
+  suit = stack(raster.list)
+  mean.suit = mean(suit)
+  
+  ## Then return the cells with suitability > 0.5 in all scenarios
+  suit.05 <- overlay(suit, fun =   
+                    function(S1, S2, S3, S4, S5, S6) { 
+                      
+                      ifelse( S1 > 0.5 & S2 > 0.5 & S3 > 0.5 & 
+                                S4 > 0.5 & S5 > 0.5 & S6 > 0.5,
+                              1, 0) 
+                    } )
+  
+  ## Then return the cells with suitability > 0.7 in all scenarios
+  suit.07 <- overlay(suit, fun =   
+                       function(S1, S2, S3, S4, S5, S6) { 
+                         
+                         ifelse( S1 > 0.5 & S2 > 0.5 & S3 > 0.5 & 
+                                   S4 > 0.5 & S5 > 0.5 & S6 > 0.5,
+                                 1, 0) 
+                       } )
+  
+  ## Then return the cells with suitability > 0.9 in all scenarios
+  suit.09 <- overlay(suit, fun =   
+                       function(S1, S2, S3, S4, S5, S6) { 
+                         
+                         ifelse( S1 > 0.9 & S2 > 0.9 & S3 > 0.9 & 
+                                   S4 > 0.9 & S5 > 0.9 & S6 > 0.9,
+                                 1, 0) 
+                       } )
+  
+  ## Then return the cells with suitability < 0.5 in all scenarios
+  suit.less.05 <- overlay(suit, fun =   
+                            function(S1, S2, S3, S4, S5, S6) { 
+                              
+                              ifelse( S1 < 0.5 & S2 < 0.5 & S3 < 0.5 & 
+                                        S4 < 0.5 & S5 < 0.5 & S6 < 0.5,
+                                      1, 0) 
+                            } )
+  
+  ########################################################################################################################
+  ## Write the results to file
+  # writeRaster(mean.suit, paste0(DIR, "suitability_average.tif"), overwrite = TRUE)
+  # writeRaster(mean.suit, paste0(DIR, "suitability_average.tif"), overwrite = TRUE)
+
+  print(paste0(DIR, "suitability_average.tif"))
+  
+  ########################################################################################################################
+  ## Take the threshold
+  print(paste0(DIR, "suitability_threshold_04.tif"))
+  # print(paste0(DIR, species, "_suitability_threshold_05.tif"))
+  # print(paste0(DIR, species, "_suitability_threshold_07.tif"))
+  # print(paste0(DIR, species, "_suitability_threshold_09.tif"))
+  
+  ########################################################################################################################
+  ## Use the levelplot function to make a multipanel output: average, threshold 1, threshold 2
+  # png(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.png', species, species, x),      
+  #     11, 4, units = 'in', res = 300)
+  # 
+  # ## Need an empty frame
+  # print(levelplot(stack(pred.average,
+  #                       pred.thresh.05,
+  #                       pred.thresh.05), margin = FALSE,
+  #                 
+  #                 ## Create a colour scheme using colbrewer: 100 is to make it continuos
+  #                 ## Also, make it a one-directional colour scheme
+  #                 scales      = list(draw = FALSE), 
+  #                 at = seq(0, 1, length = 100),
+  #                 col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
+  #                 
+  #                 ## Give each plot a name
+  #                 names.attr = c('GCM average', 'GCM > 0.7', 'GCM > 0.9'),
+  #                 colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
+  #                 main       = list(gsub('_', ' ', species), font = 4, cex = 2)))
+  
+  ## Plot the Aus shapefile with the occurrence points for reference
+  ## Can the points be made more legible for both poorly and well recorded species?
+  # layer(sp.polygons(aus)) +
+  # layer(sp.points(occ, pch = 20, cex = 0.4, 
+  #                 col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
+  
+  ##
+  #dev.off()
   
 })
+  
+  
+#})
 
 
 
