@@ -148,102 +148,143 @@ str(SDM.RESULTS.DIR)
 
 
 #########################################################################################################################
-## Iterate over each directory
-## Need a way of assigning the species name to the raster file
-ensmemble.2050 = lapply(SDM.RESULTS.DIR, function(DIR) { ## lapply(scen_2050, function(x)
+## Iterate over each directory: need a way of assigning the species name to the raster file
+ensemble.2050 = lapply(SDM.RESULTS.DIR, function(DIR) { ## lapply(scen_2050, function(x)
   
-  #lapply(test_spp, function(species) {
-  
-  ########################################################################################################################
-  ## First create a list of the rasters in each directory, then take the mean and the thresholds
-  raster.list = list.files(dir, pattern = "bi50.tif")
-  suit = stack(raster.list)
-  mean.suit = mean(suit)
-  
-  ## Then return the cells with suitability > 0.5 in all scenarios
-  suit.05 <- overlay(suit, fun =   
-                    function(S1, S2, S3, S4, S5, S6) { 
-                      
-                      ifelse( S1 > 0.5 & S2 > 0.5 & S3 > 0.5 & 
-                                S4 > 0.5 & S5 > 0.5 & S6 > 0.5,
-                              1, 0) 
-                    } )
-  
-  ## Then return the cells with suitability > 0.7 in all scenarios
-  suit.07 <- overlay(suit, fun =   
-                       function(S1, S2, S3, S4, S5, S6) { 
-                         
-                         ifelse( S1 > 0.5 & S2 > 0.5 & S3 > 0.5 & 
-                                   S4 > 0.5 & S5 > 0.5 & S6 > 0.5,
-                                 1, 0) 
-                       } )
-  
-  ## Then return the cells with suitability > 0.9 in all scenarios
-  suit.09 <- overlay(suit, fun =   
-                       function(S1, S2, S3, S4, S5, S6) { 
-                         
-                         ifelse( S1 > 0.9 & S2 > 0.9 & S3 > 0.9 & 
-                                   S4 > 0.9 & S5 > 0.9 & S6 > 0.9,
-                                 1, 0) 
-                       } )
-  
-  ## Then return the cells with suitability < 0.5 in all scenarios
-  suit.less.05 <- overlay(suit, fun =   
-                            function(S1, S2, S3, S4, S5, S6) { 
-                              
-                              ifelse( S1 < 0.5 & S2 < 0.5 & S3 < 0.5 & 
-                                        S4 < 0.5 & S5 < 0.5 & S6 < 0.5,
-                                      1, 0) 
-                            } )
-  
-  ########################################################################################################################
-  ## Write the results to file
-  # writeRaster(mean.suit, paste0(DIR, "suitability_average.tif"), overwrite = TRUE)
-  # writeRaster(mean.suit, paste0(DIR, "suitability_average.tif"), overwrite = TRUE)
-
-  print(paste0(DIR, "suitability_average.tif"))
-  
-  ########################################################################################################################
-  ## Take the threshold
-  print(paste0(DIR, "suitability_threshold_04.tif"))
-  # print(paste0(DIR, species, "_suitability_threshold_05.tif"))
-  # print(paste0(DIR, species, "_suitability_threshold_07.tif"))
-  # print(paste0(DIR, species, "_suitability_threshold_09.tif"))
-  
-  ########################################################################################################################
-  ## Use the levelplot function to make a multipanel output: average, threshold 1, threshold 2
-  # png(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.png', species, species, x),      
-  #     11, 4, units = 'in', res = 300)
-  # 
-  # ## Need an empty frame
-  # print(levelplot(stack(pred.average,
-  #                       pred.thresh.05,
-  #                       pred.thresh.05), margin = FALSE,
-  #                 
-  #                 ## Create a colour scheme using colbrewer: 100 is to make it continuos
-  #                 ## Also, make it a one-directional colour scheme
-  #                 scales      = list(draw = FALSE), 
-  #                 at = seq(0, 1, length = 100),
-  #                 col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
-  #                 
-  #                 ## Give each plot a name
-  #                 names.attr = c('GCM average', 'GCM > 0.7', 'GCM > 0.9'),
-  #                 colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
-  #                 main       = list(gsub('_', ' ', species), font = 4, cex = 2)))
-  
-  ## Plot the Aus shapefile with the occurrence points for reference
-  ## Can the points be made more legible for both poorly and well recorded species?
-  # layer(sp.polygons(aus)) +
-  # layer(sp.points(occ, pch = 20, cex = 0.4, 
-  #                 col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
-  
-  ##
-  #dev.off()
+  lapply(test_spp, function(species) {
+    
+    ## First, as a workaround for the lapply combination, check if the file combination is correct
+    f_current <- paste0(DIR, species, "_current.tif")
+    
+    ## Then only run the raster calculations if the file path exists
+    if(file.exists(f_current)) {
+      
+      ###################################################################################################################
+      ## Create a list of the rasters in each directory, then take the mean 
+      raster.list = list.files(DIR, pattern = "bi50.tif")
+      suit        = stack(raster.list)
+      mean.suit   = mean(suit)
+      
+      ## Write the mean to file
+      writeRaster(mean.suit, sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif',
+                                     species, species, "suitability_mean.tif"), overwrite = TRUE)
+      
+      ###################################################################################################################
+      ## Create a list of the rasters in each directory, then take the mean
+      #suits = list()
+      for (thresh in c (0.5, 0.7, 0.9)) {
+        thresh_greater_fun  = function (x1, x2) {x1 & x2 > thresh}
+      
+        suit_ras = reduce (raster.list, thresh_fun, raster.list[[1]] > thresh)
+        
+        ## Write raster here
+        writeRaster(suit_ras, sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.tif',
+                                       species, species, "suitability_thresh", thresh), overwrite = TRUE)
+        
+      }
+      
+      ## Then return the cells with suitability > 0.5 in all scenarios
+      # suit.05 <- overlay(suit, fun =   
+      #                      function(S1, S2, S3, S4, S5, S6) { 
+      #                        
+      #                        ifelse(S1 > 0.5 & S2 > 0.5 & S3 > 0.5 & 
+      #                                 S4 > 0.5 & S5 > 0.5 & S6 > 0.5,
+      #                               1, 0) 
+      #                      })
+      # 
+      # ## Then return the cells with suitability > 0.7 in all scenarios
+      # suit.07 <- overlay(suit, fun =   
+      #                      function(S1, S2, S3, S4, S5, S6) { 
+      #                        
+      #                        ifelse(S1 > 0.5 & S2 > 0.5 & S3 > 0.5 & 
+      #                                 S4 > 0.5 & S5 > 0.5 & S6 > 0.5,
+      #                               1, 0) 
+      #                      })
+      # 
+      # ## Then return the cells with suitability > 0.9 in all scenarios
+      # suit.09 <- overlay(suit, fun =   
+      #                      function(S1, S2, S3, S4, S5, S6) { 
+      #                        
+      #                        ifelse(S1 > 0.9 & S2 > 0.9 & S3 > 0.9 & 
+      #                                 S4 > 0.9 & S5 > 0.9 & S6 > 0.9,
+      #                               1, 0) 
+      #                      })
+      # 
+      # ## Then return the cells with suitability < 0.5 in all scenarios
+      # suit.less.05 <- overlay(suit, fun =   
+      #                           function(S1, S2, S3, S4, S5, S6) { 
+      #                             
+      #                             ifelse(S1 < 0.5 & S2 < 0.5 & S3 < 0.5 & 
+      #                                      S4 < 0.5 & S5 < 0.5 & S6 < 0.5,
+      #                                    1, 0) 
+      #                           })
+      
+      ########################################################################################################################
+      ## Write the results to file
+      writeRaster(mean.suit, sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif',
+                                     species, species, "suitability_mean.tif"), overwrite = TRUE)
+      
+      
+      # writeRaster(suit.05,   paste0(DIR, "suitability_threshold_05.tif"), overwrite = TRUE)
+      # writeRaster(suit.07,   paste0(DIR, "suitability_threshold_07.tif"), overwrite = TRUE)
+      # writeRaster(suit.09,   paste0(DIR, "suitability_threshold_09.tif"), overwrite = TRUE)
+      # writeRaster(suit.05,   paste0(DIR, "suitability_average.tif"), overwrite = TRUE)
+      # writeRaster(suit.less.05,   paste0(DIR, "suitability_average.tif"), overwrite = TRUE)
+      sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif', 
+              species, species, "suitability_average.tif")
+      
+      
+      # print(paste0(DIR, species, "_suitability_threshold_05.tif"))
+      # print(paste0(DIR, species, "_suitability_threshold_07.tif"))
+      # print(paste0(DIR, species, "_suitability_threshold_09.tif"))
+    
+      
+      ########################################################################################################################
+      ## Take the threshold
+      print(paste0(DIR, "suitability_threshold_04.tif"))
+      # print(paste0(DIR, species, "_suitability_threshold_05.tif"))
+      # print(paste0(DIR, species, "_suitability_threshold_07.tif"))
+      # print(paste0(DIR, species, "_suitability_threshold_09.tif"))
+      
+      ########################################################################################################################
+      ## Use the levelplot function to make a multipanel output: average, threshold 1, threshold 2
+      # png(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.png', species, species, "suitability_combo"),      
+      #     11, 4, units = 'in', res = 300)
+      # 
+      # ## Need an empty frame
+      # print(levelplot(stack(pred.average,
+      #                       pred.thresh.05,
+      #                       pred.thresh.05), margin = FALSE,
+      #                 
+      #                 ## Create a colour scheme using colbrewer: 100 is to make it continuos
+      #                 ## Also, make it a one-directional colour scheme
+      #                 scales      = list(draw = FALSE), 
+      #                 at = seq(0, 1, length = 100),
+      #                 col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
+      #                 
+      #                 ## Give each plot a name
+      #                 names.attr = c('GCM average', 'GCM > 0.7', 'GCM > 0.9'),
+      #                 colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
+      #                 main       = list(gsub('_', ' ', species), font = 4, cex = 2)))
+      
+      ## Plot the Aus shapefile with the occurrence points for reference
+      ## Can the points be made more legible for both poorly and well recorded species?
+      # layer(sp.polygons(aus)) +
+      # layer(sp.points(occ, pch = 20, cex = 0.4, 
+      #                 col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
+      
+      ##
+      #dev.off()
+      
+    } else {
+      
+      message(species, ' ', ' skipped - incorrect directory')   ## Ignore species which have already been run - maybe remove
+      
+    }
+    
+  })
   
 })
-  
-  
-#})
 
 
 
