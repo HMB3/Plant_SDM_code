@@ -179,10 +179,11 @@ ensemble.2050 = lapply(SDM.RESULTS.DIR, function(DIR) { ## lapply(scen_2050, fun
         thresh_less_fun     = function (x1, x2) {x1 & x2 < thresh}
         
         ## Then apply the function to the GCM list for each species
-        suit_ras_greater    = reduce (raster.list, thresh_greater_fun, raster.list[[1]] > thresh)
-        suit_ras_less       = reduce (raster.list, thresh_less_fun,    raster.list[[1]] > thresh)
+        ## Init initializes a raster object with values
+        suit_ras_greater    = reduce (raster.list, thresh_greater_fun, .init = raster.list[[1]] > thresh)
+        suit_ras_less       = reduce (raster.list, thresh_less_fun,    .init = raster.list[[1]] < thresh)
         
-        ## Write the raster for each species and threshold inside the loop
+        ## Write the raster for each species and threshold inside the loop. But how to access the rasters for plotting?
         writeRaster(suit_ras_greater, sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.tif',
                                        species, species, "suitability_thresh", thresh), overwrite = TRUE)
         
@@ -191,7 +192,7 @@ ensemble.2050 = lapply(SDM.RESULTS.DIR, function(DIR) { ## lapply(scen_2050, fun
         
       }
       
-      ## Then return the cells with suitability > 0.5 in all scenarios
+      ## The reduce code replaces what is below...
       # suit.05 <- overlay(suit, fun =   
       #                      function(S1, S2, S3, S4, S5, S6) { 
       #                        
@@ -202,7 +203,8 @@ ensemble.2050 = lapply(SDM.RESULTS.DIR, function(DIR) { ## lapply(scen_2050, fun
       
       ########################################################################################################################
       ## Use the levelplot function to make a multipanel output: average, threshold 1, threshold 2
-      # png(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.png', species, species, "suitability_combo"),      
+      # png(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_suitability_combo.tif', 
+      #             species, species),
       #     11, 4, units = 'in', res = 300)
       # 
       # ## Need an empty frame
@@ -244,3 +246,6 @@ ensemble.2050 = lapply(SDM.RESULTS.DIR, function(DIR) { ## lapply(scen_2050, fun
 
 
 
+#########################################################################################################################
+#####################################################  TBC ############################################################## 
+#########################################################################################################################
