@@ -143,7 +143,7 @@ str(SDM.RESULTS.DIR)
 
 
 #########################################################################################################################
-## 3). CREATE AN AVERAGE AND A CONSENSUS SUITABILITY RASTER FOR EACH SPECIES, 2050 
+## 3). CREATE AN AVERAGE AND A CONSENSUS SUITABILITY RASTER FOR EACH SPECIES, FOR 2050 
 #########################################################################################################################
 
 
@@ -166,20 +166,28 @@ ensemble.2050 = lapply(SDM.RESULTS.DIR, function(DIR) { ## lapply(scen_2050, fun
       mean.suit   = mean(suit)
       
       ## Write the mean to file
-      writeRaster(mean.suit, sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif',
-                                     species, species, "suitability_mean.tif"), overwrite = TRUE)
+      writeRaster(mean.suit, sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_suitability_mean.tif', 
+                                     species, species), overwrite = TRUE)
       
       ###################################################################################################################
-      ## Create a list of the rasters in each directory, then take the mean
+      ## Then create rasters that meet habitat suitability criteria thresholds
       #suits = list()
       for (thresh in c (0.5, 0.7, 0.9)) {
-        thresh_greater_fun  = function (x1, x2) {x1 & x2 > thresh}
-      
-        suit_ras = reduce (raster.list, thresh_fun, raster.list[[1]] > thresh)
         
-        ## Write raster here
-        writeRaster(suit_ras, sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.tif',
+        ## First create a simple function to threshold each of the rasters in raster.list
+        thresh_greater_fun  = function (x1, x2) {x1 & x2 > thresh}
+        thresh_less_fun     = function (x1, x2) {x1 & x2 < thresh}
+        
+        ## Then apply the function to the GCM list for each species
+        suit_ras_greater    = reduce (raster.list, thresh_greater_fun, raster.list[[1]] > thresh)
+        suit_ras_less       = reduce (raster.list, thresh_less_fun,    raster.list[[1]] > thresh)
+        
+        ## Write the raster for each species and threshold inside the loop
+        writeRaster(suit_ras_greater, sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.tif',
                                        species, species, "suitability_thresh", thresh), overwrite = TRUE)
+        
+        writeRaster(suit_ras_less, sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.tif',
+                                           species, species, "suitability_thresh", thresh), overwrite = TRUE)
         
       }
       
@@ -191,60 +199,6 @@ ensemble.2050 = lapply(SDM.RESULTS.DIR, function(DIR) { ## lapply(scen_2050, fun
       #                                 S4 > 0.5 & S5 > 0.5 & S6 > 0.5,
       #                               1, 0) 
       #                      })
-      # 
-      # ## Then return the cells with suitability > 0.7 in all scenarios
-      # suit.07 <- overlay(suit, fun =   
-      #                      function(S1, S2, S3, S4, S5, S6) { 
-      #                        
-      #                        ifelse(S1 > 0.5 & S2 > 0.5 & S3 > 0.5 & 
-      #                                 S4 > 0.5 & S5 > 0.5 & S6 > 0.5,
-      #                               1, 0) 
-      #                      })
-      # 
-      # ## Then return the cells with suitability > 0.9 in all scenarios
-      # suit.09 <- overlay(suit, fun =   
-      #                      function(S1, S2, S3, S4, S5, S6) { 
-      #                        
-      #                        ifelse(S1 > 0.9 & S2 > 0.9 & S3 > 0.9 & 
-      #                                 S4 > 0.9 & S5 > 0.9 & S6 > 0.9,
-      #                               1, 0) 
-      #                      })
-      # 
-      # ## Then return the cells with suitability < 0.5 in all scenarios
-      # suit.less.05 <- overlay(suit, fun =   
-      #                           function(S1, S2, S3, S4, S5, S6) { 
-      #                             
-      #                             ifelse(S1 < 0.5 & S2 < 0.5 & S3 < 0.5 & 
-      #                                      S4 < 0.5 & S5 < 0.5 & S6 < 0.5,
-      #                                    1, 0) 
-      #                           })
-      
-      ########################################################################################################################
-      ## Write the results to file
-      writeRaster(mean.suit, sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif',
-                                     species, species, "suitability_mean.tif"), overwrite = TRUE)
-      
-      
-      # writeRaster(suit.05,   paste0(DIR, "suitability_threshold_05.tif"), overwrite = TRUE)
-      # writeRaster(suit.07,   paste0(DIR, "suitability_threshold_07.tif"), overwrite = TRUE)
-      # writeRaster(suit.09,   paste0(DIR, "suitability_threshold_09.tif"), overwrite = TRUE)
-      # writeRaster(suit.05,   paste0(DIR, "suitability_average.tif"), overwrite = TRUE)
-      # writeRaster(suit.less.05,   paste0(DIR, "suitability_average.tif"), overwrite = TRUE)
-      sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif', 
-              species, species, "suitability_average.tif")
-      
-      
-      # print(paste0(DIR, species, "_suitability_threshold_05.tif"))
-      # print(paste0(DIR, species, "_suitability_threshold_07.tif"))
-      # print(paste0(DIR, species, "_suitability_threshold_09.tif"))
-    
-      
-      ########################################################################################################################
-      ## Take the threshold
-      print(paste0(DIR, "suitability_threshold_04.tif"))
-      # print(paste0(DIR, species, "_suitability_threshold_05.tif"))
-      # print(paste0(DIR, species, "_suitability_threshold_07.tif"))
-      # print(paste0(DIR, species, "_suitability_threshold_09.tif"))
       
       ########################################################################################################################
       ## Use the levelplot function to make a multipanel output: average, threshold 1, threshold 2
@@ -278,7 +232,7 @@ ensemble.2050 = lapply(SDM.RESULTS.DIR, function(DIR) { ## lapply(scen_2050, fun
       
     } else {
       
-      message(species, ' ', ' skipped - incorrect directory')   ## Ignore species which have already been run - maybe remove
+      message(species, ' ', ' skipped - incorrect directory')   ## not needed with a proper loop
       
     }
     
