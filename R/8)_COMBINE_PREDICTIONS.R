@@ -14,8 +14,8 @@
 
 #########################################################################################################################
 ## Load packages
-source('./R/HIA_LIST_MATCHING.R')
 load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")
+source('./R/HIA_LIST_MATCHING.R')
 
 
 ## Require packages

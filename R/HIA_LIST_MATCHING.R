@@ -178,6 +178,7 @@ Manuel.test =  c("Acacia melanoxylon",
                  "Ulmus parvifolia")
 
 
+
 #########################################################################################################################
 ## Merge the ~1000 with the top 200
 ## This merge won't get the ones that match to binomial
@@ -286,6 +287,34 @@ HIA.SPP.LOOKUP = setDT(HIA.SPP.LOOKUP , keep.rownames = TRUE)[]
 HIA.SPP.LOOKUP = dplyr::rename(HIA.SPP.LOOKUP, Binomial = rn)
 head(HIA.SPP.LOOKUP) ## Can merge on the bilogical data here...
 ## write.csv(HIA.SPP.LOOKUP, "./data/base/HIA_LIST/HIA/HIA_BINOMIAL_LOOKUP.csv", row.names = FALSE)
+
+
+
+
+
+#########################################################################################################################
+## 3). CREATE TEST SPECIES LIST FOR MODEL RUNS 
+#########################################################################################################################
+
+
+## All species on the growers list
+spp.all  <- unique(HIA.SPP$Binomial)
+str(spp.all)
+all.reverse = sort(spp.all, decreasing = TRUE)
+
+
+## The trial species
+test.spp = sort(unique(c(renee.full$Species, 
+                         Manuel.test,
+                         MQ.glasshouse$Species,
+                         "Betula pendula", "Fraxinus excelsior", "Quercus robur", "Fagus sylvatica")))
+
+
+## Combine with 45 from the main list
+HIA.SAMPLE = head(COMBO.NICHE.CONTEXT, 53)[, c("searchTaxon")]
+test.spp   = sort(unique(c(test.spp, HIA.SAMPLE)))
+str(test.spp)
+test.reverse = sort(test.spp, decreasing = TRUE)
 
 
 

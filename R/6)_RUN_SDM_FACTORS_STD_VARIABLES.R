@@ -85,6 +85,11 @@ sdm.predictors <- c("Annual_mean_temp",    "Mean_diurnal_range",  "Isothermality
                     "Precip_dry_qu",       "Precip_warm_qu",      "Precip_col_qu")
 
 
+## Are the latest experimental species in there?
+head(test.spp, 10)
+
+
+
 
 ########################################################################################################################
 ## We can run Maxent from a cluster of cores on the local computer. Here we send (i.e. export) all the necessary ingredients 

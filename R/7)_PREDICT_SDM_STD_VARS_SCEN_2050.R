@@ -15,8 +15,9 @@
 
 #########################################################################################################################
 ## Load packages
-source('./R/HIA_LIST_MATCHING.R')
 load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")
+source('./R/HIA_LIST_MATCHING.R')
+
 
 
 ## Require packages
@@ -130,8 +131,8 @@ test.spp   = sort(unique(c(test.spp, HIA.SAMPLE)))
 
 ## Now make the test species directory names
 test_spp = gsub(" ", "_", test.spp)
-test_spp = intersect(test_spp, species_list)
-test_rev = sort(test_spp, decreasing = TRUE)
+# test_spp = intersect(test_spp, species_list)
+# test_rev = sort(test_spp, decreasing = TRUE)
 
 
 
@@ -441,9 +442,6 @@ env.grids.2070 = lapply(scen_2070, function(x) {
 #########################################################################################################################
 
 
-## 2070 raster crop is failing: need to set the extent and resolution to be exactly the same...
-
-
 ## We are missing two scenarios recommended for Australia: CanESM2 & CESM1-CAM5. These two are not on the worldclim list:
 
 ## https://www.climatechangeinaustralia.gov.au/en/support-and-guidance/faqs/eight-climate-models-data/
@@ -451,11 +449,10 @@ env.grids.2070 = lapply(scen_2070, function(x) {
 ## http://www.worldclim.org/cmip5_30s
   
 
+## Consider the final format needed: which files: table, plots/maps, files. Space important for both local and web... 
 
-## Consider the final format needed: which files: table, plots/maps, files. Space important for both local and web 
 
-
-## How can we take an consensus layer of all the scenarios, to create a confidence interval? See ensemble.raster
+## How can we take an consensus layer of all the scenarios, to create a confidence interval? See step 8).
 
 
 
