@@ -136,9 +136,10 @@ ensemble.2050 = lapply(SDM.RESULTS.DIR, function(DIR) { ## lapply(scen_2050, fun
       
       ###################################################################################################################
       ## Create a list of the rasters in each directory, then take the mean. How long does the mean calculation take?
-      ## 
+      ## Tidy this up with %, etc
       raster.list = list.files(as.character(DIR), pattern = "bi50.tif", full.names = TRUE)
       suit        = stack(raster.list)
+      suit.list   = unstack(suit)
       mean.suit   = mean(suit)   ## plot(mean)
       
       ## Write the mean to file
@@ -155,16 +156,19 @@ ensemble.2050 = lapply(SDM.RESULTS.DIR, function(DIR) { ## lapply(scen_2050, fun
         thresh_less_fun     = function (x1, x2) {x1 & x2 < thresh}
         
         ## Then apply the function to the GCM list for each species
-        ## Init initializes a raster object with values
-        suit_ras_greater    = reduce (raster.list, thresh_greater_fun, .init = raster.list[[1]] > thresh)
-        suit_ras_less       = reduce (raster.list, thresh_less_fun,    .init = raster.list[[1]] < thresh)
+        ## The Init function initializes a raster object with values
+        #Error in .local(x, ...) : not a valid subset is due to the fact that you are providing a logical index vector
+        suit_ras_greater    = reduce(suit.list, thresh_greater_fun, .init = suit.list[[1]] > thresh)
+        suit_ras_less       = reduce(suit.list, thresh_less_fun,    .init = suit.list[[1]] < thresh)
         
         ## Write the raster for each species and threshold inside the loop. But how to access the rasters for plotting?
+        message('Writing ', species, ' suitability > ', thresh) 
         writeRaster(suit_ras_greater, sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.tif',
-                                       species, species, "suitability_thresh", thresh), overwrite = TRUE)
+                                       species, species, "suitability_greater_thresh", thresh), overwrite = TRUE)
         
-        writeRaster(suit_ras_less, sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.tif',
-                                           species, species, "suitability_thresh", thresh), overwrite = TRUE)
+        # message('Writing ', species, ' suitability < ', thresh) 
+        # writeRaster(suit_ras_less, sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.tif',
+        #                                    species, species, "suitability_less_thresh", thresh), overwrite = TRUE)
         
       }
       
