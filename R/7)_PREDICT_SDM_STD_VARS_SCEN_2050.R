@@ -103,7 +103,7 @@ summary(env.grids.current[[11]])
 
 
 ## All species on the growers list, and also a test list which includes Renee's species
-species_list  <- basename(list.dirs('F:/green_cities_sdm/output/maxent/STD_VAR_ALL',   recursive = FALSE))
+species_list  <- basename(list.dirs('./output/maxent/STD_VAR_ALL',   recursive = FALSE))
 species_rev   = sort(species_list, decreasing = TRUE)
 
 
@@ -165,22 +165,22 @@ env.grids.2050 = lapply(scen_2050, function(x) {
   lapply(test_spp, function(species) {
     
     ## First check if the species projection has already been run...
-    if(!file.exists(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif',
+    if(!file.exists(sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif',
                             species, species, x))) {
       message('Doing ', species) 
       
       ## Read in the SDM model calibrated on current conditions
-      m <- readRDS(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/maxent_fitted.rds', species)) 
+      m <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/maxent_fitted.rds', species)) 
       
       ## Read in the occurrence points used to create the SDM
       occ <- readRDS(
-        sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/occ.rds', 
+        sprintf('./output/maxent/STD_VAR_ALL/%s/occ.rds', 
                 species)) %>%
         
       ########################################################################################################################
       ## If the current raster doesn't exist, create it
       spTransform(CRS('+init=epsg:4326'))
-      f_current <- sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_current.tif', 
+      f_current <- sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_current.tif', 
                            species, species)
       
       if(!file.exists(f_current)) {
@@ -194,13 +194,13 @@ env.grids.2050 = lapply(scen_2050, function(x) {
         
       } else {
         
-        pred.current = raster(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_current.tif', 
+        pred.current = raster(sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_current.tif', 
                                       species, species))
       }
       
       ########################################################################################################################
       ## If the future raster doesn't exist, create it 
-      f_future <- sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif', 
+      f_future <- sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif', 
                           species, species, x)
       
       if(!file.exists(f_future)) {
@@ -217,7 +217,7 @@ env.grids.2050 = lapply(scen_2050, function(x) {
         
         ########################################################################################################################
         ## Use the levelplot function to make a multipanel output: occurrence points, current raster and future raster
-        png(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.png', species, species, x),      
+        png(sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s.png', species, species, x),      
             11, 4, units = 'in', res = 300)
         
         ## Need an empty frame
@@ -320,22 +320,22 @@ env.grids.2070 = lapply(scen_2070, function(x) {
   lapply(test_rev, function(species) {
     
     ## First check if the species projection has already been run...
-    if(!file.exists(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif',
+    if(!file.exists(sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif',
                             species, species, x))) {
       message('Doing ', species) 
       
       ## Read in the SDM model calibrated on current conditions
-      m <- readRDS(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/maxent_fitted.rds', species)) 
+      m <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/maxent_fitted.rds', species)) 
       
       ## Read in the occurrence points used to create the SDM
       occ <- readRDS(
-        sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/occ.rds', 
+        sprintf('./output/maxent/STD_VAR_ALL/%s/occ.rds', 
                 species)) %>%
         
       ########################################################################################################################
       ## If the current raster doesn't exist, create it
       spTransform(CRS('+init=epsg:4326'))
-      f_current <- sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_current.tif', 
+      f_current <- sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_current.tif', 
                            species, species)
       
       if(!file.exists(f_current)) {
@@ -350,13 +350,13 @@ env.grids.2070 = lapply(scen_2070, function(x) {
       } else {
         
         ## Otherwise just read it in
-        pred.current = raster(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_current.tif', 
+        pred.current = raster(sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_current.tif', 
                                       species, species))
       }
       
       ########################################################################################################################
       ## If the future raster doesn't exist, create it 
-      f_future <- sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif', 
+      f_future <- sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif', 
                           species, species, x)
       
       if(!file.exists(f_future)) {
@@ -373,7 +373,7 @@ env.grids.2070 = lapply(scen_2070, function(x) {
         
         ########################################################################################################################
         ## Use the levelplot function to make a multipanel output: occurrence points, current raster and future raster...
-        png(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s.png', species, species, x),      
+        png(sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s.png', species, species, x),      
             11, 4, units = 'in', res = 300)
         
         ## Need an empty frame

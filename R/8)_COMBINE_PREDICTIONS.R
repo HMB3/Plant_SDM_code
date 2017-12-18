@@ -75,7 +75,7 @@ scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cn85bi70", "gf85bi70", "hg85b
 
 #########################################################################################################################
 ## All species on the growers list, and also a test list which includes Renee's species
-species_list  <- basename(list.dirs('F:/green_cities_sdm/output/maxent/STD_VAR_ALL',   recursive = FALSE))
+species_list  <- basename(list.dirs('./output/maxent/STD_VAR_ALL',   recursive = FALSE))
 species_rev   = sort(species_list, decreasing = TRUE)
 
 
@@ -89,7 +89,7 @@ test_spp = gsub(" ", "_", test.spp)
 
 
 #########################################################################################################################
-## 2). CREATE LISTS OF DIRECTORIES
+## 2). CREATE LIST OF DIRECTORIES
 #########################################################################################################################
 
 
@@ -101,7 +101,7 @@ SDM.RESULTS.DIR <- test_spp[c(1:length(test_spp))] %>%
   lapply(function(species) {
     
     ## create the character string
-    m <-   sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/', species)
+    m <-   sprintf('./output/maxent/STD_VAR_ALL/%s/full/', species)
     m 
     
   }) %>%
@@ -143,7 +143,7 @@ ensemble.2050 = lapply(SDM.RESULTS.DIR, function(DIR) { ## lapply(scen_2050, fun
       mean.suit   = mean(suit)   ## plot(mean)
       
       ## Write the mean to file
-      writeRaster(mean.suit, sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_suitability_mean.tif', 
+      writeRaster(mean.suit, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_suitability_mean.tif', 
                                      species, species), overwrite = TRUE)
       
       ###################################################################################################################
@@ -163,11 +163,11 @@ ensemble.2050 = lapply(SDM.RESULTS.DIR, function(DIR) { ## lapply(scen_2050, fun
         
         ## Write the raster for each species and threshold inside the loop. But how to access the rasters for plotting?
         message('Writing ', species, ' suitability > ', thresh) 
-        writeRaster(suit_ras_greater, sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.tif',
+        writeRaster(suit_ras_greater, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.tif',
                                        species, species, "suitability_greater_thresh", thresh), overwrite = TRUE)
         
         # message('Writing ', species, ' suitability < ', thresh) 
-        # writeRaster(suit_ras_less, sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.tif',
+        # writeRaster(suit_ras_less, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.tif',
         #                                    species, species, "suitability_less_thresh", thresh), overwrite = TRUE)
         
       }
@@ -183,7 +183,7 @@ ensemble.2050 = lapply(SDM.RESULTS.DIR, function(DIR) { ## lapply(scen_2050, fun
       
       ########################################################################################################################
       ## Use the levelplot function to make a multipanel output: average, threshold 1, threshold 2
-      # png(sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_suitability_combo.tif', 
+      # png(sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_suitability_combo.tif', 
       #             species, species),
       #     11, 4, units = 'in', res = 300)
       # 
