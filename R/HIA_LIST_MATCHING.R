@@ -35,7 +35,6 @@ library(raster)
 library(rJava)
 library(things)
 
-
 library(ALA4R)
 library(rgbif)
 library(scrubr)

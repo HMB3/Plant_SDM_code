@@ -91,7 +91,7 @@ clusterEvalQ(cl, {
 
 ########################################################################################################################
 ## Now use 'lapply' to run maxent for multiple species
-lapply(spp.all[1:length(test.spp)], function(x) { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel 
+lapply(test.spp[1:length(test.spp)], function(x) { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel 
   
   ## Print the taxa being processed to screen
   if(x %in% SDM.DATA.ALL$searchTaxon) {

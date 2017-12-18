@@ -18,16 +18,6 @@ load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")
 source('./R/HIA_LIST_MATCHING.R')
 
 
-## Require packages
-p <- c('ff',    'things',         'raster',    'dismo',        'sp',           'latticeExtra', 'data.table', 
-       'rgdal', 'rgeos',          'gdalUtils', 'rmaxent',      'readr',        'dplyr',        'tidyr',
-       'readr', 'rnaturalearth',  'rasterVis', 'RColorBrewer', 'latticeExtra', 'parallel')
-sapply(p, require, character.only = TRUE)
-
-
-
-
-
 #########################################################################################################################
 ## 1). CREATE LISTS OF GCMs AND SPECIES FOR MODEL RUNS 
 #########################################################################################################################
@@ -89,21 +79,6 @@ species_list  <- basename(list.dirs('F:/green_cities_sdm/output/maxent/STD_VAR_A
 species_rev   = sort(species_list, decreasing = TRUE)
 
 
-spp.all  <- unique(COMBO.NICHE.CONTEXT$searchTaxon)
-str(spp.all)                 ## 6782
-
-
-## The trial species
-test.spp = sort(unique(c(renee.full$Species, MQ.glasshouse$Species,
-                         "Betula pendula", "Fraxinus excelsior", "Quercus robur", "Fagus sylvatica")))
-test.spp   
-
-
-## Combine with 45 from the main list
-HIA.SAMPLE = head(COMBO.NICHE.CONTEXT, 53)[, c("searchTaxon")]
-test.spp   = sort(unique(c(test.spp, HIA.SAMPLE)))  ## intersect(test.spp, MQ.glasshouse$Species) 
-
-
 ## Now make the test species directory names
 test_spp = gsub(" ", "_", test.spp)
 #test_spp = intersect(test_spp, species_list)
@@ -160,10 +135,11 @@ ensemble.2050 = lapply(SDM.RESULTS.DIR, function(DIR) { ## lapply(scen_2050, fun
     if(file.exists(f_current)) {
       
       ###################################################################################################################
-      ## Create a list of the rasters in each directory, then take the mean 
-      raster.list = list.files(DIR, pattern = "bi50.tif")
+      ## Create a list of the rasters in each directory, then take the mean. How long does the mean calculation take?
+      ## 
+      raster.list = list.files(as.character(DIR), pattern = "bi50.tif", full.names = TRUE)
       suit        = stack(raster.list)
-      mean.suit   = mean(suit)
+      mean.suit   = mean(suit)   ## plot(mean)
       
       ## Write the mean to file
       writeRaster(mean.suit, sprintf('F:/green_cities_sdm/output/maxent/STD_VAR_ALL/%s/full/%s_suitability_mean.tif', 
@@ -172,7 +148,7 @@ ensemble.2050 = lapply(SDM.RESULTS.DIR, function(DIR) { ## lapply(scen_2050, fun
       ###################################################################################################################
       ## Then create rasters that meet habitat suitability criteria thresholds
       #suits = list()
-      for (thresh in c (0.5, 0.7, 0.9)) {
+      for (thresh in c(0.5, 0.7, 0.9)) {
         
         ## First create a simple function to threshold each of the rasters in raster.list
         thresh_greater_fun  = function (x1, x2) {x1 & x2 > thresh}

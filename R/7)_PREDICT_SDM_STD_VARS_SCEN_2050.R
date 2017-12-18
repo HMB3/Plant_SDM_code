@@ -19,14 +19,6 @@ load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")
 source('./R/HIA_LIST_MATCHING.R')
 
 
-
-## Require packages
-p <- c('ff',    'things',         'raster',    'dismo',        'sp',           'latticeExtra', 'data.table', 
-       'rgdal', 'rgeos',          'gdalUtils', 'rmaxent',      'readr',        'dplyr',        'tidyr',
-       'readr', 'rnaturalearth',  'rasterVis', 'RColorBrewer', 'latticeExtra', 'parallel')
-sapply(p, require, character.only = TRUE)
-
-
 #########################################################################################################################
 ## create a list of GCM scenarios (below is from CSIRO): 
 
@@ -113,20 +105,6 @@ summary(env.grids.current[[11]])
 ## All species on the growers list, and also a test list which includes Renee's species
 species_list  <- basename(list.dirs('F:/green_cities_sdm/output/maxent/STD_VAR_ALL',   recursive = FALSE))
 species_rev   = sort(species_list, decreasing = TRUE)
-
-
-spp.all  <- unique(COMBO.NICHE.CONTEXT$searchTaxon)
-str(spp.all)                 ## 6782
-
-
-## The trial species
-test.spp = sort(unique(c(renee.full$Species, "Betula pendula", "Fraxinus excelsior", "Quercus robur", "Fagus sylvatica")))
-test.spp 
-
-
-## Combine with 45 from the main list
-HIA.SAMPLE = head(COMBO.NICHE.CONTEXT, 53)[, c("searchTaxon")]
-test.spp   = sort(unique(c(test.spp, HIA.SAMPLE)))
 
 
 ## Now make the test species directory names
