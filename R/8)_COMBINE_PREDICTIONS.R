@@ -123,8 +123,8 @@ str(SDM.RESULTS.DIR)
 
 
 #########################################################################################################################
-## Iterate over each directory: need a way of assigning the species name to the raster file
-ensemble.2050 = lapply(SDM.RESULTS.DIR, function(DIR) { ## lapply(scen_2050, function(x)
+## Iterate over each directory: 
+ensemble.2050 = lapply(SDM.RESULTS.DIR, function(DIR) { 
   
   lapply(test_spp, function(species) {
     
@@ -143,28 +143,53 @@ ensemble.2050 = lapply(SDM.RESULTS.DIR, function(DIR) { ## lapply(scen_2050, fun
       mean.suit   = mean(suit)   ## plot(mean)
       
       ## Write the mean to file
-      writeRaster(mean.suit, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_suitability_mean.tif', 
-                                     species, species), overwrite = TRUE)
+      f_mean = sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_2050_suitability_mean.tif', 
+                       species, species)
+      
+      
+      if(!file.exists(f_mean)) {
+        
+        writeRaster(mean.suit, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_2050_suitability_mean.tif', 
+                                       species, species), overwrite = TRUE)
+        
+      } else {
+        
+        message(species, '2050 mean suitability skipped - already exists')   ## not needed with a proper loop
+        
+      }
       
       ###################################################################################################################
       ## Then create rasters that meet habitat suitability criteria thresholds
       #suits = list()
       for (thresh in c(0.5, 0.7, 0.9)) {
         
-        ## First create a simple function to threshold each of the rasters in raster.list
-        thresh_greater_fun  = function (x1, x2) {x1 & x2 > thresh}
-        thresh_less_fun     = function (x1, x2) {x1 & x2 < thresh}
+        ## Check if the combined suitability raster exists
+        f_suit <- sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.tif',
+                          species, species, "2050_suitability_greater_thresh", thresh)
         
-        ## Then apply the function to the GCM list for each species
-        ## The Init function initializes a raster object with values
-        #Error in .local(x, ...) : not a valid subset is due to the fact that you are providing a logical index vector
-        suit_ras_greater    = reduce(suit.list, thresh_greater_fun, .init = suit.list[[1]] > thresh)
-        suit_ras_less       = reduce(suit.list, thresh_less_fun,    .init = suit.list[[1]] < thresh)
-        
-        ## Write the raster for each species and threshold inside the loop. But how to access the rasters for plotting?
-        message('Writing ', species, ' suitability > ', thresh) 
-        writeRaster(suit_ras_greater, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.tif',
-                                       species, species, "suitability_greater_thresh", thresh), overwrite = TRUE)
+        ## If it exists, create the suitability rasters
+        if(!file.exists(f_suit)) {
+          
+          ## First create a simple function to threshold each of the rasters in raster.list
+          thresh_greater_fun  = function (x1, x2) {x1 & x2 > thresh}
+          thresh_less_fun     = function (x1, x2) {x1 & x2 < thresh}
+          
+          ## Then apply the function to the GCM list for each species
+          ## The Init function initializes a raster object with values
+          #Error in .local(x, ...) : not a valid subset is due to the fact that you are providing a logical index vector
+          suit_ras_greater    = reduce(suit.list, thresh_greater_fun, .init = suit.list[[1]] > thresh)
+          #suit_ras_less       = reduce(suit.list, thresh_less_fun,    .init = suit.list[[1]] < thresh)
+          
+          ## Write the raster for each species and threshold inside the loop. But how to access the rasters for plotting?
+          message('Writing ', species, '2050 suitability > ', thresh) 
+          writeRaster(suit_ras_greater, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.tif',
+                                                species, species, "2050_suitability_greater_thresh", thresh), overwrite = TRUE)
+          
+        } else {
+          
+          message(species, '2050 suitability > ', thresh, ' skipped - already exists')   ## 
+          
+        }
         
         # message('Writing ', species, ' suitability < ', thresh) 
         # writeRaster(suit_ras_less, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.tif',
@@ -172,14 +197,130 @@ ensemble.2050 = lapply(SDM.RESULTS.DIR, function(DIR) { ## lapply(scen_2050, fun
         
       }
       
-      ## The reduce code replaces what is below...
-      # suit.05 <- overlay(suit, fun =   
-      #                      function(S1, S2, S3, S4, S5, S6) { 
-      #                        
-      #                        ifelse(S1 > 0.5 & S2 > 0.5 & S3 > 0.5 & 
-      #                                 S4 > 0.5 & S5 > 0.5 & S6 > 0.5,
-      #                               1, 0) 
-      #                      })
+      ########################################################################################################################
+      ## Use the levelplot function to make a multipanel output: average, threshold 1, threshold 2
+      # png(sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_suitability_combo.tif', 
+      #             species, species),
+      #     11, 4, units = 'in', res = 300)
+      # 
+      # ## Need an empty frame
+      # print(levelplot(stack(pred.average,
+      #                       pred.thresh.05,
+      #                       pred.thresh.05), margin = FALSE,
+      #                 
+      #                 ## Create a colour scheme using colbrewer: 100 is to make it continuos
+      #                 ## Also, make it a one-directional colour scheme
+      #                 scales      = list(draw = FALSE), 
+      #                 at = seq(0, 1, length = 100),
+      #                 col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
+      #                 
+      #                 ## Give each plot a name
+      #                 names.attr = c('GCM average', 'GCM > 0.7', 'GCM > 0.9'),
+      #                 colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
+      #                 main       = list(gsub('_', ' ', species), font = 4, cex = 2)))
+      
+      ## Plot the Aus shapefile with the occurrence points for reference
+      ## Can the points be made more legible for both poorly and well recorded species?
+      # layer(sp.polygons(aus)) +
+      # layer(sp.points(occ, pch = 20, cex = 0.4, 
+      #                 col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
+      
+      ##
+      #dev.off()
+      
+    } else {
+      
+      message(species, ' ', ' skipped - incorrect directory')   ## not needed with a proper loop
+      
+    }
+    
+  })
+  
+})
+
+
+
+
+
+#########################################################################################################################
+## 4). CREATE AN AVERAGE AND A CONSENSUS SUITABILITY RASTER FOR EACH SPECIES, FOR 2070 
+#########################################################################################################################
+
+
+#########################################################################################################################
+## Iterate over each directory: 
+ensemble.2070 = lapply(SDM.RESULTS.DIR, function(DIR) { 
+  
+  lapply(test_spp, function(species) {
+    
+    ## First, as a workaround for the lapply combination, check if the file combination is correct
+    f_current <- paste0(DIR, species, "_current.tif")
+    
+    ## Then only run the raster calculations if the file path exists
+    if(file.exists(f_current)) {
+      
+      ###################################################################################################################
+      ## Create a list of the rasters in each directory, then take the mean. How long does the mean calculation take?
+      ## Tidy this up with %, etc
+      raster.list = list.files(as.character(DIR), pattern = "bi70.tif", full.names = TRUE)
+      suit        = stack(raster.list)
+      suit.list   = unstack(suit)
+      mean.suit   = mean(suit)   ## plot(mean)
+      
+      ## Write the mean to file
+      f_mean = sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_2070_suitability_mean.tif', 
+                       species, species)
+      
+      
+      if(!file.exists(f_mean)) {
+        
+        writeRaster(mean.suit, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_2070_suitability_mean.tif', 
+                                       species, species), overwrite = TRUE)
+        
+      } else {
+        
+        message(species, '2070 mean suitability skipped - already exists')   ## not needed with a proper loop
+        
+      }
+      
+      ###################################################################################################################
+      ## Then create rasters that meet habitat suitability criteria thresholds
+      #suits = list()
+      for (thresh in c(0.5, 0.7, 0.9)) {
+        
+        ## Check if the combined suitability raster exists
+        f_suit <- sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.tif',
+                          species, species, "2070_suitability_greater_thresh", thresh)
+        
+        ## If it exists, create the suitability rasters
+        if(!file.exists(f_suit)) {
+          
+          ## First create a simple function to threshold each of the rasters in raster.list
+          thresh_greater_fun  = function (x1, x2) {x1 & x2 > thresh}
+          thresh_less_fun     = function (x1, x2) {x1 & x2 < thresh}
+          
+          ## Then apply the function to the GCM list for each species
+          ## The Init function initializes a raster object with values
+          #Error in .local(x, ...) : not a valid subset is due to the fact that you are providing a logical index vector
+          suit_ras_greater    = reduce(suit.list, thresh_greater_fun, .init = suit.list[[1]] > thresh)
+          #suit_ras_less       = reduce(suit.list, thresh_less_fun,    .init = suit.list[[1]] < thresh)
+          
+          ## Write the raster for each species and threshold inside the loop. But how to access the rasters for plotting?
+          message('Writing ', species, '2070 suitability > ', thresh) 
+          writeRaster(suit_ras_greater, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.tif',
+                                                species, species, "2070_suitability_greater_thresh", thresh), overwrite = TRUE)
+          
+        } else {
+          
+          message(species, '2070 suitability > ', thresh, ' skipped - already exists')   ## 
+          
+        }
+        
+        # message('Writing ', species, ' suitability < ', thresh) 
+        # writeRaster(suit_ras_less, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.tif',
+        #                                    species, species, "suitability_less_thresh", thresh), overwrite = TRUE)
+        
+      }
       
       ########################################################################################################################
       ## Use the levelplot function to make a multipanel output: average, threshold 1, threshold 2
