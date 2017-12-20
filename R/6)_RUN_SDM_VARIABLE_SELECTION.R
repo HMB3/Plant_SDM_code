@@ -71,6 +71,7 @@ head(test.spp, 10)
 ## Use this function to find all functions relating to a search term/topic (e.g. 'debug')
 ## apropos('debug')
 ## apropos('read')
+## traceback()
 
 
 ## 100 species takes about 4 hours...
