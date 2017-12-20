@@ -56,8 +56,8 @@ head(test.spp, 10)
 
 
 ########################################################################################################################
-## We can run Maxent from a cluster of cores on the local computer. Here we send (i.e. export) all the necessary ingredients 
-## to the cluster. So that's the:
+## We can run Maxent from a cluster of cores on the local computer. Here we send (i.e. export) all the necessary 
+## ingredients to the cluster. So that's the:
 
 
 ## template.raster raster, 
@@ -91,7 +91,7 @@ clusterEvalQ(cl, {
 
 ########################################################################################################################
 ## Now use 'lapply' to run maxent for multiple species
-lapply(test.spp[1:length(test.spp)], function(x) { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel 
+lapply(spp.all[1:length(spp.all)], function(x)  { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel 
   
   ## Print the taxa being processed to screen
   if(x %in% SDM.DATA.ALL$searchTaxon) {
@@ -110,30 +110,20 @@ lapply(test.spp[1:length(test.spp)], function(x) { # for serial, parLapply(cl, s
     sdm.predictors <- sdm.predictors # vector of used sdm.predictors
     min_n          = 20
     
-    ## Skip species that have less than a minimum number of records: eg 20 species
-    # if(dim(occurrence)[1] < min_n) {
-    #   
-    #   print (paste ('Fewer than ', min_n, ' records for species ', x, 
-    #                 ' Model not fit for this species'))
-    #   
-    # } else {
-    
-    ## Finally fit the models using FIT_MAXENT
-    ## There is no switch in the function to skip outputs that exist.
-    ## Given all the changes likely to be made to the models, this could be wise...
-    FIT_MAXENT(occ                     = occurrence, 
-               bg                      = background, 
-               sdm.predictors          = sdm.predictors, 
-               name                    = x, 
-               outdir                  = 'output/maxent/STD_VAR_ALL', 
-               template.raster,
-               min_n                   = 20,   ## This should be higher...
-               max_bg_size             = 100000,
-               background_buffer_width = 200000,
-               shapefiles              = TRUE,
-               features                = 'lpq',
-               replicates              = 5,
-               responsecurves          = TRUE)
+    ## Fit the models using FIT_MAXENT. Would be good to make skipping exisitng outputs an argument
+    FIT_MAXENT_SIMP(occ                     = occurrence, 
+                    bg                      = background, 
+                    sdm.predictors          = sdm.predictors, 
+                    name                    = x, 
+                    outdir                  = 'output/maxent/STD_VAR_ALL', 
+                    template.raster,
+                    min_n                   = 20,   ## This should be higher...
+                    max_bg_size             = 100000,
+                    background_buffer_width = 200000,
+                    shapefiles              = TRUE,
+                    features                = 'lpq',
+                    replicates              = 5,
+                    responsecurves          = TRUE)
     
   } else {
     

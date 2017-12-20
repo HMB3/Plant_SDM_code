@@ -251,7 +251,7 @@ HIA.VARIETY <-
   as.data.frame %>% 
   setNames(c('Binomial', 'No.of.Varieties')) %>% 
   full_join(DRAFT.HIA.TAXA) %>% 
-  select(Species, Binomial, No.of.Varieties, Plant.type:WA, Number.of.growers, Number.of.States, Origin, Top_200)
+  dplyr::select(Species, Binomial, No.of.Varieties, Plant.type:WA, Number.of.growers, Number.of.States, Origin, Top_200)
 
 HIA.VARIETY %>% 
   filter(Binomial==Species)
@@ -300,6 +300,11 @@ head(HIA.SPP.LOOKUP) ## Can merge on the bilogical data here...
 spp.all  <- unique(HIA.SPP$Binomial)
 str(spp.all)
 all.reverse = sort(spp.all, decreasing = TRUE)
+
+
+##
+setdiff(MQ.glasshouse$Species, renee.full$Species)
+setdiff(Manuel.test, renee.full$Species)
 
 
 ## The trial species
