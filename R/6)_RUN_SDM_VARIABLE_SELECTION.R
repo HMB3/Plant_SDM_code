@@ -25,7 +25,6 @@ load("./data/base/HIA_LIST/COMBO/SDM_TEMPLATE_RASTER.RData")
 
 source('./R/HIA_LIST_MATCHING.R')
 source('./R/HIA_CLEAN_MATCHING.R')
-source('./R/GREEN_CITIES_FUNCTIONS.R')
 source('./R/SDM_FUNCTIONS.R')
 
 
@@ -92,30 +91,34 @@ clusterEvalQ(cl, {
 
 ########################################################################################################################
 ## Now use 'lapply' to run maxent for multiple species
-lapply(spp.all[1:length(spp.all)], function(x)  { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel 
+debugonce(rmaxent::simplify)
+
+
+## 
+lapply(spp.all, function(spp)  { # for serial, parLapply(cl, species[1:8], function(spp) { # for parallel 
   
   ## Print the taxa being processed to screen
-  if(x %in% SDM.DATA.ALL$searchTaxon) {
-    message('Doing ', x) 
+  if(spp %in% SDM.DATA.ALL$searchTaxon) {
+    message('Doing ', spp) 
     
     ## Subset the records to only the taxa being processed
-    occurrence         <- subset(SDM.DATA.ALL, searchTaxon == x)
-    occurrence$species <- x
+    occurrence         <- subset(SDM.DATA.ALL, searchTaxon == spp)
+    occurrence$species <- spp
     
     ## Now get the background points. These can come from anywhere in the whole dataset,other than the species used.
-    background         <- subset(SDM.DATA.ALL, searchTaxon != x)
-    background$species <- x
+    background         <- subset(SDM.DATA.ALL, searchTaxon != spp)
+    background$species <- spp
     
-    ## The create a vector of the sdm.predictors used. 
-    ## This should be based on an ecological framework! 
+    ## Then create a vector of the sdm.predictors used: all bioclim variables
     sdm.predictors <- sdm.predictors # vector of used sdm.predictors
     min_n          = 20
     
     ## Fit the models using FIT_MAXENT. Would be good to make skipping exisitng outputs an argument
+    #browser()
     FIT_MAXENT_SIMP(occ                     = occurrence, 
                     bg                      = background, 
                     sdm.predictors          = sdm.predictors, 
-                    name                    = x, 
+                    name                    = spp, 
                     outdir                  = 'output/maxent/STD_VAR_ALL', 
                     template.raster,
                     min_n                   = 20,   ## This should be higher...
@@ -124,11 +127,14 @@ lapply(spp.all[1:length(spp.all)], function(x)  { # for serial, parLapply(cl, sp
                     shapefiles              = TRUE,
                     features                = 'lpq',
                     replicates              = 5,
+                    cor_thr = 0.7, 
+                    pct_thr = 5, 
+                    k_thr = 5, 
                     responsecurves          = TRUE)
     
   } else {
     
-    message(x, ' skipped - no data.')         ## This condition ignores species which have no data
+    message(spp, ' skipped - no data.')         ## This condition ignores species which have no data
     
   }  
   
