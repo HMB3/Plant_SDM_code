@@ -91,7 +91,7 @@ clusterEvalQ(cl, {
 
 ########################################################################################################################
 ## Now use 'lapply' to run maxent for multiple species
-debugonce(rmaxent::simplify)
+#debugonce(RMAXENT_SIMPLIFY)
 
 
 ## 
@@ -115,22 +115,22 @@ lapply(spp.all, function(spp)  { # for serial, parLapply(cl, species[1:8], funct
     
     ## Fit the models using FIT_MAXENT. Would be good to make skipping exisitng outputs an argument
     #browser()
-    FIT_MAXENT_SIMP(occ                     = occurrence, 
-                    bg                      = background, 
-                    sdm.predictors          = sdm.predictors, 
-                    name                    = spp, 
-                    outdir                  = 'output/maxent/STD_VAR_ALL', 
-                    template.raster,
-                    min_n                   = 20,   ## This should be higher...
-                    max_bg_size             = 100000,
-                    background_buffer_width = 200000,
-                    shapefiles              = TRUE,
-                    features                = 'lpq',
-                    replicates              = 5,
-                    cor_thr = 0.7, 
-                    pct_thr = 5, 
-                    k_thr = 5, 
-                    responsecurves          = TRUE)
+    FIT_MAXENT_SELECTION(occ                     = occurrence, 
+                         bg                      = background, 
+                         sdm.predictors          = sdm.predictors, 
+                         name                    = spp, 
+                         outdir                  = 'output/maxent/STD_VAR_ALL', 
+                         template.raster,
+                         min_n                   = 20,   ## This should be higher...
+                         max_bg_size             = 100000,
+                         background_buffer_width = 200000,
+                         shapefiles              = TRUE,
+                         features                = 'lpq',
+                         replicates              = 5,
+                         cor_thr = 0.7, 
+                         pct_thr = 5, 
+                         k_thr = 5, 
+                         responsecurves          = TRUE)
     
   } else {
     
