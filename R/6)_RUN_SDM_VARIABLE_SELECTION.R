@@ -110,8 +110,8 @@ lapply(spp.all, function(spp)  { # for serial, parLapply(cl, species[1:8], funct
     background$species <- spp
     
     ## Then create a vector of the sdm.predictors used: all bioclim variables
-    sdm.predictors <- sdm.predictors # vector of used sdm.predictors
-    min_n          = 20
+    sdm.predictors     <- sdm.predictors # vector of used sdm.predictors
+    min_n               = 20
     
     ## Fit the models using FIT_MAXENT. Would be good to make skipping exisitng outputs an argument
     #browser()
@@ -140,7 +140,6 @@ lapply(spp.all, function(spp)  { # for serial, parLapply(cl, species[1:8], funct
   
 })
   
-
 
 stopCluster(cl)
 

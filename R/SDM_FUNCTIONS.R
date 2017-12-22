@@ -12,12 +12,46 @@
 ## MAXENT FUNCTIONS
 #########################################################################################################################
 
+# ## Arguments to run maxent line by line
+# occ                     = occurrence
+# bg                      = background
+# sdm.predictors          = sdm.predictors
+# name                    = spp
+# outdir                  = 'output/maxent/STD_VAR_ALL'
+# template.raster         = template.raster
+# min_n                   = 20   ## This should be higher...
+# max_bg_size             = 100000
+# background_buffer_width = 200000
+# shapefiles              = TRUE
+# features                = 'lpq'
+# replicates              = 5
+# cor_thr                 = 0.7
+# pct_thr                 = 5
+# k_thr                   = 5
+# responsecurves          = TRUE
+# 
+# 
+# ## selection line by line 
+# occ             = swd_occ
+# bg              = swd_bg
+# path            = outdir
+# species_column  = "species"
+# replicates      = replicates
+# response_curves = TRUE
+# logistic_format = TRUE
+# cor_thr         = 0.7
+# pct_thr         = 5
+# k_thr           = 5
+# features        ='lpq'  # change these as necessary (or cor_thr = cor_thr, etc from FIT_MAXENT_SIMP)
+# quiet           = FALSE
+# type            = "PI"
+
 
 #########################################################################################################################
 ## GET BACKGROUND POINTS AND THEN FIT MAXENT WITH BACKWARDS SELECTION 
 #########################################################################################################################
 
-
+##
 FIT_MAXENT_SELECTION <- function(occ, 
                                  bg, # A Spatial points data frame (SPDF) of candidate background points
                                  sdm.predictors, 
@@ -164,7 +198,7 @@ FIT_MAXENT_SELECTION <- function(occ,
         bg,
         path            = outdir, 
         species_column  = "species",
-        name            = spp,
+        #name            = spp,
         replicates      = replicates,
         response_curves = TRUE, 
         logistic_format = TRUE, 
@@ -189,8 +223,8 @@ FIT_MAXENT_SELECTION <- function(occ,
 
 ## Not sure why this doesn't work out of the box
 RMAXENT_SIMPLIFY = function (occ, bg, path, 
-                             species_column = "species", 
-                             name           = spp,
+                             species_column  = "species", 
+                             #name            = spp,
                              response_curves = TRUE, 
                              logistic_format = TRUE, 
                              type = "PI", 
@@ -263,7 +297,7 @@ RMAXENT_SIMPLIFY = function (occ, bg, path,
     swd   <- rbind(occ_by_species[[name]], bg_by_species[[name]])
     swd   <- swd[, -match(species_column, names(swd))]
     
-    if (ncol(swd) < k_thr) 
+    if (ncol(swd) < k_thr)                                          ## problem is here
       stop("Initial number of variables < k_thr", call. = FALSE)
     
     pa <- rep(1:0, c(nrow(occ_by_species[[name]]), nrow(bg_by_species[[name]])))
@@ -362,7 +396,7 @@ RMAXENT_SIMPLIFY = function (occ, bg, path,
     return(m)
     
   }  ## function ends here
-  lapply(names(occ_by_species), f) ## problem is here. What does he want to iterate over, a list of df (swd?)
+  lapply(names(occ_by_species), f) ## Iterate over colnames of a df (i.e. environmental variables, names(occ_by_species[[1]]))? 
   
 }
 
