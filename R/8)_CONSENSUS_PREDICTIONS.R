@@ -94,7 +94,7 @@ test_spp = gsub(" ", "_", test.spp)
 
 
 #########################################################################################################################
-## Combine all the taxa at once
+## Just list the test species
 SDM.RESULTS.DIR <- test_spp[c(1:length(test_spp))] %>%
   
   ## pipe the list into lapply
@@ -126,6 +126,7 @@ str(SDM.RESULTS.DIR)
 ## Iterate over each directory: 
 ensemble.2050 = lapply(SDM.RESULTS.DIR, function(DIR) { 
   
+  ## And each species - although we don't want all possible combinations
   lapply(test_spp, function(species) {
     
     ## First, as a workaround for the lapply combination, check if the file combination is correct
@@ -165,30 +166,39 @@ ensemble.2050 = lapply(SDM.RESULTS.DIR, function(DIR) {
         
         ## Check if the combined suitability raster exists
         f_suit <- sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.tif',
-                          species, species, "2050_suitability_greater_thresh", thresh)
+                          species, species, "2050_suitability_consensus_greater_", thresh)
         
         ## If it exists, create the suitability rasters
         if(!file.exists(f_suit)) {
           
           ## First create a simple function to threshold each of the rasters in raster.list
-          ## So how does this change to add them up
-          thresh_greater_fun  = function (x1, x2) {x1 & x2 > thresh}
-          thresh_less_fun     = function (x1, x2) {x1 & x2 < thresh}
-          
+          ## So how does this change to add them up? First
+          scen_greater = function (x) {x > thresh}
+
           ## Then apply the function to the GCM list for each species
           ## The Init function initializes a raster object with values
-          #Error in .local(x, ...) : not a valid subset is due to the fact that you are providing a logical index vector
-          suit_ras_greater    = reduce(suit.list, thresh_greater_fun, .init = suit.list[[1]] > thresh)
+          #suit_ras_greater    = reduce(suit.list, thresh_greater_fun, .init = suit.list[[1]] > thresh)
           #suit_ras_less       = reduce(suit.list, thresh_less_fun,    .init = suit.list[[1]] < thresh)
+          suit_ras1_greater  = scen_greater(suit.list[[1]])   ## do this better...
+          suit_ras2_greater  = scen_greater(suit.list[[2]])
+          suit_ras3_greater  = scen_greater(suit.list[[3]])
+          suit_ras4_greater  = scen_greater(suit.list[[4]])
+          suit_ras5_greater  = scen_greater(suit.list[[5]])
+          suit_ras6_greater  = scen_greater(suit.list[[6]])
+          
+          ## Then sum them up: could use a function or magrittr to compress this..
+          suit_ras_consensus_sum   =  Reduce("+", list(suit_ras1_greater, suit_ras2_greater, suit_ras3_greater,
+                                                       suit_ras4_greater, suit_ras5_greater, suit_ras6_greater))
+          ## plot(suit_ras_consensus_sum )
           
           ## Write the raster for each species and threshold inside the loop. But how to access the rasters for plotting?
           message('Writing ', species, '2050 suitability > ', thresh) 
-          writeRaster(suit_ras_greater, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.tif',
-                                                species, species, "2050_suitability_greater_thresh", thresh), overwrite = TRUE)
+          writeRaster(suit_ras_consensus_sum, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.tif',
+                                                      species, species, "2050_suitability_consensus_greater_", thresh), overwrite = TRUE)
           
         } else {
           
-          message(species, '2050 suitability > ', thresh, ' skipped - already exists')   ## 
+          message(species, '2050 suitability consensus > ', thresh, ' skipped - already exists')   ## 
           
         }
         
