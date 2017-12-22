@@ -300,7 +300,8 @@ RMAXENT_SIMPLIFY = function (occ, bg, path,
     # Error in rbind2(..1, r) : 
     #   no method for coercing this S4 class to a vector
     
-    if (ncol(swd) < k_thr)                                          ## problem here?
+
+    if (ncol(swd) < k_thr)                                          ## problem is here
       stop("Initial number of variables < k_thr", call. = FALSE)
     
     pa <- rep(1:0, c(nrow(occ_by_species[[name]]), nrow(bg_by_species[[name]])))
