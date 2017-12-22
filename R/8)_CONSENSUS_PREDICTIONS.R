@@ -3,13 +3,13 @@
 #########################################################################################################################
 
 
-## The aim of this code is to combine multiple maxent predictions into a single suitability raster for each species
-## The ensemble.raster package creates a weighted average, and a consensus layer.
+## The aim of this code is to combine maxent predictions for multiple GCMs into a single suitability raster for each species
 
-## Lots of different definitions of a consensus. Could start by getting a layer which is has 1 where all cells meet a
-## threshold, 
+
+## Lots of different definitions of a consensus. Could start by getting a layer which is has 1 where all > threshold
 ## e.g. above 0.5, above 0.7, above 0.9
-## e.g. below 0.5, below 0.3, etc
+
+## The sum the number of GCMs across which each cell met that condition (i.e. was > 0.5 suitability)
 
 
 #########################################################################################################################
