@@ -71,6 +71,11 @@ scen_2050 = c("mc85bi50", "no85bi50", "ac85bi50", "cn85bi50", "gf85bi50", "hg85b
 scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cn85bi70", "gf85bi70", "hg85bi70")
 
 
+## Then create an Australia shapefile for mapping
+aus <- ne_states(country = 'Australia') %>% 
+  subset(!grepl('Island', name))
+
+
 #########################################################################################################################
 ## All species on the growers list, and also a test list which includes Renee's species
 species_list  <- basename(list.dirs('./output/maxent/STD_VAR_ALL',   recursive = FALSE))
@@ -95,10 +100,10 @@ test_spp = gsub(" ", "_", test.spp)
 ## Just list the test species
 SDM.RESULTS.DIR <- test_spp[c(1:length(test_spp))] %>%
   
-  ## pipe the list into lapply
+  ## Pipe the list into lapply
   lapply(function(species) {
     
-    ## create the character string
+    ## Create the character string
     m <-   sprintf('./output/maxent/STD_VAR_ALL/%s/full/', species)
     m 
     
@@ -127,7 +132,7 @@ str(SDM.RESULTS.DIR)
 #########################################################################################################################
 ## Iterate over each directory: 
 ensemble.2050 = lapply(SDM.RESULTS.DIR, function(DIR) { 
-
+  
   ## And each species - although we don't want all possible combinations. How can this loop be improved?
   lapply(test_spp, function(species) {
     
@@ -143,7 +148,7 @@ ensemble.2050 = lapply(SDM.RESULTS.DIR, function(DIR) {
       raster.list = list.files(as.character(DIR), pattern = "bi50.tif", full.names = TRUE)
       suit        = stack(raster.list)
       suit.list   = unstack(suit)
-      mean.suit   = mean(suit)   ## plot(mean)
+      mean.suit   = mean(suit)   ## plot(mean.suit)
       
       ## Write the mean to file
       f_mean = sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_2050_suitability_mean.tif', 
@@ -168,7 +173,7 @@ ensemble.2050 = lapply(SDM.RESULTS.DIR, function(DIR) {
         ## Check if the combined suitability raster exists
         f_suit <- sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.tif',
                           species, species, "2050_suitability_consensus_greater_", thresh)
-
+        
         
         ## If it exists, create the suitability rasters
         if(!file.exists(f_suit)) {
@@ -176,11 +181,11 @@ ensemble.2050 = lapply(SDM.RESULTS.DIR, function(DIR) {
           ## First create a simple function to threshold each of the rasters in raster.list
           ## So how does this change to add them up? First
           scen_greater = function (x) {x > thresh}
-
+          
           ## Then apply the function to the GCM list for each species
           ## The Init function initializes a raster object with values
           #suit_ras_greater    = reduce(suit.list, thresh_greater_fun, .init = suit.list[[1]] > thresh)
-
+          
           suit_ras1_greater  = scen_greater(suit.list[[1]])   ## do this better...
           suit_ras2_greater  = scen_greater(suit.list[[2]])
           suit_ras3_greater  = scen_greater(suit.list[[3]])
@@ -197,7 +202,37 @@ ensemble.2050 = lapply(SDM.RESULTS.DIR, function(DIR) {
           message('Writing ', species, ' 2050 suitability > ', thresh) 
           writeRaster(suit_ras_consensus_sum, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.tif',
                                                       species, species, "2050_suitability_consensus_greater_", thresh), overwrite = TRUE)
-
+          
+          ########################################################################################################################
+          ## Use the levelplot function to make a multipanel output: average, threshold 1, threshold 2
+          # png(sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_suitability_combo.tif', 
+          #             species, species),
+          #     11, 4, units = 'in', res = 300)
+          # 
+          # ## Need an empty frame
+          # print(levelplot(stack(mean.suit,
+          #                       suit_ras_consensus_sum), margin = FALSE,
+          #                 
+          #                 ## Create a colour scheme using colbrewer: 100 is to make it continuos
+          #                 ## Also, make it a one-directional colour scheme
+          #                 scales      = list(draw = FALSE), 
+          #                 at = seq(0, 1, length = 100),
+          #                 col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
+          #                 
+          #                 ## Give each plot a name
+          #                 names.attr = c('GCM average', 'GCM > 0.7', 'GCM > 0.9'),
+          #                 colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
+          #                 main       = list(gsub('_', ' ', species), font = 4, cex = 2)))
+          
+          ## Plot the Aus shapefile with the occurrence points for reference
+          ## Can the points be made more legible for both poorly and well recorded species?
+          # layer(sp.polygons(aus)) +
+          # layer(sp.points(occ, pch = 20, cex = 0.4, 
+          #                 col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
+          
+          ##
+          #dev.off()
+          
         } else {
           
           message(species, ' 2050 suitability consensus > ', thresh, ' skipped - already exists')   ## 
@@ -206,36 +241,6 @@ ensemble.2050 = lapply(SDM.RESULTS.DIR, function(DIR) {
         
       }
       
-      ########################################################################################################################
-      ## Use the levelplot function to make a multipanel output: average, threshold 1, threshold 2
-      # png(sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_suitability_combo.tif', 
-      #             species, species),
-      #     11, 4, units = 'in', res = 300)
-      # 
-      # ## Need an empty frame
-      # print(levelplot(stack(pred.average,
-      #                       pred.thresh.05,
-      #                       pred.thresh.05), margin = FALSE,
-      #                 
-      #                 ## Create a colour scheme using colbrewer: 100 is to make it continuos
-      #                 ## Also, make it a one-directional colour scheme
-      #                 scales      = list(draw = FALSE), 
-      #                 at = seq(0, 1, length = 100),
-      #                 col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
-      #                 
-      #                 ## Give each plot a name
-      #                 names.attr = c('GCM average', 'GCM > 0.7', 'GCM > 0.9'),
-      #                 colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
-      #                 main       = list(gsub('_', ' ', species), font = 4, cex = 2)))
-      
-      ## Plot the Aus shapefile with the occurrence points for reference
-      ## Can the points be made more legible for both poorly and well recorded species?
-      # layer(sp.polygons(aus)) +
-      # layer(sp.points(occ, pch = 20, cex = 0.4, 
-      #                 col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
-      
-      ##
-      #dev.off()
       
     } else {
       
@@ -337,33 +342,36 @@ ensemble.2070 = lapply(SDM.RESULTS.DIR, function(DIR) {
         
       }
       
+      ## Now create the empty panel just before plotting
+      empty <- init(suit_ras_consensus_sum, function(x) NA)
+      
       ########################################################################################################################
       ## Use the levelplot function to make a multipanel output: average, threshold 1, threshold 2
-      # png(sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_suitability_combo.tif', 
+      # png(sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_suitability_consensus.tif', 
       #             species, species),
       #     11, 4, units = 'in', res = 300)
       # 
       # ## Need an empty frame
-      # print(levelplot(stack(pred.average,
-      #                       pred.thresh.05,
-      #                       pred.thresh.05), margin = FALSE,
-      #                 
-      #                 ## Create a colour scheme using colbrewer: 100 is to make it continuos
-      #                 ## Also, make it a one-directional colour scheme
-      #                 scales      = list(draw = FALSE), 
-      #                 at = seq(0, 1, length = 100),
-      #                 col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
-      #                 
-      #                 ## Give each plot a name
-      #                 names.attr = c('GCM average', 'GCM > 0.7', 'GCM > 0.9'),
-      #                 colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
-      #                 main       = list(gsub('_', ' ', species), font = 4, cex = 2)))
+      print(levelplot(stack(empty,
+                            mean.suit,
+                            suit_ras_consensus_sum), margin = FALSE,
+
+                      ## Create a colour scheme using colbrewer: 100 is to make it continuos
+                      ## Also, make it a one-directional colour scheme
+                      scales      = list(draw = FALSE), 
+                      at = seq(0, 1, length = 100),
+                      col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
+                      
+                      ## Give each plot a name
+                      names.attr = c('Occurrence', 'GCM average', 'GCM > 0.7'),
+                      colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
+                      main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
       
       ## Plot the Aus shapefile with the occurrence points for reference
       ## Can the points be made more legible for both poorly and well recorded species?
-      # layer(sp.polygons(aus)) +
-      # layer(sp.points(occ, pch = 20, cex = 0.4, 
-      #                 col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
+      layer(sp.polygons(aus)) +
+      layer(sp.points(occ, pch = 20, cex = 0.4,
+                      col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
       
       ##
       #dev.off()
