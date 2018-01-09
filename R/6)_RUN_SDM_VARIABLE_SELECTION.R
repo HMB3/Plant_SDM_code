@@ -52,6 +52,7 @@ sdm.predictors <- c("Annual_mean_temp",    "Mean_diurnal_range",  "Isothermality
 
 ## Are the latest experimental species in there?
 head(test.spp, 10)
+head(spp.all, 10)
 
 
 ########################################################################################################################
@@ -74,24 +75,28 @@ head(test.spp, 10)
 
 
 ## 100 species takes about 4 hours...
-cl <- makeCluster(4)
-clusterExport(cl, c('template.raster', 'SDM.DATA.ALL', 'FIT_MAXENT', 'COR_VARIABLES'))
-clusterEvalQ(cl, {
-  
-  require(ff)
-  require(rgeos)
-  require(sp)
-  require(raster)
-  require(rJava)
-  require(dismo)
-  require(things)
-  
-})
+# cl <- makeCluster(4)
+# clusterExport(cl, c('template.raster', 'SDM.DATA.ALL', 'FIT_MAXENT', 'COR_VARIABLES'))
+# clusterEvalQ(cl, {
+#   
+#   require(ff)
+#   require(rgeos)
+#   require(sp)
+#   require(raster)
+#   require(rJava)
+#   require(dismo)
+#   require(things)
+#   
+# })
 
 
 ########################################################################################################################
 ## Now use 'lapply' to run maxent for multiple species
+## spp = spp.all[1]
+## 
+
 #debugonce(RMAXENT_SIMPLIFY)
+##debugonce(f)
 
 
 ## 

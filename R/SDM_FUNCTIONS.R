@@ -191,7 +191,8 @@ FIT_MAXENT_SELECTION <- function(occ,
       
       #####################################################################
       ## Run simplify
-      #browser()
+      #debugonce(RMAXENT_SIMPLIFY)
+      ##debugonce(f)
       m <- RMAXENT_SIMPLIFY(
         
         swd_occ, 
@@ -293,15 +294,18 @@ RMAXENT_SIMPLIFY = function (occ, bg, path,
     if (!quiet) 
       message("\n\nDoing ", name)
     
+    ## debug at ./R/SDM_FUNCTIONS.R#297: swd <- rbind(occ_by_species[[name]], bg_by_species[[name]])
     name_ <- gsub(" ", "_", name)
     swd   <- rbind(occ_by_species[[name]], bg_by_species[[name]]) 
-    swd   <- swd[, -match(species_column, names(swd))]
     
     # Error in rbind2(..1, r) : 
     #   no method for coercing this S4 class to a vector
     
-
-    if (ncol(swd) < k_thr)                                          ## problem is here
+    swd   <- swd[, -match(species_column, names(swd))]
+    
+    # Error in rbind2(..1, r) : 
+    #   no method for coercing this S4 class to a vector
+    if (ncol(swd) < k_thr) 
       stop("Initial number of variables < k_thr", call. = FALSE)
     
     pa <- rep(1:0, c(nrow(occ_by_species[[name]]), nrow(bg_by_species[[name]])))
