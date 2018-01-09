@@ -3,13 +3,11 @@
 #########################################################################################################################
 
 
-## The aim of this code is to combine maxent predictions for multiple GCMs into a single suitability raster for each species
+## The aim of this code is to combine the different maxent predictions for multiple GCMs into a single suitability raster 
+## for each species.Lots of different definitions of a consensus. The easiest is a layer which is has 1 where all layers are 
+## > threshold e.g. above 0.5, above 0.7, above 0.9
 
-
-## Lots of different definitions of a consensus. Could start by getting a layer which is has 1 where all > threshold
-## e.g. above 0.5, above 0.7, above 0.9
-
-## The sum the number of GCMs across which each cell met that condition (i.e. was > 0.5 suitability)
+## Then the  final number represents the number of GCMs across which each cell met that condition (e.g. was > 0.5 suitability)
 
 
 #########################################################################################################################
@@ -122,11 +120,15 @@ str(SDM.RESULTS.DIR)
 #########################################################################################################################
 
 
+## Each species for two time-steps, mean with two threshold would be >200 MB.
+## So how could we compress the data to reduce the space needed?
+
+
 #########################################################################################################################
 ## Iterate over each directory: 
 ensemble.2050 = lapply(SDM.RESULTS.DIR, function(DIR) { 
 
-  ## And each species - although we don't want all possible combinations
+  ## And each species - although we don't want all possible combinations. How can this loop be improved?
   lapply(test_spp, function(species) {
     
     ## First, as a workaround for the lapply combination, check if the file combination is correct
@@ -161,8 +163,7 @@ ensemble.2050 = lapply(SDM.RESULTS.DIR, function(DIR) {
       
       ###################################################################################################################
       ## Then create rasters that meet habitat suitability criteria thresholds
-      #suits = list()
-      for (thresh in c(0.5, 0.7, 0.9)) {
+      for (thresh in c(0.7)) {  ## for (thresh in c(0.5, 0.7, 0.8)) {
         
         ## Check if the combined suitability raster exists
         f_suit <- sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.tif',
@@ -294,13 +295,11 @@ ensemble.2070 = lapply(SDM.RESULTS.DIR, function(DIR) {
       
       ###################################################################################################################
       ## Then create rasters that meet habitat suitability criteria thresholds
-      #suits = list()
-      for (thresh in c(0.5, 0.7, 0.9)) {
+      for (thresh in c(0.7)) {  ## for (thresh in c(0.5, 0.7, 0.8)) {
         
         ## Check if the combined suitability raster exists
         f_suit <- sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.tif',
                           species, species, "2070_suitability_consensus_greater_", thresh)
-        
         
         ## If it exists, create the suitability rasters
         if(!file.exists(f_suit)) {
