@@ -93,10 +93,10 @@ head(spp.all, 10)
 ########################################################################################################################
 ## Now use 'lapply' to run maxent for multiple species
 ## spp = spp.all[1]
-## 
 
-#debugonce(RMAXENT_SIMPLIFY)
-##debugonce(f)
+spp = spp.all[1]
+debugonce(RMAXENT_SIMPLIFY)
+debugonce(f)
 
 
 ## 

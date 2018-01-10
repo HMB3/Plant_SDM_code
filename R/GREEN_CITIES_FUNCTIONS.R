@@ -928,81 +928,6 @@ read_bind_tables = function (table.list, path) {
 #########################################################################################################################
 
 
-#########################################################################################################################
-## STU'S CALC
-#########################################################################################################################
-
-
-## 
-nicheBreadth <- function(data, species, r, verbose = TRUE) {
-
-  # handle Inf/-Inf better! Output something more meaningful
-  # remove NA before stats, so don't need na.rm everywhere
-  # - if species not specified then look for taxa list in data
-  # - do not presume column names
-  
-  ## transform raster simply to get it into memory
-  r <- t(t(r))
-  
-  ## get data columns of interest
-  data <- data[, c("species", "longitude_raw", "latitude_raw")]
-  
-  ## use data.table package for improved speed
-  myDT <- data.table(data)
-  setkey(myDT, species)
-  
-  ## setup output data frame ()
-  out <- data.frame(matrix(ncol = 11, nrow = length(species)))
-  
-  colnames(out) <- c("species", "n", "min", "max", "median",
-                     "perc02", "perc05", "perc95", "perc98", 
-                     "breadth", "breadth95", "breadth98")
-  
-  ## for all species
-  for (i in seq_len(length(species))) {
-    
-    speciesName <- species[i]
-    
-    if (verbose) {
-      
-      message(paste(i, ':', speciesName))
-      
-    }
-    
-    ## get unique occurrence data for species
-    speciesData <- data.frame(myDT[speciesName, ])
-    pts         <- unique(speciesData[, 2:3])
-    
-    ## extract raster values at each point
-    x <- extract(r, pts)
-    
-    ## get niche stats for species
-    out[i, "species"] <- speciesName
-    out[i, "n"]       <- length(x)
-    out[i, "min"]     <- min(x, na.rm = TRUE)
-    out[i, "max"]     <- max(x, na.rm = TRUE)
-    out[i, "median"]  <- median(x, na.rm = TRUE)
-    out[i, "perc02"]  <- quantile(x, 0.02, names = FALSE, na.rm = TRUE)
-    out[i, "perc05"]  <- quantile(x, 0.05, names = FALSE, na.rm = TRUE)
-    out[i, "perc95"]  <- quantile(x, 0.95, names = FALSE, na.rm = TRUE)
-    out[i, "perc98"]  <- quantile(x, 0.98, names = FALSE, na.rm = TRUE)
-    
-  }
-  
-  ## compute niche breadths
-  out$breadth   <- out$max - out$min
-  out$breadth95 <- out$perc95 - out$perc05
-  out$breadth98 <- out$perc98 - out$perc02
-  
-  ## this returns "out"?
-  return(out)
-  
-}
-
-
-
-
-
 ########################################################################################################################
 ## SHAWN'S NICHE
 ########################################################################################################################
@@ -1070,6 +995,81 @@ niche_estimate = function (DF,
 
 
 #########################################################################################################################
+## STU'S CALC
+#########################################################################################################################
+
+
+## 
+nicheBreadth <- function(data, species, r, verbose = TRUE) {
+  
+  # handle Inf/-Inf better! Output something more meaningful
+  # remove NA before stats, so don't need na.rm everywhere
+  # - if species not specified then look for taxa list in data
+  # - do not presume column names
+  
+  ## transform raster simply to get it into memory
+  r <- t(t(r))
+  
+  ## get data columns of interest
+  data <- data[, c("species", "longitude_raw", "latitude_raw")]
+  
+  ## use data.table package for improved speed
+  myDT <- data.table(data)
+  setkey(myDT, species)
+  
+  ## setup output data frame ()
+  out <- data.frame(matrix(ncol = 11, nrow = length(species)))
+  
+  colnames(out) <- c("species", "n", "min", "max", "median",
+                     "perc02", "perc05", "perc95", "perc98", 
+                     "breadth", "breadth95", "breadth98")
+  
+  ## for all species
+  for (i in seq_len(length(species))) {
+    
+    speciesName <- species[i]
+    
+    if (verbose) {
+      
+      message(paste(i, ':', speciesName))
+      
+    }
+    
+    ## get unique occurrence data for species
+    speciesData <- data.frame(myDT[speciesName, ])
+    pts         <- unique(speciesData[, 2:3])
+    
+    ## extract raster values at each point
+    x <- extract(r, pts)
+    
+    ## get niche stats for species
+    out[i, "species"] <- speciesName
+    out[i, "n"]       <- length(x)
+    out[i, "min"]     <- min(x, na.rm = TRUE)
+    out[i, "max"]     <- max(x, na.rm = TRUE)
+    out[i, "median"]  <- median(x, na.rm = TRUE)
+    out[i, "perc02"]  <- quantile(x, 0.02, names = FALSE, na.rm = TRUE)
+    out[i, "perc05"]  <- quantile(x, 0.05, names = FALSE, na.rm = TRUE)
+    out[i, "perc95"]  <- quantile(x, 0.95, names = FALSE, na.rm = TRUE)
+    out[i, "perc98"]  <- quantile(x, 0.98, names = FALSE, na.rm = TRUE)
+    
+  }
+  
+  ## compute niche breadths
+  out$breadth   <- out$max - out$min
+  out$breadth95 <- out$perc95 - out$perc05
+  out$breadth98 <- out$perc98 - out$perc02
+  
+  ## this returns "out"?
+  return(out)
+  
+}
+
+
+
+
+
+#########################################################################################################################
 ## CLEANING FUNCTIONS
 #########################################################################################################################
 
@@ -1079,7 +1079,6 @@ niche_estimate = function (DF,
 # x = GBIF
 ## run the function as 
 ## occ_data_clean = CLEAN_ALA(GBIF)
-
 
 
 CLEAN_GBIF_MACQU <- function(x) {
@@ -1169,7 +1168,6 @@ CLEAN_GBIF_MACQU <- function(x) {
 ########################################################################################################################
 
 
-
 ########################################################################################################################
 ## MAPPING FUNCTIONS
 ########################################################################################################################
@@ -1181,7 +1179,6 @@ map_GBIF_records = function (taxa.list, DF) {
   ###############################
   ## for all the taxa in the list
   for (taxa.n in taxa.list) {
-    
     
     ################################################################
     ## If the dim = 0 for that taxa subset to Australia, skip to next
