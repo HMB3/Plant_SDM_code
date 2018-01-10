@@ -87,9 +87,11 @@ p <- c('ff',    'things',         'raster',    'dismo',        'sp',           '
 ## Require packages
 sapply(p, require, character.only = TRUE)
 
+
 ## source functions
 source('./R/GREEN_CITIES_FUNCTIONS.R')
 source('./R/SDM_FUNCTIONS.R')
+source('./R/MAPPING_FUNCTIONS.R')
 
 
 
@@ -116,10 +118,10 @@ GROWING    = read.csv("./data/base/HIA_LIST/HIA/database_aus_sp_growing.csv",   
 
 
 top.200        = read.csv("./data/base/HIA_LIST/HIA/HIA_TOP_200_1309_2017.csv", stringsAsFactors = FALSE)
-renee.full     = read.csv("./data/base/HIA_LIST/HIA/RENEE_FULL_LIST.csv",       stringsAsFactors = FALSE) 
+renee.full     = read.csv("./data/base/HIA_LIST/HIA/RENEE_FULL_LIST_EDIT.csv",       stringsAsFactors = FALSE) 
 renee.taxa     = read.csv("./data/base/HIA_LIST/HIA/RENEE_TAXA.csv",            stringsAsFactors = FALSE)
 renee.50       = read.csv("./data/base/HIA_LIST/HIA/RENEE_TOP_50.csv",          stringsAsFactors = FALSE)
-MQ.glasshouse  = read.csv("./data/base/HIA_LIST/HIA/MQ_glasshouse.csv",         stringsAsFactors = FALSE)
+MQ.glasshouse  = read.csv("./data/base/HIA_LIST/HIA/MQ_glasshouse_EDIT.csv",         stringsAsFactors = FALSE)
 
 
 ##

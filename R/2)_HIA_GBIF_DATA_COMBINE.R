@@ -30,7 +30,7 @@ gc()
 ## Check GBIF column names:
 sort(unique(gbifColsToDrop))
 sort(unique(gbif.keep))
-intersect(unique(gbifColsToDrop), unique(gbif.keep))     ## don't get rid of any of the columns we want to keep
+intersect(unique(gbifColsToDrop), unique(gbif.keep))     ## Check we don't get rid of any of the columns we want to keep
  
  
 #########################################################################################################################
