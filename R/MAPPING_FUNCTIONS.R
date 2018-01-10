@@ -381,7 +381,10 @@ ensemble.2050 = function(SDM.RESULTS.DIR, test_spp){
       }
       
       ## Now create the empty panel just before plotting, and read in the occurrence data
-      empty <- init(suit_ras_consensus_sum, function(x) NA)
+      f_current <- sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_current.tif', 
+                           species, species)
+      
+      empty <- init(f_current, function(x) NA)
       occ <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/occ.rds', species)) 
       
       ########################################################################################################################
