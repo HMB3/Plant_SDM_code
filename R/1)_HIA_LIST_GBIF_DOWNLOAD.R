@@ -3,7 +3,7 @@
 #########################################################################################################################
 
 
-## This code downloads all occurrence records for species on the Horticulture Australia list, from the GBIF database. 
+## This code downloads all occurrence records for species on the Horticulture Australia list using the GBIF database. 
 ## The trick here will be substituing the functions from the ALA4R package for the rgbif functions...
 ## Matching the core fields could be tricky for some taxa.
 
@@ -27,10 +27,13 @@ load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")
 source('./R/HIA_LIST_MATCHING.R')
 source('./R/HIA_CLEAN_MATCHING.R')
 
-
-## Create one big list of all the taxa
+##
 all.taxa = unique(c(spp, spp.grow, spp.clean))
 length(all.taxa)   
+
+
+##
+setdiff(test.spp, all.taxa)
 
 
 ########################################################################################################################
@@ -82,9 +85,9 @@ taxon.search = as.list(HIA.SPP.LOOKUP.MATCH$Binomial)
 
 #########################################################################################################################
 ## Run the download function on the species and genera lists these functions need to download at least one file, or they 
-## will return NULL
-skipped.taxa    = download_GBIF_all_species(all.taxa)     ## saves each spp as .Rdata file, returning list of skipped spp
-
+## will return NULL. This saves each spp as .Rdata file, returning list of skipped species
+## REMEMBER - run without assignment to download the species
+skipped.taxa = download_GBIF_all_species(species_list = test.spp, path = "./data/base/HIA_LIST/GBIF/SPECIES/")    
 
 
 
@@ -151,34 +154,6 @@ kable(skipped.200.spp)
 #########################################################################################################################
 
 
-## Read in each file as text?
-# Magnolia.g = gbif('Magnolia grandiflora', download = TRUE)
-# Magnolia.g.names = sort(names(Magnolia.g))
-# 
-# 
-# Betula.p = read.csv("./data/base/HIA_LIST/GBIF/SPECIES/Betula_pendula.csv", stringsAsFactors = FALSE)
-# Betula.p.names = sort(names(Betula.p))
-# 
-# 
-# 
-# ## How different are the manually downloaded species?
-# setdiff(Magnolia.g.names, Betula.p.names)
-# setdiff(Betula.p.names, Magnolia.g.names)
-# setdiff(gbif.keep, Betula.p.names)
-# 
-# 
-# ##
-# unique(Magnolia.g$country)
-# unique(Betula.p$countryCode)
-# unique(Betula.p$coordinateUncertaintyInMeters)
-# unique(Betula.p$continent)
-
-
-## Save all files as .Rdata, then try concatenating them.
-
-
-
-##
 # function gbifapi { 
 #   
 #   curl -i –user popple_1500:Popple1500 -H "Content-Type: 

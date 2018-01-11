@@ -3,7 +3,7 @@
 #########################################################################################################################
 
 
-## Aim of this code is to filer the GBIF data to the most reliable recrods. Two sources of uncertainty:
+## This code filers the GBIF data to the most reliable recrods. Two sources of uncertainty:
 
 ## Spatial 
 ## Taxonomic
@@ -23,14 +23,11 @@
 
 
 #########################################################################################################################
-## LOAD
+## Load previous data
 load("./data/base/HIA_LIST/COMBO/GBIF_TRIM.RData")
 dim(GBIF.TRIM)
 names(GBIF.TRIM)
-length(unique(GBIF.TRIM$searchTaxon))  ## has the list updated with extra species? YES!
-
-
-
+length(unique(GBIF.TRIM$searchTaxon))  ## has the list updated with extra species? YES! unique(GBIF.TRIM$searchTaxon)
 
 
 #########################################################################################################################
@@ -140,12 +137,12 @@ cultivated.synonyms
 ## Try using the big list of synonyms across all the data
 ## grepl("garden|cultiva",   GBIF.TRIM.TAXO$locality,           ignore.case = TRUE) | 
 GBIF.TRIM.TAXO$CULTIVATED <- ifelse(grepl(cultivated.synonyms,   GBIF.TRIM.TAXO$locality,           ignore.case = TRUE) | 
-                                 grepl(cultivated.synonyms, GBIF.TRIM.TAXO$habitat,            ignore.case = TRUE) | 
-                                 grepl(cultivated.synonyms, GBIF.TRIM.TAXO$eventRemarks,       ignore.case = TRUE) |
-                                 grepl(cultivated.synonyms, GBIF.TRIM.TAXO$cloc,               ignore.case = TRUE) |
-                                 grepl("managed",           GBIF.TRIM.TAXO$establishmentMeans, ignore.case = TRUE),
-                               
-                               "CULTIVATED", "UNKNOWN")
+                                      grepl(cultivated.synonyms, GBIF.TRIM.TAXO$habitat,            ignore.case = TRUE) | 
+                                      grepl(cultivated.synonyms, GBIF.TRIM.TAXO$eventRemarks,       ignore.case = TRUE) |
+                                      grepl(cultivated.synonyms, GBIF.TRIM.TAXO$cloc,               ignore.case = TRUE) |
+                                      grepl("managed",           GBIF.TRIM.TAXO$establishmentMeans, ignore.case = TRUE),
+                                    
+                                    "CULTIVATED", "UNKNOWN")
 
 
 ## How many records are knocked out by using this definition?
@@ -296,7 +293,7 @@ names(GBIF.CLEAN)
 
 
 ## First get one of the BIOCLIM variables
-world.temp = raster("//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_01")
+world.temp = raster("./data/base/worldclim/world/0.5/bio/current/bio_01")
 plot(world.temp)
 
 
@@ -356,8 +353,8 @@ gc()
 
 
 ## note that this still leaves lots of points in the Islands. So we need to decide if those are legitimate.
-WORLD <- readOGR("./data/base/CONTEXTUAL/TM_WORLD_BORDERS-0.3.shp", layer = "TM_WORLD_BORDERS-0.3")
-LAND  <- readOGR("./data/base/CONTEXTUAL/ne_10m_land.shp",          layer = "ne_10m_land")
+WORLD <- readOGR("F:/green_cities_sdm/data/base/CONEXTUAL/TM_WORLD_BORDERS-0.3.shp", layer = "TM_WORLD_BORDERS-0.3")
+LAND  <- readOGR("F:/green_cities_sdm/data/base/CONEXTUAL/ne_10m_land.shp",          layer = "ne_10m_land")
 plot(WORLD)
 plot(LAND)
 

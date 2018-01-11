@@ -43,7 +43,7 @@ load("./data/base/HIA_LIST/ALA/ALA_LAND_POINTS.RData")
 
 
 ## New names are in the database...
-names(GBIF.LAND)
+names(GBIF.LAND) ## length(unique(GBIF.LAND$searchTaxon))
 str(GBIF.LAND)
 str(ALA.LAND)
 
@@ -92,7 +92,7 @@ View(HIA.SPP.JOIN)
 
 ## Get just those ALA species which are on the combined list of HIA and planted/growing
 ## ALA.LAND.HIA  = ALA.LAND[ALA.LAND$searchTaxon %in% HIA.SPP.JOIN$searchTaxon, ] 
-ALA.LAND.HIA  = ALA.LAND[ALA.LAND$searchTaxon %in% all.taxa, ] ## Including Paul's extra species
+ALA.LAND.HIA  = ALA.LAND[ALA.LAND$searchTaxon %in% all.taxa, ] ## OR, %in% unique(GBIF.LAND$searchTaxon). Old data includes Paul's extra species
 str(unique(ALA.LAND$searchTaxon))       ##
 str(unique(ALA.LAND.HIA$searchTaxon))   ## Reduced from 30k to 4K
 
@@ -250,8 +250,8 @@ COMBO.RASTER.SP   = SpatialPointsDataFrame(coords = COMBO.RASTER[c("lon", "lat")
                                            data   = COMBO.RASTER,
                                            proj4string = CRS("+init=epsg:4326"))
 
-SUA      = readOGR("./data/base/CONTEXTUAL/SUA_2011_AUST.shp",      layer = "SUA_2011_AUST")
-LGA      = readOGR("./data/base/CONTEXTUAL/LGA_2016_AUST.shp", layer = "LGA_2016_AUST")
+SUA      = readOGR("F:/green_cities_sdm/data/base/CONEXTUAL/SUA_2011_AUST.shp", layer = "SUA_2011_AUST")
+LGA      = readOGR("F:/green_cities_sdm/data/base/CONEXTUAL/LGA_2016_AUST.shp", layer = "LGA_2016_AUST")
 
 names(SUA)
 names(LGA)
@@ -287,7 +287,7 @@ LGA.WGS = LGA.WGS[, c("LGA_CODE16", "LGA_NAME16")]
 
 
 ## Then, we want to create a layer which is just in the urban area, or not. This would need to combine the above fields into one
-IN.SUA   = readOGR("./data/base/CONTEXTUAL/INSIDE_AUS_SUA.shp", layer = "INSIDE_AUS_SUA")
+IN.SUA   = readOGR("F:/green_cities_sdm/data/base/CONEXTUAL/INSIDE_AUS_SUA.shp", layer = "INSIDE_AUS_SUA")
 IN.SUA   = IN.SUA[,-(1)];
 IN.SUA   = IN.SUA[,-(2)]
 names(IN.SUA)
@@ -318,8 +318,9 @@ save(LGA.AGG,   file = paste("./data/base/HIA_LIST/GBIF/LGA_AGG.RData"))
 
 ##
 str(COMBO.SUA.LGA)
-head(COMBO.LGA)
-
+head(COMBO.SUA.LGA)
+names(COMBO.SUA.LGA)
+COMBO.SUA.LGA = subset(COMBO.SUA.LGA, select = -c(lon.1, lat.1))
 
 
 
@@ -406,12 +407,11 @@ COMBO.NICHE <- env.variables[c(1:length(env.variables))] %>%
 
 ## Remove duplicate Taxon columns and check the output
 names(COMBO.NICHE)
-drops <- c("searchTaxon.1",  "searchTaxon.2",  "searchTaxon.3",  "searchTaxon.4",
-           "searchTaxon.5",  "searchTaxon.6",  "searchTaxon.7",  "searchTaxon.7",
-           "searchTaxon.8",  "searchTaxon.9",  "searchTaxon.10", "searchTaxon.11",
-           "searchTaxon.12", "searchTaxon.13", "searchTaxon.14", "searchTaxon.15",
-           "searchTaxon.16", "searchTaxon.17", "searchTaxon.18")
-COMBO.NICHE = COMBO.NICHE[ , !(names(COMBO.NICHE) %in% drops)]
+COMBO.NICHE = subset(COMBO.NICHE, select = -c(searchTaxon.1,  searchTaxon.2,  searchTaxon.3,  searchTaxon.4,
+                                              searchTaxon.5,  searchTaxon.6,  searchTaxon.7,  searchTaxon.7,
+                                              searchTaxon.8,  searchTaxon.9,  searchTaxon.10, searchTaxon.11,
+                                              searchTaxon.12, searchTaxon.13, searchTaxon.14, searchTaxon.15,
+                                              searchTaxon.16, searchTaxon.17, searchTaxon.18))
 
 
 ## Add counts for each species, and record the total number of taxa processed
@@ -572,6 +572,18 @@ missing.taxa
 
 ## The missing species are due to too few records, too many, or taxonomy problems. EG some of the species are varieties, so they 
 ## only match to the genus. So 605 - 30 = 575. What is the difference?
+
+
+
+
+#########################################################################################################################
+## Combine the existing data with the new species 
+## COMBO.RASTER.CONTEXT.UPDATE = COMBO.RASTER.CONTEXT
+## save(COMBO.RASTER.CONTEXT.UPDATE, file = paste("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_UPDATE.RData", sep = ""))
+## load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData")
+## load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_UPDATE.RData")
+names(COMBO.RASTER.CONTEXT);names(COMBO.RASTER.CONTEXT.UPDATE)
+COMBO.RASTER.CONTEXT.UPDTATE = bind_rows(COMBO.RASTER.CONTEXT, COMBO.RASTER.CONTEXT.UPDATE)
        
 
 ## Save the summary datasets

@@ -244,7 +244,7 @@ download_GBIF_all_species = function (species_list, path) {
     
     ## 6). save records to .Rdata file, note that using .csv files seemed to cause problems...
     save(GBIF, file = paste(path, sp.n, "_GBIF_records.RData", sep = ""))
-    return(skip.spp.list)
+    #return(skip.spp.list)
     
   }
   

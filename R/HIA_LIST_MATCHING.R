@@ -117,11 +117,12 @@ CLEAN.list = read.csv("./data/base/HIA_LIST/HIA/HIA.CLEAN.csv",                 
 GROWING    = read.csv("./data/base/HIA_LIST/HIA/database_aus_sp_growing.csv",           stringsAsFactors = FALSE) 
 
 
-top.200        = read.csv("./data/base/HIA_LIST/HIA/HIA_TOP_200_1309_2017.csv", stringsAsFactors = FALSE)
-renee.full     = read.csv("./data/base/HIA_LIST/HIA/RENEE_FULL_LIST_EDIT.csv",       stringsAsFactors = FALSE) 
-renee.taxa     = read.csv("./data/base/HIA_LIST/HIA/RENEE_TAXA.csv",            stringsAsFactors = FALSE)
-renee.50       = read.csv("./data/base/HIA_LIST/HIA/RENEE_TOP_50.csv",          stringsAsFactors = FALSE)
-MQ.glasshouse  = read.csv("./data/base/HIA_LIST/HIA/MQ_glasshouse_EDIT.csv",         stringsAsFactors = FALSE)
+top.200              = read.csv("./data/base/HIA_LIST/HIA/HIA_TOP_200_1309_2017.csv",       stringsAsFactors = FALSE)
+renee.full           = read.csv("./data/base/HIA_LIST/HIA/RENEE_FULL_LIST.csv",             stringsAsFactors = FALSE) 
+renee.taxa           = read.csv("./data/base/HIA_LIST/HIA/RENEE_TAXA.csv",                  stringsAsFactors = FALSE)
+renee.50             = read.csv("./data/base/HIA_LIST/HIA/RENEE_TOP_50.csv",                stringsAsFactors = FALSE)
+MQ.glasshouse        = read.csv("./data/base/HIA_LIST/HIA/MQ_glasshouse.csv",               stringsAsFactors = FALSE)
+Manuel.experimental  = read.csv("./data/base/HIA_LIST/HIA/Manuel_experimental_species.csv", stringsAsFactors = FALSE)
 
 
 ##
@@ -161,22 +162,6 @@ spp.200          = dplyr::rename(spp.200, Binomial = Species)
 
 ## Just get the species renee selected that are not on the top 1000 or 200
 renee.list       = renee.taxa[c("Species", "Growth_Form")]
-
-
-##
-Manuel.test =  c("Acacia melanoxylon", 
-                 "Brachychiton acerifolius",
-                 "Callistemon viminalis",
-                 "Fraxinus angustifolia",
-                 "Jacaranda mimosifolia",
-                 "Magnolia grandiflora",
-                 "Olea europaea",
-                 "Pistacia chinensis",
-                 "Platanus hispanica",
-                 "Populus nigra",
-                 "Schinus molle", 
-                 "Syzygium floribundum",
-                 "Ulmus parvifolia")
 
 
 
@@ -306,14 +291,18 @@ all.reverse = sort(spp.all, decreasing = TRUE)
 
 ##
 setdiff(MQ.glasshouse$Species, renee.full$Species)
-setdiff(Manuel.test, renee.full$Species)
+setdiff(Manuel.experimental$Species, renee.full$Species)
+setdiff(Manuel.experimental$Species, spp.all)
 
 
 ## The trial species
-test.spp = sort(unique(c(renee.full$Species, 
-                         Manuel.test,
-                         MQ.glasshouse$Species,
-                         "Betula pendula", "Fraxinus excelsior", "Quercus robur", "Fagus sylvatica")))
+test.spp = trim.space(sort(unique(c(renee.full$Species, 
+                                    Manuel.experimental$Species,
+                                    MQ.glasshouse$Species,
+                                    "Betula pendula", "Fraxinus excelsior", "Quercus robur", "Fagus sylvatica"))))
+
+setdiff(test.spp, spp.all)
+
 
 
 ## Combine with 45 from the main list

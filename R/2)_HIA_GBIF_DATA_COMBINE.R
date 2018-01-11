@@ -3,6 +3,9 @@
 #########################################################################################################################
 
 
+## This code combines all downloaded records for each species into a single database.
+
+
 #########################################################################################################################
 ## 1). CREATE LIST OF TAXA FROM DOWLOADED FILES
 #########################################################################################################################
@@ -10,9 +13,15 @@
 
 #########################################################################################################################
 ## Create a list of species from the downloaded files
+load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")
+source('./R/HIA_LIST_MATCHING.R')  ## This file contains all the packages, functions and core biological lists
 spp.download = list.files("./data/base/HIA_LIST/GBIF/SPECIES/", pattern = ".RData")
 spp.download = gsub("_GBIF_records.RData", "", spp.download)
+spp.download = trim.space(spp.download)
 
+
+## Check the difference between this layer and 
+outstanding.spp = setdiff(test.spp, COMBO.NICHE.CONTEXT$searchTaxon)
 
 
 
@@ -34,19 +43,19 @@ intersect(unique(gbifColsToDrop), unique(gbif.keep))     ## Check we don't get r
  
  
 #########################################################################################################################
-## Combine all the taxa at once
-GBIF.ALL <- spp.download[c(1:length(spp.download))] %>%
+## Combine all the taxa into a single dataframe at once
+GBIF.ALL <- outstanding.spp[c(1:length(outstanding.spp))] %>%   ## spp.download[c(1:length(spp.download))] 
 
-  ## pipe the list into lapply
+  ## Pipe the list into lapply
   lapply(function(x) {
 
-    ## create the character string
+    ## Create a character string of each .RData file
     f <- sprintf("./data/base/HIA_LIST/GBIF/SPECIES/%s_GBIF_records.RData", x)
 
-    ## load each .RData file
+    ## Load each file
     d <- get(load(f))
 
-    ## now drop the columns which we don't need
+    ## Now drop the columns which we don't need
     dat <- data.frame(searchTaxon = x, d[, !colnames(d) %in% gbifColsToDrop],
                       stringsAsFactors = FALSE)
     
@@ -56,11 +65,12 @@ GBIF.ALL <- spp.download[c(1:length(spp.download))] %>%
       
     }
     
+    ## Need to print the object within the loop
     dat
     
   }) %>%
 
-  ## finally, bind all the rows together
+  ## Finally, bind all the rows together
   bind_rows
 
 
@@ -91,6 +101,8 @@ GBIF.TRIM <- GBIF.ALL %>%
 ## Check names
 dim(GBIF.TRIM)
 names(GBIF.TRIM)
+setdiff(names(GBIF.TRIM), gbif.keep)
+intersect(names(GBIF.TRIM), gbif.keep)
 
 
 ## Have a quick look at date values
@@ -117,7 +129,7 @@ names(GBIF.TRIM)
 gc()
 
 ## Remove working dataframes from memory
-save(GBIF.TRIM, file = paste("./data/base/HIA_LIST/COMBO/GBIF_TRIM.RData"))
+save(GBIF.TRIM, file = paste("./data/base/HIA_LIST/COMBO/GBIF_TRIM_OUTSTANDING.RData")) ##
 
 
 ## Now save .RData file for the next session
