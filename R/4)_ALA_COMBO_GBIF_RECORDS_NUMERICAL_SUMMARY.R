@@ -524,6 +524,10 @@ COMBO.NICHE.CONTEXT = join(COMBO.LGA, HIA.SPP.JOIN,
                            by = "searchTaxon", type = "left", match = "all")
 
 
+## Now save .RData file for the next session...
+save.image("STEP_4_NICHES.RData")
+
+
 ## Changing the order is not needed for the raster data
 #COMBO.RASTER.CONTEXT = COMBO.RASTER.CONTEXT[, c(1:5,  45:57, 6:43)]                                      ## change order
 COMBO.NICHE.CONTEXT  = COMBO.NICHE.CONTEXT[,  c(176, 2, 1, 174:175, 177:189, 3:173)]                      ## change order

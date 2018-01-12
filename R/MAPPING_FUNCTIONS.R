@@ -16,17 +16,13 @@ project.grids.2050 = function(scen_2050, test_spp){
   lapply(scen_2050, function(x) {
     
     ## Assign the scenario name (to use later in the plot)
-    scen_name = gcms.50$GCM[gcms.50$id == x]
+    scen_name = gcms.50$GCM[gcms.50$id == x]                       
     
     ## Create a raster stack for each 2050 GCM - also an empty raster for the final plot
     s <- stack(
       sprintf('./data/base/worldclim/aus/0.5/bio/2050/%s/%s%s.tif',
               x, x, 1:19))
-    #empty <- init(s[[1]], function(x) NA)
-    
-    # nm <- sub('.*bi\\d0(.*)', '\\1', names(s))
-    # names(s) <- sprintf('bio%02d', as.numeric(nm))
-    
+
     ## Rename both the current and future environmental stack...
     names(s) <- names(env.grids.current) <- c(
       'Annual_mean_temp',    'Mean_diurnal_range',
@@ -149,9 +145,6 @@ project.grids.2050 = function(scen_2050, test_spp){
 }
 
 
-
-
-
 #########################################################################################################################
 ## 2070
 project.grids.2070 = function(scen_2070, test_spp){
@@ -212,7 +205,7 @@ project.grids.2070 = function(scen_2070, test_spp){
           sprintf('./output/maxent/STD_VAR_ALL/%s/occ.rds', 
                   species)) %>%
           
-          ########################################################################################################################
+        ########################################################################################################################
         ## If the current raster doesn't exist, create it
         spTransform(CRS('+init=epsg:4326'))
         f_current <- sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_current.tif', 
@@ -231,6 +224,7 @@ project.grids.2070 = function(scen_2070, test_spp){
           
           pred.current = raster(sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_current.tif', 
                                         species, species))
+          
         }
         
         ########################################################################################################################
@@ -302,8 +296,8 @@ project.grids.2070 = function(scen_2070, test_spp){
 
 
 #########################################################################################################################
-## 2050 combine: Make this 
-combine.predictions = function(SDM.RESULTS.DIR, test_spp, period){
+## Take a perdio argument. Next make the lists generic too
+combine_maxent_predictions = function(SDM.RESULTS.DIR, test_spp, period){
   
   lapply(SDM.RESULTS.DIR, function(DIR) { 
     
@@ -313,7 +307,7 @@ combine.predictions = function(SDM.RESULTS.DIR, test_spp, period){
       ###################################################################################################################
       ## Create a list of the rasters in each directory, then take the mean. How long does the mean calculation take?
       ## Tidy this up with %, etc
-      raster.list = list.files(as.character(DIR), pattern = "bi50.tif", full.names = TRUE)  ##  sprintf('bi%s', period)
+      raster.list = list.files(as.character(DIR), pattern = sprintf('bi%s.tif', period), full.names = TRUE)  ##  sprintf('bi%s.tif', period)
       suit        = stack(raster.list)
       suit.list   = unstack(suit)
       mean.suit   = mean(suit)   ## plot(mean.suit)
@@ -340,7 +334,7 @@ combine.predictions = function(SDM.RESULTS.DIR, test_spp, period){
         
         ## Check if the combined suitability raster exists
         f_suit <- sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
-                          species, species, period, "_combined_suitability_greater_", thresh)
+                          species, species, period, "_combined_suitability_above_", thresh)
         
         
         ## If it doesn't exist, create the suitability raster
@@ -352,7 +346,7 @@ combine.predictions = function(SDM.RESULTS.DIR, test_spp, period){
           
           ## Then apply the function to the GCM list for each species
           ## The Init function initializes a raster object with values
-          #suit_ras_greater    = reduce(suit.list, thresh_greater_fun, .init = suit.list[[1]] > thresh)
+          #suit_ras_greater    = reduce(suit.list, thresh_above_fun, .init = suit.list[[1]] > thresh)
           
           suit_ras1_greater  = scen_greater(suit.list[[1]])   ## do this better...
           suit_ras2_greater  = scen_greater(suit.list[[2]])
@@ -367,9 +361,9 @@ combine.predictions = function(SDM.RESULTS.DIR, test_spp, period){
           ## plot(suit_ras_combined_sum )
           
           ## Write the raster for each species and threshold inside the loop. But how to access the rasters for plotting?
-          message('Writing ', species, ' 2050 suitability > ', thresh) 
+          message('Writing ', species, ' 20', period, ' combined suitability > ', thresh) 
           writeRaster(suit_ras_combined_sum, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
-                                                      species, species, period, "_combined_suitability_greater_", thresh), overwrite = TRUE)
+                                                      species, species, period, "_combined_suitability_above_", thresh), overwrite = TRUE)
           
           
         } else {
@@ -389,7 +383,7 @@ combine.predictions = function(SDM.RESULTS.DIR, test_spp, period){
       
       ########################################################################################################################
       ## Use the levelplot function to make a multipanel output: average, threshold 1, threshold 2
-      png(sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s_suitability_above_%s.tif',
+      png(sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s_suitability_above_%s.png',
                   species, species, period, thresh),
           11, 4, units = 'in', res = 300)
       
@@ -405,134 +399,7 @@ combine.predictions = function(SDM.RESULTS.DIR, test_spp, period){
                       col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
                       
                       ## Give each plot a name
-                      names.attr = c('Aus occurrences', '2050 GCM average', sprintf('2050 GCM > %s', thresh)),
-                      colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
-                      main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
-              
-              ## Plot the Aus shapefile with the occurrence points for reference
-              ## Why are the points not working using "occ" in this way?
-              layer(sp.polygons(aus)) +
-              layer(sp.points(occ, pch = 20, cex = 0.4, 
-                              col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
-      
-      ## Finish the device
-      dev.off()
-      
-    })
-    
-  })
-  
-}
-
-
-
-
-
-#########################################################################################################################
-## 2070 combine
-ensemble.2070 = function(SDM.RESULTS.DIR, test_spp){
-  
-  lapply(SDM.RESULTS.DIR, function(DIR) { 
-    
-    ## And each species - although we don't want all possible combinations. How can this loop be improved?
-    lapply(test_spp, function(species) {
-      
-      ###################################################################################################################
-      ## Create a list of the rasters in each directory, then take the mean. How long does the mean calculation take?
-      ## Tidy this up with %, etc
-      raster.list = list.files(as.character(DIR), pattern = "bi70.tif", full.names = TRUE)
-      suit        = stack(raster.list)
-      suit.list   = unstack(suit)
-      mean.suit   = mean(suit)   ## plot(mean.suit)
-      
-      ## Write the mean to file
-      f_mean = sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_2070_suitability_mean.tif', 
-                       species, species)
-      
-      
-      if(!file.exists(f_mean)) {
-        
-        writeRaster(mean.suit, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_2070_suitability_mean.tif', 
-                                       species, species), overwrite = TRUE)
-        
-      } else {
-        
-        message(species, ' 2070 mean suitability skipped - already exists')   ## 
-        
-      }
-      
-      ###################################################################################################################
-      ## Then create rasters that meet habitat suitability criteria thresholds
-      for (thresh in c(0.7)) {  ## for (thresh in c(0.5, 0.7, 0.8)) {
-        
-        ## Check if the combined suitability raster exists
-        f_suit <- sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.tif',
-                          species, species, "2070_combined_suitability_greater_", thresh)
-        
-        
-        ## If it doesn't exist, create the suitability raster
-        if(!file.exists(f_suit)) {
-          
-          ## First create a simple function to threshold each of the rasters in raster.list
-          ## So how does this change to add them up? First
-          scen_greater = function (x) {x > thresh}
-          
-          ## Then apply the function to the GCM list for each species
-          ## The Init function initializes a raster object with values
-          #suit_ras_greater    = reduce(suit.list, thresh_greater_fun, .init = suit.list[[1]] > thresh)
-          
-          suit_ras1_greater  = scen_greater(suit.list[[1]])   ## do this better...
-          suit_ras2_greater  = scen_greater(suit.list[[2]])
-          suit_ras3_greater  = scen_greater(suit.list[[3]])
-          suit_ras4_greater  = scen_greater(suit.list[[4]])
-          suit_ras5_greater  = scen_greater(suit.list[[5]])
-          suit_ras6_greater  = scen_greater(suit.list[[6]])
-          
-          ## Then sum them up: could use a function or magrittr to compress this..
-          suit_ras_combined_sum   =  Reduce("+", list(suit_ras1_greater, suit_ras2_greater, suit_ras3_greater,
-                                                       suit_ras4_greater, suit_ras5_greater, suit_ras6_greater))
-          ## plot(suit_ras_combined_sum )
-          
-          ## Write the raster for each species and threshold inside the loop. But how to access the rasters for plotting?
-          message('Writing ', species, ' 2070 suitability > ', thresh) 
-          writeRaster(suit_ras_combined_sum, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.tif',
-                                                      species, species, "2070_combined_suitability_greater_", thresh), overwrite = TRUE)
-          
-          
-        } else {
-          
-          message(species, ' 2070 suitability combined > ', thresh, ' skipped - already exists')   ## 
-          
-        }
-        
-      }
-      
-      ## Now create the empty panel just before plotting, and read in the occurrence data
-      f_current <- sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_current.tif', 
-                           species, species)
-      
-      empty <- init(f_current, function(x) NA)
-      occ <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/occ.rds', species)) 
-      
-      ########################################################################################################################
-      ## Use the levelplot function to make a multipanel output: average, threshold 1, threshold 2
-      png(sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_suitability_above_%s.tif',
-                  species, species, thresh),
-          11, 4, units = 'in', res = 300)
-      
-      ## Need an empty frame
-      print(levelplot(stack(empty,
-                            mean.suit,
-                            suit_ras_combined_sum), margin = FALSE,
-                      
-                      ## Create a colour scheme using colbrewer: 100 is to make it continuos
-                      ## Also, make it a one-directional colour scheme
-                      scales      = list(draw = FALSE), 
-                      at = seq(0, 6, length = 100),
-                      col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
-                      
-                      ## Give each plot a name
-                      names.attr = c('Aus occurrences', '2070 GCM average', sprintf('2070 GCM > %s', thresh)),
+                      names.attr = c('Aus occurrences', sprintf('20%s GCM average', period), sprintf('20%s GCM > %s', period, thresh)),
                       colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
                       main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
               

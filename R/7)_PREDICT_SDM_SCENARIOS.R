@@ -3,13 +3,15 @@
 #########################################################################################################################
 
 
-## This code takes the output of the Maxent species distribution models and generates a prediction of habitat suitability 
-## for current and future environmental conditions. The data table is the format of all species occurrences (rows) and 
-## environmental variables (columns)
+## This code takes the output of the Maxent species distribution models (i.e. using current conditions), and generates 
+## a prediction of habitat suitability for current and future environmental conditions. The input data table is in the 
+## format of all species occurrences (rows) and environmental variables (columns).
+
+## Finally, the predictions from all GCMs (currently using six) are combined into a single habitat suitability layer
 
 
 #########################################################################################################################
-## 1). READ IN THE CURRENT AND FUTURE ENVIRONMENTAL DATA
+## 1). READ IN THE CURRENT AND FUTURE ENVIRONMENTAL DATA FOR MULTIPLE GCMs
 #########################################################################################################################
 
 
@@ -32,7 +34,7 @@ source('./R/HIA_LIST_MATCHING.R')
 #          "hg85bi50", "in85bi50")
 
 
-## Create a lookup table of GCMs
+## Create a lookup table of GCMs using the WORLDCLIM website
 h <- read_html('http://www.worldclim.org/cmip5_30s') 
 gcms <- h %>% 
   html_node('table') %>% 
@@ -71,7 +73,7 @@ scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cn85bi70", "gf85bi70", "hg85b
 
 
 #########################################################################################################################
-## Then create a stack of current environmental conditions, and an Australia shapefile for mapping
+## Then create a stack of current environmental conditions, and an Australia shapefile for the mapping later
 aus <- ne_states(country = 'Australia') %>% 
   subset(!grepl('Island', name))
 
@@ -98,37 +100,23 @@ summary(env.grids.current[[11]])
 
 
 #########################################################################################################################
-## 2). CREATE SPECIES LISTS FOR MODEL RUNS 
+## 2). PROJECT MAXNET MODELS FOR MULTIPLE CLIMATE SCEANARIOS - currently 2050 AND 2070
 #########################################################################################################################
 
 
-## All species on the growers list, and also a test list which includes Renee's species
-species_list  <- basename(list.dirs('./output/maxent/STD_VAR_ALL',   recursive = FALSE))
-species_rev   = sort(species_list, decreasing = TRUE)
-
-
-## Now make the test species directory names
+## Make the test species directory names
 test_spp = gsub(" ", "_", test.spp)
-# test_spp = intersect(test_spp, species_list)
-# test_rev = sort(test_spp, decreasing = TRUE)
-
-
 
 
 #########################################################################################################################
-## 3). PROJECT MAXNET MODELS FOR MULTIPLE CLIMATE SCEANARIOS, 2050 AND 2070
-#########################################################################################################################
-
-
-#########################################################################################################################
-## For each species, use a function to create raster files and maps of all six climate scenarios (GCMs)
-## Note that some of the experimental species - e.g. Kennedia_beckxiana - still have to be processed
+## For each species, use a function to create raster files and maps of all six climate scenarios (GCMs).
+## Note that some of the experimental species - e.g. Kennedia_beckxiana - still have to be modelled
 env.grids.2050 = project.grids.2050(scen_2050, test_spp)
 env.grids.2070 = project.grids.2070(scen_2070, test_spp)
 
 
 #########################################################################################################################
-## First list all the directories containing the rasters
+## Then, make a list all the directories containing the individual GCM rasters
 SDM.RESULTS.DIR <- test_spp[c(1:length(test_spp))] %>%
   
   ## Pipe the list into lapply
@@ -145,9 +133,9 @@ SDM.RESULTS.DIR <- test_spp[c(1:length(test_spp))] %>%
 
 
 #########################################################################################################################
-## Then for each species, use a function to combine the raster files for each climate scenarios into one layer
-suitability.2050 = mapply(ensemble.2050, SDM.RESULTS.DIR, test_spp)
-suitability.2070 = mapply(ensemble.2070, SDM.RESULTS.DIR, test_spp)
+## Then for each species, use a function to combine the raster files for each climate scenario into one layer
+suitability.2050 = mapply(combine_maxent_predictions, SDM.RESULTS.DIR, test_spp, period = 50)
+suitability.2070 = mapply(combine_maxent_predictions, SDM.RESULTS.DIR, test_spp, period = 70)
 
 
 
@@ -163,11 +151,11 @@ suitability.2070 = mapply(ensemble.2070, SDM.RESULTS.DIR, test_spp)
 ## http://www.worldclim.org/cmip5_30s
   
 
-## Consider the final format needed: which files: table, plots/maps, files. Disk space important for both local and web... 
+## Consider the final format, which files: table, plots/maps, files. Disk space important for both local and web... 
 
 
 ## What are the options for presenting consensus layers of all scenarios? EG show the occurrences, the average and then 
-## the combined layers? Need the format first, as the details are tricky (e.g. scale bars, etc.)
+## the combined layers? Need to choose the format first, as the details are tricky (e.g. scale bars, etc.)
 
 
 
