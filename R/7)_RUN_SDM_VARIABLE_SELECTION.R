@@ -3,6 +3,7 @@
 #########################################################################################################################
 
 
+#########################################################################################################################
 ## This code takes a table of all species occurrences (rows) and environmental values (columns), and runs SDMs for a list
 ## of taxa
 
@@ -19,6 +20,8 @@
 
 #########################################################################################################################
 ## Load packages, functions and data
+## 
+load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData")
 load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")
 load("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_ALL_VAR.RData")
 load("./data/base/HIA_LIST/COMBO/SDM_TEMPLATE_RASTER.RData")

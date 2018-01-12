@@ -4,36 +4,15 @@
 
 
 #########################################################################################################################
-## First, consider the HIA brief again:
+## This code combines the GBIF records for all species with the ALA data into a single table, and adds contextual info  
 
 
-# The first module will focus on fifty plant species identified in the project’s Target Species List, and will develop maps 
-# that demonstrate each species’ suitability to both current and future climates across Australia.
-# 
-# These maps will be used to demonstrate how well or poorly a particular species will be able to tolerate future conditions 
-# in urban centres across Australia as the climate changes, based on our current understanding of species’ climatic 
-# requirements.
-
-# Our research might demonstrate, for example, that a particular species of tree is already at the very limit of its 
-# ability to cope with heat, and that the only suitable place to plant this species in the future will be in cool-climate 
-# or more temperate locations. This kind of information would be very useful to a council seeking to avoid investing in 
-# tree species for street planting that are unlikely to cope with higher temperatures.
-
-# We will also use information from national herbaria and other sources to quantify each species’ climatic limits - the 
-# warmest, coldest, driest or wettest conditions they can cope with. This information will then be tested through the 
-# Planting Successes and Failures module of the research programme to ensure that the Interactive Plant Features Tool 
-# matches the right plant in the right region with an eye on the future.
-
-
-#########################################################################################################################
-## The aim of this code is to estimate the current global realised niche, using the best available data. This will give us 
-## a broad indication of the currernt climatic toleance of each species.
-
-
-## This code creates two tables:
+## It creates two tables:
 
 ## 1). A table with one row for each species record
-## 2). A table with One row for each species, contextual data and species attributes (niches, traits, etc.)
+## 2). A table with one row for each species, including contextual data and species attributes (niches, traits, etc.)
+ 
+## These tables estimate the current global realised niche/climatic tolerance using the best available data 
 
 
 #########################################################################################################################

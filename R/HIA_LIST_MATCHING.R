@@ -101,8 +101,8 @@ source('./R/MAPPING_FUNCTIONS.R')
 ## 1). READ IN DRAFT HIA LIST AND CLEAN
 #########################################################################################################################
 
-## The aim here is to take the raw list of plants with 25 or more growers supplied by Matt Plumber and Anthony Manea, and
-## then clean the list as best as possible in R to use the species binomial as the unit of downloading and analysis.
+## This code takes the raw list of plants with 25 or more growers supplied by Matt Plumber and Anthony Manea, and
+## then cleans the list as best as possible in R to use the species binomial as the unit for downloading and analysis.
 
 ## All the cleaining methods will throw up some anomalies, which need to be tracked, and checked with the team for how
 ## each case is treated (see outstanding tasks at the bottom)

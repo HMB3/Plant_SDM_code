@@ -3,20 +3,11 @@
 #########################################################################################################################
 
 
-## This code filers the GBIF data to the most reliable recrods. Two sources of uncertainty:
+#########################################################################################################################
+## This code filters the GBIF data to the most reliable recrods. Two sources of uncertainty:
 
 ## Spatial 
 ## Taxonomic
-
-
-## Which columns overlap between GBIF and ALA/AVH? The problem here is that we don't know what each GBIF field means,
-
-## dataProvider             (ALA), GBIF ?
-## basisOfRecord            (ALA), basisOfRecord (GBIF)
-## occCultivatedEscapee     (ALA), establishmentMeans (GBIF)
-## year
-## taxonIdentificationIssue (ALA), GBIF no equivalent
-## fatal assertions         (ALA), GBIF no equivalent
 
 
 ## A record with the same lat/long to x decimal places, collected in the same month by the same person is a duplicate

@@ -3,9 +3,8 @@
 #########################################################################################################################
 
 
+#########################################################################################################################
 ## This code downloads all occurrence records for species on the Horticulture Australia list using the GBIF database. 
-## The trick here will be substituing the functions from the ALA4R package for the rgbif functions...
-## Matching the core fields could be tricky for some taxa.
 
 
 ###########################################################################################
@@ -86,8 +85,9 @@ taxon.search = as.list(HIA.SPP.LOOKUP.MATCH$Binomial)
 #########################################################################################################################
 ## Run the download function on the species and genera lists these functions need to download at least one file, or they 
 ## will return NULL. This saves each spp as .Rdata file, returning list of skipped species
-## REMEMBER - run without assignment to download the species
-skipped.taxa = download_GBIF_all_species(species_list = test.spp, path = "./data/base/HIA_LIST/GBIF/SPECIES/")    
+## REMEMBER - run without assignment to just download the species, run with assingment to create a list of missing species
+download_GBIF_all_species(species_list = test.spp, path = "./data/base/HIA_LIST/GBIF/SPECIES/")  
+#skipped.taxa = download_GBIF_all_species(species_list = test.spp, path = "./data/base/HIA_LIST/GBIF/SPECIES/")    
 
 
 

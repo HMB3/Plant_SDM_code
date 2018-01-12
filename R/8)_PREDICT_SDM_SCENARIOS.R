@@ -3,6 +3,7 @@
 #########################################################################################################################
 
 
+#########################################################################################################################
 ## This code takes the output of the Maxent species distribution models (i.e. using current conditions), and generates 
 ## a prediction of habitat suitability for current and future environmental conditions. The input data table is in the 
 ## format of all species occurrences (rows) and environmental variables (columns).
