@@ -44,7 +44,7 @@ intersect(unique(gbifColsToDrop), unique(gbif.keep))     ## Check we don't get r
  
 #########################################################################################################################
 ## Combine all the taxa into a single dataframe at once
-GBIF.ALL <- outstanding.spp[c(1:length(outstanding.spp))] %>%   ## spp.download[c(1:length(spp.download))] 
+GBIF.ALL <- spp.download[c(1:length(spp.download))] %>%   ## spp.download[c(1:length(spp.download))] 
 
   ## Pipe the list into lapply
   lapply(function(x) {
@@ -129,7 +129,7 @@ intersect(names(GBIF.TRIM), gbif.keep)
 gc()
 
 ## Remove working dataframes from memory
-save(GBIF.TRIM, file = paste("./data/base/HIA_LIST/COMBO/GBIF_TRIM_OUTSTANDING.RData")) ##
+save(GBIF.TRIM, file = paste("./data/base/HIA_LIST/COMBO/GBIF_TRIM_LATEST.RData")) ##
 
 
 ## Now save .RData file for the next session

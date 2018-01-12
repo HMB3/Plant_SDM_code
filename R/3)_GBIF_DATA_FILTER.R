@@ -24,7 +24,7 @@
 
 #########################################################################################################################
 ## Load previous data
-load("./data/base/HIA_LIST/COMBO/GBIF_TRIM.RData")
+load("./data/base/HIA_LIST/COMBO/GBIF_TRIM_OUTSTANDING.RData")
 dim(GBIF.TRIM)
 names(GBIF.TRIM)
 length(unique(GBIF.TRIM$searchTaxon))  ## has the list updated with extra species? YES! unique(GBIF.TRIM$searchTaxon)
@@ -353,10 +353,10 @@ gc()
 
 
 ## note that this still leaves lots of points in the Islands. So we need to decide if those are legitimate.
-WORLD <- readOGR("F:/green_cities_sdm/data/base/CONEXTUAL/TM_WORLD_BORDERS-0.3.shp", layer = "TM_WORLD_BORDERS-0.3")
-LAND  <- readOGR("F:/green_cities_sdm/data/base/CONEXTUAL/ne_10m_land.shp",          layer = "ne_10m_land")
-plot(WORLD)
-plot(LAND)
+# WORLD <- readOGR("F:/green_cities_sdm/data/base/CONEXTUAL/TM_WORLD_BORDERS-0.3.shp", layer = "TM_WORLD_BORDERS-0.3")
+# LAND  <- readOGR("F:/green_cities_sdm/data/base/CONEXTUAL/ne_10m_land.shp",          layer = "ne_10m_land")
+# plot(WORLD)
+# plot(LAND)
 
 
 
@@ -378,15 +378,15 @@ load("STEP_3_GBIF_CLEAN.RData")
 #########################################################################################################################
 
 
-## Check distribution maps for each species for spatial outliers                  - Keep a spreasheet of all species...
+## Check distribution maps for each species for spatial outliers  - Keep a spreasheet of all species...
 
-## Estimate native/naturalised ranges as a separate colum                         - APC data + Ubran polygons for AUS, USA, EU: only a subset
+## Estimate native/naturalised ranges as a separate colum         - APC data + Ubran polygons for AUS, USA, EU: only a subset
 
-## GBIF taxonomic errors                                                          - Use taxonstand
+## GBIF taxonomic errors                                          - Use taxonstand
 
-## Keep cultivated records as a separate column/file                              - Get cultivated column from ALA data...
+## Keep cultivated records as a separate column/file              - Get cultivated column from ALA data...
 
-## Duplicates between GBIF and ALA                                                - See email from CSIRO - only a problem for niches...
+## Duplicates between GBIF and ALA                                - See email from CSIRO - only a problem for niches...
 
 
 

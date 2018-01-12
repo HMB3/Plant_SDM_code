@@ -96,7 +96,7 @@ head(spp.all, 10)
 
 spp = spp.all[1]
 debugonce(RMAXENT_SIMPLIFY)
-debugonce(f)
+n
 
 
 ## 

@@ -116,7 +116,7 @@ test_spp = gsub(" ", "_", test.spp)
 
 
 #########################################################################################################################
-## 3). PROJECT MAXNET MODELS FOR 2050
+## 3). PROJECT MAXNET MODELS FOR MULTIPLE CLIMATE SCEANARIOS, 2050 AND 2070
 #########################################################################################################################
 
 
@@ -145,7 +145,7 @@ SDM.RESULTS.DIR <- test_spp[c(1:length(test_spp))] %>%
 
 
 #########################################################################################################################
-## Then for each species, use a function to combine thee raster files for each climate scenarios into one layer
+## Then for each species, use a function to combine the raster files for each climate scenarios into one layer
 suitability.2050 = mapply(ensemble.2050, SDM.RESULTS.DIR, test_spp)
 suitability.2070 = mapply(ensemble.2070, SDM.RESULTS.DIR, test_spp)
 
@@ -163,10 +163,11 @@ suitability.2070 = mapply(ensemble.2070, SDM.RESULTS.DIR, test_spp)
 ## http://www.worldclim.org/cmip5_30s
   
 
-## Consider the final format needed: which files: table, plots/maps, files. Space important for both local and web... 
+## Consider the final format needed: which files: table, plots/maps, files. Disk space important for both local and web... 
 
 
-## How can we take an consensus layer of all the scenarios, to create a confidence interval? See step 8).
+## What are the options for presenting consensus layers of all scenarios? EG show the occurrences, the average and then 
+## the combined layers? Need the format first, as the details are tricky (e.g. scale bars, etc.)
 
 
 

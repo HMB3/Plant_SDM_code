@@ -186,9 +186,9 @@ FIT_MAXENT_SELECTION <- function(occ,
       swd_bg$lat <- NULL
       
       #####################################################################
-      ## Run simplify
+      ## Run simplify rmaxent::simplify
       #debugonce(RMAXENT_SIMPLIFY)
-      ##debugonce(f)
+      ##debugonce(f)  
       m <- RMAXENT_SIMPLIFY(
         
         swd_occ, 

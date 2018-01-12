@@ -302,8 +302,8 @@ project.grids.2070 = function(scen_2070, test_spp){
 
 
 #########################################################################################################################
-## 2050 combine
-ensemble.2050 = function(SDM.RESULTS.DIR, test_spp){
+## 2050 combine: Make this 
+combine.predictions = function(SDM.RESULTS.DIR, test_spp, period){
   
   lapply(SDM.RESULTS.DIR, function(DIR) { 
     
@@ -313,24 +313,24 @@ ensemble.2050 = function(SDM.RESULTS.DIR, test_spp){
       ###################################################################################################################
       ## Create a list of the rasters in each directory, then take the mean. How long does the mean calculation take?
       ## Tidy this up with %, etc
-      raster.list = list.files(as.character(DIR), pattern = "bi50.tif", full.names = TRUE)
+      raster.list = list.files(as.character(DIR), pattern = "bi50.tif", full.names = TRUE)  ##  sprintf('bi%s', period)
       suit        = stack(raster.list)
       suit.list   = unstack(suit)
       mean.suit   = mean(suit)   ## plot(mean.suit)
       
       ## Write the mean to file
-      f_mean = sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_2050_suitability_mean.tif', 
-                       species, species)
+      f_mean = sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s_suitability_mean.tif', 
+                       species, species, period)
       
       
       if(!file.exists(f_mean)) {
         
-        writeRaster(mean.suit, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_2050_suitability_mean.tif', 
-                                       species, species), overwrite = TRUE)
+        writeRaster(mean.suit, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s_suitability_mean.tif', 
+                                       species, species, period), overwrite = TRUE)
         
       } else {
         
-        message(species, ' 2050 mean suitability skipped - already exists')   ## 
+        message(species, ' 20', period, ' mean suitability skipped - already exists')   ## 
         
       }
       
@@ -339,8 +339,8 @@ ensemble.2050 = function(SDM.RESULTS.DIR, test_spp){
       for (thresh in c(0.7)) {  ## for (thresh in c(0.5, 0.7, 0.8)) {
         
         ## Check if the combined suitability raster exists
-        f_suit <- sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.tif',
-                          species, species, "2050_suitability_consensus_greater_", thresh)
+        f_suit <- sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
+                          species, species, period, "_combined_suitability_greater_", thresh)
         
         
         ## If it doesn't exist, create the suitability raster
@@ -362,19 +362,19 @@ ensemble.2050 = function(SDM.RESULTS.DIR, test_spp){
           suit_ras6_greater  = scen_greater(suit.list[[6]])
           
           ## Then sum them up: could use a function or magrittr to compress this..
-          suit_ras_consensus_sum   =  Reduce("+", list(suit_ras1_greater, suit_ras2_greater, suit_ras3_greater,
+          suit_ras_combined_sum   =  Reduce("+", list(suit_ras1_greater, suit_ras2_greater, suit_ras3_greater,
                                                        suit_ras4_greater, suit_ras5_greater, suit_ras6_greater))
-          ## plot(suit_ras_consensus_sum )
+          ## plot(suit_ras_combined_sum )
           
           ## Write the raster for each species and threshold inside the loop. But how to access the rasters for plotting?
           message('Writing ', species, ' 2050 suitability > ', thresh) 
-          writeRaster(suit_ras_consensus_sum, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.tif',
-                                                      species, species, "2050_suitability_consensus_greater_", thresh), overwrite = TRUE)
+          writeRaster(suit_ras_combined_sum, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
+                                                      species, species, period, "_combined_suitability_greater_", thresh), overwrite = TRUE)
           
           
         } else {
           
-          message(species, ' 2050 suitability consensus > ', thresh, ' skipped - already exists')   ## 
+          message(species, ' 20', period, ' combined suitability > ', thresh, ' skipped - already exists')   ## 
           
         }
         
@@ -389,14 +389,14 @@ ensemble.2050 = function(SDM.RESULTS.DIR, test_spp){
       
       ########################################################################################################################
       ## Use the levelplot function to make a multipanel output: average, threshold 1, threshold 2
-      png(sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_suitability_above_%s.tif',
-                  species, species, thresh),
+      png(sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s_suitability_above_%s.tif',
+                  species, species, period, thresh),
           11, 4, units = 'in', res = 300)
       
       ## Need an empty frame
       print(levelplot(stack(empty,
                             mean.suit,
-                            suit_ras_consensus_sum), margin = FALSE,
+                            suit_ras_combined_sum), margin = FALSE,
                       
                       ## Create a colour scheme using colbrewer: 100 is to make it continuos
                       ## Also, make it a one-directional colour scheme
@@ -405,12 +405,12 @@ ensemble.2050 = function(SDM.RESULTS.DIR, test_spp){
                       col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
                       
                       ## Give each plot a name
-                      names.attr = c('Occurrence', 'GCM average', 'GCM > 0.7'),
+                      names.attr = c('Aus occurrences', '2050 GCM average', sprintf('2050 GCM > %s', thresh)),
                       colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
                       main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
               
               ## Plot the Aus shapefile with the occurrence points for reference
-              ## Why are the points not working?
+              ## Why are the points not working using "occ" in this way?
               layer(sp.polygons(aus)) +
               layer(sp.points(occ, pch = 20, cex = 0.4, 
                               col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
@@ -423,6 +423,7 @@ ensemble.2050 = function(SDM.RESULTS.DIR, test_spp){
   })
   
 }
+
 
 
 
@@ -466,7 +467,7 @@ ensemble.2070 = function(SDM.RESULTS.DIR, test_spp){
         
         ## Check if the combined suitability raster exists
         f_suit <- sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.tif',
-                          species, species, "2070_suitability_consensus_greater_", thresh)
+                          species, species, "2070_combined_suitability_greater_", thresh)
         
         
         ## If it doesn't exist, create the suitability raster
@@ -488,26 +489,29 @@ ensemble.2070 = function(SDM.RESULTS.DIR, test_spp){
           suit_ras6_greater  = scen_greater(suit.list[[6]])
           
           ## Then sum them up: could use a function or magrittr to compress this..
-          suit_ras_consensus_sum   =  Reduce("+", list(suit_ras1_greater, suit_ras2_greater, suit_ras3_greater,
+          suit_ras_combined_sum   =  Reduce("+", list(suit_ras1_greater, suit_ras2_greater, suit_ras3_greater,
                                                        suit_ras4_greater, suit_ras5_greater, suit_ras6_greater))
-          ## plot(suit_ras_consensus_sum )
+          ## plot(suit_ras_combined_sum )
           
           ## Write the raster for each species and threshold inside the loop. But how to access the rasters for plotting?
           message('Writing ', species, ' 2070 suitability > ', thresh) 
-          writeRaster(suit_ras_consensus_sum, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.tif',
-                                                      species, species, "2070_suitability_consensus_greater_", thresh), overwrite = TRUE)
+          writeRaster(suit_ras_combined_sum, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.tif',
+                                                      species, species, "2070_combined_suitability_greater_", thresh), overwrite = TRUE)
           
           
         } else {
           
-          message(species, ' 2070 suitability consensus > ', thresh, ' skipped - already exists')   ## 
+          message(species, ' 2070 suitability combined > ', thresh, ' skipped - already exists')   ## 
           
         }
         
       }
       
       ## Now create the empty panel just before plotting, and read in the occurrence data
-      empty <- init(suit_ras_consensus_sum, function(x) NA)
+      f_current <- sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_current.tif', 
+                           species, species)
+      
+      empty <- init(f_current, function(x) NA)
       occ <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/occ.rds', species)) 
       
       ########################################################################################################################
@@ -519,7 +523,7 @@ ensemble.2070 = function(SDM.RESULTS.DIR, test_spp){
       ## Need an empty frame
       print(levelplot(stack(empty,
                             mean.suit,
-                            suit_ras_consensus_sum), margin = FALSE,
+                            suit_ras_combined_sum), margin = FALSE,
                       
                       ## Create a colour scheme using colbrewer: 100 is to make it continuos
                       ## Also, make it a one-directional colour scheme
@@ -528,12 +532,12 @@ ensemble.2070 = function(SDM.RESULTS.DIR, test_spp){
                       col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
                       
                       ## Give each plot a name
-                      names.attr = c('Occurrence', 'GCM average', 'GCM > 0.7'),
+                      names.attr = c('Aus occurrences', '2070 GCM average', sprintf('2070 GCM > %s', thresh)),
                       colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
                       main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
               
               ## Plot the Aus shapefile with the occurrence points for reference
-              ## Why are the points not working?
+              ## Why are the points not working using "occ" in this way?
               layer(sp.polygons(aus)) +
               layer(sp.points(occ, pch = 20, cex = 0.4, 
                               col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
