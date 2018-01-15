@@ -74,7 +74,7 @@ scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cn85bi70", "gf85bi70", "hg85b
 
 
 #########################################################################################################################
-## Then create a stack of current environmental conditions, and an Australia shapefile for the mapping later
+## Then create a stack of current environmental conditions, and an Australia shapefile for the mapping later...
 aus <- ne_states(country = 'Australia') %>% 
   subset(!grepl('Island', name))
 
@@ -86,7 +86,7 @@ env.grids.current <- stack(
 for(i in 1:11) {
   
   message(i)
-  env.grids.current[[i]] <- env.grids.current[[i]]/10
+  env.grids.current[[i]] <- env.grids.current[[ i]]/10
   
 }
 
@@ -101,7 +101,7 @@ summary(env.grids.current[[11]])
 
 
 #########################################################################################################################
-## 2). PROJECT MAXNET MODELS FOR MULTIPLE CLIMATE SCEANARIOS - currently 2050 AND 2070
+## 2). PROJECT MAXNET MODELS FOR MULTIPLE CLIMATE SCEANARIOS currently 2050 AND 2070
 #########################################################################################################################
 
 
@@ -133,10 +133,62 @@ SDM.RESULTS.DIR <- test_spp[c(1:length(test_spp))] %>%
   c()
 
 
+
+#########################################################################################################################
+## 3). CREATE SUMMARY OF MAXENT RESULTS - TABLE AND COMBINED RASTER
+#########################################################################################################################
+
+
+#########################################################################################################################
+## Read in the list of files for the standard variables, and specify the file path
+table.list = list.files("./output/maxent/STD_VAR_ALL/")
+path       = "./output/maxent/STD_VAR_ALL/"
+
+
+## Could turn this into a function, and loop over a list of subfolders...
+MAXENT.STD.VAR.SUMMARY <- table.list[c(1:length(table.list))] %>%
+  
+  ## pipe the list into lapply
+  lapply(function(x) {
+    
+    ## create the character string
+    f <- paste0(path, x, "/full/maxentResults.csv")
+    
+    ## load each .RData file
+    d <- read.csv(f)
+    
+    ## now add a model column
+    d = cbind(GBIF_Taxon = x, Model_run  = path, d) 
+    dim(d)
+    
+    ## Remove path gunk, and species
+    d$GBIF_Taxon = gsub("_", " ", d$GBIF_Taxon)
+    d$Model_run  = gsub("./output/maxent/", "", d$Model_run)
+    d$Model_run  = gsub("/", "", d$Model_run)
+    d$Species    = NULL
+    d
+  }) %>%
+  
+  ## finally, bind all the rows together
+  bind_rows
+
+
+## If there are multiple model runs, how would we compare them? Could have a row for each species and model run? 
+dim(MAXENT.STD.VAR.SUMMARY)
+head(MAXENT.STD.VAR.SUMMARY)[1:8]
+
+
 #########################################################################################################################
 ## Then for each species, use a function to combine the raster files for each climate scenario into one layer
 suitability.2050 = mapply(combine_maxent_predictions, SDM.RESULTS.DIR, test_spp, period = 50)
 suitability.2070 = mapply(combine_maxent_predictions, SDM.RESULTS.DIR, test_spp, period = 70)
+
+
+#########################################################################################################################
+## Save results
+write.csv(MAXENT.STD.VAR.SUMMARY, "./output/maxent/MAXENT_STD_VAR_SUMMARY.csv", row.names = FALSE)
+
+
 
 
 

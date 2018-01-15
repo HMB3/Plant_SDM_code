@@ -127,7 +127,7 @@ lapply(spp.all, function(spp)  { # for serial, parLapply(cl, species[1:8], funct
                          bg                      = background, 
                          sdm.predictors          = sdm.predictors, 
                          name                    = spp, 
-                         outdir                  = 'output/maxent/STD_VAR_ALL', 
+                         outdir                  = 'output/maxent/STD_VAR_ALL',    ## Change the outdir on the new run
                          template.raster,
                          min_n                   = 20,   ## This should be higher...
                          max_bg_size             = 100000,

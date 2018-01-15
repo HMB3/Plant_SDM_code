@@ -43,6 +43,16 @@ names(ALA.LAND)
 setdiff(names(GBIF.LAND), names(ALA.LAND))
 
 
+## Test if the new experimental species are there
+'Swainsona formosa'  %in% GBIF.LAND$searchTaxon
+'Templetonia retusa' %in% GBIF.LAND$searchTaxon 
+'Dodonaea baueri'    %in% GBIF.LAND$searchTaxon
+'Platanus hispanica' %in% GBIF.LAND$searchTaxon
+'Kennedia beckxiana' %in% GBIF.LAND$searchTaxon 
+
+
+
+
 #########################################################################################################################
 ## Rename a few fields: Add rename of cultivated field, and make the values the same as mine "CULT" or "UNKNOWN"
 ## X = CULTIVATED
@@ -71,7 +81,7 @@ View(HIA.SPP.JOIN)
 
 ## Get just those ALA species which are on the combined list of HIA and planted/growing
 ## ALA.LAND.HIA  = ALA.LAND[ALA.LAND$searchTaxon %in% HIA.SPP.JOIN$searchTaxon, ] 
-ALA.LAND.HIA  = ALA.LAND[ALA.LAND$searchTaxon %in% all.taxa, ] ## OR, %in% unique(GBIF.LAND$searchTaxon). Old data includes Paul's extra species
+ALA.LAND.HIA  = ALA.LAND[ALA.LAND$searchTaxon %in% unique(GBIF.LAND$searchTaxon), ] ## OR, %in% all.taxa. Old data includes Paul's extra species
 str(unique(ALA.LAND$searchTaxon))       ##
 str(unique(ALA.LAND.HIA$searchTaxon))   ## Reduced from 30k to 4K
 
@@ -87,25 +97,37 @@ head(GBIF.ALA.COMBO.LAND)
 str(unique(GBIF.ALA.COMBO.LAND$searchTaxon))   ## ok
 
 
+## Test if the new experimental species are there
+'Swainsona formosa'  %in% GBIF.ALA.COMBO.LAND$searchTaxon
+'Templetonia retusa' %in% GBIF.ALA.COMBO.LAND$searchTaxon 
+'Dodonaea baueri'    %in% GBIF.ALA.COMBO.LAND$searchTaxon 
+'Platanus hispanica' %in% GBIF.ALA.COMBO.LAND$searchTaxon 
+'Kennedia beckxiana' %in% GBIF.ALA.COMBO.LAND$searchTaxon  
+
+
 ## What species are unique to each dataset?
 length(setdiff(unique(GBIF.LAND$searchTaxon),  unique(ALA.LAND$searchTaxon)))
 length(setdiff(unique(ALA.LAND$searchTaxon),   unique(GBIF.LAND$searchTaxon)))
 length(intersect(unique(ALA.LAND$searchTaxon), unique(GBIF.LAND$searchTaxon)))
 
 
+#########################################################################################################################
+## Now crunch the big dataset down to just the species on the 25 growers or more list: the extras are just overkill
+GBIF.ALA.COMBO.HIA  = GBIF.ALA.COMBO.LAND[GBIF.ALA.COMBO.LAND$searchTaxon %in% unique(c(test.spp, HIA.SPP$Binomial)), ]
+'Swainsona formosa'  %in% GBIF.ALA.COMBO.HIA $searchTaxon
+
+
 ## Create points: consider changing the coordinate system here to a global projected system?
-COMBO.POINTS   = SpatialPointsDataFrame(coords = GBIF.ALA.COMBO.LAND[c("lon", "lat")], 
-                                        data    = GBIF.ALA.COMBO.LAND[c("lon", "lat")],
+COMBO.POINTS   = SpatialPointsDataFrame(coords = GBIF.ALA.COMBO.HIA[c("lon", "lat")], 
+                                        data    = GBIF.ALA.COMBO.HIA[c("lon", "lat")],
                                         proj4string = CRS("+proj=longlat +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +no_defs"))
 
 
 ## Check
-summary(COMBO.POINTS)
+dim(COMBO.POINTS)
 
 
-#########################################################################################################################
-## Now crunch the big dataset down to just the species on the 25 growers or more list: the extras are just overkill
-COMBO.POINTS  = COMBO.POINTS[COMBO.POINTS$searchTaxon %in% HIA.SPP$Binomial, ]
+
 
 
 #########################################################################################################################
@@ -177,8 +199,12 @@ env.grids.current = stack(
 
 #########################################################################################################################
 ## Is there a way to speed this up?
+## ## Test if the new experimental species are there : 'Swainsona formosa'  %in% GBIF.ALA.COMBO.HIA$searchTaxon
 COMBO.RASTER <- extract(env.grids.current, COMBO.POINTS) %>% 
-  cbind(GBIF.ALA.COMBO.LAND, .)
+  cbind(GBIF.ALA.COMBO.HIA, .)
+
+## Check taxa again
+'Swainsona formosa'  %in% COMBO.RASTER$searchTaxon
 
 
 ## Multiple rename using dplyr
@@ -224,7 +250,7 @@ names(COMBO.RASTER)
 #########################################################################################################################
 
 
-## We want to know the count of species that occur in n LGAs, across a range of climates. Read in LGA and SUA
+## We want to know the count of species that occur in 'n' LGAs, across a range of climates. Read in LGA and SUA
 COMBO.RASTER.SP   = SpatialPointsDataFrame(coords = COMBO.RASTER[c("lon", "lat")], 
                                            data   = COMBO.RASTER,
                                            proj4string = CRS("+init=epsg:4326"))
@@ -470,7 +496,7 @@ GBIF.AOO <- spp.geo[c(1:length(spp.geo))] %>%
 ## Clean it up. The order of species should be preserved
 GBIF.AOO = gather(GBIF.AOO)
 str(GBIF.AOO)
-str(unique(GBIF.ALA.COMBO.LAND$searchTaxon))   ## same number of species...
+str(unique(GBIF.ALA.COMBO.HIA$searchTaxon))   ## same number of species...
 
 
 ## Now join on the GEOGRAPHIC RANGE
@@ -508,12 +534,11 @@ save.image("STEP_4_NICHES.RData")
 
 
 ## Changing the order is not needed for the raster data
-#COMBO.RASTER.CONTEXT = COMBO.RASTER.CONTEXT[, c(1:5,  45:57, 6:43)]                                      ## change order
-COMBO.NICHE.CONTEXT  = COMBO.NICHE.CONTEXT[,  c(176, 2, 1, 174:175, 177:189, 3:173)]                      ## change order
+#COMBO.RASTER.CONTEXT = COMBO.RASTER.CONTEXT[, c(1:5,  45:57, 6:43)]                                      
+COMBO.NICHE.CONTEXT  = COMBO.NICHE.CONTEXT[,  c(176, 2, 1, 174:175, 177:189, 3:173)]                ## REDO
 
 
-## Set NA to blank, then sort by no. of growers.
-## The extra species are ones I dowloaded in error
+## Set NA to blank, then sort by no. of growers. The extra species are ones I dowloaded accidentally
 COMBO.NICHE.CONTEXT$Number.of.growers[is.na(COMBO.NICHE.CONTEXT$Number.of.growers)] <- 0
 COMBO.NICHE.CONTEXT = COMBO.NICHE.CONTEXT[with(COMBO.NICHE.CONTEXT, rev(order(Number.of.growers))), ]
 
@@ -543,12 +568,13 @@ missing.200    = setdiff(unique(spp.200$Binomial),
                          unique(COMBO.NICHE.CONTEXT[ which(COMBO.NICHE.CONTEXT$Number.of.growers >= 25), ][["searchTaxon"]]))
 
 
-## Which species from Renee's list are missing?
-missing.renee  = setdiff(unique(renee.50$Species),
+## Which species from the experimental list are missing?
+missing.renee  = setdiff(unique(test.spp),
                          unique(COMBO.NICHE.CONTEXT[["searchTaxon"]]))
 
+
 ## Overall list
-missing.taxa   = unique(c(missing.25, missing.200, missing.renee))
+missing.taxa   = sort(unique(c(missing.25, missing.200, missing.renee)))
 missing.taxa   = as.data.frame(missing.taxa)
 missing.taxa
 

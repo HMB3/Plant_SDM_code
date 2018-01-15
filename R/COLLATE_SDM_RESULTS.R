@@ -9,16 +9,14 @@
 
 
 #########################################################################################################################
-## Read in the list of files for the standard variables, and specify the file path
-std.var.all = list.files("./output/maxent/STD_VAR_ALL/")
-sel.var.all   = list.files("./output/maxent/SEL_VAR_ALL/")
-table.list = std.var.all
-path = "./output/maxent/STD_VAR_ALL/"
-
-
-#########################################################################################################################
 ## 1). CREATE SUMMARY TABLE OF MAXENT RESULTS
 #########################################################################################################################
+
+
+#########################################################################################################################
+## Read in the list of files for the standard variables, and specify the file path
+table.list = list.files("./output/maxent/STD_VAR_ALL/")
+path = "./output/maxent/STD_VAR_ALL/"
 
 
 ## Could turn this into a function, and loop over a list of subfolders...
@@ -52,11 +50,6 @@ MAXENT.STD.VAR.SUMMARY <- table.list[c(1:length(table.list))] %>%
 ## If there are multiple model runs, how would we compare them? Could have a row for each species and model run? 
 dim(MAXENT.STD.VAR.SUMMARY)
 head(MAXENT.STD.VAR.SUMMARY)[1:8]
-
-
-## Run as a function?
-# MAXENT.SUM.STD.VAR.ALL = read_bind_tables(table.list = sel.var.all[1:2], 
-#                                           path = "./output/maxent/STD_VAR_ALL/")
 
 
 #########################################################################################################################

@@ -284,8 +284,8 @@ names(GBIF.CLEAN)
 
 
 ## First get one of the BIOCLIM variables
-# world.temp = raster("./data/base/worldclim/world/0.5/bio/current/bio_01")
-# plot(world.temp)
+world.temp = raster("./data/base/worldclim/world/0.5/bio/current/bio_01")
+plot(world.temp)
 
 
 ## Now get the XY centroids of the unique 1km * 1km WORLDCLIM blocks where GBIF records are found
@@ -353,7 +353,7 @@ gc()
 
 #########################################################################################################################
 ## save data
-save(GBIF.LAND,        file = paste("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.RData"))
+save(GBIF.LAND, file = paste("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.RData"))
 gc()
 
 

@@ -301,15 +301,16 @@ test.spp = trim.space(sort(unique(c(renee.full$Species,
                                     MQ.glasshouse$Species,
                                     "Betula pendula", "Fraxinus excelsior", "Quercus robur", "Fagus sylvatica"))))
 
-setdiff(test.spp, spp.all)
-
-
 
 ## Combine with 45 from the main list
 HIA.SAMPLE = head(COMBO.NICHE.CONTEXT, 53)[, c("searchTaxon")]
 test.spp   = sort(unique(c(test.spp, HIA.SAMPLE)))
 str(test.spp)
 test.reverse = sort(test.spp, decreasing = TRUE)
+
+
+## Which species are only on the test list?
+setdiff(test.spp, spp.all)
 
 
 
