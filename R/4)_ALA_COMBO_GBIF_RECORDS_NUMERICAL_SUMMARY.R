@@ -17,17 +17,9 @@
 
 #########################################################################################################################
 ## To save time, load in previous data
+source('./R/HIA_LIST_MATCHING.R')
 load("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.RData")
 load("./data/base/HIA_LIST/ALA/ALA_LAND_POINTS.RData")
-
-
-## New names are in the database...
-names(GBIF.LAND) ## length(unique(GBIF.LAND$searchTaxon))
-str(GBIF.LAND)
-str(ALA.LAND)
-
-
-
 
 
 #########################################################################################################################
@@ -37,7 +29,8 @@ str(ALA.LAND)
 
 #########################################################################################################################
 ## Merge on the ALA data. Consider that GBIF has data for both sources. We are topping up the native ranges with the AVH, 
-## so it will be important to get rid of the duplicates. 
+## so it will be important to get rid of the duplicates.
+length(unique(GBIF.LAND$searchTaxon)) 
 names(GBIF.LAND)
 names(ALA.LAND)
 setdiff(names(GBIF.LAND), names(ALA.LAND))
@@ -45,12 +38,7 @@ setdiff(names(GBIF.LAND), names(ALA.LAND))
 
 ## Test if the new experimental species are there
 'Swainsona formosa'  %in% GBIF.LAND$searchTaxon
-'Templetonia retusa' %in% GBIF.LAND$searchTaxon 
-'Dodonaea baueri'    %in% GBIF.LAND$searchTaxon
-'Platanus hispanica' %in% GBIF.LAND$searchTaxon
 'Kennedia beckxiana' %in% GBIF.LAND$searchTaxon 
-
-
 
 
 #########################################################################################################################

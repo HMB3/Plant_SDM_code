@@ -1,5 +1,5 @@
 #########################################################################################################################
-######################################### PREDICT MAXENT TO FUTURE CLIMATES ############################################# 
+###################### PREDICT MAXENT TO FUTURE CLIMATES AND SUMMARISE THE RESULTS ###################################### 
 #########################################################################################################################
 
 
@@ -135,12 +135,12 @@ SDM.RESULTS.DIR <- test_spp[c(1:length(test_spp))] %>%
 
 
 #########################################################################################################################
-## 3). CREATE SUMMARY OF MAXENT RESULTS - TABLE AND COMBINED RASTER
+## 3). CREATE TABLE OF MAXENT RESULTS FOR CURRENT CONDITIONS
 #########################################################################################################################
 
 
 #########################################################################################################################
-## Read in the list of files for the standard variables, and specify the file path
+## First, Read in the list of files for the current models, and specify the file path
 table.list = list.files("./output/maxent/STD_VAR_ALL/")
 path       = "./output/maxent/STD_VAR_ALL/"
 
@@ -162,7 +162,7 @@ MAXENT.STD.VAR.SUMMARY <- table.list[c(1:length(table.list))] %>%
     dim(d)
     
     ## Remove path gunk, and species
-    d$GBIF_Taxon = gsub("_", " ", d$GBIF_Taxon)
+    #d$GBIF_Taxon = gsub("_", " ", d$GBIF_Taxon)
     d$Model_run  = gsub("./output/maxent/", "", d$Model_run)
     d$Model_run  = gsub("/", "", d$Model_run)
     d$Species    = NULL
@@ -173,13 +173,53 @@ MAXENT.STD.VAR.SUMMARY <- table.list[c(1:length(table.list))] %>%
   bind_rows
 
 
-## If there are multiple model runs, how would we compare them? Could have a row for each species and model run? 
+## This is a summary of maxent output for current conditions
 dim(MAXENT.STD.VAR.SUMMARY)
 head(MAXENT.STD.VAR.SUMMARY)[1:8]
 
 
+## Now check the match between the species list, and the results this. These need to match, so we can access
+## the right threshold for each species.
+intersect(test_spp, MAXENT.STD.VAR.SUMMARY$GBIF_Taxon) ## accesssing the files from these directories... 
+
+
+
 #########################################################################################################################
-## Then for each species, use a function to combine the raster files for each climate scenario into one layer
+## 4). SUMMARIZE MAXENT RESULTS FOR EACH SPECIES ACROSS MULTIPLE GCMs
+#########################################################################################################################
+
+
+#########################################################################################################################
+## Now for each species, use a function to combine the raster files for each climate scenario into one layer
+
+## Here we are using the species-specific thresholds that are produced by rmaxent (i.e. the columns in MAXENT.STD.VAR.SUMMARY)
+## Linda and John use these two:
+
+## Maximum training sensitivity plus specificity Logistic threshold
+## 10 percentile training presence training omission. EG:
+summary(MAXENT.STD.VAR.SUMMARY["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"])
+summary(MAXENT.STD.VAR.SUMMARY["X10.percentile.training.presence.training.omission"])
+
+
+## Turn these into lists
+thresh.max.train = as.list(MAXENT.STD.VAR.SUMMARY["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"]) 
+thresh.max.train = thresh.max.train$Maximum.training.sensitivity.plus.specificity.Logistic.threshold
+
+thresh.10.omiss  = as.list(MAXENT.STD.VAR.SUMMARY["X10.percentile.training.presence.training.omission"])
+thresh.10.omiss  = thresh.10.omiss$X10.percentile.training.presence.training.omission
+
+
+## So we can use the values in these columns to threhsold the rasters of habitat suitability (0-1) when combining them.
+## For each species, we will create a binary raster with cell values between 0-6. These cell values represent the number of GCMs 
+## where that cell had a suitability value above the threshold determined by maxent (e.g. the max training sensitivity + specif).  
+
+
+## These thresholded predictions of habitat suitability could be used to determine the loss or gain of species within areal units
+## (e.g. significant urban areas or LGAs), between time periods (current, 2030, 2070). So the ingredients here are the results 
+## for current and future predictions. 
+
+
+## Now change the function to use the species' thresholds
 suitability.2050 = mapply(combine_maxent_predictions, SDM.RESULTS.DIR, test_spp, period = 50)
 suitability.2070 = mapply(combine_maxent_predictions, SDM.RESULTS.DIR, test_spp, period = 70)
 

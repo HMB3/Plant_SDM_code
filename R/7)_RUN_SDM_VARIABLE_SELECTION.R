@@ -20,8 +20,7 @@
 
 #########################################################################################################################
 ## Load packages, functions and data
-## 
-load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData")
+#load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData")
 load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")
 load("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_ALL_VAR.RData")
 load("./data/base/HIA_LIST/COMBO/SDM_TEMPLATE_RASTER.RData")
@@ -99,7 +98,6 @@ head(spp.all, 10)
 
 spp = spp.all[1]
 debugonce(RMAXENT_SIMPLIFY)
-n
 
 
 ## 

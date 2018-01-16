@@ -297,7 +297,7 @@ project.grids.2070 = function(scen_2070, test_spp){
 
 #########################################################################################################################
 ## Loop over directories, species and one threshold for each, also taking a period argument. Next, make the lists generic too
-combine_maxent_predictions = function(SDM.RESULTS.DIR, test_spp, period){
+combine_gcm_threshold = function(SDM.RESULTS.DIR, test_spp, thresh, period){
   
   lapply(SDM.RESULTS.DIR, function(DIR) { 
     
@@ -330,7 +330,8 @@ combine_maxent_predictions = function(SDM.RESULTS.DIR, test_spp, period){
       
       ###################################################################################################################
       ## Then create rasters that meet habitat suitability criteria thresholds
-      for (thresh in c(0.7)) {  ## Thresh should be a species specific value from the  
+      ## thresh.max.train$Maximum.training.sensitivity.plus.specificity.Logistic.threshold[1]
+      for (thresh in c(0.7)) {  ## the thresholds should be a value from the vector of thresholds  
         
         ## Check if the combined suitability raster exists
         f_suit <- sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
