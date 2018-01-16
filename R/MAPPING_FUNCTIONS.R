@@ -414,7 +414,10 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
                             col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
                             
                             ## Give each plot a name
-                            names.attr = c('Aus occurrences', sprintf('20%s GCM average', time_slice), sprintf('20%s GCM > %s', time_slice, thresh)),
+                            names.attr = c('Aus occurrences', 
+                                           sprintf('20%s GCM > 10% train omission', time_slice), 
+                                           sprintf('20%s GCM > Max train logis %s', time_slice, thresh)),
+                            
                             colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
                             main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
                     
