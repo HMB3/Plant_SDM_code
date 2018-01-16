@@ -256,7 +256,7 @@ HIA.SPP = dplyr::rename(HIA.SPP, HIA.Taxa = Species)
 
 ## Reorder by species
 HIA.SPP = HIA.SPP[with(HIA.SPP, order(Binomial)), ] 
-View(HIA.SPP)
+#View(HIA.SPP)
 
 
 #######################################################################################################################

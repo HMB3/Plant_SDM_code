@@ -517,8 +517,12 @@ COMBO.NICHE.CONTEXT = join(COMBO.LGA, HIA.SPP.JOIN,
                            by = "searchTaxon", type = "left", match = "all")
 
 
-## Now save .RData file for the next session...
-save.image("STEP_4_NICHES.RData")
+## Check taxa again
+'Swainsona formosa'  %in% COMBO.NICHE.CONTEXT$searchTaxon
+'Templetonia retusa' %in% COMBO.NICHE.CONTEXT$searchTaxon 
+'Dodonaea baueri'    %in% COMBO.NICHE.CONTEXT$searchTaxon 
+'Platanus hispanica' %in% COMBO.NICHE.CONTEXT$searchTaxon 
+'Kennedia beckxiana' %in% COMBO.NICHE.CONTEXT$searchTaxon  
 
 
 ## Changing the order is not needed for the raster data
@@ -584,10 +588,10 @@ COMBO.RASTER.CONTEXT.UPDTATE = bind_rows(COMBO.RASTER.CONTEXT, COMBO.RASTER.CONT
        
 
 ## Save the summary datasets
-save(missing.taxa,         file = paste("./data/base/HIA_LIST/COMBO/MISSING_TAXA.RData",         sep = ""))
-save(COMBO.RASTER.CONTEXT, file = paste("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData", sep = ""))
-save(COMBO.NICHE.CONTEXT,  file = paste("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData",  sep = ""))
-write.csv(COMBO.NICHE.CONTEXT, "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.csv",       row.names = FALSE)
+save(missing.taxa,         file = paste("./data/base/HIA_LIST/COMBO/MISSING_TAXA.RData",                   sep = ""))
+save(COMBO.RASTER.CONTEXT, file = paste("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_1601_2018.RData", sep = ""))
+save(COMBO.NICHE.CONTEXT,  file = paste("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1601_2018.RData",  sep = ""))
+write.csv(COMBO.NICHE.CONTEXT, "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1601_2018.csv",       row.names = FALSE)
 
 
 ## Now save .RData file for the next session...

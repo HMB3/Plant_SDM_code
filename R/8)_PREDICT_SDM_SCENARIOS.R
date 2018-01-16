@@ -181,7 +181,8 @@ head(MAXENT.STD.VAR.SUMMARY)[1:8]
 ## Now check the match between the species list, and the results this. These need to match, so we can access
 ## the right threshold for each species.
 intersect(test_spp, MAXENT.STD.VAR.SUMMARY$GBIF_Taxon) ## accesssing the files from these directories... 
-
+MAXENT.SUM.TEST  =  MAXENT.STD.VAR.SUMMARY[MAXENT.STD.VAR.SUMMARY$GBIF_Taxon %in% test_spp, ] 
+head(MAXENT.SUM.TEST, 10)["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"];head(MAXENT.SUM.TEST, 10)[1]
 
 
 #########################################################################################################################
@@ -190,23 +191,23 @@ intersect(test_spp, MAXENT.STD.VAR.SUMMARY$GBIF_Taxon) ## accesssing the files f
 
 
 #########################################################################################################################
-## Now for each species, use a function to combine the raster files for each climate scenario into one layer
+## Now for each species, use a function to combine the raster files for each climate scenario into one layer Use the 
+## species-specific thresholds that are produced by rmaxent (i.e. the columns in MAXENT.STD.VAR.SUMMARY) Linda and John 
+## use these two:
 
-## Here we are using the species-specific thresholds that are produced by rmaxent (i.e. the columns in MAXENT.STD.VAR.SUMMARY)
-## Linda and John use these two:
-
-## Maximum training sensitivity plus specificity Logistic threshold
+## Maximum training sensitivity plus specificity Logistic threshold 
 ## 10 percentile training presence training omission. EG:
-summary(MAXENT.STD.VAR.SUMMARY["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"])
-summary(MAXENT.STD.VAR.SUMMARY["X10.percentile.training.presence.training.omission"])
+summary(MAXENT.SUM.TEST["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"])
+summary(MAXENT.SUM.TEST["X10.percentile.training.presence.training.omission"])
 
 
 ## Turn these into lists
-thresh.max.train = as.list(MAXENT.STD.VAR.SUMMARY["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"]) 
+thresh.max.train = as.list(MAXENT.SUM.TEST["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"]) 
 thresh.max.train = thresh.max.train$Maximum.training.sensitivity.plus.specificity.Logistic.threshold
 
-thresh.10.omiss  = as.list(MAXENT.STD.VAR.SUMMARY["X10.percentile.training.presence.training.omission"])
-thresh.10.omiss  = thresh.10.omiss$X10.percentile.training.presence.training.omission
+percent.10.omiss  = as.list(MAXENT.SUM.TEST["X10.percentile.training.presence.training.omission"])
+percent.10.omiss  = percent.10.omiss$X10.percentile.training.presence.training.omission
+length(percent.10.omiss);length(thresh.max.train) 
 
 
 ## So we can use the values in these columns to threhsold the rasters of habitat suitability (0-1) when combining them.
@@ -215,17 +216,37 @@ thresh.10.omiss  = thresh.10.omiss$X10.percentile.training.presence.training.omi
 
 
 ## These thresholded predictions of habitat suitability could be used to determine the loss or gain of species within areal units
-## (e.g. significant urban areas or LGAs), between time periods (current, 2030, 2070). So the ingredients here are the results 
-## for current and future predictions. 
+## (e.g. significant urban areas or LGAs), between time periods (current, 2030, 2070). So the ingredients to calculate these results 
+## are the current and future predictions. 
 
 
 ## Now change the function to use the species' thresholds
-suitability.2050 = mapply(combine_maxent_predictions, SDM.RESULTS.DIR, test_spp, period = 50)
-suitability.2070 = mapply(combine_maxent_predictions, SDM.RESULTS.DIR, test_spp, period = 70)
+## Check why the test_spp list is different from the results folderds
+comb_spp   = test_spp[test_spp %in% MAXENT.STD.VAR.SUMMARY$GBIF_Taxon ]
+DIR        = SDM.RESULTS.DIR[1]
+species    = comb_spp[1]
+thresh     = thresh.max.train[1]
+time_slice = 50
+
+
+
+suitability.2050 = mapply(combine_gcm_threshold, 
+                          DIR_list     = SDM.RESULTS.DIR, 
+                          species_list = comb_spp, 
+                          thresholds   = thresh.max.train, 
+                          percentiles  = percent.10.omiss,
+                          time_slice   = 50)
+
+
+# Writing Allocasuarina_littoralis 2050 combined suitability > 0.3385
+# Error in suit.list[[2]] : subscript out of bounds
+
+
+suitability.2070 = mapply(combine_maxent_predictions, SDM.RESULTS.DIR, comb_spp, thresh = thresh.max.train, period = 70)
 
 
 #########################################################################################################################
-## Save results
+## Save results::
 write.csv(MAXENT.STD.VAR.SUMMARY, "./output/maxent/MAXENT_STD_VAR_SUMMARY.csv", row.names = FALSE)
 
 

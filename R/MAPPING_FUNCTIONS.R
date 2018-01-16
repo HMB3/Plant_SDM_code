@@ -10,7 +10,7 @@
 
 #########################################################################################################################
 ## 2050
-project.grids.2050 = function(scen_2050, test_spp){
+project.grids.2050 = function(scen_2050, test_spp) {
   
   ##  First, run a loop over each scenario: options(error = recover)    
   lapply(scen_2050, function(x) {
@@ -145,9 +145,12 @@ project.grids.2050 = function(scen_2050, test_spp){
 }
 
 
+
+
+
 #########################################################################################################################
 ## 2070
-project.grids.2070 = function(scen_2070, test_spp){
+project.grids.2070 = function(scen_2070, test_spp) {
   
   ##  First, run a loop over each scenario: options(error = recover)    
   lapply(scen_2070, function(x) {
@@ -285,7 +288,7 @@ project.grids.2070 = function(scen_2070, test_spp){
   })
   
 }
-  
+ 
 
 
 
@@ -296,122 +299,143 @@ project.grids.2070 = function(scen_2070, test_spp){
 
 
 #########################################################################################################################
-## Loop over directories, species and one threshold for each, also taking a period argument. Next, make the lists generic too
-combine_gcm_threshold = function(SDM.RESULTS.DIR, test_spp, thresh, period){
+## Loop over directories, species and one threshold for each, also taking a time_slice argument. Next, make the lists generic too
+combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles, time_slice) {
   
-  lapply(SDM.RESULTS.DIR, function(DIR) { 
+  lapply(DIR_list, function(DIR) { 
     
     ## And each species - although we don't want all possible combinations. How can this loop be improved?
-    lapply(test_spp, function(species) {
+    lapply(species_list, function(species) {
       
       ###################################################################################################################
       ## Create a list of the rasters in each directory, then take the mean. How long does the mean calculation take?
       ## Tidy this up with %, etc
-      raster.list = list.files(as.character(DIR), pattern = sprintf('bi%s.tif', period), full.names = TRUE)  ##  sprintf('bi%s.tif', period)
+      raster.list = list.files(as.character(DIR), pattern = sprintf('bi%s.tif', time_slice), full.names = TRUE)  ##  sprintf('bi%s.tif', time_slice)
       suit        = stack(raster.list)
       suit.list   = unstack(suit)
       mean.suit   = mean(suit)   ## plot(mean.suit)
       
       ## Write the mean to file
       f_mean = sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s_suitability_mean.tif', 
-                       species, species, period)
+                       species, species, time_slice)
       
       
       if(!file.exists(f_mean)) {
         
         writeRaster(mean.suit, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s_suitability_mean.tif', 
-                                       species, species, period), overwrite = TRUE)
+                                       species, species, time_slice), overwrite = TRUE)
         
       } else {
         
-        message(species, ' 20', period, ' mean suitability skipped - already exists')   ## 
+        message(species, ' 20', time_slice, ' mean suitability skipped - already exists')   ## 
         
       }
       
       ###################################################################################################################
-      ## Then create rasters that meet habitat suitability criteria thresholds
-      ## thresh.max.train$Maximum.training.sensitivity.plus.specificity.Logistic.threshold[1]
-      for (thresh in c(0.7)) {  ## the thresholds should be a value from the vector of thresholds  
+      ## Then create rasters that meet habitat suitability criteria thresholds, determined by the rmaxent function
+      for (thresh in thresholds) {
         
-        ## Check if the combined suitability raster exists
-        f_suit <- sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
-                          species, species, period, "_combined_suitability_above_", thresh)
-        
-        
-        ## If it doesn't exist, create the suitability raster
-        if(!file.exists(f_suit)) {
+        for (percent in percentiles) { 
           
-          ## First create a simple function to threshold each of the rasters in raster.list
-          ## So how does this change to add them up? First
-          scen_greater = function (x) {x > thresh}
+          ## Check if the combined suitability raster exists
+          f_suit <- sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
+                            species, species, time_slice, "_combined_suitability_above_", thresh)
           
-          ## Then apply the function to the GCM list for each species
-          ## The Init function initializes a raster object with values
-          #suit_ras_greater    = reduce(suit.list, thresh_above_fun, .init = suit.list[[1]] > thresh)
-          
-          suit_ras1_greater  = scen_greater(suit.list[[1]])   ## do this better...
-          suit_ras2_greater  = scen_greater(suit.list[[2]])
-          suit_ras3_greater  = scen_greater(suit.list[[3]])
-          suit_ras4_greater  = scen_greater(suit.list[[4]])
-          suit_ras5_greater  = scen_greater(suit.list[[5]])
-          suit_ras6_greater  = scen_greater(suit.list[[6]])
-          
-          ## Then sum them up: could use a function or magrittr to compress this..
-          suit_ras_combined_sum   =  Reduce("+", list(suit_ras1_greater, suit_ras2_greater, suit_ras3_greater,
-                                                      suit_ras4_greater, suit_ras5_greater, suit_ras6_greater))
-          ## plot(suit_ras_combined_sum )
-          
-          ## Write the raster for each species and threshold inside the loop. But how to access the rasters for plotting?
-          message('Writing ', species, ' 20', period, ' combined suitability > ', thresh) 
-          writeRaster(suit_ras_combined_sum, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
-                                                     species, species, period, "_combined_suitability_above_", thresh), overwrite = TRUE)
-          
-          
-        } else {
-          
-          message(species, ' 20', period, ' combined suitability > ', thresh, ' skipped - already exists')   ## 
+          ## If it doesn't exist, create the suitability raster
+          if(!file.exists(f_suit)) {
+            
+            ## First create a simple function to threshold each of the rasters in raster.list
+            ## So how does this change to add them up? First
+            thresh_greater  = function (x) {x > thresh}
+            percent_greater = function (x) {x > percent}
+            
+            ## Now apply the function to the list of rasters (6 GCMs) for each species
+            ## Also, the 'init' function initializes a raster object with values
+            ## suit_ras_greater    = reduce(suit.list, thresh_above_fun, .init = suit.list[[1]] > thresh)
+            
+            ## First, calculate the cells which are greater that the: 
+            ## Maximum training sensitivity plus specificity Logistic threshold
+            suit_ras1_thresh   = thresh_greater(suit.list[[1]])  
+            suit_ras2_thresh   = thresh_greater(suit.list[[2]])
+            suit_ras3_thresh   = thresh_greater(suit.list[[3]])
+            suit_ras4_thresh   = thresh_greater(suit.list[[4]])   ## Do this better...
+            suit_ras5_thresh   = thresh_greater(suit.list[[5]])
+            suit_ras6_thresh   = thresh_greater(suit.list[[6]])
+            
+            ## First, calculate the cells which are greater that the: 
+            ## Maximum training sensitivity plus specificity Logistic threshold
+            suit_ras1_percent  = percent_greater(suit.list[[1]])
+            suit_ras2_percent  = percent_greater(suit.list[[2]])
+            suit_ras3_percent  = percent_greater(suit.list[[3]])
+            suit_ras4_percent  = percent_greater(suit.list[[4]])
+            suit_ras5_percent  = percent_greater(suit.list[[5]])
+            suit_ras6_percent  = percent_greater(suit.list[[6]])
+            
+            ## Then sum them up: could use % to compress this..
+            ## All the threshholds
+            combo_suit_thresh   =  Reduce("+", list(suit_ras1_thresh, suit_ras2_thresh, suit_ras3_thresh,
+                                                    suit_ras4_thresh, suit_ras5_thresh, suit_ras6_thresh))
+            
+            ## All the percentiles
+            combo_suit_percent  =  Reduce("+", list(suit_ras1_percent, suit_ras2_percent, suit_ras3_percent,
+                                                    suit_ras4_percent, suit_ras5_percent, suit_ras6_percent))
+            
+            ## plot(suit_ras_combined_sum)
+            
+            ## Write the raster for each species and threshold inside the loop. But how to access the rasters for plotting?
+            message('Writing ', species, ' 20', time_slice, ' combined suitability > ', thresh) 
+            writeRaster(combo_suit_thresh, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
+                                                   species, species, time_slice, "_combined_suitability_above_", thresh), overwrite = TRUE)
+            
+            ## Write the percentile raster
+            message('Writing ', species, ' 20', time_slice, ' combined suitability > ', percent) 
+            writeRaster(combo_suit_thresh, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
+                                                   species, species, time_slice, "_combined_suitability_above_", percent),    overwrite = TRUE)
+            
+            ## Now create the empty panel just before plotting, and read in the occurrence data
+            empty <- init(combo_suit_thresh, function(x) NA)
+            occ <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/occ.rds', species)) 
+            
+            ########################################################################################################################
+            ## Use the levelplot function to make a multipanel output: occurences, percentiles and thresholds
+            png(sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s_suitability_above_%s.png',
+                        species, species, time_slice, thresh),
+                11, 4, units = 'in', res = 300)
+            
+            ## Need an empty frame
+            print(levelplot(stack(empty,
+                                  combo_suit_percent,
+                                  combo_suit_thresh), margin = FALSE,
+                            
+                            ## Create a colour scheme using colbrewer: 100 is to make it continuos
+                            ## Also, make it a one-directional colour scheme
+                            scales      = list(draw = FALSE), 
+                            at = seq(0, 6, length = 100),
+                            col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
+                            
+                            ## Give each plot a name
+                            names.attr = c('Aus occurrences', sprintf('20%s GCM average', time_slice), sprintf('20%s GCM > %s', time_slice, thresh)),
+                            colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
+                            main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
+                    
+                    ## Plot the Aus shapefile with the occurrence points for reference
+                    ## Why are the points not working using "occ" in this way?
+                    layer(sp.polygons(aus)) +
+                    layer(sp.points(occ, pch = 20, cex = 0.4, 
+                                    col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
+            
+            ## Finish the device
+            dev.off()
+            
+          } else {
+            
+            message(species, ' 20', time_slice, ' combined suitability > ', thresh, ' skipped - already exists')   ## 
+            
+          }
           
         }
         
       }
-      
-      ## Now create the empty panel just before plotting, and read in the occurrence data
-      f_current <- sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_current.tif', 
-                           species, species)
-      
-      empty <- init(f_current, function(x) NA)
-      occ <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/occ.rds', species)) 
-      
-      ########################################################################################################################
-      ## Use the levelplot function to make a multipanel output: average, threshold 1, threshold 2
-      png(sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s_suitability_above_%s.png',
-                  species, species, period, thresh),
-          11, 4, units = 'in', res = 300)
-      
-      ## Need an empty frame
-      print(levelplot(stack(empty,
-                            mean.suit,
-                            suit_ras_combined_sum), margin = FALSE,
-                      
-                      ## Create a colour scheme using colbrewer: 100 is to make it continuos
-                      ## Also, make it a one-directional colour scheme
-                      scales      = list(draw = FALSE), 
-                      at = seq(0, 6, length = 100),
-                      col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
-                      
-                      ## Give each plot a name
-                      names.attr = c('Aus occurrences', sprintf('20%s GCM average', period), sprintf('20%s GCM > %s', period, thresh)),
-                      colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
-                      main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
-              
-              ## Plot the Aus shapefile with the occurrence points for reference
-              ## Why are the points not working using "occ" in this way?
-              layer(sp.polygons(aus)) +
-              layer(sp.points(occ, pch = 20, cex = 0.4, 
-                              col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
-      
-      ## Finish the device
-      dev.off()
       
     })
     
