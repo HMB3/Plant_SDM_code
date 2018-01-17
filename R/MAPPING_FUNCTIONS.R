@@ -310,7 +310,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
       ###################################################################################################################
       ## Create a list of the rasters in each directory, then take the mean. How long does the mean calculation take?
       ## Tidy this up with %, etc
-      raster.list = list.files(as.character(DIR), pattern = sprintf('bi%s.tif', time_slice), full.names = TRUE)  ##  sprintf('bi%s.tif', time_slice)
+      raster.list = list.files(as.character(DIR), pattern = sprintf('bi%s.tif', time_slice), full.names = TRUE)  
       suit        = stack(raster.list)
       suit.list   = unstack(suit)
       mean.suit   = mean(suit)   ## plot(mean.suit)
@@ -389,36 +389,28 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
                                                     suit_ras4_percent, suit_ras5_percent, suit_ras6_percent))
             
             ## Try re-classifying the combination rasters
-            rc <- function(x) {ifelse(x >  1, 1, 0) }
-            speciesbin <- calc(combo_suit_thresh, fun = rc)
-            plot(speciesbin)
+            rc <- function(x) {ifelse(x >=  1, 1, 0) }
+            combo_suit_binary <- calc(combo_suit_thresh, fun = rc)
+            plot(combo_suit_binary)
             
             #########################################################################################################################
             ## Next, calcualte the loss or gain between the two time periods :
-            thresh_change_current_minus_2050 = overlay(suit_current_thresh,
-                                                       combo_suit_thresh,
-                                                       fun = function(r1, r2) {return (r1 - r2)})
+            binary_current_minus_2050 = overlay(suit_current_thresh,
+                                                speciesbin,
+                                                fun = function(r1, r2) {return (r1 - r2)})
+
             
             thresh_change_2050_minus_current = overlay(combo_suit_thresh,
                                                        suit_current_thresh,
                                                        fun = function(r1, r2) {return (r1 - r2)})
             
-            thresh_change_current_plus_2050 = overlay(suit_current_thresh,
-                                                      combo_suit_thresh,
-                                                      fun = function(r1, r2) {return (r1 + r2)})
+
+            plot(combo_suit_binary, main = gsub('_', ' ', (sprintf('%s future Max_train_sensit > %s', species, thresh))))
+            plot(suit_current_thresh, main = gsub('_', ' ', (sprintf('%s current Max_train_sensit > %s', species, thresh))))
+            plot(binary_2050_minus_current,
+                 main = gsub('_', ' ', (sprintf('%s future - current  Max_train_sensit > %s', species, thresh))))
             
-            plot(thresh_change_current_minus_2050,
-                 main = gsub('_', ' ', (sprintf('%s current - future  Max_train_sensit > %s', species, thresh))))
-            
-            plot(thresh_change_2050_minus_current,
-                 main = gsub('_', ' ', (sprintf('%s current - future  Max_train_sensit > %s', species, thresh))))
-            
-            
-            plot(thresh_change_current_plus_2050,
-                 main = gsub('_', ' ', (sprintf('%s current + future  Max_train_sensit > %s', species, thresh))))
-            
-            
-            ## Write the raster for each species and threshold inside the loop. But how to access the rasters for plotting?
+            ## Write the raster for each species and threshold inside the loop
             message('Writing ', species, ' 20', time_slice, ' combined suitability > ', thresh) 
             writeRaster(combo_suit_thresh, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
                                                    species, species, time_slice, "_Max_train_sensit_above_", thresh), overwrite = TRUE)

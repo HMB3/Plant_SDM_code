@@ -182,7 +182,7 @@ head(MAXENT.STD.VAR.SUMMARY)[1:8]
 
 ## Now check the match between the species list, and the results this. These need to match, so we can access
 ## the right threshold for each species.
-intersect(test_spp, MAXENT.STD.VAR.SUMMARY$GBIF_Taxon) ## accesssing the files from these directories... 
+length(intersect(test_spp, MAXENT.STD.VAR.SUMMARY$GBIF_Taxon)) ## accesssing the files from these directories... 
 MAXENT.SUM.TEST  =  MAXENT.STD.VAR.SUMMARY[MAXENT.STD.VAR.SUMMARY$GBIF_Taxon %in% test_spp, ] 
 head(MAXENT.SUM.TEST, 10)["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"];head(MAXENT.SUM.TEST, 10)[1]
 
@@ -193,7 +193,7 @@ head(MAXENT.SUM.TEST, 10)["Maximum.training.sensitivity.plus.specificity.Logisti
 
 
 #########################################################################################################################
-## Now for each species, use a function to combine the raster files for each climate scenario into one layer Use the 
+## Now for each species, use a function to combine the raster files for each climate scenario into one layer. Use the 
 ## species-specific thresholds that are produced by rmaxent (i.e. the columns in MAXENT.STD.VAR.SUMMARY) Linda and John 
 ## use these two:
 
