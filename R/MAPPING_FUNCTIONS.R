@@ -389,7 +389,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
                                                     suit_ras4_percent, suit_ras5_percent, suit_ras6_percent))
             
             ## Try re-classifying the combination rasters
-            rc <- function(x) {ifelse(x >  1, 1, 0) }
+            rc <- function(x) {ifelse(x >=  1, 1, 0) }
             speciesbin <- calc(combo_suit_thresh, fun = rc)
             plot(speciesbin)
             
@@ -406,6 +406,18 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             thresh_change_current_plus_2050 = overlay(suit_current_thresh,
                                                       combo_suit_thresh,
                                                       fun = function(r1, r2) {return (r1 + r2)})
+            
+            binary_current_plus_2050 = overlay(suit_current_thresh,
+                                               speciesbin,
+                                               fun = function(r1, r2) {return (r1 + r2)})
+            
+            binary_current_minus_2050 = overlay(suit_current_thresh,
+                                                speciesbin,
+                                                fun = function(r1, r2) {return (r1 - r2)})
+            
+            binary_2050_minus_current = overlay(speciesbin,
+                                                suit_current_thresh,
+                                                fun = function(r1, r2) {return (r1 - r2)})
             
             plot(thresh_change_current_minus_2050,
                  main = gsub('_', ' ', (sprintf('%s current - future  Max_train_sensit > %s', species, thresh))))
