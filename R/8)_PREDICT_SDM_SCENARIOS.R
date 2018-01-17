@@ -9,6 +9,8 @@
 ## format of all species occurrences (rows) and environmental variables (columns).
 
 ## Finally, the predictions from all GCMs (currently using six) are combined into a single habitat suitability layer
+## The aim is to determine the loss or gain of species within areal units (e.g. significant urban areas or LGAs), between 
+## time periods (current, 2030, 2070). 
 
 
 #########################################################################################################################
@@ -227,6 +229,7 @@ DIR        = SDM.RESULTS.DIR[1]
 species    = comb_spp[1]
 thresh     = thresh.max.train[1]
 time_slice = 50
+percent    = percent.10.omiss[1]
 
 
 

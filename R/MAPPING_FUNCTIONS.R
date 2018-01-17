@@ -344,12 +344,21 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
           ## If it doesn't exist, create the suitability raster
           if(!file.exists(f_suit)) {
             
-            ## First create a simple function to threshold each of the rasters in raster.list
-            ## So how does this change to add them up? First
+            ## Read in the current suitability raster
+            f_current <- raster(sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_current.tif', 
+                                        species, species))
+            
+            ## First, create a simple function to threshold each of the rasters in raster.list
             thresh_greater  = function (x) {x > thresh}
             percent_greater = function (x) {x > percent}
             
-            ## Now apply the function to the list of rasters (6 GCMs) for each species
+            ## Then apply this to just the current suitability raster. These functions use the : 
+            ## Maximum training sensitivity plus specificity Logistic threshold and the :
+            ## 10th percentile training presence training omission
+            suit_current_thresh  = thresh_greater(f_current)
+            suit_current_percent = percent_greater(f_current) 
+            
+            ## Now, apply these functions to the list of rasters (6 GCMs) for each species
             ## Also, the 'init' function initializes a raster object with values
             ## suit_ras_greater    = reduce(suit.list, thresh_above_fun, .init = suit.list[[1]] > thresh)
             
@@ -362,8 +371,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             suit_ras5_thresh   = thresh_greater(suit.list[[5]])
             suit_ras6_thresh   = thresh_greater(suit.list[[6]])
             
-            ## First, calculate the cells which are greater that the: 
-            ## Maximum training sensitivity plus specificity Logistic threshold
+            ## Then greater than the 10 percentile training presence training omission
             suit_ras1_percent  = percent_greater(suit.list[[1]])
             suit_ras2_percent  = percent_greater(suit.list[[2]])
             suit_ras3_percent  = percent_greater(suit.list[[3]])
@@ -380,17 +388,45 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             combo_suit_percent  =  Reduce("+", list(suit_ras1_percent, suit_ras2_percent, suit_ras3_percent,
                                                     suit_ras4_percent, suit_ras5_percent, suit_ras6_percent))
             
-            ## plot(suit_ras_combined_sum)
+            ## Try re-classifying the combination rasters
+            rc <- function(x) {ifelse(x >  1, 1, 0) }
+            speciesbin <- calc(combo_suit_thresh, fun = rc)
+            plot(speciesbin)
+            
+            #########################################################################################################################
+            ## Next, calcualte the loss or gain between the two time periods :
+            thresh_change_current_minus_2050 = overlay(suit_current_thresh,
+                                                       combo_suit_thresh,
+                                                       fun = function(r1, r2) {return (r1 - r2)})
+            
+            thresh_change_2050_minus_current = overlay(combo_suit_thresh,
+                                                       suit_current_thresh,
+                                                       fun = function(r1, r2) {return (r1 - r2)})
+            
+            thresh_change_current_plus_2050 = overlay(suit_current_thresh,
+                                                      combo_suit_thresh,
+                                                      fun = function(r1, r2) {return (r1 + r2)})
+            
+            plot(thresh_change_current_minus_2050,
+                 main = gsub('_', ' ', (sprintf('%s current - future  Max_train_sensit > %s', species, thresh))))
+            
+            plot(thresh_change_2050_minus_current,
+                 main = gsub('_', ' ', (sprintf('%s current - future  Max_train_sensit > %s', species, thresh))))
+            
+            
+            plot(thresh_change_current_plus_2050,
+                 main = gsub('_', ' ', (sprintf('%s current + future  Max_train_sensit > %s', species, thresh))))
+            
             
             ## Write the raster for each species and threshold inside the loop. But how to access the rasters for plotting?
             message('Writing ', species, ' 20', time_slice, ' combined suitability > ', thresh) 
             writeRaster(combo_suit_thresh, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
-                                                   species, species, time_slice, "_combined_suitability_above_", thresh), overwrite = TRUE)
+                                                   species, species, time_slice, "_Max_train_sensit_above_", thresh), overwrite = TRUE)
             
             ## Write the percentile raster
             message('Writing ', species, ' 20', time_slice, ' combined suitability > ', percent) 
-            writeRaster(combo_suit_thresh, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
-                                                   species, species, time_slice, "_combined_suitability_above_", percent),    overwrite = TRUE)
+            writeRaster(combo_suit_percent, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
+                                                    species, species, time_slice, "_10_percentile_omiss_above_", percent),    overwrite = TRUE)
             
             ## Now create the empty panel just before plotting, and read in the occurrence data
             empty <- init(combo_suit_thresh, function(x) NA)
@@ -415,8 +451,8 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
                             
                             ## Give each plot a name
                             names.attr = c('Aus occurrences', 
-                                           sprintf('20%s GCM > 10% train omission', time_slice), 
-                                           sprintf('20%s GCM > Max train logis %s', time_slice, thresh)),
+                                           sprintf('20%s GCM 10thp train omission > %s', time_slice, percent), 
+                                           sprintf('20%s GCM Max train logis > %s',      time_slice, thresh)),
                             
                             colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
                             main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
@@ -445,6 +481,10 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
   })
   
 }
+
+
+
+
 
 
 
