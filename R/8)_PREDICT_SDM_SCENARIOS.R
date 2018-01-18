@@ -8,9 +8,9 @@
 ## a prediction of habitat suitability for current and future environmental conditions. The input data table is in the 
 ## format of all species occurrences (rows) and environmental variables (columns).
 
-## Finally, the predictions from all GCMs (currently using six) are combined into a single habitat suitability layer
-## The aim is to determine the loss or gain of species within areal units (e.g. significant urban areas or LGAs), between 
-## time periods (current, 2030, 2070). 
+## Then the predictions from all GCMs (currently using six) are combined into a single habitat suitability layer.
+## Using this combined layer, the loss or gain of species within areal units (e.g. significant urban areas or LGAs), 
+## between time periods (current, 2030, 2070) can be calculated. 
 
 
 #########################################################################################################################
@@ -69,7 +69,7 @@ gcms.70$GCM = sub(" \\(#\\)", "", gcms$GCM)
 gcms.50 ; gcms.70
 
 
-## Just get the 8 models picked by CSIRO for Australia, for 2050 and 2070
+## Just get the 6 models picked by CSIRO for Australia, for 2050 and 2070
 ## Also will be a better way to get at this...
 scen_2050 = c("mc85bi50", "no85bi50", "ac85bi50", "cn85bi50", "gf85bi50", "hg85bi50")
 scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cn85bi70", "gf85bi70", "hg85bi70")
@@ -187,6 +187,9 @@ MAXENT.SUM.TEST  =  MAXENT.STD.VAR.SUMMARY[MAXENT.STD.VAR.SUMMARY$GBIF_Taxon %in
 head(MAXENT.SUM.TEST, 10)["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"];head(MAXENT.SUM.TEST, 10)[1]
 
 
+
+
+
 #########################################################################################################################
 ## 4). SUMMARIZE MAXENT RESULTS FOR EACH SPECIES ACROSS MULTIPLE GCMs
 #########################################################################################################################
@@ -203,7 +206,7 @@ summary(MAXENT.SUM.TEST["Maximum.training.sensitivity.plus.specificity.Logistic.
 summary(MAXENT.SUM.TEST["X10.percentile.training.presence.training.omission"])
 
 
-## Turn these into lists
+## Turn these into lists: use %?
 thresh.max.train = as.list(MAXENT.SUM.TEST["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"]) 
 thresh.max.train = thresh.max.train$Maximum.training.sensitivity.plus.specificity.Logistic.threshold
 
@@ -218,12 +221,12 @@ length(percent.10.omiss);length(thresh.max.train)
 
 
 ## These thresholded predictions of habitat suitability could be used to determine the loss or gain of species within areal units
-## (e.g. significant urban areas or LGAs), between time periods (current, 2030, 2070). So the ingredients to calculate these results 
-## are the current and future predictions. 
+## (e.g. significant urban areas or LGAs), between time periods (current, 2030, 2070). 
 
 
-## Now change the function to use the species' thresholds
-## Check why the test_spp list is different from the results folderds
+#########################################################################################################################
+## Lots of ways to run this analysis. Could do it all at once (i.e. all species, time periods, etc). But for now, just
+## do each time slice individually. 
 comb_spp   = test_spp[test_spp %in% MAXENT.STD.VAR.SUMMARY$GBIF_Taxon ]
 DIR        = SDM.RESULTS.DIR[1]
 species    = comb_spp[1]
@@ -232,7 +235,7 @@ time_slice = 50
 percent    = percent.10.omiss[1]
 
 
-
+## Combine output and calculate gain and loss for 2050 
 suitability.2050 = mapply(combine_gcm_threshold, 
                           DIR_list     = SDM.RESULTS.DIR, 
                           species_list = comb_spp, 
@@ -244,8 +247,13 @@ suitability.2050 = mapply(combine_gcm_threshold,
 # Writing Allocasuarina_littoralis 2050 combined suitability > 0.3385
 # Error in suit.list[[2]] : subscript out of bounds
 
-
-suitability.2070 = mapply(combine_maxent_predictions, SDM.RESULTS.DIR, comb_spp, thresh = thresh.max.train, period = 70)
+## Combine output and calculate gain and loss for 2070 
+suitability.2050 = mapply(combine_gcm_threshold, 
+                          DIR_list     = SDM.RESULTS.DIR, 
+                          species_list = comb_spp, 
+                          thresholds   = thresh.max.train, 
+                          percentiles  = percent.10.omiss,
+                          time_slice   = 50)
 
 
 #########################################################################################################################

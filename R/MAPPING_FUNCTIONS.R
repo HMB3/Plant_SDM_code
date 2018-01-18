@@ -319,7 +319,6 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
       f_mean = sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s_suitability_mean.tif', 
                        species, species, time_slice)
       
-      
       if(!file.exists(f_mean)) {
         
         writeRaster(mean.suit, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s_suitability_mean.tif', 
@@ -355,8 +354,8 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             ## Then apply this to just the current suitability raster. These functions use the : 
             ## Maximum training sensitivity plus specificity Logistic threshold and the :
             ## 10th percentile training presence training omission
-            suit_current_thresh  = thresh_greater(f_current)
-            suit_current_percent = percent_greater(f_current) 
+            current_suit_thresh  = thresh_greater(f_current)
+            current_suit_percent = percent_greater(f_current) 
             
             ## Now, apply these functions to the list of rasters (6 GCMs) for each species
             ## Also, the 'init' function initializes a raster object with values
@@ -367,7 +366,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             suit_ras1_thresh   = thresh_greater(suit.list[[1]])  
             suit_ras2_thresh   = thresh_greater(suit.list[[2]])
             suit_ras3_thresh   = thresh_greater(suit.list[[3]])
-            suit_ras4_thresh   = thresh_greater(suit.list[[4]])   ## Do this better...
+            suit_ras4_thresh   = thresh_greater(suit.list[[4]])   ## Abbreviate this...
             suit_ras5_thresh   = thresh_greater(suit.list[[5]])
             suit_ras6_thresh   = thresh_greater(suit.list[[6]])
             
@@ -387,29 +386,69 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             ## All the percentiles
             combo_suit_percent  =  Reduce("+", list(suit_ras1_percent, suit_ras2_percent, suit_ras3_percent,
                                                     suit_ras4_percent, suit_ras5_percent, suit_ras6_percent))
-            
-            ## Try re-classifying the combination rasters
-            rc <- function(x) {ifelse(x >=  1, 1, 0) }
-            combo_suit_binary <- calc(combo_suit_thresh, fun = rc)
-
+          
             #########################################################################################################################
             ## Next, calcualte the loss or gain between the two time periods :
-            binary_current_minus_2050 = overlay(suit_current_thresh,
-                                                speciesbin,
-                                                fun = function(r1, r2) {return (r1 - r2)})
-
+            ## first create a binary raster for GCM layer
+            rc <- function(x) {ifelse(x >=  1, 1, 0) }
+            combo_suit_binary <- calc(combo_suit_thresh, fun = rc)
             
-            thresh_change_2050_minus_current = overlay(combo_suit_thresh,
-                                                       suit_current_thresh,
-                                                       fun = function(r1, r2) {return (r1 - r2)})
+            ## Then subtract the binary current layer from the binary future layer
+            binary_future_minus_current = overlay(combo_suit_binary,
+                                                  current_suit_thresh,
+                                                  fun = function(r1, r2) {return (r1 - r2)})
             
-
+            ## Subtract the binary current layer from the integer future layer 
+            GCM_future_minus_current    = overlay(combo_suit_thresh,
+                                                  current_suit_thresh,
+                                                  fun = function(r1, r2) {return (r1 - r2)})
+            
+            ## Plot the difference between future and current layers...
             plot(combo_suit_binary, main = gsub('_', ' ', (sprintf('%s future Max_train_sensit > %s', species, thresh))))
-            plot(suit_current_thresh, main = gsub('_', ' ', (sprintf('%s current Max_train_sensit > %s', species, thresh))))
-            plot(binary_2050_minus_current,
-                 main = gsub('_', ' ', (sprintf('%s future - current  Max_train_sensit > %s', species, thresh))))
-
+            plot(current_suit_thresh, main = gsub('_', ' ', (sprintf('%s current Max_train_sensit > %s', species, thresh))))
             
+            ## The following two plots are not equivalent. When we subtract the current binary layer (1, 0) from the future
+            ## binary layer, we have: 
+            
+            ## F0 - C0 =  0 (no data in either layer)
+            ## F0 - C1 = -1 (LOSS across all GCMs)
+            ## F1 - C0 =  1 (GAIN across all GCMs) 
+            ## F1 - C1 =  0 (NO CHANGE: also no data before the overlay)
+          
+            ## However, this changes when we subtract the current binary layer (taking values 1, 0) from the future integer layer 
+            ## (taking values from 0 to 6). Here, any negative value (-1) is a loss. However, positive values (1-6) can either 
+            ## be 
+            
+            ## F0 - C0 = no data in either layer
+            ## F0 - C1 = -1 (LOSS according to all GCMs)
+          
+            ## F1 - C1 =  0 (NO CHANGE according to one GCM: also, no data before the overlay)
+            ## F1 - C0 =  1 (GAIN according to one GCM)
+            
+            ## F2 - C1 =  1 (NO CHANGE, according to two GCMs?)
+            ## F2 - C0 =  2 (GAIN according to two GCMs)
+            
+            ## F3 - C1 =  2 (NO CHANGE, according to three GCMs?)
+            ## F3 - C0 =  3 (GAIN, according to three GCMs?)
+            
+            ## F4 - C1 =  3 (NO CHANGE, according to four GCMs?)
+            ## F5 - C1 =  4 (NO CHANGE, according to five GCMs?)
+            ## F5 - C0 =  5 (GAIN according to five GCMs)
+            ## F6 - C1 =  5 (NO CHANGE, according to six GCMs?)
+            ## F6 - 0  =  6 (GAIN, according to six GCMs?)
+
+            ## What do the numbers > 1 represent? Numbers < 1 represent they same thing, the species was predicted to be present in that cell 
+            ## based on current conditions, but predicted to be absent under future conditions (i.e. the future layer did not meet the suitabiity
+            ## threshold in that location at that time.
+            plot(binary_future_minus_current,
+                 main = gsub('_', ' ', (sprintf('%s future - current  Max_train_sensit > %s', species, thresh))))
+            
+            ## 
+            plot(GCM_future_minus_current,
+                 main = gsub('_', ' ', (sprintf('%s future - current  Max_train_sensit > %s', species, thresh))))
+            
+            
+
             plot(thresh_change_current_minus_2050,
                  main = gsub('_', ' ', (sprintf('%s current - future  Max_train_sensit > %s', species, thresh))))
             
