@@ -448,16 +448,6 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
                  main = gsub('_', ' ', (sprintf('%s future - current  Max_train_sensit > %s', species, thresh))))
             
             
-
-            plot(thresh_change_current_minus_2050,
-                 main = gsub('_', ' ', (sprintf('%s current - future  Max_train_sensit > %s', species, thresh))))
-            
-            plot(thresh_change_2050_minus_current,
-                 main = gsub('_', ' ', (sprintf('%s current - future  Max_train_sensit > %s', species, thresh))))
-            
-            plot(thresh_change_current_plus_2050,
-                 main = gsub('_', ' ', (sprintf('%s current + future  Max_train_sensit > %s', species, thresh))))
-            
             
             ## Write the raster for each species and threshold inside the loop
             message('Writing ', species, ' 20', time_slice, ' combined suitability > ', thresh) 
