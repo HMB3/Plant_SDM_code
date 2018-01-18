@@ -221,7 +221,13 @@ length(percent.10.omiss);length(thresh.max.train)
 
 
 ## These thresholded predictions of habitat suitability could be used to determine the loss or gain of species within areal units
-## (e.g. significant urban areas or LGAs), between time periods (current, 2030, 2070). 
+## (e.g. significant urban areas or LGAs), between time periods (current, 2030, 2070).
+
+
+## In the global environment outside the function, define the SUA
+SUA = readOGR("F:/green_cities_sdm/data/base/CONEXTUAL/IN.SUA.shp", layer = "SUA_2011_AUST")
+CRS.new  <- CRS("+init=epsg:4326") # EPSG:3577
+SUA.WGS  = spTransform(SUA, CRS.new) 
 
 
 #########################################################################################################################
@@ -241,7 +247,8 @@ suitability.2050 = mapply(combine_gcm_threshold,
                           species_list = comb_spp, 
                           thresholds   = thresh.max.train, 
                           percentiles  = percent.10.omiss,
-                          time_slice   = 50)
+                          time_slice   = 50,
+                          areal_unit   = SUA.WGS)
 
 
 # Writing Allocasuarina_littoralis 2050 combined suitability > 0.3385

@@ -300,7 +300,7 @@ project.grids.2070 = function(scen_2070, test_spp) {
 
 #########################################################################################################################
 ## Loop over directories, species and one threshold for each, also taking a time_slice argument. Next, make the lists generic too
-combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles, time_slice) {
+combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles, time_slice, areal_unit) {
   
   lapply(DIR_list, function(DIR) { 
     
@@ -394,14 +394,14 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             combo_suit_binary <- calc(combo_suit_thresh, fun = rc)
             
             ## Then subtract the binary current layer from the binary future layer
-            binary_future_minus_current = overlay(combo_suit_binary,
-                                                  current_suit_thresh,
-                                                  fun = function(r1, r2) {return (r1 - r2)})
+            binary_future_minus_current      = overlay(combo_suit_binary,
+                                                       current_suit_thresh,
+                                                       fun = function(r1, r2) {return (r1 - r2)})
             
             ## Subtract the binary current layer from the integer future layer 
-            GCM_future_minus_current    = overlay(combo_suit_thresh,
-                                                  current_suit_thresh,
-                                                  fun = function(r1, r2) {return (r1 - r2)})
+            intergter_future_minus_current    = overlay(combo_suit_thresh,
+                                                        current_suit_thresh,
+                                                        fun = function(r1, r2) {return (r1 - r2)})
             
             ## Plot the difference between future and current layers...
             plot(combo_suit_binary, main = gsub('_', ' ', (sprintf('%s future Max_train_sensit > %s', species, thresh))))
@@ -416,38 +416,45 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             ## F1 - C1 =  0 (NO CHANGE: also no data before the overlay)
           
             ## However, this changes when we subtract the current binary layer (taking values 1, 0) from the future integer layer 
-            ## (taking values from 0 to 6). Here, any negative value (-1) is a loss. However, positive values (1-6) can either 
-            ## be 
+            ## (taking values from 0 to 6). Here, any negative value (-1) is a loss: the species was predicted to be present in that cell 
+            ## based on current conditions, but predicted to be absent under future conditions (i.e. the future layer did not meet the suitabiity
+            ## threshold in that location at that time.
             
-            ## F0 - C0 = no data in either layer
-            ## F0 - C1 = -1 (LOSS according to all GCMs)
+            ## However, positive values (1-6) can either be a gain, or no change. Not all these possibilities will occur, but they are : 
+            
+            ## F0 - C0 =  no data in either layer
+            ## F0 - C1 =  -1 (LOSS according to all GCMs)
           
             ## F1 - C1 =  0 (NO CHANGE according to one GCM: also, no data before the overlay)
             ## F1 - C0 =  1 (GAIN according to one GCM)
             
-            ## F2 - C1 =  1 (NO CHANGE, according to two GCMs?)
+            ## F2 - C1 =  1 (NO CHANGE, according to two GCMs)
             ## F2 - C0 =  2 (GAIN according to two GCMs)
             
-            ## F3 - C1 =  2 (NO CHANGE, according to three GCMs?)
-            ## F3 - C0 =  3 (GAIN, according to three GCMs?)
+            ## F3 - C1 =  2 (NO CHANGE, according to three GCMs)
+            ## F3 - C0 =  3 (GAIN, according to three GCMs)
             
-            ## F4 - C1 =  3 (NO CHANGE, according to four GCMs?)
-            ## F5 - C1 =  4 (NO CHANGE, according to five GCMs?)
+            ## F4 - C1 =  3 (NO CHANGE, according to four GCMs)
+            ## F4 - C0 =  3 (GAIN, according to four GCMs)
+            
+            ## F5 - C1 =  4 (NO CHANGE, according to five GCMs)
             ## F5 - C0 =  5 (GAIN according to five GCMs)
+            
             ## F6 - C1 =  5 (NO CHANGE, according to six GCMs?)
             ## F6 - 0  =  6 (GAIN, according to six GCMs?)
 
-            ## What do the numbers > 1 represent? Numbers < 1 represent they same thing, the species was predicted to be present in that cell 
-            ## based on current conditions, but predicted to be absent under future conditions (i.e. the future layer did not meet the suitabiity
-            ## threshold in that location at that time.
+            ## Plot the binary layer
             plot(binary_future_minus_current,
                  main = gsub('_', ' ', (sprintf('%s future - current  Max_train_sensit > %s', species, thresh))))
             
-            ## 
+            ## Plot the interger layer
             plot(GCM_future_minus_current,
                  main = gsub('_', ' ', (sprintf('%s future - current  Max_train_sensit > %s', species, thresh))))
             
             
+            #########################################################################################################################
+            ## Then calculate the loss or gain within each areal unit. First use the SUAs 
+            areal_unit = SUA.WGS
             
             ## Write the raster for each species and threshold inside the loop
             message('Writing ', species, ' 20', time_slice, ' combined suitability > ', thresh) 
@@ -461,7 +468,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             
             ## Now create the empty panel just before plotting, and read in the occurrence dat
             empty <- init(combo_suit_thresh, function(x) NA)
-            occ <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/occ.rds', species)) 
+            occ   <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/occ.rds', species)) 
             
             ########################################################################################################################
             ## Use the levelplot function to make a multipanel output: occurences, percentiles and thresholds
