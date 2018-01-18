@@ -319,7 +319,6 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
       f_mean = sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s_suitability_mean.tif', 
                        species, species, time_slice)
       
-      
       if(!file.exists(f_mean)) {
         
         writeRaster(mean.suit, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s_suitability_mean.tif', 
@@ -355,8 +354,8 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             ## Then apply this to just the current suitability raster. These functions use the : 
             ## Maximum training sensitivity plus specificity Logistic threshold and the :
             ## 10th percentile training presence training omission
-            suit_current_thresh  = thresh_greater(f_current)
-            suit_current_percent = percent_greater(f_current) 
+            current_suit_thresh  = thresh_greater(f_current)
+            current_suit_percent = percent_greater(f_current) 
             
             ## Now, apply these functions to the list of rasters (6 GCMs) for each species
             ## Also, the 'init' function initializes a raster object with values
@@ -367,7 +366,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             suit_ras1_thresh   = thresh_greater(suit.list[[1]])  
             suit_ras2_thresh   = thresh_greater(suit.list[[2]])
             suit_ras3_thresh   = thresh_greater(suit.list[[3]])
-            suit_ras4_thresh   = thresh_greater(suit.list[[4]])   ## Do this better...
+            suit_ras4_thresh   = thresh_greater(suit.list[[4]])   ## Abbreviate this...
             suit_ras5_thresh   = thresh_greater(suit.list[[5]])
             suit_ras6_thresh   = thresh_greater(suit.list[[6]])
             
@@ -387,29 +386,36 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             ## All the percentiles
             combo_suit_percent  =  Reduce("+", list(suit_ras1_percent, suit_ras2_percent, suit_ras3_percent,
                                                     suit_ras4_percent, suit_ras5_percent, suit_ras6_percent))
-            
-            ## Try re-classifying the combination rasters
-            rc <- function(x) {ifelse(x >=  1, 1, 0) }
-            combo_suit_binary <- calc(combo_suit_thresh, fun = rc)
-
+          
             #########################################################################################################################
             ## Next, calcualte the loss or gain between the two time periods :
-            binary_current_minus_2050 = overlay(suit_current_thresh,
-                                                speciesbin,
-                                                fun = function(r1, r2) {return (r1 - r2)})
-
+            ## first create a binary raster for GCM layer
+            rc <- function(x) {ifelse(x >=  1, 1, 0) }
+            combo_suit_binary <- calc(combo_suit_thresh, fun = rc)
             
-            thresh_change_2050_minus_current = overlay(combo_suit_thresh,
-                                                       suit_current_thresh,
-                                                       fun = function(r1, r2) {return (r1 - r2)})
+            ## Then subtract the binary current layer from the binary future layer
+            binary_future_minus_current = overlay(combo_suit_binary,
+                                                  current_suit_thresh,
+                                                  fun = function(r1, r2) {return (r1 - r2)})
             
-
+            ## Subtract the binary current layer from the integer future layer 
+            GCM_future_minus_current    = overlay(combo_suit_thresh,
+                                                  current_suit_thresh,
+                                                  fun = function(r1, r2) {return (r1 - r2)})
+            
+            ## Plot the difference between future and current layers...
             plot(combo_suit_binary, main = gsub('_', ' ', (sprintf('%s future Max_train_sensit > %s', species, thresh))))
-            plot(suit_current_thresh, main = gsub('_', ' ', (sprintf('%s current Max_train_sensit > %s', species, thresh))))
-            plot(binary_2050_minus_current,
-                 main = gsub('_', ' ', (sprintf('%s future - current  Max_train_sensit > %s', species, thresh))))
-
+            plot(current_suit_thresh, main = gsub('_', ' ', (sprintf('%s current Max_train_sensit > %s', species, thresh))))
             
+            ## So the following two plots are equivalent.
+            plot(binary_future_minus_current,
+                 main = gsub('_', ' ', (sprintf('%s future - current  Max_train_sensit > %s', species, thresh))))
+            
+            plot(GCM_future_minus_current,
+                 main = gsub('_', ' ', (sprintf('%s future - current  Max_train_sensit > %s', species, thresh))))
+            
+            
+
             plot(thresh_change_current_minus_2050,
                  main = gsub('_', ' ', (sprintf('%s current - future  Max_train_sensit > %s', species, thresh))))
             
