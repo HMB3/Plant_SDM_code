@@ -391,8 +391,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             ## Try re-classifying the combination rasters
             rc <- function(x) {ifelse(x >=  1, 1, 0) }
             combo_suit_binary <- calc(combo_suit_thresh, fun = rc)
-            plot(combo_suit_binary)
-            
+
             #########################################################################################################################
             ## Next, calcualte the loss or gain between the two time periods :
             binary_current_minus_2050 = overlay(suit_current_thresh,
@@ -409,6 +408,17 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             plot(suit_current_thresh, main = gsub('_', ' ', (sprintf('%s current Max_train_sensit > %s', species, thresh))))
             plot(binary_2050_minus_current,
                  main = gsub('_', ' ', (sprintf('%s future - current  Max_train_sensit > %s', species, thresh))))
+
+            
+            plot(thresh_change_current_minus_2050,
+                 main = gsub('_', ' ', (sprintf('%s current - future  Max_train_sensit > %s', species, thresh))))
+            
+            plot(thresh_change_2050_minus_current,
+                 main = gsub('_', ' ', (sprintf('%s current - future  Max_train_sensit > %s', species, thresh))))
+            
+            plot(thresh_change_current_plus_2050,
+                 main = gsub('_', ' ', (sprintf('%s current + future  Max_train_sensit > %s', species, thresh))))
+            
             
             ## Write the raster for each species and threshold inside the loop
             message('Writing ', species, ' 20', time_slice, ' combined suitability > ', thresh) 
