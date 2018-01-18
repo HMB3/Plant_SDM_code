@@ -420,7 +420,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             writeRaster(combo_suit_percent, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
                                                     species, species, time_slice, "_10_percentile_omiss_above_", percent),    overwrite = TRUE)
             
-            ## Now create the empty panel just before plotting, and read in the occurrence data
+            ## Now create the empty panel just before plotting, and read in the occurrence dat
             empty <- init(combo_suit_thresh, function(x) NA)
             occ <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/occ.rds', species)) 
             
