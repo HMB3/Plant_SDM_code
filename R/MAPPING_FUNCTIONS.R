@@ -307,206 +307,256 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
     ## And each species - although we don't want all possible combinations. How can this loop be improved?
     lapply(species_list, function(species) {
       
-      ###################################################################################################################
-      ## Create a list of the rasters in each directory, then take the mean. How long does the mean calculation take?
-      ## Tidy this up with %, etc
-      raster.list = list.files(as.character(DIR), pattern = sprintf('bi%s.tif', time_slice), full.names = TRUE)  
-      suit        = stack(raster.list)
-      suit.list   = unstack(suit)
-      mean.suit   = mean(suit)   ## plot(mean.suit)
-      
-      ## Write the mean to file
-      f_mean = sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s_suitability_mean.tif', 
-                       species, species, time_slice)
-      
-      if(!file.exists(f_mean)) {
+      for (slice in time_slice) {
         
-        writeRaster(mean.suit, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s_suitability_mean.tif', 
-                                       species, species, time_slice), overwrite = TRUE)
+        ###################################################################################################################
+        ## Create a list of the rasters in each directory, then take the mean. How long does the mean calculation take?
+        ## Tidy this up with %, etc
+        raster.list = list.files(as.character(DIR), pattern = sprintf('bi%s.tif', time_slice), full.names = TRUE)  
+        suit        = stack(raster.list)
+        suit.list   = unstack(suit)
+        mean.suit   = mean(suit)   ## plot(mean.suit)
         
-      } else {
+        ## Write the mean to file
+        f_mean = sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s_suitability_mean.tif', 
+                         species, species, time_slice)
         
-        message(species, ' 20', time_slice, ' mean suitability skipped - already exists')   ## 
+        if(!file.exists(f_mean)) {
+          
+          writeRaster(mean.suit, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s_suitability_mean.tif', 
+                                         species, species, time_slice), overwrite = TRUE)
+          
+        } else {
+          
+          message(species, ' 20', time_slice, ' mean suitability skipped - already exists')   ## 
+          
+        }
         
-      }
-      
-      ###################################################################################################################
-      ## Then create rasters that meet habitat suitability criteria thresholds, determined by the rmaxent function
-      for (thresh in thresholds) {
-        
-        for (percent in percentiles) { 
+        ###################################################################################################################
+        ## Then create rasters that meet habitat suitability criteria thresholds, determined by the rmaxent function
+        for (thresh in thresholds) {
           
-          ## Check if the combined suitability raster exists
-          f_suit <- sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
-                            species, species, time_slice, "_combined_suitability_above_", thresh)
-          
-          ## If it doesn't exist, create the suitability raster
-          if(!file.exists(f_suit)) {
+          for (percent in percentiles) { 
             
-            ## Read in the current suitability raster
-            f_current <- raster(sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_current.tif', 
-                                        species, species))
+            ## Check if the combined suitability raster exists
+            f_suit <- sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
+                              species, species, time_slice, "_combined_suitability_above_", thresh)
             
-            ## First, create a simple function to threshold each of the rasters in raster.list
-            thresh_greater  = function (x) {x > thresh}
-            percent_greater = function (x) {x > percent}
-            
-            ## Then apply this to just the current suitability raster. These functions use the : 
-            ## Maximum training sensitivity plus specificity Logistic threshold and the :
-            ## 10th percentile training presence training omission
-            current_suit_thresh  = thresh_greater(f_current)
-            current_suit_percent = percent_greater(f_current) 
-            
-            ## Now, apply these functions to the list of rasters (6 GCMs) for each species
-            ## Also, the 'init' function initializes a raster object with values
-            ## suit_ras_greater    = reduce(suit.list, thresh_above_fun, .init = suit.list[[1]] > thresh)
-            
-            ## First, calculate the cells which are greater that the: 
-            ## Maximum training sensitivity plus specificity Logistic threshold
-            suit_ras1_thresh   = thresh_greater(suit.list[[1]])  
-            suit_ras2_thresh   = thresh_greater(suit.list[[2]])
-            suit_ras3_thresh   = thresh_greater(suit.list[[3]])
-            suit_ras4_thresh   = thresh_greater(suit.list[[4]])   ## Abbreviate this...
-            suit_ras5_thresh   = thresh_greater(suit.list[[5]])
-            suit_ras6_thresh   = thresh_greater(suit.list[[6]])
-            
-            ## Then greater than the 10 percentile training presence training omission
-            suit_ras1_percent  = percent_greater(suit.list[[1]])
-            suit_ras2_percent  = percent_greater(suit.list[[2]])
-            suit_ras3_percent  = percent_greater(suit.list[[3]])
-            suit_ras4_percent  = percent_greater(suit.list[[4]])
-            suit_ras5_percent  = percent_greater(suit.list[[5]])
-            suit_ras6_percent  = percent_greater(suit.list[[6]])
-            
-            ## Then sum them up: could use % to compress this..
-            ## All the threshholds
-            combo_suit_thresh   =  Reduce("+", list(suit_ras1_thresh, suit_ras2_thresh, suit_ras3_thresh,
-                                                    suit_ras4_thresh, suit_ras5_thresh, suit_ras6_thresh))
-            
-            ## All the percentiles
-            combo_suit_percent  =  Reduce("+", list(suit_ras1_percent, suit_ras2_percent, suit_ras3_percent,
-                                                    suit_ras4_percent, suit_ras5_percent, suit_ras6_percent))
-          
-            #########################################################################################################################
-            ## Next, calcualte the loss or gain between the two time periods :
-            ## first create a binary raster for GCM layer
-            rc <- function(x) {ifelse(x >=  1, 1, 0) }
-            combo_suit_binary <- calc(combo_suit_thresh, fun = rc)
-            
-            ## Then subtract the binary current layer from the binary future layer
-            binary_future_minus_current      = overlay(combo_suit_binary,
-                                                       current_suit_thresh,
-                                                       fun = function(r1, r2) {return (r1 - r2)})
-            
-            ## Subtract the binary current layer from the integer future layer 
-            intergter_future_minus_current    = overlay(combo_suit_thresh,
-                                                        current_suit_thresh,
-                                                        fun = function(r1, r2) {return (r1 - r2)})
-            
-            ## Plot the difference between future and current layers...
-            plot(combo_suit_binary, main = gsub('_', ' ', (sprintf('%s future Max_train_sensit > %s', species, thresh))))
-            plot(current_suit_thresh, main = gsub('_', ' ', (sprintf('%s current Max_train_sensit > %s', species, thresh))))
-            
-            ## The following two plots are not equivalent. When we subtract the current binary layer (1, 0) from the future
-            ## binary layer, we have: 
-            
-            ## F0 - C0 =  0 (no data in either layer)
-            ## F0 - C1 = -1 (LOSS across all GCMs)
-            ## F1 - C0 =  1 (GAIN across all GCMs) 
-            ## F1 - C1 =  0 (NO CHANGE: also no data before the overlay)
-          
-            ## However, this changes when we subtract the current binary layer (taking values 1, 0) from the future integer layer 
-            ## (taking values from 0 to 6). Here, any negative value (-1) is a loss: the species was predicted to be present in that cell 
-            ## based on current conditions, but predicted to be absent under future conditions (i.e. the future layer did not meet the suitabiity
-            ## threshold in that location at that time.
-            
-            ## However, positive values (1-6) can either be a gain, or no change. Not all these possibilities will occur, but they are : 
-            
-            ## F0 - C0 =  no data in either layer
-            ## F0 - C1 =  -1 (LOSS according to all GCMs)
-          
-            ## F1 - C1 =  0 (NO CHANGE according to one GCM: also, no data before the overlay)
-            ## F1 - C0 =  1 (GAIN according to one GCM)
-            
-            ## F2 - C1 =  1 (NO CHANGE, according to two GCMs)
-            ## F2 - C0 =  2 (GAIN according to two GCMs)
-            
-            ## F3 - C1 =  2 (NO CHANGE, according to three GCMs)
-            ## F3 - C0 =  3 (GAIN, according to three GCMs)
-            
-            ## F4 - C1 =  3 (NO CHANGE, according to four GCMs)
-            ## F4 - C0 =  3 (GAIN, according to four GCMs)
-            
-            ## F5 - C1 =  4 (NO CHANGE, according to five GCMs)
-            ## F5 - C0 =  5 (GAIN according to five GCMs)
-            
-            ## F6 - C1 =  5 (NO CHANGE, according to six GCMs?)
-            ## F6 - 0  =  6 (GAIN, according to six GCMs?)
+            ## If it doesn't exist, create the suitability raster
+            if(!file.exists(f_suit)) {
+              
+              ## Read in the current suitability raster
+              f_current <- raster(sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_current.tif', 
+                                          species, species))
+              
+              ## First, create a simple function to threshold each of the rasters in raster.list
+              thresh_greater  = function (x) {x > thresh}
+              percent_greater = function (x) {x > percent}
+              
+              ## Then apply this to just the current suitability raster. These functions use the : 
+              ## Maximum training sensitivity plus specificity Logistic threshold and the :
+              ## 10th percentile training presence training omission
+              current_suit_thresh  = thresh_greater(f_current)
+              current_suit_percent = percent_greater(f_current) 
+              
+              ## Now, apply these functions to the list of rasters (6 GCMs) for each species
+              ## Also, the 'init' function initializes a raster object with values
+              ## suit_ras_greater    = reduce(suit.list, thresh_above_fun, .init = suit.list[[1]] > thresh)
+              
+              ## First, calculate the cells which are greater that the: 
+              ## Maximum training sensitivity plus specificity Logistic threshold
+              suit_ras1_thresh   = thresh_greater(suit.list[[1]])  
+              suit_ras2_thresh   = thresh_greater(suit.list[[2]])
+              suit_ras3_thresh   = thresh_greater(suit.list[[3]])
+              suit_ras4_thresh   = thresh_greater(suit.list[[4]])   ## Abbreviate this...
+              suit_ras5_thresh   = thresh_greater(suit.list[[5]])
+              suit_ras6_thresh   = thresh_greater(suit.list[[6]])
+              
+              ## Then greater than the 10 percentile training presence training omission
+              suit_ras1_percent  = percent_greater(suit.list[[1]])
+              suit_ras2_percent  = percent_greater(suit.list[[2]])
+              suit_ras3_percent  = percent_greater(suit.list[[3]])
+              suit_ras4_percent  = percent_greater(suit.list[[4]])
+              suit_ras5_percent  = percent_greater(suit.list[[5]])
+              suit_ras6_percent  = percent_greater(suit.list[[6]])
+              
+              ## Then sum them up: could use % to compress this..
+              ## All the threshholds
+              combo_suit_thresh   =  Reduce("+", list(suit_ras1_thresh, suit_ras2_thresh, suit_ras3_thresh,
+                                                      suit_ras4_thresh, suit_ras5_thresh, suit_ras6_thresh))
+              
+              ## All the percentiles
+              combo_suit_percent  =  Reduce("+", list(suit_ras1_percent, suit_ras2_percent, suit_ras3_percent,
+                                                      suit_ras4_percent, suit_ras5_percent, suit_ras6_percent))
+              
+              #########################################################################################################################
+              ## Next, calcualte the loss or gain between the two time periods :
+              ## first create a binary raster for GCM layer
+              rc <- function(x) {ifelse(x >=  1, 1, 0) }
+              combo_suit_binary <- calc(combo_suit_thresh, fun = rc)
+              
+              ## Then subtract the binary current layer from the binary future layer. So need to mask the no-data from this overlay calc.  
+              binary_future_minus_current      = overlay(combo_suit_binary,
+                                                         current_suit_thresh,
+                                                         fun = function(r1, r2) {return (r1 - r2)})
+              
+              ## Subtract the binary current layer from the integer future layer 
+              intergter_future_minus_current    = overlay(combo_suit_thresh,
+                                                          current_suit_thresh,
+                                                          fun = function(r1, r2) {return (r1 - r2)})
+              
+              ## Plot the difference between future and current layers...
+              plot(current_suit_thresh, main = gsub('_', ' ', (sprintf('%s current Max_train_sensit > %s', species, thresh))))
+              plot(combo_suit_binary, main = gsub('_', ' ',   (sprintf('%s future Max_train_sensit > %s', species, thresh))))
+              
+              ## The following two plots are not equivalent. When we subtract the current binary layer (1, 0) from the future
+              ## binary layer, we have: 
+              
+              ## F0 - C0 =  0 (no data in either layer)
+              ## F0 - C1 = -1 (LOSS across all GCMs)
+              ## F1 - C0 =  1 (GAIN across all GCMs) 
+              ## F1 - C1 =  0 (NO CHANGE: also no data before the overlay)
+              
+              ## However, this changes when we subtract the current binary layer (taking values 1, 0) from the future integer layer 
+              ## (taking values from 0 to 6). Here, any negative value (-1) is a loss: the species was predicted to be present in that cell 
+              ## based on current conditions, but predicted to be absent under future conditions (i.e. the future layer did not meet the suitabiity
+              ## threshold in that location at that time.
+              
+              ## However, positive values (1-6) can either be a gain, or, no change. The difference needs to be accounted for, because otherwise
+              ## we don't know id the species was predicted to occur. Can we fix this by masking the overlay to just cells with data?
+              ## Effectively this means excluding 0 values from the overlay.
+              
+              ## Not all these possibilities will occur, but they are : 
+              
+              ## F0 - C0 =  no data in either layer
+              ## F0 - C1 =  -1 (LOSS according to all GCMs)
+              
+              ## F1 - C1 =  0 (NO CHANGE according to one GCM: also, no data before the overlay)
+              ## F1 - C0 =  1 (GAIN according to one GCM)
+              
+              ## F2 - C1 =  1 (NO CHANGE, according to two GCMs)
+              ## F2 - C0 =  2 (GAIN according to two GCMs)
+              
+              ## F3 - C1 =  2 (NO CHANGE, according to three GCMs)
+              ## F3 - C0 =  3 (GAIN, according to three GCMs)
+              
+              ## F4 - C1 =  3 (NO CHANGE, according to four GCMs)
+              ## F4 - C0 =  3 (GAIN, according to four GCMs)
+              
+              ## F5 - C1 =  4 (NO CHANGE, according to five GCMs)
+              ## F5 - C0 =  5 (GAIN according to five GCMs)
+              
+              ## F6 - C1 =  5 (NO CHANGE, according to six GCMs?)
+              ## F6 - 0  =  6 (GAIN, according to six GCMs?)
+              
+              ## Plot the binary difference layer
+              plot(binary_future_minus_current,
+                   main = gsub('_', ' ', (sprintf('%s future - current  Max_train_sensit > %s', species, thresh))))
+              
+              ## Plot the interger difference layer
+              plot(intergter_future_minus_current,
+                   main = gsub('_', ' ', (sprintf('%s future - current  Max_train_sensit > %s', species, thresh))))
+              
+              
+              #########################################################################################################################
+              ## Then calculate the loss or gain within a given areal unit. Use the SUA's, but could be anything!
+              areal_unit = SUA.WGS
+              
+              ### Now run zonal statistics using multiple functions   
+              z.mean <- spatialEco::zonal.stats(x = areal_unit, y = intergter_future_minus_current, stat = mean,   trace = TRUE, plot = TRUE) 
+              # z.max  <- spatialEco::zonal.stats(x = areal_unit, y = intergter_future_minus_current, stat = max,    trace = TRUE, plot = TRUE)
+              # z.min  <- spatialEco::zonal.stats(x = areal_unit, y = intergter_future_minus_current, stat = min,    trace = TRUE, plot = TRUE)
+              # z.med  <- spatialEco::zonal.stats(x = areal_unit, y = intergter_future_minus_current, stat = median, trace = TRUE, plot = TRUE)
 
-            ## Plot the binary layer
-            plot(binary_future_minus_current,
-                 main = gsub('_', ' ', (sprintf('%s future - current  Max_train_sensit > %s', species, thresh))))
-            
-            ## Plot the interger layer
-            plot(GCM_future_minus_current,
-                 main = gsub('_', ' ', (sprintf('%s future - current  Max_train_sensit > %s', species, thresh))))
-            
-            
-            #########################################################################################################################
-            ## Then calculate the loss or gain within each areal unit. First use the SUAs 
-            areal_unit = SUA.WGS
-            
-            ## Write the raster for each species and threshold inside the loop
-            message('Writing ', species, ' 20', time_slice, ' combined suitability > ', thresh) 
-            writeRaster(combo_suit_thresh, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
-                                                   species, species, time_slice, "_Max_train_sensit_above_", thresh), overwrite = TRUE)
-            
-            ## Write the percentile raster
-            message('Writing ', species, ' 20', time_slice, ' combined suitability > ', percent) 
-            writeRaster(combo_suit_percent, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
-                                                    species, species, time_slice, "_10_percentile_omiss_above_", percent),    overwrite = TRUE)
-            
-            ## Now create the empty panel just before plotting, and read in the occurrence dat
-            empty <- init(combo_suit_thresh, function(x) NA)
-            occ   <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/occ.rds', species)) 
-            
-            ########################################################################################################################
-            ## Use the levelplot function to make a multipanel output: occurences, percentiles and thresholds
-            png(sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s_suitability_above_%s.png',
-                        species, species, time_slice, thresh),
-                11, 4, units = 'in', res = 300)
-            
-            ## Need an empty frame
-            print(levelplot(stack(empty,
-                                  combo_suit_percent,
-                                  combo_suit_thresh), margin = FALSE,
-                            
-                            ## Create a colour scheme using colbrewer: 100 is to make it continuos
-                            ## Also, make it a one-directional colour scheme
-                            scales      = list(draw = FALSE), 
-                            at = seq(0, 6, length = 100),
-                            col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
-                            
-                            ## Give each plot a name
-                            names.attr = c('Aus occurrences', 
-                                           sprintf('20%s GCM 10thp train omission > %s', time_slice, percent), 
-                                           sprintf('20%s GCM Max train logis > %s',      time_slice, thresh)),
-                            
-                            colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
-                            main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
-                    
-                    ## Plot the Aus shapefile with the occurrence points for reference
-                    ## Why are the points not working using "occ" in this way?
-                    layer(sp.polygons(aus)) +
-                    layer(sp.points(occ, pch = 20, cex = 0.4, 
-                                    col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
-            
-            ## Finish the device
-            dev.off()
-            
-          } else {
-            
-            message(species, ' 20', time_slice, ' combined suitability > ', thresh, ' skipped - already exists')   ## 
+              ## Could turn this into a function, and loop over a list of subfolders...
+              MAXENT.STD.VAR.SUMMARY <- test_spp[c(1:length(test_spp))] %>%
+                
+                ## pipe the list into lapply
+                lapply(function(x) {
+                  
+                  ## create the character string
+                  z.mean <- spatialEco::zonal.stats(x = areal_unit, y = intergter_future_minus_current, stat = mean,   trace = TRUE, plot = TRUE) 
+                  
+                  ## Now create a table with the columns: AREA, SPECIES, STATS (for each time slice)
+                  z <- data.frame(SUA     = areal_unit$SUA_NAME11, 
+                                  SPECIES = species,
+                                  MEAN    = z.mean, 
+                                  MEDIAN  = z.med, 
+                                  MAX     = z.max, 
+                                  MIN     = z.min)
+                  
+                  ## Rename columns using sprintf
+                  names(z) <-  c('SUA', 'SPECIES', 
+                                 sprintf('MEAN_GCMs_MT_LOG > %s in 20%s',   thresh, time_slice))#,
+                                 # sprintf('MEDIAN_GCMs_MT_LOG > %s in 20%s', thresh, time_slice),
+                                 # sprintf('MAX_GCMs_MT_LOG > %s in 20%s',    thresh, time_slice),
+                                 # sprintf('MIN_GCMs_MT_LOG > %s in 20%s',    thresh, time_slice))
+                  
+                  ## Write the table to file
+                  z
+                }) %>%
+                
+                ## finally, bind all the rows together
+                bind_rows
+              
+              ## Then 
+              write.csv(z, "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1601_2018.csv", row.names = FALSE)
+
+              
+              #########################################################################################################################
+              ## Write the raster for each species and threshold
+              message('Writing ', species, ' 20', time_slice, ' combined suitability > ', thresh) 
+              writeRaster(combo_suit_thresh, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
+                                                     species, species, time_slice, "_Max_train_sensit_above_", thresh), overwrite = TRUE)
+              
+              ## Write the percentile raster
+              message('Writing ', species, ' 20', time_slice, ' combined suitability > ', percent) 
+              writeRaster(combo_suit_percent, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
+                                                      species, species, time_slice, "_10_percentile_omiss_above_", percent), overwrite = TRUE)
+              
+              ########################################################################################################################
+              ## Now create the empty panel just before plotting, and read in the occurrence dat
+              empty <- init(combo_suit_thresh, function(x) NA)
+              occ   <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/occ.rds', species)) 
+              
+              ## Use the levelplot function to make a multipanel output: occurences, percentiles and thresholds
+              png(sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s_suitability_above_%s.png',
+                          species, species, time_slice, thresh),
+                  11, 4, units = 'in', res = 300)
+              
+              ## Need an empty frame
+              print(levelplot(stack(empty,
+                                    combo_suit_percent,
+                                    combo_suit_thresh), margin = FALSE,
+                              
+                              ## Create a colour scheme using colbrewer: 100 is to make it continuos
+                              ## Also, make it a one-directional colour scheme
+                              scales      = list(draw = FALSE), 
+                              at = seq(0, 6, length = 100),
+                              col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
+                              
+                              ## Give each plot a name
+                              names.attr = c('Aus occurrences', 
+                                             sprintf('20%s GCM 10thp train omission > %s', time_slice, percent), 
+                                             sprintf('20%s GCM Max train logis > %s',      time_slice, thresh)),
+                              
+                              colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
+                              main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
+                      
+                      ## Plot the Aus shapefile with the occurrence points for reference
+                      ## Why are the points not working using "occ" in this way?
+                      layer(sp.polygons(aus)) +
+                      layer(sp.points(occ, pch = 20, cex = 0.4, 
+                                      col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
+              
+              ## Finish the device
+              dev.off()
+              
+            } else {
+              
+              message(species, ' 20', time_slice, ' combined suitability > ', thresh, ' skipped - already exists')   ## 
+              
+            }
             
           }
           

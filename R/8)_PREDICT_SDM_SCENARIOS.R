@@ -107,7 +107,7 @@ summary(env.grids.current[[11]])
 #########################################################################################################################
 
 
-## Make the test species directory names
+## Covert the test species into directory names
 test_spp = gsub(" ", "_", test.spp)
 
 
@@ -225,7 +225,7 @@ length(percent.10.omiss);length(thresh.max.train)
 
 
 ## In the global environment outside the function, define the SUA
-SUA = readOGR("F:/green_cities_sdm/data/base/CONEXTUAL/IN.SUA.shp", layer = "SUA_2011_AUST")
+SUA = readOGR("F:/green_cities_sdm/data/base/CONEXTUAL/IN.SUA.shp", layer = "IN.SUA")
 CRS.new  <- CRS("+init=epsg:4326") # EPSG:3577
 SUA.WGS  = spTransform(SUA, CRS.new) 
 
