@@ -227,7 +227,10 @@ length(percent.10.omiss);length(thresh.max.train)
 ## In the global environment outside the function, define the SUA
 SUA = readOGR("F:/green_cities_sdm/data/base/CONEXTUAL/IN.SUA.shp", layer = "IN.SUA")
 CRS.new  <- CRS("+init=epsg:4326") # EPSG:3577
-SUA.WGS  = spTransform(SUA, CRS.new) 
+SUA.WGS  = spTransform(SUA, CRS.new)
+writeOGR(obj = SUA.WGS, dsn = "./data/base/CONTEXTUAL", layer = "IN_SUA_SUA_WGS", driver = "ESRI Shapefile")
+
+areal_unit = SUA.WGS
 
 
 #########################################################################################################################
@@ -247,8 +250,8 @@ suitability.2050.2070 = mapply(combine_gcm_threshold,
                                species_list = comb_spp, 
                                thresholds   = thresh.max.train, 
                                percentiles  = percent.10.omiss,
-                               time_slices  = c(50, 70),
-                               areal_unit   = SUA.WGS)
+                               time_slice   = 50,
+                               areal_unit   = areal_unit)
 
 
 # Writing Allocasuarina_littoralis 2050 combined suitability > 0.3385
