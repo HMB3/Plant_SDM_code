@@ -300,7 +300,7 @@ project.grids.2070 = function(scen_2070, test_spp) {
 
 #########################################################################################################################
 ## Loop over directories, species and one threshold for each, also taking a time_slice argument. Next, make the lists generic too
-combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles, time_slice, areal_unit) {
+combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles, time_slice) {
   
   lapply(DIR_list, function(DIR) { 
     
@@ -408,9 +408,9 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
                                                          fun = function(r1, r2) {return (r1 - r2)})
               
               ## Subtract the binary current layer from the integer future layer 
-              intergter_future_minus_current    = overlay(combo_suit_thresh,
-                                                          current_suit_thresh,
-                                                          fun = function(r1, r2) {return (r1 - r2)})
+              integer_future_minus_current    = overlay(combo_suit_thresh,
+                                                        current_suit_thresh,
+                                                        fun = function(r1, r2) {return (r1 - r2)})
               
               ## Plot the difference between future and current layers...
               plot(current_suit_thresh, main = gsub('_', ' ', (sprintf('%s current Max_train_sensit > %s', species, thresh))))
@@ -461,7 +461,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
                    main = gsub('_', ' ', (sprintf('%s future - current  Max_train_sensit > %s', species, thresh))))
               
               ## Plot the interger difference layer
-              plot(intergter_future_minus_current,
+              plot(integer_future_minus_current,
                    main = gsub('_', ' ', (sprintf('%s future - current  Max_train_sensit > %s', species, thresh))))
               
               
@@ -469,31 +469,31 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
               ## Then calculate the loss or gain within a given areal unit. Use the SUA's, but could be anything!
               ## Run zonal statistics using multiple functions
               message('Running zonal stats for ', species, ' | 20', time_slice, ' combined suitability > ', thresh)
-              areal_unit = readOGR("F:/green_cities_sdm/data/base/CONEXTUAL/IN_SUA_SUA_WGS.shp", layer = "IN_SUA_SUA_WGS")
+              areal_unit = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/IN_SUA_WGS.shp", layer = "IN_SUA_WGS")
               
-              z.mean <- spatialEco::zonal.stats(x = areal_unit, y = intergter_future_minus_current, stat = mean,   trace = TRUE, plot = TRUE) 
+              z.mean <- spatialEco::zonal.stats(x = areal_unit, y = integer_future_minus_current, stat = mean,   trace = TRUE, plot = TRUE) 
               # z.max  <- spatialEco::zonal.stats(x = areal_unit, y = intergter_future_minus_current, stat = max,    trace = TRUE, plot = TRUE)
               # z.min  <- spatialEco::zonal.stats(x = areal_unit, y = intergter_future_minus_current, stat = min,    trace = TRUE, plot = TRUE)
               # z.med  <- spatialEco::zonal.stats(x = areal_unit, y = intergter_future_minus_current, stat = median, trace = TRUE, plot = TRUE)
 
               ## Create a table with the columns: AREA, SPECIES, STATS (for each time slice)
-              z <- data.frame(SUA     = areal_unit$SUA_NAME11, 
-                              SPECIES = species,
-                              MEAN    = z.mean)#, 
+              GCM.AREA.SUMMARY <- data.frame(SUA     = areal_unit$SUA_NAME11, 
+                                             SPECIES = species,
+                                             MEAN    = z.mean)#, 
               # MEDIAN  = z.med, 
               # MAX     = z.max, 
               # MIN     = z.min)
               
               ## Rename columns using sprintf
-              names(z) <-  c('SUA', 'SPECIES', 
-                             sprintf('MEAN_GCMs_MT_LOG > %s in 20%s',   thresh, time_slice))#,
+              names(GCM.AREA.SUMMARY) <-  c('SUA', 'SPECIES', 
+                                            sprintf('MEAN_GCMs_MT_LOG > %s in 20%s',   thresh, time_slice))#,
               # sprintf('MEDIAN_GCMs_MT_LOG > %s in 20%s', thresh, time_slice),
               # sprintf('MAX_GCMs_MT_LOG > %s in 20%s',    thresh, time_slice),
               # sprintf('MIN_GCMs_MT_LOG > %s in 20%s',    thresh, time_slice))
  
               ##
-              dim(z)
-              unique(z$SPECIES)
+              dim(GCM.AREA.SUMMARY)
+              unique(GCM.AREA.SUMMARY$SPECIES)
               
               ## Then save the table of SUA results for all species to a datafile... 
               write.csv(GCM.AREA.SUMMARY, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.csv',
@@ -518,7 +518,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
               
               ## Write the rasters for interger loss/gain for each species/threshold
               message('Writing ', species, ' 20', time_slice, ' loss/gain 10th percentile > ', percent) 
-              writeRaster(interger_future_minus_current, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
+              writeRaster(integer_future_minus_current, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
                                                                  species, species, time_slice, "_integer_future_minus_current_", thresh), overwrite = TRUE)
               
               ########################################################################################################################

@@ -243,8 +243,8 @@ COMBO.RASTER.SP   = SpatialPointsDataFrame(coords = COMBO.RASTER[c("lon", "lat")
                                            data   = COMBO.RASTER,
                                            proj4string = CRS("+init=epsg:4326"))
 
-SUA      = readOGR("F:/green_cities_sdm/data/base/CONEXTUAL/SUA_2011_AUST.shp", layer = "SUA_2011_AUST")
-LGA      = readOGR("F:/green_cities_sdm/data/base/CONEXTUAL/LGA_2016_AUST.shp", layer = "LGA_2016_AUST")
+SUA      = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/SUA_2011_AUST.shp", layer = "SUA_2011_AUST")
+LGA      = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/LGA_2016_AUST.shp", layer = "LGA_2016_AUST")
 
 names(SUA)
 names(LGA)
@@ -280,7 +280,7 @@ LGA.WGS = LGA.WGS[, c("LGA_CODE16", "LGA_NAME16")]
 
 
 ## Then, we want to create a layer which is just in the urban area, or not. This would need to combine the above fields into one
-IN.SUA   = readOGR("F:/green_cities_sdm/data/base/CONEXTUAL/INSIDE_AUS_SUA.shp", layer = "INSIDE_AUS_SUA")
+IN.SUA   = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/INSIDE_AUS_SUA.shp", layer = "INSIDE_AUS_SUA")
 IN.SUA   = IN.SUA[,-(1)];
 IN.SUA   = IN.SUA[,-(2)]
 names(IN.SUA)

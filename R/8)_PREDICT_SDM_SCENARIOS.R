@@ -225,12 +225,12 @@ length(percent.10.omiss);length(thresh.max.train)
 
 
 ## In the global environment outside the function, define the SUA
-SUA = readOGR("F:/green_cities_sdm/data/base/CONEXTUAL/IN.SUA.shp", layer = "IN.SUA")
-CRS.new  <- CRS("+init=epsg:4326") # EPSG:3577
-SUA.WGS  = spTransform(SUA, CRS.new)
-writeOGR(obj = SUA.WGS, dsn = "./data/base/CONTEXTUAL", layer = "IN_SUA_SUA_WGS", driver = "ESRI Shapefile")
-
-areal_unit = SUA.WGS
+# SUA = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/IN.SUA.shp", layer = "IN.SUA")
+# CRS.new  <- CRS("+init=epsg:4326") # EPSG:3577
+# SUA.WGS  = spTransform(SUA, CRS.new)
+# writeOGR(obj = SUA.WGS, dsn = "./data/base/CONTEXTUAL", layer = "IN_SUA_WGS", driver = "ESRI Shapefile")
+# 
+# areal_unit = SUA.WGS
 
 
 #########################################################################################################################
@@ -245,25 +245,24 @@ percent    = percent.10.omiss[1]
 
 
 ## Combine output and calculate gain and loss for 2050 
-suitability.2050.2070 = mapply(combine_gcm_threshold, 
-                               DIR_list     = SDM.RESULTS.DIR, 
-                               species_list = comb_spp, 
-                               thresholds   = thresh.max.train, 
-                               percentiles  = percent.10.omiss,
-                               time_slice   = 50,
-                               areal_unit   = areal_unit)
+suitability.2050 = mapply(combine_gcm_threshold, 
+                          DIR_list     = SDM.RESULTS.DIR[1], 
+                          species_list = comb_spp[1], 
+                          thresholds   = thresh.max.train[1], 
+                          percentiles  = percent.10.omiss[1],
+                          time_slice   = 50)
 
 
 # Writing Allocasuarina_littoralis 2050 combined suitability > 0.3385
 # Error in suit.list[[2]] : subscript out of bounds
 
 ## Combine output and calculate gain and loss for 2070 
-suitability.2050 = mapply(combine_gcm_threshold, 
+suitability.2070 = mapply(combine_gcm_threshold, 
                           DIR_list     = SDM.RESULTS.DIR, 
                           species_list = comb_spp, 
                           thresholds   = thresh.max.train, 
                           percentiles  = percent.10.omiss,
-                          time_slice   = 50)
+                          time_slice   = 70)
 
 
 #########################################################################################################################
