@@ -242,13 +242,13 @@ percent    = percent.10.omiss[1]
 
 
 ## Combine output and calculate gain and loss for 2050 
-suitability.2050 = mapply(combine_gcm_threshold, 
-                          DIR_list     = SDM.RESULTS.DIR, 
-                          species_list = comb_spp, 
-                          thresholds   = thresh.max.train, 
-                          percentiles  = percent.10.omiss,
-                          time_slice   = 50,
-                          areal_unit   = SUA.WGS)
+suitability.2050.2070 = mapply(combine_gcm_threshold, 
+                               DIR_list     = SDM.RESULTS.DIR, 
+                               species_list = comb_spp, 
+                               thresholds   = thresh.max.train, 
+                               percentiles  = percent.10.omiss,
+                               time_slices  = c(50, 70),
+                               areal_unit   = SUA.WGS)
 
 
 # Writing Allocasuarina_littoralis 2050 combined suitability > 0.3385

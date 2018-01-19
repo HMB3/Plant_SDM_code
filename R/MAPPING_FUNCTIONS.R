@@ -300,14 +300,14 @@ project.grids.2070 = function(scen_2070, test_spp) {
 
 #########################################################################################################################
 ## Loop over directories, species and one threshold for each, also taking a time_slice argument. Next, make the lists generic too
-combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles, time_slice, areal_unit) {
+combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles, time_slices, areal_unit) {
   
   lapply(DIR_list, function(DIR) { 
     
     ## And each species - although we don't want all possible combinations. How can this loop be improved?
     lapply(species_list, function(species) {
       
-      for (slice in time_slice) {
+      # for (slice in time_slice) {
         
         ###################################################################################################################
         ## Create a list of the rasters in each directory, then take the mean. How long does the mean calculation take?
@@ -345,6 +345,9 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             ## If it doesn't exist, create the suitability raster
             if(!file.exists(f_suit)) {
               
+              ## use the message to get the looping order right
+              message('doing ', species, ' | Max train sensit > ', thresh, ' for 20', time_slice)
+              
               ## Read in the current suitability raster
               f_current <- raster(sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_current.tif', 
                                           species, species))
@@ -365,6 +368,8 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
               
               ## First, calculate the cells which are greater that the: 
               ## Maximum training sensitivity plus specificity Logistic threshold
+              message('Running thresholds for ', species, ' | 20', time_slice, ' combined suitability > ', thresh)
+              
               suit_ras1_thresh   = thresh_greater(suit.list[[1]])  
               suit_ras2_thresh   = thresh_greater(suit.list[[2]])
               suit_ras3_thresh   = thresh_greater(suit.list[[3]])
@@ -392,6 +397,8 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
               #########################################################################################################################
               ## Next, calcualte the loss or gain between the two time periods :
               ## first create a binary raster for GCM layer
+              message('Calculating change for ', species, ' | 20', time_slice, ' combined suitability > ', thresh)
+              
               rc <- function(x) {ifelse(x >=  1, 1, 0) }
               combo_suit_binary <- calc(combo_suit_thresh, fun = rc)
               
@@ -460,51 +467,39 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
               
               #########################################################################################################################
               ## Then calculate the loss or gain within a given areal unit. Use the SUA's, but could be anything!
-              areal_unit = SUA.WGS
+              ## Run zonal statistics using multiple functions
+              message('Running zonal stats for ', species, ' | 20', time_slice, ' combined suitability > ', thresh) 
               
-              ### Now run zonal statistics using multiple functions   
               z.mean <- spatialEco::zonal.stats(x = areal_unit, y = intergter_future_minus_current, stat = mean,   trace = TRUE, plot = TRUE) 
               # z.max  <- spatialEco::zonal.stats(x = areal_unit, y = intergter_future_minus_current, stat = max,    trace = TRUE, plot = TRUE)
               # z.min  <- spatialEco::zonal.stats(x = areal_unit, y = intergter_future_minus_current, stat = min,    trace = TRUE, plot = TRUE)
               # z.med  <- spatialEco::zonal.stats(x = areal_unit, y = intergter_future_minus_current, stat = median, trace = TRUE, plot = TRUE)
 
-              ## Could turn this into a function, and loop over a list of subfolders...
-              MAXENT.STD.VAR.SUMMARY <- test_spp[c(1:length(test_spp))] %>%
-                
-                ## pipe the list into lapply
-                lapply(function(x) {
-                  
-                  ## create the character string
-                  z.mean <- spatialEco::zonal.stats(x = areal_unit, y = intergter_future_minus_current, stat = mean,   trace = TRUE, plot = TRUE) 
-                  
-                  ## Now create a table with the columns: AREA, SPECIES, STATS (for each time slice)
-                  z <- data.frame(SUA     = areal_unit$SUA_NAME11, 
-                                  SPECIES = species,
-                                  MEAN    = z.mean, 
-                                  MEDIAN  = z.med, 
-                                  MAX     = z.max, 
-                                  MIN     = z.min)
-                  
-                  ## Rename columns using sprintf
-                  names(z) <-  c('SUA', 'SPECIES', 
-                                 sprintf('MEAN_GCMs_MT_LOG > %s in 20%s',   thresh, time_slice))#,
-                                 # sprintf('MEDIAN_GCMs_MT_LOG > %s in 20%s', thresh, time_slice),
-                                 # sprintf('MAX_GCMs_MT_LOG > %s in 20%s',    thresh, time_slice),
-                                 # sprintf('MIN_GCMs_MT_LOG > %s in 20%s',    thresh, time_slice))
-                  
-                  ## Write the table to file
-                  z
-                }) %>%
-                
-                ## finally, bind all the rows together
-                bind_rows
+              ## Create a table with the columns: AREA, SPECIES, STATS (for each time slice)
+              z <- data.frame(SUA     = areal_unit$SUA_NAME11, 
+                              SPECIES = species,
+                              MEAN    = z.mean)#, 
+              # MEDIAN  = z.med, 
+              # MAX     = z.max, 
+              # MIN     = z.min)
               
-              ## Then 
-              write.csv(z, "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1601_2018.csv", row.names = FALSE)
+              ## Rename columns using sprintf
+              names(z) <-  c('SUA', 'SPECIES', 
+                             sprintf('MEAN_GCMs_MT_LOG > %s in 20%s',   thresh, time_slice))#,
+              # sprintf('MEDIAN_GCMs_MT_LOG > %s in 20%s', thresh, time_slice),
+              # sprintf('MAX_GCMs_MT_LOG > %s in 20%s',    thresh, time_slice),
+              # sprintf('MIN_GCMs_MT_LOG > %s in 20%s',    thresh, time_slice))
+ 
+              ##
+              dim(z)
+              unique(z$SPECIES)
+              
+              ## Then save the table of SUA results for all species to a datafile... 
+              write.csv(GCM.AREA.SUMMARY, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.csv',
+                                                  species, species, "_Max_train_sensit_above_", thresh), row.names = FALSE)
 
-              
               #########################################################################################################################
-              ## Write the raster for each species and threshold
+              ## Write the rasters for each species/threshold
               message('Writing ', species, ' 20', time_slice, ' combined suitability > ', thresh) 
               writeRaster(combo_suit_thresh, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
                                                      species, species, time_slice, "_Max_train_sensit_above_", thresh), overwrite = TRUE)
@@ -514,12 +509,25 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
               writeRaster(combo_suit_percent, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
                                                       species, species, time_slice, "_10_percentile_omiss_above_", percent), overwrite = TRUE)
               
+              #########################################################################################################################
+              ## Write the rasters for binary loss/gain for each species/threshold
+              message('Writing ', species, ' 20', time_slice, ' loss/gain max train > ', thresh) 
+              writeRaster(binary_future_minus_current, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
+                                                               species, species, time_slice, "_binary_future_minus_current_", thresh), overwrite = TRUE)
+              
+              ## Write the rasters for interger loss/gain for each species/threshold
+              message('Writing ', species, ' 20', time_slice, ' loss/gain 10 percentile > ', percent) 
+              writeRaster(interger_future_minus_current, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
+                                                                 species, species, time_slice, "_binary_future_minus_current_", thresh), overwrite = TRUE)
+              
               ########################################################################################################################
               ## Now create the empty panel just before plotting, and read in the occurrence dat
               empty <- init(combo_suit_thresh, function(x) NA)
               occ   <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/occ.rds', species)) 
               
               ## Use the levelplot function to make a multipanel output: occurences, percentiles and thresholds
+              message('Writing figure for ', species, ' 20', time_slice, ' > ', thresh) 
+              
               png(sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s_suitability_above_%s.png',
                           species, species, time_slice, thresh),
                   11, 4, units = 'in', res = 300)
@@ -561,8 +569,6 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
           }
           
         }
-        
-      }
       
     })
     
