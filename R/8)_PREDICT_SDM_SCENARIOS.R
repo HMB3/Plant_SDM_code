@@ -8,7 +8,7 @@
 ## a prediction of habitat suitability for current and future environmental conditions. The input data table is in the 
 ## format of all species occurrences (rows) and environmental variables (columns).
 
-## Then the predictions from all GCMs (currently using six) are combined into a single habitat suitability layer.
+## Then the predictions from all GCMs (currently using six) are then combined into a single habitat suitability layer.
 ## Using this combined layer, the loss or gain of species within areal units (e.g. significant urban areas or LGAs), 
 ## between time periods (current, 2030, 2070) can be calculated. 
 
@@ -25,7 +25,7 @@ source('./R/HIA_LIST_MATCHING.R')
 
 
 #########################################################################################################################
-## create a list of GCM scenarios (below is from CSIRO): 
+## Create a list of GCM scenarios, which are used to create maps of habitat suitability 
 
 
 ## Eight of the 40 CMIP5 models assessed in this project have been selected for use in provision of application-ready data. 
@@ -93,7 +93,7 @@ for(i in 1:11) {
 }
 
 
-## What do the grids look like? 11,177,684 NAs???!!!!!
+## What do the grids look like? The 11,177,684 NAs values could be the ocean
 summary(env.grids.current[[1]])
 summary(env.grids.current[[5]])
 summary(env.grids.current[[11]])
@@ -103,7 +103,7 @@ summary(env.grids.current[[11]])
 
 
 #########################################################################################################################
-## 2). PROJECT MAXNET MODELS FOR MULTIPLE CLIMATE SCEANARIOS currently 2050 AND 2070
+## 2). PROJECT MAXENT MODELS FOR MULTIPLE CLIMATE SCEANARIOS, currently 2050 AND 2070
 #########################################################################################################################
 
 
@@ -112,7 +112,7 @@ test_spp = gsub(" ", "_", test.spp)
 
 
 #########################################################################################################################
-## For each species, use a function to create raster files and maps of all six climate scenarios (GCMs).
+## For each species, use a function to create raster files and maps of all six GCMs.
 ## Note that some of the experimental species - e.g. Kennedia_beckxiana - still have to be modelled
 env.grids.2050 = project.grids.2050(scen_2050, test_spp)
 env.grids.2070 = project.grids.2070(scen_2070, test_spp)
@@ -133,6 +133,8 @@ SDM.RESULTS.DIR <- test_spp[c(1:length(test_spp))] %>%
   
   ## Bind the list together
   c()
+
+
 
 
 
@@ -187,6 +189,11 @@ MAXENT.SUM.TEST  =  MAXENT.STD.VAR.SUMMARY[MAXENT.STD.VAR.SUMMARY$GBIF_Taxon %in
 head(MAXENT.SUM.TEST, 10)["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"];head(MAXENT.SUM.TEST, 10)[1]
 
 
+#########################################################################################################################
+## Save results::
+write.csv(MAXENT.STD.VAR.SUMMARY, "./output/maxent/MAXENT_STD_VAR_SUMMARY.csv", row.names = FALSE)
+
+
 
 
 
@@ -197,8 +204,9 @@ head(MAXENT.SUM.TEST, 10)["Maximum.training.sensitivity.plus.specificity.Logisti
 
 #########################################################################################################################
 ## Now for each species, use a function to combine the raster files for each climate scenario into one layer. Use the 
-## species-specific thresholds that are produced by rmaxent (i.e. the columns in MAXENT.STD.VAR.SUMMARY) Linda and John 
+## species-specific thresholds that are produced by rmaxent (i.e. the columns in MAXENT.STD.VAR.SUMMARY). Linda and John 
 ## use these two:
+
 
 ## Maximum training sensitivity plus specificity Logistic threshold 
 ## 10 percentile training presence training omission. EG:
@@ -206,15 +214,16 @@ summary(MAXENT.SUM.TEST["Maximum.training.sensitivity.plus.specificity.Logistic.
 summary(MAXENT.SUM.TEST["X10.percentile.training.presence.training.omission"])
 
 
-## Turn these into lists: use %?
-thresh.max.train = as.list(MAXENT.SUM.TEST["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"]) 
-thresh.max.train = thresh.max.train$Maximum.training.sensitivity.plus.specificity.Logistic.threshold
+## Turn the maxent results into lists
+thresh.max.train  = as.list(MAXENT.SUM.TEST["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"]) 
+thresh.max.train  = thresh.max.train$Maximum.training.sensitivity.plus.specificity.Logistic.threshold
 
 percent.10.omiss  = as.list(MAXENT.SUM.TEST["X10.percentile.training.presence.training.omission"])
 percent.10.omiss  = percent.10.omiss$X10.percentile.training.presence.training.omission
 length(percent.10.omiss);length(thresh.max.train) 
 
 
+#########################################################################################################################
 ## So we can use the values in these columns to threhsold the rasters of habitat suitability (0-1) when combining them.
 ## For each species, we will create a binary raster with cell values between 0-6. These cell values represent the number of GCMs 
 ## where that cell had a suitability value above the threshold determined by maxent (e.g. the max training sensitivity + specif).  
@@ -224,7 +233,7 @@ length(percent.10.omiss);length(thresh.max.train)
 ## (e.g. significant urban areas or LGAs), between time periods (current, 2030, 2070).
 
 
-## In the global environment outside the function, define the SUA
+## Why can't we , define the SUA in the global environment, outside the function?
 # SUA = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/IN.SUA.shp", layer = "IN.SUA")
 # CRS.new  <- CRS("+init=epsg:4326") # EPSG:3577
 # SUA.WGS  = spTransform(SUA, CRS.new)
@@ -234,17 +243,7 @@ length(percent.10.omiss);length(thresh.max.train)
 
 
 #########################################################################################################################
-## Lots of ways to run this analysis. Could do it all at once (i.e. all species, time periods, etc). But for now, just
-## do each time slice individually. 
-comb_spp   = test_spp[test_spp %in% MAXENT.STD.VAR.SUMMARY$GBIF_Taxon ]
-DIR        = SDM.RESULTS.DIR[1]
-species    = comb_spp[1]
-thresh     = thresh.max.train[1]
-time_slice = 50
-percent    = percent.10.omiss[1]
-
-
-## Combine output and calculate gain and loss for 2050 
+## Lots of ways to run this analysis. Combine output and calculate gain and loss for 2050 
 suitability.2050 = mapply(combine_gcm_threshold, 
                           DIR_list     = SDM.RESULTS.DIR[1], 
                           species_list = comb_spp[1], 
@@ -253,21 +252,63 @@ suitability.2050 = mapply(combine_gcm_threshold,
                           time_slice   = 50)
 
 
-# Writing Allocasuarina_littoralis 2050 combined suitability > 0.3385
-# Error in suit.list[[2]] : subscript out of bounds
-
 ## Combine output and calculate gain and loss for 2070 
 suitability.2070 = mapply(combine_gcm_threshold, 
-                          DIR_list     = SDM.RESULTS.DIR, 
-                          species_list = comb_spp, 
-                          thresholds   = thresh.max.train, 
-                          percentiles  = percent.10.omiss,
+                          DIR_list     = SDM.RESULTS.DIR[1], 
+                          species_list = comb_spp[1], 
+                          thresholds   = thresh.max.train[1], 
+                          percentiles  = percent.10.omiss[1],
                           time_slice   = 70)
 
 
+## Combine output and calculate gain and loss for 2030 
+# suitability.2030 = mapply(combine_gcm_threshold, 
+#                           DIR_list     = SDM.RESULTS.DIR, 
+#                           species_list = comb_spp, 
+#                           thresholds   = thresh.max.train, 
+#                           percentiles  = percent.10.omiss,
+#                           time_slice   = 30)
+
+
+
+
+
 #########################################################################################################################
-## Save results::
-write.csv(MAXENT.STD.VAR.SUMMARY, "./output/maxent/MAXENT_STD_VAR_SUMMARY.csv", row.names = FALSE)
+## 5). COMBINE MAXENT TABLES FOR ALL SPECIES ACROSS MULTIPLE GCMs
+#########################################################################################################################
+
+
+## Could turn this into a function, and loop over a list of subfolders...
+MAXENT.STD.VAR.SUMMARY <- table.list[c(1:length(table.list))] %>%
+  
+  ## pipe the list into lapply
+  lapply(function(x) {
+    
+    ## create the character string
+    f <- paste0(path, x, "/full/maxentResults.csv")
+    
+    ## load each .RData file
+    d <- read.csv(f)
+    
+    ## now add a model column
+    d = cbind(GBIF_Taxon = x, Model_run  = path, d) 
+    dim(d)
+    
+    ## Remove path gunk, and species
+    #d$GBIF_Taxon = gsub("_", " ", d$GBIF_Taxon)
+    d$Model_run  = gsub("./output/maxent/", "", d$Model_run)
+    d$Model_run  = gsub("/", "", d$Model_run)
+    d$Species    = NULL
+    d
+  }) %>%
+  
+  ## finally, bind all the rows together
+  bind_rows
+
+
+## This is a summary of maxent output for current conditions
+dim(MAXENT.STD.VAR.SUMMARY)
+head(MAXENT.STD.VAR.SUMMARY)[1:8]
 
 
 
@@ -278,18 +319,60 @@ write.csv(MAXENT.STD.VAR.SUMMARY, "./output/maxent/MAXENT_STD_VAR_SUMMARY.csv", 
 #########################################################################################################################
 
 
+#########################################################################################################################
+## The no-data areas need to be masked out before running the calculations.
+
 ## We are missing two scenarios recommended for Australia: CanESM2 & CESM1-CAM5. These two are not on the worldclim list:
 
 ## https://www.climatechangeinaustralia.gov.au/en/support-and-guidance/faqs/eight-climate-models-data/
 
 ## http://www.worldclim.org/cmip5_30s
-  
 
 ## Consider the final format, which files: table, plots/maps, files. Disk space important for both local and web... 
+## What are the options for presenting consensus layers of all scenarios? E.G. Are there some templates that John
+## has used for previous work?
 
 
-## What are the options for presenting consensus layers of all scenarios? EG show the occurrences, the average and then 
-## the combined layers? Need to choose the format first, as the details are tricky (e.g. scale bars, etc.)
+#########################################################################################################################
+## When we subtract the current binary layer (1, 0) from the future binary layer, we have: 
+
+## F0 - C0 =  0 (no data in either layer)
+## F0 - C1 = -1 (LOSS across all GCMs)
+## F1 - C0 =  1 (GAIN across all GCMs) 
+## F1 - C1 =  0 (NO CHANGE: also no data before the overlay...)
+
+
+## However, this changes when we subtract the current binary layer (taking values 1, 0) from the future integer layer 
+## (taking values from 0 to 6). Here, any negative value (-1) is a loss: the species was predicted to be present in that cell 
+## based on current conditions, but predicted to be absent under future conditions (i.e. the future layer did not meet the suitabiity
+## threshold in that location at that time.
+
+## However, positive values (1-6) can either be a gain, or, no change. The difference needs to be accounted for, because otherwise
+## we don't know if the species was predicted to occur. Can we fix this by masking the overlay to just cells with data?
+## Effectively this means excluding 0 values from the overlay.
+
+## Not all these possibilities will occur, but they are : 
+
+## F0 - C0 =  no data in either layer
+## F0 - C1 =  -1 (LOSS according to all GCMs)
+
+## F1 - C1 =  0 (NO CHANGE according to one GCM: also, no data before the overlay)
+## F1 - C0 =  1 (GAIN according to one GCM)
+
+## F2 - C1 =  1 (NO CHANGE, according to two GCMs)
+## F2 - C0 =  2 (GAIN according to two GCMs)
+
+## F3 - C1 =  2 (NO CHANGE, according to three GCMs)
+## F3 - C0 =  3 (GAIN, according to three GCMs)
+
+## F4 - C1 =  3 (NO CHANGE, according to four GCMs)
+## F4 - C0 =  3 (GAIN, according to four GCMs)
+
+## F5 - C1 =  4 (NO CHANGE, according to five GCMs)
+## F5 - C0 =  5 (GAIN according to five GCMs)
+
+## F6 - C1 =  5 (NO CHANGE, according to six GCMs?)
+## F6 - 0  =  6 (GAIN, according to six GCMs?)
 
 
 

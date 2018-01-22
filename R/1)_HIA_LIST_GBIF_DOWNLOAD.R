@@ -182,7 +182,7 @@ kable(skipped.200.spp)
 
 ## Get the extra species with > 200k records
 
-
+## Also, a key point for the future is how to treat the extra varieties, etc.
 
 
 

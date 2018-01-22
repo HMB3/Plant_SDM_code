@@ -310,8 +310,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
       # for (slice in time_slice) {
         
         ###################################################################################################################
-        ## Create a list of the rasters in each directory, then take the mean. How long does the mean calculation take?
-        ## Tidy this up with %, etc
+        ## Create a list of the rasters in each directory, then take the mean. Tidy this up with %, etc
         raster.list = list.files(as.character(DIR), pattern = sprintf('bi%s.tif', time_slice), full.names = TRUE)  
         suit        = stack(raster.list)
         suit.list   = unstack(suit)
@@ -345,7 +344,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             ## If it doesn't exist, create the suitability raster
             if(!file.exists(f_suit)) {
               
-              ## use the message to get the looping order right
+              ## Print the species being analysed
               message('doing ', species, ' | Max train sensit > ', thresh, ' for 20', time_slice)
               
               ## Read in the current suitability raster
@@ -395,8 +394,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
                                                       suit_ras4_percent, suit_ras5_percent, suit_ras6_percent))
               
               #########################################################################################################################
-              ## Next, calcualte the loss or gain between the two time periods :
-              ## first create a binary raster for GCM layer
+              ## Next, calcualte the loss or gain between the two time periods. Create a binary raster for GCM layer
               message('Calculating change for ', species, ' | 20', time_slice, ' combined suitability > ', thresh)
               
               rc <- function(x) {ifelse(x >=  1, 1, 0) }
@@ -414,7 +412,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
               
               ## Plot the difference between future and current layers...
               plot(current_suit_thresh, main = gsub('_', ' ', (sprintf('%s current Max_train_sensit > %s', species, thresh))))
-              plot(combo_suit_binary, main = gsub('_', ' ',   (sprintf('%s future Max_train_sensit > %s', species, thresh))))
+              plot(combo_suit_binary,   main = gsub('_', ' ', (sprintf('%s future Max_train_sensit > %s',  species, thresh))))
               
               ## The following two plots are not equivalent. When we subtract the current binary layer (1, 0) from the future
               ## binary layer, we have: 
@@ -432,29 +430,6 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
               ## However, positive values (1-6) can either be a gain, or, no change. The difference needs to be accounted for, because otherwise
               ## we don't know id the species was predicted to occur. Can we fix this by masking the overlay to just cells with data?
               ## Effectively this means excluding 0 values from the overlay.
-              
-              ## Not all these possibilities will occur, but they are : 
-              
-              ## F0 - C0 =  no data in either layer
-              ## F0 - C1 =  -1 (LOSS according to all GCMs)
-              
-              ## F1 - C1 =  0 (NO CHANGE according to one GCM: also, no data before the overlay)
-              ## F1 - C0 =  1 (GAIN according to one GCM)
-              
-              ## F2 - C1 =  1 (NO CHANGE, according to two GCMs)
-              ## F2 - C0 =  2 (GAIN according to two GCMs)
-              
-              ## F3 - C1 =  2 (NO CHANGE, according to three GCMs)
-              ## F3 - C0 =  3 (GAIN, according to three GCMs)
-              
-              ## F4 - C1 =  3 (NO CHANGE, according to four GCMs)
-              ## F4 - C0 =  3 (GAIN, according to four GCMs)
-              
-              ## F5 - C1 =  4 (NO CHANGE, according to five GCMs)
-              ## F5 - C0 =  5 (GAIN according to five GCMs)
-              
-              ## F6 - C1 =  5 (NO CHANGE, according to six GCMs?)
-              ## F6 - 0  =  6 (GAIN, according to six GCMs?)
               
               ## Plot the binary difference layer
               plot(binary_future_minus_current,

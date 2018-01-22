@@ -338,7 +338,7 @@ EXCLUDED.VARIETIES   = setdiff(unique(HIA.VARIETY$Species), unique(HIA.SPP$HIA.T
 ## EG: Rhaphiolepis indica has growers for the spp and each variety, should we add them together?
 ## Magnolia grandiflora has 8 varieties which are being missed by the current code...
 
-
+## Also, a key point for the future is how to treat the extra varieties, etc.
 
 
 
