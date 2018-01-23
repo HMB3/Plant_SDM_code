@@ -41,20 +41,20 @@ source('./R/HIA_LIST_MATCHING.R')
 h <- read_html('http://www.worldclim.org/cmip5_30s') 
 gcms <- h %>% 
   html_node('table') %>% 
-  html_table(header=TRUE) %>% 
+  html_table(header = TRUE) %>% 
   filter(rcp85 != '')
 
 id.50 <- h %>% 
   html_nodes(xpath = "//a[text()='bi']/@href") %>% 
   as.character %>% 
-  grep('85bi50', ., value=TRUE) %>% 
+  grep('85bi50', ., value = TRUE) %>% 
   basename %>% 
   sub('\\.zip.', '', .)
 
 id.70 <- h %>% 
   html_nodes(xpath = "//a[text()='bi']/@href") %>% 
   as.character %>% 
-  grep('85bi70', ., value=TRUE) %>% 
+  grep('85bi70', ., value = TRUE) %>% 
   basename %>% 
   sub('\\.zip.', '', .)
 
@@ -187,6 +187,7 @@ head(MAXENT.STD.VAR.SUMMARY)[1:8]
 length(intersect(test_spp, MAXENT.STD.VAR.SUMMARY$GBIF_Taxon)) ## accesssing the files from these directories... 
 MAXENT.SUM.TEST  =  MAXENT.STD.VAR.SUMMARY[MAXENT.STD.VAR.SUMMARY$GBIF_Taxon %in% test_spp, ] 
 head(MAXENT.SUM.TEST, 10)["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"];head(MAXENT.SUM.TEST, 10)[1]
+comb_spp = unique(MAXENT.SUM.TEST$GBIF_Taxon)
 
 
 #########################################################################################################################
@@ -244,6 +245,14 @@ length(percent.10.omiss);length(thresh.max.train)
 
 #########################################################################################################################
 ## Lots of ways to run this analysis. Combine output and calculate gain and loss for 2050 
+ 
+# DIR        = SDM.RESULTS.DIR[1] 
+# species    = comb_spp[1] 
+# threshold  = thresh.max.train[1] 
+# percent    = percent.10.omiss[1]
+# time_slice = 50
+
+
 suitability.2050 = mapply(combine_gcm_threshold, 
                           DIR_list     = SDM.RESULTS.DIR[1], 
                           species_list = comb_spp[1], 

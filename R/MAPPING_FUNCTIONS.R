@@ -439,6 +439,23 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
               plot(integer_future_minus_current,
                    main = gsub('_', ' ', (sprintf('%s future - current  Max_train_sensit > %s', species, thresh))))
               
+              #########################################################################################################################
+              ## Now, mask out the zero values?
+              # plus    = overlay(combo_suit_thresh,
+              #                   current_suit_thresh,
+              #                   fun = function(r1, r2) {return (r1 + r2)})
+              # 
+              # mask <- calc(plus, fun = rc)
+              # mask[mask < 0] <- NA
+              # 
+              # pol <- rasterToPolygons(mask, fun = function(x){x>0})
+              # 
+              # 
+              # 
+              # test   =  polygonizer(plus, outshape = NULL, pypath = "F:/green_cities_sdm/R")
+              # crs(b) <- crs(r)
+              # crop   <- crop(r, b)
+              
               
               #########################################################################################################################
               ## Then calculate the loss or gain within a given areal unit. Use the SUA's, but could be anything!
@@ -472,10 +489,14 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
               
               ## Then save the table of SUA results for all species to a datafile... 
               write.csv(GCM.AREA.SUMMARY, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.csv',
-                                                  species, species, "_Max_train_sensit_above_", thresh), row.names = FALSE)
+                                                  species, species, "Max_train_sensit_above_", thresh), row.names = FALSE)
 
               #########################################################################################################################
               ## Write the rasters for each species/threshold
+              message('Writing ', species, ' current', ' max train > ', thresh) 
+              writeRaster(current_suit_thresh, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.tif',
+                                                       species, species, "current_suit_above_", thresh), overwrite = TRUE) 
+ 
               message('Writing ', species, ' | 20', time_slice, ' max train > ', thresh) 
               writeRaster(combo_suit_thresh, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
                                                      species, species, time_slice, "_Max_train_sensit_above_", thresh), overwrite = TRUE)
