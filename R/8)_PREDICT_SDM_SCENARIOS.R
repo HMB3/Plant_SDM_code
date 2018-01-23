@@ -246,11 +246,11 @@ length(percent.10.omiss);length(thresh.max.train)
 #########################################################################################################################
 ## Lots of ways to run this analysis. Combine output and calculate gain and loss for 2050 
  
-# DIR        = SDM.RESULTS.DIR[1] 
-# species    = comb_spp[1] 
-# threshold  = thresh.max.train[1] 
-# percent    = percent.10.omiss[1]
-# time_slice = 50
+DIR        = SDM.RESULTS.DIR[1] 
+species    = comb_spp[1] 
+thresh     = thresh.max.train[1] 
+percent    = percent.10.omiss[1]
+time_slice = 50
 
 
 suitability.2050 = mapply(combine_gcm_threshold, 

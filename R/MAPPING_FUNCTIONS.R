@@ -397,13 +397,17 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
               ## Next, calcualte the loss or gain between the two time periods. Create a binary raster for GCM layer
               message('Calculating change for ', species, ' | 20', time_slice, ' combined suitability > ', thresh)
               
-              rc <- function(x) {ifelse(x >=  1, 1, 0) }
-              combo_suit_binary <- calc(combo_suit_thresh, fun = rc)
+              binary   <- function(x) {ifelse(x >=  1, 1, 0) }
+              gcm_band <- function(x) {ifelse(x >=  4, 4, ifelse(x > 0 & x < 4, 3, x)) }
+              
+              
+              combo_suit_band   <- calc(combo_suit_thresh, fun = gcm_band)
+              combo_suit_binary <- calc(combo_suit_thresh, fun = binary)
               
               ## Then subtract the binary current layer from the binary future layer. So need to mask the no-data from this overlay calc.  
-              binary_future_minus_current      = overlay(combo_suit_binary,
-                                                         current_suit_thresh,
-                                                         fun = function(r1, r2) {return (r1 - r2)})
+              binary_future_minus_current     = overlay(combo_suit_binary,
+                                                        current_suit_thresh,
+                                                        fun = function(r1, r2) {return (r1 - r2)})
               
               ## Subtract the binary current layer from the integer future layer 
               integer_future_minus_current    = overlay(combo_suit_thresh,
@@ -412,24 +416,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
               
               ## Plot the difference between future and current layers...
               plot(current_suit_thresh, main = gsub('_', ' ', (sprintf('%s current Max_train_sensit > %s', species, thresh))))
-              plot(combo_suit_binary,   main = gsub('_', ' ', (sprintf('%s future Max_train_sensit > %s',  species, thresh))))
-              
-              ## The following two plots are not equivalent. When we subtract the current binary layer (1, 0) from the future
-              ## binary layer, we have: 
-              
-              ## F0 - C0 =  0 (no data in either layer)
-              ## F0 - C1 = -1 (LOSS across all GCMs)
-              ## F1 - C0 =  1 (GAIN across all GCMs) 
-              ## F1 - C1 =  0 (NO CHANGE: also no data before the overlay)
-              
-              ## However, this changes when we subtract the current binary layer (taking values 1, 0) from the future integer layer 
-              ## (taking values from 0 to 6). Here, any negative value (-1) is a loss: the species was predicted to be present in that cell 
-              ## based on current conditions, but predicted to be absent under future conditions (i.e. the future layer did not meet the suitabiity
-              ## threshold in that location at that time.
-              
-              ## However, positive values (1-6) can either be a gain, or, no change. The difference needs to be accounted for, because otherwise
-              ## we don't know id the species was predicted to occur. Can we fix this by masking the overlay to just cells with data?
-              ## Effectively this means excluding 0 values from the overlay.
+              plot(combo_suit_thresh,   main = gsub('_', ' ', (sprintf('%s future Max_train_sensit > %s',  species, thresh))))
               
               ## Plot the binary difference layer
               plot(binary_future_minus_current,
