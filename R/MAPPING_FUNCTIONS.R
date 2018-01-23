@@ -331,6 +331,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
           
         }
         
+        #########################################################################################################################
         ###################################################################################################################
         ## Then create rasters that meet habitat suitability criteria thresholds, determined by the rmaxent function
         for (thresh in thresholds) {
@@ -365,6 +366,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
               ## Also, the 'init' function initializes a raster object with values
               ## suit_ras_greater    = reduce(suit.list, thresh_above_fun, .init = suit.list[[1]] > thresh)
               
+              #########################################################################################################################
               ## First, calculate the cells which are greater that the: 
               ## Maximum training sensitivity plus specificity Logistic threshold
               message('Running thresholds for ', species, ' | 20', time_slice, ' combined suitability > ', thresh)
@@ -384,6 +386,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
               suit_ras5_percent  = percent_greater(suit.list[[5]])
               suit_ras6_percent  = percent_greater(suit.list[[6]])
               
+              #########################################################################################################################
               ## Then sum them up: could use % to compress this..
               ## All the threshholds
               combo_suit_thresh   =  Reduce("+", list(suit_ras1_thresh, suit_ras2_thresh, suit_ras3_thresh,
@@ -394,6 +397,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
                                                       suit_ras4_percent, suit_ras5_percent, suit_ras6_percent))
               
               #########################################################################################################################
+              #########################################################################################################################
               ## Next, calcualte the loss or gain between the two time periods. Create a binary raster for GCM layer
               message('Calculating change for ', species, ' | 20', time_slice, ' combined suitability > ', thresh)
               
@@ -402,13 +406,20 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
               
               
               combo_suit_band   <- calc(combo_suit_thresh, fun = gcm_band)
-              combo_suit_binary <- calc(combo_suit_thresh, fun = binary)
+              #combo_suit_binary <- calc(combo_suit_thresh, fun = binary)
               
               ## Then subtract the binary current layer from the binary future layer. So need to mask the no-data from this overlay calc.  
-              binary_future_minus_current     = overlay(combo_suit_binary,
-                                                        current_suit_thresh,
-                                                        fun = function(r1, r2) {return (r1 - r2)})
+              # binary_future_minus_current     = overlay(combo_suit_binary,
+              #                                           current_suit_thresh,
+              #                                           fun = function(r1, r2) {return (r1 - r2)})
               
+              #########################################################################################################################
+              ## Subtract the binary current layer from the discrete future layer 
+              discrete_future_minus_current    = overlay(combo_suit_band,
+                                                         current_suit_thresh,
+                                                         fun = function(r1, r2) {return (r1 - r2)})                                           
+              
+              #########################################################################################################################
               ## Subtract the binary current layer from the integer future layer 
               integer_future_minus_current    = overlay(combo_suit_thresh,
                                                         current_suit_thresh,
@@ -418,10 +429,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
               plot(current_suit_thresh, main = gsub('_', ' ', (sprintf('%s current Max_train_sensit > %s', species, thresh))))
               plot(combo_suit_thresh,   main = gsub('_', ' ', (sprintf('%s future Max_train_sensit > %s',  species, thresh))))
               
-              ## Plot the binary difference layer
-              plot(binary_future_minus_current,
-                   main = gsub('_', ' ', (sprintf('%s future - current  Max_train_sensit > %s', species, thresh))))
-              
+
               ## Plot the interger difference layer
               plot(integer_future_minus_current,
                    main = gsub('_', ' ', (sprintf('%s future - current  Max_train_sensit > %s', species, thresh))))
