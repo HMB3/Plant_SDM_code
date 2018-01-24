@@ -314,7 +314,8 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
         raster.list = list.files(as.character(DIR), pattern = sprintf('bi%s.tif', time_slice), full.names = TRUE)  
         suit        = stack(raster.list)
         suit.list   = unstack(suit)
-        mean.suit   = mean(suit)   ## plot(mean.suit)
+        mean.suit   = mean(suit)                            ## plot(mean.suit)
+        #median.suit = median(suit)
         
         ## Write the mean to file
         f_mean = sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s_suitability_mean.tif', 
@@ -401,11 +402,12 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
               ## Next, calcualte the loss or gain between the two time periods. Create a binary raster for GCM layer
               message('Calculating change for ', species, ' | 20', time_slice, ' combined suitability > ', thresh)
               
-              binary   <- function(x) {ifelse(x >=  1, 1, 0) }
-              gcm_band <- function(x) {ifelse(x >=  4, 4, ifelse(x > 0 & x < 4, 3, x)) }
+              binary_ras   <- function(x) {ifelse(x >=  1, 1, 0) }
+              binary_4_ras <- function(x) {ifelse(x >=  4, 1, 0) }
+              band_ras     <- function(x) {ifelse(x >=  4, 4, ifelse(x > 0 & x < 4, 3, x)) }
               
-              
-              combo_suit_band   <- calc(combo_suit_thresh, fun = gcm_band)
+              combo_suit_band  <- calc(combo_suit_thresh, fun = band_ras)
+              combo_suit4_band <- calc(combo_suit_thresh, fun = binary_4_ras)
               #combo_suit_binary <- calc(combo_suit_thresh, fun = binary)
               
               ## Then subtract the binary current layer from the binary future layer. So need to mask the no-data from this overlay calc.  
@@ -415,24 +417,27 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
               
               #########################################################################################################################
               ## Subtract the binary current layer from the discrete future layer 
-              discrete_future_minus_current    = overlay(combo_suit_band,
-                                                         current_suit_thresh,
-                                                         fun = function(r1, r2) {return (r1 - r2)})                                           
+              discrete_future_minus_current = overlay(combo_suit_band,
+                                                      current_suit_thresh,
+                                                      fun = function(r1, r2) {return (r1 - r2)})                                           
               
               #########################################################################################################################
               ## Subtract the binary current layer from the integer future layer 
-              integer_future_minus_current    = overlay(combo_suit_thresh,
-                                                        current_suit_thresh,
-                                                        fun = function(r1, r2) {return (r1 - r2)})
+              integer_future_minus_current  = overlay(combo_suit_thresh,
+                                                      current_suit_thresh,
+                                                      fun = function(r1, r2) {return (r1 - r2)})
               
               ## Plot the difference between future and current layers...
               plot(current_suit_thresh, main = gsub('_', ' ', (sprintf('%s current Max_train_sensit > %s', species, thresh))))
               plot(combo_suit_thresh,   main = gsub('_', ' ', (sprintf('%s future Max_train_sensit > %s',  species, thresh))))
               
-
-              ## Plot the interger difference layer
+              ## Plot the integer difference
               plot(integer_future_minus_current,
                    main = gsub('_', ' ', (sprintf('%s future - current  Max_train_sensit > %s', species, thresh))))
+              
+              ## Plot the band difference
+              plot(discrete_future_minus_current,
+                   main = gsub('_', ' ', (sprintf('%s future - discrete  Max_train_sensit > %s', species, thresh))))
               
               #########################################################################################################################
               ## Now, mask out the zero values?
@@ -457,6 +462,10 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
               ## Run zonal statistics using multiple functions
               message('Running zonal stats for ', species, ' | 20', time_slice, ' combined suitability > ', thresh)
               areal_unit = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/IN_SUA_WGS.shp", layer = "IN_SUA_WGS")
+              
+              ## For each species, create a binary raster with cells > 4 GCMs above the maxent threshold = 1, and cells with < 4 GCMs = 0. 
+              ## Decide on a threshold of % area (10?) of the SUA that needs to be occupied, for each species to be considered present. 
+              
               
               z.mean <- spatialEco::zonal.stats(x = areal_unit, y = integer_future_minus_current, stat = mean,   trace = TRUE, plot = TRUE) 
               # z.max  <- spatialEco::zonal.stats(x = areal_unit, y = intergter_future_minus_current, stat = max,    trace = TRUE, plot = TRUE)
@@ -517,7 +526,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
               empty <- init(combo_suit_thresh, function(x) NA)
               occ   <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/occ.rds', species)) 
               
-              ## Use the levelplot function to make a multipanel output: occurences, percentiles and thresholds
+              ## Use the 'levelplot' function to make a multipanel output: occurences, percentiles and thresholds
               message('Writing figure for ', species, ' | 20', time_slice, ' > ', thresh) 
               
               png(sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s_suitability_above_%s.png',

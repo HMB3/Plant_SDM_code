@@ -144,7 +144,7 @@ SDM.RESULTS.DIR <- test_spp[c(1:length(test_spp))] %>%
 
 
 #########################################################################################################################
-## First, Read in the list of files for the current models, and specify the file path
+## First, read in the list of files for the current models, and specify the file path
 table.list = list.files("./output/maxent/STD_VAR_ALL/")
 path       = "./output/maxent/STD_VAR_ALL/"
 
@@ -182,7 +182,7 @@ dim(MAXENT.STD.VAR.SUMMARY)
 head(MAXENT.STD.VAR.SUMMARY)[1:8]
 
 
-## Now check the match between the species list, and the results this. These need to match, so we can access
+## Now check the match between the species list, and the results list. These need to match, so we can access
 ## the right threshold for each species.
 length(intersect(test_spp, MAXENT.STD.VAR.SUMMARY$GBIF_Taxon)) ## accesssing the files from these directories... 
 MAXENT.SUM.TEST  =  MAXENT.STD.VAR.SUMMARY[MAXENT.STD.VAR.SUMMARY$GBIF_Taxon %in% test_spp, ] 
@@ -244,8 +244,7 @@ length(percent.10.omiss);length(thresh.max.train)
 
 
 #########################################################################################################################
-## Lots of ways to run this analysis. Combine output and calculate gain and loss for 2050 
- 
+## Combine output and calculate gain and loss for 2050 
 DIR        = SDM.RESULTS.DIR[1] 
 species    = comb_spp[1] 
 thresh     = thresh.max.train[1] 
@@ -362,7 +361,8 @@ head(MAXENT.STD.VAR.SUMMARY)[1:8]
 
 ## Not all these possibilities will occur, but they are : 
 
-## F0 - C0 =  no data in either layer
+## F0 - C0 =  0 no data in either layer
+## F0 - C0 =  0 (NO CHANGE according to all GCMs)
 ## F0 - C1 =  -1 (LOSS according to all GCMs)
 
 ## F1 - C1 =  0 (NO CHANGE according to one GCM: also, no data before the overlay)
@@ -375,7 +375,7 @@ head(MAXENT.STD.VAR.SUMMARY)[1:8]
 ## F3 - C0 =  3 (GAIN, according to three GCMs)
 
 ## F4 - C1 =  3 (NO CHANGE, according to four GCMs)
-## F4 - C0 =  3 (GAIN, according to four GCMs)
+## F4 - C0 =  4 (GAIN, according to four GCMs)
 
 ## F5 - C1 =  4 (NO CHANGE, according to five GCMs)
 ## F5 - C0 =  5 (GAIN according to five GCMs)
