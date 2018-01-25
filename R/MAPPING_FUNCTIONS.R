@@ -471,28 +471,34 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
               ## How can this be loaded outside the function?
               message('Running zonal stats for ', species, ' | 20', time_slice, ' combined suitability > ', thresh)
               areal_unit = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/IN_SUA_WGS.shp", layer = "IN_SUA_WGS")
+              areal_unit = areal_unit[order(areal_unit$SUA_NAME11),] 
               
               ## For each species, create a binary raster with cells > 4 GCMs above the maxent threshold = 1, and cells with < 4 GCMs = 0. 
               ## Decide on a threshold of % area (10?) of the SUA that needs to be occupied, for each species to be considered present. 
  
               ## First, create a simple count of the no. of cells per SUA with where > 4 GCMs met the suitability threshold
-              z.count <- spatialEco::zonal.stats(x = areal_unit, y = combo_suit4_band, stat = sum, trace = TRUE, plot = TRUE) 
+              ## Need to fix this so that it has the same order as 
+              #sp.count <- spatialEco::zonal.stats(x = areal_unit, y = combo_suit4_band, stat = sum, trace = TRUE, plot = TRUE) 
               # z.max  <- spatialEco::zonal.stats(x = areal_unit, y = intergter_future_minus_current, stat = max,    trace = TRUE, plot = TRUE)
               # z.min  <- spatialEco::zonal.stats(x = areal_unit, y = intergter_future_minus_current, stat = min,    trace = TRUE, plot = TRUE)
               # z.med  <- spatialEco::zonal.stats(x = areal_unit, y = intergter_future_minus_current, stat = median, trace = TRUE, plot = TRUE)
               
-              ## Then, extract the values of the presence raster for each areal unit: generates a list
+              ## Then, extract the values of the presence raster for each areal unit: generates a list: 32 seconds
               ext  <- extract(combo_suit4_band, areal_unit, method = 'simple')
               
-              ## Now generate a table of cell counts per area for each species
-              AREA.COUNT <- tabs %>%
-                
-                ## Run through each areal unit and calculate a table of the count of raster cells by land use
-                lapply(seq(ext), tabFunc, ext, areal_unit, "SUA_NAME11") %>% 
-                do.call("rbind", tabs)
+              ## Run through each areal unit and calculate a table of the count of raster cells
+              tabs <- lapply(seq(ext), tabFunc, ext, areal_unit, "SUA_NAME11")
+              tabs <- do.call("rbind", tabs )
               
-              ## Mutatate the table
-              PERECENT.AREA <- AREA.COUNT %>%
+              ## Get the count here so we don't need to run zonal stats as well
+              # tabs.count      = tabs
+              # tabs.count$Freq = ifelse(tabs.count$Var1 == 0, 0, tabs.count$Freq) 
+              # sp.count <- aggregate(tabs.count$Freq, by = list(Category = tabs$name), FUN = sum)
+              # names(sp.count) = c('SUA_NAME11', 'COUNT')
+              # head(sp.count)
+              
+              ## Now mutate the table
+              PERECENT.AREA <- tabs %>%
                 
                 group_by(name) %>%                                          ## group by region
                 mutate(totcells = sum(Freq),                                ## how many cells overall
@@ -505,26 +511,23 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
               ## Rename and create a column for whether or not the species occupies that area 
               names(Percent_area) =  c('SUA_NAME11', 'Absent', 'Present') 
               Percent_area$species_present = ifelse(Percent_area$Present >= area_occ, 1, 0)
-
+              head(PERECENT.AREA)
 
               ## Create a table with the columns: REGION, AREA SPECIES, STATS (for each time slice)
               ## Change this so that we can summarise across all species as suggested by Linda 
-              GCM.AREA.SUMMARY <- data.frame(SUA       = areal_unit$SUA_NAME11, 
-                                             AREA_SQKM = areal_unit$AREA_SQKM,
-                                             SPECIES   = species,
-                                             COUNT     = z.count,
-                                             PRESENT   = Percent_area$species_present)
-              
+              GCM.AREA.SUMMARY <- data.frame(SUA        = areal_unit$SUA_NAME11, 
+                                             AREA_SQKM  = areal_unit$AREA_SQKM,
+                                             SPECIES    = species,
+                                             #CELL_COUNT = sp.count$COUNT,
+                                             PRESENT    = Percent_area$species_present)
+  
               ## Rename columns using sprintf, so we can include the suitability threshold and the time slice
               names(GCM.AREA.SUMMARY) <-  c('SUA',
                                             'AREA_SQKM',
                                             'SPECIES',
-                                            'COUNT',
-                                            sprintf('PRESENT_GCMs_MT_LOG > %s in 20%s',   thresh, time_slice))#,
-              
-              # sprintf('MEDIAN_GCMs_MT_LOG > %s in 20%s', thresh, time_slice),
-              # sprintf('MAX_GCMs_MT_LOG > %s in 20%s',    thresh, time_slice),
-              # sprintf('MIN_GCMs_MT_LOG > %s in 20%s',    thresh, time_slice))
+                                            #'CELL_COUNT',
+                                            sprintf('PRESENT_4_GCMs > %s in 20%s',   thresh, time_slice))
+              View(GCM.AREA.SUMMARY)
  
               ##
               dim(GCM.AREA.SUMMARY)
@@ -550,6 +553,11 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
                                                       species, species, time_slice, "_10_percentile_omiss_above_", percent), overwrite = TRUE)
               
               #########################################################################################################################
+              ## Write the raster for discrete loss/gain
+              message('Writing ', species, ' 20', time_slice, ' loss/gain max train > ', thresh) 
+              writeRaster(combo_suit4_band, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
+                                                               species, species, time_slice, "_combo_suit4_band_", thresh), overwrite = TRUE)
+              
               ## Write the rasters for binary loss/gain for each species/threshold
               message('Writing ', species, ' 20', time_slice, ' loss/gain max train > ', thresh) 
               writeRaster(binary_future_minus_current, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',

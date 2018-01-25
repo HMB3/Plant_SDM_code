@@ -332,6 +332,8 @@ head(MAXENT.STD.VAR.SUMMARY)[1:8]
 
 ## Decide on the method for combining the GCMs
 
+## Check the spatial referencing is ok 
+
 ## We are missing two scenarios recommended for Australia: CanESM2 & CESM1-CAM5. These two are not on the worldclim list:
 
 ## https://www.climatechangeinaustralia.gov.au/en/support-and-guidance/faqs/eight-climate-models-data/
