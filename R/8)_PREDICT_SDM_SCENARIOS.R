@@ -328,7 +328,9 @@ head(MAXENT.STD.VAR.SUMMARY)[1:8]
 
 
 #########################################################################################################################
-## The no-data areas need to be masked out before running the calculations.
+## The no-data areas need to be masked out as part of the calculations.
+
+## Decide on the method for combining the GCMs
 
 ## We are missing two scenarios recommended for Australia: CanESM2 & CESM1-CAM5. These two are not on the worldclim list:
 

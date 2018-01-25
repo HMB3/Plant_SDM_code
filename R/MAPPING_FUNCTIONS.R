@@ -300,7 +300,7 @@ project.grids.2070 = function(scen_2070, test_spp) {
 
 #########################################################################################################################
 ## Loop over directories, species and one threshold for each, also taking a time_slice argument. Next, make the lists generic too
-combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles, time_slice) {
+combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles, time_slice, area_occ) {
   
   lapply(DIR_list, function(DIR) { 
     
@@ -333,12 +333,13 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
         }
         
         #########################################################################################################################
-        ###################################################################################################################
+        #########################################################################################################################
         ## Then create rasters that meet habitat suitability criteria thresholds, determined by the rmaxent function
         for (thresh in thresholds) {
           
           for (percent in percentiles) { 
             
+            ## Can we set 0 to NA in the rasters before running the calculations?
             ## Check if the combined suitability raster exists
             f_suit <- sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
                               species, species, time_slice, "_combined_suitability_above_", thresh)
@@ -402,9 +403,17 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
               ## Next, calcualte the loss or gain between the two time periods. Create a binary raster for GCM layer
               message('Calculating change for ', species, ' | 20', time_slice, ' combined suitability > ', thresh)
               
+              ## Functions for thresholding rasters
               binary_ras   <- function(x) {ifelse(x >=  1, 1, 0) }
               binary_4_ras <- function(x) {ifelse(x >=  4, 1, 0) }
               band_ras     <- function(x) {ifelse(x >=  4, 4, ifelse(x > 0 & x < 4, 3, x)) }
+              
+              ## Function to tabulate raster values by aerial unit (e.g. SUA) and return a data.frame
+              tabFunc <- function(indx, extracted, region, regname) {
+                dat<-as.data.frame(table(extracted[[indx]]))
+                dat$name<-region[[regname]][[indx]]
+                return(dat)
+              }
               
               combo_suit_band  <- calc(combo_suit_thresh, fun = band_ras)
               combo_suit4_band <- calc(combo_suit_thresh, fun = binary_4_ras)
@@ -459,30 +468,60 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
               
               #########################################################################################################################
               ## Then calculate the loss or gain within a given areal unit. Use the SUA's, but could be anything!
-              ## Run zonal statistics using multiple functions
+              ## How can this be loaded outside the function?
               message('Running zonal stats for ', species, ' | 20', time_slice, ' combined suitability > ', thresh)
               areal_unit = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/IN_SUA_WGS.shp", layer = "IN_SUA_WGS")
               
               ## For each species, create a binary raster with cells > 4 GCMs above the maxent threshold = 1, and cells with < 4 GCMs = 0. 
               ## Decide on a threshold of % area (10?) of the SUA that needs to be occupied, for each species to be considered present. 
-              
-              
-              z.mean <- spatialEco::zonal.stats(x = areal_unit, y = integer_future_minus_current, stat = mean,   trace = TRUE, plot = TRUE) 
+ 
+              ## First, create a simple count of the no. of cells per SUA with where > 4 GCMs met the suitability threshold
+              z.count <- spatialEco::zonal.stats(x = areal_unit, y = combo_suit4_band, stat = sum, trace = TRUE, plot = TRUE) 
               # z.max  <- spatialEco::zonal.stats(x = areal_unit, y = intergter_future_minus_current, stat = max,    trace = TRUE, plot = TRUE)
               # z.min  <- spatialEco::zonal.stats(x = areal_unit, y = intergter_future_minus_current, stat = min,    trace = TRUE, plot = TRUE)
               # z.med  <- spatialEco::zonal.stats(x = areal_unit, y = intergter_future_minus_current, stat = median, trace = TRUE, plot = TRUE)
-
-              ## Create a table with the columns: AREA, SPECIES, STATS (for each time slice)
-              GCM.AREA.SUMMARY <- data.frame(SUA     = areal_unit$SUA_NAME11, 
-                                             SPECIES = species,
-                                             MEAN    = z.mean)#, 
-              # MEDIAN  = z.med, 
-              # MAX     = z.max, 
-              # MIN     = z.min)
               
-              ## Rename columns using sprintf
-              names(GCM.AREA.SUMMARY) <-  c('SUA', 'SPECIES', 
-                                            sprintf('MEAN_GCMs_MT_LOG > %s in 20%s',   thresh, time_slice))#,
+              ## Then, extract the values of the presence raster for each areal unit: generates a list
+              ext  <- extract(combo_suit4_band, areal_unit, method = 'simple')
+              
+              ## Now generate a table of cell counts per area for each species
+              AREA.COUNT <- tabs %>%
+                
+                ## Run through each areal unit and calculate a table of the count of raster cells by land use
+                lapply(seq(ext), tabFunc, ext, areal_unit, "SUA_NAME11") %>% 
+                do.call("rbind", tabs)
+              
+              ## Mutatate the table
+              PERECENT.AREA <- AREA.COUNT %>%
+                
+                group_by(name) %>%                                          ## group by region
+                mutate(totcells = sum(Freq),                                ## how many cells overall
+                       percent.area = round(100 * Freq / totcells, 2)) %>%  ## cells by landuse/total cells
+   
+                dplyr::select(-c(Freq, totcells)) %>%                       ## there is a select func in raster so need to specify
+                spread(key = Var1, value = percent.area, fill = 0)  %>%     ## make wide format
+                as.data.frame()
+              
+              ## Rename and create a column for whether or not the species occupies that area 
+              names(Percent_area) =  c('SUA_NAME11', 'Absent', 'Present') 
+              Percent_area$species_present = ifelse(Percent_area$Present >= area_occ, 1, 0)
+
+
+              ## Create a table with the columns: REGION, AREA SPECIES, STATS (for each time slice)
+              ## Change this so that we can summarise across all species as suggested by Linda 
+              GCM.AREA.SUMMARY <- data.frame(SUA       = areal_unit$SUA_NAME11, 
+                                             AREA_SQKM = areal_unit$AREA_SQKM,
+                                             SPECIES   = species,
+                                             COUNT     = z.count,
+                                             PRESENT   = Percent_area$species_present)
+              
+              ## Rename columns using sprintf, so we can include the suitability threshold and the time slice
+              names(GCM.AREA.SUMMARY) <-  c('SUA',
+                                            'AREA_SQKM',
+                                            'SPECIES',
+                                            'COUNT',
+                                            sprintf('PRESENT_GCMs_MT_LOG > %s in 20%s',   thresh, time_slice))#,
+              
               # sprintf('MEDIAN_GCMs_MT_LOG > %s in 20%s', thresh, time_slice),
               # sprintf('MAX_GCMs_MT_LOG > %s in 20%s',    thresh, time_slice),
               # sprintf('MIN_GCMs_MT_LOG > %s in 20%s',    thresh, time_slice))
