@@ -192,7 +192,7 @@ FIT_MAXENT_SELECTION <- function(occ,
       m <- RMAXENT_SIMPLIFY(
         
         swd_occ, 
-        bg,
+        swd_bg,
         path            = outdir, 
         species_column  = "species",
         #name            = spp,
@@ -233,6 +233,9 @@ RMAXENT_SIMPLIFY = function (occ, bg, path,
                              quiet = TRUE) 
   
 {
+  if(!identical(names(occ), names(bg))) {
+    stop('In RMAXENT_SIMPLIFY, columns of occ do not match columns of bg', call.=FALSE)
+  }
   
   if (missing(path)) {
     
