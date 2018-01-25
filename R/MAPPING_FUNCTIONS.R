@@ -509,8 +509,8 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
                 as.data.frame()
               
               ## Rename and create a column for whether or not the species occupies that area 
-              names(Percent_area) =  c('SUA_NAME11', 'Absent', 'Present') 
-              Percent_area$species_present = ifelse(Percent_area$Present >= area_occ, 1, 0)
+              names(PERECENT.AREA) =  c('SUA_NAME11', 'Absent', 'Present') 
+              PERECENT.AREA$species_present = ifelse(PERECENT.AREA$Present >= area_occ, 1, 0)
               head(PERECENT.AREA)
 
               ## Create a table with the columns: REGION, AREA SPECIES, STATS (for each time slice)
@@ -519,7 +519,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
                                              AREA_SQKM  = areal_unit$AREA_SQKM,
                                              SPECIES    = species,
                                              #CELL_COUNT = sp.count$COUNT,
-                                             PRESENT    = Percent_area$species_present)
+                                             PRESENT    = PERECENT.AREA$species_present)
   
               ## Rename columns using sprintf, so we can include the suitability threshold and the time slice
               names(GCM.AREA.SUMMARY) <-  c('SUA',

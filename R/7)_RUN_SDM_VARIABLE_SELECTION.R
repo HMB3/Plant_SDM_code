@@ -92,70 +92,9 @@ head(spp.all, 10)
 # })
 
 
-########################################################################################################################
-## Now use 'lapply' to run maxent for multiple species
-## spp = spp.all[1]
-spp = spp.all[1]
-debugonce(RMAXENT_SIMPLIFY)
-
-
-## Latest error is:
-# Error in rbind2(..1, r) : 
-#   no method for coercing this S4 class to a vector
-
 
 ########################################################################################################################
-## Here are the objects and args To run code line by line, inside the function
-occurrence         <- subset(SDM.DATA.ALL, searchTaxon == spp)
-occurrence$species <- spp
-
-
-## Now get the background points. These can come from anywhere in the whole dataset,other than the species used.
-background         <- subset(SDM.DATA.ALL, searchTaxon != spp)
-background$species <- spp
-
-
-## Then create a vector of the sdm.predictors used: all bioclim variables
-sdm.predictors     <- sdm.predictors # vector of used sdm.predictors
-min_n               = 20
-
-
-## Args for FIT_MAXENT_SELECTION
-occ                     = occurrence
-bg                      = background
-sdm.predictors          = sdm.predictors
-name                    = spp
-outdir                  = 'output/maxent/STD_VAR_ALL'
-template.raster         = template.raster
-min_n                   = 20   ## This should be higher...
-max_bg_size             = 100000
-background_buffer_width = 200000
-shapefiles              = TRUE
-features                = 'lpq'
-replicates              = 5
-cor_thr                 = 0.7
-pct_thr                 = 5
-k_thr                   = 5
-responsecurves          = TRUE
-
-
-## args for RMAXENT_SIMPLIFY
-# occ             = swd_occ 
-# bg              = swd_bg 
-# path            = outdir 
-# species_column  = "species" 
-# replicates      = replicates
-# response_curves = TRUE 
-# logistic_format = TRUE 
-# cor_thr         = 0.7 
-# pct_thr         = 5 
-# k_thr           = 5 
-# features        ='lpq'  # change these as necessary (or cor_thr = cor_thr, etc from FIT_MAXENT_SIMP)
-# quiet           = FALSE
-# type            = "PI"
-
-
-## 
+## Run for all species
 lapply(spp.all, function(spp)  { # for serial, parLapply(cl, species[1:8], function(spp) { # for parallel 
   
   ## Print the taxa being processed to screen
@@ -185,7 +124,7 @@ lapply(spp.all, function(spp)  { # for serial, parLapply(cl, species[1:8], funct
                          min_n                   = 20,   ## This should be higher...
                          max_bg_size             = 100000,
                          background_buffer_width = 200000,
-                         shapefiles              = TRUE,
+                         shapefiles              = FALSE,
                          features                = 'lpq',
                          replicates              = 5,
                          cor_thr = 0.7, 
@@ -202,9 +141,54 @@ lapply(spp.all, function(spp)  { # for serial, parLapply(cl, species[1:8], funct
 })
 
 
-## Latest error is:
-# Error in rbind2(..1, r) : 
-#   no method for coercing this S4 class to a vector
+
+########################################################################################################################
+## Run for all species
+lapply(all.reverse, function(spp)  { # for serial, parLapply(cl, species[1:8], function(spp) { # for parallel 
+  
+  ## Print the taxa being processed to screen
+  if(spp %in% SDM.DATA.ALL$searchTaxon) {
+    message('Doing ', spp) 
+    
+    ## Subset the records to only the taxa being processed
+    occurrence         <- subset(SDM.DATA.ALL, searchTaxon == spp)
+    occurrence$species <- spp
+    
+    ## Now get the background points. These can come from anywhere in the whole dataset,other than the species used.
+    background         <- subset(SDM.DATA.ALL, searchTaxon != spp)
+    background$species <- spp
+    
+    ## Then create a vector of the sdm.predictors used: all bioclim variables
+    sdm.predictors     <- sdm.predictors # vector of used sdm.predictors
+    min_n               = 20
+    
+    ## Fit the models using FIT_MAXENT. Would be good to make skipping exisitng outputs an argument
+    #browser()
+    FIT_MAXENT_SELECTION(occ                     = occurrence, 
+                         bg                      = background, 
+                         sdm.predictors          = sdm.predictors, 
+                         name                    = spp, 
+                         outdir                  = 'output/maxent/STD_VAR_ALL',    ## Change the outdir on the new run
+                         template.raster,
+                         min_n                   = 20,   ## This should be higher...
+                         max_bg_size             = 100000,
+                         background_buffer_width = 200000,
+                         shapefiles              = FALSE,
+                         features                = 'lpq',
+                         replicates              = 5,
+                         cor_thr = 0.7, 
+                         pct_thr = 5, 
+                         k_thr = 5, 
+                         responsecurves          = TRUE)
+    
+  } else {
+    
+    message(spp, ' skipped - no data.')         ## This condition ignores species which have no data
+    
+  }  
+  
+})
+
   
 
 # stopCluster(cl)

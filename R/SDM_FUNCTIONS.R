@@ -189,13 +189,12 @@ FIT_MAXENT_SELECTION <- function(occ,
       ## Run simplify rmaxent::simplify
       #debugonce(RMAXENT_SIMPLIFY)
       ##debugonce(f)  
-      m <- RMAXENT_SIMPLIFY(
+      m <- rmaxent::simplify(
         
         swd_occ, 
         swd_bg,
         path            = outdir, 
         species_column  = "species",
-        #name            = spp,
         replicates      = replicates,
         response_curves = TRUE, 
         logistic_format = TRUE, 
@@ -221,7 +220,6 @@ FIT_MAXENT_SELECTION <- function(occ,
 ## Not sure why this doesn't work out of the box
 RMAXENT_SIMPLIFY = function (occ, bg, path, 
                              species_column  = "species", 
-                             #name            = spp,
                              response_curves = TRUE, 
                              logistic_format = TRUE, 
                              type = "PI", 
@@ -234,8 +232,10 @@ RMAXENT_SIMPLIFY = function (occ, bg, path,
   
 {
   if(!identical(names(occ), names(bg))) {
+    
     stop('In RMAXENT_SIMPLIFY, columns of occ do not match columns of bg', call.=FALSE)
   }
+  
   
   if (missing(path)) {
     
@@ -248,8 +248,7 @@ RMAXENT_SIMPLIFY = function (occ, bg, path,
   
   features <- unlist(strsplit(gsub("\\s", "", features), ""))
   
-  if (length(setdiff(features, c("l", "p", "q", "h", "t"))) > 
-      1) 
+  if (length(setdiff(features, c("l", "p", "q", "h", "t"))) > 1) 
     
     stop("features must be a vector of one or more of ',\n         'l', 'p', 'q', 'h', and 't'.")
   
@@ -293,17 +292,15 @@ RMAXENT_SIMPLIFY = function (occ, bg, path,
     if (!quiet) 
       message("\n\nDoing ", name)
     
-    ## debug at ./R/SDM_FUNCTIONS.R#297: swd <- rbind(occ_by_species[[name]], bg_by_species[[name]])
+    ## column names of swd_occ and swd_bg need to match exactly
     name_ <- gsub(" ", "_", name)
     swd   <- rbind(occ_by_species[[name]], bg_by_species[[name]]) 
     
-    # Error in rbind2(..1, r) : 
-    #   no method for coercing this S4 class to a vector
-    
     swd   <- swd[, -match(species_column, names(swd))]
     
-    # Error in rbind2(..1, r) : 
-    #   no method for coercing this S4 class to a vector
+    # Error in FUN(X[[i]], ...) : 
+    #   cannot coerce type 'closure' to vector of type 'character'
+    
     if (ncol(swd) < k_thr) 
       stop("Initial number of variables < k_thr", call. = FALSE)
     

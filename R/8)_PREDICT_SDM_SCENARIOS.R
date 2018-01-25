@@ -257,7 +257,8 @@ suitability.2050 = mapply(combine_gcm_threshold,
                           species_list = comb_spp[1], 
                           thresholds   = thresh.max.train[1], 
                           percentiles  = percent.10.omiss[1],
-                          time_slice   = 50)
+                          time_slice   = 50,
+                          area_occ     = 10)
 
 
 ## Combine output and calculate gain and loss for 2070 
