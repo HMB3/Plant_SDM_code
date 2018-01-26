@@ -77,19 +77,19 @@ head(spp.all, 10)
 
 
 ## 100 species takes about 4 hours...
-# cl <- makeCluster(4)
-# clusterExport(cl, c('template.raster', 'SDM.DATA.ALL', 'FIT_MAXENT', 'COR_VARIABLES'))
-# clusterEvalQ(cl, {
-#   
-#   require(ff)
-#   require(rgeos)
-#   require(sp)
-#   require(raster)
-#   require(rJava)
-#   require(dismo)
-#   require(things)
-#   
-# })
+cl <- makeCluster(4)
+clusterExport(cl, c('template.raster', 'SDM.DATA.ALL', 'FIT_MAXENT_SELECTION'))
+clusterEvalQ(cl, {
+
+  require(ff)
+  require(rgeos)
+  require(sp)
+  require(raster)
+  require(rJava)
+  require(dismo)
+  require(things)
+
+})
 
 
 
@@ -129,7 +129,7 @@ lapply(spp.all, function(spp)  { # for serial, parLapply(cl, species[1:8], funct
                          replicates              = 5,
                          cor_thr = 0.7, 
                          pct_thr = 5, 
-                         k_thr = 5, 
+                         k_thr = 3, 
                          responsecurves          = TRUE)
     
   } else {
@@ -140,6 +140,28 @@ lapply(spp.all, function(spp)  { # for serial, parLapply(cl, species[1:8], funct
   
 })
 
+
+stopCluster(cl)
+
+
+
+
+
+########################################################################################################################
+## 100 species takes about 4 hours...
+cl <- makeCluster(4)
+clusterExport(cl, c('template.raster', 'SDM.DATA.ALL', 'FIT_MAXENT_SELECTION'))
+clusterEvalQ(cl, {
+  
+  require(ff)
+  require(rgeos)
+  require(sp)
+  require(raster)
+  require(rJava)
+  require(dismo)
+  require(things)
+  
+})
 
 
 ########################################################################################################################
@@ -178,7 +200,7 @@ lapply(all.reverse, function(spp)  { # for serial, parLapply(cl, species[1:8], f
                          replicates              = 5,
                          cor_thr = 0.7, 
                          pct_thr = 5, 
-                         k_thr = 5, 
+                         k_thr = 3, 
                          responsecurves          = TRUE)
     
   } else {
@@ -190,8 +212,10 @@ lapply(all.reverse, function(spp)  { # for serial, parLapply(cl, species[1:8], f
 })
 
   
+##
+stopCluster(cl)
 
-# stopCluster(cl)
+
 ## Now save .RData file for the next session...
 save.image("STEP_7_SDM_BACKWARDS_SELECTION.RData")
 save.session(file = 'STEP_7.Rda')
