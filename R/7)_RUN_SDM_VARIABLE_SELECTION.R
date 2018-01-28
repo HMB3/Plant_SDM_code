@@ -149,7 +149,7 @@ stopCluster(cl)
 
 ########################################################################################################################
 ## 100 species takes about 4 hours...
-cl <- makeCluster(4)
+cl <- makeCluster(2)
 clusterExport(cl, c('template.raster', 'SDM.DATA.ALL', 'FIT_MAXENT_SELECTION'))
 clusterEvalQ(cl, {
   

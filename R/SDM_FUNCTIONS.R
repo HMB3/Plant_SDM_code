@@ -200,7 +200,7 @@ FIT_MAXENT_SELECTION <- function(occ,
         logistic_format = TRUE, 
         cor_thr         = 0.7, 
         pct_thr         = 5, 
-        k_thr           = 5, 
+        k_thr           = 3, 
         features        ='lpq',  ## change these as necessary (or cor_thr = cor_thr, etc from FIT_MAXENT_SIMP)
         quiet           = FALSE)
       
