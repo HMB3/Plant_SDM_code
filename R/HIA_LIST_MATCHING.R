@@ -308,6 +308,9 @@ test.spp   = sort(unique(c(test.spp, HIA.SAMPLE)))
 str(test.spp)
 test.reverse = sort(test.spp, decreasing = TRUE)
 
+test_spp     = gsub(" ", "_", test.spp)
+test_reverse = sort(test_spp, decreasing = TRUE)
+
 
 ## Which species are only on the test list?
 setdiff(test.spp, spp.all)

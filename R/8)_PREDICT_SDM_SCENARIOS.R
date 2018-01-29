@@ -107,10 +107,6 @@ summary(env.grids.current[[11]])
 #########################################################################################################################
 
 
-## Covert the test species into directory names
-test_spp = gsub(" ", "_", test.spp)
-
-
 #########################################################################################################################
 ## For each species, use a function to create raster files and maps of all six GCMs.
 ## Note that some of the experimental species - e.g. Kennedia_beckxiana - still have to be modelled

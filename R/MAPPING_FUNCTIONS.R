@@ -35,6 +35,7 @@ project.grids.2050 = function(scen_2050, test_spp) {
     ########################################################################################################################
     ## Divide the temperature rasters by 10: 11 million NA values?
     ## s[[1:11]] <- s[[1:11]]/10 ## that code doesn't work, this is a work-around...
+    message('Doing raster calculation 2050')
     s[[1]]  = s[[1]]/10
     s[[2]]  = s[[2]]/10
     s[[3]]  = s[[3]]/10
@@ -57,26 +58,26 @@ project.grids.2050 = function(scen_2050, test_spp) {
         message('Doing ', species) 
         
         ## Read in the SDM model calibrated on current conditions
-        m <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/maxent_fitted.rds', species)) 
+        #m <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/maxent_fitted.rds', species))
+        m <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/full/model.rds', species)) 
         
         ## Read in the occurrence points used to create the SDM
+        ## And if the current raster doesn't exist, create it
         occ <- readRDS(
           sprintf('./output/maxent/STD_VAR_ALL/%s/occ.rds', 
                   species)) %>%
-          
-        ########################################################################################################################
-        ## If the current raster doesn't exist, create it
+        
         spTransform(CRS('+init=epsg:4326'))
         f_current <- sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_current.tif', 
                              species, species)
         
         if(!file.exists(f_current)) {
           
-          ## Report which prediction is in progress
+          ## Report which prediction is in progress m$me_full
           message('Running current prediction for ', species) 
           
           pred.current <- rmaxent::project(
-            m$me_full, env.grids.current[[colnames(m$me_full@presence)]])$prediction_logistic
+            m, env.grids.current[[colnames(m$me_full@presence)]])$prediction_logistic
           writeRaster(pred.current, f_current, overwrite = TRUE)
           
         } else {
@@ -150,7 +151,7 @@ project.grids.2050 = function(scen_2050, test_spp) {
 
 #########################################################################################################################
 ## 2070
-project.grids.2070 = function(scen_2070, test_spp) {
+project.grids.2070 = function(scen_2070, test_spp, time_slice) {
   
   ##  First, run a loop over each scenario: options(error = recover)    
   lapply(scen_2070, function(x) {
@@ -179,6 +180,7 @@ project.grids.2070 = function(scen_2070, test_spp) {
     ########################################################################################################################
     ## Divide the temperature rasters by 10: 11 million NA values?
     ## s[[1:11]] <- s[[1:11]]/10 ## that code doesn't work, this is a work-around...
+    message('Doing raster calculation 2070')
     s[[1]]  = s[[1]]/10
     s[[2]]  = s[[2]]/10
     s[[3]]  = s[[3]]/10
@@ -201,7 +203,8 @@ project.grids.2070 = function(scen_2070, test_spp) {
         message('Doing ', species) 
         
         ## Read in the SDM model calibrated on current conditions
-        m <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/maxent_fitted.rds', species)) 
+        #m <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/maxent_fitted.rds', species))
+        m <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/full/model.rds', species)) 
         
         ## Read in the occurrence points used to create the SDM
         occ <- readRDS(
