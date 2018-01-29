@@ -73,11 +73,11 @@ project.grids.2050 = function(scen_2050, test_spp) {
         
         if(!file.exists(f_current)) {
           
-          ## Report which prediction is in progress m$me_full
+          ## Report which prediction is in progress m$me_full, m$me_full@presence
           message('Running current prediction for ', species) 
           
           pred.current <- rmaxent::project(
-            m, env.grids.current[[colnames(m$me_full@presence)]])$prediction_logistic
+            m, env.grids.current[[colnames(m@presence)]])$prediction_logistic
           writeRaster(pred.current, f_current, overwrite = TRUE)
           
         } else {
@@ -97,7 +97,7 @@ project.grids.2050 = function(scen_2050, test_spp) {
           message('Running future prediction for ', species, ' ', x) 
           
           pred.future <- rmaxent::project(
-            m$me_full, s[[colnames(m$me_full@presence)]])$prediction_logistic
+            m, s[[colnames(m@presence)]])$prediction_logistic
           writeRaster(pred.future, f_future, overwrite = TRUE)
           
           ## Now create the empty panel just before plotting
@@ -223,7 +223,7 @@ project.grids.2070 = function(scen_2070, test_spp, time_slice) {
           message('Running current prediction for ', species) 
           
           pred.current <- rmaxent::project(
-            m$me_full, env.grids.current[[colnames(m$me_full@presence)]])$prediction_logistic
+            m, env.grids.current[[colnames(m@presence)]])$prediction_logistic
           writeRaster(pred.current, f_current, overwrite = TRUE)
           
         } else {
@@ -244,7 +244,7 @@ project.grids.2070 = function(scen_2070, test_spp, time_slice) {
           message('Running future prediction for ', species, ' ', x) 
           
           pred.future <- rmaxent::project(
-            m$me_full, s[[colnames(m$me_full@presence)]])$prediction_logistic
+            m, s[[colnames(m@presence)]])$prediction_logistic
           writeRaster(pred.future, f_future, overwrite = TRUE)
           
           ## Now create the empty panel just before plotting
