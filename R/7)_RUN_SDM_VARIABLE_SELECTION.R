@@ -95,7 +95,7 @@ clusterEvalQ(cl, {
 
 ########################################################################################################################
 ## Run for all species
-lapply(test.spp, function(spp)  { # for serial, parLapply(cl, species[1:8], function(spp) { # for parallel 
+lapply(spp.all, function(spp)  { # for serial, parLapply(cl, species[1:8], function(spp) { # for parallel 
   
   ## Print the taxa being processed to screen
   if(spp %in% SDM.DATA.ALL$searchTaxon) {
@@ -166,7 +166,7 @@ clusterEvalQ(cl, {
 
 ########################################################################################################################
 ## Run for all species
-lapply(test.reverse, function(spp)  { # for serial, parLapply(cl, species[1:8], function(spp) { # for parallel 
+lapply(all.reverse, function(spp)  { # for serial, parLapply(cl, species[1:8], function(spp) { # for parallel 
   
   ## Print the taxa being processed to screen
   if(spp %in% SDM.DATA.ALL$searchTaxon) {

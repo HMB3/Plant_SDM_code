@@ -15,6 +15,10 @@ project.grids.2050 = function(scen_2050, test_spp) {
   ##  First, run a loop over each scenario: options(error = recover)    
   lapply(scen_2050, function(x) {
     
+    ## Check model exists
+    # if(file.exists(readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/full/model.rds', species)))) {
+    #   message('Doing ', species) 
+    
     ## Assign the scenario name (to use later in the plot)
     scen_name = gcms.50$GCM[gcms.50$id == x]                       
     
