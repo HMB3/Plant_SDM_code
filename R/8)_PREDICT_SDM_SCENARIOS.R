@@ -145,6 +145,12 @@ table.list = list.files("./output/maxent/STD_VAR_ALL/")
 path       = "./output/maxent/STD_VAR_ALL/"
 
 
+## In linux, check if the folders are empty, then delete if empty:
+# cd F:/green_cities_sdm/output/maxent/STD_VAR_ALL
+# find . -type d -empty -print
+# find . -type d -empty -delete
+
+
 ## Could turn this into a function, and loop over a list of subfolders...
 MAXENT.STD.VAR.SUMMARY <- table.list[c(1:length(table.list))] %>%
   
@@ -167,15 +173,16 @@ MAXENT.STD.VAR.SUMMARY <- table.list[c(1:length(table.list))] %>%
     d$Model_run  = gsub("/", "", d$Model_run)
     d$Species    = NULL
     d
+    
   }) %>%
   
-  ## finally, bind all the rows together
+  ## Finally, bind all the rows together
   bind_rows
 
 
 ## This is a summary of maxent output for current conditions
 dim(MAXENT.STD.VAR.SUMMARY)
-head(MAXENT.STD.VAR.SUMMARY)[1:8]
+head(MAXENT.STD.VAR.SUMMARY, 20)[1:8]
 
 
 ## Now check the match between the species list, and the results list. These need to match, so we can access
@@ -184,11 +191,6 @@ length(intersect(test_spp, MAXENT.STD.VAR.SUMMARY$GBIF_Taxon)) ## accesssing the
 MAXENT.SUM.TEST  =  MAXENT.STD.VAR.SUMMARY[MAXENT.STD.VAR.SUMMARY$GBIF_Taxon %in% test_spp, ] 
 head(MAXENT.SUM.TEST, 10)["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"];head(MAXENT.SUM.TEST, 10)[1]
 comb_spp = unique(MAXENT.SUM.TEST$GBIF_Taxon)
-
-
-#########################################################################################################################
-## Save results::
-write.csv(MAXENT.STD.VAR.SUMMARY, "./output/maxent/MAXENT_STD_VAR_SUMMARY.csv", row.names = FALSE)
 
 
 
@@ -248,6 +250,7 @@ percent    = percent.10.omiss[1]
 time_slice = 50
 
 
+## Combine output and calculate gain and loss for 2070 
 suitability.2050 = mapply(combine_gcm_threshold, 
                           DIR_list     = SDM.RESULTS.DIR[1], 
                           species_list = comb_spp[1], 
@@ -282,9 +285,9 @@ suitability.2070 = mapply(combine_gcm_threshold,
 ## 5). COMBINE MAXENT TABLES FOR ALL SPECIES ACROSS MULTIPLE GCMs
 #########################################################################################################################
 
-
+## TBC.......................................................................
 ## Could turn this into a function, and loop over a list of subfolders...
-MAXENT.STD.VAR.SUMMARY <- table.list[c(1:length(table.list))] %>%
+MAXENT.STD.VAR.SUA <- table.list[c(1:length(table.list))] %>%
   
   ## pipe the list into lapply
   lapply(function(x) {
@@ -305,6 +308,7 @@ MAXENT.STD.VAR.SUMMARY <- table.list[c(1:length(table.list))] %>%
     d$Model_run  = gsub("/", "", d$Model_run)
     d$Species    = NULL
     d
+    
   }) %>%
   
   ## finally, bind all the rows together
@@ -312,9 +316,16 @@ MAXENT.STD.VAR.SUMMARY <- table.list[c(1:length(table.list))] %>%
 
 
 ## This is a summary of maxent output for current conditions
-dim(MAXENT.STD.VAR.SUMMARY)
-head(MAXENT.STD.VAR.SUMMARY)[1:8]
+dim(MAXENT.STD.VAR.SUA )
+head(MAXENT.STD.VAR.SUA, 20)[1:8]
 
+
+
+
+#########################################################################################################################
+## Save basic results::
+write.csv(MAXENT.STD.VAR.SUMMARY, "./output/maxent/MAXENT_STD_VAR_SUMMARY.csv", row.names = FALSE)
+write.csv(MAXENT.STD.VAR.SUA, "./output/maxent/MAXENT_STD_VAR_SUMMARY.csv", row.names = FALSE)
 
 
 
