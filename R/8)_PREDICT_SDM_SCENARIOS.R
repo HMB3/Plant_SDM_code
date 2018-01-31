@@ -225,7 +225,10 @@ length(percent.10.omiss);length(thresh.max.train)
 #########################################################################################################################
 ## So we can use the values in these columns to threhsold the rasters of habitat suitability (0-1) when combining them.
 ## For each species, we will create a binary raster with cell values between 0-6. These cell values represent the number of GCMs 
-## where that cell had a suitability value above the threshold determined by maxent (e.g. the max training sensitivity + specif).  
+## where that cell had a suitability value above the threshold determined by maxent (e.g. the max training sensitivity + specif).
+## Now save .RData file for the next session...
+save.image("STEP_8_PREDICT_SDM.RData")
+save.session(file = 'STEP_8.Rda')  
 
 
 ## These thresholded predictions of habitat suitability could be used to determine the loss or gain of species within areal units

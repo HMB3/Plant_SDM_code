@@ -427,88 +427,31 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
                                                       suit_ras4_percent, suit_ras5_percent, suit_ras6_percent))
               
               #########################################################################################################################
-              #########################################################################################################################
-              ## Next, calcualte the loss or gain between the two time periods. Create a binary raster for GCM layer
+              ## For each species, create a binary raster with cells > 4 GCMs above the maxent threshold = 1, and cells with < 4 GCMs = 0. 
               message('Calculating change for ', species, ' | 20', time_slice, ' combined suitability > ', thresh)
               
               ## Functions for thresholding rasters
-              #binary_ras   <- function(x) {ifelse(x >=  1, 1, 0) }
-              #binary_4_ras <- function(x) {ifelse(x >=  4, 1, 0) }
-              band_ras     <- function(x) {ifelse(x >=  4, 4, ifelse(x > 0 & x < 4, 3, x)) }
+              band_4       <- function(x) {ifelse(x >=  4, 1, 0) }
+              #band_ras     <- function(x) {ifelse(x >=  4, 4, ifelse(x > 0 & x < 4, 3, x)) }
               
-              ## Function to tabulate raster values by aerial unit (e.g. SUA) and return a data.frame
-              tabFunc <- function(indx, extracted, region, regname) {
-                dat<-as.data.frame(table(extracted[[indx]]))
-                dat$name<-region[[regname]][[indx]]
-                return(dat)
-              }
-              
-              combo_suit_band  <- calc(combo_suit_thresh, fun = band_ras)
+              combo_suit_4GCM  <- calc(combo_suit_thresh, fun = band_4)
 
-             
-              ## Then subtract the binary current layer from the binary future layer. So need to mask the no-data from this overlay calc.  
-              # binary_future_minus_current     = overlay(combo_suit_binary,
-              #                                           current_suit_thresh,
-              #                                           fun = function(r1, r2) {return (r1 - r2)})
-              
+
               #########################################################################################################################
-              ## Subtract the binary current layer from the discrete future layer 
-              discrete_future_minus_current = overlay(combo_suit_band,
-                                                      current_suit_thresh,
-                                                      fun = function(r1, r2) {return (r1 - r2)})                                           
-              
-              #########################################################################################################################
-              ## Subtract the binary current layer from the integer future layer 
-              integer_future_minus_current  = overlay(combo_suit_thresh,
-                                                      current_suit_thresh,
-                                                      fun = function(r1, r2) {return (r1 - r2)})
-              
-              ## Plot the difference between future and current layers...
-              plot(current_suit_thresh, main = gsub('_', ' ', (sprintf('%s current Max_train_sensit > %s', species, thresh))))
-              plot(combo_suit_thresh,   main = gsub('_', ' ', (sprintf('%s future Max_train_sensit > %s',  species, thresh))))
-              
-              ## Plot the integer difference
-              plot(integer_future_minus_current,
-                   main = gsub('_', ' ', (sprintf('%s future - current  Max_train_sensit > %s', species, thresh))))
-              
-              ## Plot the band difference
-              plot(discrete_future_minus_current,
-                   main = gsub('_', ' ', (sprintf('%s future - discrete  Max_train_sensit > %s', species, thresh))))
-              
-              #########################################################################################################################
-              ## Now, mask out the zero values?
-              # plus    = overlay(combo_suit_thresh,
-              #                   current_suit_thresh,
-              #                   fun = function(r1, r2) {return (r1 + r2)})
-              # 
-              # mask <- calc(plus, fun = rc)
-              # mask[mask < 0] <- NA
-              # 
-              # pol <- rasterToPolygons(mask, fun = function(x){x>0})
-              # 
-              # 
-              # 
-              # test   =  polygonizer(plus, outshape = NULL, pypath = "F:/green_cities_sdm/R")
-              # crs(b) <- crs(r)
-              # crop   <- crop(r, b)
-              
-              
-              #########################################################################################################################
-              ## Then calculate the loss or gain within a given areal unit. Use the SUA's, but could be anything!
-              ## How can this be loaded outside the function?
+              ## Then using this GCM consensus, calculate whether the species is likely to be present in each SUA
+              ## Decide on a threshold of % area (10?) of the SUA that needs to be occupied, for each species to be considered present. 
               message('Running zonal stats for ', species, ' | 20', time_slice, ' combined suitability > ', thresh)
+              
+              
+              ## First read in the shapefile - can we do this outside the function?
+              ## Also sort the attribute table so that it matches the list 
               areal_unit = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/IN_SUA_WGS.shp", layer = "IN_SUA_WGS")
               areal_unit = areal_unit[order(areal_unit$SUA_NAME11),] 
               
-              ## For each species, create a binary raster with cells > 4 GCMs above the maxent threshold = 1, and cells with < 4 GCMs = 0. 
-              ## Decide on a threshold of % area (10?) of the SUA that needs to be occupied, for each species to be considered present. 
- 
-              ## First, create a simple count of the no. of cells per SUA with where > 4 GCMs met the suitability threshold
-              ## Need to fix this so that it has the same order as 
-              #sp.count <- spatialEco::zonal.stats(x = areal_unit, y = combo_suit4_band, stat = sum, trace = TRUE, plot = TRUE) 
-              # z.max  <- spatialEco::zonal.stats(x = areal_unit, y = intergter_future_minus_current, stat = max,    trace = TRUE, plot = TRUE)
-              # z.min  <- spatialEco::zonal.stats(x = areal_unit, y = intergter_future_minus_current, stat = min,    trace = TRUE, plot = TRUE)
-              # z.med  <- spatialEco::zonal.stats(x = areal_unit, y = intergter_future_minus_current, stat = median, trace = TRUE, plot = TRUE)
+              ## Also create a simple count of the no. of cells per SUA with where > 4 GCMs met the suitability threshold
+              ## Need to fix this so that it has the same order as the shapefile
+              #sp.count <- spatialEco::zonal.stats(x = areal_unit, y = combo_suit_4GCM, stat = sum, trace = TRUE, plot = TRUE) 
+              # z.med   <- spatialEco::zonal.stats(x = areal_unit, y = combo_suit_4GCM, stat = median, trace = TRUE, plot = TRUE)
               
               ## Then, extract the values of the presence raster for each areal unit: generates a list: 32 seconds
               ext  <- extract(combo_suit4_band, areal_unit, method = 'simple')
