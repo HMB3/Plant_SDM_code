@@ -9,7 +9,6 @@
 
 ## flag isses with.......................................................................................................
 
-
 #########################################################################################################################
 ## 2050
 project.grids.2050 = function(scen_2050, test_spp) {
@@ -37,6 +36,14 @@ project.grids.2050 = function(scen_2050, test_spp) {
     ########################################################################################################################
     ## Divide the temperature rasters by 10: 11 million NA values?
     ## s[[1:11]] <- s[[1:11]]/10 ## that code doesn't work, this is a work-around...
+    
+    # for(i in 1:11) {
+    #   
+    #   message(i)
+    #   s[[i]] <- s[[ i]]/10
+    #   
+    # }
+    
     message('Doing raster calculation 2050')
     s[[1]]  = s[[1]]/10
     s[[2]]  = s[[2]]/10
@@ -194,6 +201,14 @@ project.grids.2070 = function(scen_2070, test_spp, time_slice) {
     ## Divide the temperature rasters by 10: 11 million NA values?
     ## s[[1:11]] <- s[[1:11]]/10 ## that code doesn't work, this is a work-around...
     message('Doing raster calculation 2070')
+    
+    # for(i in 1:11) {
+    #   
+    #   message(i)
+    #   s[[i]] <- s[[ i]]/10
+    #   
+    # }
+    
     s[[1]]  = s[[1]]/10
     s[[2]]  = s[[2]]/10
     s[[3]]  = s[[3]]/10
@@ -437,10 +452,26 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             band_4           <- function(x) {ifelse(x >=  4, 1, 0) }
             combo_suit_4GCM  <- calc(combo_suit_thresh, fun = band_4)
             
+            ## Plot to check
+            plot(current_suit_thresh, main = gsub('_', ' ', (sprintf('%s current max_train_sensit > %s', species, thresh))))
+            plot(combo_suit_percent,  main = gsub('_', ' ', (sprintf('%s future 10th percentile > %s',   species, percent))))
+            plot(combo_suit_thresh,   main = gsub('_', ' ', (sprintf('%s future max_train_sensit > %s',  species, thresh))))
+            plot(combo_suit_4GCM,     main = gsub('_', ' ', (sprintf('%s 4+ GCMs > %s',  species, thresh))))
+            
+            
+            #########################################################################################################################
+            ## For each species, calculate the projected rainfall and temperature increase and decreas for each GCM? 
+            
+            
+            
             #########################################################################################################################
             ## Then using this GCM consensus, calculate whether the species is likely to be present in each SUA.
             ## Decide on a threshold of % area (10?) of the SUA that needs to be occupied, for each species to be considered present. 
             message('Running zonal stats for ', species, ' | 20', time_slice, ' combined suitability > ', thresh)
+            
+            
+            ## Check the order of lists match, species, SUAs, areas need to match up ................................................
+            
             
             ## First read in the shapefile - can we do this outside the function?
             ## Also sort the attribute table so that it matches the list 
@@ -499,15 +530,17 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
                                            AREA_SQKM  = areal_unit$AREA_SQKM,
                                            SPECIES    = species,
                                            #CELL_COUNT = sp.count$COUNT,
-                                           PRESENT    = PERECENT.AREA$species_present)
+                                           PERCENT_AREA = PERECENT.AREA$Present,
+                                           PRESENT      = PERECENT.AREA$species_present)
             
             ## Rename columns using sprintf, so we can include the suitability threshold and the time slice
             names(GCM.AREA.SUMMARY) <-  c('SUA',
                                           'AREA_SQKM',
                                           'SPECIES',
                                           #'CELL_COUNT',
-                                          sprintf('PRESENT_4_GCMs > %s in 20%s',   thresh, time_slice))
-            ## View(GCM.AREA.SUMMARY)
+                                          sprintf("Percent area where 4GCMs > %s in 20%s",   thresh, time_slice),
+                                          sprintf('Species present 4GCMs > %s in 20%s',   thresh, time_slice))
+            View(GCM.AREA.SUMMARY)
             
             ##
             dim(GCM.AREA.SUMMARY)

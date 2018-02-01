@@ -99,6 +99,15 @@ summary(env.grids.current[[5]])
 summary(env.grids.current[[11]])
 
 
+#########################################################################################################################
+## Calculate the anomaly
+x = scen_2050[1]
+s <- stack(
+  sprintf('./data/base/worldclim/aus/0.5/bio/2050/%s/%s%s.tif',
+          x, x, 1:19))
+
+plot(s[[1]])
+
 
 
 
@@ -152,7 +161,7 @@ path       = "./output/maxent/STD_VAR_ALL/"
 
 
 ## Could turn this into a function, and loop over a list of subfolders...
-MAXENT.STD.VAR.SUMMARY <- table.list[c(1:length(table.list))] %>%
+MAXENT.STD.VAR.SUMMARY <- table.list[c(1:length(table.list))] %>%           ## Change to 1:20 if SDMs not complete 
   
   ## pipe the list into lapply
   lapply(function(x) {
@@ -169,7 +178,7 @@ MAXENT.STD.VAR.SUMMARY <- table.list[c(1:length(table.list))] %>%
     
     ## Remove path gunk, and species
     #d$GBIF_Taxon = gsub("_", " ", d$GBIF_Taxon)
-    d$Model_run  = gsub("./output/maxent/", "", d$Model_run)
+    d$Model_run  = gsub("./output/maxent/", "", d$Model_run)  ## Model_run needed, test effect of different settings
     d$Model_run  = gsub("/", "", d$Model_run)
     d$Species    = NULL
     d
@@ -191,6 +200,13 @@ length(intersect(test_spp, MAXENT.STD.VAR.SUMMARY$GBIF_Taxon)) ## accesssing the
 MAXENT.SUM.TEST  =  MAXENT.STD.VAR.SUMMARY[MAXENT.STD.VAR.SUMMARY$GBIF_Taxon %in% test_spp, ] 
 head(MAXENT.SUM.TEST, 10)["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"];head(MAXENT.SUM.TEST, 10)[1]
 comb_spp = unique(MAXENT.SUM.TEST$GBIF_Taxon)
+
+
+## Check the order of lists match, species, SUAs, areas need to match up ................................................
+## It would be safer to read in the thresholds individually, so they match the species folder exactly?
+head(MAXENT.SUM.TEST)[, c("GBIF_Taxon",
+                          "Maximum.training.sensitivity.plus.specificity.Logistic.threshold", 
+                          "X10.percentile.training.presence.training.omission")]
 
 
 
@@ -219,7 +235,11 @@ thresh.max.train  = thresh.max.train$Maximum.training.sensitivity.plus.specifici
 
 percent.10.omiss  = as.list(MAXENT.SUM.TEST["X10.percentile.training.presence.training.omission"])
 percent.10.omiss  = percent.10.omiss$X10.percentile.training.presence.training.omission
-length(percent.10.omiss);length(thresh.max.train) 
+length(percent.10.omiss);length(thresh.max.train)
+
+
+## Check the order of lists match, species, SUAs, areas need to match up ................................................
+## It would be safer to read in the thresholds individually, so they match the species folder exactly?
 
 
 #########################################################################################################################
@@ -251,6 +271,7 @@ species    = comb_spp[1]
 thresh     = thresh.max.train[1] 
 percent    = percent.10.omiss[1]
 time_slice = 50
+area_occ   = 10
 
 
 ## Combine output and calculate gain and loss for 2070 

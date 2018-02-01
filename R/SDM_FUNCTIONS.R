@@ -218,198 +218,198 @@ FIT_MAXENT_SELECTION <- function(occ,
 
 
 ## Not sure why this doesn't work out of the box
-RMAXENT_SIMPLIFY = function (occ, bg, path, 
-                             species_column  = "species", 
-                             response_curves = TRUE, 
-                             logistic_format = TRUE, 
-                             type = "PI", 
-                             cor_thr, 
-                             pct_thr, 
-                             k_thr, 
-                             features = "lpq", 
-                             replicates = 1, 
-                             quiet = TRUE) 
-  
-{
-  if(!identical(names(occ), names(bg))) {
-    
-    stop('In RMAXENT_SIMPLIFY, columns of occ do not match columns of bg', call.=FALSE)
-  }
-  
-  
-  if (missing(path)) {
-    
-    save <- FALSE
-    path <- tempdir()
-    
-  }
-  
-  else save <- TRUE
-  
-  features <- unlist(strsplit(gsub("\\s", "", features), ""))
-  
-  if (length(setdiff(features, c("l", "p", "q", "h", "t"))) > 1) 
-    
-    stop("features must be a vector of one or more of ',\n         'l', 'p', 'q', 'h', and 't'.")
-  
-  off <- setdiff(c("l", "p", "q", "t", "h"), features)
-  
-  if (length(off) > 0) {
-    
-    off <- c(l = "linear=FALSE", p = "product=FALSE", q = "quadratic=FALSE", 
-             t = "threshold=FALSE", h = "hinge=FALSE")[off]
-    
-  }
-  
-  off <- unname(off)
-  occ_by_species <- split(occ, occ[[species_column]])
-  bg_by_species <- split(bg, bg[[species_column]])
-  
-  if (!identical(sort(names(occ_by_species)), sort(names(bg_by_species)))) {
-    
-    stop("The same set of species names must exist in occ and bg")
-  }
-  
-  type <- switch(type, PI = "permutation.importance", PC = "contribution", 
-                 stop("type must be either \"PI\" or \"PC\".", call. = FALSE))
-  
-  args <- off
-  
-  if (replicates > 1) 
-    
-    args <- c(args, paste0("replicates=", replicates))
-  
-  if (isTRUE(response_curves))
-    
-    args <- c(args, "responsecurves=TRUE")
-  
-  if (isTRUE(logistic_format)) 
-    
-    args <- c(args, "outputformat=logistic")
-  
-  f <- function(name) {
-    
-    if (!quiet) 
-      message("\n\nDoing ", name)
-    
-    ## column names of swd_occ and swd_bg need to match exactly
-    name_ <- gsub(" ", "_", name)
-    swd   <- rbind(occ_by_species[[name]], bg_by_species[[name]]) 
-    
-    swd   <- swd[, -match(species_column, names(swd))]
-    
-    # Error in FUN(X[[i]], ...) : 
-    #   cannot coerce type 'closure' to vector of type 'character'
-    
-    if (ncol(swd) < k_thr) 
-      stop("Initial number of variables < k_thr", call. = FALSE)
-    
-    pa <- rep(1:0, c(nrow(occ_by_species[[name]]), nrow(bg_by_species[[name]])))
-    vc <- usdm::vifcor(swd, maxobservations = nrow(swd), 
-                       th = cor_thr)
-    
-    vif <- slot(vc, "results")
-    k <- nrow(vif)
-    
-    exclude <- slot(vc, "excluded")
-    if (!isTRUE(quiet) & length(exclude) > 0) {
-      
-      message("Dropped due to collinearity: ", paste0(exclude, 
-                                                      collapse = ", "))
-    }
-    
-    if (k < k_thr) 
-      stop(sprintf("Number of uncorrelated variables (%s) < k_thr (%s). %s", 
-                   k, k_thr, "Reduce k_thr and/or cor_thr, or find alternative predictors."), 
-           call. = FALSE)
-    
-    swd_uncor <- swd[, vif$Variables]
-    d <- file.path(path, name_, if (replicates > 1) ## Is this ok?
-      "xval"
-      else "full")
-    
-    m <- dismo::maxent(swd_uncor, pa, args = args, path = d) ## takes ages because backwards selection is happening...
-    if (isTRUE(save)) 
-      saveRDS(m, file.path(d, "model.rds"))
-    
-    pct <- m@results[grep(type, rownames(m@results)), , drop = FALSE]
-    pct <- pct[, ncol(pct)]
-    pct <- sort(pct)
-    
-    names(pct) <- sub(paste0("\\.", type), "", names(pct))
-    if (min(pct) >= pct_thr || length(pct) == k_thr) {
-      
-      if (replicates > 1) {
-        d <- file.path(path, name_, "full")
-        m <- dismo::maxent(swd_uncor, pa, args = grep("replicates", 
-                                                      args, value = TRUE, invert = TRUE), path = d)
-        
-      }
-      
-      if (isTRUE(save)) {
-        
-        saveRDS(m, file.path(d, "model.rds"))
-        
-      }
-      
-      return(m)
-    }
-    
-    ## error occurs between here
-    ## Error in FUN(X[[i]], ...) : 
-    ## cannot coerce type 'closure' to vector of type 'character'
-    while (min(pct) < pct_thr && length(pct) > k_thr) {
-      
-      if (sum(pct == pct[1]) > 1) {
-        
-        candidates <- subset(vif, Variables %in% names(pct)[pct == 
-                                                              pct[1]])
-        drop <- as.character(candidates$Variables[which.max(candidates$VIF)])
-        
-      }
-      
-      message("Dropping ", drop)
-      swd_uncor <- swd_uncor[, -match(drop, colnames(swd_uncor))]
-      if (!quiet) 
-        message(sprintf("%s variables: %s", ncol(swd_uncor), 
-                        paste0(colnames(swd_uncor), collapse = ", ")))
-      
-      m <- dismo::maxent(swd_uncor, pa, args = args, path = d)
-      pct <- m@results[grep(type, rownames(m@results)), 
-                       , drop = FALSE]
-      
-      pct <- pct[, ncol(pct)]
-      pct <- sort(pct)
-      names(pct) <- sub(paste0("\\.", type), "", names(pct))
-      
-      ## And here. But only in the loop. Cam be run line by line...
-      
-    }
-    
-    if (replicates > 1) {
-      
-      ## Run maxent for each replicate, doing the backwards selection each time?
-      d <- file.path(path, name_, "full")
-      m <- dismo::maxent(swd_uncor, pa, args = grep("replicates", 
-                                                    args, value = TRUE, invert = TRUE), path = d)
-      
-    }
-    
-    if (isTRUE(save)) {
-      
-      saveRDS(m, file.path(d, "model.rds"))
-      
-    }
-    
-    return(m)
-    
-  }  ## function ends here
-  lapply(names(occ_by_species), f) 
-  ## Iterate over colnames of a df (i.e. environmental variables, names(occ_by_species[[1]]))? 
-  ## lapply(names(occ_by_species), f) 
-  ## lapply(name, f) 
-  
-}
+# RMAXENT_SIMPLIFY = function (occ, bg, path, 
+#                              species_column  = "species", 
+#                              response_curves = TRUE, 
+#                              logistic_format = TRUE, 
+#                              type = "PI", 
+#                              cor_thr, 
+#                              pct_thr, 
+#                              k_thr, 
+#                              features = "lpq", 
+#                              replicates = 1, 
+#                              quiet = TRUE) 
+#   
+# {
+#   if(!identical(names(occ), names(bg))) {
+#     
+#     stop('In RMAXENT_SIMPLIFY, columns of occ do not match columns of bg', call.=FALSE)
+#   }
+#   
+#   
+#   if (missing(path)) {
+#     
+#     save <- FALSE
+#     path <- tempdir()
+#     
+#   }
+#   
+#   else save <- TRUE
+#   
+#   features <- unlist(strsplit(gsub("\\s", "", features), ""))
+#   
+#   if (length(setdiff(features, c("l", "p", "q", "h", "t"))) > 1) 
+#     
+#     stop("features must be a vector of one or more of ',\n         'l', 'p', 'q', 'h', and 't'.")
+#   
+#   off <- setdiff(c("l", "p", "q", "t", "h"), features)
+#   
+#   if (length(off) > 0) {
+#     
+#     off <- c(l = "linear=FALSE", p = "product=FALSE", q = "quadratic=FALSE", 
+#              t = "threshold=FALSE", h = "hinge=FALSE")[off]
+#     
+#   }
+#   
+#   off <- unname(off)
+#   occ_by_species <- split(occ, occ[[species_column]])
+#   bg_by_species <- split(bg, bg[[species_column]])
+#   
+#   if (!identical(sort(names(occ_by_species)), sort(names(bg_by_species)))) {
+#     
+#     stop("The same set of species names must exist in occ and bg")
+#   }
+#   
+#   type <- switch(type, PI = "permutation.importance", PC = "contribution", 
+#                  stop("type must be either \"PI\" or \"PC\".", call. = FALSE))
+#   
+#   args <- off
+#   
+#   if (replicates > 1) 
+#     
+#     args <- c(args, paste0("replicates=", replicates))
+#   
+#   if (isTRUE(response_curves))
+#     
+#     args <- c(args, "responsecurves=TRUE")
+#   
+#   if (isTRUE(logistic_format)) 
+#     
+#     args <- c(args, "outputformat=logistic")
+#   
+#   f <- function(name) {
+#     
+#     if (!quiet) 
+#       message("\n\nDoing ", name)
+#     
+#     ## column names of swd_occ and swd_bg need to match exactly
+#     name_ <- gsub(" ", "_", name)
+#     swd   <- rbind(occ_by_species[[name]], bg_by_species[[name]]) 
+#     
+#     swd   <- swd[, -match(species_column, names(swd))]
+#     
+#     # Error in FUN(X[[i]], ...) : 
+#     #   cannot coerce type 'closure' to vector of type 'character'
+#     
+#     if (ncol(swd) < k_thr) 
+#       stop("Initial number of variables < k_thr", call. = FALSE)
+#     
+#     pa <- rep(1:0, c(nrow(occ_by_species[[name]]), nrow(bg_by_species[[name]])))
+#     vc <- usdm::vifcor(swd, maxobservations = nrow(swd), 
+#                        th = cor_thr)
+#     
+#     vif <- slot(vc, "results")
+#     k <- nrow(vif)
+#     
+#     exclude <- slot(vc, "excluded")
+#     if (!isTRUE(quiet) & length(exclude) > 0) {
+#       
+#       message("Dropped due to collinearity: ", paste0(exclude, 
+#                                                       collapse = ", "))
+#     }
+#     
+#     if (k < k_thr) 
+#       stop(sprintf("Number of uncorrelated variables (%s) < k_thr (%s). %s", 
+#                    k, k_thr, "Reduce k_thr and/or cor_thr, or find alternative predictors."), 
+#            call. = FALSE)
+#     
+#     swd_uncor <- swd[, vif$Variables]
+#     d <- file.path(path, name_, if (replicates > 1) ## Is this ok?
+#       "xval"
+#       else "full")
+#     
+#     m <- dismo::maxent(swd_uncor, pa, args = args, path = d) ## takes ages because backwards selection is happening...
+#     if (isTRUE(save)) 
+#       saveRDS(m, file.path(d, "model.rds"))
+#     
+#     pct <- m@results[grep(type, rownames(m@results)), , drop = FALSE]
+#     pct <- pct[, ncol(pct)]
+#     pct <- sort(pct)
+#     
+#     names(pct) <- sub(paste0("\\.", type), "", names(pct))
+#     if (min(pct) >= pct_thr || length(pct) == k_thr) {
+#       
+#       if (replicates > 1) {
+#         d <- file.path(path, name_, "full")
+#         m <- dismo::maxent(swd_uncor, pa, args = grep("replicates", 
+#                                                       args, value = TRUE, invert = TRUE), path = d)
+#         
+#       }
+#       
+#       if (isTRUE(save)) {
+#         
+#         saveRDS(m, file.path(d, "model.rds"))
+#         
+#       }
+#       
+#       return(m)
+#     }
+#     
+#     ## error occurs between here
+#     ## Error in FUN(X[[i]], ...) : 
+#     ## cannot coerce type 'closure' to vector of type 'character'
+#     while (min(pct) < pct_thr && length(pct) > k_thr) {
+#       
+#       if (sum(pct == pct[1]) > 1) {
+#         
+#         candidates <- subset(vif, Variables %in% names(pct)[pct == 
+#                                                               pct[1]])
+#         drop <- as.character(candidates$Variables[which.max(candidates$VIF)])
+#         
+#       }
+#       
+#       message("Dropping ", drop)
+#       swd_uncor <- swd_uncor[, -match(drop, colnames(swd_uncor))]
+#       if (!quiet) 
+#         message(sprintf("%s variables: %s", ncol(swd_uncor), 
+#                         paste0(colnames(swd_uncor), collapse = ", ")))
+#       
+#       m <- dismo::maxent(swd_uncor, pa, args = args, path = d)
+#       pct <- m@results[grep(type, rownames(m@results)), 
+#                        , drop = FALSE]
+#       
+#       pct <- pct[, ncol(pct)]
+#       pct <- sort(pct)
+#       names(pct) <- sub(paste0("\\.", type), "", names(pct))
+#       
+#       ## And here. But only in the loop. Cam be run line by line...
+#       
+#     }
+#     
+#     if (replicates > 1) {
+#       
+#       ## Run maxent for each replicate, doing the backwards selection each time?
+#       d <- file.path(path, name_, "full")
+#       m <- dismo::maxent(swd_uncor, pa, args = grep("replicates", 
+#                                                     args, value = TRUE, invert = TRUE), path = d)
+#       
+#     }
+#     
+#     if (isTRUE(save)) {
+#       
+#       saveRDS(m, file.path(d, "model.rds"))
+#       
+#     }
+#     
+#     return(m)
+#     
+#   }  ## function ends here
+#   lapply(names(occ_by_species), f) 
+#   ## Iterate over colnames of a df (i.e. environmental variables, names(occ_by_species[[1]]))? 
+#   ## lapply(names(occ_by_species), f) 
+#   ## lapply(name, f) 
+#   
+# }
 
 
 
