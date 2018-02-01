@@ -28,7 +28,7 @@ p <- c('ff',    'things',         'raster',    'dismo',        'sp',           '
 
 ## Require packages
 sapply(p, require, character.only = TRUE)
-load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")
+load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1601_2018.RData")
 source('./R/GREEN_CITIES_FUNCTIONS.R')
 source('./R/SDM_FUNCTIONS.R')
 
@@ -108,7 +108,7 @@ sdm.predictors.all <- c("Annual_mean_temp",    "Mean_diurnal_range",  "Isotherma
 
 #########################################################################################################################
 ## Read in Raster data
-load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData")
+load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_1601_2018.RData")
 dim(COMBO.RASTER.CONTEXT)    ## 19 million rows, the latest dataset 
 names(COMBO.RASTER.CONTEXT)
 
@@ -242,6 +242,14 @@ str(SDM.DATA.ALL)
 ## Now save/load .RData file for the next session
 #save.image("STEP_6_SDM_ALL_DATA.RData")
 #load("STEP_6_SDM.RData")
+
+
+## Check taxa again
+'Swainsona formosa'  %in% SDM.DATA.ALL$searchTaxon
+'Templetonia retusa' %in% SDM.DATA.ALL$searchTaxon 
+'Dodonaea baueri'    %in% SDM.DATA.ALL$searchTaxon 
+'Platanus hispanica' %in% SDM.DATA.ALL$searchTaxon 
+'Kennedia beckxiana' %in% SDM.DATA.ALL$searchTaxon  
 
 
 ## Save big tables to keep memory spare

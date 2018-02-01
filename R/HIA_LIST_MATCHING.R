@@ -112,9 +112,11 @@ source('./R/MAPPING_FUNCTIONS.R')
 ## This list derives from all species and varieties sold anywhere in Australia in the last 5 years. Anthony Manea cleaned 
 ## Up the data and cross-linked to growth form and exotic/native status and derived a list of ~1000 species that are the 
 ## Most commonly sold, covering the right ratio of growth forms, regional representation and native/exotic
+load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1601_2018.RData")
 HIA.list   = read.csv("./data/base/HIA_LIST/HIA/GREEN_CITIES_DRAFT_LIST_2709_2017.csv", stringsAsFactors = FALSE)
 CLEAN.list = read.csv("./data/base/HIA_LIST/HIA/HIA.CLEAN.csv",                         stringsAsFactors = FALSE)
-GROWING    = read.csv("./data/base/HIA_LIST/HIA/database_aus_sp_growing.csv",           stringsAsFactors = FALSE) 
+GROWING    = read.csv("./data/base/HIA_LIST/HIA/database_aus_sp_growing.csv",           stringsAsFactors = FALSE)
+MISSING    = read.csv("./data/base/HIA_LIST/HIA/MISSING_SPECIES.csv",                   stringsAsFactors = FALSE)
 
 
 top.200              = read.csv("./data/base/HIA_LIST/HIA/HIA_TOP_200_1309_2017.csv",       stringsAsFactors = FALSE)
@@ -308,6 +310,11 @@ test.spp   = sort(unique(c(test.spp, HIA.SAMPLE)))
 str(test.spp)
 test.reverse = sort(test.spp, decreasing = TRUE)
 
+
+## Create lists for the mapping code
+all_spp     = gsub(" ", "_", spp.all)
+all_reverse = sort(all_spp, decreasing = TRUE)
+
 test_spp     = gsub(" ", "_", test.spp)
 test_reverse = sort(test_spp, decreasing = TRUE)
 
@@ -315,8 +322,7 @@ test_reverse = sort(test_spp, decreasing = TRUE)
 ## Which species are only on the test list?
 setdiff(test.spp, spp.all)
 
-
-
+  
 
 
 #########################################################################################################################

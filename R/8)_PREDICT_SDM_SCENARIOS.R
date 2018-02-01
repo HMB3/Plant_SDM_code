@@ -119,8 +119,8 @@ plot(s[[1]])
 #########################################################################################################################
 ## For each species, use a function to create raster files and maps of all six GCMs.
 ## Note that some of the experimental species - e.g. Kennedia_beckxiana - still have to be modelled
-env.grids.2050 = project.grids.2050(scen_2050, test_spp)
-env.grids.2070 = project.grids.2070(scen_2070, test_spp)
+env.grids.2050 = project.grids.2050(scen_2050, all_spp[1:200])
+env.grids.2070 = project.grids.2070(scen_2070, all_spp[1:200])
 
 
 #########################################################################################################################
