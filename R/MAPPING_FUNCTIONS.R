@@ -348,9 +348,15 @@ project.grids.2070 = function(scen_2070, test_spp, time_slice) {
 ## pervious version in R/old/model_combine.R
 combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles, time_slice, area_occ) {
   
+  ## First read in the shapefile - can we do this outside the function?
+  ## Also sort the attribute table so that it matches the list 
+  areal_unit = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/IN_SUA_WGS.shp", layer = "IN_SUA_WGS")
+  areal_unit = areal_unit[order(areal_unit$SUA_NAME11),] 
+  
+  ## Loop over each directory
   lapply(DIR_list, function(DIR) { 
     
-    ## And each species - although we don't want all possible combinations. How can this loop be improved?
+    ## And each species - although we don't want all possible combinations. use mapply in the function call
     lapply(species_list, function(species) {
       
       # for (slice in time_slice) {
@@ -359,17 +365,17 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
       ## Create a list of the rasters in each directory, then take the mean. Tidy this up with %, etc
       message('Calcualting mean of GCMs for ', species)
       
-      raster.list = list.files(as.character(DIR), pattern = sprintf('bi%s.tif', time_slice), full.names = TRUE)  
-      suit        = stack(raster.list)
-      suit.list   = unstack(suit)
-      mean.suit   = mean(suit)                            ## plot(mean.suit)
-      #median.suit = median(suit)
-      
-      ## Write the mean to file
+      ## Check if the mean GCM raster exists
       f_mean = sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s_suitability_mean.tif', 
                        species, species, time_slice)
       
       if(!file.exists(f_mean)) {
+        
+        raster.list = list.files(as.character(DIR), pattern = sprintf('bi%s.tif', time_slice), full.names = TRUE)  
+        suit        = stack(raster.list)
+        suit.list   = unstack(suit)
+        mean.suit   = mean(suit)                            ## plot(mean.suit)
+        #median.suit = median(suit)
         
         writeRaster(mean.suit, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s_suitability_mean.tif', 
                                        species, species, time_slice), overwrite = TRUE)
@@ -473,11 +479,6 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             message('Running zonal stats for ', species, ' | 20', time_slice, ' combined suitability > ', thresh)
             
             ## Check the order of lists match, species, SUAs, areas need to match up ................................................
-            
-            ## First read in the shapefile - can we do this outside the function?
-            ## Also sort the attribute table so that it matches the list 
-            areal_unit = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/IN_SUA_WGS.shp", layer = "IN_SUA_WGS")
-            areal_unit = areal_unit[order(areal_unit$SUA_NAME11),] 
             
             ## Should we also create a simple count of the no. of cells per SUA with where > 4 GCMs met the suitability threshold?
             ## Need to fix this so that it has the same order as the shapefile

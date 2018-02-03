@@ -264,12 +264,12 @@ save.session(file = 'STEP_8.Rda')
 
 
 ## Why can't we , define the SUA in the global environment, outside the function?
-# SUA = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/IN.SUA.shp", layer = "IN.SUA")
-# CRS.new  <- CRS("+init=epsg:4326") # EPSG:3577
-# SUA.WGS  = spTransform(SUA, CRS.new)
+SUA = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/IN.SUA.shp", layer = "IN.SUA")
+CRS.new  <- CRS("+init=epsg:4326") # EPSG:3577
+SUA.WGS  = spTransform(SUA, CRS.new)
 # writeOGR(obj = SUA.WGS, dsn = "./data/base/CONTEXTUAL", layer = "IN_SUA_WGS", driver = "ESRI Shapefile")
 # 
-# areal_unit = SUA.WGS
+#areal_unit = SUA.WGS
 SUA.RAS <- rasterize(SUA.WGS, s[[1]])
 
 #########################################################################################################################
@@ -293,17 +293,16 @@ suitability.2050 = mapply(combine_gcm_threshold,
                           thresholds   = thresh.max.train, 
                           percentiles  = percent.10.omiss,
                           time_slice   = 50,
+                          #areal_unit   = SUA.WGS,
                           area_occ     = 10)
 
 suitability.2050 = mapply(combine_gcm_threshold, 
-                          DIR_list     = SDM.RESULTS.DIR, 
-                          species_list = comb_spp, 
-                          thresholds   = thresh.max.train, 
-                          percentiles  = percent.10.omiss,
+                          DIR_list     = sort(unlist(SDM.RESULTS.DIR), decreasing = TRUE), 
+                          species_list = sort(comb_spp, decreasing = TRUE), 
+                          thresholds   = sort(thresh.max.train, decreasing = TRUE),
+                          percentiles  = sort(percent.10.omiss, decreasing = TRUE),
                           time_slice   = 50,
                           area_occ     = 10)
-
-sort(exp.spp, decreasing = TRUE)
 
 
 ## Combine output and calculate gain and loss for 2070 
@@ -313,6 +312,16 @@ suitability.2070 = mapply(combine_gcm_threshold,
                           thresholds   = thresh.max.train, 
                           percentiles  = percent.10.omiss,
                           time_slice   = 70)
+
+## Combine output and calculate gain and loss for 2070 
+suitability.2070 = mapply(combine_gcm_threshold, 
+                          DIR_list     = sort(unlist(SDM.RESULTS.DIR), decreasing = TRUE), 
+                          species_list = sort(comb_spp, decreasing = TRUE), 
+                          thresholds   = sort(thresh.max.train, decreasing = TRUE),
+                          percentiles  = sort(percent.10.omiss, decreasing = TRUE),
+                          time_slice   = 70,
+                          area_occ     = 10)
+
 
 
 ## Combine output and calculate gain and loss for 2030 
