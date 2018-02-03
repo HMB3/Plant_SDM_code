@@ -173,11 +173,6 @@ names(COMBO.RASTER.CONTEXT)
 # pairs(Fagus.vars,
 #       lower.panel = panel.cor,
 #       col = "blue", pch = 19, cex = 0.7, main = "Worldclim variables")
-# 
-# 
-# ## Save correlations to file
-# save(correlations.upperTriangle, file = paste("./output/tables/variable_selection/Worldclim_select_cormatrix.RData", sep = ""))
-# save(correlations.table,         file = paste("./output/tables/variable_selection/Worldclim_select_cortable.RData",  sep = ""))
 
 
 
@@ -195,8 +190,11 @@ sdm.predictors.all <- c("Annual_mean_temp",  "Mean_diurnal_range",  "Isothermali
                         "Precip_wet_month",  "Precip_dry_month",    "Precip_seasonality",  "Precip_wet_qu",     "Precip_dry_qu",       "Precip_warm_qu", "Precip_col_qu")  
 
 
+## Watch the CRS.......................................................................................................
+
+
 ## Create an empty raster with the desired properties, using raster(raster(x))
-template.raster <- raster(raster("//sci-7910/F/data/worldclim/world/0.5/bio/current/bio_01")) %>% 
+template.raster <- raster(raster("./data/base/worldclim/world/0.5/bio/current/bio_01")) %>% 
   projectRaster(res = 1000, crs = CRS('+init=ESRI:54009'))
 
 
@@ -234,8 +232,6 @@ SDM.DATA.ALL <- mapply(function(x, cells) {
 
 
 ## Check to see we have 19 variables + the species for the standard predictors, and 19 for all predictors
-## works ok
-str(SDM.DATA)
 str(SDM.DATA.ALL)
 
 
@@ -244,7 +240,7 @@ str(SDM.DATA.ALL)
 #load("STEP_6_SDM.RData")
 
 
-## Check taxa again
+## Check experimental taxa again
 'Swainsona formosa'  %in% SDM.DATA.ALL$searchTaxon
 'Templetonia retusa' %in% SDM.DATA.ALL$searchTaxon 
 'Dodonaea baueri'    %in% SDM.DATA.ALL$searchTaxon 

@@ -106,8 +106,8 @@ GBIF.ALA.COMBO.HIA  = GBIF.ALA.COMBO.LAND[GBIF.ALA.COMBO.LAND$searchTaxon %in% u
 
 
 ## Create points: consider changing the coordinate system here to a global projected system?
-COMBO.POINTS   = SpatialPointsDataFrame(coords = GBIF.ALA.COMBO.HIA[c("lon", "lat")], 
-                                        data    = GBIF.ALA.COMBO.HIA[c("lon", "lat")],
+COMBO.POINTS   = SpatialPointsDataFrame(coords      = GBIF.ALA.COMBO.HIA[c("lon", "lat")], 
+                                        data        = GBIF.ALA.COMBO.HIA[c("lon", "lat")],
                                         proj4string = CRS("+proj=longlat +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +no_defs"))
 
 
@@ -239,8 +239,8 @@ names(COMBO.RASTER)
 
 
 ## We want to know the count of species that occur in 'n' LGAs, across a range of climates. Read in LGA and SUA
-COMBO.RASTER.SP   = SpatialPointsDataFrame(coords = COMBO.RASTER[c("lon", "lat")], 
-                                           data   = COMBO.RASTER,
+COMBO.RASTER.SP   = SpatialPointsDataFrame(coords      = COMBO.RASTER[c("lon", "lat")], 
+                                           data        = COMBO.RASTER,
                                            proj4string = CRS("+init=epsg:4326"))
 
 SUA      = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/SUA_2011_AUST.shp", layer = "SUA_2011_AUST")

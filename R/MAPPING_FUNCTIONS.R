@@ -340,6 +340,9 @@ project.grids.2070 = function(scen_2070, test_spp, time_slice) {
 #########################################################################################################################
 ## Loop over directories, species and one threshold for each, also taking a time_slice argument. Next, make the lists generic too
 ## pervious version in R/old/model_combine.R
+
+
+
 #########################################################################################################################
 ## Loop over directories, species and one threshold for each, also taking a time_slice argument. Next, make the lists generic too
 ## pervious version in R/old/model_combine.R
@@ -354,6 +357,8 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
       
       ###################################################################################################################
       ## Create a list of the rasters in each directory, then take the mean. Tidy this up with %, etc
+      message('Calcualting mean of GCMs for ', species)
+      
       raster.list = list.files(as.character(DIR), pattern = sprintf('bi%s.tif', time_slice), full.names = TRUE)  
       suit        = stack(raster.list)
       suit.list   = unstack(suit)
@@ -458,20 +463,16 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             plot(combo_suit_thresh,   main = gsub('_', ' ', (sprintf('%s future max_train_sensit > %s',  species, thresh))))
             plot(combo_suit_4GCM,     main = gsub('_', ' ', (sprintf('%s 4+ GCMs > %s',  species, thresh))))
             
-            
             #########################################################################################################################
             ## For each species, calculate the projected rainfall and temperature increase and decreas for each GCM? 
-            
-            
+            ## No, calculate this once for each GCM.
             
             #########################################################################################################################
             ## Then using this GCM consensus, calculate whether the species is likely to be present in each SUA.
             ## Decide on a threshold of % area (10?) of the SUA that needs to be occupied, for each species to be considered present. 
             message('Running zonal stats for ', species, ' | 20', time_slice, ' combined suitability > ', thresh)
             
-            
             ## Check the order of lists match, species, SUAs, areas need to match up ................................................
-            
             
             ## First read in the shapefile - can we do this outside the function?
             ## Also sort the attribute table so that it matches the list 
@@ -549,8 +550,8 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             #########################################################################################################################
             ## Then save the table of SUA results for all species to a datafile...
             ## This would be the file to loop over to create a summary of species per SUA
-            write.csv(GCM.AREA.SUMMARY, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.csv',
-                                                species, species, "Max_train_sensit_above_", thresh), row.names = FALSE)
+            write.csv(GCM.AREA.SUMMARY, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s.csv',
+                                                species, species, "SUA_summary"), row.names = FALSE)
             
             #########################################################################################################################
             #########################################################################################################################
@@ -625,8 +626,185 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
 }
     
 
-    
+
+
+
+#########################################################################################################################
+## TABLE FUNCTIONS
+#########################################################################################################################
+
+
+## Could turn this into a function, and loop over a list of subfolders...
+bind_maxent_tables = function(x) {
   
+  ## First check the table exists
+  maxent.tables = list.files("./output/maxent/STD_VAR_ALL/")
+  path       = "./output/maxent/STD_VAR_ALL/"
+  
+  f <- paste0(path, x, "/full/maxentResults.csv")
+  if(file.exists(f)){
+    
+    ## Then pipe the table list into lapply
+    MAXENT.STD.VAR.SUMMARY <- table_list[c(1:length(table_list))] %>%           ## Change to 1:20 if SDMs not complete 
+      
+      ## pipe the list into lapply
+      lapply(function(x) {
+        
+        ## Create the character string
+        f <- paste0(path, x, "/full/maxentResults.csv")
+        
+        ## load each .RData file
+        d <- read.csv(f)
+        
+        ## now add a model column
+        d = cbind(GBIF_Taxon = x, Model_run  = path, d) 
+        dim(d)
+        
+        ## Remove path gunk, and species
+        #d$GBIF_Taxon = gsub("_", " ", d$GBIF_Taxon)
+        d$Model_run  = gsub("./output/maxent/", "", d$Model_run)  ## Model_run needed, test effect of different settings
+        d$Model_run  = gsub("/", "", d$Model_run)
+        d$Species    = NULL
+        d
+        
+      }) %>%
+      
+      ## Finally, bind all the rows together
+      bind_rows
+    
+  } else {
+    
+    message(x, ' table does not exist')   ## Skip species with no existing SDM
+    
+  }
+  
+} 
+
+
+
+
+
+#########################################################################################################################
+## ANOMALY FUNCTIONS
+#########################################################################################################################
+    
+
+#########################################################################################################################
+## For each scenario, calcualte the mean annual temperature and annual rainfall anomaly
+calculate.anomaly.2050 = function(scen_2050) {
+  
+  ##  First, run a loop over each scenario: options(error = recover)    
+  lapply(scen_2050, function(x) {
+    
+    ## Assign the scenario name (to use later in the plot)
+    scen_name = gcms.50$GCM[gcms.50$id == x]
+    
+    ## create the current raster
+    aus <- ne_states(country = 'Australia') %>% 
+      subset(!grepl('Island', name))
+    
+    env.grids.current <- stack(
+      file.path('./data/base/worldclim/aus/0.5/bio/current',
+                sprintf('bio_%02d.tif', 1:19)))
+    
+    #########################################################################################################################
+    ## Create current rasters 
+    env.grids.current[[1]]  = env.grids.current[[1]]/10
+    current.bio1            = env.grids.current[[1]]
+    current.bio12           = env.grids.current[[12]]
+    
+    ## Create a raster stack for each 2050 GCM - also an empty raster for the final plot
+    s <- stack(
+      sprintf('./data/base/worldclim/aus/0.5/bio/2050/%s/%s%s.tif',
+              x, x, 1:19))
+
+    ########################################################################################################################
+    ## Create future rasters
+    s[[1]]  = s[[1]]/10
+    future.bio1  = s[[1]]
+    future.bio12 = s[[12]]
+    
+    ## Now subtract the current from the future...
+    temp.anomaly = future.bio1  - current.bio1
+    rain.anomaly = future.bio12 - current.bio12
+    
+    plot(temp.anomaly, main = paste0("BIO1  anomaly ", x))
+    plot(rain.anomaly, main = paste0("BIO12 anomaly ", x))
+    
+    ########################################################################################################################
+    ## Write the rasters for each species/threshold
+    message('Writing BIO1/12 anomaly rasters for 2050 ', x) 
+    writeRaster(temp.anomaly, sprintf('./data/base/worldclim/aus/0.5/bio/anomalies/%s_%s.tif',
+                                      "BIO1_anomaly", x), overwrite = TRUE) 
+    
+    writeRaster(rain.anomaly, sprintf('./data/base/worldclim/aus/0.5/bio/anomalies/%s_%s.tif',
+                                      "BIO12_anomaly", x), overwrite = TRUE)
+    
+  })
+  
+} 
+
+
+
+
+#########################################################################################################################
+## For each scenario, calcualte the mean annual temperature and annual rainfall anomaly
+calculate.anomaly.2070 = function(scen_2070) {
+  
+  ##  First, run a loop over each scenario: options(error = recover)    
+  lapply(scen_2070, function(x) {
+    
+    ## Assign the scenario name (to use later in the plot)
+    scen_name = gcms.50$GCM[gcms.50$id == x]
+    
+    ## create the current raster
+    aus <- ne_states(country = 'Australia') %>% 
+      subset(!grepl('Island', name))
+    
+    env.grids.current <- stack(
+      file.path('./data/base/worldclim/aus/0.5/bio/current',
+                sprintf('bio_%02d.tif', 1:19)))
+    
+    #########################################################################################################################
+    ## Create current rasters 
+    env.grids.current[[1]]  = env.grids.current[[1]]/10
+    current.bio1            = env.grids.current[[1]]
+    current.bio12           = env.grids.current[[12]]
+    
+    ## Create a raster stack for each 2050 GCM - also an empty raster for the final plot
+    s <- stack(
+      sprintf('./data/base/worldclim/aus/0.5/bio/2070/%s/%s%s.tif',
+              x, x, 1:19))
+    
+    ########################################################################################################################
+    ## Create future rasters
+    s[[1]]  = s[[1]]/10
+    future.bio1  = s[[1]]
+    future.bio12 = s[[12]]
+    
+    ## Now subtract the current from the future...
+    temp.anomaly = future.bio1  - current.bio1
+    rain.anomaly = future.bio12 - current.bio12
+    
+    plot(temp.anomaly, main = paste0("BIO1  anomaly ", x))
+    plot(rain.anomaly, main = paste0("BIO12 anomaly ", x))
+    
+    ########################################################################################################################
+    ## Write the rasters for each species/threshold
+    message('Writing BIO1/12 anomaly rasters for 2070 ', x) 
+    writeRaster(temp.anomaly, sprintf('./data/base/worldclim/aus/0.5/bio/anomalies/%s_%s.tif',
+                                      "BIO1_anomaly", x), overwrite = TRUE) 
+    
+    writeRaster(rain.anomaly, sprintf('./data/base/worldclim/aus/0.5/bio/anomalies/%s_%s.tif',
+                                      "BIO12_anomaly", x), overwrite = TRUE)
+    
+  })
+  
+}  
+
+
+
+
 
 #########################################################################################################################
 #####################################################  TBC ############################################################## 

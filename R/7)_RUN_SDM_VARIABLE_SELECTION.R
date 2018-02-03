@@ -35,6 +35,17 @@ str(template.raster)
 str(SDM.DATA.ALL)
 
 
+## Check experimental taxa again
+'Swainsona formosa'  %in% SDM.DATA.ALL$searchTaxon
+'Templetonia retusa' %in% SDM.DATA.ALL$searchTaxon 
+'Dodonaea baueri'    %in% SDM.DATA.ALL$searchTaxon 
+'Platanus hispanica' %in% SDM.DATA.ALL$searchTaxon 
+'Kennedia beckxiana' %in% SDM.DATA.ALL$searchTaxon 
+exp.spp  = c('Swainsona formosa', 'Templetonia retusa', 'Dodonaea baueri', 'Platanus hispanica', 'Kennedia beckxiana')  
+exp.rev  = sort(exp.spp, decreasing = TRUE)
+miss.spp = c('Corymbia tessellaris', 'Metrosideros excelsa')
+
+
 
 
 

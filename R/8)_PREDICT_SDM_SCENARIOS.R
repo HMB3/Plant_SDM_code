@@ -99,15 +99,6 @@ summary(env.grids.current[[5]])
 summary(env.grids.current[[11]])
 
 
-#########################################################################################################################
-## Calculate the anomaly
-x = scen_2050[1]
-s <- stack(
-  sprintf('./data/base/worldclim/aus/0.5/bio/2050/%s/%s%s.tif',
-          x, x, 1:19))
-
-plot(s[[1]])
-
 
 
 
@@ -119,25 +110,13 @@ plot(s[[1]])
 #########################################################################################################################
 ## For each species, use a function to create raster files and maps of all six GCMs.
 ## Note that some of the experimental species - e.g. Kennedia_beckxiana - still have to be modelled
-env.grids.2050 = project.grids.2050(scen_2050, all_spp[1:200])
-env.grids.2070 = project.grids.2070(scen_2070, all_spp[1:200])
+env.grids.2050 = project.grids.2050(scen_2050, sort(setdiff(all_spp, test_spp)[1:300], decreasing = TRUE))
+env.grids.2070 = project.grids.2070(scen_2070, sort(setdiff(all_spp, test_spp)[1:300], decreasing = TRUE))
 
 
-#########################################################################################################################
-## Then, make a list all the directories containing the individual GCM rasters
-SDM.RESULTS.DIR <- test_spp[c(1:length(test_spp))] %>%
-  
-  ## Pipe the list into lapply
-  lapply(function(species) {
-    
-    ## Create the character string
-    m <-   sprintf('./output/maxent/STD_VAR_ALL/%s/full/', species)
-    m 
-    
-  }) %>%
-  
-  ## Bind the list together
-  c()
+## also calcualte the temp and rain anomalies for 2050 and 2070
+# calculate.anomaly.2050(scen_2050)
+# calculate.anomaly.2070(scen_2070)
 
 
 
@@ -150,8 +129,10 @@ SDM.RESULTS.DIR <- test_spp[c(1:length(test_spp))] %>%
 
 #########################################################################################################################
 ## First, read in the list of files for the current models, and specify the file path
-table.list = list.files("./output/maxent/STD_VAR_ALL/")
+maxent.tables = list.files("./output/maxent/STD_VAR_ALL/")
 path       = "./output/maxent/STD_VAR_ALL/"
+length(maxent.tables)
+
 
 
 ## In linux, check if the folders are empty, then delete if empty:
@@ -161,12 +142,15 @@ path       = "./output/maxent/STD_VAR_ALL/"
 
 
 ## Could turn this into a function, and loop over a list of subfolders...
-MAXENT.STD.VAR.SUMMARY <- table.list[c(1:length(table.list))] %>%           ## Change to 1:20 if SDMs not complete 
+
+## Then pipe the table list into lapply
+## MAXENT.STD.VAR.SUMMARY = bind_maxent_tables(table_list)
+MAXENT.STD.VAR.SUMMARY <- maxent.tables[c(1:length(maxent.tables))] %>%           ## Change to 1:20 if SDMs not complete 
   
   ## pipe the list into lapply
   lapply(function(x) {
     
-    ## create the character string
+    ## Create the character string
     f <- paste0(path, x, "/full/maxentResults.csv")
     
     ## load each .RData file
@@ -202,11 +186,24 @@ head(MAXENT.SUM.TEST, 10)["Maximum.training.sensitivity.plus.specificity.Logisti
 comb_spp = unique(MAXENT.SUM.TEST$GBIF_Taxon)
 
 
-## Check the order of lists match, species, SUAs, areas need to match up ................................................
-## It would be safer to read in the thresholds individually, so they match the species folder exactly?
-head(MAXENT.SUM.TEST)[, c("GBIF_Taxon",
-                          "Maximum.training.sensitivity.plus.specificity.Logistic.threshold", 
-                          "X10.percentile.training.presence.training.omission")]
+
+
+
+#########################################################################################################################
+## Then, make a list all the directories containing the individual GCM rasters
+SDM.RESULTS.DIR <-comb_spp[c(1:length(comb_spp))] %>%
+  
+  ## Pipe the list into lapply
+  lapply(function(species) {
+    
+    ## Create the character string
+    m <-   sprintf('./output/maxent/STD_VAR_ALL/%s/full/', species)
+    m 
+    
+  }) %>%
+  
+  ## Bind the list together
+  c()
 
 
 
@@ -235,11 +232,22 @@ thresh.max.train  = thresh.max.train$Maximum.training.sensitivity.plus.specifici
 
 percent.10.omiss  = as.list(MAXENT.SUM.TEST["X10.percentile.training.presence.training.omission"])
 percent.10.omiss  = percent.10.omiss$X10.percentile.training.presence.training.omission
-length(percent.10.omiss);length(thresh.max.train)
 
 
 ## Check the order of lists match, species, SUAs, areas need to match up ................................................
 ## It would be safer to read in the thresholds individually, so they match the species folder exactly?
+length(SDM.RESULTS.DIR);length(MAXENT.SUM.TEST$GBIF_Taxon);length(thresh.max.train);length(percent.10.omiss);length(comb_spp)
+identical(MAXENT.SUM.TEST$GBIF_Taxon, comb_spp)
+
+
+## The order of the directories does not macth...is this due to sorting?
+head(SDM.RESULTS.DIR, 20);head(comb_spp, 20); head(MAXENT.SUM.TEST, 20)[, c("GBIF_Taxon",
+                                                                            "Maximum.training.sensitivity.plus.specificity.Logistic.threshold", 
+                                                                            "X10.percentile.training.presence.training.omission")]
+
+tail(SDM.RESULTS.DIR, 20);tail(comb_spp, 20); tail(MAXENT.SUM.TEST, 20)[, c("GBIF_Taxon",
+                                                                            "Maximum.training.sensitivity.plus.specificity.Logistic.threshold", 
+                                                                            "X10.percentile.training.presence.training.omission")]
 
 
 #########################################################################################################################
@@ -262,10 +270,14 @@ save.session(file = 'STEP_8.Rda')
 # writeOGR(obj = SUA.WGS, dsn = "./data/base/CONTEXTUAL", layer = "IN_SUA_WGS", driver = "ESRI Shapefile")
 # 
 # areal_unit = SUA.WGS
-
+SUA.RAS <- rasterize(SUA.WGS, s[[1]])
 
 #########################################################################################################################
 ## Combine output and calculate gain and loss for 2050 
+length(SDM.RESULTS.DIR)
+length(comb_spp)
+length(thresh.max.train)
+
 DIR        = SDM.RESULTS.DIR[1] 
 species    = comb_spp[1] 
 thresh     = thresh.max.train[1] 
@@ -276,20 +288,30 @@ area_occ   = 10
 
 ## Combine output and calculate gain and loss for 2070 
 suitability.2050 = mapply(combine_gcm_threshold, 
-                          DIR_list     = SDM.RESULTS.DIR[1], 
-                          species_list = comb_spp[1], 
-                          thresholds   = thresh.max.train[1], 
-                          percentiles  = percent.10.omiss[1],
+                          DIR_list     = SDM.RESULTS.DIR, 
+                          species_list = comb_spp, 
+                          thresholds   = thresh.max.train, 
+                          percentiles  = percent.10.omiss,
                           time_slice   = 50,
                           area_occ     = 10)
+
+suitability.2050 = mapply(combine_gcm_threshold, 
+                          DIR_list     = SDM.RESULTS.DIR, 
+                          species_list = comb_spp, 
+                          thresholds   = thresh.max.train, 
+                          percentiles  = percent.10.omiss,
+                          time_slice   = 50,
+                          area_occ     = 10)
+
+sort(exp.spp, decreasing = TRUE)
 
 
 ## Combine output and calculate gain and loss for 2070 
 suitability.2070 = mapply(combine_gcm_threshold, 
-                          DIR_list     = SDM.RESULTS.DIR[1], 
-                          species_list = comb_spp[1], 
-                          thresholds   = thresh.max.train[1], 
-                          percentiles  = percent.10.omiss[1],
+                          DIR_list     = SDM.RESULTS.DIR, 
+                          species_list = comb_spp, 
+                          thresholds   = thresh.max.train, 
+                          percentiles  = percent.10.omiss,
                           time_slice   = 70)
 
 

@@ -310,6 +310,11 @@ test.spp   = sort(unique(c(test.spp, HIA.SAMPLE)))
 str(test.spp)
 test.reverse = sort(test.spp, decreasing = TRUE)
 
+##
+exp.spp  = c('Swainsona formosa', 'Templetonia retusa', 'Dodonaea baueri', 'Platanus hispanica', 'Kennedia beckxiana')  
+exp.rev  = sort(exp.spp, decreasing = TRUE)
+miss.spp = c('Corymbia tessellaris', 'Metrosideros excelsa')
+
 
 ## Create lists for the mapping code
 all_spp     = gsub(" ", "_", spp.all)
@@ -317,6 +322,9 @@ all_reverse = sort(all_spp, decreasing = TRUE)
 
 test_spp     = gsub(" ", "_", test.spp)
 test_reverse = sort(test_spp, decreasing = TRUE)
+
+exp_spp      = gsub(" ", "_", exp.spp)
+miss_spp     = gsub(" ", "_", miss.spp)
 
 
 ## Which species are only on the test list?
