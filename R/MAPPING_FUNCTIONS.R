@@ -62,7 +62,6 @@ project.grids.2050 = function(scen_2050, test_spp) {
     lapply(test_spp, function(species) {
       
       ## First check if the species projection has already been run...
-      ## Check model exists: needs this condition..........................................................................
       if(file.exists(sprintf('./output/maxent/STD_VAR_ALL/%s/full/model.rds', species))) {
         message('Doing ', species)
         

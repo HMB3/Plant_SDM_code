@@ -114,30 +114,8 @@ env.grids.2050 = project.grids.2050(scen_2050, sort(setdiff(all_spp, test_spp)[1
 env.grids.2070 = project.grids.2070(scen_2070, sort(setdiff(all_spp, test_spp)[1:300], decreasing = TRUE))
 
 
-## also calcualte the temp and rain anomalies for 2050 and 2070
-# calculate.anomaly.2050(scen_2050)
-# calculate.anomaly.2070(scen_2070)
-
-
-## Now combine the anomalies across the GCMs
-# BIO1.2050.anomaly  = list.files("./data/base/worldclim/aus/0.5/bio/anomalies/BIO1",  pattern = 'bi50.tif',  full.names = TRUE)
-# BIO1.2070.anomaly  = list.files("./data/base/worldclim/aus/0.5/bio/anomalies/BIO1",  pattern = 'bi70.tif',  full.names = TRUE)
-# 
-# BIO12.2050.anomaly = list.files("./data/base/worldclim/aus/0.5/bio/anomalies/BIO12",  pattern = 'bi50.tif',  full.names = TRUE)
-# BIO12.2070.anomaly = list.files("./data/base/worldclim/aus/0.5/bio/anomalies/BIO12",  pattern = 'bi70.tif',  full.names = TRUE)
-# 
-# anomalies = list(BIO1.2050.anomaly, BIO1.2070.anomaly, BIO12.2050.anomaly, BIO12.2070.anomaly)
-# 
-# for (anomaly in anomalies) { 
-#   
-#   anomaly       = stack(anomaly)
-#   anomaly.list  = unstack(anomaly)
-#   mean.anomaly  = mean(anomaly)
-#   
-#   plot(mean.anomaly,
-#        main = 'anomaly')
-#   
-# }
+## Plot GCM anomalies...
+## source(./R/GCM_ANOMALY.R)
 
 
 
@@ -358,8 +336,12 @@ suitability.2070 = mapply(combine_gcm_threshold,
 
 
 #########################################################################################################################
-## 5). COMBINE MAXENT TABLES FOR ALL SPECIES ACROSS MULTIPLE GCMs
+## 5). COMBINE PRESENCE TABLES FOR ALL SPECIES ACROSS MULTIPLE GCMs
 #########################################################################################################################
+
+
+## In order to summarise by species and SUA, we could build one big table and then query that  
+
 
 
 #########################################################################################################################
