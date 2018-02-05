@@ -119,6 +119,27 @@ env.grids.2070 = project.grids.2070(scen_2070, sort(setdiff(all_spp, test_spp)[1
 # calculate.anomaly.2070(scen_2070)
 
 
+## Now combine the anomalies across the GCMs
+# BIO1.2050.anomaly  = list.files("./data/base/worldclim/aus/0.5/bio/anomalies/BIO1",  pattern = 'bi50.tif',  full.names = TRUE)
+# BIO1.2070.anomaly  = list.files("./data/base/worldclim/aus/0.5/bio/anomalies/BIO1",  pattern = 'bi70.tif',  full.names = TRUE)
+# 
+# BIO12.2050.anomaly = list.files("./data/base/worldclim/aus/0.5/bio/anomalies/BIO12",  pattern = 'bi50.tif',  full.names = TRUE)
+# BIO12.2070.anomaly = list.files("./data/base/worldclim/aus/0.5/bio/anomalies/BIO12",  pattern = 'bi70.tif',  full.names = TRUE)
+# 
+# anomalies = list(BIO1.2050.anomaly, BIO1.2070.anomaly, BIO12.2050.anomaly, BIO12.2070.anomaly)
+# 
+# for (anomaly in anomalies) { 
+#   
+#   anomaly       = stack(anomaly)
+#   anomaly.list  = unstack(anomaly)
+#   mean.anomaly  = mean(anomaly)
+#   
+#   plot(mean.anomaly,
+#        main = 'anomaly')
+#   
+# }
+
+
 
 
 

@@ -369,6 +369,8 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
       f_mean = sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s_suitability_mean.tif', 
                        species, species, time_slice)
       
+      ## The raster list is not accessible below, when the mean raster exists.............................................
+      
       if(!file.exists(f_mean)) {
         
         raster.list = list.files(as.character(DIR), pattern = sprintf('bi%s.tif', time_slice), full.names = TRUE)  
@@ -570,8 +572,17 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             writeRaster(combo_suit_percent, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
                                                     species, species, time_slice, "_10_percentile_omiss_above_", percent), overwrite = TRUE)
             
+            ## Write the combined threshold raster
+            message('Writing ', species, ' | 20', time_slice, ' 10th percentile > ', percent) 
+            writeRaster(combo_suit_4GCM, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
+                                                 species, species, time_slice, "_4GCMs_above_", thresh), overwrite = TRUE)
+            
+            
             ########################################################################################################################
             ## Now create the empty panel just before plotting, and read in the occurrence data
+            
+            ## occ points not working...............................................................................................
+            
             empty <- init(combo_suit_thresh, function(x) NA)
             occ   <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/occ.rds', species)) 
             
