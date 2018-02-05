@@ -361,28 +361,26 @@ suitability.2070 = mapply(combine_gcm_threshold,
 ## 5). COMBINE MAXENT TABLES FOR ALL SPECIES ACROSS MULTIPLE GCMs
 #########################################################################################################################
 
-## TBC.......................................................................
-## Could turn this into a function, and loop over a list of subfolders...
-MAXENT.STD.VAR.SUA <- table.list[c(1:length(table.list))] %>%
+
+#########################################################################################################################
+## Easiest way to do this is to store the results of each iteration as we go...need to change the way the code works
+## As a workarond, read in the list of files for the current models, and specify the file path
+SUA.tables = list.files("./output/maxent/STD_VAR_ALL/", pattern = 'SUA_summary.csv', full.names = TRUE, recursive = TRUE) 
+path       = "./output/maxent/STD_VAR_ALL/"
+length(SUA.tables)
+
+
+## Now try combing the tables
+SUA.PRESENCE <- SUA.tables[c(1:length(SUA.tables))] %>%
   
   ## pipe the list into lapply
   lapply(function(x) {
     
     ## create the character string
-    f <- paste0(path, x, "/full/maxentResults.csv")
+    f <- paste0(x)
     
     ## load each .RData file
     d <- read.csv(f)
-    
-    ## now add a model column
-    d = cbind(GBIF_Taxon = x, Model_run  = path, d) 
-    dim(d)
-    
-    ## Remove path gunk, and species
-    #d$GBIF_Taxon = gsub("_", " ", d$GBIF_Taxon)
-    d$Model_run  = gsub("./output/maxent/", "", d$Model_run)
-    d$Model_run  = gsub("/", "", d$Model_run)
-    d$Species    = NULL
     d
     
   }) %>%
@@ -392,8 +390,8 @@ MAXENT.STD.VAR.SUA <- table.list[c(1:length(table.list))] %>%
 
 
 ## This is a summary of maxent output for current conditions
-dim(MAXENT.STD.VAR.SUA )
-head(MAXENT.STD.VAR.SUA, 20)[1:8]
+dim(SUA.PRESENCE)
+head(SUA.PRESENCE$SPECIES, 150)
 
 
 

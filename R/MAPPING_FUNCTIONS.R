@@ -348,6 +348,9 @@ project.grids.2070 = function(scen_2070, test_spp, time_slice) {
 ## pervious version in R/old/model_combine.R
 combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles, time_slice, area_occ) {
   
+  
+  ## How can this shapefile be read in once, not for each species?.....................................................##
+  
   ## First read in the shapefile - can we do this outside the function?
   ## Also sort the attribute table so that it matches the list 
   areal_unit = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/IN_SUA_WGS.shp", layer = "IN_SUA_WGS")
@@ -369,8 +372,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
       f_mean = sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s_suitability_mean.tif', 
                        species, species, time_slice)
       
-      ## The raster list is not accessible below, when the mean raster exists.............................................
-      
+      ## The raster list is not accessible below, when the mean raster exists.............................................\
       if(!file.exists(f_mean)) {
         
         raster.list = list.files(as.character(DIR), pattern = sprintf('bi%s.tif', time_slice), full.names = TRUE)  
@@ -384,7 +386,9 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
         
       } else {
         
-        message(species, ' 20', time_slice, ' mean suitability skipped - already exists')   ## 
+        raster.list = list.files(as.character(DIR), pattern = sprintf('bi%s.tif', time_slice), full.names = TRUE)  
+        suit        = stack(raster.list)
+        suit.list   = unstack(suit)
         
       }
       
@@ -425,7 +429,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             ## suit_ras_greater    = reduce(suit.list, thresh_above_fun, .init = suit.list[[1]] > thresh)
             
             ## Check the logic of removing the zeros.....................................................
-            ## If we are just using the combined rasters without calculating the difference, do we need to worry about the zeros?   
+            ## If we are just using the combined rasters without calculating the difference, don't worry about the zeros   
             
             #########################################################################################################################
             ## First, calculate the cells which are greater that the: 
@@ -472,8 +476,9 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             plot(combo_suit_4GCM,     main = gsub('_', ' ', (sprintf('%s 4+ GCMs > %s',  species, thresh))))
             
             #########################################################################################################################
-            ## For each species, calculate the projected rainfall and temperature increase and decreas for each GCM? 
-            ## No, calculate this once for each GCM.
+            ## For each species, calculate the projected rainfall and temperature increase and decreas for each GCM? Could plot this
+            ## as part of the final figure.
+            
             
             #########################################################################################################################
             ## Then using this GCM consensus, calculate whether the species is likely to be present in each SUA.
@@ -484,15 +489,15 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             
             ## Should we also create a simple count of the no. of cells per SUA with where > 4 GCMs met the suitability threshold?
             ## Need to fix this so that it has the same order as the shapefile
-            #sp.count <- spatialEco::zonal.stats(x = areal_unit, y = combo_suit_4GCM, stat = sum, trace = TRUE, plot = TRUE) 
+            # sp.count <- spatialEco::zonal.stats(x = areal_unit, y = combo_suit_4GCM, stat = sum, trace = TRUE, plot = TRUE) 
             # z.med   <- spatialEco::zonal.stats(x = areal_unit, y = combo_suit_4GCM, stat = median, trace = TRUE, plot = TRUE)
             
             #########################################################################################################################
-            ## Then, extract the values of the presence raster for each areal unit: generates a list: 32 seconds
+            ## Then, extract the values of the presence raster for each areal unit: generates a list: 32 seconds...
             ext  <- extract(combo_suit_4GCM, areal_unit, method = 'simple')
             
             ## A function to tabulate the raster values by aerial unit, returning a data frame
-            tabFunc<-function(indx, extracted, region, regname) {
+            tabFunc <- function(indx, extracted, region, regname) {
               
               dat<-as.data.frame(table(extracted[[indx]]))
               dat$name<-region[[regname]][[indx]]
@@ -520,7 +525,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
                      percent.area = round(100 * Freq / totcells, 2)) %>%  ## cells /total cells
               
               dplyr::select(-c(Freq, totcells)) %>%                       ## there is a select func in raster so need to specify
-              spread(key = Var1, value = percent.area, fill = 0)  %>%     ## make wide format
+              spread(key = Var1, value = percent.area, fill = 0)     %>%  ## make wide format
               as.data.frame()
             
             ## Rename and create a column for whether or not the species occupies that area 
@@ -533,32 +538,32 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             GCM.AREA.SUMMARY <- data.frame(SUA        = areal_unit$SUA_NAME11, 
                                            AREA_SQKM  = areal_unit$AREA_SQKM,
                                            SPECIES    = species,
+                                           MAX_TRAIN  = thresh,
+                                           PERIOD     = time_slice,
                                            #CELL_COUNT = sp.count$COUNT,
                                            PERCENT_AREA = PERECENT.AREA$Present,
                                            PRESENT      = PERECENT.AREA$species_present)
             
             ## Rename columns using sprintf, so we can include the suitability threshold and the time slice
-            names(GCM.AREA.SUMMARY) <-  c('SUA',
-                                          'AREA_SQKM',
-                                          'SPECIES',
-                                          #'CELL_COUNT',
-                                          sprintf("Percent area where 4GCMs > %s in 20%s",   thresh, time_slice),
-                                          sprintf('Species present 4GCMs > %s in 20%s',   thresh, time_slice))
-            View(GCM.AREA.SUMMARY)
-            
-            ##
-            dim(GCM.AREA.SUMMARY)
-            unique(GCM.AREA.SUMMARY$SPECIES)
-            
+            #' names(GCM.AREA.SUMMARY) <-  c('SUA',
+            #'                               'AREA_SQKM',
+            #'                               'SPECIES',
+            #'                               #'CELL_COUNT',
+            #'                               sprintf("Percent_area_where_4GCMs > thresh in 20%s",   thresh, time_slice),
+            #'                               sprintf('Species_present 4GCMs > %s in 20%s',   thresh, time_slice))
+            View(GCM.AREA.SUMMARY) ## unique(GCM.AREA.SUMMARY$SPECIES)
+
             #########################################################################################################################
             ## Then save the table of SUA results for all species to a datafile...
             ## This would be the file to loop over to create a summary of species per SUA
-            write.csv(GCM.AREA.SUMMARY, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s.csv',
-                                                species, species, "SUA_summary"), row.names = FALSE)
+            write.csv(GCM.AREA.SUMMARY, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s_%s.csv',
+                                                species, species, time_slice, "SUA_summary"), row.names = FALSE)
             
             #########################################################################################################################
             #########################################################################################################################
-            ## Write the rasters for each species/threshold
+            ## If they don't exist, write the rasters for each species/threshold
+            if(!file.exists(f_max_train_suit)) {
+            
             message('Writing ', species, ' current', ' max train > ', thresh) 
             writeRaster(current_suit_thresh, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.tif',
                                                      species, species, "current_suit_above_", thresh), overwrite = TRUE) 
@@ -577,6 +582,11 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             writeRaster(combo_suit_4GCM, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
                                                  species, species, time_slice, "_4GCMs_above_", thresh), overwrite = TRUE)
             
+            } else {
+              
+              message(species, ' 20', time_slice, ' combined suitability > ', thresh, ' skipped - already exists')   ## 
+              
+            }
             
             ########################################################################################################################
             ## Now create the empty panel just before plotting, and read in the occurrence data
