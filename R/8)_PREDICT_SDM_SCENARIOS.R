@@ -8,20 +8,19 @@
 ## a prediction of habitat suitability for current and future environmental conditions. The input data table is in the 
 ## format of all species occurrences (rows) and environmental variables (columns).
 
-## Then the predictions from all GCMs (currently using six) are then combined into a single habitat suitability layer.
-## Using this combined layer, the loss or gain of species within areal units (e.g. significant urban areas or LGAs), 
-## between time periods (current, 2030, 2070) can be calculated. 
+## The predictions from all GCMs (currently using six) are then combined into a single habitat suitability layer.
+## Using this combined layer, the loss or gain of each species within areal units (e.g. significant urban areas or LGAs), 
+## between time periods (current, 2030, 2070) could be calculated. 
+
+
+## Load packages
+load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1601_2018.RData")
+source('./R/HIA_LIST_MATCHING.R')
 
 
 #########################################################################################################################
 ## 1). READ IN THE CURRENT AND FUTURE ENVIRONMENTAL DATA FOR MULTIPLE GCMs
 #########################################################################################################################
-
-
-#########################################################################################################################
-## Load packages
-load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")
-source('./R/HIA_LIST_MATCHING.R')
 
 
 #########################################################################################################################
@@ -31,6 +30,8 @@ source('./R/HIA_LIST_MATCHING.R')
 ## Eight of the 40 CMIP5 models assessed in this project have been selected for use in provision of application-ready data. 
 ## This facilitates efficient exploration of climate projections for Australia.
 ## https://www.climatechangeinaustralia.gov.au/en/support-and-guidance/faqs/eight-climate-models-data/
+
+## The full list is:
 # scen = c("ip85bi50", "mc85bi50", "mg85bi50", "mi85bi50", "mp85bi50", 
 #          "mr85bi50", "no85bi50", "ac85bi50", "bc85bi50", "cc85bi50", 
 #          "cn85bi50", "gf85bi50", "gs85bi50", "hd85bi50", "he85bi50",
@@ -110,6 +111,10 @@ summary(env.grids.current[[11]])
 #########################################################################################################################
 ## For each species, use a function to create raster files and maps of all six GCMs.
 ## Note that some of the experimental species - e.g. Kennedia_beckxiana - still have to be modelled
+## [78], SDM.RESULTS.DIR[83], SDM.RESULTS.DIR[159]
+env.grids.2050 = project.grids.2050(scen_2050, c(comb_spp[78], comb_spp[83], comb_spp[159]))
+env.grids.2070 = project.grids.2070(scen_2050, c(comb_spp[78], comb_spp[83], comb_spp[159]))
+
 env.grids.2050 = project.grids.2050(scen_2050, sort(setdiff(all_spp, test_spp)[1:300], decreasing = TRUE))
 env.grids.2070 = project.grids.2070(scen_2070, sort(setdiff(all_spp, test_spp)[1:300], decreasing = TRUE))
 
@@ -133,7 +138,6 @@ path       = "./output/maxent/STD_VAR_ALL/"
 length(maxent.tables)
 
 
-
 ## In linux, check if the folders are empty, then delete if empty:
 # cd F:/green_cities_sdm/output/maxent/STD_VAR_ALL
 # find . -type d -empty -print
@@ -141,10 +145,9 @@ length(maxent.tables)
 
 
 ## Could turn this into a function, and loop over a list of subfolders...
-
 ## Then pipe the table list into lapply
 ## MAXENT.STD.VAR.SUMMARY = bind_maxent_tables(table_list)
-MAXENT.STD.VAR.SUMMARY <- maxent.tables[c(1:length(maxent.tables))] %>%           ## Change to 1:20 if SDMs not complete 
+MAXENT.STD.VAR.SUMMARY <- maxent.tables[c(1:length(maxent.tables))] %>%           ## currently 533 species with enough records
   
   ## pipe the list into lapply
   lapply(function(x) {
@@ -181,11 +184,8 @@ head(MAXENT.STD.VAR.SUMMARY, 20)[1:8]
 ## the right threshold for each species.
 length(intersect(test_spp, MAXENT.STD.VAR.SUMMARY$GBIF_Taxon)) ## accesssing the files from these directories... 
 MAXENT.SUM.TEST  =  MAXENT.STD.VAR.SUMMARY[MAXENT.STD.VAR.SUMMARY$GBIF_Taxon %in% test_spp, ] 
-head(MAXENT.SUM.TEST, 10)["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"];head(MAXENT.SUM.TEST, 10)[1]
 comb_spp = unique(MAXENT.SUM.TEST$GBIF_Taxon)
-
-
-
+length(comb_spp)
 
 
 #########################################################################################################################
@@ -209,14 +209,13 @@ SDM.RESULTS.DIR <-comb_spp[c(1:length(comb_spp))] %>%
 
 
 #########################################################################################################################
-## 4). SUMMARIZE MAXENT RESULTS FOR EACH SPECIES ACROSS MULTIPLE GCMs
+## 5). CREATE LISTS OF HABITAT SUITABILITY THRESHOLDS
 #########################################################################################################################
 
 
 #########################################################################################################################
-## Now for each species, use a function to combine the raster files for each climate scenario into one layer. Use the 
-## species-specific thresholds that are produced by rmaxent (i.e. the columns in MAXENT.STD.VAR.SUMMARY). Linda and John 
-## use these two:
+## Maxent produces a presence threshold for each species (i.e. the columns in MAXENT.STD.VAR.SUMMARY). 
+## Linda and John use these two:
 
 
 ## Maximum training sensitivity plus specificity Logistic threshold 
@@ -225,7 +224,7 @@ summary(MAXENT.SUM.TEST["Maximum.training.sensitivity.plus.specificity.Logistic.
 summary(MAXENT.SUM.TEST["X10.percentile.training.presence.training.omission"])
 
 
-## Turn the maxent results into lists
+## Turn the maxent results into lists :: we can use these to generate the consensus layers 
 thresh.max.train  = as.list(MAXENT.SUM.TEST["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"]) 
 thresh.max.train  = thresh.max.train$Maximum.training.sensitivity.plus.specificity.Logistic.threshold
 
@@ -234,12 +233,12 @@ percent.10.omiss  = percent.10.omiss$X10.percentile.training.presence.training.o
 
 
 ## Check the order of lists match, species, SUAs, areas need to match up ................................................
-## It would be safer to read in the thresholds individually, so they match the species folder exactly?
+## It would be safer to read in the thresholds individually, so they match the species folder exactly
 length(SDM.RESULTS.DIR);length(MAXENT.SUM.TEST$GBIF_Taxon);length(thresh.max.train);length(percent.10.omiss);length(comb_spp)
 identical(MAXENT.SUM.TEST$GBIF_Taxon, comb_spp)
 
 
-## The order of the directories does not macth...is this due to sorting?
+## The order of the directories matches
 head(SDM.RESULTS.DIR, 20);head(comb_spp, 20); head(MAXENT.SUM.TEST, 20)[, c("GBIF_Taxon",
                                                                             "Maximum.training.sensitivity.plus.specificity.Logistic.threshold", 
                                                                             "X10.percentile.training.presence.training.omission")]
@@ -253,30 +252,33 @@ tail(SDM.RESULTS.DIR, 20);tail(comb_spp, 20); tail(MAXENT.SUM.TEST, 20)[, c("GBI
 ## So we can use the values in these columns to threhsold the rasters of habitat suitability (0-1) when combining them.
 ## For each species, we will create a binary raster with cell values between 0-6. These cell values represent the number of GCMs 
 ## where that cell had a suitability value above the threshold determined by maxent (e.g. the max training sensitivity + specif).
-## Now save .RData file for the next session...
-save.image("STEP_8_PREDICT_SDM.RData")
-save.session(file = 'STEP_8.Rda')  
 
 
-## These thresholded predictions of habitat suitability could be used to determine the loss or gain of species within areal units
-## (e.g. significant urban areas or LGAs), between time periods (current, 2030, 2070).
 
 
-## Why can't we , define the SUA in the global environment, outside the function?
-SUA = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/IN.SUA.shp", layer = "IN.SUA")
-CRS.new  <- CRS("+init=epsg:4326") # EPSG:3577
-SUA.WGS  = spTransform(SUA, CRS.new)
+
+#########################################################################################################################
+## 5). SUMMARIZE MAXENT RESULTS FOR EACH SPECIES ACROSS MULTIPLE GCMs
+#########################################################################################################################
+
+
+#########################################################################################################################
+## First, use the SUA as the aerial unit
+## Why can't we define the SUA in the global environment, outside the function?
+# SUA = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/IN.SUA.shp", layer = "IN.SUA")
+# CRS.new  <- CRS("+init=epsg:4326") # EPSG:3577
+# SUA.WGS  = spTransform(SUA, CRS.new)
 # writeOGR(obj = SUA.WGS, dsn = "./data/base/CONTEXTUAL", layer = "IN_SUA_WGS", driver = "ESRI Shapefile")
-# 
+SUA.WGS = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/IN_SUA_WGS.shp", layer = "IN_SUA_WGS")
+SUA.WGS = SUA.WGS [order(SUA.WGS $SUA_NAME11),]
+
 #areal_unit = SUA.WGS
-SUA.RAS <- rasterize(SUA.WGS, s[[1]])
+SUA_RAS <- rasterize(SUA.WGS, env.grids.current[[1]])
+## exp.eg = c('Ficus_brachypoda', 'Flindersia_australis', 'Xanthastemon_paradoxus')
+
 
 #########################################################################################################################
 ## Combine output and calculate gain and loss for 2050 
-length(SDM.RESULTS.DIR)
-length(comb_spp)
-length(thresh.max.train)
-
 DIR        = SDM.RESULTS.DIR[1] 
 species    = comb_spp[1] 
 thresh     = thresh.max.train[1] 
@@ -287,13 +289,13 @@ area_occ   = 10
 
 ## Combine output and calculate gain and loss for 2070 
 suitability.2050 = mapply(combine_gcm_threshold, 
-                          DIR_list     = SDM.RESULTS.DIR, 
-                          species_list = comb_spp, 
-                          thresholds   = thresh.max.train, 
-                          percentiles  = percent.10.omiss,
+                          DIR_list     = c(SDM.RESULTS.DIR[78], SDM.RESULTS.DIR[83], SDM.RESULTS.DIR[159]), 
+                          species_list = c(comb_spp[78], comb_spp[83], comb_spp[159]),
+                          thresholds   = c(thresh.max.train[78], thresh.max.train[83], thresh.max.train[159]),
+                          percentiles  = c(percent.10.omiss[78], percent.10.omiss[83], percent.10.omiss[159]),
                           time_slice   = 50,
-                          #areal_unit   = SUA.WGS,
                           area_occ     = 10)
+
 
 suitability.2050 = mapply(combine_gcm_threshold, 
                           DIR_list     = sort(unlist(SDM.RESULTS.DIR), decreasing = TRUE), 
@@ -340,13 +342,13 @@ suitability.2070 = mapply(combine_gcm_threshold,
 #########################################################################################################################
 
 
-## In order to summarise by species and SUA, we could build one big table and then query that  
-
+## In order to summarise by species and SUA, we could build one big table and then query that to create histograms, etc.  
+## This could be stored in memory if it's too big.
 
 
 #########################################################################################################################
-## Easiest way to do this is to store the results of each iteration as we go...need to change the way the code works
-## As a workarond, read in the list of files for the current models, and specify the file path
+## Easiest way to do this is to store the results of each iteration as we go...need to change the way the code works!
+## But, as a workarond, read in the list of files for the current models, and specify the file path
 SUA.tables = list.files("./output/maxent/STD_VAR_ALL/", pattern = 'SUA_summary.csv', full.names = TRUE, recursive = TRUE) 
 path       = "./output/maxent/STD_VAR_ALL/"
 length(SUA.tables)
@@ -376,12 +378,11 @@ dim(SUA.PRESENCE)
 head(SUA.PRESENCE$SPECIES, 150)
 
 
-
-
 #########################################################################################################################
-## Save basic results::
+## Save basic results and SUA results to file :: CSV and RData files
 write.csv(MAXENT.STD.VAR.SUMMARY, "./output/maxent/MAXENT_STD_VAR_SUMMARY.csv", row.names = FALSE)
 write.csv(MAXENT.STD.VAR.SUA, "./output/maxent/MAXENT_STD_VAR_SUMMARY.csv", row.names = FALSE)
+
 
 
 
@@ -392,10 +393,6 @@ write.csv(MAXENT.STD.VAR.SUA, "./output/maxent/MAXENT_STD_VAR_SUMMARY.csv", row.
 
 
 #########################################################################################################################
-## The no-data areas need to be masked out as part of the calculations.
-
-## Decide on the method for combining the GCMs
-
 ## Check the spatial referencing is ok 
 
 ## We are missing two scenarios recommended for Australia: CanESM2 & CESM1-CAM5. These two are not on the worldclim list:
@@ -408,48 +405,8 @@ write.csv(MAXENT.STD.VAR.SUA, "./output/maxent/MAXENT_STD_VAR_SUMMARY.csv", row.
 ## What are the options for presenting consensus layers of all scenarios? E.G. Are there some templates that John
 ## has used for previous work?
 
-
-#########################################################################################################################
-## When we subtract the current binary layer (1, 0) from the future binary layer, we have: 
-
-## F0 - C0 =  0 (no data in either layer)
-## F0 - C1 = -1 (LOSS across all GCMs)
-## F1 - C0 =  1 (GAIN across all GCMs) 
-## F1 - C1 =  0 (NO CHANGE: also no data before the overlay...)
-
-
-## However, this changes when we subtract the current binary layer (taking values 1, 0) from the future integer layer 
-## (taking values from 0 to 6). Here, any negative value (-1) is a loss: the species was predicted to be present in that cell 
-## based on current conditions, but predicted to be absent under future conditions (i.e. the future layer did not meet the suitabiity
-## threshold in that location at that time.
-
-## However, positive values (1-6) can either be a gain, or, no change. The difference needs to be accounted for, because otherwise
-## we don't know if the species was predicted to occur. Can we fix this by masking the overlay to just cells with data?
-## Effectively this means excluding 0 values from the overlay.
-
-## Not all these possibilities will occur, but they are : 
-
-## F0 - C0 =  0 no data in either layer
-## F0 - C0 =  0 (NO CHANGE according to all GCMs)
-## F0 - C1 =  -1 (LOSS according to all GCMs)
-
-## F1 - C1 =  0 (NO CHANGE according to one GCM: also, no data before the overlay)
-## F1 - C0 =  1 (GAIN according to one GCM)
-
-## F2 - C1 =  1 (NO CHANGE, according to two GCMs)
-## F2 - C0 =  2 (GAIN according to two GCMs)
-
-## F3 - C1 =  2 (NO CHANGE, according to three GCMs)
-## F3 - C0 =  3 (GAIN, according to three GCMs)
-
-## F4 - C1 =  3 (NO CHANGE, according to four GCMs)
-## F4 - C0 =  4 (GAIN, according to four GCMs)
-
-## F5 - C1 =  4 (NO CHANGE, according to five GCMs)
-## F5 - C0 =  5 (GAIN according to five GCMs)
-
-## F6 - C1 =  5 (NO CHANGE, according to six GCMs?)
-## F6 - 0  =  6 (GAIN, according to six GCMs?)
+## These thresholded predictions of habitat suitability could be used to determine the loss or gain of species within areal units
+## (e.g. significant urban areas or LGAs), between time periods (current, 2030, 2070).
 
 
 

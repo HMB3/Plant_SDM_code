@@ -353,7 +353,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
   ## First read in the shapefile - can we do this outside the function?
   ## Also sort the attribute table so that it matches the list 
   areal_unit = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/IN_SUA_WGS.shp", layer = "IN_SUA_WGS")
-  areal_unit = areal_unit[order(areal_unit$SUA_NAME11),] 
+  areal_unit = areal_unit[order(areal_unit$SUA_NAME11),]
   
   ## Loop over each directory
   lapply(DIR_list, function(DIR) { 
@@ -371,7 +371,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
       f_mean = sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s_suitability_mean.tif', 
                        species, species, time_slice)
       
-      ## The raster list is not accessible below, when the mean raster exists.............................................\
+      ## The raster list is not accessible below, when the mean raster exists.............................................
       if(!file.exists(f_mean)) {
         
         raster.list = list.files(as.character(DIR), pattern = sprintf('bi%s.tif', time_slice), full.names = TRUE)  
@@ -385,6 +385,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
         
       } else {
         
+        ## create another level without the mean calculation
         raster.list = list.files(as.character(DIR), pattern = sprintf('bi%s.tif', time_slice), full.names = TRUE)  
         suit        = stack(raster.list)
         suit.list   = unstack(suit)
@@ -393,7 +394,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
       
       #########################################################################################################################
       #########################################################################################################################
-      ## Then create rasters that meet habitat suitability criteria thresholds, determined by the rmaxent function
+      ## Then, create rasters that meet habitat suitability criteria thresholds, determined by the rmaxent function
       for (thresh in thresholds) {
         
         for (percent in percentiles) { 
@@ -551,7 +552,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             #'                               sprintf("Percent_area_where_4GCMs > thresh in 20%s",   thresh, time_slice),
             #'                               sprintf('Species_present 4GCMs > %s in 20%s',   thresh, time_slice))
             View(GCM.AREA.SUMMARY) ## unique(GCM.AREA.SUMMARY$SPECIES)
-
+            
             #########################################################################################################################
             ## Then save the table of SUA results for all species to a datafile...
             ## This would be the file to loop over to create a summary of species per SUA
@@ -562,25 +563,25 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             #########################################################################################################################
             ## If they don't exist, write the rasters for each species/threshold
             if(!file.exists(f_max_train_suit)) {
-            
-            message('Writing ', species, ' current', ' max train > ', thresh) 
-            writeRaster(current_suit_thresh, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.tif',
-                                                     species, species, "current_suit_above_", thresh), overwrite = TRUE) 
-            
-            message('Writing ', species, ' | 20', time_slice, ' max train > ', thresh) 
-            writeRaster(combo_suit_thresh, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
-                                                   species, species, time_slice, "_Max_train_sensit_above_", thresh), overwrite = TRUE)
-            
-            ## Write the percentile raster
-            message('Writing ', species, ' | 20', time_slice, ' 10th percentile > ', percent) 
-            writeRaster(combo_suit_percent, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
-                                                    species, species, time_slice, "_10_percentile_omiss_above_", percent), overwrite = TRUE)
-            
-            ## Write the combined threshold raster
-            message('Writing ', species, ' | 20', time_slice, ' 10th percentile > ', percent) 
-            writeRaster(combo_suit_4GCM, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
-                                                 species, species, time_slice, "_4GCMs_above_", thresh), overwrite = TRUE)
-            
+              
+              message('Writing ', species, ' current', ' max train > ', thresh) 
+              writeRaster(current_suit_thresh, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.tif',
+                                                       species, species, "current_suit_above_", thresh), overwrite = TRUE) 
+              
+              message('Writing ', species, ' | 20', time_slice, ' max train > ', thresh) 
+              writeRaster(combo_suit_thresh, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
+                                                     species, species, time_slice, "_Max_train_sensit_above_", thresh), overwrite = TRUE)
+              
+              ## Write the percentile raster
+              message('Writing ', species, ' | 20', time_slice, ' 10th percentile > ', percent) 
+              writeRaster(combo_suit_percent, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
+                                                      species, species, time_slice, "_10_percentile_omiss_above_", percent), overwrite = TRUE)
+              
+              ## Write the combined threshold raster
+              message('Writing ', species, ' | 20', time_slice, ' 10th percentile > ', percent) 
+              writeRaster(combo_suit_4GCM, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
+                                                   species, species, time_slice, "_4GCMs_above_", thresh), overwrite = TRUE)
+              
             } else {
               
               message(species, ' 20', time_slice, ' combined suitability > ', thresh, ' skipped - already exists')   ## 
@@ -593,7 +594,9 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             ## occ points not working...............................................................................................
             
             empty <- init(combo_suit_thresh, function(x) NA)
-            occ   <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/occ.rds', species)) 
+            occ <- readRDS(
+              sprintf('./output/maxent/STD_VAR_ALL/%s/occ.rds', 
+                      species))
             
             ## Use the 'levelplot' function to make a multipanel output: occurences, percentiles and thresholds
             message('Writing figure for ', species, ' | 20', time_slice, ' > ', thresh) 
@@ -623,6 +626,8 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
                     
                     ## Plot the Aus shapefile with the occurrence points for reference
                     ## Why are the points not working using "occ" in this way?
+                    ## Plot the Aus shapefile with the occurrence points for reference
+                    ## Can the points be made more legible for both poorly and well recorded species?
                     layer(sp.polygons(aus)) +
                     layer(sp.points(occ, pch = 20, cex = 0.4, 
                                     col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))

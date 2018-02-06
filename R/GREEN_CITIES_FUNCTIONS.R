@@ -1553,7 +1553,7 @@ histogram_GBIF_records = function (DF, taxa.list, env.var.1, env.col.1, env.unit
     hist(env.1, xlim = c(min.1, max.1),
          breaks = 50, border = NA, col = env.col.1, main = "",
          xlab = paste0(taxa.n, " ", env.var.1, " ", "(", env.units.1, ")", sep = ""), ylab = "",
-         cex.lab = 3, cex.axis = 2.5)
+         cex.lab = 5, cex.axis = 4)
     
     ## finsh the device
     dev.off()
@@ -1578,7 +1578,7 @@ histogram_GBIF_records = function (DF, taxa.list, env.var.1, env.col.1, env.unit
     hist(env.2, xlim = c(min.2, max.2),
          breaks = 50, border = NA, col = env.col.2, main = "",
          xlab = paste0(taxa.n, " ", env.var.2, " ", "(", env.units.2, ")", sep = ""), ylab = "",
-         cex.lab = 3, cex.axis = 2.5)
+         cex.lab = 5, cex.axis = 4)
     
     ## finsh the device
     dev.off()

@@ -44,7 +44,7 @@ str(SDM.DATA.ALL)
 exp.spp  = c('Swainsona formosa', 'Templetonia retusa', 'Dodonaea baueri', 'Platanus hispanica', 'Kennedia beckxiana')  
 exp.rev  = sort(exp.spp, decreasing = TRUE)
 miss.spp = c('Corymbia tessellaris', 'Metrosideros excelsa')
-
+exp.eg   = c('Ficus brachypoda', 'Flindersia australis', 'Xanthastemon paradoxus')
 
 
 

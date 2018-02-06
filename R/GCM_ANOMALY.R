@@ -3,10 +3,13 @@
 #########################################################################################################################
 
 
+## flag issues with ..........................................................................
+
+
 #########################################################################################################################
 ## also calcualte the temp and rain anomalies for 2050 and 2070, and map them
-#calculate.anomaly.2050(scen_2050)
-#calculate.anomaly.2070(scen_2070)
+calculate.anomaly.2050(scen_2050)
+calculate.anomaly.2070(scen_2070)
 
 
 ## Now combine the anomalies across the GCMs
@@ -77,7 +80,7 @@ print(levelplot(stack(BIO12_anomaly_ac85bi50,
                       BIO12_anomaly_mc85bi50,
                       BIO12_anomaly_no85bi50), margin = FALSE,
                 
-                ## Check the colour schemes..........................................................................
+                ## Make the colour scale for temperature uni-directional..................................................
                 
                 ## Create a colour scheme using colbrewer: 100 is to make it continuos
                 ## Also, make it a one-directional colour scheme
@@ -129,7 +132,7 @@ print(levelplot(stack(BIO1_anomaly_ac85bi70,
                 at = seq(1.5, 6, length = 100),
                 col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
                 
-                ## Check the no85bi70 anomaly..........................................................................
+                ## Check the no85bi70 anomaly...........................................................................
                 
                 ## Give each plot a name
                 names.attr = c(names(BIO1_anomaly_ac85bi70), 
