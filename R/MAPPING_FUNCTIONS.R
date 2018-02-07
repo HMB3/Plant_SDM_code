@@ -34,29 +34,16 @@ project.grids.2050 = function(scen_2050, test_spp) {
       'Precip_dry_qu',       'Precip_warm_qu',    'Precip_col_qu')
     
     ########################################################################################################################
-    ## Divide the temperature rasters by 10: 11 million NA values?
-    ## s[[1:11]] <- s[[1:11]]/10 ## that code doesn't work, this is a work-around...
-    
-    # for(i in 1:11) {
-    #   
-    #   message(i)
-    #   s[[i]] <- s[[ i]]/10
-    #   
-    # }
-    
-    message('Doing raster calculation 2050')
-    s[[1]]  = s[[1]]/10
-    s[[2]]  = s[[2]]/10
-    s[[3]]  = s[[3]]/10
-    s[[4]]  = s[[4]]/10
-    s[[5]]  = s[[5]]/10
-    s[[6]]  = s[[6]]/10
-    s[[7]]  = s[[7]]/10
-    s[[8]]  = s[[8]]/10
-    s[[9]]  = s[[9]]/10
-    s[[10]] = s[[10]]/10
-    s[[11]] = s[[11]]/10
-    
+    ## Divide the temperature rasters by 10: NA values are the ocean
+    ## s[[1:11]] <- s[[1:11]]/10 ## that code doesn't work, this is a work-around...s[[1]]  = s[[1]]/10
+    message('2050 rasters / 10')
+    for(i in 1:11) {
+
+      message(i)
+      s[[i]] <- s[[ i]]/10
+
+    }
+
     ########################################################################################################################
     ## Now loop over the species...   
     lapply(test_spp, function(species) {
@@ -75,12 +62,12 @@ project.grids.2050 = function(scen_2050, test_spp) {
           m <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/full/model.rds', species)) 
           
           ## Read in the occurrence points used to create the SDM
-          ## And if the current raster doesn't exist, create it
           occ <- readRDS(
             sprintf('./output/maxent/STD_VAR_ALL/%s/occ.rds', 
                     species)) %>%
-            
             spTransform(CRS('+init=epsg:4326'))
+          
+          ## And if the current raster doesn't exist, create it
           f_current <- sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_current.tif', 
                                species, species)
           
@@ -132,7 +119,7 @@ project.grids.2050 = function(scen_2050, test_spp) {
                             at = seq(0, 1, length = 100),
                             col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
                             
-                            ## Give each plot a name
+                            ## Give each plot a name: the third panel is the GCM
                             names.attr = c('Occurrence', 'Current', sprintf('%s, 2050, RCP8.5', scen_name)),
                             colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
                             main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
@@ -184,8 +171,8 @@ project.grids.2070 = function(scen_2070, test_spp, time_slice) {
               x, x, 1:19))
     
     #empty <- init(s[[1]], function(x) NA)
-    # nm <- sub('.*bi\\d0(.*)', '\\1', names(s))
-    # names(s) <- sprintf('bio%02d', as.numeric(nm))
+    #nm <- sub('.*bi\\d0(.*)', '\\1', names(s))
+    #names(s) <- sprintf('bio%02d', as.numeric(nm))
     
     ## Rename both the current and future environmental stack...
     names(s) <- names(env.grids.current) <- c(
@@ -197,28 +184,15 @@ project.grids.2070 = function(scen_2070, test_spp, time_slice) {
       'Precip_dry_qu',       'Precip_warm_qu',    'Precip_col_qu')
     
     ########################################################################################################################
-    ## Divide the temperature rasters by 10: 11 million NA values?
-    ## s[[1:11]] <- s[[1:11]]/10 ## that code doesn't work, this is a work-around...
-    message('Doing raster calculation 2070')
-    
-    # for(i in 1:11) {
-    #   
-    #   message(i)
-    #   s[[i]] <- s[[ i]]/10
-    #   
-    # }
-    
-    s[[1]]  = s[[1]]/10
-    s[[2]]  = s[[2]]/10
-    s[[3]]  = s[[3]]/10
-    s[[4]]  = s[[4]]/10
-    s[[5]]  = s[[5]]/10
-    s[[6]]  = s[[6]]/10
-    s[[7]]  = s[[7]]/10
-    s[[8]]  = s[[8]]/10
-    s[[9]]  = s[[9]]/10
-    s[[10]] = s[[10]]/10
-    s[[11]] = s[[11]]/10
+    ## Divide the temperature rasters by 10: NA values are the ocean
+    ## s[[1:11]] <- s[[1:11]]/10 ## that code doesn't work, this is a work-around...s[[1]]  = s[[1]]/10
+    message('2050 rasters / 10')
+    for(i in 1:11) {
+      
+      message(i)
+      s[[i]] <- s[[ i]]/10
+      
+    }
     
     ########################################################################################################################
     ## Now loop over the species...   
@@ -234,16 +208,14 @@ project.grids.2070 = function(scen_2070, test_spp, time_slice) {
           message('Projecting ', species) 
           
           ## Read in the SDM model calibrated on current conditions
-          #m <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/maxent_fitted.rds', species))
           m <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/full/model.rds', species)) 
           
           ## Read in the occurrence points used to create the SDM
           ## And if the current raster doesn't exist, create it
-          occ <- readRDS(
-            sprintf('./output/maxent/STD_VAR_ALL/%s/occ.rds', 
-                    species)) %>%
-            
+          occ <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/occ.rds', species)) %>%
             spTransform(CRS('+init=epsg:4326'))
+          
+          ## Check the current raster exists for that species 
           f_current <- sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_current.tif', 
                                species, species)
           
@@ -347,12 +319,20 @@ project.grids.2070 = function(scen_2070, test_spp, time_slice) {
 ## pervious version in R/old/model_combine.R
 combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles, time_slice, area_occ) {
   
+  ## How can the shapefiles be read in once, not for each species?.....................................................##
   
-  ## How can this shapefile be read in once, not for each species?.....................................................##
+  ## Create Australia shapefile
+  aus <- ne_states(country = 'Australia') %>% 
+    subset(!grepl('Island', name))
   
-  ## First read in the shapefile - can we do this outside the function?
-  ## Also sort the attribute table so that it matches the list 
-  areal_unit = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/IN_SUA_WGS.shp", layer = "IN_SUA_WGS")
+  ## Create world shapefile
+  LAND  <- readOGR("./data/base/CONTEXTUAL/ne_10m_land.shp", layer = "ne_10m_land")
+  
+  ## Create koppen shapefile
+  Koppen     = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/WC05_1975H_Koppen.shp", layer = "WC05_1975H_Koppen")
+  
+  ## Create SUA shapefile, and sort the attribute table so that it matches the list
+  areal_unit = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/IN_SUA_WGS.shp",        layer = "IN_SUA_WGS")
   areal_unit = areal_unit[order(areal_unit$SUA_NAME11),]
   
   ## Loop over each directory
@@ -371,7 +351,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
       f_mean = sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s_suitability_mean.tif', 
                        species, species, time_slice)
       
-      ## The raster list is not accessible below, when the mean raster exists.............................................
+      ## The mean of the GCMs doesn't exist, create it
       if(!file.exists(f_mean)) {
         
         raster.list = list.files(as.character(DIR), pattern = sprintf('bi%s.tif', time_slice), full.names = TRUE)  
@@ -385,14 +365,13 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
         
       } else {
         
-        ## create another level without the mean calculation
+        ## Create another level without the mean calculation
         raster.list = list.files(as.character(DIR), pattern = sprintf('bi%s.tif', time_slice), full.names = TRUE)  
         suit        = stack(raster.list)
         suit.list   = unstack(suit)
         
       }
       
-      #########################################################################################################################
       #########################################################################################################################
       ## Then, create rasters that meet habitat suitability criteria thresholds, determined by the rmaxent function
       for (thresh in thresholds) {
@@ -419,7 +398,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             percent_greater = function (x) {x > percent}
             
             ## Then apply this to just the current suitability raster. These functions use the : 
-            ## Maximum training sensitivity plus specificity Logistic threshold and the :
+            ## Maximum training sensitivity plus specificity Logistic threshold
             ## 10th percentile training presence training omission
             current_suit_thresh  = thresh_greater(f_current)
             current_suit_percent = percent_greater(f_current) 
@@ -436,10 +415,10 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             ## Maximum training sensitivity plus specificity Logistic threshold
             message('Running thresholds for ', species, ' | 20', time_slice, ' combined suitability > ', thresh)
             
-            suit_ras1_thresh   = thresh_greater(suit.list[[1]])  
+            suit_ras1_thresh   = thresh_greater(suit.list[[1]])   ## Abbreviate these...
             suit_ras2_thresh   = thresh_greater(suit.list[[2]])
             suit_ras3_thresh   = thresh_greater(suit.list[[3]])
-            suit_ras4_thresh   = thresh_greater(suit.list[[4]])   ## Abbreviate this...
+            suit_ras4_thresh   = thresh_greater(suit.list[[4]])   
             suit_ras5_thresh   = thresh_greater(suit.list[[5]])
             suit_ras6_thresh   = thresh_greater(suit.list[[6]])
             
@@ -564,20 +543,22 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             ## If they don't exist, write the rasters for each species/threshold
             if(!file.exists(f_max_train_suit)) {
               
+              ## Write the current suitability raster
               message('Writing ', species, ' current', ' max train > ', thresh) 
               writeRaster(current_suit_thresh, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s%s.tif',
                                                        species, species, "current_suit_above_", thresh), overwrite = TRUE) 
               
+              ## Write the combined suitability raster, thresholded using the maximum training value
               message('Writing ', species, ' | 20', time_slice, ' max train > ', thresh) 
               writeRaster(combo_suit_thresh, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
                                                      species, species, time_slice, "_Max_train_sensit_above_", thresh), overwrite = TRUE)
               
-              ## Write the percentile raster
+              ## Write the combined suitability raster, thresholded using the percentile value
               message('Writing ', species, ' | 20', time_slice, ' 10th percentile > ', percent) 
               writeRaster(combo_suit_percent, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
                                                       species, species, time_slice, "_10_percentile_omiss_above_", percent), overwrite = TRUE)
               
-              ## Write the combined threshold raster
+              ## Write the combined future raster with > 4 GCMs above the maximum training value
               message('Writing ', species, ' | 20', time_slice, ' 10th percentile > ', percent) 
               writeRaster(combo_suit_4GCM, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s%s%s.tif',
                                                    species, species, time_slice, "_4GCMs_above_", thresh), overwrite = TRUE)
@@ -589,14 +570,15 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             }
             
             ########################################################################################################################
-            ## Now create the empty panel just before plotting, and read in the occurrence data
+            ## Now create the empty panel just before plotting, and read in the occurrence and background points
+            empty       <- init(combo_suit_thresh, function(x) NA)
+
+            occ <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/occ.rds', species)) %>%
+              spTransform(CRS('+init=epsg:4326'))
             
-            ## occ points not working...............................................................................................
+            bg <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/bg_swd.rds', species)) %>%
+              spTransform(CRS('+init=epsg:4326'))
             
-            empty <- init(combo_suit_thresh, function(x) NA)
-            occ <- readRDS(
-              sprintf('./output/maxent/STD_VAR_ALL/%s/occ.rds', 
-                      species))
             
             ## Use the 'levelplot' function to make a multipanel output: occurences, percentiles and thresholds
             message('Writing figure for ', species, ' | 20', time_slice, ' > ', thresh) 
@@ -606,7 +588,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
                 11, 4, units = 'in', res = 300)
             
             ## Need an empty frame
-            print(levelplot(stack(empty,
+            print(levelplot(stack(empty,                ## needs to have a different colour scale   
                                   combo_suit_percent,
                                   combo_suit_thresh), margin = FALSE,
                             
@@ -628,12 +610,41 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
                     ## Why are the points not working using "occ" in this way?
                     ## Plot the Aus shapefile with the occurrence points for reference
                     ## Can the points be made more legible for both poorly and well recorded species?
-                    layer(sp.polygons(aus)) +
+                    layer(sp.polygons(Koppen)) +
+
                     layer(sp.points(occ, pch = 20, cex = 0.4, 
                                     col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
+              
             
             ## Finish the device
             dev.off()
+            
+            ########################################################################################################################
+            ## Another png for the global records
+            plot(LAND, #add = TRUE, 
+                 lwd = 1.8, asp = 1, col = 'grey', bg = 'sky blue')
+            
+            points(occ, pch = ".", cex = 7, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2, 
+                   main = paste0("Global occurrences for ", species), 
+                   xlab = "", ylab = "", asp = 1)
+            
+            ## title 
+            title(paste0("Global occurrences for ", species),
+                  cex.main = 4,   font.main = 4, col.main = "blue")
+            
+            ########################################################################################################################
+            ## Another PNG for the backgraound points
+            plot(LAND, #add = TRUE, 
+                 lwd = 1.8, asp = 1, col = 'grey', bg = 'sky blue')
+            
+            points(bg, pch = ".", cex = 7, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2, 
+                   main = paste0("Global occurrences for ", species), 
+                   xlab = "", ylab = "", asp = 1)
+            
+            ## title 
+            title(paste0("Bacground points for ", species),
+                  cex.main = 4,   font.main = 4, col.main = "blue") 
+
             
           } else {
             

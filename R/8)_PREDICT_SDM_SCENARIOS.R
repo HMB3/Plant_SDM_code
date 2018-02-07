@@ -13,7 +13,7 @@
 ## between time periods (current, 2030, 2070) could be calculated. 
 
 
-## Load packages
+## Load packages ::
 load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1601_2018.RData")
 source('./R/HIA_LIST_MATCHING.R')
 
@@ -111,10 +111,7 @@ summary(env.grids.current[[11]])
 #########################################################################################################################
 ## For each species, use a function to create raster files and maps of all six GCMs.
 ## Note that some of the experimental species - e.g. Kennedia_beckxiana - still have to be modelled
-## [78], SDM.RESULTS.DIR[83], SDM.RESULTS.DIR[159]
-env.grids.2050 = project.grids.2050(scen_2050, c(comb_spp[78], comb_spp[83], comb_spp[159]))
-env.grids.2070 = project.grids.2070(scen_2050, c(comb_spp[78], comb_spp[83], comb_spp[159]))
-
+## c(comb_spp[78], comb_spp[83], comb_spp[159])
 env.grids.2050 = project.grids.2050(scen_2050, sort(setdiff(all_spp, test_spp)[1:300], decreasing = TRUE))
 env.grids.2070 = project.grids.2070(scen_2070, sort(setdiff(all_spp, test_spp)[1:300], decreasing = TRUE))
 
@@ -269,12 +266,12 @@ tail(SDM.RESULTS.DIR, 20);tail(comb_spp, 20); tail(MAXENT.SUM.TEST, 20)[, c("GBI
 # CRS.new  <- CRS("+init=epsg:4326") # EPSG:3577
 # SUA.WGS  = spTransform(SUA, CRS.new)
 # writeOGR(obj = SUA.WGS, dsn = "./data/base/CONTEXTUAL", layer = "IN_SUA_WGS", driver = "ESRI Shapefile")
-SUA.WGS = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/IN_SUA_WGS.shp", layer = "IN_SUA_WGS")
-SUA.WGS = SUA.WGS [order(SUA.WGS $SUA_NAME11),]
 
-#areal_unit = SUA.WGS
-SUA_RAS <- rasterize(SUA.WGS, env.grids.current[[1]])
-## exp.eg = c('Ficus_brachypoda', 'Flindersia_australis', 'Xanthastemon_paradoxus')
+
+# SUA.WGS = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/IN_SUA_WGS.shp", layer = "IN_SUA_WGS")
+# SUA.WGS = SUA.WGS [order(SUA.WGS $SUA_NAME11),]
+# SUA_RAS <- rasterize(SUA.WGS, env.grids.current[[1]])
+
 
 
 #########################################################################################################################
