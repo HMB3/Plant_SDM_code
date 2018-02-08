@@ -572,7 +572,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             
             ########################################################################################################################
             ## Now create the empty panel just before plotting, and read in the occurrence and background points
-            empty       <- init(combo_suit_thresh, function(x) NA)
+            empty <- init(combo_suit_thresh, function(x) NA)
             
             occ <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/occ_swd.rds', species)) %>%
               spTransform(CRS('+init=epsg:4326'))
@@ -626,16 +626,16 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
                         species, species, "global_records"),
                 16180, 10000, units = 'px', res = 600)
 
-            ## How do we locate bad records after finding them?
+            ## How do we locate bad records in the dataset after spotting them?
             plot(LAND, #add = TRUE, 
-                 lwd = 1.8, asp = 1, col = 'grey', bg = 'sky blue')
+                 lwd = 0.5, asp = 1) # col = 'grey', bg = 'sky blue')
             
-            points(occ, pch = ".", cex = 7, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2, 
+            points(occ, pch = ".", cex = 2, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2, 
                    main = paste0("Global occurrences for ", species), 
                    xlab = "", ylab = "", asp = 1)
             
             ## title 
-            title(paste0("Global occurrences for ", species),
+            title(paste0("Global points for ", species),
                   cex.main = 4,   font.main = 4, col.main = "blue")
             
             ## finsh the device
@@ -644,14 +644,14 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             ########################################################################################################################
             ## Another PNG for the backgraound points
             png(sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s.png',
-                        species, species, "global_records"),
+                        species, species, "background_records"),
                 16180, 10000, units = 'px', res = 600)
             
-            ## How do we locate bad records after finding them?
+            ## How do we locate bad records in the dataset after spotting them?
             plot(LAND, #add = TRUE, 
-                 lwd = 1.8, asp = 1, col = 'grey', bg = 'sky blue')
+                 lwd = 0.5, asp = 1) #, col = 'grey', bg = 'sky blue')
             
-            points(bg, pch = ".", cex = 7, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2, 
+            points(bg, pch = ".", cex = 1.6, col = "blue", cex.lab = 3, cex.main = 4, cex.axis = 2, 
                    main = paste0("Global occurrences for ", species), 
                    xlab = "", ylab = "", asp = 1)
             

@@ -97,12 +97,14 @@ source('./R/SDM_FUNCTIONS.R')
 ## Extremes (e.g. most extreme months)
 
 
-## These will change... 
+## Remove 8, 9, 18, 19
 sdm.predictors.all <- c("Annual_mean_temp",    "Mean_diurnal_range",  "Isothermality",      "Temp_seasonality",  
-                        "Max_temp_warm_month", "Min_temp_cold_month", "Temp_annual_range",  "Mean_temp_wet_qu",    
-                        "Mean_temp_dry_qu",    "Mean_temp_warm_qu",   "Mean_temp_cold_qu",  "Annual_precip", 
-                        "Precip_wet_month",    "Precip_dry_month",    "Precip_seasonality", "Precip_wet_qu",     
-                        "Precip_dry_qu",       "Precip_warm_qu",      "Precip_col_qu")
+                        "Max_temp_warm_month", "Min_temp_cold_month", "Temp_annual_range",  
+                        #"Mean_temp_wet_qu",    "Mean_temp_dry_qu",    
+                        "Mean_temp_warm_qu",   "Mean_temp_cold_qu",  "Annual_precip", 
+                        "Precip_wet_month",    "Precip_dry_month",   "Precip_seasonality", "Precip_wet_qu",     
+                        "Precip_dry_qu")       
+                        #"Precip_warm_qu",     "Precip_col_qu")
 
 
 
@@ -185,9 +187,12 @@ names(COMBO.RASTER.CONTEXT)
 
 #########################################################################################################################
 ## Chose all worldclim predictors
-sdm.predictors.all <- c("Annual_mean_temp",  "Mean_diurnal_range",  "Isothermality",       "Temp_seasonality",  "Max_temp_warm_month", "Min_temp_cold_month", 
-                        "Temp_annual_range", "Mean_temp_wet_qu",    "Mean_temp_dry_qu",    "Mean_temp_warm_qu", "Mean_temp_cold_qu",   "Annual_precip", 
-                        "Precip_wet_month",  "Precip_dry_month",    "Precip_seasonality",  "Precip_wet_qu",     "Precip_dry_qu",       "Precip_warm_qu", "Precip_col_qu")  
+sdm.predictors.all <- c("Annual_mean_temp",  "Mean_diurnal_range",  "Isothermality",  "Temp_seasonality",  "Max_temp_warm_month", "Min_temp_cold_month", 
+                        "Temp_annual_range", 
+                        #"Mean_temp_wet_qu", "Mean_temp_dry_qu",    
+                        "Mean_temp_warm_qu", "Mean_temp_cold_qu",   "Annual_precip", 
+                        "Precip_wet_month",  "Precip_dry_month",    "Precip_seasonality",  "Precip_wet_qu",     "Precip_dry_qu")       
+                        #"Precip_warm_qu", "Precip_col_qu")  
 
 
 ## Watch the CRS.......................................................................................................
@@ -203,9 +208,12 @@ template.raster <- raster(raster("./data/base/worldclim/world/0.5/bio/current/bi
 COMBO.RASTER.ALL    <- select(COMBO.RASTER.CONTEXT, 
                               searchTaxon, 
                               lon, lat, 
-                              Annual_mean_temp,  Mean_diurnal_range,  Isothermality,       Temp_seasonality,  Max_temp_warm_month, Min_temp_cold_month, 
-                              Temp_annual_range, Mean_temp_wet_qu,    Mean_temp_dry_qu,    Mean_temp_warm_qu, Mean_temp_cold_qu,   Annual_precip, 
-                              Precip_wet_month,  Precip_dry_month,    Precip_seasonality,  Precip_wet_qu,     Precip_dry_qu,       Precip_warm_qu, Precip_col_qu)
+                              Annual_mean_temp,  Mean_diurnal_range,  Isothermality, Temp_seasonality,  Max_temp_warm_month, Min_temp_cold_month, 
+                              Temp_annual_range, 
+                              #Mean_temp_wet_qu, Mean_temp_dry_qu,    
+                              Mean_temp_warm_qu, Mean_temp_cold_qu,   Annual_precip, 
+                              Precip_wet_month,  Precip_dry_month,    Precip_seasonality,  Precip_wet_qu,     Precip_dry_qu)       
+                              #Precip_warm_qu, Precip_col_qu)
 
 
 #########################################################################################################################
