@@ -187,8 +187,6 @@ FIT_MAXENT_SELECTION <- function(occ,
       
       #####################################################################
       ## Run simplify rmaxent::simplify
-      #debugonce(RMAXENT_SIMPLIFY)
-      ##debugonce(f)  
       m <- rmaxent::simplify(
         
         swd_occ, 

@@ -321,6 +321,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
   
   ## How can the shapefiles be read in once, not for each species?.....................................................##
   
+  ###################################################################################################################
   ## Create Australia shapefile
   aus <- ne_states(country = 'Australia') %>% 
     subset(!grepl('Island', name))
@@ -572,8 +573,8 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             ########################################################################################################################
             ## Now create the empty panel just before plotting, and read in the occurrence and background points
             empty       <- init(combo_suit_thresh, function(x) NA)
-
-            occ <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/occ.rds', species)) %>%
+            
+            occ <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/occ_swd.rds', species)) %>%
               spTransform(CRS('+init=epsg:4326'))
             
             bg <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/bg_swd.rds', species)) %>%
@@ -621,6 +622,11 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             
             ########################################################################################################################
             ## Another png for the global records
+            png(sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s.png',
+                        species, species, "global_records"),
+                16180, 10000, units = 'px', res = 600)
+
+            ## How do we locate bad records after finding them?
             plot(LAND, #add = TRUE, 
                  lwd = 1.8, asp = 1, col = 'grey', bg = 'sky blue')
             
@@ -632,8 +638,16 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             title(paste0("Global occurrences for ", species),
                   cex.main = 4,   font.main = 4, col.main = "blue")
             
+            ## finsh the device
+            dev.off()
+            
             ########################################################################################################################
             ## Another PNG for the backgraound points
+            png(sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s.png',
+                        species, species, "global_records"),
+                16180, 10000, units = 'px', res = 600)
+            
+            ## How do we locate bad records after finding them?
             plot(LAND, #add = TRUE, 
                  lwd = 1.8, asp = 1, col = 'grey', bg = 'sky blue')
             
@@ -643,7 +657,10 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             
             ## title 
             title(paste0("Bacground points for ", species),
-                  cex.main = 4,   font.main = 4, col.main = "blue") 
+                  cex.main = 4,   font.main = 4, col.main = "blue")
+            
+            ## finsh the device
+            dev.off() 
 
             
           } else {

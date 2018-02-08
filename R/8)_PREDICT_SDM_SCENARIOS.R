@@ -131,7 +131,7 @@ env.grids.2070 = project.grids.2070(scen_2070, sort(setdiff(all_spp, test_spp)[1
 #########################################################################################################################
 ## First, read in the list of files for the current models, and specify the file path
 maxent.tables = list.files("./output/maxent/STD_VAR_ALL/")
-path       = "./output/maxent/STD_VAR_ALL/"
+path          = "./output/maxent/STD_VAR_ALL/"
 length(maxent.tables)
 
 
