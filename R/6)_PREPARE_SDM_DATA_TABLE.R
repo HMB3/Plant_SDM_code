@@ -97,17 +97,6 @@ source('./R/SDM_FUNCTIONS.R')
 ## Extremes (e.g. most extreme months)
 
 
-## Remove 8, 9, 18, 19
-sdm.predictors.all <- c("Annual_mean_temp",    "Mean_diurnal_range",  "Isothermality",      "Temp_seasonality",  
-                        "Max_temp_warm_month", "Min_temp_cold_month", "Temp_annual_range",  
-                        #"Mean_temp_wet_qu",    "Mean_temp_dry_qu",    
-                        "Mean_temp_warm_qu",   "Mean_temp_cold_qu",  "Annual_precip", 
-                        "Precip_wet_month",    "Precip_dry_month",   "Precip_seasonality", "Precip_wet_qu",     
-                        "Precip_dry_qu")       
-                        #"Precip_warm_qu",     "Precip_col_qu")
-
-
-
 #########################################################################################################################
 ## Read in Raster data
 load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_1601_2018.RData")
@@ -185,19 +174,8 @@ names(COMBO.RASTER.CONTEXT)
 #########################################################################################################################
 
 
-#########################################################################################################################
-## Chose all worldclim predictors
-sdm.predictors.all <- c("Annual_mean_temp",  "Mean_diurnal_range",  "Isothermality",  "Temp_seasonality",  "Max_temp_warm_month", "Min_temp_cold_month", 
-                        "Temp_annual_range", 
-                        #"Mean_temp_wet_qu", "Mean_temp_dry_qu",    
-                        "Mean_temp_warm_qu", "Mean_temp_cold_qu",   "Annual_precip", 
-                        "Precip_wet_month",  "Precip_dry_month",    "Precip_seasonality",  "Precip_wet_qu",     "Precip_dry_qu")       
-                        #"Precip_warm_qu", "Precip_col_qu")  
-
-
 ## Watch the CRS.......................................................................................................
-
-
+## 
 ## Create an empty raster with the desired properties, using raster(raster(x))
 template.raster <- raster(raster("./data/base/worldclim/world/0.5/bio/current/bio_01")) %>% 
   projectRaster(res = 1000, crs = CRS('+init=ESRI:54009'))

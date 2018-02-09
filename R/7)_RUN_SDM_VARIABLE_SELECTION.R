@@ -57,12 +57,13 @@ exp.eg   = c('Ficus brachypoda', 'Flindersia australis', 'Xanthastemon paradoxus
 #########################################################################################################################
 ## Chose a-priori worldclim predictors
 sdm.predictors <- c("Annual_mean_temp",    "Mean_diurnal_range",  "Isothermality",      "Temp_seasonality",  
-                    "Max_temp_warm_month", "Min_temp_cold_month", 
-                    #"Temp_annual_range",  "Mean_temp_wet_qu",    
-                    "Mean_temp_dry_qu",    "Mean_temp_warm_qu",   "Mean_temp_cold_qu",  "Annual_precip", 
-                    "Precip_wet_month",    "Precip_dry_month",    "Precip_seasonality", "Precip_wet_qu",     
+                    "Max_temp_warm_month", "Min_temp_cold_month", "Temp_annual_range",  
+                    #"Mean_temp_wet_qu",    "Mean_temp_dry_qu",    
+                    "Mean_temp_warm_qu",   "Mean_temp_cold_qu",  "Annual_precip", 
+                    "Precip_wet_month",    "Precip_dry_month",   "Precip_seasonality", "Precip_wet_qu",     
                     "Precip_dry_qu")       
-                    #"Precip_warm_qu",      "Precip_col_qu")
+#"Precip_warm_qu",     "Precip_col_qu")
+
 
 
 ## Are the latest experimental species in there?
@@ -89,6 +90,11 @@ head(spp.all, 10)
 ## traceback()
 
 
+## Check the old variables are gone :
+names(SDM.DATA.ALL)
+
+
+
 ## 100 species takes about 4 hours...
 cl <- makeCluster(4)
 clusterExport(cl, c('template.raster', 'SDM.DATA.ALL', 'FIT_MAXENT_SELECTION'))
@@ -108,7 +114,7 @@ clusterEvalQ(cl, {
 
 ########################################################################################################################
 ## Run for all species
-lapply(spp.all, function(spp)  { # for serial, parLapply(cl, species[1:8], function(spp) { # for parallel 
+lapply(test.spp, function(spp)  { # for serial, parLapply(cl, species[1:8], function(spp) { # for parallel 
   
   ## Print the taxa being processed to screen
   if(spp %in% SDM.DATA.ALL$searchTaxon) {
@@ -137,12 +143,12 @@ lapply(spp.all, function(spp)  { # for serial, parLapply(cl, species[1:8], funct
                          min_n                   = 20,   ## This should be higher...
                          max_bg_size             = 100000,
                          background_buffer_width = 200000,
-                         shapefiles              = FALSE,
+                         shapefiles              = TRUE,
                          features                = 'lpq',
                          replicates              = 5,
                          cor_thr = 0.7, 
                          pct_thr = 5, 
-                         k_thr = 3, 
+                         k_thr = 2, 
                          responsecurves          = TRUE)
     
   } else {
@@ -179,7 +185,7 @@ clusterEvalQ(cl, {
 
 ########################################################################################################################
 ## Run for all species
-lapply(all.reverse, function(spp)  { # for serial, parLapply(cl, species[1:8], function(spp) { # for parallel 
+lapply(test.reverse, function(spp)  { # for serial, parLapply(cl, species[1:8], function(spp) { # for parallel 
   
   ## Print the taxa being processed to screen
   if(spp %in% SDM.DATA.ALL$searchTaxon) {
@@ -208,12 +214,12 @@ lapply(all.reverse, function(spp)  { # for serial, parLapply(cl, species[1:8], f
                          min_n                   = 20,   ## This should be higher...
                          max_bg_size             = 100000,
                          background_buffer_width = 200000,
-                         shapefiles              = FALSE,
+                         shapefiles              = TRUE,
                          features                = 'lpq',
                          replicates              = 5,
                          cor_thr = 0.7, 
                          pct_thr = 5, 
-                         k_thr = 3, 
+                         k_thr = 2, 
                          responsecurves          = TRUE)
     
   } else {

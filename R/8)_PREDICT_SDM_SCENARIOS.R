@@ -112,8 +112,8 @@ summary(env.grids.current[[11]])
 ## For each species, use a function to create raster files and maps of all six GCMs.
 ## Note that some of the experimental species - e.g. Kennedia_beckxiana - still have to be modelled
 ## c(comb_spp[78], comb_spp[83], comb_spp[159])
-env.grids.2050 = project.grids.2050(scen_2050, sort(setdiff(all_spp, test_spp)[1:300], decreasing = TRUE))
-env.grids.2070 = project.grids.2070(scen_2070, sort(setdiff(all_spp, test_spp)[1:300], decreasing = TRUE))
+env.grids.2050 = project.grids.2050(scen_2050, (test_spp)[84])
+env.grids.2070 = project.grids.2070(scen_2070, (test_spp)[84])
 
 
 ## Plot GCM anomalies...
