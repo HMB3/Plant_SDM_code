@@ -176,6 +176,8 @@ MAXENT.STD.VAR.SUMMARY <- maxent.tables[c(1:length(maxent.tables))] %>%         
 dim(MAXENT.STD.VAR.SUMMARY)
 head(MAXENT.STD.VAR.SUMMARY, 20)[1:8]
 
+## test$no_variables = 14 - (test$na_count / 2)                           ## 
+
 
 ## Now check the match between the species list, and the results list. These need to match, so we can access
 ## the right threshold for each species.

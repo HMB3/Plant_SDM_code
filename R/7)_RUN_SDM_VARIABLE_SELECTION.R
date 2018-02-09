@@ -241,14 +241,20 @@ save.session(file = 'STEP_7.Rda')
 
 
 
+
+
 #########################################################################################################################
 ## OUTSTANDING SDM TASKS:
 #########################################################################################################################
 
 
-## Further mapping and cleaning of GBIF data needed for the important species: Use worldview?
+## What is being used for background records? How is background selection being done? 
+  
+## What is the cut-off for correlation and what is the minimum number of variables? 
+  
+## Which variables are showing up as important
 
-## Need a condition in the loop to skip folders in the list, can this be an argument in the loop set to "TRUE" OR "FALSE"? Can be time-stamped
+## Further mapping and cleaning of GBIF data needed for the important species: Use worldview?
 
 ## Store the list of skipped species...
 

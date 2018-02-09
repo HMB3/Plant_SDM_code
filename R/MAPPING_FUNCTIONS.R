@@ -165,9 +165,7 @@ FIT_MAXENT_SELECTION <- function(occ,
       saveRDS(occ, file.path(outdir_sp, 'occ.rds'))
       
       #####################################################################
-      ## sdm.predictors: the s_ff object containing sdm.predictors to use in 
-      ## the model. Sample sdm.predictors at occurrence and background points
-      #####################################################################
+      ## Now get the predictors at the occurrence and background points 
       swd_occ <- occ[, sdm.predictors]
       swd_occ$species <- name           
       saveRDS(swd_occ, file.path(outdir_sp, 'occ_swd.rds'))
@@ -253,13 +251,13 @@ project.grids.2050 = function(scen_2050, test_spp) {
     ## s[[1:11]] <- s[[1:11]]/10 ## that code doesn't work, this is a work-around...s[[1]]  = s[[1]]/10
     message('2050 rasters / 10')
     for(i in 1:11) {
-
+      
       ## simple loop
       message(i)
       s[[i]] <- s[[ i]]/10
-
+      
     }
-
+    
     ########################################################################################################################
     ## Now loop over the species...   
     lapply(test_spp, function(species) {
@@ -514,7 +512,7 @@ project.grids.2070 = function(scen_2070, test_spp, time_slice) {
   })
   
 }
- 
+
 
 
 
@@ -828,10 +826,10 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
                     ## Plot the Aus shapefile with the occurrence points for reference
                     ## Can the points be made more legible for both poorly and well recorded species?
                     layer(sp.polygons(Koppen)) +
-
+                    
                     layer(sp.points(occ, pch = 20, cex = 0.4, 
                                     col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
-              
+            
             
             ## Finish the device
             dev.off()
@@ -841,7 +839,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             png(sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s.png',
                         species, species, "global_records"),
                 16180, 10000, units = 'px', res = 600)
-
+            
             ## How do we locate bad records in the dataset after spotting them?
             plot(LAND, #add = TRUE, 
                  lwd = 0.5, asp = 1) # col = 'grey', bg = 'sky blue')
@@ -877,7 +875,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             
             ## finsh the device
             dev.off() 
-
+            
             
           } else {
             
@@ -894,7 +892,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
   })
   
 }
-    
+
 
 
 
@@ -957,7 +955,7 @@ bind_maxent_tables = function(x) {
 #########################################################################################################################
 ## ANOMALY FUNCTIONS
 #########################################################################################################################
-    
+
 
 #########################################################################################################################
 ## For each scenario, calcualte the mean annual temperature and annual rainfall anomaly
@@ -987,7 +985,7 @@ calculate.anomaly.2050 = function(scen_2050) {
     s <- stack(
       sprintf('./data/base/worldclim/aus/0.5/bio/2050/%s/%s%s.tif',
               x, x, 1:19))
-
+    
     ########################################################################################################################
     ## Create future rasters
     s[[1]]  = s[[1]]/10
