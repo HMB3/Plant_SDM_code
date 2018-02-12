@@ -8,7 +8,7 @@
 ## of taxa
 
 
-## The brief again:
+## The HIA brief again:
 
 ## The first module will focus on x plant species identified in the project’s Target Species List, and will develop maps 
 ## that demonstrate each species’ suitability to both current and future climates across Australia.
@@ -16,6 +16,7 @@
 ## These maps will be used to demonstrate how well or poorly a particular species will be able to tolerate future conditions 
 ## in urban centres across Australia as the climate changes, based on our current understanding of species’ climatic 
 ## requirements.
+
 
 
 #########################################################################################################################
@@ -55,20 +56,16 @@ exp.eg   = c('Ficus brachypoda', 'Flindersia australis', 'Xanthastemon paradoxus
 
 
 #########################################################################################################################
-## Chose a-priori worldclim predictors
+## Chose a-priori worldclim predictors: get rid of 8, 9, 18 and 19
 sdm.predictors <- c("Annual_mean_temp",    "Mean_diurnal_range",  "Isothermality",      "Temp_seasonality",  
-                    "Max_temp_warm_month", "Min_temp_cold_month", "Temp_annual_range",  
-                    #"Mean_temp_wet_qu",    "Mean_temp_dry_qu",    
-                    "Mean_temp_warm_qu",   "Mean_temp_cold_qu",  "Annual_precip", 
-                    "Precip_wet_month",    "Precip_dry_month",   "Precip_seasonality", "Precip_wet_qu",     
-                    "Precip_dry_qu")       
-#"Precip_warm_qu",     "Precip_col_qu")
-
+                    "Max_temp_warm_month", "Min_temp_cold_month", "Temp_annual_range",  "Mean_temp_warm_qu",   
+                    "Mean_temp_cold_qu",   "Annual_precip",       "Precip_wet_month",   "Precip_dry_month",   
+                    "Precip_seasonality",  "Precip_wet_qu",       "Precip_dry_qu")
 
 
 ## Are the latest experimental species in there?
 head(test.spp, 10)
-head(spp.all, 10)
+head(spp.all,  10)
 
 
 ########################################################################################################################
@@ -94,7 +91,6 @@ head(spp.all, 10)
 names(SDM.DATA.ALL)
 
 
-
 ## 100 species takes about 4 hours...
 cl <- makeCluster(4)
 clusterExport(cl, c('template.raster', 'SDM.DATA.ALL', 'FIT_MAXENT_SELECTION'))
@@ -110,6 +106,16 @@ clusterEvalQ(cl, {
 
 })
 
+
+## Regarding maxent settings ...........................................................................................
+
+
+## Also note that for some species there are only a few variables with < 0.7 correlation. So to reduce this problem :
+
+
+## Increase cor_thr to 0.8, 
+## Skip the species with < 5 uncorrelated variables
+## Increase k_thr to avoid commission error
 
 
 ########################################################################################################################
@@ -134,6 +140,7 @@ lapply(test.spp, function(spp)  { # for serial, parLapply(cl, species[1:8], func
     
     ## Fit the models using FIT_MAXENT. Would be good to make skipping exisitng outputs an argument
     #browser()
+    tryCatch(  ## catch any error in the following code, print a message, skipping to next species 
     FIT_MAXENT_SELECTION(occ                     = occurrence, 
                          bg                      = background, 
                          sdm.predictors          = sdm.predictors, 
@@ -146,10 +153,12 @@ lapply(test.spp, function(spp)  { # for serial, parLapply(cl, species[1:8], func
                          shapefiles              = TRUE,
                          features                = 'lpq',
                          replicates              = 5,
-                         cor_thr = 0.7, 
-                         pct_thr = 5, 
-                         k_thr = 2, 
-                         responsecurves          = TRUE)
+                         cor_thr                 = 0.8, 
+                         pct_thr                 = 5, 
+                         k_thr                   = 5, 
+                         responsecurves          = TRUE), 
+    
+    function(e) message('Species skipped ', spp)) ## skip any species for which the functio fails
     
   } else {
     

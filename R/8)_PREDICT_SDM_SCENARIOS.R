@@ -109,11 +109,47 @@ summary(env.grids.current[[11]])
 
 
 #########################################################################################################################
+## First, create a raster stack outside the loop. Try passing the object to the loop and see what happens
+
+project.grids.2050 = function(scen_2050) {
+  
+  lapply(scen_2050, function(x) {
+    
+    s <- stack(
+      sprintf('./data/base/worldclim/aus/0.5/bio/2050/%s/%s%s.tif',
+              x, x, 1:19))
+    
+    ## Rename both the current and future environmental stack...
+    names(s) <- names(env.grids.current) <- c(
+      'Annual_mean_temp',    'Mean_diurnal_range',
+      'Isothermality',       'Temp_seasonality',  'Max_temp_warm_month',
+      'Min_temp_cold_month', 'Temp_annual_range', 'Mean_temp_wet_qu',
+      'Mean_temp_dry_qu',    'Mean_temp_warm_qu', 'Mean_temp_cold_qu',  'Annual_precip',
+      'Precip_wet_month',    'Precip_dry_month',  'Precip_seasonality', 'Precip_wet_qu',
+      'Precip_dry_qu',       'Precip_warm_qu',    'Precip_col_qu')
+    
+    ########################################################################################################################
+    ## Divide the temperature rasters by 10: NA values are the ocean
+    ## s[[1:11]] <- s[[1:11]]/10 ## that code doesn't work, this is a work-around...s[[1]]  = s[[1]]/10
+    message('2050 rasters / 10')
+    for(i in 1:11) {
+      
+      ## simple loop
+      message(i)
+      s[[i]] <- s[[ i]]/10
+      
+    }
+    
+  })
+  
+}
+  
+#########################################################################################################################
 ## For each species, use a function to create raster files and maps of all six GCMs.
 ## Note that some of the experimental species - e.g. Kennedia_beckxiana - still have to be modelled
 ## c(comb_spp[78], comb_spp[83], comb_spp[159])
-env.grids.2050 = project.grids.2050(scen_2050, (test_spp)[84])
-env.grids.2070 = project.grids.2070(scen_2070, (test_spp)[84])
+env.grids.2050 = project.grids.2050(scen_2050, (test_spp)[1])
+env.grids.2070 = project.grids.2070(scen_2070, (test_spp)[1])
 
 
 ## Plot GCM anomalies...
@@ -176,7 +212,20 @@ MAXENT.STD.VAR.SUMMARY <- maxent.tables[c(1:length(maxent.tables))] %>%         
 dim(MAXENT.STD.VAR.SUMMARY)
 head(MAXENT.STD.VAR.SUMMARY, 20)[1:8]
 
-## test$no_variables = 14 - (test$na_count / 2)                           ## 
+
+## Dodgy way to see how many variables were used each time
+MAXENT.STD.VAR.SUMMARY$na_count     <- apply(MAXENT.STD.VAR.SUMMARY, 1, function(x) sum(is.na(x)))
+MAXENT.STD.VAR.SUMMARY$no_variables = 14 - (MAXENT.STD.VAR.SUMMARY$na_count / 2)                           
+
+
+## What are the variables we want to see?
+View(head(MAXENT.STD.VAR.SUMMARY, 180)[, c("GBIF_Taxon",
+                                           "no_variables",
+                                           "X.Training.samples",                                                                
+                                           "Iterations",                                                                        
+                                           "Training.AUC",                                                                      
+                                           "X.Background.points",  
+                                           "Maximum.training.sensitivity.plus.specificity.Logistic.threshold")])
 
 
 ## Now check the match between the species list, and the results list. These need to match, so we can access
@@ -286,12 +335,12 @@ time_slice = 50
 area_occ   = 10
 
 
-## Combine output and calculate gain and loss for 2070 
+## Combine output and calculate gain and loss for 2070 ## c(SDM.RESULTS.DIR[78], SDM.RESULTS.DIR[83], SDM.RESULTS.DIR[159])
 suitability.2050 = mapply(combine_gcm_threshold, 
-                          DIR_list     = c(SDM.RESULTS.DIR[78], SDM.RESULTS.DIR[83], SDM.RESULTS.DIR[159]), 
-                          species_list = c(comb_spp[78], comb_spp[83], comb_spp[159]),
-                          thresholds   = c(thresh.max.train[78], thresh.max.train[83], thresh.max.train[159]),
-                          percentiles  = c(percent.10.omiss[78], percent.10.omiss[83], percent.10.omiss[159]),
+                          DIR_list     = SDM.RESULTS.DIR[1], 
+                          species_list = comb_spp[1], 
+                          thresholds   = thresh.max.train[1],
+                          percentiles  = percent.10.omiss[1],
                           time_slice   = 50,
                           area_occ     = 10)
 
