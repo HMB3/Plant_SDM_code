@@ -584,7 +584,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
   LAND  <- readOGR("./data/base/CONTEXTUAL/ne_10m_land.shp", layer = "ne_10m_land")
   
   ## Create koppen shapefile
-  Koppen     = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/WC05_1975H_Koppen.shp", layer = "WC05_1975H_Koppen")
+  #Koppen     = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/WC05_1975H_Koppen.shp", layer = "WC05_1975H_Koppen")
   
   ## Create SUA shapefile, and sort the attribute table so that it matches the list
   areal_unit = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/IN_SUA_WGS.shp",        layer = "IN_SUA_WGS")
@@ -954,6 +954,8 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             ## Finish the device
             dev.off()
             
+            ## current.list = as.data.frame(env.grids.current)
+            ## test = similarity(occ, env.grids.current, full = FALSE)
             
           } else {
             

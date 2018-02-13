@@ -299,10 +299,10 @@ setdiff(Manuel.experimental$Species, spp.all)
 
 
 ## The trial species
-test.spp = trim.space(sort(unique(c(renee.full$Species, 
-                                    Manuel.experimental$Species,
-                                    MQ.glasshouse$Species,
-                                    "Betula pendula", "Fraxinus excelsior", "Quercus robur", "Fagus sylvatica"))))
+test.spp = trimws(sort(unique(c(renee.full$Species, 
+                                Manuel.experimental$Species,
+                                MQ.glasshouse$Species,
+                                "Betula pendula", "Fraxinus excelsior", "Quercus robur", "Fagus sylvatica"))))
 
 
 ## Combine with 45 from the main list

@@ -30,7 +30,8 @@ p <- c('ff',    'things',         'raster',    'dismo',        'sp',           '
 sapply(p, require, character.only = TRUE)
 load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1601_2018.RData")
 source('./R/GREEN_CITIES_FUNCTIONS.R')
-source('./R/SDM_FUNCTIONS.R')
+source('./R/MAPPING_FUNCTIONS.R')
+source('./R/HIA_LIST_MATCHING.R')
 
 
 
@@ -100,7 +101,7 @@ source('./R/SDM_FUNCTIONS.R')
 #########################################################################################################################
 ## Read in Raster data
 load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_1601_2018.RData")
-dim(COMBO.RASTER.CONTEXT)    ## 19 million rows, the latest dataset 
+dim(COMBO.RASTER.CONTEXT)    ##
 names(COMBO.RASTER.CONTEXT)
 
 
@@ -109,7 +110,7 @@ names(COMBO.RASTER.CONTEXT)
 # ## Try the correlation for everything
 # combo.subset <- COMBO.RASTER.CONTEXT %>%
 #   
-#   ## just get the sdm.predictors
+#   ## Just get the sdm.predictors
 #   select(one_of(sdm.predictors.all)) %>%
 #   as.data.frame()
 # 
@@ -183,15 +184,35 @@ template.raster <- raster(raster("./data/base/worldclim/world/0.5/bio/current/bi
 
 #########################################################################################################################
 ## Just get the columns needed for modelling: this would include cultivated/non, and inside/outside
-COMBO.RASTER.ALL    <- select(COMBO.RASTER.CONTEXT, 
-                              searchTaxon, 
-                              lon, lat, 
-                              Annual_mean_temp,  Mean_diurnal_range,  Isothermality, Temp_seasonality,  Max_temp_warm_month, Min_temp_cold_month, 
-                              Temp_annual_range, 
-                              #Mean_temp_wet_qu, Mean_temp_dry_qu,    
-                              Mean_temp_warm_qu, Mean_temp_cold_qu,   Annual_precip, 
-                              Precip_wet_month,  Precip_dry_month,    Precip_seasonality,  Precip_wet_qu,     Precip_dry_qu)       
-                              #Precip_warm_qu, Precip_col_qu)
+## Get an ID column here too, and use it to join back on the other columns to the unique cells data
+COMBO.RASTER.CONTEXT$OBS <- 1:nrow(COMBO.RASTER.CONTEXT)
+dim(COMBO.RASTER.CONTEXT)[1];length(COMBO.RASTER.CONTEXT$OBS)
+
+
+COMBO.RASTER.ALL = COMBO.RASTER.CONTEXT[,c("searchTaxon", 
+                                           "OBS", 
+                                           "lon",
+                                           "lat",
+                                           "Annual_mean_temp", 
+                                           "Mean_diurnal_range", 
+                                           "Isothermality", 
+                                           "Temp_seasonality", 
+                                           "Max_temp_warm_month", 
+                                           "Min_temp_cold_month", 
+                                           "Temp_annual_range", 
+                                           "Mean_temp_warm_qu", 
+                                           "Mean_temp_cold_qu", 
+                                           "Annual_precip", 
+                                           "Precip_wet_month", 
+                                           "Precip_dry_month", 
+                                           "Precip_seasonality", 
+                                           "Precip_wet_qu", 
+                                           "Precip_dry_qu")]
+
+# COMBO.RASTER.ALL    <- select(COMBO.RASTER.CONTEXT, searchTaxon, lon, lat, 
+#                               Annual_mean_temp, Mean_diurnal_range, Isothermality, Temp_seasonality, Max_temp_warm_month, Min_temp_cold_month, 
+#                               Temp_annual_range, Mean_temp_warm_qu, Mean_temp_cold_qu, Annual_precip, 
+#                               Precip_wet_month, Precip_dry_month, Precip_seasonality, Precip_wet_qu, Precip_dry_qu)
 
 
 #########################################################################################################################
@@ -199,6 +220,7 @@ COMBO.RASTER.ALL    <- select(COMBO.RASTER.CONTEXT,
 coordinates(COMBO.RASTER.ALL)    <- ~lon+lat
 proj4string(COMBO.RASTER.ALL)    <- '+init=epsg:4326'
 
+##
 COMBO.RASTER.ALL    <- spTransform(
   COMBO.RASTER.ALL, CRS('+init=ESRI:54009'))
 
@@ -232,6 +254,26 @@ str(SDM.DATA.ALL)
 'Dodonaea baueri'    %in% SDM.DATA.ALL$searchTaxon 
 'Platanus hispanica' %in% SDM.DATA.ALL$searchTaxon 
 'Kennedia beckxiana' %in% SDM.DATA.ALL$searchTaxon  
+
+
+#########################################################################################################################
+## Now join back on the contextual columns for data cleaning
+SDM.DATA.ALL.CHECK = merge(SDM.DATA.ALL, COMBO.RASTER.CONTEXT, by = "OBS", all.y = FALSE)   ##
+dim(SDM.DATA.ALL.CHECK);dim(SDM.DATA.ALL)
+
+
+## Probably create a separate file for cleaning the records?
+COMBO_check_records(taxa.list = test.spp[84],                   ## c(names(COMBO.RASTER.CONTEXT))
+                    columns   = c("searchTaxon",
+                                  "lat",
+                                  "lon",
+                                  "locality",
+                                  "country",
+                                  "taxo_agree",
+                                  "CULTIVATED"),  
+                    DF        = SDM.DATA.ALL.CHECK)
+
+
 
 
 ## Save big tables to keep memory spare

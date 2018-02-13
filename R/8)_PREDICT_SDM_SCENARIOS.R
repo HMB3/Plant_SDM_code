@@ -81,6 +81,20 @@ aus <- ne_states(country = 'Australia') %>%
   subset(!grepl('Island', name))
 
 
+## Now divide the current environmental grids by 10
+env.grids.current <- stack(
+  file.path('./data/base/worldclim/aus/0.5/bio/current',
+            sprintf('bio_%02d.tif', 1:19)))
+
+for(i in 1:11) {
+  
+  ## simple loop
+  message(i)
+  env.grids.current[[i]] <- env.grids.current[[i]]/10
+  
+}
+
+
 
 
 
@@ -257,7 +271,6 @@ tail(SDM.RESULTS.DIR, 20);tail(comb_spp, 20); tail(MAXENT.SUM.TEST, 20)[, c("GBI
 
 
 #########################################################################################################################
-## First, use the SUA as the aerial unit
 ## Why can't we define the SUA in the global environment, outside the function?
 # SUA = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/IN.SUA.shp", layer = "IN.SUA")
 # CRS.new  <- CRS("+init=epsg:4326") # EPSG:3577
@@ -268,7 +281,6 @@ tail(SDM.RESULTS.DIR, 20);tail(comb_spp, 20); tail(MAXENT.SUM.TEST, 20)[, c("GBI
 # SUA.WGS = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/IN_SUA_WGS.shp", layer = "IN_SUA_WGS")
 # SUA.WGS = SUA.WGS [order(SUA.WGS $SUA_NAME11),]
 # SUA_RAS <- rasterize(SUA.WGS, env.grids.current[[1]])
-
 
 
 #########################################################################################################################

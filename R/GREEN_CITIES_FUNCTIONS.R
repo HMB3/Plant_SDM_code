@@ -1598,6 +1598,24 @@ histogram_GBIF_records = function (DF, taxa.list, env.var.1, env.col.1, env.unit
 
 ########################################################################################################################
 ## create simple summaries for selected taxa
+COMBO_check_records = function (taxa.list, columns, DF) {
+  
+  ###############################
+  ## for all the taxa in the list
+  for (taxa.n in taxa.list) {
+    
+    ## slice the table 
+    summary.table <- DF[, columns][ which(DF[["searchTaxon"]] == taxa.n ), ]
+    
+    ## print to screen
+    View(summary.table)
+    
+  }
+  
+}
+
+
+##
 GBIF_summary_slice = function (taxa.list, env.cols, GBIF) {
   
   ###############################

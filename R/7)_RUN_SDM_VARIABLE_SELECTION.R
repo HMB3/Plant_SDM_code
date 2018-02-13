@@ -118,6 +118,10 @@ clusterEvalQ(cl, {
 ## Increase k_thr to avoid commission error
 
 
+# I would suggest you just project onto current and we have a look at how many species are falling out. If too many are failing, 
+# then we just have to change our approach which means you then have to reproject onto future.
+
+
 ########################################################################################################################
 ## Run for all species
 lapply(test.spp, function(spp)  { # for serial, parLapply(cl, species[1:8], function(spp) { # for parallel 
