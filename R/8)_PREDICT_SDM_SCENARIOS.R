@@ -76,28 +76,9 @@ scen_2050 = c("mc85bi50", "no85bi50", "ac85bi50", "cn85bi50", "gf85bi50", "hg85b
 scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cn85bi70", "gf85bi70", "hg85bi70")
 
 
-#########################################################################################################################
 ## Then create a stack of current environmental conditions, and an Australia shapefile for the mapping later...
 aus <- ne_states(country = 'Australia') %>% 
   subset(!grepl('Island', name))
-
-env.grids.current <- stack(
-  file.path('./data/base/worldclim/aus/0.5/bio/current',
-            sprintf('bio_%02d.tif', 1:19)))
-
-## Now divide the current temperature grids by 10
-for(i in 1:11) {
-  
-  message(i)
-  env.grids.current[[i]] <- env.grids.current[[ i]]/10
-  
-}
-
-
-## What do the grids look like? The 11,177,684 NAs values could be the ocean
-summary(env.grids.current[[1]])
-summary(env.grids.current[[5]])
-summary(env.grids.current[[11]])
 
 
 
@@ -108,42 +89,6 @@ summary(env.grids.current[[11]])
 #########################################################################################################################
 
 
-#########################################################################################################################
-## First, create a raster stack outside the loop. Try passing the object to the loop and see what happens
-
-project.grids.2050 = function(scen_2050) {
-  
-  lapply(scen_2050, function(x) {
-    
-    s <- stack(
-      sprintf('./data/base/worldclim/aus/0.5/bio/2050/%s/%s%s.tif',
-              x, x, 1:19))
-    
-    ## Rename both the current and future environmental stack...
-    names(s) <- names(env.grids.current) <- c(
-      'Annual_mean_temp',    'Mean_diurnal_range',
-      'Isothermality',       'Temp_seasonality',  'Max_temp_warm_month',
-      'Min_temp_cold_month', 'Temp_annual_range', 'Mean_temp_wet_qu',
-      'Mean_temp_dry_qu',    'Mean_temp_warm_qu', 'Mean_temp_cold_qu',  'Annual_precip',
-      'Precip_wet_month',    'Precip_dry_month',  'Precip_seasonality', 'Precip_wet_qu',
-      'Precip_dry_qu',       'Precip_warm_qu',    'Precip_col_qu')
-    
-    ########################################################################################################################
-    ## Divide the temperature rasters by 10: NA values are the ocean
-    ## s[[1:11]] <- s[[1:11]]/10 ## that code doesn't work, this is a work-around...s[[1]]  = s[[1]]/10
-    message('2050 rasters / 10')
-    for(i in 1:11) {
-      
-      ## simple loop
-      message(i)
-      s[[i]] <- s[[ i]]/10
-      
-    }
-    
-  })
-  
-}
-  
 #########################################################################################################################
 ## For each species, use a function to create raster files and maps of all six GCMs.
 ## Note that some of the experimental species - e.g. Kennedia_beckxiana - still have to be modelled
@@ -180,7 +125,7 @@ length(maxent.tables)
 ## Could turn this into a function, and loop over a list of subfolders...
 ## Then pipe the table list into lapply
 ## MAXENT.STD.VAR.SUMMARY = bind_maxent_tables(table_list)
-MAXENT.STD.VAR.SUMMARY <- maxent.tables[c(1:length(maxent.tables))] %>%           ## currently 533 species with enough records
+MAXENT.STD.VAR.SUMMARY <- maxent.tables[c(1:length(maxent.tables))] %>%         ## currently 534 species with enough records
   
   ## pipe the list into lapply
   lapply(function(x) {
@@ -188,17 +133,17 @@ MAXENT.STD.VAR.SUMMARY <- maxent.tables[c(1:length(maxent.tables))] %>%         
     ## Create the character string
     f <- paste0(path, x, "/full/maxentResults.csv")
     
-    ## load each .RData file
+    ## Load each .RData file
     d <- read.csv(f)
     
-    ## now add a model column
-    d = cbind(GBIF_Taxon = x, Model_run  = path, d) 
+    ## Now add a model column
+    d = cbind(GBIF_Taxon = x, Settings  = "cor0.8_pct5_k5", records = "ALL", d)  ## see step 7, make a variable for multiple runs
     dim(d)
     
     ## Remove path gunk, and species
     #d$GBIF_Taxon = gsub("_", " ", d$GBIF_Taxon)
-    d$Model_run  = gsub("./output/maxent/", "", d$Model_run)  ## Model_run needed, test effect of different settings
-    d$Model_run  = gsub("/", "", d$Model_run)
+    #d$Model_run  = gsub("./output/maxent/", "", d$Model_run)                   
+    #d$Model_run  = gsub("/", "", d$Model_run)
     d$Species    = NULL
     d
     
@@ -214,12 +159,13 @@ head(MAXENT.STD.VAR.SUMMARY, 20)[1:8]
 
 
 ## Dodgy way to see how many variables were used each time
-MAXENT.STD.VAR.SUMMARY$na_count     <- apply(MAXENT.STD.VAR.SUMMARY, 1, function(x) sum(is.na(x)))
+MAXENT.STD.VAR.SUMMARY$na_count     = apply(MAXENT.STD.VAR.SUMMARY, 1, function(x) sum(is.na(x)))
 MAXENT.STD.VAR.SUMMARY$no_variables = 14 - (MAXENT.STD.VAR.SUMMARY$na_count / 2)                           
 
 
 ## What are the variables we want to see?
 View(head(MAXENT.STD.VAR.SUMMARY, 180)[, c("GBIF_Taxon",
+                                           "Settings",
                                            "no_variables",
                                            "X.Training.samples",                                                                
                                            "Iterations",                                                                        

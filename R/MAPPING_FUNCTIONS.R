@@ -12,27 +12,26 @@
 ## MAXENT FUNCTIONS
 #########################################################################################################################
 
-# ## Arguments to run maxent line by line
-occ                     = occurrence
-bg                      = background
-sdm.predictors          = sdm.predictors
-name                    = spp
-outdir                  = 'output/maxent/STD_VAR_ALL'
-template.raster         = template.raster
-min_n                   = 20   ## This should be higher...
-max_bg_size             = 100000
-background_buffer_width = 200000
-shapefiles              = TRUE
-features                = 'lpq'
-replicates              = 5
-cor_thr                 = 0.7
-pct_thr                 = 5
-k_thr                   = 5
-responsecurves          = TRUE
+## Arguments to run maxent line by line
+# occ                     = occurrence
+# bg                      = background
+# sdm.predictors          = sdm.predictors
+# name                    = spp
+# outdir                  = 'output/maxent/STD_VAR_ALL'
+# template.raster         = template.raster
+# min_n                   = 20   ## This should be higher...
+# max_bg_size             = 100000
+# background_buffer_width = 200000
+# shapefiles              = TRUE
+# features                = 'lpq'
+# replicates              = 5
+# cor_thr                 = 0.7
+# pct_thr                 = 5
+# k_thr                   = 5
+# responsecurves          = TRUE
 
-# 
-# 
-# ## selection line by line 
+ 
+## selection line by line 
 # occ             = swd_occ
 # bg              = swd_bg
 # path            = outdir
@@ -221,7 +220,45 @@ FIT_MAXENT_SELECTION <- function(occ,
 ## PROJECT MAXENT MODELS
 #########################################################################################################################
 
-## flag isses with.......................................................................................................
+
+## How can the raster stack be calcualted once, not for each species?....................................................
+## S needs to be calculated 6 times, but currently it will be calculated 6 * n_spp (3240) 
+project.grids.2050 = function(scen_2050) {
+  
+  lapply(scen_2050, function(x) {
+    
+    s <- stack(
+      sprintf('./data/base/worldclim/aus/0.5/bio/2050/%s/%s%s.tif',
+              x, x, 1:19))
+    
+    ## Rename both the current and future environmental stack...
+    names(s) <- names(env.grids.current) <- c(
+      'Annual_mean_temp',    'Mean_diurnal_range',
+      'Isothermality',       'Temp_seasonality',  'Max_temp_warm_month',
+      'Min_temp_cold_month', 'Temp_annual_range', 'Mean_temp_wet_qu',
+      'Mean_temp_dry_qu',    'Mean_temp_warm_qu', 'Mean_temp_cold_qu',  'Annual_precip',
+      'Precip_wet_month',    'Precip_dry_month',  'Precip_seasonality', 'Precip_wet_qu',
+      'Precip_dry_qu',       'Precip_warm_qu',    'Precip_col_qu')
+    
+    ########################################################################################################################
+    ## Divide the temperature rasters by 10: NA values are the ocean
+    ## s[[1:11]] <- s[[1:11]]/10 ## that code doesn't work, this is a work-around...s[[1]]  = s[[1]]/10
+    message('2050 rasters / 10')
+    for(i in 1:11) {
+      
+      ## simple loop
+      message(i)
+      s[[i]] <- s[[ i]]/10
+      
+    }
+    
+  })
+  
+}
+
+
+
+
 
 #########################################################################################################################
 ## 2050
@@ -572,10 +609,10 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
       ## The mean of the GCMs doesn't exist, create it
       if(!file.exists(f_mean)) {
         
-        raster.list = list.files(as.character(DIR), pattern = sprintf('bi%s.tif', time_slice), full.names = TRUE)  
-        suit        = stack(raster.list)
-        suit.list   = unstack(suit)
-        mean.suit   = mean(suit)                            ## plot(mean.suit)
+        raster.list       = list.files(as.character(DIR), pattern = sprintf('bi%s.tif', time_slice), full.names = TRUE)  
+        suit              = stack(raster.list)
+        suit.list         = unstack(suit)
+        combo_suit_mean   = mean(suit)                            ## plot(mean.suit)
         #median.suit = median(suit)
         
         writeRaster(mean.suit, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s_suitability_mean.tif', 
@@ -717,12 +754,12 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             ## Now mutate the table
             PERECENT.AREA <- tabs %>%
               
-              group_by(name) %>%                                          ## group by region
-              mutate(totcells = sum(Freq),                                ## how many cells overall
-                     percent.area = round(100 * Freq / totcells, 2)) %>%  ## cells /total cells
+              group_by(name) %>%                                          ## Group by region
+              mutate(totcells = sum(Freq),                                ## How many cells overall
+                     percent.area = round(100 * Freq / totcells, 2)) %>%  ## Cells /total cells
               
-              dplyr::select(-c(Freq, totcells)) %>%                       ## there is a select func in raster so need to specify
-              spread(key = Var1, value = percent.area, fill = 0)     %>%  ## make wide format
+              dplyr::select(-c(Freq, totcells)) %>%                       ## There is a select func in raster so need to specify
+              spread(key = Var1, value = percent.area, fill = 0)     %>%  ## Make wide format
               as.data.frame()
             
             ## Rename and create a column for whether or not the species occupies that area 
@@ -791,13 +828,13 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             ## Now create the empty panel just before plotting, and read in the occurrence and background points and original model
             empty <- init(combo_suit_thresh, function(x) NA)
             
-            occ   <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/occ_swd.rds', species)) %>%
+            occ <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/occ_swd.rds', species)) %>%
               spTransform(CRS('+init=epsg:4326'))
             
-            bg    <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/bg_swd.rds', species)) %>%
+            bg <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/bg_swd.rds', species)) %>%
               spTransform(CRS('+init=epsg:4326'))
             
-            m     <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/full/model.rds', species)) 
+            m <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/full/model.rds', species)) 
             
             
             ## Use the 'levelplot' function to make a multipanel output: occurences, percentiles and thresholds
@@ -808,10 +845,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
                 11, 4, units = 'in', res = 300)
             
             ## Need an empty frame
-            print(levelplot(stack(empty,                ## needs to have a different colour scale
-                                  plot(m, col = "blue", pch = 19, cex.lab = 1.3, cex.axis = 2, lwd = 2, 
-                                       main = "", xlab = "Variable contribution (%)"),
-                                  response(m),
+            print(levelplot(stack(empty,                ## needs to have a different colour scale,
                                   combo_suit_percent,
                                   combo_suit_thresh), margin = FALSE,
                             
@@ -832,7 +866,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
                     ## Plot the Aus shapefile with the occurrence points for reference
 
                     ## why does plotting the koppen shapefile take so long? ................................................
-                    ## Can we assign different shapefiles to different panels, rather than them all? .......................
+                    ## Can we assign different shapefiles to different panels, rather than to them all?
                     
                     layer(sp.polygons(aus)) +
                     
@@ -843,46 +877,82 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             dev.off()
             
             ########################################################################################################################
-            ## Another .png for the global records
+            ## Another .png for the global records: str(LAND$long) 
             png(sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s.png',
                         species, species, "global_records"),
                 16180, 10000, units = 'px', res = 600)
-            
+
             ## How do we locate bad records in the dataset after spotting them?
-            plot(LAND, #add = TRUE, 
-                 lwd = 0.5, asp = 1) # col = 'grey', bg = 'sky blue')
+            plot(LAND, 
+                 lwd = 0.5, asp = 1, axes = TRUE, cex.axis = 3.5,
+                 col = 'darkolivegreen3', bg = 'lightblue', cex.lab = 3)
             
-            points(occ, pch = ".", cex = 2, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2, 
+            points(occ, pch = ".", cex = 3.5, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2, 
                    main = paste0("Global occurrences for ", species), 
                    xlab = "", ylab = "", asp = 1)
             
-            ## title 
+            ## Title 
             title(paste0("Global points for ", species),
                   cex.main = 4,   font.main = 4, col.main = "blue")
             
-            ## finsh the device
+            ## Finsh the device
             dev.off()
             
             ########################################################################################################################
-            ## Another PNG for the backgraound points
+            ## Another PNG for the background points....
             png(sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s.png',
                         species, species, "background_records"),
                 16180, 10000, units = 'px', res = 600)
             
             ## How do we locate bad records in the dataset after spotting them?
-            plot(LAND, #add = TRUE, 
-                 lwd = 0.5, asp = 1) #, col = 'grey', bg = 'sky blue')
+            plot(LAND,  
+                 lwd = 0.5, asp = 1, axes = TRUE, cex.axis = 3.5,
+                 col = 'darkolivegreen3', bg = 'lightblue', cex.lab = 3)
             
             points(bg, pch = ".", cex = 1.6, col = "blue", cex.lab = 3, cex.main = 4, cex.axis = 2, 
                    main = paste0("Global occurrences for ", species), 
                    xlab = "", ylab = "", asp = 1)
             
-            ## title 
+            ## Title 
             title(paste0("Bacground points for ", species),
                   cex.main = 4,   font.main = 4, col.main = "blue")
             
-            ## finsh the device
+            ## Finish the device
             dev.off() 
+            
+            ########################################################################################################################
+            ## Plot the models: can two plots be combined into one?
+            
+            ## Make these unique names, and they can be searched in windows.Otherwise, we can just click into each subfolder. 
+            ## To sort, names would need to be: spp + unique_extension
+            png(sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s.png',
+                        species, species, "variable_contribution"),
+                3236, 2000, units = 'px', res = 300)
+            
+            ## Set the margins
+            # par(mgp      = c(10, 4, 0), 
+            #     oma      = c(1.5, 1.5, 1.5, 1.5),
+            #     font.lab = 2)
+            
+            plot(m, col = "blue", pch = 19, cex.lab = 2, cex.axis = 5, cex.main = 2, 
+                 main   = paste0("Variables for ", species), 
+                 xlab   = "Maxent contribution (%)")
+            
+            ## Finish the device
+            dev.off()
+            
+            ## Plot the response curves too
+            png(sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s.png',
+                        species, species, "response_curves"),
+                3236, 2000, units = 'px', res = 300)
+            
+            ## Add detail to the response plot
+            response(m, pch = 19, cex.lab = 2, cex.axis = 1.5, lwd = 2) 
+                     #ylab   = "",
+                     #main   = paste0(species, " responses"))
+            
+            ## Finish the device
+            dev.off()
             
             
           } else {
