@@ -82,7 +82,7 @@ head(GBIF.ALA.COMBO.LAND)
 
 
 ## Check the new data frame has just the species on the HIA list
-str(unique(GBIF.ALA.COMBO.LAND$searchTaxon))   ## ok
+str(unique(GBIF.ALA.COMBO.LAND$searchTaxon))                                  ## ok
 
 
 ## Test if the new experimental species are there
@@ -105,6 +105,20 @@ GBIF.ALA.COMBO.HIA  = GBIF.ALA.COMBO.LAND[GBIF.ALA.COMBO.LAND$searchTaxon %in% u
 'Swainsona formosa'  %in% GBIF.ALA.COMBO.HIA $searchTaxon
 
 
+#########################################################################################################################
+## REMOVE DODGY RECORDS FROM NICHE CALCULATION
+#########################################################################################################################
+dim(GBIF.ALA.COMBO.HIA)
+GBIF.ALA.COMBO.HIA$OBS <- 1:nrow(GBIF.ALA.COMBO.HIA)
+dim(GBIF.ALA.COMBO.HIA)[1];length(GBIF.ALA.COMBO.HIA$OBS)                                          ## This matches step 6
+
+
+## Read in a list of bad points and remove...................................................................
+
+
+
+
+#########################################################################################################################
 ## Create points: consider changing the coordinate system here to a global projected system?
 COMBO.POINTS   = SpatialPointsDataFrame(coords      = GBIF.ALA.COMBO.HIA[c("lon", "lat")], 
                                         data        = GBIF.ALA.COMBO.HIA[c("lon", "lat")],
@@ -225,7 +239,7 @@ save(COMBO.RASTER, file = paste("./data/base/HIA_LIST/GBIF/COMBO_GBIF_ALA_RASTER
 #COMBO.RASTER  = COMBO.RASTER[COMBO.RASTER$searchTaxon %in% HIA.SPP$Binomial, ]
 
 
-## check
+## Check
 dim(COMBO.RASTER)
 names(COMBO.RASTER)
 
@@ -260,7 +274,7 @@ projection(LGA.WGS)
 projection(SUA.WGS)
 
 
-## remove the LGA columns we don't need
+## Remove the LGA columns we don't need
 LGA.WGS = LGA.WGS[, c("LGA_CODE16", "LGA_NAME16")] 
 
 
@@ -540,6 +554,12 @@ names(COMBO.RASTER.CONTEXT)
 names(COMBO.NICHE.CONTEXT)
 dim(COMBO.RASTER.CONTEXT)
 dim(COMBO.NICHE.CONTEXT)
+
+
+
+
+
+
 
 
 #########################################################################################################################

@@ -316,9 +316,7 @@ project.grids.2050 = function(scen_2050, test_spp) {
           m <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/full/model.rds', species)) 
           
           ## Read in the occurrence points used to create the SDM
-          occ <- readRDS(
-            sprintf('./output/maxent/STD_VAR_ALL/%s/occ.rds', 
-                    species)) %>%
+          occ <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/occ.rds', species)) %>%
             spTransform(CRS('+init=epsg:4326'))
           
           ## And if the current raster doesn't exist, create it

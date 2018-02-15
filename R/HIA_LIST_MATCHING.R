@@ -4,7 +4,7 @@
 
 
 #########################################################################################################################
-# ## Setup for project 
+## Setup for project 
 library(gtools)
 library(GISTools)
 library(devtools)
@@ -330,7 +330,7 @@ miss_spp     = gsub(" ", "_", miss.spp)
 
 ## Which species are only on the test list?
 setdiff(test.spp, spp.all)
-
+save(test.spp, file = paste("./data/base/HIA_LIST/GBIF/test.spp.RData", sep = ""))
   
 
 

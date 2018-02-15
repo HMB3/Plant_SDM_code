@@ -14,8 +14,8 @@
 
 
 ## Load packages ::
-load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1601_2018.RData")
 source('./R/HIA_LIST_MATCHING.R')
+load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1601_2018.RData")
 
 
 #########################################################################################################################
@@ -59,6 +59,11 @@ id.70 <- h %>%
   basename %>% 
   sub('\\.zip.', '', .)
 
+id.30 = gsub("50", "30", id.50)
+
+gcms.30 <- cbind(gcms, id.30)
+gcms.30$GCM = sub(" \\(#\\)", "", gcms$GCM)
+
 gcms.50 <- cbind(gcms, id.50)
 gcms.50$GCM = sub(" \\(#\\)", "", gcms$GCM)  ## sub replaces first instance in a string, gsub = global
 
@@ -67,16 +72,18 @@ gcms.70$GCM = sub(" \\(#\\)", "", gcms$GCM)
 
 
 ## Now create the scenario lists across which to loop
-gcms.50 ; gcms.70
+## Which files
+gcms.50 ; gcms.70 ; gcms.30
 
 
 ## Just get the 6 models picked by CSIRO for Australia, for 2050 and 2070
 ## Also will be a better way to get at this...
-scen_2050 = c("mc85bi50", "no85bi50", "ac85bi50", "cn85bi50", "gf85bi50", "hg85bi50")
-scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cn85bi70", "gf85bi70", "hg85bi70")
+scen_2030 = c("mc85bi30", "no85bi30", "ac85bi30", "cc85bi30", "gf85bi30", "hg85bi30")
+scen_2050 = c("mc85bi50", "no85bi50", "ac85bi50", "cc85bi50", "gf85bi50", "hg85bi50")
+scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cc85bi70", "gf85bi70", "hg85bi70")
 
 
-## Then create a stack of current environmental conditions, and an Australia shapefile for the mapping later...
+## Then create a stack of current environmental conditions outside the function, and an Australia shapefile for the mapping later...
 aus <- ne_states(country = 'Australia') %>% 
   subset(!grepl('Island', name))
 
@@ -93,6 +100,23 @@ for(i in 1:11) {
   env.grids.current[[i]] <- env.grids.current[[i]]/10
   
 }
+
+
+#########################################################################################################################
+## Rename Dina's files: replace two different strings with the same thing. EG:
+## cccma_canesm2 taken to be cc85bi50
+
+# cd F:/green_cities_sdm/data/base/worldclim/aus/0.5/bio/2030/
+# rename 'bio_0' ac85bi30 *
+# rename 'bio_' ac85bi30 *
+
+# cd F:/green_cities_sdm/data/base/worldclim/aus/0.5/bio/2050/
+# rename 'bio_0' ac85bi50 *
+# rename 'bio_' ac85bi50 *
+
+# cd F:/green_cities_sdm/data/base/worldclim/aus/0.5/bio/2070/
+# rename 'bio_0' ac85bi70 *
+# rename 'bio_' ac85bi70 *
 
 
 

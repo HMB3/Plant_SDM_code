@@ -29,12 +29,15 @@ p <- c('ff',    'things',         'raster',    'dismo',        'sp',           '
 ## Require packages
 sapply(p, require, character.only = TRUE)
 load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1601_2018.RData")
+load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_1601_2018.RData")
+
 source('./R/GREEN_CITIES_FUNCTIONS.R')
 source('./R/MAPPING_FUNCTIONS.R')
 source('./R/HIA_LIST_MATCHING.R')
 
-
-
+##
+dim(COMBO.RASTER.CONTEXT)    
+names(COMBO.RASTER.CONTEXT)
 
 
 #########################################################################################################################
@@ -96,13 +99,6 @@ source('./R/HIA_LIST_MATCHING.R')
 ## Average across the time period
 ## variability across the time period
 ## Extremes (e.g. most extreme months)
-
-
-#########################################################################################################################
-## Read in Raster data
-load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_1601_2018.RData")
-dim(COMBO.RASTER.CONTEXT)    ##
-names(COMBO.RASTER.CONTEXT)
 
 
 # #########################################################################################################################
@@ -189,6 +185,7 @@ COMBO.RASTER.CONTEXT$OBS <- 1:nrow(COMBO.RASTER.CONTEXT)
 dim(COMBO.RASTER.CONTEXT)[1];length(COMBO.RASTER.CONTEXT$OBS)
 
 
+## Select stopped working for some reason...
 COMBO.RASTER.ALL = COMBO.RASTER.CONTEXT[,c("searchTaxon", 
                                            "OBS", 
                                            "lon",
@@ -219,10 +216,7 @@ COMBO.RASTER.ALL = COMBO.RASTER.CONTEXT[,c("searchTaxon",
 ## Create a spatial points object, and change to a projected system to calculate distance more accurately 
 coordinates(COMBO.RASTER.ALL)    <- ~lon+lat
 proj4string(COMBO.RASTER.ALL)    <- '+init=epsg:4326'
-
-##
-COMBO.RASTER.ALL    <- spTransform(
-  COMBO.RASTER.ALL, CRS('+init=ESRI:54009'))
+COMBO.RASTER.ALL                 <- spTransform(COMBO.RASTER.ALL, CRS('+init=ESRI:54009'))
 
 
 ## Now split using the data using the species column, and get the unique occurrence cells
@@ -258,27 +252,18 @@ str(SDM.DATA.ALL)
 
 #########################################################################################################################
 ## Now join back on the contextual columns for data cleaning
-SDM.DATA.ALL.CHECK = merge(SDM.DATA.ALL, COMBO.RASTER.CONTEXT, by = "OBS", all.y = FALSE)   ##
+SDM.DATA.ALL.CHECK = merge(SDM.DATA.ALL, COMBO.RASTER.CONTEXT, all = FALSE)   ## skip "by" argument if colname same
 dim(SDM.DATA.ALL.CHECK);dim(SDM.DATA.ALL)
 
 
-## Probably create a separate file for cleaning the records?
-COMBO_check_records(taxa.list = test.spp[84],                   ## c(names(COMBO.RASTER.CONTEXT))
-                    columns   = c("searchTaxon",
-                                  "lat",
-                                  "lon",
-                                  "locality",
-                                  "country",
-                                  "taxo_agree",
-                                  "CULTIVATED"),  
-                    DF        = SDM.DATA.ALL.CHECK)
-
-
+## Write the restricted set of species occurrences to a shapefile 
+#writeOGR(obj = SDM.DATA.ALL.CHECK, dsn = "./data/base/CONTEXTUAL", layer = "SDM_DATA_UNIQUE_CHECK", driver = "ESRI Shapefile")
 
 
 ## Save big tables to keep memory spare
-save(template.raster,  file = paste("./data/base/HIA_LIST/COMBO/SDM_TEMPLATE_RASTER.RData"))
-save(SDM.DATA.ALL,     file = paste("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_ALL_VAR.RData"))
+save(template.raster,    file = paste("./data/base/HIA_LIST/COMBO/SDM_TEMPLATE_RASTER.RData"))
+save(SDM.DATA.ALL,       file = paste("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_ALL_VAR.RData"))
+save(SDM.DATA.ALL.CHECK, file = paste("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_cHECK.RData"))
 
 
 ## Remove the other data
@@ -291,5 +276,5 @@ save.image("STEP_6_PREPARE_SDM.RData")
 
 
 #########################################################################################################################
-#####################################################  TBC ############################################################## 
+##################################################### TBC ############################################################### 
 #########################################################################################################################
