@@ -77,7 +77,6 @@ gcms.50 ; gcms.70 ; gcms.30
 
 
 ## Just get the 6 models picked by CSIRO for Australia, for 2050 and 2070
-## Also will be a better way to get at this...
 scen_2030 = c("mc85bi30", "no85bi30", "ac85bi30", "cc85bi30", "gf85bi30", "hg85bi30")
 scen_2050 = c("mc85bi50", "no85bi50", "ac85bi50", "cc85bi50", "gf85bi50", "hg85bi50")
 scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cc85bi70", "gf85bi70", "hg85bi70")
@@ -91,7 +90,7 @@ aus <- ne_states(country = 'Australia') %>%
 ## Now divide the current environmental grids by 10
 env.grids.current <- stack(
   file.path('./data/base/worldclim/aus/0.5/bio/current',
-            sprintf('bio_%02d.tif', 1:19)))
+            sprintf('bio_%02d.tif', 1:19)), quick = TRUE)
 
 for(i in 1:11) {
   
@@ -100,6 +99,15 @@ for(i in 1:11) {
   env.grids.current[[i]] <- env.grids.current[[i]]/10
   
 }
+
+
+##
+extent(env.grids.current);extent(s)
+dim(env.grids.current);dim(s)
+
+##
+ex = extent(env.grids.current)
+r2 = crop(s, ex)
 
 
 #########################################################################################################################
@@ -131,6 +139,7 @@ for(i in 1:11) {
 ## For each species, use a function to create raster files and maps of all six GCMs.
 ## Note that some of the experimental species - e.g. Kennedia_beckxiana - still have to be modelled
 ## c(comb_spp[78], comb_spp[83], comb_spp[159])
+env.grids.2030 = project.grids.2030(scen_2030, (test_spp)[1])
 env.grids.2050 = project.grids.2050(scen_2050, (test_spp)[1])
 env.grids.2070 = project.grids.2070(scen_2070, (test_spp)[1])
 

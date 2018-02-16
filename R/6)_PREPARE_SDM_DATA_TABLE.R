@@ -171,7 +171,6 @@ names(COMBO.RASTER.CONTEXT)
 #########################################################################################################################
 
 
-## Watch the CRS.......................................................................................................
 ## 
 ## Create an empty raster with the desired properties, using raster(raster(x))
 template.raster <- raster(raster("./data/base/worldclim/world/0.5/bio/current/bio_01")) %>% 

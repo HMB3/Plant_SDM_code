@@ -283,7 +283,10 @@ names(GBIF.CLEAN)
 ## At the global scale, there probably is no alterntive to using WORLDCLIM...
 
 
-## First get one of the BIOCLIM variables
+## This could need to change to the Dina's grid....................................................................
+
+
+## First, get one of the BIOCLIM variables
 world.temp = raster("./data/base/worldclim/world/0.5/bio/current/bio_01")
 plot(world.temp)
 
