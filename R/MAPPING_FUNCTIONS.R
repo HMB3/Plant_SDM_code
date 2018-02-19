@@ -261,34 +261,38 @@ FIT_MAXENT_SELECTION <- function(occ,
 
 
 #########################################################################################################################
-## 2030
-project.grids.2030 = function(scen_2030, test_spp) {
+## 2030 
+## x = scen_2030[1]
+## species = test_spp[1]
+## time_slice = 30
+## maxent_path  = "./output/maxent/STD_VAR_ALL"
+## climate_path = "./data/base/worldclim/aus/0.5/bio"
+project_maxent_grids = function(scen_list, species_list, maxent_path, climate_path, time_slice) {
   
-  ##  First, run a loop over each scenario: options(error = recover)    
-  lapply(scen_2030, function(x) {
+  ## First, run a loop over each scenario: options(error = recover)    
+  lapply(scen_list, function(x) {
     
     ## then over each species
     lapply(test_spp, function(species) {
       
-      ## First check if the species projection has already been run...
-      if(file.exists(sprintf('./output/maxent/STD_VAR_ALL/%s/full/model.rds', species))) {
+      ## First, check if the maxent model exists
+      ## path = './output/maxent/STD_VAR_ALL'
+      ## sprintf('%s/%s/full/model.rds', path, species)
+      if(file.exists(sprintf('%s/%s/full/model.rds', maxent_path, species))) {           ## make a path argument
         message('Doing ', species)
         
-        ## Then check if the species projection has already been run...
-        if(!file.exists(sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif',
-                                species, species, x))) {
-          message('Projecting ', species) 
+        ## Then, check if the species projection has already been run...
+        if(!file.exists(sprintf('%s/%s/full/%s_%s.tif', maxent_path, species, species, x))) {
+          #message('Doing ', species) 
           
           ## Assign the scenario name (to use later in the plot)
-          scen_name = gcms.30$GCM[gcms.30$id == x]                       
+          scen_name = eval(parse(text = sprintf('gcms.%s$GCM[gcms.%s$id == x]', time_slice, time_slice)))           
           
           ## How can the raster stack be calcualted once, not for each species?.....................................................
           ## S needs to be calculated 6 times, but currently it will be calculated 6 * n_spp (3240)
           
           ## Create a raster stack for each 2030 GCM - also an empty raster for the final plot
-          s <- stack(
-            sprintf('./data/base/worldclim/aus/0.5/bio/2030/%s/%s%s.tif',
-                    x, x, 1:19), quick = TRUE)
+          s <- stack(sprintf('%s/20%s/%s/%s%s.tif', climate_path, time_slice, x, x, 1:19))
           
           ## Rename both the current and future environmental stack...
           names(s) <- names(env.grids.current) <- c(
@@ -302,7 +306,7 @@ project.grids.2030 = function(scen_2030, test_spp) {
           ########################################################################################################################
           ## Divide the temperature rasters by 10: NA values are the ocean
           ## s[[1:11]] <- s[[1:11]]/10 ## that code doesn't work, this is a work-around...s[[1]]  = s[[1]]/10
-          message('2030 rasters / 10')
+          message('20', time_slice, ' rasters / 10')
           for(i in 1:11) {
             
             ## simple loop
@@ -313,19 +317,19 @@ project.grids.2030 = function(scen_2030, test_spp) {
           
           ########################################################################################################################
           ## Now read in the SDM model calibrated on current conditions  ## maxent_fitted.rds
-          m <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/full/model.rds', species)) 
+          m <- readRDS(sprintf('%s/%s/full/model.rds', maxent_path, species)) 
           
           ## Read in the occurrence points used to create the SDM
-          occ <- readRDS(sprintf('./output/maxent/STD_VAR_ALL/%s/occ.rds', species)) %>%
+          occ <- readRDS(sprintf('%s/%s/occ.rds', maxent_path, species)) %>%
             spTransform(CRS('+init=epsg:4326'))
           
           ## And if the current raster doesn't exist, create it
-          f_current <- sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_current.tif', 
-                               species, species)
+          f_current <- sprintf('%s/%s/full/%s_current.tif', 
+                               maxent_path, species, species)
           
           if(!file.exists(f_current)) {
             
-            ## Report which prediction is in progress m$me_full, m$me_full@presence
+            ## Report which prediction is in progress :: m$me_full, m$me_full@presence
             message('Running current prediction for ', species) 
             
             pred.current <- rmaxent::project(
@@ -334,14 +338,14 @@ project.grids.2030 = function(scen_2030, test_spp) {
             
           } else {
             
-            pred.current = raster(sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_current.tif', 
-                                          species, species))
+            pred.current = raster(sprintf('%s/%s/full/%s_current.tif', 
+                                          maxent_path, species, species))
           }
           
           ########################################################################################################################
           ## If the future raster doesn't exist, create it 
-          f_future <- sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s.tif', 
-                              species, species, x)
+          f_future <- sprintf('%s/%s/full/%s_%s.tif', 
+                              maxent_path, species, species, x)
           
           if(!file.exists(f_future)) {
             
@@ -355,19 +359,20 @@ project.grids.2030 = function(scen_2030, test_spp) {
             ## Now create the empty panel just before plotting
             empty <- init(pred.current, function(x) NA) 
             
-            ## workaround for differnce in raster extents :: annoying
-            ## extent(pred.current);extent(pred.future);extent(empty)
+            ## Extents don't match between current and future data .................................................................
+            ## workaround for differnce in raster extents :: annoying, current rasters are smaller than future
+            #r.new       = resample(pred.current, pred.future, "bilinear")
             ex          = extent(pred.current)
             pred.f      = crop(pred.future, ex)
-            
+
             ########################################################################################################################
             ## Use the levelplot function to make a multipanel output: occurrence points, current raster and future raster
-            png(sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_%s.png', species, species, x),      
+            png(sprintf('%s/%s/full/%s_%s.png', maxent_path, species, species, x),      
                 11, 4, units = 'in', res = 300)
             
             ## Need an empty frame
             print(levelplot(stack(empty,
-                                  pred.current,
+                                  pred.current, 
                                   pred.f, quick = TRUE), margin = FALSE,
                             
                             ## Create a colour scheme using colbrewer: 100 is to make it continuos
@@ -377,7 +382,7 @@ project.grids.2030 = function(scen_2030, test_spp) {
                             col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
                             
                             ## Give each plot a name: the third panel is the GCM
-                            names.attr = c('Occurrence', 'Current', sprintf('%s, 2030, RCP8.5', scen_name)),
+                            names.attr = c('Occurrence', 'Current', sprintf('%s, 20%s, RCP8.5', scen_name, time_slice)),
                             colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
                             main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
                     

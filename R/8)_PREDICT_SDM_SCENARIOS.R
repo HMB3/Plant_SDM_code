@@ -72,7 +72,6 @@ gcms.70$GCM = sub(" \\(#\\)", "", gcms$GCM)
 
 
 ## Now create the scenario lists across which to loop
-## Which files
 gcms.50 ; gcms.70 ; gcms.30
 
 
@@ -90,7 +89,7 @@ aus <- ne_states(country = 'Australia') %>%
 ## Now divide the current environmental grids by 10
 env.grids.current <- stack(
   file.path('./data/base/worldclim/aus/0.5/bio/current',
-            sprintf('bio_%02d.tif', 1:19)), quick = TRUE)
+            sprintf('bio_%02d.tif', 1:19)))
 
 for(i in 1:11) {
   
@@ -99,32 +98,6 @@ for(i in 1:11) {
   env.grids.current[[i]] <- env.grids.current[[i]]/10
   
 }
-
-
-##
-extent(env.grids.current);extent(s)
-dim(env.grids.current);dim(s)
-
-##
-ex = extent(env.grids.current)
-r2 = crop(s, ex)
-
-
-#########################################################################################################################
-## Rename Dina's files: replace two different strings with the same thing. EG:
-## cccma_canesm2 taken to be cc85bi50
-
-# cd F:/green_cities_sdm/data/base/worldclim/aus/0.5/bio/2030/
-# rename 'bio_0' ac85bi30 *
-# rename 'bio_' ac85bi30 *
-
-# cd F:/green_cities_sdm/data/base/worldclim/aus/0.5/bio/2050/
-# rename 'bio_0' ac85bi50 *
-# rename 'bio_' ac85bi50 *
-
-# cd F:/green_cities_sdm/data/base/worldclim/aus/0.5/bio/2070/
-# rename 'bio_0' ac85bi70 *
-# rename 'bio_' ac85bi70 *
 
 
 
@@ -139,9 +112,11 @@ r2 = crop(s, ex)
 ## For each species, use a function to create raster files and maps of all six GCMs.
 ## Note that some of the experimental species - e.g. Kennedia_beckxiana - still have to be modelled
 ## c(comb_spp[78], comb_spp[83], comb_spp[159])
-env.grids.2030 = project.grids.2030(scen_2030, (test_spp)[1])
-env.grids.2050 = project.grids.2050(scen_2050, (test_spp)[1])
-env.grids.2070 = project.grids.2070(scen_2070, (test_spp)[1])
+env.grids.2030 = project_maxent_grids(scen_list    = scen_2030,
+                                      species_list = test_spp,
+                                      time_slice   = 30,
+                                      maxent_path  = "./output/maxent/STD_VAR_ALL",
+                                      climate_path = "./data/base/worldclim/aus/0.5/bio")
 
 
 ## Plot GCM anomalies...
@@ -261,7 +236,7 @@ SDM.RESULTS.DIR <-comb_spp[c(1:length(comb_spp))] %>%
 
 ## Maximum training sensitivity plus specificity Logistic threshold 
 ## 10 percentile training presence training omission. EG:
-summary(MAXENT.SUM.TEST["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"])
+summary(MAXENT.SUM.TEST["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"])   ## .training. should be .test.
 summary(MAXENT.SUM.TEST["X10.percentile.training.presence.training.omission"])
 
 
