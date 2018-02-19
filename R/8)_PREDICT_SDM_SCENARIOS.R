@@ -118,6 +118,12 @@ env.grids.2030 = project_maxent_grids(scen_list    = scen_2030,
                                       maxent_path  = "./output/maxent/STD_VAR_ALL",
                                       climate_path = "./data/base/worldclim/aus/0.5/bio")
 
+env.grids.2050 = project_maxent_grids(scen_list    = scen_2050,
+                                      species_list = test_spp,
+                                      time_slice   = 50,
+                                      maxent_path  = "./output/maxent/STD_VAR_ALL",
+                                      climate_path = "./data/base/worldclim/aus/0.5/bio")
+
 
 ## Plot GCM anomalies...
 ## source(./R/GCM_ANOMALY.R)
