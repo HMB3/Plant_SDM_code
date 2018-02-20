@@ -8,7 +8,10 @@
 
 #########################################################################################################################
 ## also calcualte the temp and rain anomalies for 2050 and 2070, and map them
-calculate.anomaly.2050(scen_2050)
+calculate.anomaly.2030 = calculate.anomaly (scen_list    = scen_2030,
+                                            time_slice   = 30,
+                                            climate_path = "./data/base/worldclim/aus/0.5/bio")
+
 calculate.anomaly.2070(scen_2070)
 
 
