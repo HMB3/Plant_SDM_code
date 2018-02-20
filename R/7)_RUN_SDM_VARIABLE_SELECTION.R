@@ -36,17 +36,6 @@ str(template.raster)
 str(SDM.DATA.ALL)
 
 
-## Check experimental taxa again
-'Swainsona formosa'  %in% SDM.DATA.ALL$searchTaxon
-'Templetonia retusa' %in% SDM.DATA.ALL$searchTaxon 
-'Dodonaea baueri'    %in% SDM.DATA.ALL$searchTaxon 
-'Platanus hispanica' %in% SDM.DATA.ALL$searchTaxon 
-'Kennedia beckxiana' %in% SDM.DATA.ALL$searchTaxon 
-exp.spp  = c('Swainsona formosa', 'Templetonia retusa', 'Dodonaea baueri', 'Platanus hispanica', 'Kennedia beckxiana')  
-exp.rev  = sort(exp.spp, decreasing = TRUE)
-miss.spp = c('Corymbia tessellaris', 'Metrosideros excelsa')
-exp.eg   = c('Ficus brachypoda', 'Flindersia australis', 'Xanthastemon paradoxus')
-
 
 
 
@@ -124,6 +113,7 @@ clusterEvalQ(cl, {
 
 ########################################################################################################################
 ## Run for all species
+## spp = "Acacia implexa"
 lapply(test.spp, function(spp)  { # for serial, parLapply(cl, species[1:8], function(spp) { # for parallel 
   
   ## Print the taxa being processed to screen

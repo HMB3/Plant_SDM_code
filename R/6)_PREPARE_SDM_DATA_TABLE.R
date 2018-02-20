@@ -241,14 +241,6 @@ str(SDM.DATA.ALL)
 #load("STEP_6_SDM.RData")
 
 
-## Check experimental taxa again
-'Swainsona formosa'  %in% SDM.DATA.ALL$searchTaxon
-'Templetonia retusa' %in% SDM.DATA.ALL$searchTaxon 
-'Dodonaea baueri'    %in% SDM.DATA.ALL$searchTaxon 
-'Platanus hispanica' %in% SDM.DATA.ALL$searchTaxon 
-'Kennedia beckxiana' %in% SDM.DATA.ALL$searchTaxon  
-
-
 #########################################################################################################################
 ## Now join back on the contextual columns for data cleaning
 SDM.DATA.ALL.CHECK = merge(SDM.DATA.ALL, COMBO.RASTER.CONTEXT, all = FALSE)   ## skip "by" argument if colname same

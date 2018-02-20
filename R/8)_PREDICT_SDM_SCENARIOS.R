@@ -100,18 +100,20 @@ for(i in 1:11) {
 }
 
 
+## Also, plot GCM anomalies...
+## source(./R/GCM_ANOMALY.R)
+
+
 
 
 
 #########################################################################################################################
-## 2). PROJECT MAXENT MODELS FOR MULTIPLE CLIMATE SCEANARIOS, currently 2050 AND 2070
+## 2). PROJECT MAXENT MODELS FOR MULTIPLE CLIMATE SCEANARIOS AT 2030, 2050 AND 2070
 #########################################################################################################################
 
 
 #########################################################################################################################
-## For each species, use a function to create raster files and maps of all six GCMs.
-## Note that some of the experimental species - e.g. Kennedia_beckxiana - still have to be modelled
-## c(comb_spp[78], comb_spp[83], comb_spp[159])
+## For each species, use a function to create raster files and maps of all six GCMs under each time step
 env.grids.2030 = project_maxent_grids(scen_list    = scen_2030,
                                       species_list = test_spp,
                                       time_slice   = 30,
@@ -124,9 +126,11 @@ env.grids.2050 = project_maxent_grids(scen_list    = scen_2050,
                                       maxent_path  = "./output/maxent/STD_VAR_ALL",
                                       climate_path = "./data/base/worldclim/aus/0.5/bio")
 
-
-## Plot GCM anomalies...
-## source(./R/GCM_ANOMALY.R)
+env.grids.2070 = project_maxent_grids(scen_list    = scen_2070,
+                                      species_list = test_spp,
+                                      time_slice   = 50,
+                                      maxent_path  = "./output/maxent/STD_VAR_ALL",
+                                      climate_path = "./data/base/worldclim/aus/0.5/bio")
 
 
 
@@ -144,7 +148,7 @@ path          = "./output/maxent/STD_VAR_ALL/"
 length(maxent.tables)
 
 
-## In linux, check if the folders are empty, then delete if empty:
+## In linux, check if the folders are empty, then delete if empty as this will break the code:
 # cd F:/green_cities_sdm/output/maxent/STD_VAR_ALL
 # find . -type d -empty -print
 # find . -type d -empty -delete
@@ -211,7 +215,7 @@ length(comb_spp)
 
 
 #########################################################################################################################
-## Then, make a list all the directories containing the individual GCM rasters
+## Then, make a list all the directories containing the individual GCM rasters...
 SDM.RESULTS.DIR <-comb_spp[c(1:length(comb_spp))] %>%
   
   ## Pipe the list into lapply
@@ -237,7 +241,11 @@ SDM.RESULTS.DIR <-comb_spp[c(1:length(comb_spp))] %>%
 
 #########################################################################################################################
 ## Maxent produces a presence threshold for each species (i.e. the columns in MAXENT.STD.VAR.SUMMARY). 
-## Linda and John use these two:
+
+
+## For AUC you can report the cross-validated test AUC (if your code currently runs a cross-validated model as well), 
+## and for the model threshold (for binarising) you can just use the training value (or the crossval one... there's little 
+## guidance about this and you can ## really get away with either).
 
 
 ## Maximum training sensitivity plus specificity Logistic threshold 
@@ -270,12 +278,6 @@ tail(SDM.RESULTS.DIR, 20);tail(comb_spp, 20); tail(MAXENT.SUM.TEST, 20)[, c("GBI
                                                                             "X10.percentile.training.presence.training.omission")]
 
 
-#########################################################################################################################
-## So we can use the values in these columns to threhsold the rasters of habitat suitability (0-1) when combining them.
-## For each species, we will create a binary raster with cell values between 0-6. These cell values represent the number of GCMs 
-## where that cell had a suitability value above the threshold determined by maxent (e.g. the max training sensitivity + specif).
-
-
 
 
 
@@ -285,7 +287,13 @@ tail(SDM.RESULTS.DIR, 20);tail(comb_spp, 20); tail(MAXENT.SUM.TEST, 20)[, c("GBI
 
 
 #########################################################################################################################
-## Why can't we define the SUA in the global environment, outside the function?
+## So we can use the values in these columns to threhsold the rasters of habitat suitability (0-1) when combining them.
+## For each species, we will create a binary raster with cell values between 0-6. These cell values represent the number of GCMs 
+## where that cell had a suitability value above the threshold determined by maxent (e.g. the max training sensitivity + specif).
+
+
+#########################################################################################################################
+## Why can't we define the shapefiles in the global environment, outside the function?
 # SUA = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/IN.SUA.shp", layer = "IN.SUA")
 # CRS.new  <- CRS("+init=epsg:4326") # EPSG:3577
 # SUA.WGS  = spTransform(SUA, CRS.new)
@@ -298,16 +306,7 @@ tail(SDM.RESULTS.DIR, 20);tail(comb_spp, 20); tail(MAXENT.SUM.TEST, 20)[, c("GBI
 
 
 #########################################################################################################################
-## Combine output and calculate gain and loss for 2050 
-DIR        = SDM.RESULTS.DIR[1] 
-species    = comb_spp[1] 
-thresh     = thresh.max.train[1] 
-percent    = percent.10.omiss[1]
-time_slice = 50
-area_occ   = 10
-
-
-## Combine output and calculate gain and loss for 2070 ## c(SDM.RESULTS.DIR[78], SDM.RESULTS.DIR[83], SDM.RESULTS.DIR[159])
+## Combine output and calculate gain and loss for 2050 ## c(SDM.RESULTS.DIR[78], SDM.RESULTS.DIR[83], SDM.RESULTS.DIR[159])
 suitability.2050 = mapply(combine_gcm_threshold, 
                           DIR_list     = SDM.RESULTS.DIR[1], 
                           species_list = comb_spp[1], 
@@ -316,49 +315,30 @@ suitability.2050 = mapply(combine_gcm_threshold,
                           time_slice   = 50,
                           area_occ     = 10)
 
-
-suitability.2050 = mapply(combine_gcm_threshold, 
-                          DIR_list     = sort(unlist(SDM.RESULTS.DIR), decreasing = TRUE), 
-                          species_list = sort(comb_spp, decreasing = TRUE), 
-                          thresholds   = sort(thresh.max.train, decreasing = TRUE),
-                          percentiles  = sort(percent.10.omiss, decreasing = TRUE),
-                          time_slice   = 50,
-                          area_occ     = 10)
-
-
-## Combine output and calculate gain and loss for 2070 
-suitability.2070 = mapply(combine_gcm_threshold, 
-                          DIR_list     = SDM.RESULTS.DIR, 
-                          species_list = comb_spp, 
-                          thresholds   = thresh.max.train, 
-                          percentiles  = percent.10.omiss,
-                          time_slice   = 70)
-
-## Combine output and calculate gain and loss for 2070 
-suitability.2070 = mapply(combine_gcm_threshold, 
-                          DIR_list     = sort(unlist(SDM.RESULTS.DIR), decreasing = TRUE), 
-                          species_list = sort(comb_spp, decreasing = TRUE), 
-                          thresholds   = sort(thresh.max.train, decreasing = TRUE),
-                          percentiles  = sort(percent.10.omiss, decreasing = TRUE),
-                          time_slice   = 70,
-                          area_occ     = 10)
-
-
-
 ## Combine output and calculate gain and loss for 2030 
-# suitability.2030 = mapply(combine_gcm_threshold, 
-#                           DIR_list     = SDM.RESULTS.DIR, 
-#                           species_list = comb_spp, 
-#                           thresholds   = thresh.max.train, 
-#                           percentiles  = percent.10.omiss,
-#                           time_slice   = 30)
+suitability.2030 = mapply(combine_gcm_threshold,
+                          DIR_list     = SDM.RESULTS.DIR,
+                          species_list = comb_spp,
+                          thresholds   = thresh.max.train,
+                          percentiles  = percent.10.omiss,
+                          time_slice   = 30)
+
+
+## Reverse the list, in order to walk through list on different R sessions
+# suitability.2050 = mapply(combine_gcm_threshold, 
+#                           DIR_list     = sort(unlist(SDM.RESULTS.DIR), decreasing = TRUE), 
+#                           species_list = sort(comb_spp, decreasing = TRUE), 
+#                           thresholds   = sort(thresh.max.train, decreasing = TRUE),
+#                           percentiles  = sort(percent.10.omiss, decreasing = TRUE),
+#                           time_slice   = 50,
+#                           area_occ     = 10)
 
 
 
 
 
 #########################################################################################################################
-## 5). COMBINE PRESENCE TABLES FOR ALL SPECIES ACROSS MULTIPLE GCMs
+## 5). COMBINE PRESENCE TABLES FOR ALL SPECIES ACROSS MULTIPLE GCMs: 
 #########################################################################################################################
 
 
@@ -370,7 +350,6 @@ suitability.2070 = mapply(combine_gcm_threshold,
 ## Easiest way to do this is to store the results of each iteration as we go...need to change the way the code works!
 ## But, as a workarond, read in the list of files for the current models, and specify the file path
 SUA.tables = list.files("./output/maxent/STD_VAR_ALL/", pattern = 'SUA_summary.csv', full.names = TRUE, recursive = TRUE) 
-path       = "./output/maxent/STD_VAR_ALL/"
 length(SUA.tables)
 
 
@@ -395,13 +374,13 @@ SUA.PRESENCE <- SUA.tables[c(1:length(SUA.tables))] %>%
 
 ## This is a summary of maxent output for current conditions
 dim(SUA.PRESENCE)
-head(SUA.PRESENCE$SPECIES, 150)
+head(SUA.PRESENCE, 150)
 
 
 #########################################################################################################################
 ## Save basic results and SUA results to file :: CSV and RData files
 write.csv(MAXENT.STD.VAR.SUMMARY, "./output/maxent/MAXENT_STD_VAR_SUMMARY.csv", row.names = FALSE)
-write.csv(MAXENT.STD.VAR.SUA, "./output/maxent/MAXENT_STD_VAR_SUMMARY.csv", row.names = FALSE)
+write.csv(MAXENT.STD.VAR.SUA,     "./output/maxent/MAXENT_STD_VAR_SUMMARY.csv", row.names = FALSE)
 
 
 

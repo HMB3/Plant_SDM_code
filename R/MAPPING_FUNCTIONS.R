@@ -189,6 +189,28 @@ FIT_MAXENT_SELECTION <- function(occ,
       swd_bg$lon <- NULL
       swd_bg$lat <- NULL
       
+      
+      #####################################################################
+      ## Could also insert kernel density estimation here, to further winnow the recrords
+      ## Set a threshold for density, then make a shapefile and exclude on this... 
+      # city  <- readRDS('./data/base/CONTEXTUAL/city.rds')
+      # crime <- readRDS('./data/base/CONTEXTUAL/crime.rds')
+      # LAND  <- readOGR("./data/base/CONTEXTUAL/ne_10m_land.shp", layer = "ne_10m_land")
+      # swd_occ = as.spatial
+      # 
+      # r <- raster(city)
+      # res(r) <- 1000
+      # 
+      # r <- rasterize(city, r)
+      # plot(r)
+      # quads <- as(r, 'SpatialPolygons')
+      # plot(quads, add = TRUE)
+      # points(crime, col = 'red', cex = 0.5)
+      # 
+      # nc <- rasterize(coordinates(crime), r, fun = 'count', background = 0)
+      # plot(nc)
+      # plot(city, add = TRUE)
+      
       #####################################################################
       ## Run simplify rmaxent::simplify
       m <- rmaxent::simplify(
@@ -424,7 +446,12 @@ project_maxent_grids = function(scen_list, species_list, maxent_path, climate_pa
 #########################################################################################################################
 ## Loop over directories, species and one threshold for each, also taking a time_slice argument. Next, make the lists generic too
 ## pervious version in R/old/model_combine.R
-
+DIR        = SDM.RESULTS.DIR[1] 
+species    = comb_spp[1] 
+thresh     = thresh.max.train[1] 
+percent    = percent.10.omiss[1]
+time_slice = 50
+area_occ   = 10
 
 #########################################################################################################################
 ## Loop over directories, species and one threshold for each, also taking a time_slice argument. Next, make the lists generic too
@@ -441,7 +468,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
   ## Create world shapefile
   LAND  <- readOGR("./data/base/CONTEXTUAL/ne_10m_land.shp", layer = "ne_10m_land")
   
-  ## Create koppen shapefile
+  ## Create koppen shapefile:: this takes ages!
   #Koppen     = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/WC05_1975H_Koppen.shp", layer = "WC05_1975H_Koppen")
   
   ## Create SUA shapefile, and sort the attribute table so that it matches the list
@@ -471,7 +498,6 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
         suit              = stack(raster.list)
         suit.list         = unstack(suit)
         combo_suit_mean   = mean(suit)                            ## plot(mean.suit)
-        #median.suit = median(suit)
         
         writeRaster(mean.suit, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s_suitability_mean.tif', 
                                        species, species, time_slice), overwrite = TRUE)
@@ -613,7 +639,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             PERECENT.AREA <- tabs %>%
               
               group_by(name) %>%                                          ## Group by region
-              mutate(totcells = sum(Freq),                                ## How many cells overall
+              mutate(totcells = sum(Freq),                                ## How many cells overall?
                      percent.area = round(100 * Freq / totcells, 2)) %>%  ## Cells /total cells
               
               dplyr::select(-c(Freq, totcells)) %>%                       ## There is a select func in raster so need to specify
