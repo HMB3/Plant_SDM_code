@@ -100,8 +100,9 @@ for(i in 1:11) {
 }
 
 
+#########################################################################################################################
 ## Also, plot GCM anomalies...
-## source(./R/GCM_ANOMALY.R)
+#source(./R/GCM_ANOMALY.R)
 
 
 
@@ -114,11 +115,12 @@ for(i in 1:11) {
 
 #########################################################################################################################
 ## For each species, use a function to create raster files and maps of all six GCMs under each time step
-env.grids.2030 = project_maxent_grids(scen_list    = scen_2030,
-                                      species_list = test_spp,
-                                      time_slice   = 30,
-                                      maxent_path  = "./output/maxent/STD_VAR_ALL",
-                                      climate_path = "./data/base/worldclim/aus/0.5/bio")
+env.grids.2030 = project_maxent_grids(scen_list     = scen_2030,
+                                      species_list  = test_spp,
+                                      time_slice    = 30,
+                                      maxent_path   = "./output/maxent/STD_VAR_ALL",
+                                      climate_path  = "./data/base/worldclim/aus/0.5/bio",
+                                      current_grids = env.grids.current)
 
 env.grids.2050 = project_maxent_grids(scen_list    = scen_2050,
                                       species_list = test_spp,
@@ -303,6 +305,17 @@ tail(SDM.RESULTS.DIR, 20);tail(comb_spp, 20); tail(MAXENT.SUM.TEST, 20)[, c("GBI
 # SUA.WGS = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/IN_SUA_WGS.shp", layer = "IN_SUA_WGS")
 # SUA.WGS = SUA.WGS [order(SUA.WGS $SUA_NAME11),]
 # SUA_RAS <- rasterize(SUA.WGS, env.grids.current[[1]])
+
+
+#########################################################################################################################
+## Loop over directories, species and one threshold for each, also taking a time_slice argument. Next, make the lists generic too
+## pervious version in R/old/model_combine.R
+DIR        = SDM.RESULTS.DIR[1] 
+species    = comb_spp[1] 
+thresh     = thresh.max.train[1] 
+percent    = percent.10.omiss[1]
+time_slice = 50
+area_occ   = 10
 
 
 #########################################################################################################################

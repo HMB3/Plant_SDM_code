@@ -3,9 +3,7 @@
 #########################################################################################################################
 
 
-#########################################################################################################################
-## THRESHOLD FUNCTIONS
-########################################################################################################################
+## flag issues with ..........................................................................
 
 
 #########################################################################################################################
@@ -289,12 +287,36 @@ FIT_MAXENT_SELECTION <- function(occ,
 ## time_slice = 30
 ## maxent_path  = "./output/maxent/STD_VAR_ALL"
 ## climate_path = "./data/base/worldclim/aus/0.5/bio"
-project_maxent_grids = function(scen_list, species_list, maxent_path, climate_path, time_slice) {
+project_maxent_grids = function(scen_list, species_list, maxent_path, climate_path, time_slice, current_grids) {
   
-  ## First, run a loop over each scenario: options(error = recover)    
+  ## First, run a loop over each scenario:    
   lapply(scen_list, function(x) {
     
-    ## then over each species
+    ## Create a raster stack for each 2030 GCM - 6 times, not for each species also an empty raster for the final plot
+    s <- stack(sprintf('%s/20%s/%s/%s%s.tif', climate_path, time_slice, x, x, 1:19))
+    
+    ## Rename both the current and future environmental stack...
+    names(s) <- names(current_grids) <- c(
+      'Annual_mean_temp',    'Mean_diurnal_range',
+      'Isothermality',       'Temp_seasonality',  'Max_temp_warm_month',
+      'Min_temp_cold_month', 'Temp_annual_range', 'Mean_temp_wet_qu',
+      'Mean_temp_dry_qu',    'Mean_temp_warm_qu', 'Mean_temp_cold_qu',  'Annual_precip',
+      'Precip_wet_month',    'Precip_dry_month',  'Precip_seasonality', 'Precip_wet_qu',
+      'Precip_dry_qu',       'Precip_warm_qu',    'Precip_col_qu')
+    
+    ########################################################################################################################
+    ## Divide the temperature rasters by 10: NA values are the ocean
+    ## s[[1:11]] <- s[[1:11]]/10 ## that code doesn't work, this is a work-around...s[[1]]  = s[[1]]/10
+    message('20', time_slice, ' rasters / 10 ', x)
+    for(i in 1:11) {
+      
+      ## simple loop
+      message(i)
+      s[[i]] <- s[[ i]]/10
+      
+    }
+    
+    ## Then over each species
     lapply(test_spp, function(species) {
       
       ## First, check if the maxent model exists
@@ -309,33 +331,6 @@ project_maxent_grids = function(scen_list, species_list, maxent_path, climate_pa
           
           ## Assign the scenario name (to use later in the plot)
           scen_name = eval(parse(text = sprintf('gcms.%s$GCM[gcms.%s$id == x]', time_slice, time_slice)))           
-          
-          ## How can the raster stack be calcualted once, not for each species?.....................................................
-          ## S needs to be calculated 6 times, but currently it will be calculated 6 * n_spp (3240)
-          
-          ## Create a raster stack for each 2030 GCM - also an empty raster for the final plot
-          s <- stack(sprintf('%s/20%s/%s/%s%s.tif', climate_path, time_slice, x, x, 1:19))
-          
-          ## Rename both the current and future environmental stack...
-          names(s) <- names(env.grids.current) <- c(
-            'Annual_mean_temp',    'Mean_diurnal_range',
-            'Isothermality',       'Temp_seasonality',  'Max_temp_warm_month',
-            'Min_temp_cold_month', 'Temp_annual_range', 'Mean_temp_wet_qu',
-            'Mean_temp_dry_qu',    'Mean_temp_warm_qu', 'Mean_temp_cold_qu',  'Annual_precip',
-            'Precip_wet_month',    'Precip_dry_month',  'Precip_seasonality', 'Precip_wet_qu',
-            'Precip_dry_qu',       'Precip_warm_qu',    'Precip_col_qu')
-          
-          ########################################################################################################################
-          ## Divide the temperature rasters by 10: NA values are the ocean
-          ## s[[1:11]] <- s[[1:11]]/10 ## that code doesn't work, this is a work-around...s[[1]]  = s[[1]]/10
-          message('20', time_slice, ' rasters / 10')
-          for(i in 1:11) {
-            
-            ## simple loop
-            message(i)
-            s[[i]] <- s[[ i]]/10
-            
-          }
           
           ########################################################################################################################
           ## Now read in the SDM model calibrated on current conditions  ## maxent_fitted.rds
@@ -355,7 +350,7 @@ project_maxent_grids = function(scen_list, species_list, maxent_path, climate_pa
             message('Running current prediction for ', species) 
             
             pred.current <- rmaxent::project(
-              m, env.grids.current[[colnames(m@presence)]])$prediction_logistic
+              m, current_grids[[colnames(m@presence)]])$prediction_logistic
             writeRaster(pred.current, f_current, overwrite = TRUE)
             
           } else {
@@ -382,10 +377,10 @@ project_maxent_grids = function(scen_list, species_list, maxent_path, climate_pa
             empty <- init(pred.current, function(x) NA) 
             
             ## Extents don't match between current and future data .................................................................
-            ## workaround for differnce in raster extents :: annoying, current rasters are smaller than future
+            ## workaround for difference in raster extents :: annoying, current rasters are smaller than future
             ex          = extent(pred.current)
             pred.f      = crop(pred.future, ex)
-
+            
             ########################################################################################################################
             ## Use the levelplot function to make a multipanel output: occurrence points, current raster and future raster
             png(sprintf('%s/%s/full/%s_%s.png', maxent_path, species, species, x),      
@@ -424,7 +419,7 @@ project_maxent_grids = function(scen_list, species_list, maxent_path, climate_pa
         
       } else {
         
-        message(species, ' ', x, ' skipped - SDM not yet run')   ## Skip species with no existing SDM
+        message(species, ' ', x, ' skipped - SDM not yet run')          ## Skip species with no existing maxent model
         
       }
       
@@ -442,16 +437,6 @@ project_maxent_grids = function(scen_list, species_list, maxent_path, climate_pa
 ## COMBINE GCM FUNCTIONS
 #########################################################################################################################
 
-
-#########################################################################################################################
-## Loop over directories, species and one threshold for each, also taking a time_slice argument. Next, make the lists generic too
-## pervious version in R/old/model_combine.R
-DIR        = SDM.RESULTS.DIR[1] 
-species    = comb_spp[1] 
-thresh     = thresh.max.train[1] 
-percent    = percent.10.omiss[1]
-time_slice = 50
-area_occ   = 10
 
 #########################################################################################################################
 ## Loop over directories, species and one threshold for each, also taking a time_slice argument. Next, make the lists generic too
@@ -923,34 +908,32 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
 
 #########################################################################################################################
 ## For each scenario, calcualte the mean annual temperature and annual rainfall anomaly
-
-## Again, make this generic.............................................................................................
 calculate.anomaly = function(scen_list, time_slice, climate_path) {
   
-  ## First, run a loop over each scenario: options(error = recover)    
+  #########################################################################################################################
+  ## Create current rasters :: can the raster creation happen just once?
+  ## And read in the current data. Can the specific "current" be removed withouth makin a seconf path argument?
+  message('current rasters / 10')
+  
+  env.grids.current       = stack(file.path(sprintf('%s/current/bio_%02d.tif', climate_path, 1:19)))
+  env.grids.current[[1]]  = env.grids.current[[1]]/10
+  current.bio1            = env.grids.current[[1]]
+  current.bio12           = env.grids.current[[12]]
+  
+  ## First, run a loop over each scenario :: 
   lapply(scen_list, function(x) {
     
     ## Assign the scenario name (to use later in the plot)
     scen_name = eval(parse(text = sprintf('gcms.%s$GCM[gcms.%s$id == x]', time_slice, time_slice)))
-    
-    ## Create the current raster
-    aus <- ne_states(country = 'Australia') %>% 
-      subset(!grepl('Island', name))
-    
-    ## And read in the current data. Can the specific "current" be removed withouth makin a seconf path argument?
-    env.grids.current <- stack(file.path(sprintf('%s/current/bio_%02d.tif', climate_path, 1:19)))
 
     #########################################################################################################################
-    ## Create current rasters 
-    env.grids.current[[1]]  = env.grids.current[[1]]/10
-    current.bio1            = env.grids.current[[1]]
-    current.bio12           = env.grids.current[[12]]
-    
     ## Create a raster stack for each 2050 GCM - also an empty raster for the final plot
     s <- stack(sprintf('%s/20%s/%s/%s%s.tif', climate_path, time_slice, x, x, 1:19))
     
     ########################################################################################################################
     ## Create future rasters
+    message('20', time_slice, ' rasters / 10')
+    
     s[[1]]       = s[[1]]/10
     future.bio1  = s[[1]]
     future.bio12 = s[[12]]
@@ -964,78 +947,33 @@ calculate.anomaly = function(scen_list, time_slice, climate_path) {
     
     ########################################################################################################################
     ## Write the rasters for each species/threshold
-    message('Writing BIO1/12 anomaly rasters for 20', time_slice, ' ', x) 
+    message('Writing BIO1/12 anomaly rasters for 20', time_slice, ' ', x)
     
-    ## Temp anomalies
-    writeRaster(temp.anomaly, sprintf('%s/anomalies/%s_%s.tif', climate_path, "BIO1_anomaly",  x), overwrite = TRUE) 
+    if(!file.exists(sprintf('%s/anomalies/%s_%s.tif', climate_path, "BIO1_anomaly",  x))) {
+      
+      ## Temp anomalies
+      writeRaster(temp.anomaly, sprintf('%s/anomalies/%s_%s.tif', climate_path, "BIO1_anomaly",  x), overwrite = TRUE)
+      
+    } else {
+      
+      message('Skipped ', "BIO1 anomaly for ", x, ', already exists')
+      
+    }
     
-    ## Rain anomalies
-    writeRaster(rain.anomaly, sprintf('%s/anomalies/%s_%s.tif', climate_path, "BIO12_anomaly", x), overwrite = TRUE)
+    if(!file.exists(sprintf('%s/anomalies/%s_%s.tif', climate_path, "BIO12_anomaly",  x))) {
+      
+      ## Rain anomalies
+      writeRaster(rain.anomaly, sprintf('%s/anomalies/%s_%s.tif', climate_path, "BIO12_anomaly", x), overwrite = TRUE)
+      
+    } else {
+      
+      message('Skipped ', "BIO12 anomaly for ", x, ', already exists')
+      
+    }
     
   })
   
 } 
-
-
-
-
-#########################################################################################################################
-## For each scenario, calcualte the mean annual temperature and annual rainfall anomaly
-calculate.anomaly.2070 = function(scen_2070) {
-  
-  ##  First, run a loop over each scenario: options(error = recover)    
-  lapply(scen_2070, function(x) {
-    
-    ## Assign the scenario name (to use later in the plot)
-    scen_name = gcms.50$GCM[gcms.50$id == x]
-    
-    ## create the current raster
-    aus <- ne_states(country = 'Australia') %>% 
-      subset(!grepl('Island', name))
-    
-    env.grids.current <- stack(
-      file.path('./data/base/worldclim/aus/0.5/bio/current',
-                sprintf('bio_%02d.tif', 1:19)))
-    
-    #########################################################################################################################
-    ## Create current rasters 
-    env.grids.current[[1]]  = env.grids.current[[1]]/10
-    current.bio1            = env.grids.current[[1]]
-    current.bio12           = env.grids.current[[12]]
-    
-    ## Create a raster stack for each 2050 GCM - also an empty raster for the final plot
-    s <- stack(
-      sprintf('./data/base/worldclim/aus/0.5/bio/2070/%s/%s%s.tif',
-              x, x, 1:19))
-    
-    ########################################################################################################################
-    ## Create future rasters
-    s[[1]]  = s[[1]]/10
-    future.bio1  = s[[1]]
-    future.bio12 = s[[12]]
-    
-    ## Now subtract the current from the future...
-    temp.anomaly = future.bio1  - current.bio1
-    rain.anomaly = future.bio12 - current.bio12
-    
-    plot(temp.anomaly, main = paste0("BIO1  anomaly ", x))
-    plot(rain.anomaly, main = paste0("BIO12 anomaly ", x))
-    
-    ########################################################################################################################
-    ## Write the rasters for each species/threshold
-    message('Writing BIO1/12 anomaly rasters for 2070 ', x) 
-    
-    ## Rain anomalies
-    writeRaster(temp.anomaly, sprintf('./data/base/worldclim/aus/0.5/bio/anomalies/%s_%s.tif',
-                                      "BIO1_anomaly", x), overwrite = TRUE) 
-    
-    ## Temp anomalies
-    writeRaster(rain.anomaly, sprintf('./data/base/worldclim/aus/0.5/bio/anomalies/%s_%s.tif',
-                                      "BIO12_anomaly", x), overwrite = TRUE)
-    
-  })
-  
-}  
 
 
 
