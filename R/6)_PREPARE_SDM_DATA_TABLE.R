@@ -32,8 +32,9 @@ load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1601_2018.RData")
 load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_1601_2018.RData")
 
 source('./R/GREEN_CITIES_FUNCTIONS.R')
-source('./R/MAPPING_FUNCTIONS.R')
+source('./R/MAXENT_FUNCTIONS.R')
 source('./R/HIA_LIST_MATCHING.R')
+
 
 ##
 dim(COMBO.RASTER.CONTEXT)    
@@ -101,68 +102,6 @@ names(COMBO.RASTER.CONTEXT)
 ## Extremes (e.g. most extreme months)
 
 
-# #########################################################################################################################
-# ## Now quantify the correlations between these variables are related within this set seems wise.
-# ## Try the correlation for everything
-# combo.subset <- COMBO.RASTER.CONTEXT %>%
-#   
-#   ## Just get the sdm.predictors
-#   select(one_of(sdm.predictors.all)) %>%
-#   as.data.frame()
-# 
-# dim(combo.subset)
-# head(combo.subset)
-# 
-# 
-# #########################################################################################################################
-# ## Create a pearson correlation matrix between all a-priori analysis variables
-# correlations <- cor(combo.subset, use = "pairwise.complete.obs") 
-# 
-#   
-# ## Turn into a upper triangle
-# upperTriangle <- upper.tri(correlations, diag = F)
-# 
-# 
-# ## Take a copy of the original cor-mat
-# correlations.upperTriangle <- correlations
-# 
-# 
-# ## Set everything not in upper triangle to NA
-# correlations.upperTriangle[!upperTriangle]<-NA                   
-# 
-# 
-# ## Use melt to reshape the matrix into triplets, and na.omit to get rid of the NA rows
-# correlations.table <- na.omit(melt(correlations.upperTriangle, value.name = "correlationCoef")) 
-# 
-# 
-# ## Rename columns
-# colnames(correlations.table) <- c("Var1", "Var2", "Correlation")  
-# 
-# 
-# ## Reorder by absolute correlation
-# correlations.table = correlations.table[order(-abs(correlations.table["Correlation"])),]  
-# 
-# 
-# #########################################################################################################################
-# ## Have a look at the matrix, and also the ordered list of variable combinations:
-# print(kable(correlations.upperTriangle))
-# print(kable(correlations.table, row.names = FALSE))
-# 
-# 
-# #########################################################################################################################
-# ## Try a 'chart correlation', showing the histograms:
-# chart.Correlation(sp.subset, 
-#                   histogram = TRUE, pch = 19, main = "Worldclim variables")
-# 
-# 
-# #########################################################################################################################
-# ## Do a pairs plot of all the variables
-# ## scatterplots for all variables
-# pairs(Fagus.vars,
-#       lower.panel = panel.cor,
-#       col = "blue", pch = 19, cex = 0.7, main = "Worldclim variables")
-
-
 
 
 
@@ -171,7 +110,6 @@ names(COMBO.RASTER.CONTEXT)
 #########################################################################################################################
 
 
-## 
 ## Create an empty raster with the desired properties, using raster(raster(x))
 template.raster <- raster(raster("./data/base/worldclim/world/0.5/bio/current/bio_01")) %>% 
   projectRaster(res = 1000, crs = CRS('+init=ESRI:54009'))

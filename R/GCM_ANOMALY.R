@@ -34,12 +34,17 @@ setwd("F:/green_cities_sdm")
 
 ## Due to extent differences between Dina's layers and mine, we need to crop the extent
 extent(BIO1_anomaly_cc85bi30)
-extent(BIO1_anomaly_cn85bi50)
-extent(BIO1_anomaly_cn85bi70)
+extent(BIO12_anomaly_ac85bi30)
 
-ex                       = extent(BIO1_anomaly_cc85bi30)
-BIO1_anomaly_cn85bi50_cr = crop(BIO1_anomaly_cn85bi50, ex)
-BIO1_anomaly_cn85bi50_cr = crop(BIO1_anomaly_cn85bi50, ex)
+extent(BIO1_anomaly_cc85bi50)
+extent(BIO12_anomaly_ac85bi50)
+
+extent(BIO1_anomaly_cc85bi70)
+extent(BIO12_anomaly_ac85bi70)
+
+# ex                       = extent(BIO1_anomaly_cc85bi30)
+# BIO1_anomaly_cn85bi50_cr = crop(BIO1_anomaly_cn85bi50, ex)
+# BIO1_anomaly_cn85bi50_cr = crop(BIO1_anomaly_cn85bi50, ex)
 
 
 ## create an Australia shapefile

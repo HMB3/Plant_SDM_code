@@ -85,6 +85,7 @@ scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cc85bi70", "gf85bi70", "hg85b
 aus <- ne_states(country = 'Australia') %>% 
   subset(!grepl('Island', name))
 
+shapefile = aus
 
 ## Now divide the current environmental grids by 10
 env.grids.current <- stack(
@@ -101,6 +102,13 @@ for(i in 1:11) {
 
 
 #########################################################################################################################
+## Name the environmental grids :: this is all 19, because we are using the directory structure
+grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',      'Temp_seasonality', 
+               'Max_temp_warm_month', 'Min_temp_cold_month', 'Temp_annual_range',  'Mean_temp_wet_qu',
+               'Mean_temp_dry_qu',    'Mean_temp_warm_qu',   'Mean_temp_cold_qu',  'Annual_precip',
+               'Precip_wet_month',    'Precip_dry_month',    'Precip_seasonality', 'Precip_wet_qu',
+               'Precip_dry_qu',       'Precip_warm_qu',      'Precip_col_qu')
+
 ## Also, plot GCM anomalies...
 #source(./R/GCM_ANOMALY.R)
 
@@ -120,19 +128,26 @@ env.grids.2030 = project_maxent_grids(scen_list     = scen_2030,
                                       time_slice    = 30,
                                       maxent_path   = "./output/maxent/STD_VAR_ALL",
                                       climate_path  = "./data/base/worldclim/aus/0.5/bio",
+                                      grid_names    = grid.names,
                                       current_grids = env.grids.current)
+
 
 env.grids.2050 = project_maxent_grids(scen_list    = scen_2050,
                                       species_list = test_spp,
                                       time_slice   = 50,
                                       maxent_path  = "./output/maxent/STD_VAR_ALL",
-                                      climate_path = "./data/base/worldclim/aus/0.5/bio")
+                                      climate_path = "./data/base/worldclim/aus/0.5/bio",
+                                      grid_names    = grid.names,
+                                      current_grids = env.grids.current)
+
 
 env.grids.2070 = project_maxent_grids(scen_list    = scen_2070,
                                       species_list = test_spp,
                                       time_slice   = 50,
                                       maxent_path  = "./output/maxent/STD_VAR_ALL",
-                                      climate_path = "./data/base/worldclim/aus/0.5/bio")
+                                      climate_path = "./data/base/worldclim/aus/0.5/bio",
+                                      grid_names    = grid.names,
+                                      current_grids = env.grids.current)
 
 
 
@@ -319,15 +334,6 @@ area_occ   = 10
 
 
 #########################################################################################################################
-## Combine output and calculate gain and loss for 2050 ## c(SDM.RESULTS.DIR[78], SDM.RESULTS.DIR[83], SDM.RESULTS.DIR[159])
-suitability.2050 = mapply(combine_gcm_threshold, 
-                          DIR_list     = SDM.RESULTS.DIR[1], 
-                          species_list = comb_spp[1], 
-                          thresholds   = thresh.max.train[1],
-                          percentiles  = percent.10.omiss[1],
-                          time_slice   = 50,
-                          area_occ     = 10)
-
 ## Combine output and calculate gain and loss for 2030 
 suitability.2030 = mapply(combine_gcm_threshold,
                           DIR_list     = SDM.RESULTS.DIR,
@@ -335,6 +341,26 @@ suitability.2030 = mapply(combine_gcm_threshold,
                           thresholds   = thresh.max.train,
                           percentiles  = percent.10.omiss,
                           time_slice   = 30)
+
+
+## Combine GCM output for 2050 
+suitability.2050 = mapply(combine_gcm_threshold, 
+                          DIR_list     = SDM.RESULTS.DIR[1:2], 
+                          species_list = comb_spp[1:2], 
+                          thresholds   = thresh.max.train[1:2],
+                          percentiles  = percent.10.omiss[1:2],
+                          time_slice   = 50,
+                          area_occ     = 10)
+
+
+## Combine GCM output for 2070 
+suitability.2070 = mapply(combine_gcm_threshold, 
+                          DIR_list     = SDM.RESULTS.DIR[1], 
+                          species_list = comb_spp[1], 
+                          thresholds   = thresh.max.train[1],
+                          percentiles  = percent.10.omiss[1],
+                          time_slice   = 70,
+                          area_occ     = 10)
 
 
 ## Reverse the list, in order to walk through list on different R sessions

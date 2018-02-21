@@ -241,45 +241,6 @@ FIT_MAXENT_SELECTION <- function(occ,
 #########################################################################################################################
 
 
-## How can the raster stack be calcualted once, not for each species?....................................................
-## S needs to be calculated 6 times, but currently it will be calculated 6 * n_spp (3240) 
-# project.grids.2050 = function(scen_2050) {
-#   
-#   lapply(scen_2050, function(x) {
-#     
-#     s <- stack(
-#       sprintf('./data/base/worldclim/aus/0.5/bio/2050/%s/%s%s.tif',
-#               x, x, 1:19))
-#     
-#     ## Rename both the current and future environmental stack...
-#     names(s) <- names(env.grids.current) <- c(
-#       'Annual_mean_temp',    'Mean_diurnal_range',
-#       'Isothermality',       'Temp_seasonality',  'Max_temp_warm_month',
-#       'Min_temp_cold_month', 'Temp_annual_range', 'Mean_temp_wet_qu',
-#       'Mean_temp_dry_qu',    'Mean_temp_warm_qu', 'Mean_temp_cold_qu',  'Annual_precip',
-#       'Precip_wet_month',    'Precip_dry_month',  'Precip_seasonality', 'Precip_wet_qu',
-#       'Precip_dry_qu',       'Precip_warm_qu',    'Precip_col_qu')
-#     
-#     ########################################################################################################################
-#     ## Divide the temperature rasters by 10: NA values are the ocean
-#     ## s[[1:11]] <- s[[1:11]]/10 ## that code doesn't work, this is a work-around...s[[1]]  = s[[1]]/10
-#     message('2050 rasters / 10')
-#     for(i in 1:11) {
-#       
-#       ## simple loop
-#       message(i)
-#       s[[i]] <- s[[ i]]/10
-#       
-#     }
-#     
-#   })
-#   
-# }
-
-
-
-
-
 #########################################################################################################################
 ## Create maxent maps for a given time period 
 ## x = scen_2030[1]
@@ -287,47 +248,40 @@ FIT_MAXENT_SELECTION <- function(occ,
 ## time_slice = 30
 ## maxent_path  = "./output/maxent/STD_VAR_ALL"
 ## climate_path = "./data/base/worldclim/aus/0.5/bio"
-project_maxent_grids = function(scen_list, species_list, maxent_path, climate_path, time_slice, current_grids) {
+## grid_names    = grid.names
+## current_grids = env.grids.current
+project_maxent_grids = function(scen_list, species_list, maxent_path, climate_path, grid_names, time_slice, current_grids) {
   
   ## First, run a loop over each scenario:    
   lapply(scen_list, function(x) {
     
-    ## Create a raster stack for each 2030 GCM - 6 times, not for each species also an empty raster for the final plot
+    ## Create a raster stack for each of the 6 GCMs, not for each species
     s <- stack(sprintf('%s/20%s/%s/%s%s.tif', climate_path, time_slice, x, x, 1:19))
     
     ## Rename both the current and future environmental stack...
-    names(s) <- names(current_grids) <- c(
-      'Annual_mean_temp',    'Mean_diurnal_range',
-      'Isothermality',       'Temp_seasonality',  'Max_temp_warm_month',
-      'Min_temp_cold_month', 'Temp_annual_range', 'Mean_temp_wet_qu',
-      'Mean_temp_dry_qu',    'Mean_temp_warm_qu', 'Mean_temp_cold_qu',  'Annual_precip',
-      'Precip_wet_month',    'Precip_dry_month',  'Precip_seasonality', 'Precip_wet_qu',
-      'Precip_dry_qu',       'Precip_warm_qu',    'Precip_col_qu')
+    names(s) <- names(current_grids) <- grid_names 
     
     ########################################################################################################################
-    ## Divide the temperature rasters by 10: NA values are the ocean
-    ## s[[1:11]] <- s[[1:11]]/10 ## that code doesn't work, this is a work-around...s[[1]]  = s[[1]]/10
+    ## Divide the 11 temperature rasters by 10: NA values are the ocean
+    ## s[[1:11]] <- s[[1:11]]/10 ## That code doesn't work
     message('20', time_slice, ' rasters / 10 ', x)
     for(i in 1:11) {
       
-      ## simple loop
+      ## Simple loop
       message(i)
       s[[i]] <- s[[ i]]/10
       
     }
     
-    ## Then over each species
-    lapply(test_spp, function(species) {
+    ## Then apply each GCM to each species
+    lapply(species_list, function(species) {
       
       ## First, check if the maxent model exists
-      ## path = './output/maxent/STD_VAR_ALL'
-      ## sprintf('%s/%s/full/model.rds', path, species)
-      if(file.exists(sprintf('%s/%s/full/model.rds', maxent_path, species))) {           ## make a path argument
+      if(file.exists(sprintf('%s/%s/full/model.rds', maxent_path, species))) {
         message('Doing ', species)
         
         ## Then, check if the species projection has already been run...
         if(!file.exists(sprintf('%s/%s/full/%s_%s.tif', maxent_path, species, species, x))) {
-          #message('Doing ', species) 
           
           ## Assign the scenario name (to use later in the plot)
           scen_name = eval(parse(text = sprintf('gcms.%s$GCM[gcms.%s$id == x]', time_slice, time_slice)))           
@@ -341,8 +295,7 @@ project_maxent_grids = function(scen_list, species_list, maxent_path, climate_pa
             spTransform(CRS('+init=epsg:4326'))
           
           ## And if the current raster doesn't exist, create it
-          f_current <- sprintf('%s/%s/full/%s_current.tif', 
-                               maxent_path, species, species)
+          f_current <- sprintf('%s/%s/full/%s_current.tif', maxent_path, species, species)
           
           if(!file.exists(f_current)) {
             
@@ -404,7 +357,7 @@ project_maxent_grids = function(scen_list, species_list, maxent_path, climate_pa
                     
                     ## Plot the Aus shapefile with the occurrence points for reference
                     ## Can the points be made more legible for both poorly and well recorded species?
-                    layer(sp.polygons(aus)) +
+                    layer(sp.polygons(shapefile)) +
                     layer(sp.points(occ, pch = 20, cex = 0.4, 
                                     col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
             dev.off()
@@ -484,7 +437,7 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
         suit.list         = unstack(suit)
         combo_suit_mean   = mean(suit)                            ## plot(mean.suit)
         
-        writeRaster(mean.suit, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s_suitability_mean.tif', 
+        writeRaster(combo_suit_mean , sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s_suitability_mean.tif', 
                                        species, species, time_slice), overwrite = TRUE)
         
       } else {
@@ -659,8 +612,8 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
             #########################################################################################################################
             ## Then save the table of SUA results for all species to a datafile...
             ## This would be the file to loop over to create a summary of species per SUA
-            write.csv(GCM.AREA.SUMMARY, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s_%s.csv',
-                                                species, species, time_slice, "SUA_summary"), row.names = FALSE)
+            write.csv(GCM.AREA.SUMMARY, sprintf('./output/maxent/STD_VAR_ALL/%s/full/%s_20%s_%s%s.csv',
+                                                species, species, time_slice, area_occ, "pc_area_SUA_summary"), row.names = FALSE)
             
             #########################################################################################################################
             #########################################################################################################################
@@ -841,61 +794,6 @@ combine_gcm_threshold = function(DIR_list, species_list, thresholds, percentiles
   })
   
 }
-
-
-
-
-
-#########################################################################################################################
-## TABLE FUNCTIONS
-#########################################################################################################################
-
-
-## Could turn this into a function, and loop over a list of subfolders...
-# bind_maxent_tables = function(x) {
-#   
-#   ## First check the table exists
-#   maxent.tables = list.files("./output/maxent/STD_VAR_ALL/")
-#   path          = "./output/maxent/STD_VAR_ALL/"
-#   
-#   f <- paste0(path, x, "/full/maxentResults.csv")
-#   if(file.exists(f)){
-#     
-#     ## Then pipe the table list into lapply
-#     MAXENT.STD.VAR.SUMMARY <- table_list[c(1:length(table_list))] %>%           ## Change to 1:20 if SDMs not complete 
-#       
-#       ## pipe the list into lapply
-#       lapply(function(x) {
-#         
-#         ## Create the character string
-#         f <- paste0(path, x, "/full/maxentResults.csv")
-#         
-#         ## load each .RData file
-#         d <- read.csv(f)
-#         
-#         ## now add a model column
-#         d = cbind(GBIF_Taxon = x, Model_run  = path, d) 
-#         dim(d)
-#         
-#         ## Remove path gunk, and species
-#         #d$GBIF_Taxon = gsub("_", " ", d$GBIF_Taxon)
-#         d$Model_run  = gsub("./output/maxent/", "", d$Model_run)  ## Model_run needed, test effect of different settings
-#         d$Model_run  = gsub("/", "", d$Model_run)
-#         d$Species    = NULL
-#         d
-#         
-#       }) %>%
-#       
-#       ## Finally, bind all the rows together
-#       bind_rows
-#     
-#   } else {
-#     
-#     message(x, ' table does not exist')   ## Skip species with no existing SDM
-#     
-#   }
-#   
-# } 
 
 
 

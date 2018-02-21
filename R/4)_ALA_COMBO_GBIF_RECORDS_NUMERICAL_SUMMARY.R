@@ -74,6 +74,7 @@ str(unique(ALA.LAND$searchTaxon))       ##
 str(unique(ALA.LAND.HIA$searchTaxon))   ## Reduced from 30k to 4K
 
 
+#########################################################################################################################
 ## Bind the rows together?
 GBIF.ALA.COMBO.LAND = bind_rows(GBIF.LAND, ALA.LAND.HIA)
 names(GBIF.ALA.COMBO.LAND)
@@ -85,12 +86,8 @@ head(GBIF.ALA.COMBO.LAND)
 str(unique(GBIF.ALA.COMBO.LAND$searchTaxon))                                  ## ok
 
 
-## Test if the new experimental species are there
+## Test if a particular species is there
 'Swainsona formosa'  %in% GBIF.ALA.COMBO.LAND$searchTaxon
-'Templetonia retusa' %in% GBIF.ALA.COMBO.LAND$searchTaxon 
-'Dodonaea baueri'    %in% GBIF.ALA.COMBO.LAND$searchTaxon 
-'Platanus hispanica' %in% GBIF.ALA.COMBO.LAND$searchTaxon 
-'Kennedia beckxiana' %in% GBIF.ALA.COMBO.LAND$searchTaxon  
 
 
 ## What species are unique to each dataset?
@@ -113,8 +110,67 @@ GBIF.ALA.COMBO.HIA$OBS <- 1:nrow(GBIF.ALA.COMBO.HIA)
 dim(GBIF.ALA.COMBO.HIA)[1];length(GBIF.ALA.COMBO.HIA$OBS)                                          ## This matches step 6
 
 
-## Read in a list of bad points and remove...................................................................
+#########################################################################################################################
+## Now check the field names :: ALA and GBIF fields are uniquely identified?
+test_exotic = subset(GBIF.ALA.COMBO.HIA, searchTaxon == "Cycas revoluta")
+test_native = subset(GBIF.ALA.COMBO.HIA, searchTaxon == "Syzygium floribundum")
 
+View(head(test_exotic, 162)[, c("searchTaxon",
+                                "lon",
+                                "lat",
+                                "gbifID", 
+                                "id")])
+
+## 
+View(head(test_native, 521)[, c("searchTaxon",
+                                "lon",
+                                "lat",
+                                "gbifID", 
+                                "id")])
+
+
+## Not simple to just exclude the GBIF records for ALA species
+
+
+#########################################################################################################################
+## CREATE INDIVIDUAL SHAPEFILES FOR MANUAL CLEANING
+#########################################################################################################################
+
+
+## The whole table of records is too big, so split it up into each species
+GBIF.ALA.CLEAN               = GBIF.ALA.COMBO.HIA
+coordinates(GBIF.ALA.CLEAN)  <- ~lon+lat
+proj4string(GBIF.ALA.CLEAN)  <- '+init=epsg:4326'
+GBIF.ALA.CLEAN               <- spTransform(GBIF.ALA.CLEAN, CRS('+init=ESRI:54009'))
+
+
+## Could also remove the species with insufficent records to run maxent?
+#COMBO.RASTER.CLEAN   = COMBO.RASTER.CLEAN[!COMBO.RASTER.CLEAN$searchTaxon %in% unique(MISSING$searchTaxon), ]
+#FINAL.MAXENT.LIST =  unique(COMBO.RASTER.CLEAN$searchTaxon[!COMBO.RASTER.CLEAN$searchTaxon %in% unique(MISSING$searchTaxon) ])
+
+
+[1] "searchTaxon"                   "scientificName"                "taxonRank"                     "genus"                         "family"                       
+[6] "Taxonomic.status"              "Infraspecific.rank"            "New.Taxonomic.status"          "New.ID"                        "TPL_binomial"                 
+[11] "taxo_agree"                    "cloc"                          "basisOfRecord"                 "locality"                      "establishmentMeans"           
+[16] "institutionCode"               "datasetName"                   "habitat"                       "eventRemarks"                  "recordedBy"                   
+[21] "identifiedBy"                  "gbifID"                        "catalogNumber"                 "country"                       "coordinateUncertaintyInMeters"
+[26] "geodeticDatum"                 "year"                          "month"                         "day"                           "eventDate"                    
+[31] "eventID"                       "CULTIVATED"                    "id"                            "commonname"                    "date_first"                   
+[36] "date_last"                     "POLY_ID"                       "SUB_CODE_7"                    "REG_CODE_7"                    "OBS" 
+
+## Then, loop over the species list and create a shapefile for each 
+for (i in 1:length(searchTaxon)) {
+  
+  ## Need to check the OBS column matches up - or do we not need this again?
+  tmp <- GBIF.ALA.CLEAN[GBIF.ALA.CLEAN$searchTaxon == searchTaxon[i], ] 
+  writeOGR(tmp, dsn = "./data/base/HIA_LIST/COMBO/CLEAN_GBIF", searchTaxon[i], driver = "ESRI Shapefile", overwrite_layer = TRUE)
+  
+}
+
+
+
+## Read in a list of bad points and remove...................................................................
+## Check the OBS feature works on some points
 
 
 

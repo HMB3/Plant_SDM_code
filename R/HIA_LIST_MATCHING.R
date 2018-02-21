@@ -91,8 +91,7 @@ sapply(p, require, character.only = TRUE)
 
 ## source functions
 source('./R/GREEN_CITIES_FUNCTIONS.R')
-source('./R/SDM_FUNCTIONS.R')
-source('./R/MAPPING_FUNCTIONS.R')
+source('./R/MAXENT_FUNCTIONS.R')
 
 
 
