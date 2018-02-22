@@ -113,6 +113,7 @@ source('./R/MAXENT_FUNCTIONS.R')
 ## Up the data and cross-linked to growth form and exotic/native status and derived a list of ~1000 species that are the 
 ## Most commonly sold, covering the right ratio of growth forms, regional representation and native/exotic
 load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1601_2018.RData")
+
 HIA.list   = read.csv("./data/base/HIA_LIST/HIA/GREEN_CITIES_DRAFT_LIST_2709_2017.csv", stringsAsFactors = FALSE)
 CLEAN.list = read.csv("./data/base/HIA_LIST/HIA/HIA.CLEAN.csv",                         stringsAsFactors = FALSE)
 GROWING    = read.csv("./data/base/HIA_LIST/HIA/database_aus_sp_growing.csv",           stringsAsFactors = FALSE)
@@ -139,9 +140,11 @@ dim(renee.taxa)
 str(HIA.list)
 head(HIA.list)
 
-##
-#intersect(CLEAN.list$Species, GROWING$scientific_name)
 
+#########################################################################################################################
+## intersect(CLEAN.list$Species, GROWING$scientific_name)
+
+#########################################################################################################################
 ## Create a list of the raw HIA list, but removing the weird characters...
 ## Just use "TRIM(CELL)" in excel
 ## trim <- function (x) gsub("^\\s+|\\s+$", "", x) ##  HIA.list$Species <- trim(HIA.list$Species)
@@ -348,6 +351,14 @@ length(unique(HIA.SPP$Binomial))     ## Binomials (610), keep Michelia yunnanens
 ## record the "spp." weirdos
 EXCLUDED.SPP         = setdiff(unique(RAW.HIA.SPP), unique(HIA.VARIETY$Species))
 EXCLUDED.VARIETIES   = setdiff(unique(HIA.VARIETY$Species), unique(HIA.SPP$HIA.Taxa))   ## Here is the list that spots the exceptions!!!!!!!
+
+
+## Which species that can't be modelled are on the test list or the top 200 list?
+test.glasshouse = unique(c(MQ.glasshouse$Species, renee.full$Species))
+
+intersect(MISSING$searchTaxon, test.spp)
+intersect(MISSING$searchTaxon, test.glasshouse)
+intersect(MISSING$searchTaxon, top.200$Species)
 
 
 ## Remaining anomalies:

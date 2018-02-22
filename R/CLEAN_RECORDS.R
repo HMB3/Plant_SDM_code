@@ -3,16 +3,22 @@
 #########################################################################################################################
 
 
+## This code creates individual shapefiles for each species, so we can create a list of the spatial outliers manually
+
+
 #########################################################################################################################
-## REMOVE DODGY RECORDS FROM NICHE CALCULATION
+## 1). CREATE UNIQUE ID FIELD FOR EACH RECORD
 #########################################################################################################################
+
+
+## This column can be applied across the project  
 dim(GBIF.ALA.COMBO.HIA)
 GBIF.ALA.COMBO.HIA$OBS <- 1:nrow(GBIF.ALA.COMBO.HIA)
 dim(GBIF.ALA.COMBO.HIA)[1];length(GBIF.ALA.COMBO.HIA$OBS)                                          ## This matches step 6
 
 
 #########################################################################################################################
-## Now check the field names :: ALA and GBIF fields are uniquely identified?
+## Check the field names :: are ALA and GBIF ID fields mutually exclusive?
 test_exotic = subset(GBIF.ALA.COMBO.HIA, searchTaxon == "Cycas revoluta")
 test_native = subset(GBIF.ALA.COMBO.HIA, searchTaxon == "Syzygium floribundum")
 
@@ -29,11 +35,21 @@ View(head(test_native, 521)[, c("searchTaxon",
                                 "id")])
 
 
-## So, not simple to just exclude the GBIF records for ALA species...
+## So, excluding the outliers is not as simple to just exclude the GBIF records for native species...
+## This will work for some taxa, but for others in could lead to equal bias in the model by further underestimating
+## the fundamental niche.
+
+## So the preferable option is to either use a density-based approach, and/or clean them spatially using manual inspection.
+## No approach will get everything, and the scaling problems with occurrence vs spatial resolution remain. The key is to
+## get sensible looking maps at the end :]
+
+
+## Also, we should consider that some species (e.g. Agave attenuata) are simply so poorly sampled, that we can't model them
+## well, or estimate their distribution. We should discuss how to present those, if we indeed do.
 
 
 #########################################################################################################################
-## CREATE INDIVIDUAL SHAPEFILES FOR MANUAL CLEANING
+## 2). CREATE INDIVIDUAL SHAPEFILES WITH UNIQUE ID FOR MANUAL CLEANING
 #########################################################################################################################
 
 
@@ -98,5 +114,29 @@ for (i in 1:length(searchTaxon)) {
 
 
 
-## Read in a list of bad points and remove...................................................................
-## Check the OBS feature works on some points
+
+
+#########################################################################################################################
+## 3). MANUALLY INSPECT THE SHAPEFILES
+#########################################################################################################################
+
+
+#########################################################################################################################
+## Need a criteria for removing records :: key ecological information is in the density of records 
+
+## Spatial outliers     - long way from where they are most dense, e.g. in a garden of central Australian homestead
+## Logistical outliers  - Herbarium specimens, etc (we know the location of Australian herbaria, but not overseas)
+
+
+
+
+
+
+
+#########################################################################################################################
+## Then Read back in a list of suspect points and remove them ................................................................
+
+
+
+
+

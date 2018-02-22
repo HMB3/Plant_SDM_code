@@ -347,8 +347,8 @@ gc()
 
 
 ## note that this still leaves lots of points in the Islands. So we need to decide if those are legitimate.
-# WORLD <- readOGR("F:/green_cities_sdm/data/base/CONEXTUAL/TM_WORLD_BORDERS-0.3.shp", layer = "TM_WORLD_BORDERS-0.3")
-# LAND  <- readOGR("F:/green_cities_sdm/data/base/CONEXTUAL/ne_10m_land.shp",          layer = "ne_10m_land")
+# WORLD <- readOGR("./data/base/CONEXTUAL/TM_WORLD_BORDERS-0.3.shp", layer = "TM_WORLD_BORDERS-0.3")
+# LAND  <- readOGR("./data/base/CONTEXTUAL/ne_10m_land.shp", layer = "ne_10m_land")
 # plot(WORLD)
 # plot(LAND)
 
