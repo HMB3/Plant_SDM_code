@@ -115,10 +115,12 @@ source('./R/MAXENT_FUNCTIONS.R')
 load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1601_2018.RData")
 
 HIA.list   = read.csv("./data/base/HIA_LIST/HIA/GREEN_CITIES_DRAFT_LIST_2709_2017.csv", stringsAsFactors = FALSE)
+HIA.RAW    = read.csv("./data/base/HIA_LIST/HIA/HIA_ORIGINAL_RAW.csv",                  stringsAsFactors = FALSE)
 CLEAN.list = read.csv("./data/base/HIA_LIST/HIA/HIA.CLEAN.csv",                         stringsAsFactors = FALSE)
 GROWING    = read.csv("./data/base/HIA_LIST/HIA/database_aus_sp_growing.csv",           stringsAsFactors = FALSE)
 MISSING    = read.csv("./data/base/HIA_LIST/HIA/MISSING_SPECIES.csv",                   stringsAsFactors = FALSE)
-
+MOD_2      = read.csv("./data/base/HIA_LIST/HIA/MOD2_LIST.csv",                         stringsAsFactors = FALSE)
+COMBO.ALL  = read.csv("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_ALL_SPP.csv",     stringsAsFactors = FALSE)
 
 top.200              = read.csv("./data/base/HIA_LIST/HIA/HIA_TOP_200_1309_2017.csv",       stringsAsFactors = FALSE)
 renee.full           = read.csv("./data/base/HIA_LIST/HIA/RENEE_FULL_LIST.csv",             stringsAsFactors = FALSE) 
@@ -359,6 +361,29 @@ test.glasshouse = unique(c(MQ.glasshouse$Species, renee.full$Species))
 intersect(MISSING$searchTaxon, test.spp)
 intersect(MISSING$searchTaxon, test.glasshouse)
 intersect(MISSING$searchTaxon, top.200$Species)
+
+
+## What about the mod_2 species
+setdiff(MOD_2$Species, HIA.RAW$Species)
+setdiff(MOD_2$Species, HIA.list$Binomial)
+setdiff(MOD_2$Species, COMBO.NICHE.CONTEXT$searchTaxon)
+intersect(MOD_2$Species, test.spp)
+
+
+## Now restrict the niche dataset to just the MOD2 species
+View(head(COMBO.ALL[COMBO.ALL$searchTaxon %in% MOD_2$Species, ], 13)[, c("searchTaxon",
+                                                                         "Origin",
+                                                                         "Top_200",
+                                                                         "Plant.type",
+                                                                         "Number.of.growers", 
+                                                                         "Number.of.States")])
+
+MOD2.SPP = head(COMBO.ALL[COMBO.ALL$searchTaxon %in% MOD_2$Species, ], 15)[, c("searchTaxon",
+                                                                               "Origin",
+                                                                               "Top_200",
+                                                                               "Plant.type",
+                                                                               "Number.of.growers", 
+                                                                               "Number.of.States")]
 
 
 ## Remaining anomalies:

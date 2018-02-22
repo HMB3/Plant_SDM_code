@@ -28,8 +28,8 @@ load("./data/base/HIA_LIST/ALA/ALA_LAND_POINTS.RData")
 
 
 #########################################################################################################################
-## Merge on the ALA data. Consider that GBIF has data for both sources. We are topping up the native ranges with the AVH, 
-## so it will be important to get rid of the duplicates.
+## Merge on the ALA data. Consider that GBIF has data for both sources. We are topping up the native ranges with the AVH. 
+## So there could be duplicates between both sources
 length(unique(GBIF.LAND$searchTaxon)) 
 names(GBIF.LAND)
 names(ALA.LAND)
@@ -38,7 +38,6 @@ setdiff(names(GBIF.LAND), names(ALA.LAND))
 
 ## Test if the new experimental species are there
 'Swainsona formosa'  %in% GBIF.LAND$searchTaxon
-'Kennedia beckxiana' %in% GBIF.LAND$searchTaxon 
 
 
 #########################################################################################################################
@@ -91,86 +90,35 @@ str(unique(GBIF.ALA.COMBO.LAND$searchTaxon))                                  ##
 
 
 ## What species are unique to each dataset?
-length(setdiff(unique(GBIF.LAND$searchTaxon),  unique(ALA.LAND$searchTaxon)))
-length(setdiff(unique(ALA.LAND$searchTaxon),   unique(GBIF.LAND$searchTaxon)))
-length(intersect(unique(ALA.LAND$searchTaxon), unique(GBIF.LAND$searchTaxon)))
+# length(setdiff(unique(GBIF.LAND$searchTaxon),  unique(ALA.LAND$searchTaxon)))
+# length(setdiff(unique(ALA.LAND$searchTaxon),   unique(GBIF.LAND$searchTaxon)))
+# length(intersect(unique(ALA.LAND$searchTaxon), unique(GBIF.LAND$searchTaxon)))
 
 
 #########################################################################################################################
-## Now crunch the big dataset down to just the species on the 25 growers or more list: the extras are just overkill
+## Now crunch the big dataset down to just the species on the 25 growers or more list: the extras are just overkill......
 GBIF.ALA.COMBO.HIA  = GBIF.ALA.COMBO.LAND[GBIF.ALA.COMBO.LAND$searchTaxon %in% unique(c(test.spp, HIA.SPP$Binomial)), ]
 'Swainsona formosa'  %in% GBIF.ALA.COMBO.HIA $searchTaxon
+
+
+## This unique ID column can be applied across the project  
+GBIF.ALA.COMBO.HIA$OBS <- 1:nrow(GBIF.ALA.COMBO.HIA)
+dim(GBIF.ALA.COMBO.HIA)[1];length(GBIF.ALA.COMBO.HIA$OBS)  
+names(GBIF.ALA.COMBO.HIA)
+
+
+## Now move this out to a separet file, so the cleaning code can be run separately
+save(GBIF.ALA.COMBO.HIA, file = paste("./data/base/HIA_LIST/COMBO/GBIF_ALA_COMBO_PRE_CLEAN.RData"))
 
 
 #########################################################################################################################
 ## REMOVE DODGY RECORDS FROM NICHE CALCULATION
 #########################################################################################################################
-dim(GBIF.ALA.COMBO.HIA)
-GBIF.ALA.COMBO.HIA$OBS <- 1:nrow(GBIF.ALA.COMBO.HIA)
-dim(GBIF.ALA.COMBO.HIA)[1];length(GBIF.ALA.COMBO.HIA$OBS)                                          ## This matches step 6
 
 
-#########################################################################################################################
-## Now check the field names :: ALA and GBIF fields are uniquely identified?
-test_exotic = subset(GBIF.ALA.COMBO.HIA, searchTaxon == "Cycas revoluta")
-test_native = subset(GBIF.ALA.COMBO.HIA, searchTaxon == "Syzygium floribundum")
-
-View(head(test_exotic, 162)[, c("searchTaxon",
-                                "lon",
-                                "lat",
-                                "gbifID", 
-                                "id")])
-
-## 
-View(head(test_native, 521)[, c("searchTaxon",
-                                "lon",
-                                "lat",
-                                "gbifID", 
-                                "id")])
+## ........................
 
 
-## Not simple to just exclude the GBIF records for ALA species
-
-
-#########################################################################################################################
-## CREATE INDIVIDUAL SHAPEFILES FOR MANUAL CLEANING
-#########################################################################################################################
-
-
-## The whole table of records is too big, so split it up into each species
-GBIF.ALA.CLEAN               = GBIF.ALA.COMBO.HIA
-coordinates(GBIF.ALA.CLEAN)  <- ~lon+lat
-proj4string(GBIF.ALA.CLEAN)  <- '+init=epsg:4326'
-GBIF.ALA.CLEAN               <- spTransform(GBIF.ALA.CLEAN, CRS('+init=ESRI:54009'))
-
-
-## Could also remove the species with insufficent records to run maxent?
-#COMBO.RASTER.CLEAN   = COMBO.RASTER.CLEAN[!COMBO.RASTER.CLEAN$searchTaxon %in% unique(MISSING$searchTaxon), ]
-#FINAL.MAXENT.LIST =  unique(COMBO.RASTER.CLEAN$searchTaxon[!COMBO.RASTER.CLEAN$searchTaxon %in% unique(MISSING$searchTaxon) ])
-
-
-[1] "searchTaxon"                   "scientificName"                "taxonRank"                     "genus"                         "family"                       
-[6] "Taxonomic.status"              "Infraspecific.rank"            "New.Taxonomic.status"          "New.ID"                        "TPL_binomial"                 
-[11] "taxo_agree"                    "cloc"                          "basisOfRecord"                 "locality"                      "establishmentMeans"           
-[16] "institutionCode"               "datasetName"                   "habitat"                       "eventRemarks"                  "recordedBy"                   
-[21] "identifiedBy"                  "gbifID"                        "catalogNumber"                 "country"                       "coordinateUncertaintyInMeters"
-[26] "geodeticDatum"                 "year"                          "month"                         "day"                           "eventDate"                    
-[31] "eventID"                       "CULTIVATED"                    "id"                            "commonname"                    "date_first"                   
-[36] "date_last"                     "POLY_ID"                       "SUB_CODE_7"                    "REG_CODE_7"                    "OBS" 
-
-## Then, loop over the species list and create a shapefile for each 
-for (i in 1:length(searchTaxon)) {
-  
-  ## Need to check the OBS column matches up - or do we not need this again?
-  tmp <- GBIF.ALA.CLEAN[GBIF.ALA.CLEAN$searchTaxon == searchTaxon[i], ] 
-  writeOGR(tmp, dsn = "./data/base/HIA_LIST/COMBO/CLEAN_GBIF", searchTaxon[i], driver = "ESRI Shapefile", overwrite_layer = TRUE)
-  
-}
-
-
-
-## Read in a list of bad points and remove...................................................................
-## Check the OBS feature works on some points
 
 
 
@@ -260,6 +208,7 @@ env.grids.current = stack(
 ## ## Test if the new experimental species are there : 'Swainsona formosa'  %in% GBIF.ALA.COMBO.HIA$searchTaxon
 COMBO.RASTER <- extract(env.grids.current, COMBO.POINTS) %>% 
   cbind(GBIF.ALA.COMBO.HIA, .)
+
 
 ## Check taxa again
 'Swainsona formosa'  %in% COMBO.RASTER$searchTaxon
@@ -588,10 +537,6 @@ COMBO.NICHE.CONTEXT = join(COMBO.LGA, HIA.SPP.JOIN,
 
 
 ## Check taxa again
-'Swainsona formosa'  %in% COMBO.NICHE.CONTEXT$searchTaxon
-'Templetonia retusa' %in% COMBO.NICHE.CONTEXT$searchTaxon 
-'Dodonaea baueri'    %in% COMBO.NICHE.CONTEXT$searchTaxon 
-'Platanus hispanica' %in% COMBO.NICHE.CONTEXT$searchTaxon 
 'Kennedia beckxiana' %in% COMBO.NICHE.CONTEXT$searchTaxon  
 
 

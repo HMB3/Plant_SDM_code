@@ -6,15 +6,19 @@
 ## This code creates individual shapefiles for each species, so we can create a list of the spatial outliers manually
 
 
+## Load the niche data and the records from step 4, after cruncing ALA and GBIF, but prior to cleaning (GBIF.ALA.COMBO.HIA)
+source('./R/HIA_LIST_MATCHING.R')
+load("./data/base/HIA_LIST/COMBO/GBIF_ALA_COMBO_PRE_CLEAN.RData")
+
+
 #########################################################################################################################
 ## 1). CREATE UNIQUE ID FIELD FOR EACH RECORD
 #########################################################################################################################
 
 
 ## This column can be applied across the project  
-dim(GBIF.ALA.COMBO.HIA)
-GBIF.ALA.COMBO.HIA$OBS <- 1:nrow(GBIF.ALA.COMBO.HIA)
-dim(GBIF.ALA.COMBO.HIA)[1];length(GBIF.ALA.COMBO.HIA$OBS)                                          ## This matches step 6
+names(GBIF.ALA.COMBO.HIA)
+dim(GBIF.ALA.COMBO.HIA)                                                                           ## This matches step 6
 
 
 #########################################################################################################################
@@ -22,6 +26,12 @@ dim(GBIF.ALA.COMBO.HIA)[1];length(GBIF.ALA.COMBO.HIA$OBS)                       
 test_exotic = subset(GBIF.ALA.COMBO.HIA, searchTaxon == "Cycas revoluta")
 test_native = subset(GBIF.ALA.COMBO.HIA, searchTaxon == "Syzygium floribundum")
 
+
+## Are there records with both ALA and GBIF IDs? Seems not...
+dim(GBIF.ALA.COMBO.HIA[!is.na(GBIF.ALA.COMBO.HIA$gbifID) & !is.na(GBIF.ALA.COMBO.HIA$id),])
+
+
+## So the records don't overlap
 View(head(test_exotic, 162)[, c("searchTaxon",
                                 "lon",
                                 "lat",
@@ -35,7 +45,9 @@ View(head(test_native, 521)[, c("searchTaxon",
                                 "id")])
 
 
-## So, excluding the outliers is not as simple to just exclude the GBIF records for native species...
+
+
+## So, excluding the outliers is not as simple as just removing the GBIF records for native species...
 ## This will work for some taxa, but for others in could lead to equal bias in the model by further underestimating
 ## the fundamental niche.
 
@@ -53,25 +65,25 @@ View(head(test_native, 521)[, c("searchTaxon",
 #########################################################################################################################
 
 
+## Merge on a native/exotic colum?
+length(unique(GBIF.ALA.COMBO.HIA$searchTaxon)) 
+OCC.CONTEXT = COMBO.NICHE.CONTEXT[,c("searchTaxon", "Origin", "Plant.type", "Top_200")] 
+
+
 ## The whole table of records is too big, so split it up into each species...
 GBIF.ALA.CLEAN               = GBIF.ALA.COMBO.HIA
-coordinates(GBIF.ALA.CLEAN)  <- ~lon+lat
-proj4string(GBIF.ALA.CLEAN)  <- '+init=epsg:4326'
-GBIF.ALA.CLEAN               <- spTransform(GBIF.ALA.CLEAN, CRS('+init=ESRI:54009'))
-
-
-## Could also remove the species with insufficent records to run maxent?
-#COMBO.RASTER.CLEAN   = COMBO.RASTER.CLEAN[!COMBO.RASTER.CLEAN$searchTaxon %in% unique(MISSING$searchTaxon), ]
-#FINAL.MAXENT.LIST =  unique(COMBO.RASTER.CLEAN$searchTaxon[!COMBO.RASTER.CLEAN$searchTaxon %in% unique(MISSING$searchTaxon) ])
-
-
-## The OBS field is truncated in ArcMap by default
-View(head(subset(GBIF.ALA.CLEAN, searchTaxon == "Araucaria bidwillii"), 368))
+GBIF.ALA.CLEAN               = join(GBIF.ALA.CLEAN, OCC.CONTEXT)
+dim(GBIF.ALA.CLEAN)
 
 
 ## Reorder the columns to see in ArcMap
 GBIF.ALA.CLEAN  = GBIF.ALA.CLEAN[,c("searchTaxon",
                                     "OBS",
+                                    "lat",
+                                    "lon",
+                                    "Origin",
+                                    "Plant.type",
+                                    "Top_200",
                                     "scientificName",
                                     "commonname",  
                                     "taxonRank", 
@@ -101,6 +113,61 @@ GBIF.ALA.CLEAN  = GBIF.ALA.CLEAN[,c("searchTaxon",
                                     "POLY_ID",                       
                                     "SUB_CODE_7",                    
                                     "REG_CODE_7")]
+
+
+## Rename the fields so that ArcMap can handle them
+GBIF.ALA.CLEAN     = dplyr::rename(GBIF.ALA.CLEAN, 
+                                   TAXON     = searchTaxon,
+                                   ORIGIN    = Origin, 
+                                   TYPE      = Plant.type,
+                                   T200      = Top_200,
+                                   SC_NAME   = scientificName,
+                                   COM_NAME  = commonname,
+                                   RANK      = taxonRank,
+                                   GENUS     = genus,
+                                   FAMILY    = family,
+                                   TPL       = TPL_binomial,
+                                   TX_AGR    = taxo_agree,
+                                   GBIF_ID   = gbifID,
+                                   ALA_ID    = id,
+                                   CLOC      = cloc,                     
+                                   BASIS     = basisOfRecord,                
+                                   LOCAL     = locality,                      
+                                   ESTAB     = establishmentMeans,          
+                                   INSTIT    = institutionCode,                
+                                   DATASET   = datasetName,                      
+                                   HABITAT   = habitat,                
+                                   CAT_NO    = catalogNumber,                
+                                   COUNTRY   = country,                
+                                   COORD_UN  = coordinateUncertaintyInMeters,
+                                   DATUM     = geodeticDatum,                 
+                                   YEAR      = year,                          
+                                   MNTH      = month,                        
+                                   DAY       = day,                      
+                                   DATE      = eventDate,                     
+                                   EV_ID     = eventID,                      
+                                   CULT      = CULTIVATED)
+
+
+##
+names(GBIF.ALA.CLEAN)
+
+
+
+#########################################################################################################################
+## The whole table of records is too big, so split it up into each species...
+coordinates(GBIF.ALA.CLEAN)  <- ~lon+lat
+proj4string(GBIF.ALA.CLEAN)  <- '+init=epsg:4326'
+GBIF.ALA.CLEAN               <- spTransform(GBIF.ALA.CLEAN, CRS('+init=ESRI:54009'))
+
+
+## Could also remove the species with insufficent records to run maxent?
+#COMBO.RASTER.CLEAN   = COMBO.RASTER.CLEAN[!COMBO.RASTER.CLEAN$searchTaxon %in% unique(MISSING$searchTaxon), ]
+#FINAL.MAXENT.LIST =  unique(COMBO.RASTER.CLEAN$searchTaxon[!COMBO.RASTER.CLEAN$searchTaxon %in% unique(MISSING$searchTaxon) ])
+
+
+## Check
+head(GBIF.ALA.CLEAN)
 
 
 ## Then, loop over the species list and create a shapefile for each 
