@@ -152,6 +152,7 @@ lapply(test.spp, function(spp)  { # for serial, parLapply(cl, species[1:8], func
                          k_thr                   = 5, 
                          responsecurves          = TRUE), 
     
+    ## https://stackoverflow.com/questions/19394886/trycatch-in-r-not-working-properly
     function(e) message('Species skipped ', spp)) ## skip any species for which the functio fails
     
   } else {
