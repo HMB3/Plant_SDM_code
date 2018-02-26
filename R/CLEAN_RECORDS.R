@@ -136,24 +136,25 @@ GBIF.ALA.POINTS = SpatialPointsDataFrame(coords      = GBIF.ALA.CLEAN[c("LON", "
                                          data        = GBIF.ALA.CLEAN,
                                          proj4string = CRS("+proj=longlat +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +no_defs"))
 
-##
+## OK
 names(GBIF.ALA.POINTS)
+
 
 ## Could also remove the species with insufficent records to run maxent?
 #COMBO.RASTER.CLEAN   = COMBO.RASTER.CLEAN[!COMBO.RASTER.CLEAN$searchTaxon %in% unique(MISSING$searchTaxon), ]
 #FINAL.MAXENT.LIST =  unique(COMBO.RASTER.CLEAN$searchTaxon[!COMBO.RASTER.CLEAN$searchTaxon %in% unique(MISSING$searchTaxon) ])
 
 
-## Check
-head(GBIF.ALA.POINTS)
+## Create list of species 
+TAXA <- unique(GBIF.ALA.POINTS$TAXON)
 
 
 ## Then, loop over the species list and create a shapefile for each 
-for (i in 1:length(searchTaxon)) {
+for (i in 1:length(TAXA)) {
   
   ## Need to check the OBS column matches up - or do we not need this again?
-  tmp <- GBIF.ALA.CLEAN[GBIF.ALA.CLEAN$searchTaxon == searchTaxon[i], ] 
-  writeOGR(tmp, dsn = "./data/base/HIA_LIST/COMBO/CLEAN_GBIF", searchTaxon[i], driver = "ESRI Shapefile", overwrite_layer = TRUE)
+  tmp <- GBIF.ALA.POINTS[GBIF.ALA.POINTS$TAXON == TAXA[i], ] 
+  writeOGR(tmp, dsn = "./data/base/HIA_LIST/COMBO/CLEAN_GBIF", TAXA[i], driver = "ESRI Shapefile", overwrite_layer = TRUE)
   
 }
 
