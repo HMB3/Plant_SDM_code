@@ -45,6 +45,8 @@ View(head(test_native, 521)[, c("searchTaxon",
                                 "id")])
 
 
+## Update
+names(GBIF.ALA.COMBO.HIA)
 
 
 ## So, excluding the outliers is not as simple as just removing the GBIF records for native species...
@@ -65,36 +67,34 @@ View(head(test_native, 521)[, c("searchTaxon",
 #########################################################################################################################
 
 
-## Merge on a native/exotic colum?
+## Merge on the origin columns
 length(unique(GBIF.ALA.COMBO.HIA$searchTaxon)) 
 OCC.CONTEXT = COMBO.NICHE.CONTEXT[,c("searchTaxon", "Origin", "Plant.type", "Top_200")] 
 
 
 ## The whole table of records is too big, so split it up into each species...
 GBIF.ALA.CLEAN               = GBIF.ALA.COMBO.HIA
-GBIF.ALA.CLEAN               = join(GBIF.ALA.CLEAN, OCC.CONTEXT)
+GBIF.ALA.CLEAN               = join(GBIF.ALA.COMBO.HIA, OCC.CONTEXT)
 dim(GBIF.ALA.CLEAN)
+names(GBIF.ALA.CLEAN)
 
 
 ## Reorder the columns to see in ArcMap
-GBIF.ALA.CLEAN  = select(GBIF.ALA.CLEAN, searchTaxon, OBS, 
-                         lat,lon,
-                         Origin, Plant.type, Top_200,
-                         scientificName, commonname, taxonRank, 
-                         genus, family, TPL_binomial, taxo_agree, 
-                         gbifID, id, cloc,                          
-                         basisOfRecord, locality, establishmentMeans,           
-                         institutionCode, datasetName, habitat,                       
-                         catalogNumber, country, coordinateUncertaintyInMeters,
-                         geodeticDatum, year, month,                         
-                         day, eventDate, eventID,                       
-                         CULTIVATED, POLY_ID, SUB_CODE_7, REG_CODE_7)
+GBIF.ALA.CLEAN  = select(GBIF.ALA.CLEAN, searchTaxon, OBS,     lat,            lon,
+                         Origin,         Plant.type,  Top_200, scientificName, commonname, 
+                         taxonRank,      genus,       family,  TPL_binomial,   taxo_agree, 
+                         gbifID,         id,          cloc,    basisOfRecord,  locality, 
+                         establishmentMeans, institutionCode, datasetName, habitat, catalogNumber, 
+                         country, coordinateUncertaintyInMeters, geodeticDatum, year, month,                         
+                         day, eventDate, eventID, CULTIVATED, POLY_ID, SUB_CODE_7, REG_CODE_7)
 
 
 ## Rename the fields so that ArcMap can handle them
 GBIF.ALA.CLEAN     = dplyr::rename(GBIF.ALA.CLEAN, 
                                    TAXON     = searchTaxon,
-                                   ORIGIN    = Origin, 
+                                   ORIGIN    = Origin,
+                                   LAT       = lat,
+                                   LON       = lon,
                                    TYPE      = Plant.type,
                                    T200      = Top_200,
                                    SC_NAME   = scientificName,
@@ -129,13 +129,15 @@ GBIF.ALA.CLEAN     = dplyr::rename(GBIF.ALA.CLEAN,
 names(GBIF.ALA.CLEAN)
 
 
-
 #########################################################################################################################
 ## The whole table of records is too big, so split it up into each species...
-coordinates(GBIF.ALA.CLEAN)  <- ~lon+lat
-proj4string(GBIF.ALA.CLEAN)  <- '+init=epsg:4326'
-GBIF.ALA.CLEAN               <- spTransform(GBIF.ALA.CLEAN, CRS('+init=ESRI:54009'))
+## Create spatial points dataframe
+GBIF.ALA.POINTS = SpatialPointsDataFrame(coords      = GBIF.ALA.CLEAN[c("LON", "LAT")], 
+                                         data        = GBIF.ALA.CLEAN,
+                                         proj4string = CRS("+proj=longlat +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +no_defs"))
 
+##
+names(GBIF.ALA.POINTS)
 
 ## Could also remove the species with insufficent records to run maxent?
 #COMBO.RASTER.CLEAN   = COMBO.RASTER.CLEAN[!COMBO.RASTER.CLEAN$searchTaxon %in% unique(MISSING$searchTaxon), ]
@@ -143,7 +145,7 @@ GBIF.ALA.CLEAN               <- spTransform(GBIF.ALA.CLEAN, CRS('+init=ESRI:5400
 
 
 ## Check
-head(GBIF.ALA.CLEAN)
+head(GBIF.ALA.POINTS)
 
 
 ## Then, loop over the species list and create a shapefile for each 
