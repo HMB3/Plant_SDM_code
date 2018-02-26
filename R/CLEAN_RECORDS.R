@@ -12,7 +12,7 @@ load("./data/base/HIA_LIST/COMBO/GBIF_ALA_COMBO_PRE_CLEAN.RData")
 
 
 #########################################################################################################################
-## 1). CREATE UNIQUE ID FIELD FOR EACH RECORD
+## 1). CHECK ALA/GBIF OVERLAP
 #########################################################################################################################
 
 
@@ -136,8 +136,13 @@ GBIF.ALA.POINTS = SpatialPointsDataFrame(coords      = GBIF.ALA.CLEAN[c("LON", "
                                          data        = GBIF.ALA.CLEAN,
                                          proj4string = CRS("+proj=longlat +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +no_defs"))
 
+TEST.POINTS     = SpatialPointsDataFrame(coords      = test_exotic[c("lon", "lat")], 
+                                         data        = test_exotic,
+                                         proj4string = CRS("+proj=longlat +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +no_defs"))
+
 ## OK
 names(GBIF.ALA.POINTS)
+dim(GBIF.ALA.POINTS)
 
 
 ## Could also remove the species with insufficent records to run maxent?
@@ -159,11 +164,74 @@ for (i in 1:length(TAXA)) {
 }
 
 
+#########################################################################################################################
+## Now merge the shapefiles into 5-10 big files for easier previewing
+
+
 
 
 
 #########################################################################################################################
-## 3). MANUALLY INSPECT THE SHAPEFILES
+## 3). INTERSECT SPECIES RECORDS WITH CLIMATE ZONES
+#########################################################################################################################
+
+
+## Read in the Koppen shapefile
+Koppen = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/WC05_1975H_Koppen.shp", layer = "WC05_1975H_Koppen")
+head(Koppen)
+str(unique(Koppen$Koppen))
+
+
+## Project :: probably not needed 
+CRS.new          <- CRS("+init=epsg:4326")                                                                  ## EPSG:3577
+Koppen           = spTransform(Koppen, CRS.new)
+GBIF.ALA.POINTS  = spTransform(GBIF.ALA.POINTS, CRS.new)
+TEST.POINTS      = spTransform(TEST.POINTS, CRS.new)
+
+
+## 
+projection(Koppen)
+projection(GBIF.ALA.POINTS)
+projection(TEST.POINTS)
+
+
+## Intersect the species with the data 
+KOPPEN.TAXA = over(TEST.POINTS, Koppen) 
+head(KOPPEN.TAXA)
+head(TEST.POINTS[1])
+
+
+## Join the koppen classification onto the data
+TAXA.KOPPEN.JOIN = cbind.data.frame(TEST.POINTS, KOPPEN.TAXA)
+
+
+#########################################################################################################################
+## How many Koppen zones each taxa falls in
+KOPP.TAXA   = tapply(TAXA.KOPPEN.JOIN$Koppen, TAXA.KOPPEN.JOIN$searchTaxon, function(x) length(unique(x)))
+KOPP.TAXA   = as.data.frame(KOPP.TAXA)
+
+
+## How many species records are in each koppen zone (total)?
+KOPP.OCC    = data.frame(table(TAXA.KOPPEN.JOIN$Koppen))        ## group Koppen by occurrence
+
+
+## What format of table do we want?
+head(KOPP.TAXA)
+head(KOPP.OCC)
+
+
+
+
+#########################################################################################################################
+## Need a criteria for removing records :: key ecological information is in the density of records 
+
+## Spatial outliers     - long way from where they are most dense, e.g. in a garden of central Australian homestead
+## Logistical outliers  - Herbarium specimens, etc (we know the location of Australian herbaria, but not overseas)
+
+
+
+#########################################################################################################################
+## 4). MANUALLY INSPECT THE SHAPEFILES
 #########################################################################################################################
 
 

@@ -328,7 +328,8 @@ head(LGA.AGG)
 save(COMBO.SUA.LGA, file = paste("./data/base/HIA_LIST/GBIF/COMBO_SUA_LGA.RData"))
 save(LGA.AGG,   file = paste("./data/base/HIA_LIST/GBIF/LGA_AGG.RData"))
 
-##
+
+## 
 str(COMBO.SUA.LGA)
 head(COMBO.SUA.LGA)
 names(COMBO.SUA.LGA)
