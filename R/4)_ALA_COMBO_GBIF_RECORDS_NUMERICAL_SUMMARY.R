@@ -12,7 +12,7 @@
 ## 1). A table with one row for each species record
 ## 2). A table with one row for each species, including contextual data and species attributes (niches, traits, etc.)
  
-## These tables estimate the current global realised niche/climatic tolerance using the best available data 
+## These tables are used to estimate the current global realised niche/climatic tolerance using the best available data 
 
 
 #########################################################################################################################
@@ -112,14 +112,11 @@ save(GBIF.ALA.COMBO.HIA, file = paste("./data/base/HIA_LIST/COMBO/GBIF_ALA_COMBO
 
 
 #########################################################################################################################
-## REMOVE DODGY RECORDS FROM NICHE CALCULATION
+## DON'T REMOVE SPATIAL OUTLIERS FROM NICHE CALCULATION
 #########################################################################################################################
 
 
 ## ........................
-
-
-
 
 
 #########################################################################################################################

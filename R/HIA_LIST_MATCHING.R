@@ -371,12 +371,12 @@ intersect(MOD_2$Species, test.spp)
 
 
 ## Now restrict the niche dataset to just the MOD2 species
-View(head(COMBO.ALL[COMBO.ALL$searchTaxon %in% MOD_2$Species, ], 13)[, c("searchTaxon",
-                                                                         "Origin",
-                                                                         "Top_200",
-                                                                         "Plant.type",
-                                                                         "Number.of.growers", 
-                                                                         "Number.of.States")])
+# View(head(COMBO.ALL[COMBO.ALL$searchTaxon %in% MOD_2$Species, ], 13)[, c("searchTaxon",
+#                                                                          "Origin",
+#                                                                          "Top_200",
+#                                                                          "Plant.type",
+#                                                                          "Number.of.growers", 
+#                                                                          "Number.of.States")])
 
 MOD2.SPP = head(COMBO.ALL[COMBO.ALL$searchTaxon %in% MOD_2$Species, ], 15)[, c("searchTaxon",
                                                                                "Origin",
