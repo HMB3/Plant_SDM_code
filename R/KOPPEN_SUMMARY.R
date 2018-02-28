@@ -6,6 +6,10 @@
 ## This code creates individual shapefiles for each species, so we can create a list of the spatial outliers manually.
 ## It also makes a table of koppen zones * species occurrences
 
+#  which Koppen zones a given species is primarily found in (by overlaying the occurrences with the Koppen data). We could then group species according to their distribution in Koppen zones. For each of these major groupings, we would then come up with a list of variables to use in the models, based on our understanding of the climate of those zones. So, for example, we would be able to identify a group of species that are primarily Montane. We would then decide on which variables to use for these. A second group of species might be primarily arid/semi-arid, and so on.
+# 
+# So the point of overlaying the occurrences with the Koppen is simply to identify what zones the species falls in. We would do that by calculating the % of a species' records in each zone. I have done similar things before, and I guarantee it still wont be straightforward with grouping species, but it will be a start.
+
 
 ## Load the niche data and the records from step 4, after cruncing ALA and GBIF, but prior to cleaning (GBIF.ALA.COMBO.HIA)
 ## Load Koppen zones 
@@ -117,8 +121,7 @@ for(kop in koppen.list){
 
 
 ##
-names(KOPPEN.CAST)
-View(KOPPEN.CAST)
+names(KOPPEN.CAST)View(KOPPEN.CAST)
 
 
 
