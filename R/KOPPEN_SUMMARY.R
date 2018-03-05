@@ -32,7 +32,7 @@ str(unique(Koppen$Koppen))
 
 ## Make a table of the Koppen descriptions
 n.samples = 30
-table.columns = c("Koppen", "Kop_descr")
+table.columns = c("Koppen", "Description")
 
 
 ## Create big table to store the data, with n rows = n samples
@@ -42,6 +42,19 @@ colnames(KOP.LUT)    = table.columns
 KOP.LUT              = as.data.frame(KOP.LUT)
 KOP.LUT$Koppen       = as.character(sort(unique(Koppen$Koppen)))
 str(KOP.LUT)
+
+
+## Loop over all the Koppens and create a new column
+## descr.list = as.character(unique(KOP.LUT$Description))
+# for(i in 1:30){
+#   
+#   for(descr in descr.list){
+#     
+#     KOP.LUT[i, "Description"] = descr
+#     
+#   }
+#   
+# }
 
 
 ## Fill the table
@@ -145,7 +158,7 @@ head(KOP.LUT, 30)
 
 
 ##
-write.csv(KOP.LUT, "./data/base/CONTEXTUAL/KOPPEN_LUT.csv", row.names = FALSE)
+write.csv(KOP.LUT, "./data/base/HIA_LIST/COMBO/KOPPEN_LUT.csv", row.names = FALSE)
 
 
 

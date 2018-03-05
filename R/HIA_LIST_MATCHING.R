@@ -121,6 +121,8 @@ GROWING    = read.csv("./data/base/HIA_LIST/HIA/database_aus_sp_growing.csv",   
 MISSING    = read.csv("./data/base/HIA_LIST/HIA/MISSING_SPECIES.csv",                   stringsAsFactors = FALSE)
 MOD_2      = read.csv("./data/base/HIA_LIST/HIA/MOD2_LIST.csv",                         stringsAsFactors = FALSE)
 COMBO.ALL  = read.csv("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_ALL_SPP.csv",     stringsAsFactors = FALSE)
+KOP.TEST   = read.csv("./data/base/HIA_LIST/COMBO/KOPPEN_TEST_SPP.csv",                 stringsAsFactors = FALSE)
+
 
 top.200              = read.csv("./data/base/HIA_LIST/HIA/HIA_TOP_200_1309_2017.csv",       stringsAsFactors = FALSE)
 renee.full           = read.csv("./data/base/HIA_LIST/HIA/RENEE_FULL_LIST.csv",             stringsAsFactors = FALSE) 
@@ -303,6 +305,10 @@ setdiff(Manuel.experimental$Species, spp.all)
 
 
 ## The trial species
+glasshouse.spp = trimws(sort(unique(c(renee.full$Species, MQ.glasshouse$Species))))
+glasshouse.spp = as.data.frame(glasshouse.spp)
+
+                        
 test.spp = trimws(sort(unique(c(renee.full$Species, 
                                 Manuel.experimental$Species,
                                 MQ.glasshouse$Species,
@@ -314,6 +320,10 @@ HIA.SAMPLE = head(COMBO.NICHE.CONTEXT, 53)[, c("searchTaxon")]
 test.spp   = sort(unique(c(test.spp, HIA.SAMPLE)))
 str(test.spp)
 test.reverse = sort(test.spp, decreasing = TRUE)
+
+
+##
+kop.spp = sort(unique(KOP.TEST$searchTaxon))
 
 ##
 exp.spp  = c('Swainsona formosa', 'Templetonia retusa', 'Dodonaea baueri', 'Platanus hispanica', 'Kennedia beckxiana')  

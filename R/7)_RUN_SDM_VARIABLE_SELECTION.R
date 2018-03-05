@@ -23,38 +23,47 @@
 ## Load packages, functions and data
 #load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData")
 load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")
-load("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_ALL_VAR.RData")
 load("./data/base/HIA_LIST/COMBO/SDM_TEMPLATE_RASTER.RData")
+load("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_SEL_VAR.RData")
+load("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_ALL_VAR.RData")
 
 source('./R/HIA_LIST_MATCHING.R')
-source('./R/HIA_CLEAN_MATCHING.R')
 source('./R/SDM_FUNCTIONS.R')
 
 
 ## Check data 
-str(template.raster)
-str(SDM.DATA.ALL)
-
-
-
-
-
-#########################################################################################################################
-## 3). RUN SDM FOR SELECTED VARIABLES
-#########################################################################################################################
+dim(template.raster)
+dim(SDM.DATA.ALL)
+dim(SDM.DATA.SEL)
 
 
 #########################################################################################################################
 ## Chose a-priori worldclim predictors: get rid of 8, 9, 18 and 19
 sdm.predictors <- c("Annual_mean_temp",    "Mean_diurnal_range",  "Isothermality",      "Temp_seasonality",  
-                    "Max_temp_warm_month", "Min_temp_cold_month", "Temp_annual_range",  "Mean_temp_warm_qu",   
-                    "Mean_temp_cold_qu",   "Annual_precip",       "Precip_wet_month",   "Precip_dry_month",   
-                    "Precip_seasonality",  "Precip_wet_qu",       "Precip_dry_qu")
+                    "Max_temp_warm_month", "Min_temp_cold_month", "Temp_annual_range",  "Mean_temp_wet_qu",
+                    "Mean_temp_dry_qu",    "Mean_temp_warm_qu",   "Mean_temp_cold_qu",   
+                    
+                    "Annual_precip",       "Precip_wet_month",   "Precip_dry_month",    "Precip_seasonality",  
+                    "Precip_wet_qu",       "Precip_dry_qu",      "Precip_warm_qu",      "Precip_col_qu")
 
 
+sdm.select     <- c("Annual_mean_temp", "Temp_seasonality",    "Max_temp_warm_month", "Min_temp_cold_month",
+                    "Annual_precip",    "Precip_seasonality",  "Precip_wet_month", "Precip_dry_month")
+
+
+
+
+
+#########################################################################################################################
+## 3). RUN SDMs USING BACKWARDS SELECTION
+#########################################################################################################################
+
+
+#########################################################################################################################
 ## Are the latest experimental species in there?
 head(test.spp, 10)
 head(spp.all,  10)
+head(kop.spp,  10)
 
 
 ########################################################################################################################
@@ -107,14 +116,12 @@ clusterEvalQ(cl, {
 ## Increase k_thr to avoid commission error
 
 
-# I would suggest you just project onto current and we have a look at how many species are falling out. If too many are failing, 
-# then we just have to change our approach which means you then have to reproject onto future.
+## Just project onto current and we have a look at how many species are falling out. If too many are failing, 
+## then we just have to change our approach which means you then have to reproject onto future.
 
 
-########################################################################################################################
-## Run for all species
 ## spp = "Acacia implexa"
-lapply(test.spp, function(spp)  { # for serial, parLapply(cl, species[1:8], function(spp) { # for parallel 
+lapply(kop.spp, function(spp)  { # for serial, parLapply(cl, species[1:8], function(spp) { # for parallel 
   
   ## Print the taxa being processed to screen
   if(spp %in% SDM.DATA.ALL$searchTaxon) {
@@ -133,13 +140,12 @@ lapply(test.spp, function(spp)  { # for serial, parLapply(cl, species[1:8], func
     min_n               = 20
     
     ## Fit the models using FIT_MAXENT. Would be good to make skipping exisitng outputs an argument
-    #browser()
     tryCatch(  ## catch any error in the following code, print a message, skipping to next species 
     FIT_MAXENT_SELECTION(occ                     = occurrence, 
                          bg                      = background, 
                          sdm.predictors          = sdm.predictors, 
                          name                    = spp, 
-                         outdir                  = 'output/maxent/STD_VAR_ALL',    ## Change the outdir on the new run
+                         outdir                  = 'output/maxent/SEL_VAR_ALL',    ## Change the outdir on the new run
                          template.raster,
                          min_n                   = 20,   ## This should be higher...
                          max_bg_size             = 100000,
@@ -147,17 +153,20 @@ lapply(test.spp, function(spp)  { # for serial, parLapply(cl, species[1:8], func
                          shapefiles              = TRUE,
                          features                = 'lpq',
                          replicates              = 5,
-                         cor_thr                 = 0.8, 
+                         cor_thr                 = 0.85, 
                          pct_thr                 = 5, 
                          k_thr                   = 5, 
                          responsecurves          = TRUE), 
     
     ## https://stackoverflow.com/questions/19394886/trycatch-in-r-not-working-properly
-    function(e) message('Species skipped ', spp)) ## skip any species for which the functio fails
+    #function(e) message('Species skipped ', spp)) ## skip any species for which the function fails
+    error = function(cond) {
+      message(paste('Species skipped ', spp))
+    })
     
   } else {
     
-    message(spp, ' skipped - no data.')         ## This condition ignores species which have no data
+    message(spp, ' skipped - no data.')         ## This condition ignores species which have no data...
     
   }  
   
@@ -170,78 +179,49 @@ stopCluster(cl)
 
 
 
-########################################################################################################################
-## 100 species takes about 4 hours...
-cl <- makeCluster(2)
-clusterExport(cl, c('template.raster', 'SDM.DATA.ALL', 'FIT_MAXENT_SELECTION'))
-clusterEvalQ(cl, {
-  
-  require(ff)
-  require(rgeos)
-  require(sp)
-  require(raster)
-  require(rJava)
-  require(dismo)
-  require(things)
-  
-})
+#########################################################################################################################
+## 4). RUN SDMs USING APRIORI VARIABLES
+#########################################################################################################################
 
 
-########################################################################################################################
-## Run for all species
-lapply(test.reverse, function(spp)  { # for serial, parLapply(cl, species[1:8], function(spp) { # for parallel 
+## Run without 
+lapply(test.spp[1:length(test.spp)], function(x) { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel 
   
   ## Print the taxa being processed to screen
-  if(spp %in% SDM.DATA.ALL$searchTaxon) {
-    message('Doing ', spp) 
-    
-    ## Subset the records to only the taxa being processed
-    occurrence         <- subset(SDM.DATA.ALL, searchTaxon == spp)
-    occurrence$species <- spp
-    
-    ## Now get the background points. These can come from anywhere in the whole dataset,other than the species used.
-    background         <- subset(SDM.DATA.ALL, searchTaxon != spp)
-    background$species <- spp
-    
-    ## Then create a vector of the sdm.predictors used: all bioclim variables
-    sdm.predictors     <- sdm.predictors # vector of used sdm.predictors
-    min_n               = 20
-    
-    ## Fit the models using FIT_MAXENT. Would be good to make skipping exisitng outputs an argument
-    #browser()
-    FIT_MAXENT_SELECTION(occ                     = occurrence, 
-                         bg                      = background, 
-                         sdm.predictors          = sdm.predictors, 
-                         name                    = spp, 
-                         outdir                  = 'output/maxent/STD_VAR_ALL',    ## Change the outdir on the new run
-                         template.raster,
-                         min_n                   = 20,   ## This should be higher...
-                         max_bg_size             = 100000,
-                         background_buffer_width = 200000,
-                         shapefiles              = TRUE,
-                         features                = 'lpq',
-                         replicates              = 5,
-                         cor_thr = 0.7, 
-                         pct_thr = 5, 
-                         k_thr = 2, 
-                         responsecurves          = TRUE)
-    
-  } else {
-    
-    message(spp, ' skipped - no data.')         ## This condition ignores species which have no data
-    
-  }  
+  message('Doing ', x)
+  
+  ## Subset the records to only the taxa being processed
+  occurrence <- subset(SDM.DATA, searchTaxon == x)
+  
+  ## Now get the background points. These can come from anywhere in the whole dataset,
+  ## other than the species used.
+  background <- subset(SDM.DATA, searchTaxon != x)
+  
+  ## The create a vector of the sdm.predictors used. 
+  ## This should be based on an ecological framework! 
+  sdm.predictors <- sdm.predictors # vector of used sdm.predictors 
+  
+  ## Finally fit the models using FIT_MAXENT
+  ## There is no switch in the function to skip outputs that exist.
+  ## Given all the changes likely to be made to the models, this could be wise...
+  FIT_MAXENT(occ                     = occurrence, 
+             bg                      = background, 
+             sdm.predictors          = sdm.predictors, 
+             name                    = x, 
+             outdir                  = 'output/maxent/STD_VAR_ALL', 
+             template.raster,
+             min_n                   = 20,   ## This should be higher...
+             max_bg_size             = 100000,
+             background_buffer_width = 200000,
+             shapefiles              = TRUE,
+             features                = 'lpq',
+             replicates              = 5,
+             responsecurves          = TRUE)
   
 })
 
-  
-##
-stopCluster(cl)
 
 
-## Now save .RData file for the next session...
-save.image("STEP_7_SDM_BACKWARDS_SELECTION.RData")
-save.session(file = 'STEP_7.Rda')
 
 
 
