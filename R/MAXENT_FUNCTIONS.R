@@ -70,8 +70,25 @@ FIT_MAXENT <- function(occ,
                        replicates, # number of cross-validation replicates
                        responsecurves) {
   
+  #######################################################################
+  ## First, create features argument
+  features <- unlist(strsplit(gsub("\\s", "", features), ""))
+  if (length(setdiff(features, c("l", "p", "q", "h", "t"))) > 1) 
+    stop("features must be a vector of one or more of ',\n         'l', 'p', 'q', 'h', and 't'.")
+  
+  off <- setdiff(c("l", "p", "q", "t", "h"), features)
+  
+  if (length(off) > 0) {
+    off <- c(l = "linear=FALSE", p = "product=FALSE", q = "quadratic=FALSE", 
+             t = "threshold=FALSE", h = "hinge=FALSE")[off]
+    
+  }
+  
+  off <- unname(off)
+  
+  
   ########################################################################
-  ## First, stop if the outdir file exists, 
+  ## Stop if the outdir file exists, 
   if(!file.exists(outdir)) stop('outdir does not exist :(', call. = FALSE)
   outdir_sp <- file.path(outdir, gsub(' ', '_', name))
   
@@ -183,28 +200,96 @@ FIT_MAXENT <- function(occ,
       swd_bg$lon <- NULL
       swd_bg$lat <- NULL
       
-      #####################################################################
-      ## Run simplify rmaxent::simplify
-      m <- rmaxent::simplify(
+      
+      ##
+      ## Now fit model
+      off <- setdiff(c('l', 'p', 'q', 't', 'h'), features)
+      
+      ## 
+      if(length(off) > 0) {
         
-        swd_occ, 
-        swd_bg,
-        path            = outdir, 
-        species_column  = "species",
-        replicates      = replicates,
-        response_curves = TRUE, 
-        logistic_format = TRUE, 
-        cor_thr         = 0.7, 
-        pct_thr         = 5, 
-        k_thr           = 3, 
-        features        ='lpq',  ## change these as necessary (or cor_thr = cor_thr, etc from FIT_MAXENT_SIMP)
-        quiet           = FALSE)
+        off <- c(l = 'linear=false',    p = 'product=false', q = 'quadratic=false',
+                 t = 'threshold=false', h = 'hinge=false')[off]
+        
+      }
+      
+      off <- unname(off)
+      
+      if(replicates > 1) {
+        
+        if(missing(rep_args)) rep_args <- NULL
+        
+        ## This runs the MAXENT. This is where the argument errors are coming in
+        # Error in .local(x, p, ...) : args not understood:
+        #   replicates = 5, responsecurves = TRUE, threshold = FALSE, hinge = FALSE
+        me_xval <- maxent(swd_occ, swd_bg, path = file.path(outdir_sp, 'xval'), 
+                          args = c(paste0('replicates=', replicates),
+                                   'responsecurves=true', 
+                                   'outputformat=logistic',
+                                   off, paste(names(rep_args), rep_args, sep = '=')))
+        
+      }
+      
+      ## And this is the same, but with a different argument 
+      if(missing(full_args)) full_args <- NULL
+      me_full <- maxent(swd_occ, swd_bg, path = file.path(outdir_sp, 'full'), 
+                        args = c(off, paste(names(full_args), full_args, sep = '='),
+                                 'responsecurves=true',
+                                 'outputformat=logistic'))
+      
+      #####################################################################
+      ## Save fitted model object, and the model-fitting data.
+      # if (file.exists (file)) {
+      #   
+      #   print (paste ("file exists for genera", gen.n, "skipping"))
+      #   next
+      
+      if(replicates > 1) {
+        
+        saveRDS(list(me_xval = me_xval, me_full = me_full, swd = swd_occ, pa = swd_bg), 
+                file.path(outdir_sp, 'maxent_fitted.rds'))
+        
+      } else {
+        
+        saveRDS(list(me_xval = NA, me_full = me_full, swd = swd_occ, pa = swd_bg), 
+                file.path(outdir_sp, 'maxent_fitted.rds'))
+        
+      }
+      
       
     }
     
   }
   
 }
+      
+#       
+#       #####################################################################
+#       ## Run dismo
+#       m <- maxent(sdm.predictors, 
+#                   swd_occ, 
+#                   swd_bg, 
+#                   path = outdir)
+#       
+#       # m <- rmaxent::simplify(
+#       #   swd_occ, 
+#       #   swd_bg,
+#       #   path            = outdir, 
+#       #   species_column  = "species",
+#       #   replicates      = replicates,
+#       #   response_curves = TRUE, 
+#       #   logistic_format = TRUE, 
+#       #   cor_thr         = 0.7, 
+#       #   pct_thr         = 5, 
+#       #   k_thr           = 3, 
+#       #   features        ='lpq',  ## change these as necessary (or cor_thr = cor_thr, etc from FIT_MAXENT_SIMP)
+#       #   quiet           = FALSE)
+#       
+#     }
+#     
+#   }
+#   
+# }
 
 
 
@@ -256,6 +341,7 @@ FIT_MAXENT_SELECTION <- function(occ,
     
     ## Select background records from within 200km of the target species occurrence records
     b <- aggregate(gBuffer(occ, width = background_buffer_width, byid = TRUE))
+    
     
     #####################################################################
     ## Get unique cell numbers for species occurrences
@@ -385,10 +471,10 @@ FIT_MAXENT_SELECTION <- function(occ,
         replicates      = replicates,
         response_curves = TRUE, 
         logistic_format = TRUE, 
-        cor_thr         = 0.7, 
-        pct_thr         = 5, 
-        k_thr           = 3, 
-        features        ='lpq',  ## change these as necessary (or cor_thr = cor_thr, etc from FIT_MAXENT_SIMP)
+        cor_thr         = cor_thr, 
+        pct_thr         = pct_thr, 
+        k_thr           = k_thr, 
+        features        = features,  ## change these as necessary (or cor_thr = cor_thr, etc from FIT_MAXENT_SIMP)
         quiet           = FALSE)
       
     }

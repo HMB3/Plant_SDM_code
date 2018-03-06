@@ -28,7 +28,7 @@ load("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_SEL_VAR.RData")
 load("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_ALL_VAR.RData")
 
 source('./R/HIA_LIST_MATCHING.R')
-source('./R/SDM_FUNCTIONS.R')
+source('./R/MAXENT_FUNCTIONS.R')
 
 
 ## Check data 
@@ -90,19 +90,19 @@ names(SDM.DATA.ALL)
 
 
 ## 100 species takes about 4 hours...
-cl <- makeCluster(4)
-clusterExport(cl, c('template.raster', 'SDM.DATA.ALL', 'FIT_MAXENT_SELECTION'))
-clusterEvalQ(cl, {
-
-  require(ff)
-  require(rgeos)
-  require(sp)
-  require(raster)
-  require(rJava)
-  require(dismo)
-  require(things)
-
-})
+# cl <- makeCluster(4)
+# clusterExport(cl, c('template.raster', 'SDM.DATA.ALL', 'FIT_MAXENT_SELECTION'))
+# clusterEvalQ(cl, {
+# 
+#   require(ff)
+#   require(rgeos)
+#   require(sp)
+#   require(raster)
+#   require(rJava)
+#   require(dismo)
+#   require(things)
+# 
+# })
 
 
 ## Regarding maxent settings ...........................................................................................
@@ -145,7 +145,7 @@ lapply(kop.spp, function(spp)  { # for serial, parLapply(cl, species[1:8], funct
                          bg                      = background, 
                          sdm.predictors          = sdm.predictors, 
                          name                    = spp, 
-                         outdir                  = 'output/maxent/SEL_VAR_ALL',    ## Change the outdir on the new run
+                         outdir                  = 'output/maxent/TEST',    ## Change the outdir on the new run
                          template.raster,
                          min_n                   = 20,   ## This should be higher...
                          max_bg_size             = 100000,
@@ -156,7 +156,7 @@ lapply(kop.spp, function(spp)  { # for serial, parLapply(cl, species[1:8], funct
                          cor_thr                 = 0.85, 
                          pct_thr                 = 5, 
                          k_thr                   = 5, 
-                         responsecurves          = TRUE), 
+                         responsecurves          = FALSE), 
     
     ## https://stackoverflow.com/questions/19394886/trycatch-in-r-not-working-properly
     #function(e) message('Species skipped ', spp)) ## skip any species for which the function fails
@@ -180,40 +180,43 @@ stopCluster(cl)
 
 
 #########################################################################################################################
-## 4). RUN SDMs USING APRIORI VARIABLES
+## 4). RUN SDMs USING A-PRIORI VARIABLES
 #########################################################################################################################
 
 
+##
+spp = kop.spp[1]
+
 ## Run without 
-lapply(test.spp[1:length(test.spp)], function(x) { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel 
+lapply(kop.spp, function(spp) { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel 
   
   ## Print the taxa being processed to screen
-  message('Doing ', x)
+  message('Doing ', spp)
   
   ## Subset the records to only the taxa being processed
-  occurrence <- subset(SDM.DATA, searchTaxon == x)
+  occurrence <- subset(SDM.DATA.ALL, searchTaxon == spp)
   
   ## Now get the background points. These can come from anywhere in the whole dataset,
   ## other than the species used.
-  background <- subset(SDM.DATA, searchTaxon != x)
+  background <- subset(SDM.DATA.ALL, searchTaxon != spp)
   
   ## The create a vector of the sdm.predictors used. 
   ## This should be based on an ecological framework! 
-  sdm.predictors <- sdm.predictors # vector of used sdm.predictors 
+  sdm.predictors <- sdm.select # vector of used sdm.predictors 
   
   ## Finally fit the models using FIT_MAXENT
   ## There is no switch in the function to skip outputs that exist.
   ## Given all the changes likely to be made to the models, this could be wise...
   FIT_MAXENT(occ                     = occurrence, 
              bg                      = background, 
-             sdm.predictors          = sdm.predictors, 
-             name                    = x, 
-             outdir                  = 'output/maxent/STD_VAR_ALL', 
+             sdm.predictors          = sdm.select, 
+             name                    = spp, 
+             outdir                  = 'output/maxent/SET_VAR_ALL', 
              template.raster,
              min_n                   = 20,   ## This should be higher...
              max_bg_size             = 100000,
              background_buffer_width = 200000,
-             shapefiles              = TRUE,
+             shapefiles              = FALSE,
              features                = 'lpq',
              replicates              = 5,
              responsecurves          = TRUE)
