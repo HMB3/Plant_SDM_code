@@ -150,7 +150,7 @@ lapply(kop.spp, function(spp)  { # for serial, parLapply(cl, species[1:8], funct
                          min_n                   = 20,   ## This should be higher...
                          max_bg_size             = 100000,
                          background_buffer_width = 200000,
-                         shapefiles              = TRUE,
+                         shapefiles              = FALSE,
                          features                = 'lpq',
                          replicates              = 5,
                          cor_thr                 = 0.85, 
@@ -161,7 +161,9 @@ lapply(kop.spp, function(spp)  { # for serial, parLapply(cl, species[1:8], funct
     ## https://stackoverflow.com/questions/19394886/trycatch-in-r-not-working-properly
     #function(e) message('Species skipped ', spp)) ## skip any species for which the function fails
     error = function(cond) {
+      
       message(paste('Species skipped ', spp))
+      
     })
     
   } else {
@@ -211,7 +213,7 @@ lapply(kop.spp, function(spp) { # for serial, parLapply(cl, species[1:8], functi
              bg                      = background, 
              sdm.predictors          = sdm.select, 
              name                    = spp, 
-             outdir                  = 'output/maxent/SET_VAR_ALL', 
+             outdir                  = 'output/maxent/SET_VAR', 
              template.raster,
              min_n                   = 20,   ## This should be higher...
              max_bg_size             = 100000,
