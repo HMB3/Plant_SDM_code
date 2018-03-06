@@ -207,8 +207,7 @@ lapply(kop.spp, function(spp) { # for serial, parLapply(cl, species[1:8], functi
   sdm.predictors <- sdm.select # vector of used sdm.predictors 
   
   ## Finally fit the models using FIT_MAXENT
-  ## There is no switch in the function to skip outputs that exist.
-  ## Given all the changes likely to be made to the models, this could be wise...
+  ## debugonce( FIT_MAXENT)
   FIT_MAXENT(occ                     = occurrence, 
              bg                      = background, 
              sdm.predictors          = sdm.select, 

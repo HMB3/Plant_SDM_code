@@ -11,22 +11,22 @@
 #########################################################################################################################
 
 ## Arguments to run maxent line by line
-occ                     = occurrence
-bg                      = background
-sdm.predictors          = sdm.predictors
-name                    = spp
-outdir                  = 'output/maxent/SET_VAR_ALL'
-template.raster         = template.raster
-min_n                   = 20   ## This should be higher...
-max_bg_size             = 100000
-background_buffer_width = 200000
-shapefiles              = TRUE
-features                = 'lpq'
-replicates              = 5
-cor_thr                 = 0.85
-pct_thr                 = 5
-k_thr                   = 5
-responsecurves          = TRUE
+# occ                     = occurrence
+# bg                      = background
+# sdm.predictors          = sdm.predictors
+# name                    = spp
+# outdir                  = 'output/maxent/SET_VAR_ALL'
+# template.raster         = template.raster
+# min_n                   = 20   ## This should be higher...
+# max_bg_size             = 100000
+# background_buffer_width = 200000
+# shapefiles              = TRUE
+# features                = 'lpq'
+# replicates              = 5
+# cor_thr                 = 0.85
+# pct_thr                 = 5
+# k_thr                   = 5
+# responsecurves          = TRUE
 
  
 ## selection line by line 
@@ -69,29 +69,20 @@ FIT_MAXENT <- function(occ,
                        shapefiles, 
                        features, 
                        replicates, # number of cross-validation replicates
-                       responsecurves) {
-  
-  #######################################################################
-  ## First, create features argument
-  features <- unlist(strsplit(gsub("\\s", "", features), ""))
-  if (length(setdiff(features, c("l", "p", "q", "h", "t"))) > 1) 
-    stop("features must be a vector of one or more of ',\n         'l', 'p', 'q', 'h', and 't'.")
-  
-  off <- setdiff(c("l", "p", "q", "t", "h"), features)
-  
-  if (length(off) > 0) {
-    off <- c(l = "linear=FALSE", p = "product=FALSE", q = "quadratic=FALSE", 
-             t = "threshold=FALSE", h = "hinge=FALSE")[off]
-    
-  }
-  
-  off <- unname(off)
-  
+                       responsecurves,
+                       rep_args, full_args) {
   
   ########################################################################
-  ## Stop if the outdir file exists, 
+  ## First, stop if the outdir file exists, 
   if(!file.exists(outdir)) stop('outdir does not exist :(', call. = FALSE)
   outdir_sp <- file.path(outdir, gsub(' ', '_', name))
+  
+  #######################################################################
+  ## Then create features argument
+  features <- unlist(strsplit(features, ''))
+  if(length(setdiff(features, c('l', 'p', 'q', 'h', 't'))) > 1)
+    stop("features must be a vector of one or more of ',
+         'l', 'p', 'q', 'h', and 't'.")
   
   ## Also Skip species which have already been modelled: again, can this be made into an argument?
   if(file.exists(outdir_sp)) {
@@ -203,44 +194,59 @@ FIT_MAXENT <- function(occ,
       
       #####################################################################
       ## Now fit model
-      # Combine occ and bg SWD data
-      swd <- as.data.frame(rbind(swd_occ@data, swd_bg@data))
-      saveRDS(swd, file.path(outdir_sp, 'swd.rds'))
+      
+      ## Combine occ and bg SWD data
+      #swd <- as.data.frame(rbind(swd_occ@data, swd_bg@data))
+      swd <- as.data.frame(rbind(swd_occ, swd_bg))
+      saveRDS(swd, file.path(outdir_sp, 'swd_occ_bg_comb.rds'))
       pa <- rep(1:0, c(nrow(swd_occ), nrow(swd_bg)))
       
-      # Fit model
+      ## Check features
       off <- setdiff(c('l', 'p', 'q', 't', 'h'), features)
       if(length(off) > 0) {
         off <- c(l='linear=FALSE', p='product=FALSE', q='quadratic=FALSE',
                  t='threshold=FALSE', h='hinge=FALSE')[off]
+        
       }
+      
       off <- unname(off)
       if(replicates > 1) {
+        
+        ## Run the maxent using cross validation (e.g. run five data splits)
+        
+        # Error: Initialization flags not understood: replicates = 5, responsecurves = TRUE
+        # Error in .local(x, p, ...) : args not understood:
+  
         if(missing(rep_args)) rep_args <- NULL
-        me_xval <- maxent(swd, pa, path=file.path(outdir_sp, 'xval'), 
-                          args=c(paste0('replicates=', replicates),
-                                 'responsecurves=TRUE',
-                                 off, paste(names(rep_args), rep_args, sep='=')))
+        
+        me_xval <- maxent(swd, pa, path = file.path(outdir_sp, 'xval')#, 
+                          # args = c(paste0('replicates = ', replicates),
+                          #        'responsecurves = TRUE',
+                          #        off, paste(names(rep_args), rep_args, sep='='))
+                          )
+        
       }
-      if(missing(full_args)) full_args <- NULL
-      me_full <- maxent(swd, pa, path=file.path(outdir_sp, 'full'), 
-                        args=c(off, paste(names(full_args), full_args, sep='='),
-                               'responsecurves=TRUE'))
       
-      # Save fitted model object, and the model-fitting data.
-      saveRDS(list(me_xval=me_xval, me_full=me_full, swd=swd, pa=pa), 
+      ## Run the full maxent 
+      if(missing(full_args)) full_args <- NULL
+      me_full <- maxent(swd, pa, path = file.path(outdir_sp, 'full')#, 
+                        # args = c(off, paste(names(full_args), full_args, sep = '='),
+                        #        'responsecurves = TRUE')
+                        )
+      
+      ## Save the full fitted model object, and the model-fitting data.
+      saveRDS(list(me_xval = me_xval, me_full = me_full, swd = swd, pa = pa), 
               file.path(outdir_sp, 'maxent_fitted.rds'))
       
       return(invisible(NULL))
- 
-        
-      }
       
     }
     
   }
   
 }
+  
+
 
 
 
