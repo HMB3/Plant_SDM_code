@@ -130,33 +130,17 @@ COMBO.RASTER.ALL  <- select(COMBO.RASTER.CONTEXT, searchTaxon, lon, lat,
                             Precip_wet_qu,        Precip_dry_qu,       Precip_warm_qu,    Precip_col_qu)
 
 
-## Create a table with only selected variables
-COMBO.RASTER.SEL   <- select(COMBO.RASTER.CONTEXT, searchTaxon, lon, lat,
-                             
-                             Annual_mean_temp,     Temp_seasonality,    Max_temp_warm_month,  Min_temp_cold_month,
-                             Annual_precip,        Precip_seasonality,  Precip_wet_month,     Precip_dry_month)
-
-
 #########################################################################################################################
 ## Create a spatial points object, and change to a projected system to calculate distance more accurately 
 coordinates(COMBO.RASTER.ALL)    <- ~lon+lat
-coordinates(COMBO.RASTER.SEL)    <- ~lon+lat
-
 proj4string(COMBO.RASTER.ALL)    <- '+init=epsg:4326'
-proj4string(COMBO.RASTER.SEL)    <- '+init=epsg:4326'
-
 COMBO.RASTER.ALL                 <- spTransform(COMBO.RASTER.ALL, CRS('+init=ESRI:54009'))
-COMBO.RASTER.SEL                 <- spTransform(COMBO.RASTER.SEL, CRS('+init=ESRI:54009'))
 
 
 ## Now split using the data using the species column, and get the unique occurrence cells
 COMBO.RASTER.SPLIT.ALL <- split(COMBO.RASTER.ALL, COMBO.RASTER.ALL$searchTaxon)
 occurrence_cells_all   <- lapply(COMBO.RASTER.SPLIT.ALL, function(x) cellFromXY(template.raster, x))
 length(occurrence_cells_all)   ## this is a list of dataframes, where the number of rows for each being the species table
-
-COMBO.RASTER.SPLIT.SEL <- split(COMBO.RASTER.SEL, COMBO.RASTER.SEL$searchTaxon)
-occurrence_cells_sel   <- lapply(COMBO.RASTER.SPLIT.SEL, function(x) cellFromXY(template.raster, x))
-length(occurrence_cells_sel)   
 
 
 #########################################################################################################################
@@ -167,15 +151,8 @@ SDM.DATA.ALL <- mapply(function(x, cells) {
 }, COMBO.RASTER.SPLIT.ALL, occurrence_cells_all, SIMPLIFY = FALSE) %>% do.call(rbind, .)
 
 
-## Just for the selected columns
-SDM.DATA.SEL <- mapply(function(x, cells) {
-  x[!duplicated(cells), ]
-}, COMBO.RASTER.SPLIT.SEL, occurrence_cells_sel, SIMPLIFY = FALSE) %>% do.call(rbind, .)
-
-
 ## Check to see we have 19 variables + the species for the standard predictors, and 19 for all predictors
 str(SDM.DATA.ALL)
-str(SDM.DATA.SEL)
 
 
 ## Now save/load .RData file for the next session
@@ -194,16 +171,13 @@ str(SDM.DATA.SEL)
 
 
 ## Save big tables to keep memory spare
-save(template.raster,    file = paste("./data/base/HIA_LIST/COMBO/SDM_TEMPLATE_RASTER.RData"))
-save(SDM.DATA.ALL,       file = paste("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_ALL_VAR.RData"))
-save(SDM.DATA.SEL,       file = paste("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_SEL_VAR.RData"))
+save(template.raster, file = paste("./data/base/HIA_LIST/COMBO/SDM_TEMPLATE_RASTER.RData"))
+save(SDM.DATA.ALL,    file = paste("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_ALL_VAR.RData"))
 
 
 ## Remove the other data
 rm(COMBO.RASTER.ALL)
 rm(COMBO.RASTER.SPLIT.ALL)
-rm(COMBO.RASTER.SEL)
-rm(COMBO.RASTER.SPLIT.SEL)
 save.image("STEP_6_PREPARE_SDM.RData")
 
 

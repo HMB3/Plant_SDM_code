@@ -213,26 +213,25 @@ FIT_MAXENT <- function(occ,
       if(replicates > 1) {
         
         ## Run the maxent using cross validation (e.g. run five data splits)
+        ## me < -maxent(predictors,spp.occ,args = c("-J","-P","replicates = 10","replicatetype = crossvalidate"), path = 'Results')
         
         # Error: Initialization flags not understood: replicates = 5, responsecurves = TRUE
         # Error in .local(x, p, ...) : args not understood:
   
         if(missing(rep_args)) rep_args <- NULL
         
-        me_xval <- maxent(swd, pa, path = file.path(outdir_sp, 'xval')#, 
-                          # args = c(paste0('replicates = ', replicates),
-                          #        'responsecurves = TRUE',
-                          #        off, paste(names(rep_args), rep_args, sep='='))
-                          )
+        me_xval <- maxent(swd, pa, path = file.path(outdir_sp, 'xval'), 
+                          args=c(paste0('replicates=', replicates),
+                                 'responsecurves=TRUE',
+                                 off, paste(names(rep_args), rep_args, sep='=')))
         
       }
       
       ## Run the full maxent 
       if(missing(full_args)) full_args <- NULL
-      me_full <- maxent(swd, pa, path = file.path(outdir_sp, 'full')#, 
-                        # args = c(off, paste(names(full_args), full_args, sep = '='),
-                        #        'responsecurves = TRUE')
-                        )
+      me_full <- maxent(swd, pa, path = file.path(outdir_sp, 'full'), 
+                        args=c(off, paste(names(full_args), full_args, sep='='),
+                               'responsecurves=TRUE'))
       
       ## Save the full fitted model object, and the model-fitting data.
       saveRDS(list(me_xval = me_xval, me_full = me_full, swd = swd, pa = pa), 

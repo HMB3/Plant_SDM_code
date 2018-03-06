@@ -24,7 +24,6 @@
 #load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData")
 load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")
 load("./data/base/HIA_LIST/COMBO/SDM_TEMPLATE_RASTER.RData")
-load("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_SEL_VAR.RData")
 load("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_ALL_VAR.RData")
 
 source('./R/HIA_LIST_MATCHING.R')
@@ -34,7 +33,6 @@ source('./R/MAXENT_FUNCTIONS.R')
 ## Check data 
 dim(template.raster)
 dim(SDM.DATA.ALL)
-dim(SDM.DATA.SEL)
 
 
 #########################################################################################################################
@@ -186,10 +184,8 @@ stopCluster(cl)
 #########################################################################################################################
 
 
-##
-spp = kop.spp[1]
-
-## Run without 
+## spp = kop.spp[2]
+## Run without cluster
 lapply(kop.spp, function(spp) { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel 
   
   ## Print the taxa being processed to screen
@@ -207,12 +203,27 @@ lapply(kop.spp, function(spp) { # for serial, parLapply(cl, species[1:8], functi
   sdm.predictors <- sdm.select # vector of used sdm.predictors 
   
   ## Finally fit the models using FIT_MAXENT
-  ## debugonce( FIT_MAXENT)
+  ## debugonce(FIT_MAXENT)
+  ## debugonce(maxent)
+  # occ, 
+  # bg, 
+  # name, 
+  # outdir, 
+  # template, 
+  # max_bg_size=100000, 
+  # bg_buffer_width=200000, 
+  # shapefiles=TRUE, 
+  # features, 
+  # replicates, 
+  # responsecurves=TRUE, 
+  # rep_args, 
+  # full_args)
+  
   FIT_MAXENT(occ                     = occurrence, 
              bg                      = background, 
              sdm.predictors          = sdm.select, 
              name                    = spp, 
-             outdir                  = 'output/maxent/SET_VAR', 
+             outdir                  = 'output/maxent/SET_VAR', # "F:/green_cities_sdm/output/maxent/SET_VAR/"
              template.raster,
              min_n                   = 20,   ## This should be higher...
              max_bg_size             = 100000,
@@ -220,7 +231,7 @@ lapply(kop.spp, function(spp) { # for serial, parLapply(cl, species[1:8], functi
              shapefiles              = FALSE,
              features                = 'lpq',
              replicates              = 5,
-             responsecurves          = TRUE)
+             responsecurves          = TRUE) 
   
 })
 
