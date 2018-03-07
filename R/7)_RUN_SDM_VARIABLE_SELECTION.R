@@ -38,15 +38,18 @@ dim(SDM.DATA.ALL)
 #########################################################################################################################
 ## Chose a-priori worldclim predictors: get rid of 8, 9, 18 and 19
 sdm.predictors <- c("Annual_mean_temp",    "Mean_diurnal_range",  "Isothermality",      "Temp_seasonality",  
-                    "Max_temp_warm_month", "Min_temp_cold_month", "Temp_annual_range",  "Mean_temp_wet_qu",
-                    "Mean_temp_dry_qu",    "Mean_temp_warm_qu",   "Mean_temp_cold_qu",   
+                    "Max_temp_warm_month", "Min_temp_cold_month", "Temp_annual_range",  
+                    "Mean_temp_wet_qu",    "Mean_temp_dry_qu",    ## remove these?
+                    "Mean_temp_warm_qu",   "Mean_temp_cold_qu",   
                     
                     "Annual_precip",       "Precip_wet_month",   "Precip_dry_month",    "Precip_seasonality",  
-                    "Precip_wet_qu",       "Precip_dry_qu",      "Precip_warm_qu",      "Precip_col_qu")
+                    "Precip_wet_qu",       "Precip_dry_qu",      
+                    "Precip_warm_qu",      "Precip_col_qu")
 
 
 sdm.select     <- c("Annual_mean_temp", "Temp_seasonality",    "Max_temp_warm_month", "Min_temp_cold_month",
-                    "Annual_precip",    "Precip_seasonality",  "Precip_wet_month", "Precip_dry_month")
+                    "Annual_precip",    "Precip_seasonality",  
+                    "Precip_wet_month", "Precip_dry_month")      ## remove these?
 
 
 
@@ -143,7 +146,7 @@ lapply(kop.spp, function(spp)  { # for serial, parLapply(cl, species[1:8], funct
                          bg                      = background, 
                          sdm.predictors          = sdm.predictors, 
                          name                    = spp, 
-                         outdir                  = 'output/maxent/TEST',    ## Change the outdir on the new run
+                         outdir                  = 'output/maxent/SEL_VAR',    ## Change the outdir on the new run
                          template.raster,
                          min_n                   = 20,   ## This should be higher...
                          max_bg_size             = 100000,
@@ -199,7 +202,6 @@ lapply(kop.spp, function(spp) { # for serial, parLapply(cl, species[1:8], functi
   background <- subset(SDM.DATA.ALL, searchTaxon != spp)
   
   ## The create a vector of the sdm.predictors used. 
-  ## This should be based on an ecological framework! 
   sdm.predictors <- sdm.select # vector of used sdm.predictors 
   
   ## Finally fit the models using FIT_MAXENT

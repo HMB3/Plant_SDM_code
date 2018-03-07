@@ -123,6 +123,7 @@ grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',   
 
 #########################################################################################################################
 ## For each species, use a function to create raster files and maps of all six GCMs under each time step
+## 2030
 env.grids.2030 = project_maxent_grids(scen_list     = scen_2030,
                                       species_list  = kop_spp,
                                       time_slice    = 30,
@@ -131,9 +132,9 @@ env.grids.2030 = project_maxent_grids(scen_list     = scen_2030,
                                       grid_names    = grid.names,
                                       current_grids = env.grids.current)
 
-
+## 2050
 env.grids.2050 = project_maxent_grids(scen_list    = scen_2050,
-                                      species_list = test_spp,
+                                      species_list = kop_spp,
                                       time_slice   = 50,
                                       maxent_path  = "./output/maxent/SEL_VAR",
                                       climate_path = "./data/base/worldclim/aus/0.5/bio",
@@ -141,9 +142,10 @@ env.grids.2050 = project_maxent_grids(scen_list    = scen_2050,
                                       current_grids = env.grids.current)
 
 
+## 2070
 env.grids.2070 = project_maxent_grids(scen_list    = scen_2070,
-                                      species_list = test_spp,
-                                      time_slice   = 50,
+                                      species_list = kop_spp,
+                                      time_slice   = 70,
                                       maxent_path  = "./output/maxent/SEL_VAR",
                                       climate_path = "./data/base/worldclim/aus/0.5/bio",
                                       grid_names    = grid.names,
@@ -160,9 +162,19 @@ env.grids.2070 = project_maxent_grids(scen_list    = scen_2070,
 
 #########################################################################################################################
 ## First, read in the list of files for the current models, and specify the file path
-maxent.tables = list.files("./output/maxent/STD_VAR_ALL/")
-path          = "./output/maxent/STD_VAR_ALL/"
-length(maxent.tables)
+path.backwards.sel = "./output/maxent/SEL_VAR/"
+path.set.var       = "./output/maxent/SET_VAR/"
+#path.kop.var       = "./output/maxent/SEL_VAR/"
+
+
+## Create an object for the maxent settings
+backwards.sel.settings = "cor0.85_pct5_k5"        ## Chagne this for each variable selection strategy
+
+
+## Create a file list for each run
+maxent.tables = list.files(path.backwards.sel)    ## Chagne this for each variable selection strategy
+path          = path.backwards.sel                ## Chagne this for each variable selection strategy
+length(maxent.tables)                             ## Should match the number of taxa tested
 
 
 ## In linux, check if the folders are empty, then delete if empty as this will break the code:
@@ -186,7 +198,7 @@ MAXENT.STD.VAR.SUMMARY <- maxent.tables[c(1:length(maxent.tables))] %>%         
     d <- read.csv(f)
     
     ## Now add a model column
-    d = cbind(GBIF_Taxon = x, Settings  = "cor0.8_pct5_k5", records = "ALL", d)  ## see step 7, make a variable for multiple runs
+    d = cbind(GBIF_Taxon = x, Settings  = backwards.sel.settings, records = "ALL", d)  ## see step 7, make a variable for multiple runs
     dim(d)
     
     ## Remove path gunk, and species
@@ -233,13 +245,14 @@ length(comb_spp)
 
 #########################################################################################################################
 ## Then, make a list all the directories containing the individual GCM rasters...
-SDM.RESULTS.DIR <-comb_spp[c(1:length(comb_spp))] %>%
+## path.backwards.sel
+SDM.RESULTS.DIR <- comb_spp[c(1:length(comb_spp))] %>%
   
   ## Pipe the list into lapply
   lapply(function(species) {
     
     ## Create the character string
-    m <-   sprintf('./output/maxent/STD_VAR_ALL/%s/full/', species)
+    m <-   sprintf('%s%s/full/', path.backwards.sel, species)
     m 
     
   }) %>%
