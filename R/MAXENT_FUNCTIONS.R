@@ -28,7 +28,7 @@
 # k_thr                   = 5
 # responsecurves          = TRUE
 
- 
+
 ## selection line by line 
 # occ             = swd_occ
 # bg              = swd_bg
@@ -217,7 +217,7 @@ FIT_MAXENT <- function(occ,
         
         # Error: Initialization flags not understood: replicates = 5, responsecurves = TRUE
         # Error in .local(x, p, ...) : args not understood:
-  
+        
         if(missing(rep_args)) rep_args <- NULL
         
         me_xval <- maxent(swd, pa, path = file.path(outdir_sp, 'xval'), 
@@ -244,7 +244,7 @@ FIT_MAXENT <- function(occ,
   }
   
 }
-  
+
 
 
 
@@ -893,12 +893,9 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
                             main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
                     
                     ## Plot the Aus shapefile with the occurrence points for reference
-
-                    ## why does plotting the koppen shapefile take so long? ................................................
                     ## Can we assign different shapefiles to different panels, rather than to them all?
                     
                     layer(sp.polygons(aus)) +
-                    
                     layer(sp.points(occ, pch = 20, cex = 0.4, 
                                     col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
             
@@ -906,55 +903,72 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             dev.off()
             
             ########################################################################################################################
-            ## Another .png for the global records: str(LAND$long) 
-            png(sprintf('%s/%s/full/%s_%s.png', maxent_path,
-                        species, species, "global_records"),
-                16180, 10000, units = 'px', res = 600)
-
-            ## How do we locate bad records in the dataset after spotting them?
-            plot(LAND, 
-                 lwd = 0.5, asp = 1, axes = TRUE, cex.axis = 3.5,
-                 col = 'darkolivegreen3', bg = 'lightblue', cex.lab = 3)
-            
-            points(occ, pch = ".", cex = 3.5, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2, 
-                   main = paste0("Global occurrences for ", species), 
-                   xlab = "", ylab = "", asp = 1)
-            
-            ## Title 
-            title(paste0("Global points for ", species),
-                  cex.main = 4,   font.main = 4, col.main = "blue")
-            
-            ## Finsh the device
-            dev.off()
+            ## Another .png for the global records: str(LAND$long)
+            if(!file.exists(sprintf('%s/%s/full/%s_%s.png', maxent_path, species, species, "global_records"))) {
+              
+              png(sprintf('%s/%s/full/%s_%s.png', maxent_path,
+                          species, species, "global_records"),
+                  16180, 10000, units = 'px', res = 600)
+              
+              ## How do we locate bad records in the dataset after spotting them?
+              plot(LAND, 
+                   lwd = 0.5, asp = 1, axes = TRUE, cex.axis = 3.5,
+                   col = 'darkolivegreen3', bg = 'lightblue', cex.lab = 3)
+              
+              points(occ, pch = ".", cex = 3.5, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2, 
+                     main = paste0("Global occurrences for ", species), 
+                     xlab = "", ylab = "", asp = 1)
+              
+              ## Title 
+              title(paste0("Global points for ", species),
+                    cex.main = 4,   font.main = 4, col.main = "blue")
+              
+              ## Finsh the device
+              dev.off()
+              
+            } else {
+              
+              message("Global records maps exists for ", species)
+              
+            }
             
             ########################################################################################################################
             ## Another PNG for the background points....
-            png(sprintf('%s/%s/full/%s_%s.png', maxent_path,
-                        species, species, "background_records"),
-                16180, 10000, units = 'px', res = 600)
-            
-            ## How do we locate bad records in the dataset after spotting them?
-            plot(LAND,  
-                 lwd = 0.5, asp = 1, axes = TRUE, cex.axis = 3.5,
-                 col = 'darkolivegreen3', bg = 'lightblue', cex.lab = 3)
-            
-            points(bg, pch = ".", cex = 1.6, col = "blue", cex.lab = 3, cex.main = 4, cex.axis = 2, 
-                   main = paste0("Global occurrences for ", species), 
-                   xlab = "", ylab = "", asp = 1)
-            
-            ## Title 
-            title(paste0("Bacground points for ", species),
-                  cex.main = 4,   font.main = 4, col.main = "blue")
-            
-            ## Finish the device
-            dev.off() 
+            if(!file.exists(sprintf('%s/%s/full/%s_%s.png', maxent_path, species, species, "background_records"))) {
+              
+              png(sprintf('%s/%s/full/%s_%s.png', maxent_path,
+                          species, species, "background_records"),
+                  16180, 10000, units = 'px', res = 600)
+              
+              ## How do we locate bad records in the dataset after spotting them?
+              plot(LAND,  
+                   lwd = 0.5, asp = 1, axes = TRUE, cex.axis = 3.5,
+                   col = 'darkolivegreen3', bg = 'lightblue', cex.lab = 3)
+              
+              points(bg, pch = ".", cex = 1.6, col = "blue", cex.lab = 3, cex.main = 4, cex.axis = 2, 
+                     main = paste0("Global occurrences for ", species), 
+                     xlab = "", ylab = "", asp = 1)
+              
+              ## Title 
+              title(paste0("Bacground points for ", species),
+                    cex.main = 4,   font.main = 4, col.main = "blue")
+              
+              ## Finish the device
+              dev.off() 
+              
+            } else {
+              
+              message("Background records maps exists for ", species)
+              
+            }
             
             ########################################################################################################################
             ## Plot the models: can two plots be combined into one?
-            
-            ## Make these unique names, and they can be searched in windows.Otherwise, we can just click into each subfolder. 
+            ## Make these unique names, and they can be searched in windows. Otherwise, we can just click into each subfolder. 
             ## To sort, names would need to be: spp + unique_extension
-            png(sprintf('%s/%s/full/%s_%s.png', maxent_path,
+            if(!file.exists(sprintf('%s/%s/full/%s_current.png', maxent_path, species, species, "variable_contribution"))) {
+            
+            png(sprintf('%s/%s/full/%s_current.png', maxent_path,
                         species, species, "variable_contribution"),
                 3236, 2000, units = 'px', res = 300)
             
@@ -977,11 +991,17 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             
             ## Add detail to the response plot
             response(m, pch = 19, cex.lab = 2, cex.axis = 1.5, lwd = 2) 
-                     #ylab   = "",
-                     #main   = paste0(species, " responses"))
+            #ylab   = "",
+            #main   = paste0(species, " responses"))
             
             ## Finish the device
             dev.off()
+            
+            } else {
+              
+              message("Variable contribution plot exists for ", species)
+              
+            }
             
             ## current.list = as.data.frame(env.grids.current)
             ## test = similarity(occ, env.grids.current, full = FALSE)
@@ -1030,7 +1050,7 @@ calculate.anomaly = function(scen_list, time_slice, climate_path) {
     
     ## Assign the scenario name (to use later in the plot)
     scen_name = eval(parse(text = sprintf('gcms.%s$GCM[gcms.%s$id == x]', time_slice, time_slice)))
-
+    
     #########################################################################################################################
     ## Create a raster stack for each 2050 GCM - also an empty raster for the final plot
     s <- stack(sprintf('%s/20%s/%s/%s%s.tif', climate_path, time_slice, x, x, 1:19))
