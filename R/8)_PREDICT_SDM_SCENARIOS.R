@@ -265,7 +265,7 @@ SDM.RESULTS.DIR <- comb_spp[c(1:length(comb_spp))] %>%
 
 
 #########################################################################################################################
-## 5). CREATE LISTS OF HABITAT SUITABILITY THRESHOLDS
+## 4). CREATE LISTS OF HABITAT SUITABILITY THRESHOLDS
 #########################################################################################################################
 
 
@@ -351,27 +351,31 @@ area_occ   = 10
 suitability.2030 = mapply(combine_gcm_threshold,
                           DIR_list     = SDM.RESULTS.DIR,
                           species_list = comb_spp,
+                          maxent_path  = "./output/maxent/SEL_VAR",
                           thresholds   = thresh.max.train,
                           percentiles  = percent.10.omiss,
-                          time_slice   = 30)
+                          time_slice   = 30,
+                          area_occ     = 10)
 
 
 ## Combine GCM output for 2050 
 suitability.2050 = mapply(combine_gcm_threshold, 
-                          DIR_list     = SDM.RESULTS.DIR[1:2], 
-                          species_list = comb_spp[1:2], 
-                          thresholds   = thresh.max.train[1:2],
-                          percentiles  = percent.10.omiss[1:2],
+                          DIR_list     = SDM.RESULTS.DIR, 
+                          species_list = comb_spp, 
+                          maxent_path  = "./output/maxent/SEL_VAR",
+                          thresholds   = thresh.max.train,
+                          percentiles  = percent.10.omiss,
                           time_slice   = 50,
                           area_occ     = 10)
 
 
 ## Combine GCM output for 2070 
 suitability.2070 = mapply(combine_gcm_threshold, 
-                          DIR_list     = SDM.RESULTS.DIR[1], 
-                          species_list = comb_spp[1], 
-                          thresholds   = thresh.max.train[1],
-                          percentiles  = percent.10.omiss[1],
+                          DIR_list     = SDM.RESULTS.DIR, 
+                          species_list = comb_spp, 
+                          maxent_path  = "./output/maxent/SEL_VAR",
+                          thresholds   = thresh.max.train,
+                          percentiles  = percent.10.omiss,
                           time_slice   = 70,
                           area_occ     = 10)
 
