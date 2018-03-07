@@ -101,6 +101,8 @@ for(i in 1:11) {
 }
 
 
+
+
 #########################################################################################################################
 ## Name the environmental grids :: this is all 19, because we are using the directory structure
 grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',      'Temp_seasonality', 
@@ -111,6 +113,11 @@ grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',   
 
 ## Also, plot GCM anomalies...
 #source(./R/GCM_ANOMALY.R)
+
+
+## plot the dodgy variables
+plot(env.grids.current[[8]]);plot(env.grids.current[[9]])
+plot(env.grids.current[[18]]);plot(env.grids.current[[19]])
 
 
 
