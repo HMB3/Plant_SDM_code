@@ -452,9 +452,9 @@ FIT_MAXENT_SELECTION <- function(occ,
 #########################################################################################################################
 ## Create maxent maps for a given time period 
 ## x = scen_2030[1]
-## species = test_spp[1]
+## species = kop_spp[1]
 ## time_slice = 30
-## maxent_path  = "./output/maxent/STD_VAR_ALL"
+## maxent_path  = "./output/maxent/SEL_VAR"
 ## climate_path = "./data/base/worldclim/aus/0.5/bio"
 ## grid_names    = grid.names
 ## current_grids = env.grids.current

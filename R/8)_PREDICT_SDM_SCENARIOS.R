@@ -9,8 +9,11 @@
 ## format of all species occurrences (rows) and environmental variables (columns).
 
 ## The predictions from all GCMs (currently using six) are then combined into a single habitat suitability layer.
-## Using this combined layer, the loss or gain of each species within areal units (e.g. significant urban areas or LGAs), 
-## between time periods (current, 2030, 2070) could be calculated. 
+## A version of this habitat suitability layer could be supplied to HIA.
+
+## Using this combined layer, the % of area occupied by species within areal units (e.g. significant urban areas or LGAs), 
+## under each projection (2030, 2050 and 2070) could also be calculated. 
+
 
 
 ## Load packages ::
@@ -59,8 +62,12 @@ id.70 <- h %>%
   basename %>% 
   sub('\\.zip.', '', .)
 
+
+## Work around because the 2030 data comes from CC in Aus, not worldclim
 id.30 = gsub("50", "30", id.50)
 
+
+## Create the IDs
 gcms.30 <- cbind(gcms, id.30)
 gcms.30$GCM = sub(" \\(#\\)", "", gcms$GCM)
 
@@ -75,7 +82,7 @@ gcms.70$GCM = sub(" \\(#\\)", "", gcms$GCM)
 gcms.50 ; gcms.70 ; gcms.30
 
 
-## Just get the 6 models picked by CSIRO for Australia, for 2050 and 2070
+## Just get the 6 models picked by CSIRO for Australia, for 2030, 2050 and 2070
 scen_2030 = c("mc85bi30", "no85bi30", "ac85bi30", "cc85bi30", "gf85bi30", "hg85bi30")
 scen_2050 = c("mc85bi50", "no85bi50", "ac85bi50", "cc85bi50", "gf85bi50", "hg85bi50")
 scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cc85bi70", "gf85bi70", "hg85bi70")
@@ -104,7 +111,7 @@ for(i in 1:11) {
 
 
 #########################################################################################################################
-## Name the environmental grids :: this is all 19, because we are using the directory structure
+## Name the environmental grids to be used in the mapping code :: this is all 19, because we are using the directory structure
 grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',      'Temp_seasonality', 
                'Max_temp_warm_month', 'Min_temp_cold_month', 'Temp_annual_range',  'Mean_temp_wet_qu',
                'Mean_temp_dry_qu',    'Mean_temp_warm_qu',   'Mean_temp_cold_qu',  'Annual_precip',
@@ -115,7 +122,7 @@ grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',   
 #source(./R/GCM_ANOMALY.R)
 
 
-## plot the dodgy variables
+## Plot the dodgy variables :: 
 plot(env.grids.current[[8]]);plot(env.grids.current[[9]])
 plot(env.grids.current[[18]]);plot(env.grids.current[[19]])
 
@@ -129,7 +136,7 @@ plot(env.grids.current[[18]]);plot(env.grids.current[[19]])
 
 
 #########################################################################################################################
-## For each species, use a function to create raster files and maps of all six GCMs under each time step
+## For each species, use a function to create raster files and maps under all six GCMs at each time step
 ## 2030
 env.grids.2030 = project_maxent_grids(scen_list     = scen_2030,
                                       species_list  = kop_spp,
@@ -175,12 +182,12 @@ path.set.var       = "./output/maxent/SET_VAR/"
 
 
 ## Create an object for the maxent settings
-backwards.sel.settings = "cor0.85_pct5_k5"        ## Chagne this for each variable selection strategy
+model.selection.settings = "Backwards_cor_0.85_pct_5_k_5"        ## Chagne this for each variable selection strategy
 
 
-## Create a file list for each run
+## Create a file list for each model run
 maxent.tables = list.files(path.backwards.sel)    ## Chagne this for each variable selection strategy
-path          = path.backwards.sel                ## Chagne this for each variable selection strategy
+maxent_path   = path.backwards.sel                ## Chagne this for each variable selection strategy
 length(maxent.tables)                             ## Should match the number of taxa tested
 
 
@@ -199,19 +206,23 @@ MAXENT.STD.VAR.SUMMARY <- maxent.tables[c(1:length(maxent.tables))] %>%         
   lapply(function(x) {
     
     ## Create the character string
-    f <- paste0(path, x, "/full/maxentResults.csv")
+    f <- paste0(maxent_path, x, "/full/maxentResults.csv")
     
     ## Load each .RData file
     d <- read.csv(f)
     
+    ##
+    m <- readRDS(sprintf('%s/%s/full/model.rds', maxent_path, x))
+    number_var = length(m@lambdas) - 4                                          ## (the last 4 slots of lambdas are not variables) 
+    
     ## Now add a model column
-    d = cbind(GBIF_Taxon = x, Settings  = backwards.sel.settings, records = "ALL", d)  ## see step 7, make a variable for multiple runs
+    d = cbind(searchTaxon = x, 
+              Settings    = model.selection.settings, 
+              Number_var  = number_var, 
+              Records     = "ALL", d)  ## see step 7, make a variable for multiple runs
     dim(d)
     
     ## Remove path gunk, and species
-    #d$GBIF_Taxon = gsub("_", " ", d$GBIF_Taxon)
-    #d$Model_run  = gsub("./output/maxent/", "", d$Model_run)                   
-    #d$Model_run  = gsub("/", "", d$Model_run)
     d$Species    = NULL
     d
     
@@ -223,18 +234,25 @@ MAXENT.STD.VAR.SUMMARY <- maxent.tables[c(1:length(maxent.tables))] %>%         
 
 ## This is a summary of maxent output for current conditions
 dim(MAXENT.STD.VAR.SUMMARY)
-head(MAXENT.STD.VAR.SUMMARY, 20)[1:8]
+head(MAXENT.STD.VAR.SUMMARY, 20)[1:9]
 
 
-## Dodgy way to see how many variables were used each time
-MAXENT.STD.VAR.SUMMARY$na_count     = apply(MAXENT.STD.VAR.SUMMARY, 1, function(x) sum(is.na(x)))
-MAXENT.STD.VAR.SUMMARY$no_variables = 14 - (MAXENT.STD.VAR.SUMMARY$na_count / 2)                           
+## Calcualte the number of variables were used for the full models (including linear, quadratic and product features) 
+# lapply(species_list, function(species) {
+# 
+# m <- readRDS(sprintf('%s/%s/full/model.rds', maxent_path, species))
+# 
+# 
+# 
+# 
+# MAXENT.STD.VAR.SUMMARY$na_count       = apply(MAXENT.STD.VAR.SUMMARY, 1, function(x) sum(is.na(x)))
+# MAXENT.STD.VAR.SUMMARY$env_conditions = 14 - (MAXENT.STD.VAR.SUMMARY$na_count / 2)                           
 
 
 ## What are the variables we want to see?
-View(head(MAXENT.STD.VAR.SUMMARY, 180)[, c("GBIF_Taxon",
+View(head(MAXENT.STD.VAR.SUMMARY, 180)[, c("searchTaxon",
                                            "Settings",
-                                           "no_variables",
+                                           "Number_var",
                                            "X.Training.samples",                                                                
                                            "Iterations",                                                                        
                                            "Training.AUC",                                                                      
@@ -244,9 +262,9 @@ View(head(MAXENT.STD.VAR.SUMMARY, 180)[, c("GBIF_Taxon",
 
 ## Now check the match between the species list, and the results list. These need to match, so we can access
 ## the right threshold for each species.
-length(intersect(test_spp, MAXENT.STD.VAR.SUMMARY$GBIF_Taxon)) ## accesssing the files from these directories... 
-MAXENT.SUM.TEST  =  MAXENT.STD.VAR.SUMMARY[MAXENT.STD.VAR.SUMMARY$GBIF_Taxon %in% test_spp, ] 
-comb_spp = unique(MAXENT.SUM.TEST$GBIF_Taxon)
+length(intersect(test_spp, MAXENT.STD.VAR.SUMMARY$searchTaxon)) ## accesssing the files from these directories... 
+MAXENT.SUM.TEST  =  MAXENT.STD.VAR.SUMMARY[MAXENT.STD.VAR.SUMMARY$searchTaxon %in% test_spp, ] 
+comb_spp = unique(MAXENT.SUM.TEST$searchTaxon)
 length(comb_spp)
 
 
@@ -301,16 +319,16 @@ percent.10.omiss  = percent.10.omiss$X10.percentile.training.presence.training.o
 
 ## Check the order of lists match, species, SUAs, areas need to match up ................................................
 ## It would be safer to read in the thresholds individually, so they match the species folder exactly
-length(SDM.RESULTS.DIR);length(MAXENT.SUM.TEST$GBIF_Taxon);length(thresh.max.train);length(percent.10.omiss);length(comb_spp)
-identical(MAXENT.SUM.TEST$GBIF_Taxon, comb_spp)
+length(SDM.RESULTS.DIR);length(MAXENT.SUM.TEST$searchTaxon);length(thresh.max.train);length(percent.10.omiss);length(comb_spp)
+identical(MAXENT.SUM.TEST$searchTaxon, comb_spp)
 
 
 ## The order of the directories matches
-head(SDM.RESULTS.DIR, 20);head(comb_spp, 20); head(MAXENT.SUM.TEST, 20)[, c("GBIF_Taxon",
+head(SDM.RESULTS.DIR, 20);head(comb_spp, 20); head(MAXENT.SUM.TEST, 20)[, c("searchTaxon",
                                                                             "Maximum.training.sensitivity.plus.specificity.Logistic.threshold", 
                                                                             "X10.percentile.training.presence.training.omission")]
 
-tail(SDM.RESULTS.DIR, 20);tail(comb_spp, 20); tail(MAXENT.SUM.TEST, 20)[, c("GBIF_Taxon",
+tail(SDM.RESULTS.DIR, 20);tail(comb_spp, 20); tail(MAXENT.SUM.TEST, 20)[, c("searchTaxon",
                                                                             "Maximum.training.sensitivity.plus.specificity.Logistic.threshold", 
                                                                             "X10.percentile.training.presence.training.omission")]
 
