@@ -199,8 +199,8 @@ length(maxent.tables)                             ## Should match the number of 
 
 ## Could turn this into a function, and loop over a list of subfolders...
 ## Then pipe the table list into lapply
-## MAXENT.STD.VAR.SUMMARY = bind_maxent_tables(table_list)
-MAXENT.STD.VAR.SUMMARY <- maxent.tables[c(1:length(maxent.tables))] %>%         ## currently 534 species with enough records
+## MAXENT.SUMMARY = bind_maxent_tables(table_list)
+MAXENT.SUMMARY <- maxent.tables[c(1:length(maxent.tables))] %>%         ## currently 534 species with enough records
   
   ## pipe the list into lapply
   lapply(function(x) {
@@ -233,8 +233,8 @@ MAXENT.STD.VAR.SUMMARY <- maxent.tables[c(1:length(maxent.tables))] %>%         
 
 
 ## This is a summary of maxent output for current conditions
-dim(MAXENT.STD.VAR.SUMMARY)
-head(MAXENT.STD.VAR.SUMMARY, 20)[1:9]
+dim(MAXENT.SUMMARY)
+head(MAXENT.SUMMARY, 20)[1:9]
 
 
 ## Calcualte the number of variables were used for the full models (including linear, quadratic and product features) 
@@ -245,25 +245,25 @@ head(MAXENT.STD.VAR.SUMMARY, 20)[1:9]
 # 
 # 
 # 
-# MAXENT.STD.VAR.SUMMARY$na_count       = apply(MAXENT.STD.VAR.SUMMARY, 1, function(x) sum(is.na(x)))
-# MAXENT.STD.VAR.SUMMARY$env_conditions = 14 - (MAXENT.STD.VAR.SUMMARY$na_count / 2)                           
+# MAXENT.SUMMARY$na_count       = apply(MAXENT.SUMMARY, 1, function(x) sum(is.na(x)))
+# MAXENT.SUMMARY$env_conditions = 14 - (MAXENT.SUMMARY$na_count / 2)                           
 
 
 ## What are the variables we want to see?
-View(head(MAXENT.STD.VAR.SUMMARY, 180)[, c("searchTaxon",
-                                           "Settings",
-                                           "Number_var",
-                                           "X.Training.samples",                                                                
-                                           "Iterations",                                                                        
-                                           "Training.AUC",                                                                      
-                                           "X.Background.points",  
-                                           "Maximum.training.sensitivity.plus.specificity.Logistic.threshold")])
+# View(head(MAXENT.SUMMARY, 180)[, c("searchTaxon",
+#                                            "Settings",
+#                                            "Number_var",
+#                                            "X.Training.samples",                                                                
+#                                            "Iterations",                                                                        
+#                                            "Training.AUC",                                                                      
+#                                            "X.Background.points",  
+#                                            "Maximum.training.sensitivity.plus.specificity.Logistic.threshold")])
 
 
 ## Now check the match between the species list, and the results list. These need to match, so we can access
 ## the right threshold for each species.
-length(intersect(test_spp, MAXENT.STD.VAR.SUMMARY$searchTaxon)) ## accesssing the files from these directories... 
-MAXENT.SUM.TEST  =  MAXENT.STD.VAR.SUMMARY[MAXENT.STD.VAR.SUMMARY$searchTaxon %in% test_spp, ] 
+length(intersect(test_spp, MAXENT.SUMMARY$searchTaxon)) ## accesssing the files from these directories... 
+MAXENT.SUM.TEST  =  MAXENT.SUMMARY[MAXENT.SUMMARY$searchTaxon %in% test_spp, ] 
 comb_spp = unique(MAXENT.SUM.TEST$searchTaxon)
 length(comb_spp)
 
@@ -286,6 +286,38 @@ SDM.RESULTS.DIR <- comb_spp[c(1:length(comb_spp))] %>%
   c()
 
 
+#########################################################################################################################
+## Now combine the SDM output with the niche context data
+NICHE.CONTEXT = COMBO.NICHE.CONTEXT[, c("searchTaxon",      "Plant.type",        "Origin", 
+                                        "Top_200",          "Number.of.growers", "Number.of.States")]
+
+
+## Check with John and Linda which columns will help with model selection
+MAXENT.SUMM   = MAXENT.SUMMARY[, c("searchTaxon",
+                                           "Settings",
+                                           "Number_var",
+                                           "X.Training.samples",                                                                
+                                           "Iterations",                                                                        
+                                           "Training.AUC",                                                                      
+                                           "X.Background.points",  
+                                           "Maximum.training.sensitivity.plus.specificity.Logistic.threshold")]
+
+
+## Remove the underscore and join
+MAXENT.SUMM$searchTaxon = gsub("_", " ", MAXENT.SUMM$searchTaxon)
+MAXENT.CHECK.TABLE      = join(NICHE.CONTEXT, MAXENT.SUMM, type = "inner")
+View(MAXENT.CHECK.TABLE)
+
+
+## Also could join on other tables with different settings using rbind
+## rbind(MAXENT.CHECK.TABLE, MAXENT.CHECK.TABLE.SET)
+## order by species and compare three rows : set, backwards selection, koppen
+
+
+## Save
+write.csv(MAXENT.CHECK.TABLE, "./output/maxent/MAXENT_CHECK_TABLE.csv", row.names = FALSE)
+
+
 
 
 
@@ -295,7 +327,7 @@ SDM.RESULTS.DIR <- comb_spp[c(1:length(comb_spp))] %>%
 
 
 #########################################################################################################################
-## Maxent produces a presence threshold for each species (i.e. the columns in MAXENT.STD.VAR.SUMMARY). 
+## Maxent produces a presence threshold for each species (i.e. the columns in MAXENT.SUMMARY). 
 
 
 ## For AUC you can report the cross-validated test AUC (if your code currently runs a cross-validated model as well), 
@@ -419,7 +451,7 @@ suitability.2070 = mapply(combine_gcm_threshold,
 
 
 #########################################################################################################################
-## 5). COMBINE PRESENCE TABLES FOR ALL SPECIES ACROSS MULTIPLE GCMs: 
+## 5). COMBINE TABLES OF SPECIES PRESENCES IN SUAs FOR ALL SPECIES ACROSS MULTIPLE GCMs: 
 #########################################################################################################################
 
 
@@ -460,7 +492,7 @@ head(SUA.PRESENCE, 150)
 
 #########################################################################################################################
 ## Save basic results and SUA results to file :: CSV and RData files
-write.csv(MAXENT.STD.VAR.SUMMARY, "./output/maxent/MAXENT_STD_VAR_SUMMARY.csv", row.names = FALSE)
+write.csv(MAXENT.SUMMARY, "./output/maxent/MAXENT_STD_VAR_SUMMARY.csv", row.names = FALSE)
 write.csv(MAXENT.STD.VAR.SUA,     "./output/maxent/MAXENT_STD_VAR_SUMMARY.csv", row.names = FALSE)
 
 
