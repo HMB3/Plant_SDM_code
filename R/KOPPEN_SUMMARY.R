@@ -173,7 +173,63 @@ View(KOPPEN.ALL.SPP)
 ## Create a shapefile for just the test species
 TEST.OCC = GBIF.ALA.POINTS[GBIF.ALA.POINTS$searchTaxon %in% KOPPEN.MOD.SPP$searchTaxon, ]
 dim(test)
-writeOGR(obj = IN.SUA, dsn = "./data/base/CONTEXTUAL", layer = "IN.SUA", driver = "ESRI Shapefile")
+TEST.OCC = as.data.frame(TEST.OCC)
+
+
+## Reorder the columns to see in ArcMap
+TEST.OCC  = select(TEST.OCC, searchTaxon, OBS,     lat,            lon,
+                   Origin,         Plant.type,  Top_200, scientificName, commonname, 
+                   taxonRank,      genus,       family,  TPL_binomial,   taxo_agree, 
+                   gbifID,         id,          cloc,    basisOfRecord,  locality, 
+                   establishmentMeans, institutionCode, datasetName, habitat, catalogNumber, 
+                   country, coordinateUncertaintyInMeters, geodeticDatum, year, month,                         
+                   day, eventDate, eventID, CULTIVATED, POLY_ID, SUB_CODE_7, REG_CODE_7)
+
+
+## Rename the fields so that ArcMap can handle them
+TEST.OCC     = dplyr::rename(TEST.OCC, 
+                             TAXON     = searchTaxon,
+                             ORIGIN    = Origin,
+                             LAT       = lat,
+                             LON       = lon,
+                             TYPE      = Plant.type,
+                             T200      = Top_200,
+                             SC_NAME   = scientificName,
+                             COM_NAME  = commonname,
+                             RANK      = taxonRank,
+                             GENUS     = genus,
+                             FAMILY    = family,
+                             TPL       = TPL_binomial,
+                             TX_AGR    = taxo_agree,
+                             GBIF_ID   = gbifID,
+                             ALA_ID    = id,
+                             CLOC      = cloc,                     
+                             BASIS     = basisOfRecord,                
+                             LOCAL     = locality,                      
+                             ESTAB     = establishmentMeans,          
+                             INSTIT    = institutionCode,                
+                             DATASET   = datasetName,                      
+                             HABITAT   = habitat,                
+                             CAT_NO    = catalogNumber,                
+                             COUNTRY   = country,                
+                             COORD_UN  = coordinateUncertaintyInMeters,
+                             DATUM     = geodeticDatum,                 
+                             YEAR      = year,                          
+                             MNTH      = month,                        
+                             DAY       = day,                      
+                             DATE      = eventDate,                     
+                             EV_ID     = eventID,                      
+                             CULT      = CULTIVATED)
+
+
+##
+TEST.OCC = SpatialPointsDataFrame(coords      = TEST.OCC[c("LON", "LAT")], 
+                                  data        = TEST.OCC,
+                                  proj4string = CRS("+proj=longlat +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +no_defs"))
+
+
+##
+writeOGR(obj = TEST.OCC, dsn = "./data/base/CONTEXTUAL", layer = "TEST.OCC", driver = "ESRI Shapefile")
 
 
 #########################################################################################################################
