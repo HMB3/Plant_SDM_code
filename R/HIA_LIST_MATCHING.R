@@ -346,7 +346,129 @@ kop_spp      = gsub(" ", "_", kop.spp)
 ## Which species are only on the test list?
 setdiff(test.spp, spp.all)
 save(test.spp, file = paste("./data/base/HIA_LIST/GBIF/test.spp.RData", sep = ""))
-  
+
+
+
+
+
+#########################################################################################################################
+## 4). MATCH EVERGREEN LIST WITH THE PLANT RISK LIST
+#########################################################################################################################
+
+
+## Check if there is difference between the Evergreen Connect list and the Plant risk list. Michelle ::
+
+## Just a cross-check of two lists of most widely sold species, from different sources. There may be some interesting 
+## spp on the Nursery Industry list from Anthony Kachenko that aren't on the original list we got from Evergreen, and 
+## it's good to keep a look out for these things and make sure we have as good coverage as possible.
+
+
+## Check for the raw match 
+intersect(RAW.HIA.SPP, RISK.LIST$Plant.Name)                     ## 232 binomials match
+intersect(HIA.list$Binomial,  RISK.LIST$Plant.Name)              ## 244 binomials match
+intersect(COMBO.NICHE.CONTEXT$searchTaxon, RISK.LIST$Plant.Name) ## 250 binomials match
+
+## Check for the raw difference
+setdiff(RISK.LIST$Plant.Name, RAW.HIA.SPP)                       ## 232 binomials match
+setdiff(RISK.LIST$Plant.Name, HIA.list$Binomial)                 ## 244 binomials match
+setdiff(RISK.LIST$Plant.Name, COMBO.NICHE.CONTEXT$searchTaxon)   ## 250 binomials match
+
+
+#########################################################################################################################
+## Now create a new species list to manipulate
+RISK.CLEAN            = RISK.LIST
+RISK.CLEAN$Plant.Name = trimws(RISK.CLEAN$Plant.Name, which = c("both"))
+
+
+## Use gsub to find and replace the weirdos :: could use multiple commands, but still messy
+RISK.CLEAN$Plant.Name = gsub(" x ",   " ",  RISK.CLEAN$Plant.Name,  perl = TRUE)
+RISK.CLEAN$Plant.Name = gsub(" spp ", "",   RISK.CLEAN$Plant.Name,  perl = TRUE)
+RISK.CLEAN$Plant.Name = gsub(" spp. ", "",  RISK.CLEAN$Plant.Name,  perl = TRUE)
+RISK.CLEAN$Plant.Name = gsub(" sp. ", "",   RISK.LIST$Plant.Name,   perl = TRUE)
+RISK.CLEAN$Plant.Name = gsub(" var. ", "",  RISK.LIST$Plant.Name,   perl = TRUE)
+RISK.CLEAN$Plant.Name = gsub(" var ", "",   RISK.LIST$Plant.Name,   perl = TRUE)
+
+
+## Too many weird things to remove
+RISK.CLEAN$Plant.Name = gsub(" species and cultivars ", "",  RISK.LIST$Plant.Name,   perl = TRUE)
+RISK.CLEAN$Plant.Name = gsub(" hybrids and cultivars ", "",  RISK.LIST$Plant.Name,   perl = TRUE)
+RISK.CLEAN$Plant.Name = gsub(" and cultivars ", "",  RISK.LIST$Plant.Name,   perl = TRUE)
+RISK.CLEAN$Plant.Name = gsub(" (cultivars) ", "",  RISK.LIST$Plant.Name,   perl = TRUE)
+
+
+## Again this could be done with some kind of regular expressions
+RISK.CLEAN$Plant.Name = gsub(" (hybrids) ", "",  RISK.LIST$Plant.Name,   perl = TRUE)
+RISK.CLEAN$Plant.Name = gsub(" (Hybrids) ", "",  RISK.LIST$Plant.Name,   perl = TRUE)
+RISK.CLEAN$Plant.Name = gsub(" hybrids ", "",  RISK.LIST$Plant.Name,   perl = TRUE)
+RISK.CLEAN$Plant.Name = gsub(" Hybrids ", "",  RISK.LIST$Plant.Name,   perl = TRUE)
+
+
+## Remove words in parenthesis from string
+RISK.CLEAN$Plant.Name = trimws(RISK.CLEAN$Plant.Name, which = c("both"))
+RISK.CLEAN$Plant.Name = gsub(" x ",   " ", RISK.CLEAN$Plant.Name,  perl = TRUE)
+RISK.CLEAN$Plant.Name = gsub("\\s*\\([^\\)]+\\)", "", as.character(RISK.CLEAN$Plant.Name))
+
+
+## Get the binomials :: causes problems with X, but these are common anyway?
+RISK.CLEAN$Binomial <- sub('(^\\S+ \\S+).*', '\\1', RISK.CLEAN$Plant.Name)
+
+
+## Now get the unique binomials
+RISK.BINOMIAL = unique(RISK.CLEAN$Binomial)
+
+
+#########################################################################################################################
+## Now check the intersection and difference with the cleaned data
+## Check for the cleaned match between evergreen and plant risk lists
+intersect(RAW.HIA.SPP, RISK.BINOMIAL)                     ## 268 binomials match
+intersect(HIA.list$Binomial,  RISK.BINOMIAL)              ## 310 binomials match
+intersect(COMBO.NICHE.CONTEXT$searchTaxon, RISK.BINOMIAL) ## 319 binomials match
+
+
+## 311/654 41% overlap between the risk list and the evergreen list
+(length(intersect(unique(HIA.list$Binomial), RISK.BINOMIAL))/length(unique(HIA.list$Binomial)))*100 
+
+
+## Check for the cleaned difference  between evergreen and plant risk lists
+setdiff(RISK.BINOMIAL, RAW.HIA.SPP)                       ## 605 plants are new
+setdiff(RISK.BINOMIAL, unique(HIA.list$Binomial))         ## 564 plants are new
+setdiff(RISK.BINOMIAL, COMBO.NICHE.CONTEXT$searchTaxon)   ## 554 plants are new
+
+
+## 860/1131 (76%) difference between the risk list and the evergreen list
+(length(setdiff(RAW.HIA.SPP, RISK.BINOMIAL))/length(RAW.HIA.SPP))*100 
+
+
+## 555/610 (90%) difference between the risk list and the popular list
+(length(setdiff(RISK.BINOMIAL, COMBO.NICHE.CONTEXT$searchTaxon))/length(COMBO.NICHE.CONTEXT$searchTaxon))*100
+
+
+#########################################################################################################################
+## Return the grower info for the species that overlap
+## Instead of merge or join, just use %in%
+RISK.LOW = RISK.LIST[, c("Plant.Name",
+                         "Low.Risk")]
+RISK.LOW =  dplyr::rename(RISK.LOW, 
+                          searchTaxon = Plant.Name)
+
+## The %in% operator is useful
+EVERGREEN.RISK = COMBO.NICHE.CONTEXT[COMBO.NICHE.CONTEXT$searchTaxon %in% RISK.BINOMIAL, ][, c("searchTaxon",
+                                                                                               "Origin",
+                                                                                               "Top_200",
+                                                                                               "Plant.type",
+                                                                                               "Number.of.growers", 
+                                                                                               "Number.of.States",
+                                                                                               "No.of.Varieties")]
+
+EVERGREEN.RISK = merge(EVERGREEN.RISK, RISK.LOW, by = "searchTaxon", all = FALSE)
+
+## Check and save
+dim(EVER.RISK)
+View(EVER.RISK)
+write.csv(EVERGREEN.RISK, "./data/base/HIA_LIST/HIA/EVERGREEN_RISK_MATCH.csv", row.names = FALSE)  
+
+
+
 
 
 #########################################################################################################################

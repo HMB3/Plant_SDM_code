@@ -112,7 +112,7 @@ names(SDM.DATA.ALL)
 ## Also note that for some species there are only a few variables with < 0.7 correlation. So to reduce this problem :
 
 
-## Increase cor_thr to 0.8, 
+## Increase cor_thr to 0.85, 
 ## Skip the species with < 5 uncorrelated variables
 ## Increase k_thr to avoid commission error
 
@@ -138,7 +138,6 @@ lapply(kop.spp, function(spp)  { # for serial, parLapply(cl, species[1:8], funct
     
     ## Then create a vector of the sdm.predictors used: all bioclim variables
     sdm.predictors     <- sdm.predictors # vector of used sdm.predictors
-    min_n               = 20
     
     ## Fit the models using FIT_MAXENT. Would be good to make skipping exisitng outputs an argument
     tryCatch(  ## catch any error in the following code, print a message, skipping to next species 
@@ -187,53 +186,53 @@ stopCluster(cl)
 #########################################################################################################################
 
 
-## spp = kop.spp[2]
+## spp = kop.spp[6]
 ## Run without cluster
 lapply(kop.spp, function(spp) { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel 
   
   ## Print the taxa being processed to screen
-  message('Doing ', spp)
-  
-  ## Subset the records to only the taxa being processed
-  occurrence <- subset(SDM.DATA.ALL, searchTaxon == spp)
-  
-  ## Now get the background points. These can come from anywhere in the whole dataset,
-  ## other than the species used.
-  background <- subset(SDM.DATA.ALL, searchTaxon != spp)
-  
-  ## The create a vector of the sdm.predictors used. 
-  sdm.predictors <- sdm.select # vector of used sdm.predictors 
-  
-  ## Finally fit the models using FIT_MAXENT
-  ## debugonce(FIT_MAXENT)
-  ## debugonce(maxent)
-  # occ, 
-  # bg, 
-  # name, 
-  # outdir, 
-  # template, 
-  # max_bg_size=100000, 
-  # bg_buffer_width=200000, 
-  # shapefiles=TRUE, 
-  # features, 
-  # replicates, 
-  # responsecurves=TRUE, 
-  # rep_args, 
-  # full_args)
-  
-  FIT_MAXENT(occ                     = occurrence, 
-             bg                      = background, 
-             sdm.predictors          = sdm.select, 
-             name                    = spp, 
-             outdir                  = 'output/maxent/SET_VAR', # "F:/green_cities_sdm/output/maxent/SET_VAR/"
-             template.raster,
-             min_n                   = 20,   ## This should be higher...
-             max_bg_size             = 100000,
-             background_buffer_width = 200000,
-             shapefiles              = FALSE,
-             features                = 'lpq',
-             replicates              = 5,
-             responsecurves          = TRUE) 
+  if(spp %in% SDM.DATA.ALL$searchTaxon) {
+    message('Doing ', spp) 
+    
+    ## Subset the records to only the taxa being processed
+    occurrence <- subset(SDM.DATA.ALL, searchTaxon == spp)
+    
+    ## Now get the background points. These can come from anywhere in the whole dataset,
+    ## other than the species used.
+    background <- subset(SDM.DATA.ALL, searchTaxon != spp)
+    
+    ## The create a vector of the sdm.predictors used. 
+    sdm.predictors <- sdm.select # vector of used sdm.predictors 
+    
+    ## Finally fit the models using FIT_MAXENT. Use tryCatch to skip any exceptions
+    tryCatch(
+      FIT_MAXENT(occ                     = occurrence, 
+                 bg                      = background, 
+                 sdm.predictors          = sdm.select, 
+                 name                    = spp, 
+                 outdir                  = 'output/maxent/SET_VAR', 
+                 template.raster,
+                 min_n                   = 20,   ## This should be higher...
+                 max_bg_size             = 100000,
+                 background_buffer_width = 200000,
+                 shapefiles              = TRUE,
+                 features                = 'lpq',
+                 replicates              = 5,
+                 responsecurves          = TRUE),
+      
+      ## https://stackoverflow.com/questions/19394886/trycatch-in-r-not-working-properly
+      #function(e) message('Species skipped ', spp)) ## skip any species for which the function fails
+      error = function(cond) {
+        
+        message(paste('Species skipped ', spp))
+        
+      })
+    
+  } else {
+    
+    message(spp, ' skipped - no data.')         ## This condition ignores species which have no data...
+    
+  }  
   
 })
 
