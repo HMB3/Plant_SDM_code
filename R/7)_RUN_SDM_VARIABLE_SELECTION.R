@@ -54,9 +54,67 @@ sdm.select     <- c("Annual_mean_temp", "Temp_seasonality",    "Max_temp_warm_mo
 
 
 
+#########################################################################################################################
+## 3). RUN SDMs USING A-PRIORI VARIABLES
+#########################################################################################################################
+
+
+## spp = kop.spp[6]
+## Run without cluster
+lapply(kop.spp, function(spp) { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel 
+  
+  ## Print the taxa being processed to screen
+  if(spp %in% SDM.DATA.ALL$searchTaxon) {
+    message('Doing ', spp) 
+    
+    ## Subset the records to only the taxa being processed
+    occurrence <- subset(SDM.DATA.ALL, searchTaxon == spp)
+    
+    ## Now get the background points. These can come from anywhere in the whole dataset,
+    ## other than the species used.
+    background <- subset(SDM.DATA.ALL, searchTaxon != spp)
+    
+    ## The create a vector of the sdm.predictors used. 
+    sdm.predictors <- sdm.select # vector of used sdm.predictors 
+    
+    ## Finally fit the models using FIT_MAXENT. Use tryCatch to skip any exceptions
+    tryCatch(
+      FIT_MAXENT(occ                     = occurrence, 
+                 bg                      = background, 
+                 sdm.predictors          = sdm.select, 
+                 name                    = spp, 
+                 outdir                  = 'output/maxent/SET_VAR', 
+                 template.raster,
+                 min_n                   = 20,   ## This should be higher...
+                 max_bg_size             = 100000,
+                 background_buffer_width = 200000,
+                 shapefiles              = TRUE,
+                 features                = 'lpq',
+                 replicates              = 5,
+                 responsecurves          = TRUE),
+      
+      ## https://stackoverflow.com/questions/19394886/trycatch-in-r-not-working-properly
+      #function(e) message('Species skipped ', spp)) ## skip any species for which the function fails
+      error = function(cond) {
+        
+        message(paste('Species skipped ', spp))
+        
+      })
+    
+  } else {
+    
+    message(spp, ' skipped - no data.')         ## This condition ignores species which have no data...
+    
+  }  
+  
+})
+
+
+
+
 
 #########################################################################################################################
-## 3). RUN SDMs USING BACKWARDS SELECTION
+## 4). RUN SDMs USING BACKWARDS SELECTION
 #########################################################################################################################
 
 
@@ -176,68 +234,6 @@ lapply(kop.spp, function(spp)  { # for serial, parLapply(cl, species[1:8], funct
 
 
 stopCluster(cl)
-
-
-
-
-
-#########################################################################################################################
-## 4). RUN SDMs USING A-PRIORI VARIABLES
-#########################################################################################################################
-
-
-## spp = kop.spp[6]
-## Run without cluster
-lapply(kop.spp, function(spp) { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel 
-  
-  ## Print the taxa being processed to screen
-  if(spp %in% SDM.DATA.ALL$searchTaxon) {
-    message('Doing ', spp) 
-    
-    ## Subset the records to only the taxa being processed
-    occurrence <- subset(SDM.DATA.ALL, searchTaxon == spp)
-    
-    ## Now get the background points. These can come from anywhere in the whole dataset,
-    ## other than the species used.
-    background <- subset(SDM.DATA.ALL, searchTaxon != spp)
-    
-    ## The create a vector of the sdm.predictors used. 
-    sdm.predictors <- sdm.select # vector of used sdm.predictors 
-    
-    ## Finally fit the models using FIT_MAXENT. Use tryCatch to skip any exceptions
-    tryCatch(
-      FIT_MAXENT(occ                     = occurrence, 
-                 bg                      = background, 
-                 sdm.predictors          = sdm.select, 
-                 name                    = spp, 
-                 outdir                  = 'output/maxent/SET_VAR', 
-                 template.raster,
-                 min_n                   = 20,   ## This should be higher...
-                 max_bg_size             = 100000,
-                 background_buffer_width = 200000,
-                 shapefiles              = TRUE,
-                 features                = 'lpq',
-                 replicates              = 5,
-                 responsecurves          = TRUE),
-      
-      ## https://stackoverflow.com/questions/19394886/trycatch-in-r-not-working-properly
-      #function(e) message('Species skipped ', spp)) ## skip any species for which the function fails
-      error = function(cond) {
-        
-        message(paste('Species skipped ', spp))
-        
-      })
-    
-  } else {
-    
-    message(spp, ' skipped - no data.')         ## This condition ignores species which have no data...
-    
-  }  
-  
-})
-
-
-
 
 
 

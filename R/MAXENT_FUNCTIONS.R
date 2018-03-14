@@ -238,16 +238,15 @@ FIT_MAXENT <- function(occ,
           3236, 2000, units = 'px', res = 300)
       
       ## set margins
-      par(mfrow = c(2, 1),              ## c(nrows, ncols)
-          mar   = c(11.8, 15, 2.5, 4),  ## b, l, t, r
-          mgp   = c(9.8, 2.5, 0),
+      par(mar   = c(3, 3, 5, 3),  ## b, l, t, r
+          #mgp   = c(9.8, 2.5, 0),
           oma   = c(1.5, 1.5, 1.5, 1.5))
       
       ## Add detail to the response plot
       chart.Correlation(swd_occ@data,
                         histogram = TRUE, pch = 19, 
                         #cex.lab = 2, cex.axis = 1.5,
-                        main = paste0("Predictor values for ", spp))
+                        main = paste0("Predictor corrleation matrix for ", spp))
       
       ## Finish the device
       dev.off()
@@ -257,12 +256,12 @@ FIT_MAXENT <- function(occ,
       if(replicates > 1) {
 
         saveRDS(list(me_xval = me_xval, me_full = me_full, swd = swd, pa = pa),
-                file.path(outdir_sp, 'maxent_fitted.rds'))
+                file.path(outdir_sp, 'xval', 'maxent_fitted_xval.rds'))
 
       } else {
 
         saveRDS(list(me_xval = NA, me_full = me_full, swd = swd, pa = pa),
-                file.path(outdir_sp, 'maxent_fitted.rds'))
+                file.path(outdir_sp, 'full', 'maxent_fitted_full.rds'))
 
       }
 

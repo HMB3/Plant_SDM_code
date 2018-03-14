@@ -122,7 +122,7 @@ MISSING    = read.csv("./data/base/HIA_LIST/HIA/MISSING_SPECIES.csv",           
 MOD_2      = read.csv("./data/base/HIA_LIST/HIA/MOD2_LIST.csv",                         stringsAsFactors = FALSE)
 COMBO.ALL  = read.csv("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_ALL_SPP.csv",     stringsAsFactors = FALSE)
 KOP.TEST   = read.csv("./data/base/HIA_LIST/COMBO/KOPPEN_TEST_SPP.csv",                 stringsAsFactors = FALSE)
-
+RISK.LIST  = read.csv("./data/base/HIA_LIST/HIA/RISK_LIST.csv",                         stringsAsFactors = FALSE)
 
 top.200              = read.csv("./data/base/HIA_LIST/HIA/HIA_TOP_200_1309_2017.csv",       stringsAsFactors = FALSE)
 renee.full           = read.csv("./data/base/HIA_LIST/HIA/RENEE_FULL_LIST.csv",             stringsAsFactors = FALSE) 
@@ -364,20 +364,21 @@ save(test.spp, file = paste("./data/base/HIA_LIST/GBIF/test.spp.RData", sep = ""
 
 
 ## Check for the raw match 
-intersect(RAW.HIA.SPP, RISK.LIST$Plant.Name)                     ## 232 binomials match
-intersect(HIA.list$Binomial,  RISK.LIST$Plant.Name)              ## 244 binomials match
-intersect(COMBO.NICHE.CONTEXT$searchTaxon, RISK.LIST$Plant.Name) ## 250 binomials match
+length(intersect(RAW.HIA.SPP, RISK.LIST$Plant.Name))                       ## 232 binomials match
+length(intersect(HIA.list$Binomial,  RISK.LIST$Plant.Name))                ## 244 binomials match
+length(intersect(COMBO.NICHE.CONTEXT$searchTaxon, RISK.LIST$Plant.Name))   ## 250 binomials match
+
 
 ## Check for the raw difference
-setdiff(RISK.LIST$Plant.Name, RAW.HIA.SPP)                       ## 232 binomials match
-setdiff(RISK.LIST$Plant.Name, HIA.list$Binomial)                 ## 244 binomials match
-setdiff(RISK.LIST$Plant.Name, COMBO.NICHE.CONTEXT$searchTaxon)   ## 250 binomials match
+length(setdiff(RISK.LIST$Plant.Name, RAW.HIA.SPP))                       ## 713 binomials differ
+length(setdiff(RISK.LIST$Plant.Name, HIA.list$Binomial))                 ## 700 binomials differ
+length(setdiff(RISK.LIST$Plant.Name, COMBO.NICHE.CONTEXT$searchTaxon))   ## 695 binomials differ
 
 
 #########################################################################################################################
 ## Now create a new species list to manipulate
 RISK.CLEAN            = RISK.LIST
-RISK.CLEAN$Plant.Name = trimws(RISK.CLEAN$Plant.Name, which = c("both"))
+RISK.CLEAN$Plant.Name = trimws(RISK.CLEAN$Plant.Name, which = c("both"))   ## remove any trailing or leading white space
 
 
 ## Use gsub to find and replace the weirdos :: could use multiple commands, but still messy
@@ -396,7 +397,7 @@ RISK.CLEAN$Plant.Name = gsub(" and cultivars ", "",  RISK.LIST$Plant.Name,   per
 RISK.CLEAN$Plant.Name = gsub(" (cultivars) ", "",  RISK.LIST$Plant.Name,   perl = TRUE)
 
 
-## Again this could be done with some kind of regular expressions
+## Again this could be done with some kind of regular expression
 RISK.CLEAN$Plant.Name = gsub(" (hybrids) ", "",  RISK.LIST$Plant.Name,   perl = TRUE)
 RISK.CLEAN$Plant.Name = gsub(" (Hybrids) ", "",  RISK.LIST$Plant.Name,   perl = TRUE)
 RISK.CLEAN$Plant.Name = gsub(" hybrids ", "",  RISK.LIST$Plant.Name,   perl = TRUE)
@@ -420,9 +421,9 @@ RISK.BINOMIAL = unique(RISK.CLEAN$Binomial)
 #########################################################################################################################
 ## Now check the intersection and difference with the cleaned data
 ## Check for the cleaned match between evergreen and plant risk lists
-intersect(RAW.HIA.SPP, RISK.BINOMIAL)                     ## 268 binomials match
-intersect(HIA.list$Binomial,  RISK.BINOMIAL)              ## 310 binomials match
-intersect(COMBO.NICHE.CONTEXT$searchTaxon, RISK.BINOMIAL) ## 319 binomials match
+length(intersect(RAW.HIA.SPP, RISK.BINOMIAL))                     ## 269 binomials match
+length(intersect(HIA.list$Binomial,  RISK.BINOMIAL))              ## 311 binomials match
+length(intersect(COMBO.NICHE.CONTEXT$searchTaxon, RISK.BINOMIAL)) ## 319 binomials match
 
 
 ## 311/654 41% overlap between the risk list and the evergreen list
@@ -463,8 +464,8 @@ EVERGREEN.RISK = COMBO.NICHE.CONTEXT[COMBO.NICHE.CONTEXT$searchTaxon %in% RISK.B
 EVERGREEN.RISK = merge(EVERGREEN.RISK, RISK.LOW, by = "searchTaxon", all = FALSE)
 
 ## Check and save
-dim(EVER.RISK)
-View(EVER.RISK)
+dim(EVERGREEN.RISK)
+View(EVERGREEN.RISK)
 write.csv(EVERGREEN.RISK, "./data/base/HIA_LIST/HIA/EVERGREEN_RISK_MATCH.csv", row.names = FALSE)  
 
 
