@@ -415,7 +415,12 @@ RISK.CLEAN$Binomial <- sub('(^\\S+ \\S+).*', '\\1', RISK.CLEAN$Plant.Name)
 
 
 ## Now get the unique binomials
-RISK.BINOMIAL = unique(RISK.CLEAN$Binomial)
+RISK.BINOMIAL       = unique(RISK.CLEAN$Binomial)
+RISK.BINOMIAL.DF    = as.data.frame(RISK.BINOMIAL) 
+colnames(RISK.BINOMIAL.DF)[1] = "Plant_name"
+names(RISK.BINOMIAL.DF)
+#write.csv(RISK.BINOMIAL.DF, "./data/base/HIA_LIST/HIA/RISK_BINOMIAL_DF.csv", row.names = FALSE) 
+#RISK.BINOMIAL.CLEAN = read.csv("./data/base/HIA_LIST/HIA/RISK_BINOMIAL_DF.csv", stringsAsFactors = FALSE)
 
 
 #########################################################################################################################

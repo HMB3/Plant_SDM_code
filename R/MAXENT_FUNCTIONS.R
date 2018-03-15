@@ -223,12 +223,16 @@ FIT_MAXENT <- function(occ,
 
       }
 
-      ## Runs the full maxent model - presukmably using all the data in swd
+      ## Runs the full maxent model - presumably using all the data in swd
       if(missing(full_args)) full_args <- NULL
       me_full <- maxent(swd, pa, path = file.path(outdir_sp, 'full'),
                         args = c(off, paste(names(full_args), full_args, sep = '='),
                                  'responsecurves=true',
                                  'outputformat=logistic'))
+      
+      ## Save the full model?
+      saveRDS(list(me_xval = me_xval, me_full = me_full, swd = swd, pa = pa), 
+              file.path(outdir_sp, 'full', 'maxent_fitted.rds'))
       
       #####################################################################
       ## Save the chart corrleation file too for the variable set
@@ -244,26 +248,26 @@ FIT_MAXENT <- function(occ,
       
       ## Add detail to the response plot
       chart.Correlation(swd_occ@data,
-                        histogram = TRUE, pch = 19, 
+                        histogram = TRUE, pch = 19) 
                         #cex.lab = 2, cex.axis = 1.5,
-                        main = paste0("Predictor corrleation matrix for ", spp))
+                        #main = paste0("Predictor corrleation matrix for ", spp))
       
       ## Finish the device
       dev.off()
 
       #####################################################################
       ## Save fitted model object, and the model-fitting data.
-      if(replicates > 1) {
-
-        saveRDS(list(me_xval = me_xval, me_full = me_full, swd = swd, pa = pa),
-                file.path(outdir_sp, 'xval', 'maxent_fitted_xval.rds'))
-
-      } else {
-
-        saveRDS(list(me_xval = NA, me_full = me_full, swd = swd, pa = pa),
-                file.path(outdir_sp, 'full', 'maxent_fitted_full.rds'))
-
-      }
+      #       if(replicates > 1) {
+      # 
+      #         saveRDS(list(me_xval = me_xval, me_full = me_full, swd = swd, pa = pa),
+      #                 file.path(outdir_sp, 'maxent_fitted.rds'))
+      # 
+      #       } else {
+      # 
+      #         saveRDS(list(me_xval = NA, me_full = me_full, swd = swd, pa = pa),
+      #                 file.path(outdir_sp, 'maxent_fitted.rds'))
+      # 
+      # }
 
     }
 
@@ -522,9 +526,10 @@ project_maxent_grids = function(scen_list, species_list, maxent_path, climate_pa
           
           ########################################################################################################################
           ## Now read in the SDM model calibrated on current conditions  ## maxent_fitted.rds
-          m <- readRDS(sprintf('%s/%s/full/model.rds', maxent_path, species)) 
+          m <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, species)) 
+          m <- m$me_full  ## class(m);View(m)
           
-          ## Read in the occurrence points used to create the SDM
+          ## Read in the occurrence points used to create the SDM :: need the transform to plot later
           occ <- readRDS(sprintf('%s/%s/occ.rds', maxent_path, species)) %>%
             spTransform(CRS('+init=epsg:4326'))
           
