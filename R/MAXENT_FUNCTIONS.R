@@ -891,8 +891,9 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             bg <- readRDS(sprintf('%s/%s/bg_swd.rds', maxent_path, species)) %>%
               spTransform(CRS('+init=epsg:4326'))
             
-            m <- readRDS(sprintf('%s/%s/full/model.rds', maxent_path, species)) 
-            
+            #m <- readRDS(sprintf('%s/%s/full/model.rds', maxent_path, species)) 
+            m <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, species)) 
+            m <- m$me_full  ## class(m);View(m)
             
             ## Use the 'levelplot' function to make a multipanel output: occurences, percentiles and thresholds
             message('Writing figure for ', species, ' | 20', time_slice, ' > ', thresh) 

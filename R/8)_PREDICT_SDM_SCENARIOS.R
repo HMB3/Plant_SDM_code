@@ -118,9 +118,9 @@ BIOA_10km = raster("./data/base/worldclim/aus/0.5/bio/current/bio_aus_01_10km.ti
 # saveRDS(aus,        file.path("F:/green_cities_sdm/data/base/CONTEXTUAL/", 'aus_states.rds'))
 # saveRDS(LAND,       file.path("F:/green_cities_sdm/data/base/CONTEXTUAL/", 'LAND_world.rds'))
 
-aus        = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds")
-LAND       = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LAND_world.rds")
-areal_unit = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/SUA.rds")
+# aus        = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds")
+# LAND       = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LAND_world.rds")
+# areal_unit = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/SUA.rds")
 
 
 #########################################################################################################################
