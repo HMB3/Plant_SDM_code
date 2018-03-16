@@ -108,6 +108,19 @@ for(i in 1:11) {
 }
 
 
+## Can we resample the rasters to 10km?
+BIOW_10km = raster("./data/base/worldclim/world/0.5/bio/current/bio_01_10km.tif")
+BIOA_10km = raster("./data/base/worldclim/aus/0.5/bio/current/bio_aus_01_10km.tif")
+
+
+##
+# saveRDS(areal_unit, file.path("F:/green_cities_sdm/data/base/CONTEXTUAL/", 'SUA.rds'))
+# saveRDS(aus,        file.path("F:/green_cities_sdm/data/base/CONTEXTUAL/", 'aus_states.rds'))
+# saveRDS(LAND,       file.path("F:/green_cities_sdm/data/base/CONTEXTUAL/", 'LAND_world.rds'))
+
+aus        = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds")
+LAND       = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LAND_world.rds")
+areal_unit = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/SUA.rds")
 
 
 #########################################################################################################################
@@ -182,12 +195,13 @@ path.set.var       = "./output/maxent/SET_VAR/"
 
 
 ## Create an object for the maxent settings
-model.selection.settings = "Backwards_cor_0.85_pct_5_k_5"        ## Chagne this for each variable selection strategy
-
+#model.selection.settings = "Backwards_cor_0.85_pct_5_k_5"        ## Chagne this for each variable selection strategy
+model.selection.settings = "Set_variables"  
+records_setting          = "ALL"
 
 ## Create a file list for each model run
-maxent.tables = list.files(path.backwards.sel)    ## Chagne this for each variable selection strategy
-maxent_path   = path.backwards.sel                ## Chagne this for each variable selection strategy
+maxent.tables = list.files(path.set.var )    ## Chagne this for each variable selection strategy
+maxent_path   = path.set.var                 ## Chagne this for each variable selection strategy
 length(maxent.tables)                             ## Should match the number of taxa tested
 
 
@@ -212,14 +226,16 @@ MAXENT.SUMMARY <- maxent.tables[c(1:length(maxent.tables))] %>%         ## curre
     d <- read.csv(f)
     
     ##
-    m <- readRDS(sprintf('%s/%s/full/model.rds', maxent_path, x))
+    #m <- readRDS(sprintf('%s/%s/full/model.rds', maxent_path, x))
+    m <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, x))
+    m <- m$me_full
     number_var = length(m@lambdas) - 4                                          ## (the last 4 slots of lambdas are not variables) 
     
     ## Now add a model column
     d = cbind(searchTaxon = x, 
               Settings    = model.selection.settings, 
               Number_var  = number_var, 
-              Records     = "ALL", d)  ## see step 7, make a variable for multiple runs
+              Records     = records_setting , d)  ## see step 7, make a variable for multiple runs
     dim(d)
     
     ## Remove path gunk, and species
@@ -277,7 +293,7 @@ SDM.RESULTS.DIR <- comb_spp[c(1:length(comb_spp))] %>%
   lapply(function(species) {
     
     ## Create the character string
-    m <-   sprintf('%s%s/full/', path.backwards.sel, species)
+    m <-   sprintf('%s%s/full/', path.set.var, species)                ## path.backwards.sel
     m 
     
   }) %>%
@@ -294,13 +310,13 @@ NICHE.CONTEXT = COMBO.NICHE.CONTEXT[, c("searchTaxon",      "Plant.type",       
 
 ## Check with John and Linda which columns will help with model selection
 MAXENT.SUMM   = MAXENT.SUMMARY[, c("searchTaxon",
-                                           "Settings",
-                                           "Number_var",
-                                           "X.Training.samples",                                                                
-                                           "Iterations",                                                                        
-                                           "Training.AUC",                                                                      
-                                           "X.Background.points",  
-                                           "Maximum.training.sensitivity.plus.specificity.Logistic.threshold")]
+                                   "Settings",
+                                   "Number_var",
+                                   "X.Training.samples",                                                                
+                                   "Iterations",                                                                        
+                                   "Training.AUC",                                                                      
+                                   "X.Background.points",  
+                                   "Maximum.training.sensitivity.plus.specificity.Logistic.threshold")]
 
 
 ## Remove the underscore and join
@@ -315,7 +331,7 @@ View(MAXENT.CHECK.TABLE)
 
 
 ## Save
-write.csv(MAXENT.CHECK.TABLE, "./output/maxent/MAXENT_CHECK_TABLE.csv", row.names = FALSE)
+#write.csv(MAXENT.CHECK.TABLE, "./output/maxent/MAXENT_CHECK_TABLE.csv", row.names = FALSE)
 
 
 
@@ -408,7 +424,7 @@ area_occ   = 10
 suitability.2030 = mapply(combine_gcm_threshold,
                           DIR_list     = SDM.RESULTS.DIR,
                           species_list = comb_spp,
-                          maxent_path  = "./output/maxent/SEL_VAR",
+                          maxent_path  = "./output/maxent/SET_VAR",
                           thresholds   = thresh.max.train,
                           percentiles  = percent.10.omiss,
                           time_slice   = 30,
@@ -419,7 +435,7 @@ suitability.2030 = mapply(combine_gcm_threshold,
 suitability.2050 = mapply(combine_gcm_threshold, 
                           DIR_list     = SDM.RESULTS.DIR, 
                           species_list = comb_spp, 
-                          maxent_path  = "./output/maxent/SEL_VAR",
+                          maxent_path  = "./output/maxent/SET_VAR",
                           thresholds   = thresh.max.train,
                           percentiles  = percent.10.omiss,
                           time_slice   = 50,
@@ -430,7 +446,7 @@ suitability.2050 = mapply(combine_gcm_threshold,
 suitability.2070 = mapply(combine_gcm_threshold, 
                           DIR_list     = SDM.RESULTS.DIR, 
                           species_list = comb_spp, 
-                          maxent_path  = "./output/maxent/SEL_VAR",
+                          maxent_path  = "./output/maxent/SET_VAR",
                           thresholds   = thresh.max.train,
                           percentiles  = percent.10.omiss,
                           time_slice   = 70,

@@ -43,7 +43,7 @@ library(httr)
 
 library(taxonlookup)
 library(Taxonstand)
-#library(speciesgeocodeR)
+library(speciesgeocodeR)
 library(raster)
 library(rnaturalearth)
 library(gdalUtils)

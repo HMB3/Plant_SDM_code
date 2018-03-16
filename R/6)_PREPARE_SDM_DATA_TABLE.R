@@ -108,8 +108,9 @@ names(COMBO.RASTER.CONTEXT)
 
 
 ## Create an empty raster with the desired properties, using raster(raster(x))
-template.raster <- raster(raster("./data/base/worldclim/world/0.5/bio/current/bio_01")) %>% 
-  projectRaster(res = 1000, crs = CRS('+init=ESRI:54009'))
+#template.raster <- raster(raster("./data/base/worldclim/world/0.5/bio/current/bio_01"))
+template.raster <- raster(raster("./data/base/worldclim/world/0.5/bio/current/bio_01_10km.tif")) %>% 
+  projectRaster(res = 10000, crs = CRS('+init=ESRI:54009'))       ## res = 1000
 
 
 #########################################################################################################################
@@ -120,14 +121,14 @@ dim(COMBO.RASTER.CONTEXT)[1];length(COMBO.RASTER.CONTEXT$OBS)
 
 
 ## Create a table with all the variables 
-COMBO.RASTER.ALL  <- select(COMBO.RASTER.CONTEXT, searchTaxon, lon, lat,
-                            
-                            Annual_mean_temp,     Mean_diurnal_range,  Isothermality,     Temp_seasonality, 
-                            Max_temp_warm_month,  Min_temp_cold_month, Temp_annual_range, Mean_temp_wet_qu,
-                            Mean_temp_dry_qu,     Mean_temp_warm_qu,   Mean_temp_cold_qu, 
-                            
-                            Annual_precip,        Precip_wet_month,    Precip_dry_month,  Precip_seasonality,   
-                            Precip_wet_qu,        Precip_dry_qu,       Precip_warm_qu,    Precip_col_qu)
+COMBO.RASTER.ALL  <- dplyr::select(COMBO.RASTER.CONTEXT, searchTaxon, lon, lat,
+                                   
+                                   Annual_mean_temp,     Mean_diurnal_range,  Isothermality,     Temp_seasonality, 
+                                   Max_temp_warm_month,  Min_temp_cold_month, Temp_annual_range, Mean_temp_wet_qu,
+                                   Mean_temp_dry_qu,     Mean_temp_warm_qu,   Mean_temp_cold_qu, 
+                                   
+                                   Annual_precip,        Precip_wet_month,    Precip_dry_month,  Precip_seasonality,   
+                                   Precip_wet_qu,        Precip_dry_qu,       Precip_warm_qu,    Precip_col_qu)
 
 
 #########################################################################################################################

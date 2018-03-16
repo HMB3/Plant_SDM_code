@@ -515,7 +515,7 @@ project_maxent_grids = function(scen_list, species_list, maxent_path, climate_pa
     lapply(species_list, function(species) {
       
       ## First, check if the maxent model exists
-      if(file.exists(sprintf('%s/%s/full/model.rds', maxent_path, species))) {
+      if(file.exists(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, species))) {
         message('Doing ', species)
         
         ## Then, check if the species projection has already been run...
@@ -526,6 +526,7 @@ project_maxent_grids = function(scen_list, species_list, maxent_path, climate_pa
           
           ########################################################################################################################
           ## Now read in the SDM model calibrated on current conditions  ## maxent_fitted.rds
+          #m <- readRDS(sprintf('%s/%s/full/model.rds', maxent_path, species)) 
           m <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, species)) 
           m <- m$me_full  ## class(m);View(m)
           
@@ -639,17 +640,13 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
   
   ###################################################################################################################
   ## Create Australia shapefile
-  aus <- ne_states(country = 'Australia') %>% 
-    subset(!grepl('Island', name))
+  aus        = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds")
   
   ## Create world shapefile
-  LAND  <- readOGR("./data/base/CONTEXTUAL/ne_10m_land.shp", layer = "ne_10m_land")
-  
-  ## Create koppen shapefile:: this takes ages!
-  #Koppen     = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/WC05_1975H_Koppen.shp", layer = "WC05_1975H_Koppen")
+  LAND       = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LAND_world.rds")
   
   ## Create SUA shapefile, and sort the attribute table so that it matches the list
-  areal_unit = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/IN_SUA_WGS.shp",        layer = "IN_SUA_WGS")
+  areal_unit = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/SUA.rds")
   areal_unit = areal_unit[order(areal_unit$SUA_NAME11),]
   
   ## Loop over each directory

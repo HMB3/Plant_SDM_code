@@ -8,21 +8,21 @@
 
 
 #########################################################################################################################
-## 1). CREATE LIST OF TAXA FROM DOWLOADED FILES
+## 1). CREATE LIST OF TAXA FROM DOWNLOADED FILES
 #########################################################################################################################
 
 
 #########################################################################################################################
 ## Create a list of species from the downloaded files
-load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")
+load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_1601_2018.RData")
 source('./R/HIA_LIST_MATCHING.R')  ## This file contains all the packages, functions and core biological lists
 spp.download = list.files("./data/base/HIA_LIST/GBIF/SPECIES/", pattern = ".RData")
 spp.download = gsub("_GBIF_records.RData", "", spp.download)
-spp.download = trim.space(spp.download)
+spp.download = trimws(spp.download)
 
 
-## Check the difference between this layer and 
-outstanding.spp = setdiff(test.spp, COMBO.NICHE.CONTEXT$searchTaxon)
+## Check the difference between the risk list and the downloaded list
+#outstanding.spp = setdiff(spp.download, unique(COMBO.RASTER.CONTEXT$searchTaxon))
 
 
 

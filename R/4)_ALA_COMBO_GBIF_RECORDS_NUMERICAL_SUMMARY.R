@@ -186,6 +186,18 @@ env.grids.current = stack(
             sprintf('bio_%02d', 1:19)))
 
 
+## Can we resample the rasters to 10km?
+BIOW_10km = raster("./data/base/worldclim/world/0.5/bio/current/bio_01_10km.tif")
+BIOA_10km = raster("./data/base/worldclim/aus/0.5/bio/current/bio_aus_01_10km.tif")
+
+
+## Use bilinear?
+test          = resample(env.grids.current, BIOW_10km, method = 'bilinear')
+raster_path   = "./data/base/worldclim/aus/0.5/bio/current/"
+current_10km  <- sprintf('%scurrent_env_10km.tif', raster_path)
+writeRaster(test, current_10km , overwrite = TRUE)
+
+
 #########################################################################################################################
 ## Then use the extract function for all the rasters, and finaly bind on the COMBO data to the left of the raster values
 ## Can we use a cluster to speed this up?

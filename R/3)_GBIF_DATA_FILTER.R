@@ -184,7 +184,7 @@ GBIF.PROBLEMS <- with(GBIF.TRIM.TAXO,
                         ## Taxon rank is genus/form?
                         #taxonRank == 'GENUS' & 'FORM',
                         
-                        ## Taxonomic status: consider if this is the right filter, it seems to restrictive
+                        ## Taxonomic status: consider if this is the right filter, it seems too restrictive
                         New.Taxonomic.status == 'Unresolved',
                         
                         ## Cultivated
