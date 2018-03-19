@@ -33,8 +33,7 @@ load("./data/base/HIA_LIST/ALA/ALA_LAND_POINTS.RData")
 length(unique(GBIF.LAND$searchTaxon)) 
 
 
-## Rename a few fields: Add rename of cultivated field, and make the values the same as mine "CULT" or "UNKNOWN"
-## X = CULTIVATED
+## Rename a few fields:
 ALA.LAND     = dplyr::rename(ALA.LAND, 
                              searchTaxon                   = scientificname,
                              coordinateUncertaintyInMeters = uncertainty_m)
@@ -62,7 +61,7 @@ View(HIA.SPP.JOIN)
 ## ALA.LAND.HIA  = ALA.LAND[ALA.LAND$searchTaxon %in% HIA.SPP.JOIN$searchTaxon, ] 
 ALA.LAND.HIA  = ALA.LAND[ALA.LAND$searchTaxon %in% kop.spp, ] ## OR, %in% all.taxa. Old data includes Paul's extra species
 str(unique(ALA.LAND$searchTaxon))       ##
-str(unique(ALA.LAND.HIA$searchTaxon))   ## Reduced from 30k to 4K
+str(unique(ALA.LAND.HIA$searchTaxon))   ## 
 
 
 #########################################################################################################################
@@ -128,7 +127,7 @@ dim(COMBO.POINTS)
 #########################################################################################################################
 ## Create a stack of rasters to sample: get all the World clim variables just for good measure
 env.grids.current = stack(
-  file.path('./data/base/worldclim/world/0.5/bio/current',
+  file.path('./data/base/worldclim/world/0.5/bio/current', #/10km
             sprintf('bio_%02d', 1:19)))
 
 
@@ -138,12 +137,18 @@ BIOA_10km = raster("./data/base/worldclim/aus/0.5/bio/current/bio_aus_01_10km.ti
 
 
 ## Use bilinear?
-test          = resample(env.grids.current, BIOW_10km, method = 'bilinear')
+ten.km.grids.current = resample(env.grids.current, BIOW_10km, method = 'bilinear')
+writeRaster(ten.km.grids.current, 
+            filename = "./data/base/worldclim/aus/0.5/bio/current/10km_current_grids.current.tif", 
+            options = "INTERLEAVE = BAND", overwrite = TRUE)
+
+
 # raster_path   = "./data/base/worldclim/aus/0.5/bio/current/"
 # current_10km  <- sprintf('%scurrent_env_10km.tif', raster_path)
 # writeRaster(test, current_10km , overwrite = TRUE)
-xres(test)
-yres(test)
+xres(ten.km.grids.current)
+yres(ten.km.grids.current)
+
 
 #########################################################################################################################
 ## Is there a way to speed this up?
@@ -198,7 +203,7 @@ summary(COMBO.RASTER$Isothermality)
 
 
 ## Save the summary datasets
-save(COMBO.RASTER.CONTEXT, file = paste("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_1601_2018.RData", sep = ""))
+save(COMBO.RASTER.CONTEXT, file = paste("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_10km.RData", sep = ""))
 save.image("STEP_4_NICHES_TEST_SPP.RData")
 
 

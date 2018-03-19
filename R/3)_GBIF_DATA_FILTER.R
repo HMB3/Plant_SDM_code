@@ -6,19 +6,21 @@
 #########################################################################################################################
 ## This code filters the GBIF data to the most reliable recrods. Two sources of uncertainty:
 
-## Spatial 
 ## Taxonomic
+## Spatial 
 
 
 ## A record with the same lat/long to x decimal places, collected in the same month by the same person is a duplicate
+## Use the TPL and CoordinateCleaner packages 
 
 
 #########################################################################################################################
 ## Load previous data
-load("./data/base/HIA_LIST/COMBO/GBIF_TRIM_OUTSTANDING.RData")
+load("./data/base/HIA_LIST/COMBO/GBIF_TRIM_LATEST.RData")
 dim(GBIF.TRIM)
 names(GBIF.TRIM)
 length(unique(GBIF.TRIM$searchTaxon))  ## has the list updated with extra species? YES! unique(GBIF.TRIM$searchTaxon)
+setdiff(RISK.BINOMIAL.CLEAN$Plant_name, GBIF.TRIM$searchTaxon) 
 
 
 #########################################################################################################################
@@ -365,6 +367,8 @@ save.image("STEP_3_GBIF_CLEAN.RData")
 load("STEP_3_GBIF_CLEAN.RData")
 
 
+## Check that the new species are there
+setdiff(RISK.BINOMIAL.CLEAN$Plant_name, GBIF.TRIM.TAXO$searchTaxon) 
 
 
 

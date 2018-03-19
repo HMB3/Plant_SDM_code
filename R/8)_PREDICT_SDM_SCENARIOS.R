@@ -415,7 +415,7 @@ DIR        = SDM.RESULTS.DIR[1]
 species    = comb_spp[1] 
 thresh     = thresh.max.train[1] 
 percent    = percent.10.omiss[1]
-time_slice = 50
+time_slice = 30
 area_occ   = 10
 
 
