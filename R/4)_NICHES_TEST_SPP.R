@@ -132,22 +132,22 @@ env.grids.current = stack(
 
 
 ## Can we resample the rasters to 10km?
-BIOW_10km = raster("./data/base/worldclim/world/0.5/bio/current/bio_01_10km.tif")
-BIOA_10km = raster("./data/base/worldclim/aus/0.5/bio/current/bio_aus_01_10km.tif")
-
-
-## Use bilinear?
-ten.km.grids.current = resample(env.grids.current, BIOW_10km, method = 'bilinear')
-writeRaster(ten.km.grids.current, 
-            filename = "./data/base/worldclim/aus/0.5/bio/current/10km_current_grids.current.tif", 
-            options = "INTERLEAVE = BAND", overwrite = TRUE)
-
-
-# raster_path   = "./data/base/worldclim/aus/0.5/bio/current/"
-# current_10km  <- sprintf('%scurrent_env_10km.tif', raster_path)
-# writeRaster(test, current_10km , overwrite = TRUE)
-xres(ten.km.grids.current)
-yres(ten.km.grids.current)
+# BIOW_10km = raster("./data/base/worldclim/world/0.5/bio/current/bio_01_10km.tif")
+# BIOA_10km = raster("./data/base/worldclim/aus/0.5/bio/current/bio_aus_01_10km.tif")
+# 
+# 
+# ## Use bilinear?
+# ten.km.grids.current = resample(env.grids.current, BIOW_10km, method = 'bilinear')
+# writeRaster(ten.km.grids.current, 
+#             filename = "./data/base/worldclim/aus/0.5/bio/current/10km_current_grids.current.tif", 
+#             options = "INTERLEAVE = BAND", overwrite = TRUE)
+# 
+# 
+# # raster_path   = "./data/base/worldclim/aus/0.5/bio/current/"
+# # current_10km  <- sprintf('%scurrent_env_10km.tif', raster_path)
+# # writeRaster(test, current_10km , overwrite = TRUE)
+# xres(ten.km.grids.current)
+# yres(ten.km.grids.current)
 
 
 #########################################################################################################################
@@ -200,6 +200,20 @@ summary(COMBO.RASTER$Annual_mean_temp)
 
 summary(COMBO.RASTER.CONVERT$Isothermality)
 summary(COMBO.RASTER$Isothermality)
+
+
+
+
+#########################################################################################################################
+## 3). FLAG OUTLIERS
+#########################################################################################################################
+
+
+##
+
+
+
+
 
 
 ## Save the summary datasets

@@ -195,11 +195,25 @@ FIT_MAXENT <- function(occ,
       swd <- as.data.frame(rbind(swd_occ@data, swd_bg@data))
       saveRDS(swd, file.path(outdir_sp, 'swd.rds'))
       pa <- rep(1:0, c(nrow(swd_occ), nrow(swd_bg)))
+      
+      #####################################################################
+      ## make a bias file climate_path = "./data/base/worldclim/aus/0.5/bio"
+      climdat   <- raster("./data/base/worldclim/world/0.5/bio/current/bio_01")
+      occ.data  <- coordinates(swd_occ)
+      occur.ras <- rasterize(occ.data, climdat)
+      plot(occur.ras)
+      ## writeRaster(dens.ras, "H:/Species Occurrences/Bird bias file.tif")
+      
+      dens <- kde2d(pres.locs[,1], pres.locs[,2], n = c(nrow(occur.states), ncol(occur.states)))
+      dens.ras <- raster(dens)
+      plot(dens.ras)
+      # mod1 <- maxent(climdat, occurrences, args = "biasfile = dens.ras")
+      
 
       ## Now check the features arguments are correct
       off <- setdiff(c('l', 'p', 'q', 't', 'h'), features)
 
-      ##
+      ## 
       if(length(off) > 0) {
 
         off <- c(l = 'linear=false',    p = 'product=false', q = 'quadratic=false',
@@ -218,7 +232,7 @@ FIT_MAXENT <- function(occ,
         me_xval <- maxent(swd, pa, path = file.path(outdir_sp, 'xval'),
                           args = c(paste0('replicates=', replicates),
                                    'responsecurves=true',
-                                   'outputformat=logistic',
+                                   'outputformat=logistic', # "biasfile = dens.ras"
                                    off, paste(names(rep_args), rep_args, sep = '=')))
 
       }

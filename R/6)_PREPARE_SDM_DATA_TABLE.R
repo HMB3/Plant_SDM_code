@@ -109,15 +109,21 @@ names(COMBO.RASTER.CONTEXT)
 
 ## Create an empty raster with the desired properties, using raster(raster(x))
 #template.raster <- raster(raster("./data/base/worldclim/world/0.5/bio/current/bio_01"))
-template.raster <- raster(raster("./data/base/worldclim/world/0.5/bio/current/bio_01_10km.tif")) %>% 
-  projectRaster(res = 10000, crs = CRS('+init=ESRI:54009'))       ## res = 1000
+template.raster <- raster(raster("./data/base/worldclim/world/0.5/bio/current/bio_01")) %>% 
+  projectRaster(res = 1000, crs = CRS('+init=ESRI:54009'))       ## res = 1000
 
 
 #########################################################################################################################
 ## Just get the columns needed for modelling: this would include cultivated/non, and inside/outside
 ## Get an ID column here too, and use it to join back on the other columns to the unique cells data
-COMBO.RASTER.CONTEXT$OBS <- 1:nrow(COMBO.RASTER.CONTEXT)
-dim(COMBO.RASTER.CONTEXT)[1];length(COMBO.RASTER.CONTEXT$OBS)
+# COMBO.RASTER.CONTEXT$OBS <- 1:nrow(COMBO.RASTER.CONTEXT)
+# dim(COMBO.RASTER.CONTEXT)[1];length(COMBO.RASTER.CONTEXT$OBS)
+
+
+#########################################################################################################################
+## Remove the "false" records according to CoordinateClean
+# COMBO.RASTER.CLEAN = subset(COMBO.RASTER.CONTEXT, summary == "TRUE" | GBIF.SPAT.OUT == "TRUE")
+# dim(COMBO.RASTER.CLEAN)[1]/dim(COMBO.RASTER.CONTEXT)[1]*100
 
 
 ## Create a table with all the variables 
