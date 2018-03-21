@@ -129,6 +129,7 @@ intersect(names(GBIF.TRIM), gbif.keep)
 ## Check how many records match the search term?
 gc()
 
+
 ## Remove working dataframes from memory
 save(GBIF.TRIM, file = paste("./data/base/HIA_LIST/COMBO/GBIF_TRIM_LATEST.RData")) ##
 

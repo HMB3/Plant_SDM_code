@@ -15,7 +15,6 @@
 ## under each projection (2030, 2050 and 2070) could also be calculated. 
 
 
-
 ## Load packages ::
 source('./R/HIA_LIST_MATCHING.R')
 load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1601_2018.RData")
@@ -108,11 +107,6 @@ for(i in 1:11) {
 }
 
 
-## Can we resample the rasters to 10km?
-BIOW_10km = raster("./data/base/worldclim/world/0.5/bio/current/bio_01_10km.tif")
-BIOA_10km = raster("./data/base/worldclim/aus/0.5/bio/current/bio_aus_01_10km.tif")
-
-
 ##
 # saveRDS(areal_unit, file.path("F:/green_cities_sdm/data/base/CONTEXTUAL/", 'SUA.rds'))
 # saveRDS(aus,        file.path("F:/green_cities_sdm/data/base/CONTEXTUAL/", 'aus_states.rds'))
@@ -154,7 +148,7 @@ plot(env.grids.current[[18]]);plot(env.grids.current[[19]])
 env.grids.2030 = project_maxent_grids(scen_list     = scen_2030,
                                       species_list  = kop_spp,
                                       time_slice    = 30,
-                                      maxent_path   = "./output/maxent/SET_VAR",
+                                      maxent_path   = "./output/maxent/SET_VAR_CLEAN2",
                                       climate_path  = "./data/base/worldclim/aus/0.5/bio",
                                       grid_names    = grid.names,
                                       current_grids = env.grids.current)
@@ -163,7 +157,7 @@ env.grids.2030 = project_maxent_grids(scen_list     = scen_2030,
 env.grids.2050 = project_maxent_grids(scen_list    = scen_2050,
                                       species_list = kop_spp,
                                       time_slice   = 50,
-                                      maxent_path  = "./output/maxent/SET_VAR",
+                                      maxent_path  = "./output/maxent/SET_VAR_CLEAN2",
                                       climate_path = "./data/base/worldclim/aus/0.5/bio",
                                       grid_names    = grid.names,
                                       current_grids = env.grids.current)
@@ -173,7 +167,7 @@ env.grids.2050 = project_maxent_grids(scen_list    = scen_2050,
 env.grids.2070 = project_maxent_grids(scen_list    = scen_2070,
                                       species_list = kop_spp,
                                       time_slice   = 70,
-                                      maxent_path  = "./output/maxent/SET_VAR",
+                                      maxent_path  = "./output/maxent/SET_VAR_CLEAN2",
                                       climate_path = "./data/base/worldclim/aus/0.5/bio",
                                       grid_names    = grid.names,
                                       current_grids = env.grids.current)

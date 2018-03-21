@@ -36,6 +36,11 @@ source('./R/MAXENT_FUNCTIONS.R')
 ## Check data 
 dim(template.raster)
 dim(SDM.DATA.ALL)
+length(unique(SDM.DATA.ALL$searchTaxon))
+
+
+## What resolution is the template raster at?
+xres(template.raster);yres(template.raster)
 
 
 #########################################################################################################################
@@ -86,7 +91,7 @@ lapply(kop.spp, function(spp) { # for serial, parLapply(cl, species[1:8], functi
                  bg                      = background, 
                  sdm.predictors          = sdm.select, 
                  name                    = spp, 
-                 outdir                  = 'output/maxent/SET_VAR', 
+                 outdir                  = 'output/maxent/SET_VAR_CLEAN2', 
                  template.raster,
                  min_n                   = 20,   ## This should be higher...
                  max_bg_size             = 100000,

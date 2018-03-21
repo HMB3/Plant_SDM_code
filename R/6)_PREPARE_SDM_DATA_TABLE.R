@@ -30,6 +30,7 @@ p <- c('ff',    'things',         'raster',    'dismo',        'sp',           '
 sapply(p, require, character.only = TRUE)
 load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1601_2018.RData")
 load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_1601_2018.RData")
+load("./data/base/HIA_LIST/COMBO/COMBO_CLEAN_TEST.RData")
 
 source('./R/GREEN_CITIES_FUNCTIONS.R')
 source('./R/MAXENT_FUNCTIONS.R')

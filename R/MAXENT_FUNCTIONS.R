@@ -105,6 +105,7 @@ FIT_MAXENT <- function(occ,
 
     #####################################################################
     ## Get unique cell numbers for species occurrences
+    ## Can we make the template raster 10km?
     cells <- cellFromXY(template.raster, occ)
 
     ## Clean out duplicate cells and NAs (including points outside extent of predictor data)
@@ -113,7 +114,28 @@ FIT_MAXENT <- function(occ,
     occ       <- occ[not_dupes, ]
     cells     <- cells[not_dupes]
     message(nrow(occ), ' occurrence records (unique cells).')
+    
+    
+    #####################################################################
+    ## make a bias file?
+    occ.data  <- as.data.frame(coordinates(occ))
+    occ.data  <- SpatialPointsDataFrame(coords      = occ.data[c("lon", "lat")],
+                                        data        = occ.data,
+                                        proj4string = CRS('+init=ESRI:54009'))
+    
+    ## Create a 2-D kernel density file
+    ## dens <- kde2d(occ[,1], occ[,2])
+    dens      <- kde2D(occ.data, standardize = TRUE)
+    plot(dens$kde, main = paste0("Kernel density for ", name))
+    plot(occ.data, pch = 20, cex = 0.25,
+         col = "red", add = TRUE)
 
+    ## save the file for checking
+    # spp_save = gsub(' ', '_', spp)
+    # KD_save  = sprintf('%s/%s/%s_kernel_density.tif', outdir, spp_save , spp_save)
+    # writeRaster(dens$kde, KD_save, overwrite = TRUE)
+    # writeOGR(obj = occ.data, dsn = "./data/base/CONTEXTUAL", layer = "occ.lomandra.10km", driver = "ESRI Shapefile")
+    
     ## Skip species that have less than a minimum number of records: eg 20 species
     if(nrow(occ) < min_n) {
 
@@ -124,7 +146,7 @@ FIT_MAXENT <- function(occ,
     } else {
 
       #####################################################################
-      ## Now subset bg to the buffer polygon
+      ## Now subset the background records to the buffered polygon
       system.time(o <- over(bg, b))
       bg <- bg[which(!is.na(o)), ]
       bg_cells <- cellFromXY(template.raster, bg)
@@ -133,20 +155,32 @@ FIT_MAXENT <- function(occ,
       bg_not_dupes <- which(!duplicated(bg_cells) & !is.na(bg_cells))
       bg <- bg[bg_not_dupes, ]
       bg_cells <- bg_cells[bg_not_dupes]
-
+      
+      ## To incorporate bias in the background records, we can sample from the bias file
+      bg_bias <- xyFromCell(dens$kde, sample(which(!is.na(values(dens$kde))), 10000,
+                                             prob = values(dens$kde)[!is.na(values(dens$kde))],
+                                                                                  replace = TRUE))
+      
       ## Reduce background sample if it's larger than max_bg_size
       if (nrow(bg) > max_bg_size) {
 
         message(nrow(bg), ' target species background records, reduced to random ',
                 max_bg_size, '.')
 
-        bg <- bg[sample(nrow(bg), max_bg_size), ]
+        bg <- bg[sample(nrow(bg), max_bg_size), ]  ## Change this to use 
 
       } else {
 
         message(nrow(bg), ' target species background records.')
 
       }
+      
+      
+      #####################################################################
+      ## Then extract predictor values at the points, and provide data to 
+      ## the maxent function as swd. Does this mean the 
+      
+      
 
       #####################################################################
       ## Save objects for future reference
@@ -177,11 +211,6 @@ FIT_MAXENT <- function(occ,
       swd_bg <- bg[, sdm.predictors]
       saveRDS(swd_bg, file.path(outdir_sp, 'bg_swd.rds'))
 
-      ## Have a look at the correlation structure
-      # chart.Correlation(swd_occ@data,
-      #                   histogram = TRUE, pch = 19,
-      #                   main = paste0("Climate values for ", spp))
-      
       ## Save shapefiles of the occurrence and background points
       if(shapefiles) {
 
@@ -196,20 +225,6 @@ FIT_MAXENT <- function(occ,
       saveRDS(swd, file.path(outdir_sp, 'swd.rds'))
       pa <- rep(1:0, c(nrow(swd_occ), nrow(swd_bg)))
       
-      #####################################################################
-      ## make a bias file climate_path = "./data/base/worldclim/aus/0.5/bio"
-      climdat   <- raster("./data/base/worldclim/world/0.5/bio/current/bio_01")
-      occ.data  <- coordinates(swd_occ)
-      occur.ras <- rasterize(occ.data, climdat)
-      plot(occur.ras)
-      ## writeRaster(dens.ras, "H:/Species Occurrences/Bird bias file.tif")
-      
-      dens <- kde2d(pres.locs[,1], pres.locs[,2], n = c(nrow(occur.states), ncol(occur.states)))
-      dens.ras <- raster(dens)
-      plot(dens.ras)
-      # mod1 <- maxent(climdat, occurrences, args = "biasfile = dens.ras")
-      
-
       ## Now check the features arguments are correct
       off <- setdiff(c('l', 'p', 'q', 't', 'h'), features)
 
@@ -231,6 +246,7 @@ FIT_MAXENT <- function(occ,
         ## EG xval = cross validation : "OUT_DIR\Acacia_boormanii\xval\maxent_0.html"
         me_xval <- maxent(swd, pa, path = file.path(outdir_sp, 'xval'),
                           args = c(paste0('replicates=', replicates),
+                                   #paste0('biasfile=', dens),
                                    'responsecurves=true',
                                    'outputformat=logistic', # "biasfile = dens.ras"
                                    off, paste(names(rep_args), rep_args, sep = '=')))
