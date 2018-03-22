@@ -118,23 +118,23 @@ FIT_MAXENT <- function(occ,
     
     #####################################################################
     ## make a bias file?
-    occ.data  <- as.data.frame(coordinates(occ))
-    occ.data  <- SpatialPointsDataFrame(coords      = occ.data[c("lon", "lat")],
-                                        data        = occ.data,
-                                        proj4string = CRS('+init=ESRI:54009'))
+    # occ.data  <- as.data.frame(coordinates(occ))
+    # occ.data  <- SpatialPointsDataFrame(coords      = occ.data[c("lon", "lat")],
+    #                                     data        = occ.data,
+    #                                     proj4string = CRS('+init=ESRI:54009'))
     
     ## Create a 2-D kernel density file
     ## dens <- kde2d(occ[,1], occ[,2])
-    dens      <- kde2D(occ.data, standardize = TRUE)
-    plot(dens$kde, main = paste0("Kernel density for ", name))
-    plot(occ.data, pch = 20, cex = 0.25,
-         col = "red", add = TRUE)
+    # dens      <- kde2D(occ.data, standardize = TRUE)
+    # plot(dens$kde, main = paste0("Kernel density for ", name))
+    # plot(occ.data, pch = 20, cex = 0.25,
+    #      col = "red", add = TRUE)
 
     ## save the file for checking
     # spp_save = gsub(' ', '_', spp)
     # KD_save  = sprintf('%s/%s/%s_kernel_density.tif', outdir, spp_save , spp_save)
     # writeRaster(dens$kde, KD_save, overwrite = TRUE)
-    # writeOGR(obj = occ.data, dsn = "./data/base/CONTEXTUAL", layer = "occ.lomandra.10km", driver = "ESRI Shapefile")
+    # writeOGR(obj = occ.data, dsn = "./data/base/CONTEXTUAL", layer = "occ.cordyline", driver = "ESRI Shapefile")
     
     ## Skip species that have less than a minimum number of records: eg 20 species
     if(nrow(occ) < min_n) {
@@ -157,9 +157,9 @@ FIT_MAXENT <- function(occ,
       bg_cells <- bg_cells[bg_not_dupes]
       
       ## To incorporate bias in the background records, we can sample from the bias file
-      bg_bias <- xyFromCell(dens$kde, sample(which(!is.na(values(dens$kde))), 10000,
-                                             prob = values(dens$kde)[!is.na(values(dens$kde))],
-                                                                                  replace = TRUE))
+      # bg_bias <- xyFromCell(dens$kde, sample(which(!is.na(values(dens$kde))), 10000,
+      #                                        prob = values(dens$kde)[!is.na(values(dens$kde))],
+      #                                                                             replace = TRUE))
       
       ## Reduce background sample if it's larger than max_bg_size
       if (nrow(bg) > max_bg_size) {
@@ -512,9 +512,9 @@ FIT_MAXENT_SELECTION <- function(occ,
 #########################################################################################################################
 ## Create maxent maps for a given time period 
 ## x = scen_2030[1]
-## species = kop_spp[1]
+## species = kop_spp[3]
 ## time_slice = 30
-## maxent_path  = "./output/maxent/SEL_VAR"
+## maxent_path  = "./output/maxent/SET_VAR_CLEAN"
 ## climate_path = "./data/base/worldclim/aus/0.5/bio"
 ## grid_names    = grid.names
 ## current_grids = env.grids.current
@@ -592,6 +592,7 @@ project_maxent_grids = function(scen_list, species_list, maxent_path, climate_pa
             ## Report which prediction is in progress
             message('Running future prediction for ', species, ' ', x) 
             
+            ## Error in sum(sapply(lambdas, nrow)) : invalid 'type' (list) of argument
             pred.future <- rmaxent::project(
               m, s[[colnames(m@presence)]])$prediction_logistic
             writeRaster(pred.future, f_future, overwrite = TRUE)

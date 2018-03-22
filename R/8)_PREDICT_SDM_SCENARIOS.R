@@ -107,7 +107,7 @@ for(i in 1:11) {
 }
 
 
-##
+## 
 # saveRDS(areal_unit, file.path("F:/green_cities_sdm/data/base/CONTEXTUAL/", 'SUA.rds'))
 # saveRDS(aus,        file.path("F:/green_cities_sdm/data/base/CONTEXTUAL/", 'aus_states.rds'))
 # saveRDS(LAND,       file.path("F:/green_cities_sdm/data/base/CONTEXTUAL/", 'LAND_world.rds'))
@@ -130,8 +130,8 @@ grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',   
 
 
 ## Plot the dodgy variables :: 
-plot(env.grids.current[[8]]);plot(env.grids.current[[9]])
-plot(env.grids.current[[18]]);plot(env.grids.current[[19]])
+# plot(env.grids.current[[8]]);plot(env.grids.current[[9]])
+# plot(env.grids.current[[18]]);plot(env.grids.current[[19]])
 
 
 
@@ -145,19 +145,26 @@ plot(env.grids.current[[18]]);plot(env.grids.current[[19]])
 #########################################################################################################################
 ## For each species, use a function to create raster files and maps under all six GCMs at each time step
 ## 2030
-env.grids.2030 = project_maxent_grids(scen_list     = scen_2030,
-                                      species_list  = kop_spp,
-                                      time_slice    = 30,
-                                      maxent_path   = "./output/maxent/SET_VAR_CLEAN2",
-                                      climate_path  = "./data/base/worldclim/aus/0.5/bio",
-                                      grid_names    = grid.names,
-                                      current_grids = env.grids.current)
+env.grids.2030 = tryCatch(project_maxent_grids(scen_list     = scen_2030,
+                                               species_list  = kop_spp,
+                                               time_slice    = 30,
+                                               maxent_path   = "./output/maxent/SET_VAR_CLEAN",
+                                               climate_path  = "./data/base/worldclim/aus/0.5/bio",
+                                               grid_names    = grid.names,
+                                               current_grids = env.grids.current),
+                          
+                          ## Will this work outside a loop?
+                          error = function(cond) {
+                            
+                            message(paste('Species skipped ', spp))
+                            
+                          })
 
 ## 2050
 env.grids.2050 = project_maxent_grids(scen_list    = scen_2050,
                                       species_list = kop_spp,
                                       time_slice   = 50,
-                                      maxent_path  = "./output/maxent/SET_VAR_CLEAN2",
+                                      maxent_path  = "./output/maxent/SET_VAR_CLEAN",
                                       climate_path = "./data/base/worldclim/aus/0.5/bio",
                                       grid_names    = grid.names,
                                       current_grids = env.grids.current)
@@ -167,7 +174,7 @@ env.grids.2050 = project_maxent_grids(scen_list    = scen_2050,
 env.grids.2070 = project_maxent_grids(scen_list    = scen_2070,
                                       species_list = kop_spp,
                                       time_slice   = 70,
-                                      maxent_path  = "./output/maxent/SET_VAR_CLEAN2",
+                                      maxent_path  = "./output/maxent/SET_VAR_CLEAN",
                                       climate_path = "./data/base/worldclim/aus/0.5/bio",
                                       grid_names    = grid.names,
                                       current_grids = env.grids.current)

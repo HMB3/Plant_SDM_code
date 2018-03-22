@@ -37,11 +37,11 @@ source('./R/MAXENT_FUNCTIONS.R')
 source('./R/HIA_LIST_MATCHING.R')
 
 
-##
+## Need to clean this up...
 dim(COMBO.RASTER.CONTEXT)    
 names(COMBO.RASTER.CONTEXT)
-
-
+dim(GBIF.TRUE)
+#COMBO.RASTER.CONTEXT = GBIF.TRUE
 
 
 
@@ -180,8 +180,8 @@ str(SDM.DATA.ALL)
 
 ## Save big tables to keep memory spare
 save(template.raster, file = paste("./data/base/HIA_LIST/COMBO/SDM_TEMPLATE_RASTER.RData"))
-save(SDM.DATA.ALL,    file = paste("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_ALL_VAR.RData"))
-
+#save(SDM.DATA.ALL,    file = paste("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_ALL_VAR.RData"))
+save(SDM.DATA.ALL,    file = paste("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_TEST_CLEAN.RData"))
 
 ## Remove the other data
 rm(COMBO.RASTER.ALL)
