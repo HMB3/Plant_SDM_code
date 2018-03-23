@@ -107,7 +107,7 @@ for(i in 1:11) {
 }
 
 
-## 
+## Using .rds files in the combine function is much quicker
 # saveRDS(areal_unit, file.path("F:/green_cities_sdm/data/base/CONTEXTUAL/", 'SUA.rds'))
 # saveRDS(aus,        file.path("F:/green_cities_sdm/data/base/CONTEXTUAL/", 'aus_states.rds'))
 # saveRDS(LAND,       file.path("F:/green_cities_sdm/data/base/CONTEXTUAL/", 'LAND_world.rds'))
@@ -156,28 +156,41 @@ env.grids.2030 = tryCatch(project_maxent_grids(scen_list     = scen_2030,
                           ## Will this work outside a loop?
                           error = function(cond) {
                             
-                            message(paste('Species skipped ', spp))
+                            message(paste('Species skipped - probably due to insufficient background records', spp))
                             
                           })
 
+
 ## 2050
-env.grids.2050 = project_maxent_grids(scen_list    = scen_2050,
-                                      species_list = kop_spp,
-                                      time_slice   = 50,
-                                      maxent_path  = "./output/maxent/SET_VAR_CLEAN",
-                                      climate_path = "./data/base/worldclim/aus/0.5/bio",
-                                      grid_names    = grid.names,
-                                      current_grids = env.grids.current)
+env.grids.2050 = tryCatch(project_maxent_grids(scen_list    = scen_2050,
+                                               species_list = kop_spp,
+                                               time_slice   = 50,
+                                               maxent_path  = "./output/maxent/SET_VAR_CLEAN",
+                                               climate_path = "./data/base/worldclim/aus/0.5/bio",
+                                               grid_names    = grid.names,
+                                               current_grids = env.grids.current),
+                          
+                          error = function(cond) {
+                            
+                            message(paste('Species skipped - probably due to insufficient background records', spp))
+                            
+                          })
 
 
 ## 2070
-env.grids.2070 = project_maxent_grids(scen_list    = scen_2070,
-                                      species_list = kop_spp,
-                                      time_slice   = 70,
-                                      maxent_path  = "./output/maxent/SET_VAR_CLEAN",
-                                      climate_path = "./data/base/worldclim/aus/0.5/bio",
-                                      grid_names    = grid.names,
-                                      current_grids = env.grids.current)
+env.grids.2070 = tryCatch(project_maxent_grids(scen_list    = scen_2070,
+                                               species_list = kop_spp,
+                                               time_slice   = 70,
+                                               maxent_path  = "./output/maxent/SET_VAR_CLEAN",
+                                               climate_path = "./data/base/worldclim/aus/0.5/bio",
+                                               grid_names    = grid.names,
+                                               current_grids = env.grids.current),
+                          
+                          error = function(cond) {
+                            
+                            message(paste('Species skipped - probably due to insufficient background records', spp))
+                            
+                          })
 
 
 

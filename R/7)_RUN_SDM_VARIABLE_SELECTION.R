@@ -44,10 +44,10 @@ xres(template.raster);yres(template.raster)
 
 
 #########################################################################################################################
-## Chose a-priori worldclim predictors: get rid of 8, 9, 18 and 19
+## Chose a-priori worldclim predictors: 8, 9, 18 and 19 are suspect
 sdm.predictors <- c("Annual_mean_temp",    "Mean_diurnal_range",  "Isothermality",      "Temp_seasonality",  
                     "Max_temp_warm_month", "Min_temp_cold_month", "Temp_annual_range",  
-                    "Mean_temp_wet_qu",    "Mean_temp_dry_qu",    ## remove these?
+                    "Mean_temp_wet_qu",    "Mean_temp_dry_qu",    
                     "Mean_temp_warm_qu",   "Mean_temp_cold_qu",   
                     
                     "Annual_precip",       "Precip_wet_month",   "Precip_dry_month",    "Precip_seasonality",  
@@ -57,7 +57,7 @@ sdm.predictors <- c("Annual_mean_temp",    "Mean_diurnal_range",  "Isothermality
 
 sdm.select     <- c("Annual_mean_temp", "Temp_seasonality",    "Max_temp_warm_month", "Min_temp_cold_month",
                     "Annual_precip",    "Precip_seasonality",  
-                    "Precip_wet_month", "Precip_dry_month")      ## remove these?
+                    "Precip_wet_month", "Precip_dry_month")      
 
 
 

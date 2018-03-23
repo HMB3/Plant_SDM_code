@@ -56,6 +56,12 @@ string_fun_first_word <- function(x) {
 }
 
 
+completeFun <- function(data, desiredCols) {
+  completeVec <- complete.cases(data[, desiredCols])
+  return(data[completeVec, ])
+}
+
+
 
 #########################################################################################################################
 ## CORRELATION PLOTTING FUNCTIONS
