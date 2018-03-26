@@ -127,7 +127,7 @@ intersect(names(GBIF.TRIM), gbif.keep)
 
 
 ## Check how many records match the search term?
-gc()
+setdiff(RISK.BINOMIAL, GBIF.TRIM$searchTaxon) 
 
 
 ## Remove working dataframes from memory

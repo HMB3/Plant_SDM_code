@@ -17,10 +17,11 @@
 #########################################################################################################################
 ## Load previous data
 load("./data/base/HIA_LIST/COMBO/GBIF_TRIM_LATEST.RData")
-dim(GBIF.TRIM)
-names(GBIF.TRIM)
-length(unique(GBIF.TRIM$searchTaxon))  ## has the list updated with extra species? YES! unique(GBIF.TRIM$searchTaxon)
-setdiff(RISK.BINOMIAL.CLEAN$Plant_name, GBIF.TRIM$searchTaxon) 
+# dim(GBIF.TRIM)
+# names(GBIF.TRIM)
+# length(unique(GBIF.TRIM$searchTaxon))  ## has the list updated with extra species? YES! unique(GBIF.TRIM$searchTaxon)
+# setdiff(RISK.BINOMIAL, GBIF.TRIM$searchTaxon) 
+
 
 
 #########################################################################################################################
@@ -44,7 +45,7 @@ sort(names(GBIF.TAXO))
 ## Then join the GBIF data to the taxonomic check, using "scientificName" as the join field... 
 GBIF.TRIM <- GBIF.TRIM %>%
   left_join(., GBIF.TAXO, by = c("scientificName" = "Taxon"))
-names(GBIF.TRIM)
+#names(GBIF.TRIM)
 
 
 ## So we can filter by the agreement between "scientificName", and "New.Taxonomic.status"?
@@ -76,8 +77,8 @@ GBIF.UNRESOLVED <- GBIF.TRIM %>%
 
 
 ## Also keep the managed records:
-unique(GBIF.UNRESOLVED$New.Taxonomic.status)
-dim(GBIF.UNRESOLVED)   ## 1.2 million unresolved records, quite a lot!
+# unique(GBIF.UNRESOLVED$New.Taxonomic.status)
+# dim(GBIF.UNRESOLVED)   ## 1.2 million unresolved records, quite a lot!
 
 
 ## Unique(GBIF.UNRESOLVED$New.Taxonomic.status)
@@ -88,7 +89,7 @@ save(GBIF.UNRESOLVED, file = paste("./data/base/HIA_LIST/GBIF/GBIF_UNRESOLVED.RD
 ## Taxonomic.status, Infraspecific.rank, New.Taxonomic.status, New.ID, New_binomial, taxo_agree
 GBIF.TRIM.TAXO <- GBIF.TRIM %>% 
   select(one_of(TPL.keep))
-names(GBIF.TRIM.TAXO)
+# names(GBIF.TRIM.TAXO)
 
 
 ## Unique(GBIF.UNRESOLVED$New.Taxonomic.status)
@@ -112,12 +113,12 @@ GBIF.COUNTRY = GBIF.COUNTRY[order(GBIF.COUNTRY$count, decreasing = TRUE), ]
 
 
 ## Look for synonyms in the countries which have the most GBIF records
-GBIF.COUNTRY
+#GBIF.COUNTRY
 #write.csv(GBIF.COUNTRY, "./data/base/HIA_LIST/GBIF/SPECIES/GBIF_COUNTRY.csv", row.names = FALSE)
 
 
 ## This creates a list of synonyms:
-cultivated.synonyms
+#cultivated.synonyms
 
 
 #########################################################################################################################
@@ -146,7 +147,7 @@ dim(GBIF.CULTIVATED)[1]
 
 ## Still very few records being returned as "cultivated"?
 dim(GBIF.CULTIVATED)[1]/dim(GBIF.TRIM.TAXO)[1]
-View(GBIF.CULTIVATED)
+#View(GBIF.CULTIVATED)
 
 
 ## Also keep the cultivated records:
@@ -157,9 +158,9 @@ GBIF.CULTIVATED <- GBIF.TRIM.TAXO %>%
 
 
 ## Unique(GBIF.UNRESOLVED$New.Taxonomic.status)
-dim(GBIF.CULTIVATED)
-names(GBIF.CULTIVATED)
-unique(GBIF.CULTIVATED$CULTIVATED)
+# dim(GBIF.CULTIVATED)
+# names(GBIF.CULTIVATED)
+# unique(GBIF.CULTIVATED$CULTIVATED)
 save(GBIF.CULTIVATED, file = paste("./data/base/HIA_LIST/GBIF/GBIF_CULTIVATED.RData"))
 
 
@@ -205,8 +206,7 @@ GBIF.PROBLEMS <- with(GBIF.TRIM.TAXO,
                         coordinateUncertaintyInMeters > 1000 & 
                           !is.na(coordinateUncertaintyInMeters)
                         
-                        ## Add maybe the centre of Australia?
-                        ## Lamber centre of Aus: 25.610111, 134.354806
+                        ## Other checks using coordinateCleaner
                         
                       )
                       
@@ -222,13 +222,13 @@ GBIF.PROBLEMS <- with(GBIF.TRIM.TAXO,
 
 ## Print table to screen: in .Rmd file, no need to save
 ## Note that TRUE indicates there is a problem (e.g. no lat/long = TRUE)
-str(GBIF.PROBLEMS)
-kable(GBIF.PROBLEMS)
+# str(GBIF.PROBLEMS)
+# kable(GBIF.PROBLEMS)
 
 
 ## Quickly check the total record number matches the count of problems
-Total.count = sum(GBIF.PROBLEMS$COUNT)
-identical(dim(GBIF.TRIM.TAXO)[1], Total.count)  ## identical matches two objects
+#Total.count = sum(GBIF.PROBLEMS$COUNT)
+#identical(dim(GBIF.TRIM.TAXO)[1], Total.count)  ## identical matches two objects
 
 
 
@@ -240,7 +240,7 @@ identical(dim(GBIF.TRIM.TAXO)[1], Total.count)  ## identical matches two objects
 
 
 ## Filter the GBIF records using conditions which are not too restrictive
-dim(GBIF.TRIM.TAXO)
+#dim(GBIF.TRIM.TAXO)
 GBIF.CLEAN <- GBIF.TRIM.TAXO %>% 
   
   ## Note that these filters are very forgiving...
@@ -256,21 +256,21 @@ GBIF.CLEAN <- GBIF.TRIM.TAXO %>%
 
 ## The table above gives the details, but worth documenting how many records are knocked out by each filter
 ## Consider what these filters accomplish. Is it really worth knocking out that many records automatically?
-dim(GBIF.CLEAN)
+#dim(GBIF.CLEAN)
 
 Remaining.percent = dim(GBIF.CLEAN)[1]/Total.count*100
 Filters.applied = "NA COORD | < 1950/NA | UNRESOLVED TAXONOMY" ## INCLUDE CULTIVATED RECORDS
-Remaining.percent ## 57% of records remain after cleaning 
+#Remaining.percent ## 57% of records remain after cleaning 
 gc()
 
 
 ## Check
-dim(GBIF.CLEAN)
-head(GBIF.CLEAN)
+# dim(GBIF.CLEAN)
+# head(GBIF.CLEAN)
 
 
 ## What does this dataframe look like?
-names(GBIF.CLEAN)
+#names(GBIF.CLEAN)
 
 
 
@@ -306,9 +306,9 @@ xy <- cellFromXY(world.temp, GBIF.CLEAN[c("lon", "lat")]) %>%
 
 
 ## Take a look at xy: NA's should be removed...
-summary(xy)
-str(xy)
-points(xy, pch = ".", col = "red")
+# summary(xy)
+# str(xy)
+# points(xy, pch = ".", col = "red")
 
 
 ## For some reason, we need to convert the xy coords to a spatial points data frame, in order to avoid this error:
@@ -330,7 +330,7 @@ hist(z, border = NA, col = "orange", breaks = 50, main = "", xlab = "Worldclim A
 
 ## Then track which values of Z are on land or not
 onland = z %>% is.na %>%  `!` # %>% xy[.,]  cells on land or not
-summary(onland)
+#summary(onland)
 
 
 ## Finally, filter the cleaned GBIF data to only those points on land. 
@@ -341,7 +341,7 @@ GBIF.LAND = filter(GBIF.CLEAN, cellFromXY(world.temp, GBIF.CLEAN[c("lon", "lat")
 
 ## how many records were on land?
 records.ocean = dim(GBIF.CLEAN)[1] - dim(GBIF.LAND)[1]  ## 91575 records are in the ocean   
-records.ocean
+#records.ocean
 
 
 ## Free some memory
@@ -364,7 +364,7 @@ gc()
 
 ## Now save .RData file for the next session
 save.image("STEP_3_GBIF_CLEAN.RData")
-load("STEP_3_GBIF_CLEAN.RData")
+#load("STEP_3_GBIF_CLEAN.RData")
 
 
 ## Check that the new species are there

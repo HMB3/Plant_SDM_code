@@ -8,29 +8,9 @@
 ## SDM analysis
 
 
-#########################################################################################################################
-## There are a few key facors we would like to vary across the model runs:
-
-## Environmnetal variables : run with the same core set, and also with variable selection
-## RECORDS                 : ALL, CULTIVATED & UNCULT
-## RANGES                  : ALL, NATIVE RANGE & NON-NATIVE
-## GCMs/RCPs               : the lowest prioritym but probably do them all in the end
-## UHI 
-## WUE
-
-
-#########################################################################################################################
-## Load packages
-p <- c('ff',    'things',         'raster',    'dismo',        'sp',           'latticeExtra', 'data.table', 
-       'rgdal', 'rgeos',          'gdalUtils', 'rmaxent',      'readr',        'dplyr',        'tidyr',
-       'readr', 'rnaturalearth',  'rasterVis', 'RColorBrewer', 'latticeExtra', 'parallel')
-
-
-## Require packages
-sapply(p, require, character.only = TRUE)
-load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1601_2018.RData")
-load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_1601_2018.RData")
-load("./data/base/HIA_LIST/COMBO/COMBO_CLEAN_TEST.RData")
+#load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1601_2018.RData")
+#load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_1601_2018.RData")
+load("./data/base/HIA_LIST/COMBO/COMBO_GBIF_TRUE_TEST_SPP.RData")
 
 source('./R/GREEN_CITIES_FUNCTIONS.R')
 source('./R/MAXENT_FUNCTIONS.R')
@@ -40,8 +20,7 @@ source('./R/HIA_LIST_MATCHING.R')
 ## Need to clean this up...
 dim(COMBO.RASTER.CONTEXT)    
 names(COMBO.RASTER.CONTEXT)
-dim(GBIF.TRUE)
-#COMBO.RASTER.CONTEXT = GBIF.TRUE
+
 
 
 
@@ -179,13 +158,14 @@ str(SDM.DATA.ALL)
 
 
 ## Save big tables to keep memory spare
+dim(SDM.DATA.ALL)
 save(template.raster, file = paste("./data/base/HIA_LIST/COMBO/SDM_TEMPLATE_RASTER.RData"))
 #save(SDM.DATA.ALL,    file = paste("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_ALL_VAR.RData"))
-save(SDM.DATA.ALL,    file = paste("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_TEST_CLEAN.RData"))
+save(SDM.DATA.ALL,    file = paste("./data/base/HIA_LIST/COMBO/SDM_DATA_TEST_CLEAN.RData"))
 
 ## Remove the other data
-rm(COMBO.RASTER.ALL)
-rm(COMBO.RASTER.SPLIT.ALL)
+# rm(COMBO.RASTER.ALL)
+# rm(COMBO.RASTER.SPLIT.ALL)
 save.image("STEP_6_PREPARE_SDM.RData")
 
 

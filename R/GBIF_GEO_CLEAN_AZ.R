@@ -14,6 +14,8 @@
 # library(speciesgeocodeR)
 # library(CoordinateCleaner)
 load("GEO_CLEAN_EG.RData")
+load("COMBO_RASTER_CONTEXT_1601_2018.RData")
+
 
 ## load a buffered coastline
 load("./data/base/CONTEXTUAL/buffland_1deg.rda")
@@ -22,14 +24,20 @@ projection(buffland)
 plot(buffland)  ## Raster extract will get rid of these anyway... 
 
 
+##
+GBIF.TRIM.TEST  = COMBO.RASTER.CONTEXT[COMBO.RASTER.CONTEXT$searchTaxon %in% kop.spp, ]
+dim(GBIF.TRIM.TEST)
+
+
 ## Quickly check the data
+GBIF.TRIM.TEST$TAXON = as.character(GBIF.TRIM.TEST$TAXON)
 dim(GBIF.TRIM.TEST)
 names(GBIF.TRIM.TEST)
 unique(GBIF.TRIM.TEST$TAXON)
 
 
 ## Do an example species
-GBIF.TRIM.TEST = subset(GBIF.TRIM.TEST, TAXON == "Ficus brachypoda")
+#GBIF.TRIM.TEST = subset(GBIF.TRIM.TEST, TAXON == "Ficus brachypoda")
 dim(GBIF.TRIM.TEST)
 unique(GBIF.TRIM.TEST$TAXON)
 
@@ -41,13 +49,13 @@ GBIF.TRIM.GEO = dplyr::rename(GBIF.TRIM.TEST, identifier = TAXON,
 
 
 ## Perform some simple test for coordinate validity. Each argument of GeoClean represents one test, 
-## see ?GeoClean for details. Creates a GeoClean table with columms for each data check
+## See ?GeoClean for details. Creates a GeoClean table with columms for each data check
 tt.long <- GeoClean(GBIF.TRIM.GEO, isna = TRUE, isnumeric = TRUE, coordinatevalidity = TRUE,
                     containszero = TRUE, zerozero = TRUE, zerozerothresh = 1, 
                     latequallong = TRUE, outp = "detailed")
 
 
-## AZ Now all records pass, you seem to have some high quality data... 
+## AZ :: now all records pass, you seem to have some high quality data... 
 mean(tt.long$summary) 
 
 
@@ -87,8 +95,8 @@ plot(tt.long)
 ## You might want to consider some tweaking of the mltpl paramters
 ## Why is the length of the value vector less than the 
 ?cc_outl
-GBIF.CLEAN    <- cc_outl(GBIF.TRIM.GEO, value = "clean")
-GBIF.SPAT.OUT <- cc_outl(GBIF.TRIM.GEO, value = "flags")
+GBIF.CLEAN    <- cc_outl(GBIF.TRIM.GEO, value = "clean", mltpl = 6)
+GBIF.SPAT.OUT <- cc_outl(GBIF.TRIM.GEO, value = "flags", mltpl = 6)
 
 
 ## Check the output ::

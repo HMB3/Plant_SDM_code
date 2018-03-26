@@ -22,12 +22,12 @@
 #########################################################################################################################
 ## Load packages, functions and data
 #load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData")
-load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")
+#load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")
 load("./data/base/HIA_LIST/COMBO/SDM_TEMPLATE_RASTER.RData")
 
-#load("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_ALL_VAR.RData")
+load("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_ALL_VAR.RData")
 #load("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_TEST_SPP.RData")
-load("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_TEST_CLEAN.RData")
+#load("./data/base/HIA_LIST/COMBO/SDM_DATA_TEST_CLEAN.RData")
 
 source('./R/HIA_LIST_MATCHING.R')
 source('./R/MAXENT_FUNCTIONS.R')
@@ -39,7 +39,7 @@ dim(SDM.DATA.ALL)
 length(unique(SDM.DATA.ALL$searchTaxon))
 
 
-## What resolution is the template raster at?
+## What resolution is the template raster at? This will affect the density sampling...
 xres(template.raster);yres(template.raster)
 
 
@@ -94,7 +94,7 @@ lapply(kop.spp, function(spp) { # for serial, parLapply(cl, species[1:8], functi
                  bg                      = background, 
                  sdm.predictors          = sdm.select, 
                  name                    = spp, 
-                 outdir                  = 'output/maxent/SET_VAR_CLEAN', 
+                 outdir                  = 'output/maxent/SET_VAR_TEST', 
                  template.raster,
                  min_n                   = 20,   ## This should be higher...
                  max_bg_size             = 100000, ## need a min bg size?
