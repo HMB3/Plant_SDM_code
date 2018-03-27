@@ -10,7 +10,7 @@
 ## MAXENT FUNCTIONS
 #########################################################################################################################
 
-## Arguments to run maxent line by line
+# # Arguments to run maxent line by line
 # occ                     = occurrence
 # bg                      = background
 # sdm.predictors          = sdm.predictors

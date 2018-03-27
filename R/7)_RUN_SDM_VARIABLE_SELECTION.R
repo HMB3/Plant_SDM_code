@@ -70,7 +70,7 @@ sdm.select     <- c("Annual_mean_temp", "Temp_seasonality",    "Max_temp_warm_mo
 ## Add kernel density to reduce the bias, and add minimum bg size...
 
 
-## spp = kop.spp[6]
+## spp = kop.spp[8]
 ## Run without cluster
 lapply(kop.spp, function(spp) { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel 
   
@@ -94,7 +94,7 @@ lapply(kop.spp, function(spp) { # for serial, parLapply(cl, species[1:8], functi
                  bg                      = background, 
                  sdm.predictors          = sdm.select, 
                  name                    = spp, 
-                 outdir                  = 'output/maxent/SET_VAR_TEST', 
+                 outdir                  = 'output/maxent/SET_VAR_DENSITY', 
                  template.raster,
                  min_n                   = 20,   ## This should be higher...
                  max_bg_size             = 100000, ## need a min bg size?

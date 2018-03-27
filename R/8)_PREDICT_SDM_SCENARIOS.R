@@ -115,7 +115,7 @@ for(i in 1:11) {
 # aus        = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds")
 # LAND       = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LAND_world.rds")
 # areal_unit = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/SUA.rds")
-
+# urban      = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/urbanareas.rda")
 
 #########################################################################################################################
 ## Name the environmental grids to be used in the mapping code :: this is all 19, because we are using the directory structure
@@ -148,7 +148,7 @@ grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',   
 env.grids.2030 = tryCatch(project_maxent_grids(scen_list     = scen_2030,
                                                species_list  = kop_spp,
                                                time_slice    = 30,
-                                               maxent_path   = "./output/maxent/SET_VAR_GBIF",
+                                               maxent_path   = "./output/maxent/SET_VAR_TEST",
                                                climate_path  = "./data/base/worldclim/aus/0.5/bio",
                                                grid_names    = grid.names,
                                                current_grids = env.grids.current),

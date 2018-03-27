@@ -87,12 +87,21 @@ names(COMBO.RASTER.CONTEXT)
 #########################################################################################################################
 
 
-## Create an empty raster with the desired properties, using raster(raster(x))
-#template.raster <- raster(raster("./data/base/worldclim/world/0.5/bio/current/bio_01"))
-template.raster <- raster(raster("./data/base/worldclim/world/0.5/bio/current/bio_01")) %>% 
-  projectRaster(res = 1000, crs = CRS('+init=ESRI:54009'))       ## res = 1000
+## Use GDAL to create a raster which = 1 where bio_01 has data (i.e. land), and NA where there is no data
+template.raster <- gdalwarp("data/base/worldclim/world/0.5/bio/current/bio_01", 
+                            tempfile(fileext = '.tif'), 
+                            t_srs = '+proj=moll +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs',
+                            output_Raster = TRUE, 
+                            tr = c(1000, 1000),
+                            r = "near", dstnodata = '-9999')
 
+## Asign all the cells to be NA
+template.raster <- !is.na(template.raster)
+writeRaster(template.raster, 'data/template_hasData.tif', datatype='INT2S')
+template_cells <- Which(template.raster==1, cells=TRUE)
+saveRDS(template_cells, 'data/hasData_cells.rds')
 
+## Then multiply 
 #########################################################################################################################
 ## Just get the columns needed for modelling: this would include cultivated/non, and inside/outside
 ## Get an ID column here too, and use it to join back on the other columns to the unique cells data
@@ -167,9 +176,6 @@ save(SDM.DATA.ALL,    file = paste("./data/base/HIA_LIST/COMBO/SDM_DATA_TEST_CLE
 # rm(COMBO.RASTER.ALL)
 # rm(COMBO.RASTER.SPLIT.ALL)
 save.image("STEP_6_PREPARE_SDM.RData")
-
-
-
 
 
 #########################################################################################################################

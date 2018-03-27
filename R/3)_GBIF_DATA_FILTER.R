@@ -56,7 +56,7 @@ GBIF.TRIM <- GBIF.TRIM %>%
 #########################################################################################################################
 ## Now create a column for the agreement between the new genus and the old genus
 ## First, trim the spaces out
-GBIF.TRIM$searchTaxon  = trim.space(GBIF.TRIM$searchTaxon)
+GBIF.TRIM$searchTaxon  = trimws(GBIF.TRIM$searchTaxon)
 
 
 ## Then combine the genus and species returned by TPL into
@@ -68,7 +68,7 @@ GBIF.TRIM$taxo_agree <- ifelse(
   GBIF.TRIM$searchTaxon == GBIF.TRIM$TPL_binomial, TRUE, FALSE)
 
 
-## Also keep the managed records:
+## Also keep the unresolved records:
 GBIF.UNRESOLVED <- GBIF.TRIM %>% 
   
   ## Note that these filters are very forgiving...
@@ -367,8 +367,8 @@ save.image("STEP_3_GBIF_CLEAN.RData")
 #load("STEP_3_GBIF_CLEAN.RData")
 
 
-## Check that the new species are there
-setdiff(RISK.BINOMIAL.CLEAN$Plant_name, GBIF.TRIM.TAXO$searchTaxon) 
+## 196 species from the risk list are missing...presumably due to inusfficient data
+length(setdiff(RISK.BINOMIAL.CLEAN$Plant_name, GBIF.TRIM.TAXO$searchTaxon)) 
 
 
 
