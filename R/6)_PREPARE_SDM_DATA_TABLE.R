@@ -98,10 +98,57 @@ template.raster <- gdalwarp("data/base/worldclim/world/0.5/bio/current/bio_01",
 ## Asign all the cells to be NA
 template.raster <- !is.na(template.raster)
 writeRaster(template.raster, 'data/template_hasData.tif', datatype='INT2S')
-template_cells <- Which(template.raster==1, cells=TRUE)
+template_cells <- Which
+
+## Save 
 saveRDS(template_cells, 'data/hasData_cells.rds')
 
-## Then multiply 
+
+#########################################################################################################################
+## Create a raster stack of just the analysis variables in the correct projected coordinate system
+pred_names <- c(
+  'Annual_mean_temp',   ## To select a column with the cursor, hold ctrl+alt and use up or down arrow
+  'Mean_diurnal_range',
+  'Isothermality',
+  'Temp_seasonality', 
+  'Max_temp_warm_month', 
+  'Min_temp_cold_month', 
+  'Temp_annual_range',
+  'Mean_temp_wet_qu', 
+  'Mean_temp_dry_qu', 
+  'Mean_temp_warm_qu',
+  'Mean_temp_cold_qu',
+  'Annual_precip', 
+  'Precip_wet_month', 
+  'Precip_dry_month', 
+  'Precip_seasonality', 
+  'Precip_wet_qu', 
+  'Precip_dry_qu', 
+  'Precip_warm_qu', 
+  'Precip_col_qu') 
+
+
+## Create new files in the 1km directory 
+i  <- match(sdm.select, pred_names)
+ff <- file.path('./data/base/worldclim/world/0.5/bio/current',
+                sprintf('bio_%02d', i))
+dir.create(dirname(sub('0.5', '1km', ff)[1]), recursive = TRUE)
+
+
+## Run a loop to project just the variables we will use
+lapply(ff, function(f) {
+  message(f)
+  gdalwarp(f, sub('0.5', '1km', f), tr = c(1000, 1000),
+           t_srs = '+init=esri:54009', r = 'bilinear', 
+           multi = TRUE)
+})
+
+
+## Create a raster stack of the projected grids
+env.grids.current = stack(sub('0.5', '1km', ff))
+names(env.grids.current) <- pred_names[i]
+
+
 #########################################################################################################################
 ## Just get the columns needed for modelling: this would include cultivated/non, and inside/outside
 ## Get an ID column here too, and use it to join back on the other columns to the unique cells data

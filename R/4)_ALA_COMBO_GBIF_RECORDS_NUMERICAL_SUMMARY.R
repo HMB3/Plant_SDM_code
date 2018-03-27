@@ -22,6 +22,10 @@ load("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.RData")
 load("./data/base/HIA_LIST/ALA/ALA_LAND_POINTS.RData")
 
 
+## 196 species from the risk list are missing...presumably due to inusfficient data
+length(setdiff(RISK.BINOMIAL.CLEAN$Plant_name, GBIF.LAND$searchTaxon))
+
+
 #########################################################################################################################
 ## 1). MERGE GBIF DATA WITH CLEANED AVH/ALA RECORDS
 #########################################################################################################################
@@ -186,16 +190,19 @@ env.grids.current = stack(
             sprintf('bio_%02d', 1:19)))
 
 
-## Can we resample the rasters to 10km?
-BIOW_10km = raster("./data/base/worldclim/world/0.5/bio/current/bio_01_10km.tif")
-BIOA_10km = raster("./data/base/worldclim/aus/0.5/bio/current/bio_aus_01_10km.tif")
+## Here, we should project all datasets into the final system used by maxent (World Mollweide https://epsg.io/54009)
+## Using step 6...
 
-
-## Use bilinear?
-test          = resample(env.grids.current, BIOW_10km, method = 'bilinear')
-raster_path   = "./data/base/worldclim/aus/0.5/bio/current/"
-current_10km  <- sprintf('%scurrent_env_10km.tif', raster_path)
-writeRaster(test, current_10km , overwrite = TRUE)
+# ## Can we resample the rasters to 10km?
+# BIOW_10km = raster("./data/base/worldclim/world/0.5/bio/current/bio_01_10km.tif")
+# BIOA_10km = raster("./data/base/worldclim/aus/0.5/bio/current/bio_aus_01_10km.tif")
+# 
+# 
+# ## Use bilinear?
+# test          = resample(env.grids.current, BIOW_10km, method = 'bilinear')
+# raster_path   = "./data/base/worldclim/aus/0.5/bio/current/"
+# current_10km  <- sprintf('%scurrent_env_10km.tif', raster_path)
+# writeRaster(test, current_10km , overwrite = TRUE)
 
 
 #########################################################################################################################
@@ -582,7 +589,7 @@ missing.25     = setdiff(unique(HIA.SPP.JOIN[ which(HIA.SPP.JOIN$Number.of.growe
                          unique(COMBO.NICHE.CONTEXT[ which(COMBO.NICHE.CONTEXT$Number.of.growers >= 25), ][["searchTaxon"]]))
 
 
-## Same as for 
+## Same as for
 missing.all    = setdiff(unique(HIA.SPP.JOIN[["searchTaxon"]]),
                          unique(COMBO.NICHE.CONTEXT[["searchTaxon"]]))
 
@@ -620,9 +627,9 @@ COMBO.RASTER.CONTEXT.UPDTATE = bind_rows(COMBO.RASTER.CONTEXT, COMBO.RASTER.CONT
 
 ## Save the summary datasets
 save(missing.taxa,         file = paste("./data/base/HIA_LIST/COMBO/MISSING_TAXA.RData",                   sep = ""))
-save(COMBO.RASTER.CONTEXT, file = paste("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_1601_2018.RData", sep = ""))
-save(COMBO.NICHE.CONTEXT,  file = paste("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1601_2018.RData",  sep = ""))
-write.csv(COMBO.NICHE.CONTEXT, "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1601_2018.csv",       row.names = FALSE)
+save(COMBO.RASTER.CONTEXT, file = paste("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_2703_2018.RData", sep = ""))
+save(COMBO.NICHE.CONTEXT,  file = paste("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_2703_2018.RData",  sep = ""))
+write.csv(COMBO.NICHE.CONTEXT, "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_2703_2018.csv",       row.names = FALSE)
 
 
 ## Now save .RData file for the next session...
