@@ -122,9 +122,6 @@ saveRDS(GBIF.ALA.COMBO.HIA, file = paste("./data/base/HIA_LIST/COMBO/GBIF_ALA_CO
 #########################################################################################################################
 
 
-## ........................
-
-
 #########################################################################################################################
 ## Create points: consider changing the coordinate system here to a global projected system?
 COMBO.POINTS   = SpatialPointsDataFrame(coords      = GBIF.ALA.COMBO.HIA[c("lon", "lat")], 
@@ -135,9 +132,6 @@ COMBO.POINTS   = SpatialPointsDataFrame(coords      = GBIF.ALA.COMBO.HIA[c("lon"
 
 ## Check
 dim(COMBO.POINTS)
-
-
-
 
 
 #########################################################################################################################
@@ -169,8 +163,8 @@ dim(COMBO.POINTS)
 # BIO2  = Mean Diurnal Range (Mean of monthly (max temp - min temp))  ##
 # BIO3  = Isothermality (BIO2/BIO7) (* 100)
 # BIO4  = Temperature Seasonality (standard deviation *100)           ##
-# BIO5  = Max Temperature of Warmest Month                            ## Take out max of max
-# BIO6  = Min Temperature of Coldest Month                            ## Take out min of min, use threshold variables 
+# BIO5  = Max Temperature of Warmest Month                            ## 
+# BIO6  = Min Temperature of Coldest Month                            ## 
 # BIO7  = Temperature Annual Range (BIO5-BIO6)
 # BIO8  = Mean Temperature of Wettest Quarter
 # BIO9  = Mean Temperature of Driest Quarter
@@ -192,7 +186,11 @@ dim(COMBO.POINTS)
 #   file.path('./data/base/worldclim/world/0.5/bio/current',
 #             sprintf('bio_%02d', 1:19)))
 
-##
+
+## Change the directories in the maxent mapping function to 1km...........................................................
+
+
+## These are the variables we will use for the SDMs
 sdm.select <- c("Annual_mean_temp",   "Temp_seasonality",   "Max_temp_warm_month", "Min_temp_cold_month",
                 "Annual_precip",      "Precip_seasonality", "Precip_wet_month",    "Precip_dry_month")
 
@@ -220,19 +218,76 @@ pred_names <- c(
   'Precip_col_qu') 
 
 
-## Create new files in the 1km directory 
+## Create an index for each name 
 i  <- match(pred_names, pred_names)
-ff <- file.path('./data/base/worldclim/world/0.5/bio/current',
-                sprintf('bio_%02d', i))
-dir.create(dirname(sub('0.5', '1km', ff)[1]), recursive = TRUE)
 
 
-## Run a loop to warp worldclim variables into a projected system
-lapply(ff, function(f) {
+## Create file paths using existing files, these will be projected
+ff_current <- file.path('./data/base/worldclim/world/0.5/bio/current', sprintf('bio_%02d.tif', i))
+ff_2030    <- file.path('./data/base/worldclim/aus/0.5/bio/2030',      sprintf('bio_%02d.tif', i))
+ff_2050    <- file.path('./data/base/worldclim/aus/0.5/bio/2050',      sprintf('bio_%02d.tif', i))
+ff_2070    <- file.path('./data/base/worldclim/aus/0.5/bio/2070',      sprintf('bio_%02d.tif', i))
+
+
+## Create directories for the projected files :: 1km 
+dir.create(dirname(sub('0.5', '1km', ff_current)[1]), recursive = TRUE)
+dir.create(dirname(sub('0.5', '1km', ff_2030)[1]),    recursive = TRUE)
+dir.create(dirname(sub('0.5', '1km', ff_2050)[1]),    recursive = TRUE)
+dir.create(dirname(sub('0.5', '1km', ff_2070)[1]),    recursive = TRUE)
+
+
+## Run a loop to warp the worldclim variables into the World Mollweide projected system, saving in the 1km folder
+lapply(ff_current, function(f) {
+  
   message(f)
   gdalwarp(f, sub('0.5', '1km', f), tr = c(1000, 1000),
            t_srs = '+init=esri:54009', r = 'bilinear', 
            multi = TRUE)
+  
+})
+
+
+## Run a loop to warp the worldclim variables into the World Mollweide projected system, saving in the 1km folder
+lapply(ff_current, function(f) {
+  
+  message(f)
+  gdalwarp(f, sub('0.5', '1km', f), tr = c(1000, 1000),
+           t_srs = '+init=esri:54009', r = 'bilinear', 
+           multi = TRUE)
+  
+})
+
+
+## Run a loop to warp the worldclim variables into the World Mollweide projected system, saving in the 1km folder
+lapply(ff_2030, function(f) {
+  
+  message(f)
+  gdalwarp(f, sub('0.5', '1km', f), tr = c(1000, 1000),
+           t_srs = '+init=esri:54009', r = 'bilinear', 
+           multi = TRUE)
+  
+})
+
+
+## Run a loop to warp the worldclim variables into the World Mollweide projected system, saving in the 1km folder
+lapply(ff_2050, function(f) {
+  
+  message(f)
+  gdalwarp(f, sub('0.5', '1km', f), tr = c(1000, 1000),
+           t_srs = '+init=esri:54009', r = 'bilinear', 
+           multi = TRUE)
+  
+})
+
+
+## Run a loop to warp the worldclim variables into the World Mollweide projected system, saving in the 1km folder
+lapply(ff_2070, function(f) {
+  
+  message(f)
+  gdalwarp(f, sub('0.5', '1km', f), tr = c(1000, 1000),
+           t_srs = '+init=esri:54009', r = 'bilinear', 
+           multi = TRUE)
+  
 })
 
 

@@ -900,13 +900,9 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
   ## How can the shapefiles be read in once, not for each species?...................................................
   
   ###################################################################################################################
-  ## Create Australia shapefile
+  ## Read in shapefiles :: this should be done outside the loop
   aus        = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds")
-  
-  ## Create world shapefile
   LAND       = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LAND_world.rds")
-  
-  ## Create SUA shapefile, and sort the attribute table so that it matches the list
   areal_unit = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/SUA.rds")
   areal_unit = areal_unit[order(areal_unit$SUA_NAME11),]
   

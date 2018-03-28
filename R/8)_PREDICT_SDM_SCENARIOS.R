@@ -142,6 +142,10 @@ grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',   
 #########################################################################################################################
 
 
+## Change climate paths to match the projected Mollweide system rasters in the 1km directories...........................
+## Also warp the shapefiles into the same system.........................................................................
+
+
 #########################################################################################################################
 ## For each species, use a function to create raster files and maps under all six GCMs at each time step
 ## 2030
