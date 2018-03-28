@@ -25,7 +25,7 @@ load("./data/base/HIA_LIST/COMBO/GBIF_TRIM_LATEST.RData")
 
 
 #########################################################################################################################
-## 1). CHECK TAXONOMY RETURNED BY GBIF
+## 1). CHECK TAXONOMY RETURNED BY GBIF USING TAXONSTAND
 ######################################################################################################################### 
 
 
@@ -45,7 +45,6 @@ sort(names(GBIF.TAXO))
 ## Then join the GBIF data to the taxonomic check, using "scientificName" as the join field... 
 GBIF.TRIM <- GBIF.TRIM %>%
   left_join(., GBIF.TAXO, by = c("scientificName" = "Taxon"))
-#names(GBIF.TRIM)
 
 
 ## So we can filter by the agreement between "scientificName", and "New.Taxonomic.status"?
@@ -63,7 +62,7 @@ GBIF.TRIM$searchTaxon  = trimws(GBIF.TRIM$searchTaxon)
 GBIF.TRIM$TPL_binomial  = with(GBIF.TRIM, paste(New.Genus, New.Species, sep = " "))
 
 
-## Now match the searchTaxon with the binomial returned by TPL
+## Now match the searchTaxon with the binomial returned by TPL :: this would be the best field to filter on
 GBIF.TRIM$taxo_agree <- ifelse(
   GBIF.TRIM$searchTaxon == GBIF.TRIM$TPL_binomial, TRUE, FALSE)
 
@@ -82,7 +81,7 @@ GBIF.UNRESOLVED <- GBIF.TRIM %>%
 
 
 ## Unique(GBIF.UNRESOLVED$New.Taxonomic.status)
-save(GBIF.UNRESOLVED, file = paste("./data/base/HIA_LIST/GBIF/GBIF_UNRESOLVED.RData"))
+saveRDS(GBIF.UNRESOLVED, file = paste("./data/base/HIA_LIST/GBIF/GBIF_UNRESOLVED.rds"))
 
 
 ## Just keep these columns:
@@ -93,8 +92,8 @@ GBIF.TRIM.TAXO <- GBIF.TRIM %>%
 
 
 ## Unique(GBIF.UNRESOLVED$New.Taxonomic.status)
-save(GBIF.TAXO,       file = paste("./data/base/HIA_LIST/GBIF/GBIF_TAXO.RData"))
-save(GBIF.TRIM.TAXO,  file = paste("./data/base/HIA_LIST/GBIF/GBIF_TRIM_TAXO.RData"))
+saveRDS(GBIF.TAXO,       file = paste("./data/base/HIA_LIST/GBIF/GBIF_TAXO.rds"))
+saveRDS(GBIF.TRIM.TAXO,  file = paste("./data/base/HIA_LIST/GBIF/GBIF_TRIM_TAXO.rds"))
 
 
 
@@ -161,7 +160,7 @@ GBIF.CULTIVATED <- GBIF.TRIM.TAXO %>%
 # dim(GBIF.CULTIVATED)
 # names(GBIF.CULTIVATED)
 # unique(GBIF.CULTIVATED$CULTIVATED)
-save(GBIF.CULTIVATED, file = paste("./data/base/HIA_LIST/GBIF/GBIF_CULTIVATED.RData"))
+saveRDS(GBIF.CULTIVATED, file = paste("./data/base/HIA_LIST/GBIF/GBIF_CULTIVATED.rds"))
 
 
 
@@ -358,11 +357,11 @@ gc()
 
 #########################################################################################################################
 ## save data
-save(GBIF.LAND, file = paste("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.RData"))
+saveRDS(GBIF.LAND, file = paste("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.rds"))
 gc()
 
 
-## Now save .RData file for the next session
+## Now save .rds file for the next session
 save.image("STEP_3_GBIF_CLEAN.RData")
 #load("STEP_3_GBIF_CLEAN.RData")
 
@@ -381,7 +380,7 @@ length(setdiff(RISK.BINOMIAL.CLEAN$Plant_name, GBIF.TRIM.TAXO$searchTaxon))
 
 ## Estimate native/naturalised ranges as a separate colum         - APC data + Ubran polygons for AUS, USA, EU: only a subset
 
-## GBIF taxonomic errors                                          - Use taxonstand
+## GBIF taxonomic errors                                          - Use TPL
 
 ## Keep cultivated records as a separate column/file              - Get cultivated column from ALA data...
 

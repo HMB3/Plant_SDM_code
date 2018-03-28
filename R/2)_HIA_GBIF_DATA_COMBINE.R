@@ -131,7 +131,7 @@ setdiff(RISK.BINOMIAL, GBIF.TRIM$searchTaxon)
 
 
 ## Remove working dataframes from memory
-save(GBIF.TRIM, file = paste("./data/base/HIA_LIST/COMBO/GBIF_TRIM_LATEST.RData")) ##
+saveRDS(GBIF.TRIM, file = paste("./data/base/HIA_LIST/COMBO/GBIF_TRIM_LATEST.rds")) ##
 
 
 ## Now save .RData file for the next session

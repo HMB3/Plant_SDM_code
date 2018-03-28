@@ -8,9 +8,9 @@
 ## SDM analysis
 
 
-#load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1601_2018.RData")
-#load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_1601_2018.RData")
-load("./data/base/HIA_LIST/COMBO/COMBO_GBIF_TRUE_TEST_SPP.RData")
+#load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_2703_2018.RData")
+#load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_2703_2018.RData")
+#load("./data/base/HIA_LIST/COMBO/COMBO_GBIF_TRUE_TEST_SPP.RData")
 
 source('./R/GREEN_CITIES_FUNCTIONS.R')
 source('./R/MAXENT_FUNCTIONS.R')
@@ -77,8 +77,8 @@ names(COMBO.RASTER.CONTEXT)
 ## Extremes (e.g. most extreme months)
 
 
-# sdm.select <- c("Annual_mean_temp",   "Temp_seasonality",   "Max_temp_warm_month", "Min_temp_cold_month", 
-#                 "Annual_precip",      "Precip_seasonality", "Precip_wet_month",    "Precip_dry_month")
+sdm.select <- c("Annual_mean_temp",   "Temp_seasonality",   "Max_temp_warm_month", "Min_temp_cold_month",
+                "Annual_precip",      "Precip_seasonality", "Precip_wet_month",    "Precip_dry_month")
 
 
 
@@ -88,6 +88,7 @@ names(COMBO.RASTER.CONTEXT)
 
 
 ## Use GDAL to create a raster which = 1 where bio_01 has data (i.e. land), and NA where there is no data
+## Also note that gdalwarp is much faster, and the trs ='+init=esri:54009' argument does not work here
 template.raster <- gdalwarp("data/base/worldclim/world/0.5/bio/current/bio_01", 
                             tempfile(fileext = '.tif'), 
                             t_srs = '+proj=moll +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs',
@@ -99,6 +100,7 @@ template.raster <- gdalwarp("data/base/worldclim/world/0.5/bio/current/bio_01",
 template.raster <- !is.na(template.raster)
 writeRaster(template.raster, 'data/template_hasData.tif', datatype='INT2S')
 template_cells <- Which
+
 
 ## Save 
 saveRDS(template_cells, 'data/hasData_cells.rds')

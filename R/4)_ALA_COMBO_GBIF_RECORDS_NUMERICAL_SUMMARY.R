@@ -4,15 +4,17 @@
 
 
 #########################################################################################################################
-## This code combines the GBIF records for all species with the ALA data into a single table, and adds contextual info  
+## This code combines the GBIF records for all species with the ALA data into a single table, extracts environmental 
+## values and final adds contextual info for each record (taxonomic and horticultural) 
 
 
 ## It creates two tables:
 
-## 1). A table with one row for each species record
-## 2). A table with one row for each species, including contextual data and species attributes (niches, traits, etc.)
+## 1). A large table with one row for each species record
+## 2). A smaller table with one row for each species, including contextual data and species attributes (niches, traits, etc.)
  
-## These tables are used to estimate the current global realised niche/climatic tolerance using the best available data 
+## These tables are subsequently used to estimate the current global realised niche/climatic tolerance using the best 
+## available data, and susequently model the niches using the maxent algorithm.  
 
 
 #########################################################################################################################
@@ -112,7 +114,7 @@ names(GBIF.ALA.COMBO.HIA)
 
 
 ## Now move this out to a separet file, so the cleaning code can be run separately
-save(GBIF.ALA.COMBO.HIA, file = paste("./data/base/HIA_LIST/COMBO/GBIF_ALA_COMBO_PRE_CLEAN.RData"))
+saveRDS(GBIF.ALA.COMBO.HIA, file = paste("./data/base/HIA_LIST/COMBO/GBIF_ALA_COMBO_PRE_CLEAN.RData"))
 
 
 #########################################################################################################################
@@ -127,7 +129,8 @@ save(GBIF.ALA.COMBO.HIA, file = paste("./data/base/HIA_LIST/COMBO/GBIF_ALA_COMBO
 ## Create points: consider changing the coordinate system here to a global projected system?
 COMBO.POINTS   = SpatialPointsDataFrame(coords      = GBIF.ALA.COMBO.HIA[c("lon", "lat")], 
                                         data        = GBIF.ALA.COMBO.HIA[c("lon", "lat")],
-                                        proj4string = CRS("+proj=longlat +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +no_defs"))
+                                        #proj4string = CRS("+proj=longlat +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +no_defs")
+                                        proj4string = CRS('+proj=moll +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs'))
 
 
 ## Check
@@ -154,7 +157,7 @@ dim(COMBO.POINTS)
 
 
 #########################################################################################################################
-## 2). EXTRACT ALL WORLDCLIM DATA FOR SPECIES RECORDS
+## 2). PROJECT RASTERS AND EXTRACT ALL WORLDCLIM DATA FOR SPECIES RECORDS
 #########################################################################################################################
 
 
@@ -184,10 +187,58 @@ dim(COMBO.POINTS)
 
 
 #########################################################################################################################
-## Create a stack of rasters to sample: get all the World clim variables just for good measure
-env.grids.current = stack(
-  file.path('./data/base/worldclim/world/0.5/bio/current',
-            sprintf('bio_%02d', 1:19)))
+## Create a stack of rasters to sample: get all the Worldclim variables just for good measure
+# env.grids.current = stack(
+#   file.path('./data/base/worldclim/world/0.5/bio/current',
+#             sprintf('bio_%02d', 1:19)))
+
+##
+sdm.select <- c("Annual_mean_temp",   "Temp_seasonality",   "Max_temp_warm_month", "Min_temp_cold_month",
+                "Annual_precip",      "Precip_seasonality", "Precip_wet_month",    "Precip_dry_month")
+
+
+## Create names for all 19 predictors
+pred_names <- c(
+  'Annual_mean_temp',   ## To select a column with the cursor, hold ctrl+alt and use up or down arrow
+  'Mean_diurnal_range',
+  'Isothermality',
+  'Temp_seasonality', 
+  'Max_temp_warm_month', 
+  'Min_temp_cold_month', 
+  'Temp_annual_range',
+  'Mean_temp_wet_qu', 
+  'Mean_temp_dry_qu', 
+  'Mean_temp_warm_qu',
+  'Mean_temp_cold_qu',
+  'Annual_precip', 
+  'Precip_wet_month', 
+  'Precip_dry_month', 
+  'Precip_seasonality', 
+  'Precip_wet_qu', 
+  'Precip_dry_qu', 
+  'Precip_warm_qu', 
+  'Precip_col_qu') 
+
+
+## Create new files in the 1km directory 
+i  <- match(pred_names, pred_names)
+ff <- file.path('./data/base/worldclim/world/0.5/bio/current',
+                sprintf('bio_%02d', i))
+dir.create(dirname(sub('0.5', '1km', ff)[1]), recursive = TRUE)
+
+
+## Run a loop to warp worldclim variables into a projected system
+lapply(ff, function(f) {
+  message(f)
+  gdalwarp(f, sub('0.5', '1km', f), tr = c(1000, 1000),
+           t_srs = '+init=esri:54009', r = 'bilinear', 
+           multi = TRUE)
+})
+
+
+## Create a raster stack of the projected grids
+env.grids.current = stack(sub('0.5', '1km', ff))
+names(env.grids.current) <- pred_names[i]
 
 
 ## Here, we should project all datasets into the final system used by maxent (World Mollweide https://epsg.io/54009)
@@ -226,37 +277,36 @@ COMBO.RASTER <- extract(env.grids.current, COMBO.POINTS) %>%
   cbind(GBIF.ALA.COMBO.HIA, .)
 
 
-## Check taxa again
-'Swainsona formosa'  %in% COMBO.RASTER$searchTaxon
+#'Swainsona formosa'  %in% COMBO.RASTER$searchTaxon
 
 
 ## Multiple rename using dplyr
-COMBO.RASTER = dplyr::rename(COMBO.RASTER,
-                             Annual_mean_temp     = bio_01, 
-                             Mean_diurnal_range   = bio_02,
-                             Isothermality        = bio_03,
-                             Temp_seasonality     = bio_04, 
-                             Max_temp_warm_month  = bio_05, 
-                             Min_temp_cold_month  = bio_06, 
-                             Temp_annual_range    = bio_07,
-                             Mean_temp_wet_qu     = bio_08, ## remove
-                             Mean_temp_dry_qu     = bio_09, ## remove
-                             Mean_temp_warm_qu    = bio_10,
-                             Mean_temp_cold_qu    = bio_11,
-                             
-                             Annual_precip        = bio_12, 
-                             Precip_wet_month     = bio_13, 
-                             Precip_dry_month     = bio_14, 
-                             Precip_seasonality   = bio_15, 
-                             Precip_wet_qu        = bio_16, 
-                             Precip_dry_qu        = bio_17, 
-                             Precip_warm_qu       = bio_18, ## remove
-                             Precip_col_qu        = bio_19) ## remove
+# COMBO.RASTER = dplyr::rename(COMBO.RASTER,
+#                              Annual_mean_temp     = bio_01, 
+#                              Mean_diurnal_range   = bio_02,
+#                              Isothermality        = bio_03,
+#                              Temp_seasonality     = bio_04, 
+#                              Max_temp_warm_month  = bio_05, 
+#                              Min_temp_cold_month  = bio_06, 
+#                              Temp_annual_range    = bio_07,
+#                              Mean_temp_wet_qu     = bio_08, 
+#                              Mean_temp_dry_qu     = bio_09, 
+#                              Mean_temp_warm_qu    = bio_10,
+#                              Mean_temp_cold_qu    = bio_11,
+#                              
+#                              Annual_precip        = bio_12, 
+#                              Precip_wet_month     = bio_13, 
+#                              Precip_dry_month     = bio_14, 
+#                              Precip_seasonality   = bio_15, 
+#                              Precip_wet_qu        = bio_16, 
+#                              Precip_dry_qu        = bio_17, 
+#                              Precip_warm_qu       = bio_18, 
+#                              Precip_col_qu        = bio_19) 
 
 
 ## Save/load
-save(COMBO.RASTER, file = paste("./data/base/HIA_LIST/GBIF/COMBO_GBIF_ALA_RASTER.RData"))
-#load("./data/base/HIA_LIST/GBIF/COMBO_GBIF_ALA_RASTER.RData")
+saveRDS(COMBO.RASTER, file = paste("./data/base/HIA_LIST/GBIF/COMBO_GBIF_ALA_RASTER.rds"))
+#load("./data/base/HIA_LIST/GBIF/COMBO_GBIF_ALA_RASTER.rds")
 #COMBO.RASTER  = COMBO.RASTER[COMBO.RASTER$searchTaxon %in% HIA.SPP$Binomial, ]
 
 
@@ -276,7 +326,8 @@ names(COMBO.RASTER)
 ## We want to know the count of species that occur in 'n' LGAs, across a range of climates. Read in LGA and SUA
 COMBO.RASTER.SP   = SpatialPointsDataFrame(coords      = COMBO.RASTER[c("lon", "lat")], 
                                            data        = COMBO.RASTER,
-                                           proj4string = CRS("+init=epsg:4326"))
+                                           #proj4string = CRS("+init=epsg:4326"),
+                                           proj4string = CRS('+proj=moll +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs'))
 
 SUA      = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/SUA_2011_AUST.shp", layer = "SUA_2011_AUST")
 LGA      = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/LGA_2016_AUST.shp", layer = "LGA_2016_AUST")
@@ -285,14 +336,15 @@ names(SUA)
 names(LGA)
 
 
-## Project
-CRS.new  <- CRS("+init=epsg:4326") # EPSG:3577
+## Project using a projected rather than geographic coordinate system
+#CRS.new  <- CRS("+init=epsg:4326") # EPSG:3577
+CRS.new  <- CRS('+proj=moll +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs')
 LGA.WGS  = spTransform(LGA, CRS.new)
 SUA.WGS  = spTransform(SUA, CRS.new)
 
-projection(COMBO.RASTER.SP)
-projection(LGA.WGS)
-projection(SUA.WGS)
+
+## Double check they are the same
+projection(COMBO.RASTER.SP);projection(LGA.WGS);projection(SUA.WGS)
 
 
 ## Remove the LGA columns we don't need
@@ -341,8 +393,8 @@ head(LGA.AGG)
 
 
 ## Save
-save(COMBO.SUA.LGA, file = paste("./data/base/HIA_LIST/GBIF/COMBO_SUA_LGA.RData"))
-save(LGA.AGG,   file = paste("./data/base/HIA_LIST/GBIF/LGA_AGG.RData"))
+saveRDS(COMBO.SUA.LGA, file = paste("./data/base/HIA_LIST/GBIF/COMBO_SUA_LGA.rds"))
+saveRDS(LGA.AGG,   file = paste("./data/base/HIA_LIST/GBIF/LGA_AGG.rds"))
 
 
 ## 
@@ -361,34 +413,34 @@ COMBO.SUA.LGA = subset(COMBO.SUA.LGA, select = -c(lon.1, lat.1))
 
 #########################################################################################################################
 ## Now summarise the niches. But figure out a cleaner way of doing this
-env.variables = c("Annual_mean_temp",     
-                  "Mean_diurnal_range",   
-                  "Isothermality",        
-                  "Temp_seasonality",     
-                  "Max_temp_warm_month",  
-                  "Min_temp_cold_month",  
-                  "Temp_annual_range",    
-                  "Mean_temp_wet_qu",     
-                  "Mean_temp_dry_qu",     
-                  "Mean_temp_warm_qu",    
-                  "Mean_temp_cold_qu",
-                  
-                  "Annual_precip",        
-                  "Precip_wet_month",     
-                  "Precip_dry_month",     
-                  "Precip_seasonality",   
-                  "Precip_wet_qu",        
-                  "Precip_dry_qu",        
-                  "Precip_warm_qu",       
-                  "Precip_col_qu")
+# env.variables = c("Annual_mean_temp",     
+#                   "Mean_diurnal_range",   
+#                   "Isothermality",        
+#                   "Temp_seasonality",     
+#                   "Max_temp_warm_month",  
+#                   "Min_temp_cold_month",  
+#                   "Temp_annual_range",    
+#                   "Mean_temp_wet_qu",     
+#                   "Mean_temp_dry_qu",     
+#                   "Mean_temp_warm_qu",    
+#                   "Mean_temp_cold_qu",
+#                   
+#                   "Annual_precip",        
+#                   "Precip_wet_month",     
+#                   "Precip_dry_month",     
+#                   "Precip_seasonality",   
+#                   "Precip_wet_qu",        
+#                   "Precip_dry_qu",        
+#                   "Precip_warm_qu",       
+#                   "Precip_col_qu")
 
 
 #########################################################################################################################
 ## Change the raster values here: See http://worldclim.org/formats1 for description of the interger conversion. 
 ## All temperature variables wer multiplied by 10, so divide by 10 to reverse it.
 COMBO.RASTER.CONVERT = as.data.table(COMBO.SUA.LGA)                           ## Check this works, also inefficient
-COMBO.RASTER.CONVERT[, (env.variables[c(1:11)]) := lapply(.SD, function(x) 
-  x / 10 ), .SDcols = env.variables[c(1:11)]]
+COMBO.RASTER.CONVERT[, (pred_names [c(1:11)]) := lapply(.SD, function(x) 
+  x / 10 ), .SDcols = pred_names [c(1:11)]]
 COMBO.RASTER.CONVERT = as.data.frame(COMBO.RASTER.CONVERT)                   ## Find another method without using data.table
 
 
@@ -416,7 +468,7 @@ head(niche_estimate (DF = COMBO.RASTER.CONVERT, colname = "Annual_mean_temp"))  
 
 ## So lets use lapply on the "Search Taxon". Note additonal flags are needed, and the taxonomic lists need to be managed better...
 ## test = run_function_concatenate(list, DF, "DF, colname = x") 
-COMBO.NICHE <- env.variables[c(1:length(env.variables))] %>% 
+COMBO.NICHE <- pred_names[c(1:length(pred_names))] %>% 
   
   ## Pipe the list into lapply
   lapply(function(x) {
@@ -434,7 +486,7 @@ COMBO.NICHE <- env.variables[c(1:length(env.variables))] %>%
   as.data.frame
 
 
-## Remove duplicate Taxon columns and check the output
+## Remove duplicate Taxon columns and check the output :: would be great to skip these columns when running the function
 names(COMBO.NICHE)
 COMBO.NICHE = subset(COMBO.NICHE, select = -c(searchTaxon.1,  searchTaxon.2,  searchTaxon.3,  searchTaxon.4,
                                               searchTaxon.5,  searchTaxon.6,  searchTaxon.7,  searchTaxon.7,
@@ -517,20 +569,20 @@ GBIF.AOO <- spp.geo[c(1:length(spp.geo))] %>%
 
 
 #########################################################################################################################
-## Clean it up. The order of species should be preserved
+## Clean it up :: the order of species should be preserved
 GBIF.AOO = gather(GBIF.AOO)
 str(GBIF.AOO)
-str(unique(GBIF.ALA.COMBO.HIA$searchTaxon))   ## same number of species...
+str(unique(GBIF.ALA.COMBO.HIA$searchTaxon))                     ## same number of species...
 
 
 ## Now join on the GEOGRAPHIC RANGE
-COMBO.NICHE$AREA_OCCUPANCY = GBIF.AOO$value    ## vectors same length so don't need to match
+COMBO.NICHE$AREA_OCCUPANCY = GBIF.AOO$value                     ## vectors same length so don't need to match
 
 
 ## AOO is calculated as the area of all known or predicted cells for the species. The resolution will be 2x2km as 
 ## required by IUCN. A single value in km2.
 ## Add the counts of LGAs for each species in here:
-COMBO.LGA = cbind.data.frame(COMBO.NICHE, LGA.AGG) ## The tapply needs to go where the niche summaries are
+COMBO.LGA = cbind.data.frame(COMBO.NICHE, LGA.AGG)              ## The tapply needs to go where the niche summaries are
 names(COMBO.LGA)
 
 
@@ -559,7 +611,7 @@ COMBO.NICHE.CONTEXT = join(COMBO.LGA, HIA.SPP.JOIN,
 
 ## Changing the order is not needed for the raster data
 #COMBO.RASTER.CONTEXT = COMBO.RASTER.CONTEXT[, c(1:5,  45:57, 6:43)]                                      
-COMBO.NICHE.CONTEXT  = COMBO.NICHE.CONTEXT[,  c(176, 2, 1, 174:175, 177:189, 3:173)]                ## REDO
+#COMBO.NICHE.CONTEXT  = COMBO.NICHE.CONTEXT[,  c(176, 2, 1, 174:175, 177:189, 3:173)]                ## REDO
 
 
 ## Set NA to blank, then sort by no. of growers. The extra species are ones I dowloaded accidentally
@@ -610,25 +662,25 @@ missing.taxa
 
 
 ## The missing species are due to too few records, too many, or taxonomy problems. EG some of the species are varieties, so they 
-## only match to the genus. So 605 - 30 = 575. What is the difference?
+## only match to the genus. So 605 - 30 = 575.
 
 
 
 
 #########################################################################################################################
-## Combine the existing data with the new species 
+## Combine the existing data with the new species :: use this approach to just process a subset 
 ## COMBO.RASTER.CONTEXT.UPDATE = COMBO.RASTER.CONTEXT
-## save(COMBO.RASTER.CONTEXT.UPDATE, file = paste("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_UPDATE.RData", sep = ""))
-## load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData")
-## load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_UPDATE.RData")
-names(COMBO.RASTER.CONTEXT);names(COMBO.RASTER.CONTEXT.UPDATE)
-COMBO.RASTER.CONTEXT.UPDTATE = bind_rows(COMBO.RASTER.CONTEXT, COMBO.RASTER.CONTEXT.UPDATE)
+## saveRDS(COMBO.RASTER.CONTEXT.UPDATE, file = paste("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_UPDATE.rds", sep = ""))
+## load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.rds")
+## load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_UPDATE.rds")
+# names(COMBO.RASTER.CONTEXT);names(COMBO.RASTER.CONTEXT.UPDATE)
+# COMBO.RASTER.CONTEXT.UPDTATE = bind_rows(COMBO.RASTER.CONTEXT, COMBO.RASTER.CONTEXT.UPDATE)
        
 
 ## Save the summary datasets
-save(missing.taxa,         file = paste("./data/base/HIA_LIST/COMBO/MISSING_TAXA.RData",                   sep = ""))
-save(COMBO.RASTER.CONTEXT, file = paste("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_2703_2018.RData", sep = ""))
-save(COMBO.NICHE.CONTEXT,  file = paste("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_2703_2018.RData",  sep = ""))
+saveRDS(missing.taxa,         file = paste("./data/base/HIA_LIST/COMBO/MISSING_TAXA.rds",                   sep = ""))
+saveRDS(COMBO.RASTER.CONTEXT, file = paste("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_2703_2018.rds", sep = ""))
+saveRDS(COMBO.NICHE.CONTEXT,  file = paste("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_2703_2018.rds",  sep = ""))
 write.csv(COMBO.NICHE.CONTEXT, "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_2703_2018.csv",       row.names = FALSE)
 
 
