@@ -88,10 +88,10 @@ scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cc85bi70", "gf85bi70", "hg85b
 
 
 ## Then create a stack of current environmental conditions outside the function, and an Australia shapefile for the mapping later...
-aus <- ne_states(country = 'Australia') %>% 
-  subset(!grepl('Island', name))
-
-shapefile = aus
+# aus <- ne_states(country = 'Australia') %>% 
+#   subset(!grepl('Island', name))
+# 
+# shapefile = aus
 
 ## Now divide the current environmental grids by 10
 env.grids.current <- stack(
@@ -144,6 +144,7 @@ grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',   
 
 ## Change climate paths to match the projected Mollweide system rasters in the 1km directories...........................
 ## Also warp the shapefiles into the same system.........................................................................
+## And change the projection for the operators...........................................................................
 
 
 #########################################################################################################################

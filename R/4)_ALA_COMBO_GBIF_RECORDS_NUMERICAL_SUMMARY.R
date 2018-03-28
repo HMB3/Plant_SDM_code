@@ -218,70 +218,32 @@ pred_names <- c(
   'Precip_col_qu') 
 
 
+## create scenario names here
+scen_2030 = c("mc85bi30", "no85bi30", "ac85bi30", "cc85bi30", "gf85bi30", "hg85bi30")
+scen_2050 = c("mc85bi50", "no85bi50", "ac85bi50", "cc85bi50", "gf85bi50", "hg85bi50")
+scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cc85bi70", "gf85bi70", "hg85bi70")
+
 ## Create an index for each name 
 i  <- match(pred_names, pred_names)
 
 
 ## Create file paths using existing files, these will be projected
-ff_current <- file.path('./data/base/worldclim/world/0.5/bio/current', sprintf('bio_%02d.tif', i))
-ff_2030    <- file.path('./data/base/worldclim/aus/0.5/bio/2030',      sprintf('bio_%02d.tif', i))
-ff_2050    <- file.path('./data/base/worldclim/aus/0.5/bio/2050',      sprintf('bio_%02d.tif', i))
-ff_2070    <- file.path('./data/base/worldclim/aus/0.5/bio/2070',      sprintf('bio_%02d.tif', i))
+ff_current <- file.path('./data/base/worldclim/world/0.5/bio/current', sprintf('bio_%02d', i))
+# ff_2030    <- file.path('./data/base/worldclim/aus/0.5/bio/2030',      sprintf('bio_%02d.tif', i))
+# ff_2050    <- file.path('./data/base/worldclim/aus/0.5/bio/2050',      sprintf('bio_%02d.tif', i))
+# ff_2070    <- file.path('./data/base/worldclim/aus/0.5/bio/2070',      sprintf('bio_%02d.tif', i))
 
 
 ## Create directories for the projected files :: 1km 
 dir.create(dirname(sub('0.5', '1km', ff_current)[1]), recursive = TRUE)
-dir.create(dirname(sub('0.5', '1km', ff_2030)[1]),    recursive = TRUE)
-dir.create(dirname(sub('0.5', '1km', ff_2050)[1]),    recursive = TRUE)
-dir.create(dirname(sub('0.5', '1km', ff_2070)[1]),    recursive = TRUE)
+# dir.create(dirname(sub('0.5', '1km', ff_2030)[1]),    recursive = TRUE)
+# dir.create(dirname(sub('0.5', '1km', ff_2050)[1]),    recursive = TRUE)
+# dir.create(dirname(sub('0.5', '1km', ff_2070)[1]),    recursive = TRUE)
 
 
 ## Run a loop to warp the worldclim variables into the World Mollweide projected system, saving in the 1km folder
+## Current rasters
 lapply(ff_current, function(f) {
-  
-  message(f)
-  gdalwarp(f, sub('0.5', '1km', f), tr = c(1000, 1000),
-           t_srs = '+init=esri:54009', r = 'bilinear', 
-           multi = TRUE)
-  
-})
-
-
-## Run a loop to warp the worldclim variables into the World Mollweide projected system, saving in the 1km folder
-lapply(ff_current, function(f) {
-  
-  message(f)
-  gdalwarp(f, sub('0.5', '1km', f), tr = c(1000, 1000),
-           t_srs = '+init=esri:54009', r = 'bilinear', 
-           multi = TRUE)
-  
-})
-
-
-## Run a loop to warp the worldclim variables into the World Mollweide projected system, saving in the 1km folder
-lapply(ff_2030, function(f) {
-  
-  message(f)
-  gdalwarp(f, sub('0.5', '1km', f), tr = c(1000, 1000),
-           t_srs = '+init=esri:54009', r = 'bilinear', 
-           multi = TRUE)
-  
-})
-
-
-## Run a loop to warp the worldclim variables into the World Mollweide projected system, saving in the 1km folder
-lapply(ff_2050, function(f) {
-  
-  message(f)
-  gdalwarp(f, sub('0.5', '1km', f), tr = c(1000, 1000),
-           t_srs = '+init=esri:54009', r = 'bilinear', 
-           multi = TRUE)
-  
-})
-
-
-## Run a loop to warp the worldclim variables into the World Mollweide projected system, saving in the 1km folder
-lapply(ff_2070, function(f) {
   
   message(f)
   gdalwarp(f, sub('0.5', '1km', f), tr = c(1000, 1000),

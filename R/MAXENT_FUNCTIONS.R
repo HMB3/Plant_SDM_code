@@ -1140,10 +1140,14 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             
             ########################################################################################################################
             ## Now create the empty panel just before plotting, and read in the occurrence and background points and original model
+    
+            
+            ## And change the projection for the operators...........................................................................
+            ## '+init=esri:54009'
             empty <- init(combo_suit_thresh, function(x) NA)
             
             occ <- readRDS(sprintf('%s/%s/occ_swd.rds', maxent_path, species)) %>%
-              spTransform(CRS('+init=epsg:4326'))
+              spTransform(CRS('+init=epsg:4326'))  
             
             bg <- readRDS(sprintf('%s/%s/bg_swd.rds', maxent_path, species)) %>%
               spTransform(CRS('+init=epsg:4326'))
