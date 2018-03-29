@@ -89,67 +89,67 @@ sdm.select <- c("Annual_mean_temp",   "Temp_seasonality",   "Max_temp_warm_month
 
 ## Use GDAL to create a raster which = 1 where bio_01 has data (i.e. land), and NA where there is no data
 ## Also note that gdalwarp is much faster, and the trs ='+init=esri:54009' argument does not work here
-template.raster <- gdalwarp("data/base/worldclim/world/0.5/bio/current/bio_01", 
-                            tempfile(fileext = '.tif'), 
-                            t_srs = '+proj=moll +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs',
-                            output_Raster = TRUE, 
-                            tr = c(1000, 1000),
-                            r = "near", dstnodata = '-9999')
+# template.raster <- gdalwarp("data/base/worldclim/world/0.5/bio/current/bio_01", 
+#                             tempfile(fileext = '.tif'), 
+#                             t_srs = '+proj=moll +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs',
+#                             output_Raster = TRUE, 
+#                             tr = c(1000, 1000),
+#                             r = "near", dstnodata = '-9999')
 
 
 ## Asign all the cells to be NA
-template.raster <- !is.na(template.raster)
-writeRaster(template.raster, 'data/template_hasData.tif', datatype='INT2S')
-template.cells <- Which(template.raster == 1, cells = TRUE)                       ## this is incomplete, might be causing the error
+# template.raster <- !is.na(template.raster)
+# writeRaster(template.raster, 'data/template_hasData.tif', datatype='INT2S')
+# template.cells <- Which(template.raster == 1, cells = TRUE)                   ## this is incomplete, might be causing the error
 
 
 ## Save 
-saveRDS(template_cells, 'data/hasData_cells.rds')
+saveRDS(template.cells, 'data/hasData_cells.rds')
 
 
 #########################################################################################################################
 ## Create a raster stack of just the analysis variables in the correct projected coordinate system
-pred_names <- c(
-  'Annual_mean_temp',   ## To select a column with the cursor, hold ctrl+alt and use up or down arrow
-  'Mean_diurnal_range',
-  'Isothermality',
-  'Temp_seasonality', 
-  'Max_temp_warm_month', 
-  'Min_temp_cold_month', 
-  'Temp_annual_range',
-  'Mean_temp_wet_qu', 
-  'Mean_temp_dry_qu', 
-  'Mean_temp_warm_qu',
-  'Mean_temp_cold_qu',
-  'Annual_precip', 
-  'Precip_wet_month', 
-  'Precip_dry_month', 
-  'Precip_seasonality', 
-  'Precip_wet_qu', 
-  'Precip_dry_qu', 
-  'Precip_warm_qu', 
-  'Precip_col_qu') 
+# pred_names <- c(
+#   'Annual_mean_temp',   ## To select a column with the cursor, hold ctrl+alt and use up or down arrow
+#   'Mean_diurnal_range',
+#   'Isothermality',
+#   'Temp_seasonality', 
+#   'Max_temp_warm_month', 
+#   'Min_temp_cold_month', 
+#   'Temp_annual_range',
+#   'Mean_temp_wet_qu', 
+#   'Mean_temp_dry_qu', 
+#   'Mean_temp_warm_qu',
+#   'Mean_temp_cold_qu',
+#   'Annual_precip', 
+#   'Precip_wet_month', 
+#   'Precip_dry_month', 
+#   'Precip_seasonality', 
+#   'Precip_wet_qu', 
+#   'Precip_dry_qu', 
+#   'Precip_warm_qu', 
+#   'Precip_col_qu') 
 
 
 ## Create new files in the 1km directory 
-i  <- match(sdm.select, pred_names)
-ff <- file.path('./data/base/worldclim/world/0.5/bio/current',
-                sprintf('bio_%02d', i))
-dir.create(dirname(sub('0.5', '1km', ff)[1]), recursive = TRUE)
+# i  <- match(sdm.select, pred_names)
+# ff <- file.path('./data/base/worldclim/world/0.5/bio/current',
+#                 sprintf('bio_%02d', i))
+# dir.create(dirname(sub('0.5', '1km', ff)[1]), recursive = TRUE)
 
 
 ## Run a loop to project just the variables we will use
-lapply(ff, function(f) {
-  message(f)
-  gdalwarp(f, sub('0.5', '1km', f), tr = c(1000, 1000),
-           t_srs = '+init=esri:54009', r = 'bilinear', 
-           multi = TRUE)
-})
+# lapply(ff, function(f) {
+#   message(f)
+#   gdalwarp(f, sub('0.5', '1km', f), tr = c(1000, 1000),
+#            t_srs = '+init=esri:54009', r = 'bilinear', 
+#            multi = TRUE)
+# })
 
 
 ## Create a raster stack of the projected grids
-env.grids.current = stack(sub('0.5', '1km', ff))
-names(env.grids.current) <- pred_names[i]
+# env.grids.current = stack(sub('0.5', '1km', ff))
+# names(env.grids.current) <- pred_names[i]
 
 
 #########################################################################################################################

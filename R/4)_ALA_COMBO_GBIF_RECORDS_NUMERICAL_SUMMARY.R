@@ -258,6 +258,7 @@ saveRDS(COMBO.RASTER, file = paste("./data/base/HIA_LIST/GBIF/COMBO_GBIF_ALA_RAS
 ## Check
 dim(COMBO.RASTER)
 names(COMBO.RASTER)
+summary(COMBO.RASTER)
 
 
 

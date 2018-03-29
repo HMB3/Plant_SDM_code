@@ -73,6 +73,8 @@ FIT_MAXENT_RAND_BG <- function(occ,
                                rep_args,
                                full_args) {
   
+  ## There is no minimum number of background records.................................................................
+  
   ########################################################################
   ## First, stop if the outdir file exists,
   if(!file.exists(outdir)) stop('outdir does not exist :(', call. = FALSE)
@@ -144,6 +146,10 @@ FIT_MAXENT_RAND_BG <- function(occ,
       bg <- xyFromCell(template.raster, bg_cells)
       
       ## Reduce background sample if it's larger than max_bg_size
+      
+      ## There is no minimum number of background records.................................................................
+      
+      ## What if the species has vert few records surrounding its record?
       if (nrow(bg) > max_bg_size) {
         
         message(nrow(bg), ' target species background records, reduced to random ',
