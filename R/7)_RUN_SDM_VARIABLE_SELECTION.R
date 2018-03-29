@@ -30,13 +30,13 @@ source('./R/HIA_LIST_MATCHING.R')
 source('./R/MAXENT_FUNCTIONS.R')
 
 load("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_ALL_VAR.RData")
-load("./data/template_hasData.tif")
-readRDS("./data/hasData_cells.rds")
+template.raster = raster("./data/template_hasData.tif")
+template.cells  = readRDS("./data/hasData_cells.rds")
 #load("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_TEST_SPP.RData")
 #load("./data/base/HIA_LIST/COMBO/SDM_DATA_TEST_CLEAN.RData")
 
 
-## Check data 
+## Check data :: template, data table and species 
 dim(template.raster)
 dim(SDM.DATA.ALL)
 length(unique(SDM.DATA.ALL$searchTaxon))
@@ -47,7 +47,7 @@ xres(template.raster);yres(template.raster)
 
 
 #########################################################################################################################
-## Chose a-priori worldclim predictors: 8, 9, 18 and 19 are suspect
+## Full worldclim predictors: 8, 9, 18 and 19 are suspect
 sdm.predictors <- c("Annual_mean_temp",    "Mean_diurnal_range",  "Isothermality",      "Temp_seasonality",  
                     "Max_temp_warm_month", "Min_temp_cold_month", "Temp_annual_range",  
                     "Mean_temp_wet_qu",    "Mean_temp_dry_qu",    
@@ -58,9 +58,11 @@ sdm.predictors <- c("Annual_mean_temp",    "Mean_diurnal_range",  "Isothermality
                     "Precip_warm_qu",      "Precip_col_qu")
 
 
+## A-priori worldclim predictors
 sdm.select     <- c("Annual_mean_temp", "Temp_seasonality",    "Max_temp_warm_month", "Min_temp_cold_month",
                     "Annual_precip",    "Precip_seasonality",  
                     "Precip_wet_month", "Precip_dry_month")      
+
 
 
 
@@ -158,7 +160,7 @@ lapply(kop.spp, function(spp) { # for serial, parLapply(cl, species[1:8], functi
                          name                    = spp, 
                          outdir                  = 'output/maxent/SET_VAR_DENSITY', 
                          template.raster         = template.raster,
-                         template.cells          = template_cells,
+                         template.cells          = template.cells,
                          min_n                   = 20,   ## This should be higher...
                          max_bg_size             = 100000, ## need a min bg size?
                          background_buffer_width = 200000,

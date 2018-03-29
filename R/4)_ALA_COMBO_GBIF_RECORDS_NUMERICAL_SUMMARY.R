@@ -103,8 +103,9 @@ str(unique(GBIF.ALA.COMBO.LAND$searchTaxon))                                  ##
 
 #########################################################################################################################
 ## Now crunch the big dataset down to just the species on the 25 growers or more list: the extras are just overkill......
-GBIF.ALA.COMBO.HIA  = GBIF.ALA.COMBO.LAND[GBIF.ALA.COMBO.LAND$searchTaxon %in% unique(c(test.spp, HIA.SPP$Binomial)), ]
-'Swainsona formosa'  %in% GBIF.ALA.COMBO.HIA $searchTaxon
+#GBIF.ALA.COMBO.HIA  = GBIF.ALA.COMBO.LAND[GBIF.ALA.COMBO.LAND$searchTaxon %in% unique(c(test.spp, HIA.SPP$Binomial)), ]
+GBIF.ALA.COMBO.HIA  = GBIF.ALA.COMBO.LAND[GBIF.ALA.COMBO.LAND$searchTaxon %in% unique(GBIF.LAND$searchTaxon), ]
+str(unique(GBIF.ALA.COMBO.HIA$searchTaxon))
 
 
 ## This unique ID column can be applied across the project  
@@ -182,84 +183,14 @@ dim(COMBO.POINTS)
 
 #########################################################################################################################
 ## Create a stack of rasters to sample: get all the Worldclim variables just for good measure
-# env.grids.current = stack(
-#   file.path('./data/base/worldclim/world/0.5/bio/current',
-#             sprintf('bio_%02d', 1:19)))
+env.grids.current = stack(
+  file.path('./data/base/worldclim/world/1km/bio/current',
+            sprintf('bio_%02d.tif', 1:19)))
+projection(env.grids.current)                                   ## Now the Mollweide projection
 
 
-## Change the directories in the maxent mapping function to 1km...........................................................
+## Projected all datasets into the final system used by maxent (World Mollweide https://epsg.io/54009)
 
-
-## These are the variables we will use for the SDMs
-sdm.select <- c("Annual_mean_temp",   "Temp_seasonality",   "Max_temp_warm_month", "Min_temp_cold_month",
-                "Annual_precip",      "Precip_seasonality", "Precip_wet_month",    "Precip_dry_month")
-
-
-## Create names for all 19 predictors
-pred_names <- c(
-  'Annual_mean_temp',   ## To select a column with the cursor, hold ctrl+alt and use up or down arrow
-  'Mean_diurnal_range',
-  'Isothermality',
-  'Temp_seasonality', 
-  'Max_temp_warm_month', 
-  'Min_temp_cold_month', 
-  'Temp_annual_range',
-  'Mean_temp_wet_qu', 
-  'Mean_temp_dry_qu', 
-  'Mean_temp_warm_qu',
-  'Mean_temp_cold_qu',
-  'Annual_precip', 
-  'Precip_wet_month', 
-  'Precip_dry_month', 
-  'Precip_seasonality', 
-  'Precip_wet_qu', 
-  'Precip_dry_qu', 
-  'Precip_warm_qu', 
-  'Precip_col_qu') 
-
-
-## create scenario names here
-scen_2030 = c("mc85bi30", "no85bi30", "ac85bi30", "cc85bi30", "gf85bi30", "hg85bi30")
-scen_2050 = c("mc85bi50", "no85bi50", "ac85bi50", "cc85bi50", "gf85bi50", "hg85bi50")
-scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cc85bi70", "gf85bi70", "hg85bi70")
-
-## Create an index for each name 
-i  <- match(pred_names, pred_names)
-
-
-## Create file paths using existing files, these will be projected
-ff_current <- file.path('./data/base/worldclim/world/0.5/bio/current', sprintf('bio_%02d', i))
-# ff_2030    <- file.path('./data/base/worldclim/aus/0.5/bio/2030',      sprintf('bio_%02d.tif', i))
-# ff_2050    <- file.path('./data/base/worldclim/aus/0.5/bio/2050',      sprintf('bio_%02d.tif', i))
-# ff_2070    <- file.path('./data/base/worldclim/aus/0.5/bio/2070',      sprintf('bio_%02d.tif', i))
-
-
-## Create directories for the projected files :: 1km 
-dir.create(dirname(sub('0.5', '1km', ff_current)[1]), recursive = TRUE)
-# dir.create(dirname(sub('0.5', '1km', ff_2030)[1]),    recursive = TRUE)
-# dir.create(dirname(sub('0.5', '1km', ff_2050)[1]),    recursive = TRUE)
-# dir.create(dirname(sub('0.5', '1km', ff_2070)[1]),    recursive = TRUE)
-
-
-## Run a loop to warp the worldclim variables into the World Mollweide projected system, saving in the 1km folder
-## Current rasters
-lapply(ff_current, function(f) {
-  
-  message(f)
-  gdalwarp(f, sub('0.5', '1km', f), tr = c(1000, 1000),
-           t_srs = '+init=esri:54009', r = 'bilinear', 
-           multi = TRUE)
-  
-})
-
-
-## Create a raster stack of the projected grids
-env.grids.current = stack(sub('0.5', '1km', ff))
-names(env.grids.current) <- pred_names[i]
-
-
-## Here, we should project all datasets into the final system used by maxent (World Mollweide https://epsg.io/54009)
-## Using step 6...
 
 # ## Can we resample the rasters to 10km?
 # BIOW_10km = raster("./data/base/worldclim/world/0.5/bio/current/bio_01_10km.tif")
@@ -289,36 +220,33 @@ names(env.grids.current) <- pred_names[i]
 
 #########################################################################################################################
 ## Is there a way to speed this up?
-## ## Test if the new experimental species are there : 'Swainsona formosa'  %in% GBIF.ALA.COMBO.HIA$searchTaxon
+projection(COMBO.POINTS);projection(env.grids.current)
 COMBO.RASTER <- extract(env.grids.current, COMBO.POINTS) %>% 
   cbind(GBIF.ALA.COMBO.HIA, .)
 
 
-#'Swainsona formosa'  %in% COMBO.RASTER$searchTaxon
-
-
 ## Multiple rename using dplyr
-# COMBO.RASTER = dplyr::rename(COMBO.RASTER,
-#                              Annual_mean_temp     = bio_01, 
-#                              Mean_diurnal_range   = bio_02,
-#                              Isothermality        = bio_03,
-#                              Temp_seasonality     = bio_04, 
-#                              Max_temp_warm_month  = bio_05, 
-#                              Min_temp_cold_month  = bio_06, 
-#                              Temp_annual_range    = bio_07,
-#                              Mean_temp_wet_qu     = bio_08, 
-#                              Mean_temp_dry_qu     = bio_09, 
-#                              Mean_temp_warm_qu    = bio_10,
-#                              Mean_temp_cold_qu    = bio_11,
-#                              
-#                              Annual_precip        = bio_12, 
-#                              Precip_wet_month     = bio_13, 
-#                              Precip_dry_month     = bio_14, 
-#                              Precip_seasonality   = bio_15, 
-#                              Precip_wet_qu        = bio_16, 
-#                              Precip_dry_qu        = bio_17, 
-#                              Precip_warm_qu       = bio_18, 
-#                              Precip_col_qu        = bio_19) 
+COMBO.RASTER = dplyr::rename(COMBO.RASTER,
+                             Annual_mean_temp     = bio_01,
+                             Mean_diurnal_range   = bio_02,
+                             Isothermality        = bio_03,
+                             Temp_seasonality     = bio_04,
+                             Max_temp_warm_month  = bio_05,
+                             Min_temp_cold_month  = bio_06,
+                             Temp_annual_range    = bio_07,
+                             Mean_temp_wet_qu     = bio_08,
+                             Mean_temp_dry_qu     = bio_09,
+                             Mean_temp_warm_qu    = bio_10,
+                             Mean_temp_cold_qu    = bio_11,
+
+                             Annual_precip        = bio_12,
+                             Precip_wet_month     = bio_13,
+                             Precip_dry_month     = bio_14,
+                             Precip_seasonality   = bio_15,
+                             Precip_wet_qu        = bio_16,
+                             Precip_dry_qu        = bio_17,
+                             Precip_warm_qu       = bio_18,
+                             Precip_col_qu        = bio_19)
 
 
 ## Save/load
@@ -430,34 +358,34 @@ COMBO.SUA.LGA = subset(COMBO.SUA.LGA, select = -c(lon.1, lat.1))
 
 #########################################################################################################################
 ## Now summarise the niches. But figure out a cleaner way of doing this
-# env.variables = c("Annual_mean_temp",     
-#                   "Mean_diurnal_range",   
-#                   "Isothermality",        
-#                   "Temp_seasonality",     
-#                   "Max_temp_warm_month",  
-#                   "Min_temp_cold_month",  
-#                   "Temp_annual_range",    
-#                   "Mean_temp_wet_qu",     
-#                   "Mean_temp_dry_qu",     
-#                   "Mean_temp_warm_qu",    
-#                   "Mean_temp_cold_qu",
-#                   
-#                   "Annual_precip",        
-#                   "Precip_wet_month",     
-#                   "Precip_dry_month",     
-#                   "Precip_seasonality",   
-#                   "Precip_wet_qu",        
-#                   "Precip_dry_qu",        
-#                   "Precip_warm_qu",       
-#                   "Precip_col_qu")
+env.variables = c("Annual_mean_temp",
+                  "Mean_diurnal_range",
+                  "Isothermality",
+                  "Temp_seasonality",
+                  "Max_temp_warm_month",
+                  "Min_temp_cold_month",
+                  "Temp_annual_range",
+                  "Mean_temp_wet_qu",
+                  "Mean_temp_dry_qu",
+                  "Mean_temp_warm_qu",
+                  "Mean_temp_cold_qu",
+
+                  "Annual_precip",
+                  "Precip_wet_month",
+                  "Precip_dry_month",
+                  "Precip_seasonality",
+                  "Precip_wet_qu",
+                  "Precip_dry_qu",
+                  "Precip_warm_qu",
+                  "Precip_col_qu")
 
 
 #########################################################################################################################
 ## Change the raster values here: See http://worldclim.org/formats1 for description of the interger conversion. 
 ## All temperature variables wer multiplied by 10, so divide by 10 to reverse it.
 COMBO.RASTER.CONVERT = as.data.table(COMBO.SUA.LGA)                           ## Check this works, also inefficient
-COMBO.RASTER.CONVERT[, (pred_names [c(1:11)]) := lapply(.SD, function(x) 
-  x / 10 ), .SDcols = pred_names [c(1:11)]]
+COMBO.RASTER.CONVERT[, (env.variables [c(1:11)]) := lapply(.SD, function(x) 
+  x / 10 ), .SDcols = env.variables [c(1:11)]]
 COMBO.RASTER.CONVERT = as.data.frame(COMBO.RASTER.CONVERT)                   ## Find another method without using data.table
 
 

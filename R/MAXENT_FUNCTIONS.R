@@ -105,7 +105,6 @@ FIT_MAXENT_RAND_BG <- function(occ,
     
     #####################################################################
     ## Get unique cell numbers for species occurrences
-    ## Can we make the template raster 10km?
     cells <- cellFromXY(template.raster, occ)
     
     ## Clean out duplicate cells and NAs (including points outside extent of predictor data)
@@ -140,7 +139,7 @@ FIT_MAXENT_RAND_BG <- function(occ,
         
         .[[1]] %>% # gdal_rasterize returns a RasterBrick but Which needs a RasterLayer, so we grab the first (only) layer
         Which(. == 1, cells = TRUE) %>% 
-        intersect(template_cells)
+        intersect(template.cells)
       
       bg <- xyFromCell(template.raster, bg_cells)
       

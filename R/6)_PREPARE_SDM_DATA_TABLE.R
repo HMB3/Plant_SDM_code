@@ -96,10 +96,11 @@ template.raster <- gdalwarp("data/base/worldclim/world/0.5/bio/current/bio_01",
                             tr = c(1000, 1000),
                             r = "near", dstnodata = '-9999')
 
+
 ## Asign all the cells to be NA
 template.raster <- !is.na(template.raster)
 writeRaster(template.raster, 'data/template_hasData.tif', datatype='INT2S')
-template_cells <- Which                                                     ## this is incomplete, might be causing the error
+template.cells <- Which(template.raster == 1, cells = TRUE)                       ## this is incomplete, might be causing the error
 
 
 ## Save 
