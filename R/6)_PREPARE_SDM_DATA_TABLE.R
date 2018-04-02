@@ -10,14 +10,15 @@
 
 #load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_2703_2018.RData")
 #load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_2703_2018.RData")
-#load("./data/base/HIA_LIST/COMBO/COMBO_GBIF_TRUE_TEST_SPP.RData")
-
+COMBO.RASTER.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/CLEAN_TEST_SPP.rds")
+template.raster = raster("./data/template_hasData.tif")
 source('./R/GREEN_CITIES_FUNCTIONS.R')
 source('./R/MAXENT_FUNCTIONS.R')
 source('./R/HIA_LIST_MATCHING.R')
 
 
 ## Need to clean this up...
+unique(COMBO.RASTER.CONTEXT$GBIF.SPAT.OUT)                                      ## could make the decison here
 dim(COMBO.RASTER.CONTEXT)    
 names(COMBO.RASTER.CONTEXT)
 
@@ -104,7 +105,7 @@ sdm.select <- c("Annual_mean_temp",   "Temp_seasonality",   "Max_temp_warm_month
 
 
 ## Save 
-saveRDS(template.cells, 'data/hasData_cells.rds')
+#saveRDS(template.cells, 'data/hasData_cells.rds')
 
 
 #########################################################################################################################
@@ -218,7 +219,7 @@ str(SDM.DATA.ALL)
 
 ## Save big tables to keep memory spare
 dim(SDM.DATA.ALL)
-save(template.raster, file = paste("./data/base/HIA_LIST/COMBO/SDM_TEMPLATE_RASTER.RData"))
+#save(template.raster, file = paste("./data/base/HIA_LIST/COMBO/SDM_TEMPLATE_RASTER.RData"))
 #save(SDM.DATA.ALL,    file = paste("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_ALL_VAR.RData"))
 save(SDM.DATA.ALL,    file = paste("./data/base/HIA_LIST/COMBO/SDM_DATA_TEST_CLEAN.RData"))
 

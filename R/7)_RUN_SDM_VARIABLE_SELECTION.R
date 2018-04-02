@@ -101,7 +101,7 @@ lapply(kop.spp, function(spp) { # for serial, parLapply(cl, species[1:8], functi
                          bg                      = background, 
                          sdm.predictors          = sdm.select, 
                          name                    = spp, 
-                         outdir                  = 'output/maxent/SET_VAR_DENSITY', 
+                         outdir                  = 'output/maxent/SET_VAR_COORDCLEAN', 
                          template.raster,
                          min_n                   = 20,   ## This should be higher...
                          max_bg_size             = 100000, ## need a min bg size?

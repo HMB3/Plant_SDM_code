@@ -29,7 +29,7 @@ source('./R/HIA_LIST_MATCHING.R')
 
 
 ## HB Do an example species :: SPP Brachypoda
-GBIF.TRIM.TEST  = COMBO.RASTER.CONTEXT[COMBO.RASTER.CONTEXT$searchTaxon %in% kop.spp, ]
+GBIF.TRIM.TEST  = COMBO.RASTER.CONTEXT[COMBO.RASTER.CONTEXT$searchTaxon %in% spp.all, ]   ## kop.spp for the test spp
 SPP.TEST        = subset(GBIF.TRIM.TEST, searchTaxon == "Ficus brachypoda")
 
 unique(GBIF.TRIM.TEST$searchTaxon)
@@ -85,6 +85,7 @@ FLAGS  <- CleanCoordinates(TIB.TEST,
                            outliers.mtp     = 5,
                            outliers.td      = 1000,
                            seas             = FALSE)
+
 
 ## Flagging < 1%, but that's just coastal records for this species - pretty dodgy
 summary(FLAGS)
@@ -248,28 +249,26 @@ GBIF.SPAT.OUT <- cc_outl(TIB.TEST,
 
 ## Check the output ::
 dim(FLAGS);length(GBIF.SPAT.OUT)
+FLAGS = FLAGS[ ,!(colnames(FLAGS) == "decimallongitude" | colnames(FLAGS) =="decimallatitude")]
 
 
-## Join data
-TEST.GEO = cbind(TIB.TEST, FLAGS, GBIF.SPAT.OUT)
-names(TEST.GEO)
-dim(TEST.GEO)
+## Join data :: exclude the decimal lat/long 
+TEST.GEO = cbind(GBIF.TRIM.TEST, FLAGS, GBIF.SPAT.OUT)
+identical(TEST.GEO$searchTaxon, TEST.GEO$species)                              ## order matches
 
 
-## Check the values for each field
-unique(TEST.GEO$validity)
-unique(TEST.GEO$equal)
-unique(TEST.GEO$equal)
-unique(TEST.GEO$zeros)
-unique(TEST.GEO$capitals)
-unique(TEST.GEO$centroids)
-unique(TEST.GEO$outliers)
-unique(TEST.GEO$gbif)
-unique(TEST.GEO$institution)
-unique(TEST.GEO$outliers)
-unique(TEST.GEO$gbif)
-unique(TEST.GEO$summary)
-unique(TEST.GEO$GBIF.SPAT.OUT)
+## Check the values for each flag
+summary(TEST.GEO$validity)
+summary(TEST.GEO$equal)
+summary(TEST.GEO$equal)
+summary(TEST.GEO$zeros)
+summary(TEST.GEO$capitals)
+summary(TEST.GEO$centroids)
+summary(TEST.GEO$gbif)
+summary(TEST.GEO$institution)
+summary(TEST.GEO$gbif)
+summary(TEST.GEO$summary)
+summary(TEST.GEO$GBIF.SPAT.OUT)
 
 
 
@@ -293,15 +292,55 @@ unique(TEST.GEO$GBIF.SPAT.OUT)
 
 
 #########################################################################################################################
-## CONVERT AND SAVE
+## SUBSET AND SAVE TABLES
 #########################################################################################################################
 
 
-##  
-GBIF.TRIM.GEO = dplyr::rename(SPP.TEST, 
-                              species = searchTaxon,
-                              decimallongitude = lon, 
-                              decimallatitude  = lat)
+## This unique ID column can be applied across the project  
+TEST.GEO$OBS <- 1:nrow(TEST.GEO)
+dim(TEST.GEO)[1];length(TEST.GEO$OBS)  
+
+
+## So ~0.8% of the data is dodgy according to the GBIF fields or spatial outliers
+## This seems ok as a median figure across the data set?
+dim(subset(TEST.GEO, summary == "FALSE" | GBIF.SPAT.OUT == "FALSE"))[1]/dim(TEST.GEO)[1]*100
+CLEAN.FALSE = subset(TEST.GEO, summary == "FALSE" | GBIF.SPAT.OUT == "FALSE")
+
+
+## Check one species
+coordyline = subset(TEST.GEO, searchTaxon == "Cordyline australis")
+View(subset(coordyline, summary == "FALSE" | GBIF.SPAT.OUT == "FALSE")[, c("searchTaxon", "OBS",
+                                                                           "lon",
+                                                                           "lat",
+                                                                           "validity", 
+                                                                           "equal",
+                                                                           "zeros",
+                                                                           "capitals",
+                                                                           "centroids",
+                                                                           "duplicates",
+                                                                           "gbif",
+                                                                           "institution",
+                                                                           "summary",
+                                                                           "GBIF.SPAT.OUT")])
+
+
+
+## Not sure why the inverse did not work :: get only the records which were not flagged as being dodgy.
+## dim(subset(TEST.GEO, summary == "TRUE" | GBIF.SPAT.OUT == "TRUE"))
+CLEAN.TRUE = TEST.GEO[!TEST.GEO$OBS %in% CLEAN.FALSE$OBS, ]
+dim(CLEAN.TRUE)
+unique(CLEAN.TRUE$summary)                                             ## works
+unique(CLEAN.TRUE$GBIF.SPAT.OUT)                                       ## works
+
+
+
+#########################################################################################################################
+##    
+saveRDS(TEST.GEO,   'data/base/HIA_LIST/COMBO/CLEAN_FLAGS_HIA_SPP.rds')
+saveRDS(CLEAN.TRUE, 'data/base/HIA_LIST/COMBO/CLEAN_ONLY_HIA_SPP.rds')
+
+
+
 
 
 #########################################################################################################################

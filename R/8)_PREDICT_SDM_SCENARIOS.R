@@ -17,7 +17,7 @@
 
 ## Load packages ::
 source('./R/HIA_LIST_MATCHING.R')
-load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1601_2018.RData")
+#load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1601_2018.RData")
 
 
 #########################################################################################################################
@@ -153,7 +153,7 @@ grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',   
 env.grids.2030 = tryCatch(project_maxent_grids(scen_list     = scen_2030,
                                                species_list  = kop_spp,
                                                time_slice    = 30,
-                                               maxent_path   = "./output/maxent/SET_VAR_TEST",
+                                               maxent_path   = "./output/maxent/SET_VAR_COORDCLEAN",
                                                climate_path  = "./data/base/worldclim/aus/0.5/bio",
                                                grid_names    = grid.names,
                                                current_grids = env.grids.current),
@@ -170,7 +170,7 @@ env.grids.2030 = tryCatch(project_maxent_grids(scen_list     = scen_2030,
 env.grids.2050 = tryCatch(project_maxent_grids(scen_list    = scen_2050,
                                                species_list = kop_spp,
                                                time_slice   = 50,
-                                               maxent_path  = "./output/maxent/SET_VAR_GBIF",
+                                               maxent_path  = "./output/maxent/SET_VAR_COORDCLEAN",
                                                climate_path = "./data/base/worldclim/aus/0.5/bio",
                                                grid_names    = grid.names,
                                                current_grids = env.grids.current),
@@ -186,7 +186,7 @@ env.grids.2050 = tryCatch(project_maxent_grids(scen_list    = scen_2050,
 env.grids.2070 = tryCatch(project_maxent_grids(scen_list    = scen_2070,
                                                species_list = kop_spp,
                                                time_slice   = 70,
-                                               maxent_path  = "./output/maxent/SET_VAR_GBIF",
+                                               maxent_path  = "./output/maxent/SET_VAR_COORDCLEAN",
                                                climate_path = "./data/base/worldclim/aus/0.5/bio",
                                                grid_names    = grid.names,
                                                current_grids = env.grids.current),
