@@ -27,7 +27,6 @@
 #load('data/hasData_cells.rds')
 #load('data/template_hasData.tif')
 source('./R/HIA_LIST_MATCHING.R')
-source('./R/MAXENT_FUNCTIONS.R')
 
 load("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_ALL_VAR.RData")
 template.raster = raster("./data/template_hasData.tif")
@@ -74,6 +73,11 @@ ff <- file.path('./data/base/worldclim/world/0.5/bio/current',
 env.grids.current = stack(sub('0.5', '1km', ff))
 names(env.grids.current) <- sdm.predictors[i]
 identical(names(env.grids.current),sdm.predictors)
+
+
+## Create polygon of land surface
+LAND       = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LAND_world.rds")
+
 
 
 
@@ -171,7 +175,7 @@ lapply(kop.spp, function(spp) { # for serial, parLapply(cl, species[1:8], functi
                          name                    = spp, 
                          outdir                  = 'output/maxent/SET_VAR_COORDCLEAN',
                          sdm.predictors          = sdm.select,
-                         env.grids.current       = env.grids.current,
+                         env.grids               = env.grids.current,
                          template.raster         = template.raster,
                          template.cells          = template.cells,
                          min_n                   = 20,   ## This should be higher...
@@ -332,16 +336,15 @@ stopCluster(cl)
 ## OUTSTANDING SDM TASKS:
 #########################################################################################################################
 
+## Create a list of species with boundary bias, and without boundary bias
 
-## What is being used for background records? How is background selection being done? 
+## Get the random background points working
   
-## What is the cut-off for correlation and what is the minimum number of variables? 
+## Set a minium no. of background points, as well as a maximum
   
-## Which variables are showing up as important
+## Add the koppen zone constraint
 
-## Further mapping and cleaning of GBIF data needed for the important species: Use worldview?
-
-## Store the list of skipped species...
+## Test the maps on cleaned data
 
 
 

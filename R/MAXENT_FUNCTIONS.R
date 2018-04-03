@@ -10,27 +10,23 @@
 ## MAXENT FUNCTIONS
 #########################################################################################################################
 
-# # Arguments to run maxent line by line
-occ                     = occurrence
-bg                      = background
-sdm.predictors          = sdm.select
-env.grids.current       = env.grids.current
-template.raster         = template.raster
-template.cells          = template.cells
-name                    = spp
-outdir                  = 'output/maxent/SET_VAR_COORDCLEAN'
-template.raster         = template.raster
-min_n                   = 20   ## This should be higher...
-max_bg_size             = 100000
-background_buffer_width = 200000
-shapefiles              = TRUE
-features                = 'lpq'
-replicates              = 5
 
-cor_thr                 = 0.85
-pct_thr                 = 5
-k_thr                   = 5
-responsecurves          = TRUE
+## Arguments to run maxent line by line
+# occ                     = occurrence
+# bg                      = background,
+# name                    = spp
+# outdir                  = 'output/maxent/SET_VAR_COORDCLEAN'
+# sdm.predictors          = sdm.select
+# env.grids               = env.grids.current
+# template.raster         = template.raster
+# template.cells          = template.cells
+# min_n                   = 20   ## This should be higher...
+# max_bg_size             = 100000 ## need a min bg size?
+# background_buffer_width = 200000
+# shapefiles              = TRUE
+# features                = 'lpq'
+# replicates              = 5
+# responsecurves          = TRUE
 
 
 ## Selection line by line 
@@ -57,11 +53,10 @@ responsecurves          = TRUE
 
 ## Select background points randomly, then fit maxent
 FIT_MAXENT_RAND_BG <- function(occ,
-                               env.grids,
                                name,
                                outdir,
                                sdm.predictors,
-                               env.grids.current,
+                               env.grids,
                                template.raster,
                                template.cells,
                                # template.raster is an empty raster with extent, res and projection
@@ -176,7 +171,7 @@ FIT_MAXENT_RAND_BG <- function(occ,
                                    proj4string = CRS('+proj=moll +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs'))
       
       ## Is the cell = bg_cells necessary?
-      bg <- extract(env.grids.current, bg) ## sp = TRUE)
+      bg <- extract(env.grids, bg) ## sp = TRUE)
       ## bg <- SpatialPointsDataFrame(SpatialPoints(bg), data.frame(cell = bg_cells)) 
       
       #####################################################################
@@ -288,6 +283,8 @@ FIT_MAXENT_RAND_BG <- function(occ,
       ########################################################################################################################
       ## Another .png for the global records: str(LAND$long)
       #if(!file.exists(sprintf('%s/%s/full/%s_%s.png', outdir_sp, name, name, "global_records"))) {
+      #LAND       = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LAND_world.rds")
+      
       png(sprintf('%s/%s/full/%s_%s.png', outdir,
                   name, name, "global_records"),
           16180, 10000, units = 'px', res = 600)
@@ -317,7 +314,6 @@ FIT_MAXENT_RAND_BG <- function(occ,
       ########################################################################################################################
       ## Another PNG for the background points....
       #if(!file.exists(sprintf('%s/%s/full/%s_%s.png', maxent_path, name, name, "background_records"))) {
-      
       png(sprintf('%s/%s/full/%s_%s.png', outdir,
                   name, name, "background_records"),
           16180, 10000, units = 'px', res = 600)
@@ -464,25 +460,6 @@ FIT_MAXENT_TARG_BG <- function(occ,
     
     
     #####################################################################
-    ## make a bias file?
-    # occ.data  <- as.data.frame(coordinates(occ))
-    # occ.data  <- SpatialPointsDataFrame(coords      = occ.data[c("lon", "lat")],
-    #                                     data        = occ.data,
-    #                                     proj4string = CRS('+init=ESRI:54009'))
-    
-    ## Create a 2-D kernel density file
-    ## dens <- kde2d(occ[,1], occ[,2])
-    # dens      <- kde2D(occ.data, standardize = TRUE)
-    # plot(dens$kde, main = paste0("Kernel density for ", name))
-    # plot(occ.data, pch = 20, cex = 0.25,
-    #      col = "red", add = TRUE)
-
-    ## save the file for checking
-    # spp_save = gsub(' ', '_', spp)
-    # KD_save  = sprintf('%s/%s/%s_kernel_density.tif', outdir, spp_save , spp_save)
-    # writeRaster(dens$kde, KD_save, overwrite = TRUE)
-    # writeOGR(obj = occ.data, dsn = "./data/base/CONTEXTUAL", layer = "occ.cordyline", driver = "ESRI Shapefile")
-    
     ## Skip species that have less than a minimum number of records: eg 20 species
     if(nrow(occ) < min_n) {
 
@@ -522,13 +499,6 @@ FIT_MAXENT_TARG_BG <- function(occ,
 
       }
       
-      
-      #####################################################################
-      ## Then extract predictor values at the points, and provide data to 
-      ## the maxent function as swd. Does this mean the 
-      
-      
-
       #####################################################################
       ## Save objects for future reference
       if(shapefiles) {
@@ -589,11 +559,10 @@ FIT_MAXENT_TARG_BG <- function(occ,
 
         if(missing(rep_args)) rep_args <- NULL
 
-        ## Run MAXENT for X cross validation data splits of swd : so 5 replicaes, 0-4
+        ## Run MAXENT for x cross validation data splits of swd : so 5 replicaes, 0-4
         ## EG xval = cross validation : "OUT_DIR\Acacia_boormanii\xval\maxent_0.html"
         me_xval <- maxent(swd, pa, path = file.path(outdir_sp, 'xval'),
                           args = c(paste0('replicates=', replicates),
-                                   #paste0('biasfile=', dens),
                                    'responsecurves=true',
                                    'outputformat=logistic', # "biasfile = dens.ras"
                                    off, paste(names(rep_args), rep_args, sep = '=')))
@@ -628,6 +597,93 @@ FIT_MAXENT_TARG_BG <- function(occ,
                         histogram = TRUE, pch = 19) 
                         #cex.lab = 2, cex.axis = 1.5,
                         #main = paste0("Predictor corrleation matrix for ", spp))
+      
+      ## Finish the device
+      dev.off()
+      
+      ########################################################################################################################
+      ## Another .png for the global records: str(LAND$long)
+      if(!file.exists(sprintf('%s/%s/full/%s_%s.png', maxent_path, species, species, "global_records"))) {
+        
+        png(sprintf('%s/%s/full/%s_%s.png', maxent_path,
+                    species, species, "global_records"),
+            16180, 10000, units = 'px', res = 600)
+        
+        ## How do we locate bad records in the dataset after spotting them?
+        plot(LAND, 
+             lwd = 0.5, asp = 1, axes = TRUE, cex.axis = 3.5,
+             col = 'darkolivegreen3', bg = 'lightblue', cex.lab = 3)
+        
+        points(occ, pch = ".", cex = 3.5, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2, 
+               main = paste0("Global occurrences for ", species), 
+               xlab = "", ylab = "", asp = 1)
+        
+        ## Title 
+        title(paste0("Global points for ", species),
+              cex.main = 4,   font.main = 4, col.main = "blue")
+        
+        ## Finsh the device
+        dev.off()
+      
+      ########################################################################################################################
+      ## Another PNG for the background points....
+      #if(!file.exists(sprintf('%s/%s/full/%s_%s.png', maxent_path, name, name, "background_records"))) {
+      png(sprintf('%s/%s/full/%s_%s.png', outdir,
+                  name, name, "background_records"),
+          16180, 10000, units = 'px', res = 600)
+      
+      ## How do we locate bad records in the dataset after spotting them?
+      plot(LAND,  
+           lwd = 0.5, asp = 1, axes = TRUE, cex.axis = 3.5,
+           col = 'darkolivegreen3', bg = 'lightblue', cex.lab = 3)
+      
+      points(bg, pch = ".", cex = 1.6, col = "blue", cex.lab = 3, cex.main = 4, cex.axis = 2, 
+             main = paste0("Global occurrences for ", name), 
+             xlab = "", ylab = "", asp = 1)
+      
+      ## Title 
+      title(paste0("Bacground points for ", name),
+            cex.main = 4,   font.main = 4, col.main = "blue")
+      
+      ## Finish the device
+      dev.off() 
+      
+      # } else {
+      #   
+      #   message("Background records maps exists for ", name)
+      #   
+      # }
+      
+      ########################################################################################################################
+      ## Plot the models: can two plots be combined into one?
+      ## Make these unique names, and they can be searched in windows. Otherwise, we can just click into each subfolder. 
+      ## To sort, names would need to be: spp + unique_extension
+      m <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', outdir, name)) 
+      m <- m$me_full
+      
+      png(sprintf('%s/%s/full/%s_current.png', outdir,
+                  name, name, "variable_contribution"),
+          3236, 2000, units = 'px', res = 300)
+      
+      ## Set the margins
+      # par(mgp      = c(10, 4, 0), 
+      #     oma      = c(1.5, 1.5, 1.5, 1.5),
+      #     font.lab = 2)
+      
+      plot(m, col = "blue", pch = 19, cex.lab = 2, cex.axis = 5, cex.main = 2, 
+           main   = paste0("Variables for ", name), 
+           xlab   = "Maxent contribution (%)")
+      
+      ## Finish the device
+      dev.off()
+      
+      ## Plot the response curves too
+      png(sprintf('%s/%s/full/%s_%s.png', outdir,
+                  name, name, "response_curves"),
+          3236, 2000, units = 'px', res = 300)
+      
+      ## Add detail to the response plot
+      response(m, pch = 19, cex.lab = 2, cex.axis = 1.5, lwd = 2) 
       
       ## Finish the device
       dev.off()
@@ -801,27 +857,6 @@ FIT_MAXENT_SELECTION <- function(occ,
       swd_bg <- as.data.frame(swd_bg)
       swd_bg$lon <- NULL
       swd_bg$lat <- NULL
-      
-      #####################################################################
-      ## Could also insert kernel density estimation here, to further winnow the recrords
-      ## Set a threshold for density, then make a shapefile and exclude on this... 
-      # city  <- readRDS('./data/base/CONTEXTUAL/city.rds')
-      # crime <- readRDS('./data/base/CONTEXTUAL/crime.rds')
-      # LAND  <- readOGR("./data/base/CONTEXTUAL/ne_10m_land.shp", layer = "ne_10m_land")
-      # swd_occ = as.spatial
-      # 
-      # r <- raster(city)
-      # res(r) <- 1000
-      # 
-      # r <- rasterize(city, r)
-      # plot(r)
-      # quads <- as(r, 'SpatialPolygons')
-      # plot(quads, add = TRUE)
-      # points(crime, col = 'red', cex = 0.5)
-      # 
-      # nc <- rasterize(coordinates(crime), r, fun = 'count', background = 0)
-      # plot(nc)
-      # plot(city, add = TRUE)
       
       #####################################################################
       ## Run simplify rmaxent::simplify

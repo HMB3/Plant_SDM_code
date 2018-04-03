@@ -215,7 +215,7 @@ str(unique(TIB.TEST$species))
 ## the worldclim raster boundaries, so the sea test is probably not the most important for me
 ## Study area is the globe, but we are only projecting models onto Australia
 
-
+#########################################################################################################################
 ## Don't run the outliers test here, it is slower
 FLAGS  <- CleanCoordinates(TIB.TEST,
                            #countries        = "country",    ## too many flagged here...
@@ -228,34 +228,45 @@ FLAGS  <- CleanCoordinates(TIB.TEST,
                            seas             = FALSE)
 
 
-## Flagging < 1% seems reasonable
+## Flagging < 2.7 % seems reasonable
 summary(FLAGS)
-summary(FLAGS)[10]/dim(FLAGS)[1]*100
+summary(FLAGS)[8]/dim(FLAGS)[1]*100
+FLAGS = FLAGS[ ,!(colnames(FLAGS) == "decimallongitude" | colnames(FLAGS) =="decimallatitude")]
 
 
 ## A plot like this for each species would be awesome, fantastic work!
 #plot(FLAGS)
 
 
+#########################################################################################################################
 ## This creates a vector of true/false for each record
-GBIF.SPAT.OUT <- cc_outl(TIB.TEST, 
+GBIF.SPAT.OUT.1 <- cc_outl(head(TIB.TEST, (dim(TIB.TEST)[1]/2)), 
                          lon     = "decimallongitude", 
                          lat     = "decimallatitude", 
                          species = "species", 
                          method  = "quantile", 
                          mltpl   = 5, 
                          tdi     = 1000, 
-                         value   = "flags",  
-                         verbose = TRUE)
+                         value   = "flags")#, verbose = TRUE
+
+GBIF.SPAT.OUT.2 <- cc_outl(tail(TIB.TEST, (dim(TIB.TEST)[1]/2)), 
+                           lon     = "decimallongitude", 
+                           lat     = "decimallatitude", 
+                           species = "species", 
+                           method  = "quantile", 
+                           mltpl   = 5, 
+                           tdi     = 1000, 
+                           value   = "flags")#, verbose = TRUE)
 
 
 ## Check the output ::
 #dim(FLAGS);length(GBIF.SPAT.OUT)
-FLAGS = FLAGS[ ,!(colnames(FLAGS) == "decimallongitude" | colnames(FLAGS) =="decimallatitude")]
+FLAGS = bind_rows(GBIF.SPAT.OUT.1, GBIF.SPAT.OUT.2 )
 
 
+#########################################################################################################################
 ## Join data :: exclude the decimal lat/long 
-TEST.GEO = cbind(GBIF.TRIM.TEST, FLAGS, GBIF.SPAT.OUT)
+GBIF.SPAT.OUT = cbind(GBIF.TRIM.TEST, FLAGS, GBIF.SPAT.OUT)
 identical(TEST.GEO$searchTaxon, TEST.GEO$species)                              ## order matches
 
 
