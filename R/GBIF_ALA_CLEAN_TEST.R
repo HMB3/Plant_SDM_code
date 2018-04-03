@@ -240,23 +240,53 @@ FLAGS = FLAGS[ ,!(colnames(FLAGS) == "decimallongitude" | colnames(FLAGS) =="dec
 
 #########################################################################################################################
 ## This creates a vector of true/false for each record
-GBIF.SPAT.OUT.1 <- cc_outl(head(TIB.TEST, (dim(TIB.TEST)[1]/2)), 
-                         lon     = "decimallongitude", 
-                         lat     = "decimallatitude", 
-                         species = "species", 
-                         method  = "quantile", 
-                         mltpl   = 5, 
-                         tdi     = 1000, 
-                         value   = "flags")#, verbose = TRUE
+n = 676837
+TIB.LIST = split(TIB.TEST, rep(1:(nrow(TIB.TEST)/n+nrow(TIB.TEST)%%n),each = n))
 
-GBIF.SPAT.OUT.2 <- cc_outl(tail(TIB.TEST, (dim(TIB.TEST)[1]/2)), 
+GBIF.SPAT.OUT.1 <- cc_outl(TIB.LIST$`1`, 
                            lon     = "decimallongitude", 
                            lat     = "decimallatitude", 
                            species = "species", 
                            method  = "quantile", 
                            mltpl   = 5, 
                            tdi     = 1000, 
-                           value   = "flags")#, verbose = TRUE)
+                           value   = "flags")#, verbose = TRUE
+
+GBIF.SPAT.OUT.2 <- cc_outl(TIB.LIST$`2`, 
+                           lon     = "decimallongitude", 
+                           lat     = "decimallatitude", 
+                           species = "species", 
+                           method  = "quantile", 
+                           mltpl   = 5, 
+                           tdi     = 1000, 
+                           value   = "flags")#, verbose = TRUE
+
+GBIF.SPAT.OUT.3 <- cc_outl(TIB.LIST$`3`, 
+                           lon     = "decimallongitude", 
+                           lat     = "decimallatitude", 
+                           species = "species", 
+                           method  = "quantile", 
+                           mltpl   = 5, 
+                           tdi     = 1000, 
+                           value   = "flags")#, verbose = TRUE
+
+GBIF.SPAT.OUT.4 <- cc_outl(TIB.LIST$`4`, 
+                           lon     = "decimallongitude", 
+                           lat     = "decimallatitude", 
+                           species = "species", 
+                           method  = "quantile", 
+                           mltpl   = 5, 
+                           tdi     = 1000, 
+                           value   = "flags")#, verbose = TRUE
+
+GBIF.SPAT.OUT.5 <- cc_outl(TIB.LIST$`5`, 
+                           lon     = "decimallongitude", 
+                           lat     = "decimallatitude", 
+                           species = "species", 
+                           method  = "quantile", 
+                           mltpl   = 5, 
+                           tdi     = 1000, 
+                           value   = "flags")#, verbose = TRUE
 
 
 ## Check the output ::

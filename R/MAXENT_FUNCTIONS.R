@@ -415,23 +415,23 @@ FIT_MAXENT_TARG_BG <- function(occ,
                                responsecurves,
                                rep_args,
                                full_args) {
-
+  
   ########################################################################
   ## First, stop if the outdir file exists,
   if(!file.exists(outdir)) stop('outdir does not exist :(', call. = FALSE)
   outdir_sp <- file.path(outdir, gsub(' ', '_', name))
-
+  
   ## Also Skip species which have already been modelled: again, can this be made into an argument?
   if(file.exists(outdir_sp)) {
-
+    
     print (paste ('Skip', name, ', Model results exist for this species'))
-
+    
   } else {
-
+    
     ## If the file doesn't exist, split out the features
     if(!file.exists(outdir_sp)) dir.create(outdir_sp)
     features <- unlist(strsplit(features, ''))
-
+    
     ## Make sure user features are allowed: don't run the model if the
     ## features have been incorrectly specified in the main argument
     ## l: linear
@@ -442,15 +442,15 @@ FIT_MAXENT_TARG_BG <- function(occ,
     if(length(setdiff(features, c('l', 'p', 'q', 'h', 't'))) > 1)
       stop("features must be a vector of one or more of ',
          'l', 'p', 'q', 'h', and 't'.")
-
+    
     ## Aggregate
     b <- aggregate(gBuffer(occ, width = background_buffer_width, byid = TRUE))
-
+    
     #####################################################################
     ## Get unique cell numbers for species occurrences
     ## Can we make the template raster 10km?
     cells <- cellFromXY(template.raster, occ)
-
+    
     ## Clean out duplicate cells and NAs (including points outside extent of predictor data)
     ## Note this will get rid of a lot of duplicate records not filtered out by GBIF columns, etc.
     not_dupes <- which(!duplicated(cells) & !is.na(cells))
@@ -462,19 +462,19 @@ FIT_MAXENT_TARG_BG <- function(occ,
     #####################################################################
     ## Skip species that have less than a minimum number of records: eg 20 species
     if(nrow(occ) < min_n) {
-
+      
       print (paste ('Fewer occurrence records than the number of cross-validation ',
                     'replicates for species ', name,
                     ' Model not fit for this species'))
-
+      
     } else {
-
+      
       #####################################################################
       ## Now subset the background records to the buffered polygon
       system.time(o <- over(bg, b))
       bg <- bg[which(!is.na(o)), ]
       bg_cells <- cellFromXY(template.raster, bg)
-
+      
       ## Clean out duplicates and NAs (including points outside extent of predictor data)
       bg_not_dupes <- which(!duplicated(bg_cells) & !is.na(bg_cells))
       bg <- bg[bg_not_dupes, ]
@@ -487,55 +487,55 @@ FIT_MAXENT_TARG_BG <- function(occ,
       
       ## Reduce background sample if it's larger than max_bg_size
       if (nrow(bg) > max_bg_size) {
-
+        
         message(nrow(bg), ' target species background records, reduced to random ',
                 max_bg_size, '.')
-
+        
         bg <- bg[sample(nrow(bg), max_bg_size), ]  ## Change this to use 
-
+        
       } else {
-
+        
         message(nrow(bg), ' target species background records.')
-
+        
       }
       
       #####################################################################
       ## Save objects for future reference
       if(shapefiles) {
-
+        
         suppressWarnings({
-
+          
           writeOGR(SpatialPolygonsDataFrame(b, data.frame(ID = seq_len(length(b)))),
                    outdir_sp, 'bg_buffer', 'ESRI Shapefile', overwrite_layer = TRUE)
           writeOGR(bg,  outdir_sp, 'bg',   'ESRI Shapefile', overwrite_layer = TRUE)
           writeOGR(occ, outdir_sp, 'occ',  'ESRI Shapefile', overwrite_layer = TRUE)
-
+          
         })
-
+        
       }
-
+      
       ## Save the background and occurrence points as objects
       saveRDS(bg,  file.path(outdir_sp, 'bg.rds'))
       saveRDS(occ, file.path(outdir_sp, 'occ.rds'))
-
+      
       #####################################################################
       ## sdm.predictors: the s_ff object containing sdm.predictors to use in the model
       ## Sample sdm.predictors at occurrence and background points
       #####################################################################
       swd_occ <- occ[, sdm.predictors]
       saveRDS(swd_occ, file.path(outdir_sp, 'occ_swd.rds'))
-
+      
       swd_bg <- bg[, sdm.predictors]
       saveRDS(swd_bg, file.path(outdir_sp, 'bg_swd.rds'))
-
+      
       ## Save shapefiles of the occurrence and background points
       if(shapefiles) {
-
+        
         writeOGR(swd_occ, outdir_sp,  'occ_swd', 'ESRI Shapefile', overwrite_layer = TRUE)
         writeOGR(swd_bg,  outdir_sp,  'bg_swd',  'ESRI Shapefile', overwrite_layer = TRUE)
-
+        
       }
-
+      
       #####################################################################
       ## Combine occurrence and background data
       swd <- as.data.frame(rbind(swd_occ@data, swd_bg@data))
@@ -544,21 +544,21 @@ FIT_MAXENT_TARG_BG <- function(occ,
       
       ## Now check the features arguments are correct
       off <- setdiff(c('l', 'p', 'q', 't', 'h'), features)
-
+      
       ## 
       if(length(off) > 0) {
-
+        
         off <- c(l = 'linear=false',    p = 'product=false', q = 'quadratic=false',
                  t = 'threshold=false', h = 'hinge=false')[off]
-
+        
       }
-
+      
       off <- unname(off)
-
+      
       if(replicates > 1) {
-
+        
         if(missing(rep_args)) rep_args <- NULL
-
+        
         ## Run MAXENT for x cross validation data splits of swd : so 5 replicaes, 0-4
         ## EG xval = cross validation : "OUT_DIR\Acacia_boormanii\xval\maxent_0.html"
         me_xval <- maxent(swd, pa, path = file.path(outdir_sp, 'xval'),
@@ -566,9 +566,9 @@ FIT_MAXENT_TARG_BG <- function(occ,
                                    'responsecurves=true',
                                    'outputformat=logistic', # "biasfile = dens.ras"
                                    off, paste(names(rep_args), rep_args, sep = '=')))
-
+        
       }
-
+      
       ## Runs the full maxent model - presumably using all the data in swd
       if(missing(full_args)) full_args <- NULL
       me_full <- maxent(swd, pa, path = file.path(outdir_sp, 'full'),
@@ -595,8 +595,8 @@ FIT_MAXENT_TARG_BG <- function(occ,
       ## Add detail to the response plot
       chart.Correlation(swd_occ@data,
                         histogram = TRUE, pch = 19) 
-                        #cex.lab = 2, cex.axis = 1.5,
-                        #main = paste0("Predictor corrleation matrix for ", spp))
+      #cex.lab = 2, cex.axis = 1.5,
+      #main = paste0("Predictor corrleation matrix for ", spp))
       
       ## Finish the device
       dev.off()
@@ -624,97 +624,97 @@ FIT_MAXENT_TARG_BG <- function(occ,
         
         ## Finsh the device
         dev.off()
+        
+        ########################################################################################################################
+        ## Another PNG for the background points....
+        #if(!file.exists(sprintf('%s/%s/full/%s_%s.png', maxent_path, name, name, "background_records"))) {
+        png(sprintf('%s/%s/full/%s_%s.png', outdir,
+                    name, name, "background_records"),
+            16180, 10000, units = 'px', res = 600)
+        
+        ## How do we locate bad records in the dataset after spotting them?
+        plot(LAND,  
+             lwd = 0.5, asp = 1, axes = TRUE, cex.axis = 3.5,
+             col = 'darkolivegreen3', bg = 'lightblue', cex.lab = 3)
+        
+        points(bg, pch = ".", cex = 1.6, col = "blue", cex.lab = 3, cex.main = 4, cex.axis = 2, 
+               main = paste0("Global occurrences for ", name), 
+               xlab = "", ylab = "", asp = 1)
+        
+        ## Title 
+        title(paste0("Bacground points for ", name),
+              cex.main = 4,   font.main = 4, col.main = "blue")
+        
+        ## Finish the device
+        dev.off() 
+        
+        # } else {
+        #   
+        #   message("Background records maps exists for ", name)
+        #   
+        # }
+        
+        ########################################################################################################################
+        ## Plot the models: can two plots be combined into one?
+        ## Make these unique names, and they can be searched in windows. Otherwise, we can just click into each subfolder. 
+        ## To sort, names would need to be: spp + unique_extension
+        m <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', outdir, name)) 
+        m <- m$me_full
+        
+        png(sprintf('%s/%s/full/%s_current.png', outdir,
+                    name, name, "variable_contribution"),
+            3236, 2000, units = 'px', res = 300)
+        
+        ## Set the margins
+        # par(mgp      = c(10, 4, 0), 
+        #     oma      = c(1.5, 1.5, 1.5, 1.5),
+        #     font.lab = 2)
+        
+        plot(m, col = "blue", pch = 19, cex.lab = 2, cex.axis = 5, cex.main = 2, 
+             main   = paste0("Variables for ", name), 
+             xlab   = "Maxent contribution (%)")
+        
+        ## Finish the device
+        dev.off()
+        
+        ## Plot the response curves too
+        png(sprintf('%s/%s/full/%s_%s.png', outdir,
+                    name, name, "response_curves"),
+            3236, 2000, units = 'px', res = 300)
+        
+        ## Add detail to the response plot
+        response(m, pch = 19, cex.lab = 2, cex.axis = 1.5, lwd = 2) 
+        
+        ## Finish the device
+        dev.off()
+        
+        #####################################################################
+        ## Save fitted model object, and the model-fitting data.
+        #       if(replicates > 1) {
+        # 
+        #         saveRDS(list(me_xval = me_xval, me_full = me_full, swd = swd, pa = pa),
+        #                 file.path(outdir_sp, 'maxent_fitted.rds'))
+        # 
+        #       } else {
+        # 
+        #         saveRDS(list(me_xval = NA, me_full = me_full, swd = swd, pa = pa),
+        #                 file.path(outdir_sp, 'maxent_fitted.rds'))
+        # 
+        # }
+        
+      }
       
-      ########################################################################################################################
-      ## Another PNG for the background points....
-      #if(!file.exists(sprintf('%s/%s/full/%s_%s.png', maxent_path, name, name, "background_records"))) {
-      png(sprintf('%s/%s/full/%s_%s.png', outdir,
-                  name, name, "background_records"),
-          16180, 10000, units = 'px', res = 600)
-      
-      ## How do we locate bad records in the dataset after spotting them?
-      plot(LAND,  
-           lwd = 0.5, asp = 1, axes = TRUE, cex.axis = 3.5,
-           col = 'darkolivegreen3', bg = 'lightblue', cex.lab = 3)
-      
-      points(bg, pch = ".", cex = 1.6, col = "blue", cex.lab = 3, cex.main = 4, cex.axis = 2, 
-             main = paste0("Global occurrences for ", name), 
-             xlab = "", ylab = "", asp = 1)
-      
-      ## Title 
-      title(paste0("Bacground points for ", name),
-            cex.main = 4,   font.main = 4, col.main = "blue")
-      
-      ## Finish the device
-      dev.off() 
-      
-      # } else {
-      #   
-      #   message("Background records maps exists for ", name)
-      #   
-      # }
-      
-      ########################################################################################################################
-      ## Plot the models: can two plots be combined into one?
-      ## Make these unique names, and they can be searched in windows. Otherwise, we can just click into each subfolder. 
-      ## To sort, names would need to be: spp + unique_extension
-      m <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', outdir, name)) 
-      m <- m$me_full
-      
-      png(sprintf('%s/%s/full/%s_current.png', outdir,
-                  name, name, "variable_contribution"),
-          3236, 2000, units = 'px', res = 300)
-      
-      ## Set the margins
-      # par(mgp      = c(10, 4, 0), 
-      #     oma      = c(1.5, 1.5, 1.5, 1.5),
-      #     font.lab = 2)
-      
-      plot(m, col = "blue", pch = 19, cex.lab = 2, cex.axis = 5, cex.main = 2, 
-           main   = paste0("Variables for ", name), 
-           xlab   = "Maxent contribution (%)")
-      
-      ## Finish the device
-      dev.off()
-      
-      ## Plot the response curves too
-      png(sprintf('%s/%s/full/%s_%s.png', outdir,
-                  name, name, "response_curves"),
-          3236, 2000, units = 'px', res = 300)
-      
-      ## Add detail to the response plot
-      response(m, pch = 19, cex.lab = 2, cex.axis = 1.5, lwd = 2) 
-      
-      ## Finish the device
-      dev.off()
-
-      #####################################################################
-      ## Save fitted model object, and the model-fitting data.
-      #       if(replicates > 1) {
-      # 
-      #         saveRDS(list(me_xval = me_xval, me_full = me_full, swd = swd, pa = pa),
-      #                 file.path(outdir_sp, 'maxent_fitted.rds'))
-      # 
-      #       } else {
-      # 
-      #         saveRDS(list(me_xval = NA, me_full = me_full, swd = swd, pa = pa),
-      #                 file.path(outdir_sp, 'maxent_fitted.rds'))
-      # 
-      # }
-
     }
-
+    
   }
-
-}
-
-
-
-
-
-
-
-
+  
+} 
+  
+  
+  
+  
+  
+  
 #########################################################################################################################
 ## GET BACKGROUND POINTS AND THEN FIT MAXENT WITH BACKWARDS SELECTION 
 #########################################################################################################################
@@ -1291,7 +1291,7 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             
             ########################################################################################################################
             ## Now create the empty panel just before plotting, and read in the occurrence and background points and original model
-    
+            
             
             ## And change the projection for the operators...........................................................................
             ## '+init=esri:54009'
@@ -1408,36 +1408,36 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             ## Make these unique names, and they can be searched in windows. Otherwise, we can just click into each subfolder. 
             ## To sort, names would need to be: spp + unique_extension
             if(!file.exists(sprintf('%s/%s/full/%s_current.png', maxent_path, species, species, "variable_contribution"))) {
-            
-            png(sprintf('%s/%s/full/%s_current.png', maxent_path,
-                        species, species, "variable_contribution"),
-                3236, 2000, units = 'px', res = 300)
-            
-            ## Set the margins
-            # par(mgp      = c(10, 4, 0), 
-            #     oma      = c(1.5, 1.5, 1.5, 1.5),
-            #     font.lab = 2)
-            
-            plot(m, col = "blue", pch = 19, cex.lab = 2, cex.axis = 5, cex.main = 2, 
-                 main   = paste0("Variables for ", species), 
-                 xlab   = "Maxent contribution (%)")
-            
-            ## Finish the device
-            dev.off()
-            
-            ## Plot the response curves too
-            png(sprintf('%s/%s/full/%s_%s.png', maxent_path,
-                        species, species, "response_curves"),
-                3236, 2000, units = 'px', res = 300)
-            
-            ## Add detail to the response plot
-            response(m, pch = 19, cex.lab = 2, cex.axis = 1.5, lwd = 2) 
-            #ylab   = "",
-            #main   = paste0(species, " responses"))
-            
-            ## Finish the device
-            dev.off()
-            
+              
+              png(sprintf('%s/%s/full/%s_current.png', maxent_path,
+                          species, species, "variable_contribution"),
+                  3236, 2000, units = 'px', res = 300)
+              
+              ## Set the margins
+              # par(mgp      = c(10, 4, 0), 
+              #     oma      = c(1.5, 1.5, 1.5, 1.5),
+              #     font.lab = 2)
+              
+              plot(m, col = "blue", pch = 19, cex.lab = 2, cex.axis = 5, cex.main = 2, 
+                   main   = paste0("Variables for ", species), 
+                   xlab   = "Maxent contribution (%)")
+              
+              ## Finish the device
+              dev.off()
+              
+              ## Plot the response curves too
+              png(sprintf('%s/%s/full/%s_%s.png', maxent_path,
+                          species, species, "response_curves"),
+                  3236, 2000, units = 'px', res = 300)
+              
+              ## Add detail to the response plot
+              response(m, pch = 19, cex.lab = 2, cex.axis = 1.5, lwd = 2) 
+              #ylab   = "",
+              #main   = paste0(species, " responses"))
+              
+              ## Finish the device
+              dev.off()
+              
             } else {
               
               message("Variable contribution plot exists for ", species)
