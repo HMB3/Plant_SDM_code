@@ -319,6 +319,8 @@ test.spp = trimws(sort(unique(c(renee.full$Species,
                                 MQ.glasshouse$Species,
                                 "Betula pendula", "Fraxinus excelsior", "Quercus robur", "Fagus sylvatica"))))
 
+spp.all = unique(sort(c(test.spp, spp.all)))
+
 
 ## Combine with 45 from the main list
 HIA.SAMPLE = head(COMBO.NICHE.CONTEXT, 53)[, c("searchTaxon")]

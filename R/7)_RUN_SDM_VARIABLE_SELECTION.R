@@ -47,7 +47,7 @@ xres(template.raster);yres(template.raster)
 
 
 #########################################################################################################################
-## Full worldclim predictors: 8, 9, 18 and 19 are suspect
+## Now create the variables needed to access current environmental conditions + their names in the functions
 sdm.predictors <- c("Annual_mean_temp",    "Mean_diurnal_range",  "Isothermality",      "Temp_seasonality",  
                     "Max_temp_warm_month", "Min_temp_cold_month", "Temp_annual_range",  
                     "Mean_temp_wet_qu",    "Mean_temp_dry_qu",    
@@ -63,6 +63,17 @@ sdm.select     <- c("Annual_mean_temp", "Temp_seasonality",    "Max_temp_warm_mo
                     "Annual_precip",    "Precip_seasonality",  
                     "Precip_wet_month", "Precip_dry_month")      
 
+
+
+## Create raster stack of current environmental conditions if needed
+i  <- match(sdm.predictors, sdm.predictors)
+ff <- file.path('./data/base/worldclim/world/0.5/bio/current',
+                sprintf('bio_%02d.tif', i))
+
+## Name the grids :: these should be indentical
+env.grids.current = stack(sub('0.5', '1km', ff))
+names(env.grids.current) <- sdm.predictors[i]
+identical(names(env.grids.current),sdm.predictors)
 
 
 
@@ -93,7 +104,7 @@ lapply(kop.spp, function(spp) { # for serial, parLapply(cl, species[1:8], functi
     background <- subset(SDM.DATA.ALL, searchTaxon != spp)
     
     ## The create a vector of the sdm.predictors used. 
-    sdm.predictors <- sdm.select # vector of used sdm.predictors 
+    #sdm.predictors <- sdm.select # vector of used sdm.predictors 
     
     ## Finally fit the models using FIT_MAXENT. Use tryCatch to skip any exceptions
     tryCatch(
@@ -151,14 +162,16 @@ lapply(kop.spp, function(spp) { # for serial, parLapply(cl, species[1:8], functi
     background <- subset(SDM.DATA.ALL, searchTaxon != spp)
     
     ## The create a vector of the sdm.predictors used. 
-    sdm.predictors <- sdm.select # vector of used sdm.predictors 
+    #sdm.predictors <- sdm.select # vector of used sdm.predictors 
     
     ## Finally fit the models using FIT_MAXENT. Use tryCatch to skip any exceptions
     tryCatch(
       FIT_MAXENT_RAND_BG(occ                     = occurrence, 
                          #bg                      = background, 
                          name                    = spp, 
-                         outdir                  = 'output/maxent/SET_VAR_DENSITY', 
+                         outdir                  = 'output/maxent/SET_VAR_COORDCLEAN',
+                         sdm.predictors          = sdm.select,
+                         env.grids.current       = env.grids.current,
                          template.raster         = template.raster,
                          template.cells          = template.cells,
                          min_n                   = 20,   ## This should be higher...

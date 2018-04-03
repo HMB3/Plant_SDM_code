@@ -32,11 +32,12 @@ source('./R/HIA_LIST_MATCHING.R')
 GBIF.TRIM.TEST  = COMBO.RASTER.CONTEXT[COMBO.RASTER.CONTEXT$searchTaxon %in% spp.all, ]   ## kop.spp for the test spp
 SPP.TEST        = subset(GBIF.TRIM.TEST, searchTaxon == "Ficus brachypoda")
 
-unique(GBIF.TRIM.TEST$searchTaxon)
+str(unique(GBIF.TRIM.TEST$searchTaxon))
 unique(SPP.TEST$searchTaxon)
+'Ficus brachypoda' %in% GBIF.TRIM.TEST$searchTaxon  
 
 
-## HB Hard to see - but we'd love to remove the point in Madagascar 
+## HB hard to see - but we'd love to remove the point in Madagascar 
 plot(LAND)
 points(SPP.TEST$lon,  SPP.TEST$lat, cex = 0.2, col = "red", pch = 19)
 
@@ -197,6 +198,7 @@ points(GBIF.CLEAN$decimallongitude,  GBIF.CLEAN$decimallatitude, cex = 0.8, col 
 #########################################################################################################################
 ## AZ I have further devloped the cleaning functions in the CoordinateCleaner package, which runs additional tests.
 ## I suggest you do the following instead
+str(unique(GBIF.TRIM.TEST$searchTaxon))
 GBIF.TRIM.GEO = dplyr::rename(GBIF.TRIM.TEST, 
                               species = searchTaxon,
                               decimallongitude = lon, 
@@ -206,7 +208,7 @@ GBIF.TRIM.GEO = dplyr::rename(GBIF.TRIM.TEST,
 ## Now use ?CleanCoordinates :: need to work on a tibble, for some reason !
 TIB.TEST <- as_tibble(GBIF.TRIM.GEO)
 dim(TIB.TEST)
-unique(TIB.TEST$species)
+str(unique(TIB.TEST$species))
 
 
 ## Run a check :: I've already stripped out the records that fall outside
@@ -232,7 +234,7 @@ summary(FLAGS)[10]/dim(FLAGS)[1]*100
 
 
 ## A plot like this for each species would be awesome, fantastic work!
-plot(FLAGS)
+#plot(FLAGS)
 
 
 ## This creates a vector of true/false for each record
@@ -248,7 +250,7 @@ GBIF.SPAT.OUT <- cc_outl(TIB.TEST,
 
 
 ## Check the output ::
-dim(FLAGS);length(GBIF.SPAT.OUT)
+#dim(FLAGS);length(GBIF.SPAT.OUT)
 FLAGS = FLAGS[ ,!(colnames(FLAGS) == "decimallongitude" | colnames(FLAGS) =="decimallatitude")]
 
 
@@ -332,6 +334,11 @@ dim(CLEAN.TRUE)
 unique(CLEAN.TRUE$summary)                                             ## works
 unique(CLEAN.TRUE$GBIF.SPAT.OUT)                                       ## works
 
+
+## How many species?
+str(unique(CLEAN.TRUE$searchTaxon))
+str(unique(TEST.GEO$searchTaxon))
+'Ficus brachypoda' %in% TEST.GEO$searchTaxon  
 
 
 #########################################################################################################################
