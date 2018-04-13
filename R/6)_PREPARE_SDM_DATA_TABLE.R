@@ -10,15 +10,16 @@
 
 #load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_2703_2018.RData")
 #load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_2703_2018.RData")
-COMBO.RASTER.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/CLEAN_TEST_SPP.rds")
-template.raster = raster("./data/template_hasData.tif")
+COMBO.RASTER.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/CLEAN_ONLY_HIA_SPP.rds")
+template.raster      = raster("./data/template_hasData.tif")
 source('./R/GREEN_CITIES_FUNCTIONS.R')
 source('./R/MAXENT_FUNCTIONS.R')
+source('./R/MAPPING_FUNCTIONS.R')
 source('./R/HIA_LIST_MATCHING.R')
 
 
 ## Need to clean this up...
-unique(COMBO.RASTER.CONTEXT$GBIF.SPAT.OUT)                                      ## could make the decison here
+unique(COMBO.RASTER.CONTEXT$GBIF.SPAT.OUT)                                ## could filter the records here
 dim(COMBO.RASTER.CONTEXT)    
 names(COMBO.RASTER.CONTEXT)
 
@@ -78,8 +79,6 @@ names(COMBO.RASTER.CONTEXT)
 ## Extremes (e.g. most extreme months)
 
 
-sdm.select <- c("Annual_mean_temp",   "Temp_seasonality",   "Max_temp_warm_month", "Min_temp_cold_month",
-                "Annual_precip",      "Precip_seasonality", "Precip_wet_month",    "Precip_dry_month")
 
 
 
@@ -166,7 +165,7 @@ sdm.select <- c("Annual_mean_temp",   "Temp_seasonality",   "Max_temp_warm_month
 # dim(COMBO.RASTER.CLEAN)[1]/dim(COMBO.RASTER.CONTEXT)[1]*100
 
 
-## Create a table with all the variables 
+## Create a table with all the variables :: can we add "In Australia" to this list?
 COMBO.RASTER.ALL  <- dplyr::select(COMBO.RASTER.CONTEXT, searchTaxon, lon, lat,
                                    
                                    Annual_mean_temp,     Mean_diurnal_range,  Isothermality,     Temp_seasonality, 
@@ -191,8 +190,7 @@ length(occurrence_cells_all)   ## this is a list of dataframes, where the number
 
 
 #########################################################################################################################
-## Now get just one record within each 10*10km cell. This step should eliminate most, if not all, duplicate records
-## A simple alternative to the extract problem could be to run this process before the extract?
+## Now get just one record within each 10*10km cell.
 SDM.DATA.ALL <- mapply(function(x, cells) {
   x[!duplicated(cells), ]
 }, COMBO.RASTER.SPLIT.ALL, occurrence_cells_all, SIMPLIFY = FALSE) %>% do.call(rbind, .)
@@ -221,7 +219,8 @@ str(SDM.DATA.ALL)
 dim(SDM.DATA.ALL)
 #save(template.raster, file = paste("./data/base/HIA_LIST/COMBO/SDM_TEMPLATE_RASTER.RData"))
 #save(SDM.DATA.ALL,    file = paste("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_ALL_VAR.RData"))
-save(SDM.DATA.ALL,    file = paste("./data/base/HIA_LIST/COMBO/SDM_DATA_TEST_CLEAN.RData"))
+saveRDS(SDM.DATA.ALL,    'data/base/HIA_LIST/COMBO/SDM_DATA_TEST_CLEAN.rds')
+
 
 ## Remove the other data
 # rm(COMBO.RASTER.ALL)

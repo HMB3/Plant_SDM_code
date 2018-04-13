@@ -5,7 +5,13 @@
 
 #########################################################################################################################
 ## This code takes a table of all species occurrences (rows) and environmental values (columns), and runs SDMs for a list
-## of taxa
+## of taxa. These taxa will be modelled in two sets:
+
+## Species with Australian boundary bias (e.g. Lomandra Longifolia) will be modelled using random selection of background
+## points.
+
+## Species without Australian boundary bias (e.g. Ficus Brachypoda) will be modelled using targetted selection of 
+## background points.
 
 
 ## The HIA brief again:
@@ -28,11 +34,11 @@
 #load('data/template_hasData.tif')
 source('./R/HIA_LIST_MATCHING.R')
 
-load("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_ALL_VAR.RData")
+#load("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_ALL_VAR.RData")
 template.raster = raster("./data/template_hasData.tif")
 template.cells  = readRDS("./data/hasData_cells.rds")
 #load("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_TEST_SPP.RData")
-#load("./data/base/HIA_LIST/COMBO/SDM_DATA_TEST_CLEAN.RData")
+SDM.DATA.ALL = readRDS("./data/base/HIA_LIST/COMBO/SDM_DATA_TEST_CLEAN.rds")
 
 
 ## Check data :: template, data table and species 
@@ -63,7 +69,6 @@ sdm.select     <- c("Annual_mean_temp", "Temp_seasonality",    "Max_temp_warm_mo
                     "Precip_wet_month", "Precip_dry_month")      
 
 
-
 ## Create raster stack of current environmental conditions if needed
 i  <- match(sdm.predictors, sdm.predictors)
 ff <- file.path('./data/base/worldclim/world/0.5/bio/current',
@@ -77,6 +82,41 @@ identical(names(env.grids.current),sdm.predictors)
 
 ## Create polygon of land surface
 LAND       = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LAND_world.rds")
+aus = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds") %>%
+  spTransform(CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs'))
+
+
+#########################################################################################################################
+## Loop over the species list and plot the occurrence data for each to check the data bias
+## 
+TAXA = as.list(sort(unique(SDM.DATA.ALL$searchTaxon)))
+  
+for (i in 1:length(TAXA)) {
+  
+  ## Need to check the OBS column matches up - or do we not need this again?
+  spp.points <- SDM.DATA.ALL[SDM.DATA.ALL$searchTaxon == TAXA[i], ] %>%
+    spTransform(CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs'))
+  
+  ## Print to file
+  save_name = gsub(' ', '_', TAXA[i])
+  save_dir  = "output/maxent/summary"
+  png(sprintf('%s/%s_%s.png', save_dir,
+              save_name, "Australian_points"),
+      3236, 2000, units = 'px', res = 300)
+  
+  ## set margins
+  par(mar   = c(3, 3, 5, 3),  ## b, l, t, r
+      #mgp   = c(9.8, 2.5, 0),
+      oma   = c(1.5, 1.5, 1.5, 1.5))
+  
+  ## Plot just the Australian points
+  plot(aus, main = TAXA[i])
+  points(spp.points, col = "red", cex = .3, pch = 19)
+  
+  ## Finish the device
+  dev.off()
+  
+}
 
 
 
@@ -92,7 +132,7 @@ LAND       = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LAND_world.rds")
 projection(template.raster);projection(SDM.DATA.ALL)
 
 
-## spp = kop.spp[8]
+## spp = kop.spp[1]
 ## Run without cluster
 lapply(kop.spp, function(spp) { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel 
   
@@ -103,8 +143,7 @@ lapply(kop.spp, function(spp) { # for serial, parLapply(cl, species[1:8], functi
     ## Subset the records to only the taxa being processed
     occurrence <- subset(SDM.DATA.ALL, searchTaxon == spp)
     
-    ## Now get the background points. These can come from anywhere in the whole dataset,
-    ## other than the species used.
+    ## Now get the background points. These can come from any spp, other than the modelled species.
     background <- subset(SDM.DATA.ALL, searchTaxon != spp)
     
     ## The create a vector of the sdm.predictors used. 
@@ -329,6 +368,10 @@ lapply(kop.spp, function(spp)  { # for serial, parLapply(cl, species[1:8], funct
 stopCluster(cl)
 
 
+## Save image
+save.image("STEP_7_RUN_SDM.RData")
+
+
 
 
 
@@ -336,15 +379,29 @@ stopCluster(cl)
 ## OUTSTANDING SDM TASKS:
 #########################################################################################################################
 
-## Create a list of species with boundary bias, and without boundary bias
 
-## Get the random background points working
-  
-## Set a minium no. of background points, as well as a maximum
-  
-## Add the koppen zone constraint
+## 1). Create a list of species with boundary bias, and without boundary bias (done). Only model those species with > 20 AUS records
 
-## Test the maps on cleaned data
+## 2). Track the coverage of the modelled spp :: taxonomic/functional/phlogenetic (done).
+
+## 3). Re-process the niches for extra species :: we have niches for 6800 taxa, including all but 200 of the risky taxa (done).
+
+## 4). Get the random background points maxent function working (need John's help to code).
+  
+## 5). Add the koppen zone constraint to both maxent functions  (need John's help to code).
+
+## 6). Set a minium no. of background points, as well as a maximum (John to advise).
+
+## 7). Fix mapping code :: why doesn't it work on the new rasters
+
+## 7). Summarise all maxent output, check species thresholds :: maxent tables (AIC), predicted maps, occ/bg points, response curves, etc.
+##     Choose spp (Hugh, Linda, Rach to review each species, and an indepdendent expert?).
+
+## 8). Get the Koppen summary idea working for species that are not modelled :: where will the koppens with records be in 2030/50/70? 
+
+## 9). Model extra species :: take another ~300 spp from the intersection of any grown spp and the risky/innovative species.
+
+## 10). Decide format to present n species to HIA
 
 
 

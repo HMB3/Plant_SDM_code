@@ -146,6 +146,7 @@ CLEAN.SPP = dplyr::rename(CLEAN.SPP, HIA.Taxa = Species)
 
 ## Reorder by species
 CLEAN.SPP = CLEAN.SPP[with(CLEAN.SPP, order(Binomial)), ] 
+write.csv(CLEAN.SPP , "./data/base/HIA_LIST/HIA/CLEAN_HIA_BIONOMIAL.csv", row.names = FALSE) 
 #View(CLEAN.SPP)
 
 
@@ -176,9 +177,9 @@ head(CLEAN.LOOKUP) ## Can merge on the bilogical data here...
 
 ## Record each list: Raw top 25 (1135), Varieties (948), Binomials (610) 
 ## Check exceptions with team
-length(unique(CLEAN.list$Species))   ## All 'things' being grown (13736)
-length(unique(HIA.VARIETY$Species))  ## Varieties  (8822), excluding "spp.", eg Philodendron spp. Congo, Nandina domestica Moon Bay
-length(unique(CLEAN.SPP$Binomial))     ## Binomials  (4303), keep Michelia yunnanensis Scented Pearl, exclude Spathiphyllum spp. Assorted
+length(unique(CLEAN.list$Species))    ## All 'things' being grown (13736)
+length(unique(HIA.VARIETY$Species))   ## Varieties  (8822), excluding "spp.", eg Philodendron spp. Congo, Nandina domestica Moon Bay
+length(unique(CLEAN.SPP$Binomial))    ## Binomials  (4303), keep Michelia yunnanensis Scented Pearl, exclude Spathiphyllum spp. Assorted
 
 
 ## Record the "spp." weirdos

@@ -20,12 +20,15 @@
 #########################################################################################################################
 ## To save time, load in previous data
 source('./R/HIA_LIST_MATCHING.R')
-load("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.RData")
+GBIF.LAND = readRDS("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.rds")
 load("./data/base/HIA_LIST/ALA/ALA_LAND_POINTS.RData")
 
 
-## 196 species from the risk list are missing...presumably due to inusfficient data
+## 199 species from the risk list are missing...presumably due to inusfficient data
 length(setdiff(RISK.BINOMIAL.CLEAN$Plant_name, GBIF.LAND$searchTaxon))
+
+
+
 
 
 #########################################################################################################################
@@ -42,8 +45,8 @@ names(ALA.LAND)
 setdiff(names(GBIF.LAND), names(ALA.LAND))
 
 
-## Test if the new experimental species are there
-'Swainsona formosa'  %in% GBIF.LAND$searchTaxon
+## Test if the new risky species are there
+summary(RISK.BINOMIAL  %in% GBIF.LAND$searchTaxon)
 
 
 #########################################################################################################################
@@ -88,11 +91,11 @@ head(GBIF.ALA.COMBO.LAND)
 
 
 ## Check the new data frame has just the species on the HIA list
-str(unique(GBIF.ALA.COMBO.LAND$searchTaxon))                                  ## ok
+length(unique(GBIF.ALA.COMBO.LAND$searchTaxon))                                  ## ok
 
 
-## Test if a particular species is there
-'Swainsona formosa'  %in% GBIF.ALA.COMBO.LAND$searchTaxon
+## How many risky species are there?
+summary(RISK.BINOMIAL  %in% GBIF.LAND$searchTaxon)
 
 
 ## What species are unique to each dataset?
@@ -105,7 +108,7 @@ str(unique(GBIF.ALA.COMBO.LAND$searchTaxon))                                  ##
 ## Now crunch the big dataset down to just the species on the 25 growers or more list: the extras are just overkill......
 #GBIF.ALA.COMBO.HIA  = GBIF.ALA.COMBO.LAND[GBIF.ALA.COMBO.LAND$searchTaxon %in% unique(c(test.spp, HIA.SPP$Binomial)), ]
 GBIF.ALA.COMBO.HIA  = GBIF.ALA.COMBO.LAND[GBIF.ALA.COMBO.LAND$searchTaxon %in% unique(GBIF.LAND$searchTaxon), ]
-str(unique(GBIF.ALA.COMBO.HIA$searchTaxon))
+length(unique(GBIF.ALA.COMBO.HIA$searchTaxon))
 
 
 ## This unique ID column can be applied across the project  
@@ -115,7 +118,7 @@ names(GBIF.ALA.COMBO.HIA)
 
 
 ## Now move this out to a separet file, so the cleaning code can be run separately
-saveRDS(GBIF.ALA.COMBO.HIA, file = paste("./data/base/HIA_LIST/COMBO/GBIF_ALA_COMBO_PRE_CLEAN.RData"))
+# saveRDS(GBIF.ALA.COMBO.HIA, file = paste("./data/base/HIA_LIST/COMBO/GBIF_ALA_COMBO_PRE_CLEAN.RData"))
 
 
 #########################################################################################################################
@@ -125,14 +128,29 @@ saveRDS(GBIF.ALA.COMBO.HIA, file = paste("./data/base/HIA_LIST/COMBO/GBIF_ALA_CO
 
 #########################################################################################################################
 ## Create points: consider changing the coordinate system here to a global projected system?
+CRS.MOL      <- CRS('+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +units=m +no_defs')
+CRS.WGS.84   <- CRS("+init=epsg:4326")
+CRS.AUS.ALB  <- CRS("+init=EPSG:3577")
+
+
+## The points table can be in global mollweide :: how can we 
 COMBO.POINTS   = SpatialPointsDataFrame(coords      = GBIF.ALA.COMBO.HIA[c("lon", "lat")], 
                                         data        = GBIF.ALA.COMBO.HIA[c("lon", "lat")],
-                                        #proj4string = CRS("+proj=longlat +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +no_defs")
-                                        proj4string = CRS('+proj=moll +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs'))
+                                        proj4string = CRS.WGS.84)
+
+# coordinates(GBIF.ALA.COMBO.HIA) = GBIF.ALA.COMBO.HIA[c("lon", "lat")]
+# proj4string(GBIF.ALA.COMBO.HIA) = CRS.MOL
+# res = spTransform(GBIF.ALA.COMBO.HIA, CRS.MOL)
+# head(res)
 
 
 ## Check
 dim(COMBO.POINTS)
+projection(COMBO.POINTS)
+names(COMBO.POINTS)
+
+
+
 
 
 #########################################################################################################################
@@ -183,32 +201,17 @@ dim(COMBO.POINTS)
 
 #########################################################################################################################
 ## Create a stack of rasters to sample: get all the Worldclim variables just for good measure
+## Use the Mollweide projection for the points and rasters 
 env.grids.current = stack(
-  file.path('./data/base/worldclim/world/1km/bio/current',
-            sprintf('bio_%02d.tif', 1:19)))
-projection(env.grids.current)                                   ## Now the Mollweide projection
-
-
-## Projected all datasets into the final system used by maxent (World Mollweide https://epsg.io/54009)
-
-
-# ## Can we resample the rasters to 10km?
-# BIOW_10km = raster("./data/base/worldclim/world/0.5/bio/current/bio_01_10km.tif")
-# BIOA_10km = raster("./data/base/worldclim/aus/0.5/bio/current/bio_aus_01_10km.tif")
-# 
-# 
-# ## Use bilinear?
-# test          = resample(env.grids.current, BIOW_10km, method = 'bilinear')
-# raster_path   = "./data/base/worldclim/aus/0.5/bio/current/"
-# current_10km  <- sprintf('%scurrent_env_10km.tif', raster_path)
-# writeRaster(test, current_10km , overwrite = TRUE)
+  file.path('./data/base/worldclim/world/0.5/bio/current',
+            sprintf('bio_%02d', 1:19))) 
 
 
 #########################################################################################################################
 ## Then use the extract function for all the rasters, and finaly bind on the COMBO data to the left of the raster values
 ## Can we use a cluster to speed this up?
 
-## Best option to speed this up is to use only the unique cells
+## Speed this up is to use only the unique cells?
 # COMBO.XY <- cellFromXY(world.temp, COMBO.POINTS) %>% 
 #   
 #   ## get the unique raster cells
@@ -227,6 +230,8 @@ COMBO.RASTER <- extract(env.grids.current, COMBO.POINTS) %>%
 
 ## Multiple rename using dplyr
 COMBO.RASTER = dplyr::rename(COMBO.RASTER,
+                             
+                             ## Temperature
                              Annual_mean_temp     = bio_01,
                              Mean_diurnal_range   = bio_02,
                              Isothermality        = bio_03,
@@ -238,7 +243,8 @@ COMBO.RASTER = dplyr::rename(COMBO.RASTER,
                              Mean_temp_dry_qu     = bio_09,
                              Mean_temp_warm_qu    = bio_10,
                              Mean_temp_cold_qu    = bio_11,
-
+                             
+                             ## Rainfall
                              Annual_precip        = bio_12,
                              Precip_wet_month     = bio_13,
                              Precip_dry_month     = bio_14,
@@ -250,15 +256,16 @@ COMBO.RASTER = dplyr::rename(COMBO.RASTER,
 
 
 ## Save/load
+summary(COMBO.RASTER)
 saveRDS(COMBO.RASTER, file = paste("./data/base/HIA_LIST/GBIF/COMBO_GBIF_ALA_RASTER.rds"))
-#load("./data/base/HIA_LIST/GBIF/COMBO_GBIF_ALA_RASTER.rds")
+#COMBO.RASTER = readRDS("./data/base/HIA_LIST/GBIF/COMBO_GBIF_ALA_RASTER.rds")
 #COMBO.RASTER  = COMBO.RASTER[COMBO.RASTER$searchTaxon %in% HIA.SPP$Binomial, ]
-
+gc();gc()
 
 ## Check
 dim(COMBO.RASTER)
 names(COMBO.RASTER)
-summary(COMBO.RASTER)
+projection(COMBO.RASTER)
 
 
 
@@ -269,31 +276,33 @@ summary(COMBO.RASTER)
 #########################################################################################################################
 
 
+#########################################################################################################################
+## Now crunch the big dataset down to just the intersection of the evergreen list and the risk list 
+# COMBO.RASTER  = COMBO.RASTER[COMBO.RASTER$searchTaxon %in% unique(c(GBIF.LAND$searchTaxon, extra.spp)), ]
+# length(unique(GBIF.ALA.COMBO.HIA$searchTaxon))
+
+
+
 ## We want to know the count of species that occur in 'n' LGAs, across a range of climates. Read in LGA and SUA
+SUA      = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/IN_SUA_AUS.rds")
+LGA      = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LGA.rds")
+AUS      = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds")
+projection(LGA);projection(SUA);projection(AUS)
+
+
+## Convert the raster data back into a spdf
 COMBO.RASTER.SP   = SpatialPointsDataFrame(coords      = COMBO.RASTER[c("lon", "lat")], 
                                            data        = COMBO.RASTER,
-                                           #proj4string = CRS("+init=epsg:4326"),
-                                           proj4string = CRS('+proj=moll +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs'))
-
-SUA      = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/SUA_2011_AUST.shp", layer = "SUA_2011_AUST")
-LGA      = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/LGA_2016_AUST.shp", layer = "LGA_2016_AUST")
-
-names(SUA)
-names(LGA)
+                                           proj4string = CRS.WGS.84)
 
 
 ## Project using a projected rather than geographic coordinate system
-#CRS.new  <- CRS("+init=epsg:4326") # EPSG:3577
-CRS.new  <- CRS('+proj=moll +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs')
-LGA.WGS  = spTransform(LGA, CRS.new)
-SUA.WGS  = spTransform(SUA, CRS.new)
+LGA.WGS  = spTransform(LGA, CRS.WGS.84)
+SUA.WGS  = spTransform(SUA, CRS.WGS.84)
+AUS.WGS  = spTransform(AUS, CRS.WGS.84)
 
 
-## Double check they are the same
-projection(COMBO.RASTER.SP);projection(LGA.WGS);projection(SUA.WGS)
-
-
-## Remove the LGA columns we don't need
+## Remove the columns we don't need
 LGA.WGS = LGA.WGS[, c("LGA_CODE16", "LGA_NAME16")] 
 
 
@@ -313,47 +322,60 @@ LGA.WGS = LGA.WGS[, c("LGA_CODE16", "LGA_NAME16")]
 
 
 ## Then, we want to create a layer which is just in the urban area, or not. This would need to combine the above fields into one
-IN.SUA   = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/INSIDE_AUS_SUA.shp", layer = "INSIDE_AUS_SUA")
-IN.SUA   = IN.SUA[,-(1)];
-IN.SUA   = IN.SUA[,-(2)]
-names(IN.SUA)
-IN.SUA  = spTransform(IN.SUA, CRS.new)
-plot(IN.SUA)
+# IN.SUA   = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/INSIDE_AUS_SUA.shp", layer = "INSIDE_AUS_SUA")
+# saveRDS(IN.SUA, file.path("F:/green_cities_sdm/data/base/CONTEXTUAL/", 'IN_SUA_AUS.rds'))
+# 
+# IN.SUA   = IN.SUA[,-(1)];
+# IN.SUA   = IN.SUA[,-(2)]
+# names(IN.SUA)
+# IN.SUA  = spTransform(IN.SUA, CRS.WGS.84)
 
-
-#########################################################################################################################
-## Run join between species records and LGAs/SUAs
-SUA.JOIN      = over(COMBO.RASTER.SP, IN.SUA)  
-LGA.JOIN      = over(COMBO.RASTER.SP, LGA.WGS)   
-COMBO.SUA.LGA = cbind.data.frame(COMBO.RASTER.SP, SUA.JOIN, LGA.JOIN) ## Include below, just get the LGA columns?  
-
-head(SUA.JOIN)
-head(LGA.JOIN)
 
 
 #########################################################################################################################
-## AGGREGATE THE NUMBER OF LGAs EACH SPECIES IS FOUND IN 
+## Run join between species records and LGAs/SUAs :: Double check they are the same
+projection(COMBO.RASTER.SP);projection(LGA.WGS);projection(SUA.WGS);projection(AUS.WGS)
+LGA.JOIN      = over(COMBO.RASTER.SP, LGA.WGS)              ## =SUA.JOIN      = over(COMBO.RASTER.SP, SUA.WGS) 
+COMBO.SUA.LGA = cbind.data.frame(COMBO.RASTER.SP, LGA.JOIN) 
+#saveRDS(COMBO.SUA.LGA, file = paste("./data/base/HIA_LIST/GBIF/COMBO_SUA_LGA.rds"))
+## COMBO.SUA.LGA = readRDS("./data/base/HIA_LIST/GBIF/COMBO_SUA_LGA.rds")
+
+
+#########################################################################################################################
+## AGGREGATE THE NUMBER OF LGAs EACH SPECIES IS FOUND IN. NA LGAs ARE OUTSIDE AUS
 LGA.AGG   = tapply(COMBO.SUA.LGA$LGA_NAME16, COMBO.SUA.LGA$searchTaxon, function(x) length(unique(x))) ## group LGA by species name
+AUS.AGG   = aggregate(LGA_CODE16 ~ searchTaxon, data = COMBO.SUA.LGA, function(x) {sum(!is.na(x))}, na.action = NULL)
 LGA.AGG   = as.data.frame(LGA.AGG)
+LGA.AGG   = cbind.data.frame(AUS.AGG, LGA.AGG)
+names(LGA.AGG) = c("searchTaxon", "AUS_RECORDS", "LGA_COUNT")
 head(LGA.AGG)
 
 
-## Save
-saveRDS(COMBO.SUA.LGA, file = paste("./data/base/HIA_LIST/GBIF/COMBO_SUA_LGA.rds"))
-saveRDS(LGA.AGG,   file = paste("./data/base/HIA_LIST/GBIF/LGA_AGG.rds"))
-
-
 ## 
-str(COMBO.SUA.LGA)
-head(COMBO.SUA.LGA)
 names(COMBO.SUA.LGA)
 COMBO.SUA.LGA = subset(COMBO.SUA.LGA, select = -c(lon.1, lat.1))
+names(COMBO.SUA.LGA)
+
+
+# #########################################################################################################################
+# ## Check which species have records in Aus :: 14
+# dim(subset(COMBO.SUA.LGA, AUS_RECORDS >= 20))[1]
+# dim(subset(COMBO.SUA.LGA, AUS_RECORDS >= 20 & Top_200 == "TRUE"))[1]
+# NICHE.AUS.OK = subset(COMBO.SUA.LGA, AUS_RECORDS >= 20)
+# NICHE.AUS.POP = subset(COMBO.SUA.LGA, AUS_RECORDS >= 20 & Top_200 == "TRUE")
+# 
+# 
+# ## What is the breakdown here? Need to add phylogenetic
+# unique(NICHE.AUS.OK$Number.of.States)
+# summary(NICHE.AUS.OK$AUS_RECORDS)
+# with(NICHE.AUS.OK, table(Plant.type)/sum(table(Plant.type))*100)
+
 
 
 
 
 #########################################################################################################################
-## 4). CREATE NICHES FOR SELECTED TAXA
+## 5). CREATE NICHES FOR SELECTED TAXA
 #########################################################################################################################
 
 
@@ -452,7 +474,7 @@ names(COMBO.NICHE)
 
 
 #########################################################################################################################
-## 5). CALCULATE AREA OF OCCUPANCY RANGES 
+## 6). CALCULATE AREA OF OCCUPANCY RANGES 
 #########################################################################################################################
 
 
@@ -528,7 +550,7 @@ COMBO.NICHE$AREA_OCCUPANCY = GBIF.AOO$value                     ## vectors same 
 ## AOO is calculated as the area of all known or predicted cells for the species. The resolution will be 2x2km as 
 ## required by IUCN. A single value in km2.
 ## Add the counts of LGAs for each species in here:
-COMBO.LGA = cbind.data.frame(COMBO.NICHE, LGA.AGG)              ## The tapply needs to go where the niche summaries are
+COMBO.LGA = join(COMBO.NICHE, LGA.AGG)              ## The tapply needs to go where the niche summaries are
 names(COMBO.LGA)
 
 
@@ -536,7 +558,7 @@ names(COMBO.LGA)
 
 
 #########################################################################################################################
-## 6). JOIN ON CONTEXTUAL DATA
+## 7). JOIN ON CONTEXTUAL DATA
 #########################################################################################################################
 
 
@@ -575,11 +597,8 @@ dim(COMBO.NICHE.CONTEXT)
 
 
 
-
-
-
 #########################################################################################################################
-## quickly check how many species match from the original 605. Only 553 are currently there.
+## Quickly check how many species match from the original 605. Only 553 are currently there.
 
 
 ## Which species from those with > 25 growers are missing?
@@ -625,13 +644,13 @@ missing.taxa
 
 ## Save the summary datasets
 saveRDS(missing.taxa,         file = paste("./data/base/HIA_LIST/COMBO/MISSING_TAXA.rds",                   sep = ""))
-saveRDS(COMBO.RASTER.CONTEXT, file = paste("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_2703_2018.rds", sep = ""))
-saveRDS(COMBO.NICHE.CONTEXT,  file = paste("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_2703_2018.rds",  sep = ""))
-write.csv(COMBO.NICHE.CONTEXT, "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_2703_2018.csv",       row.names = FALSE)
+saveRDS(COMBO.RASTER.CONTEXT, file = paste("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_1004_2018.rds", sep = ""))
+saveRDS(COMBO.NICHE.CONTEXT,  file = paste("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1004_2018.rds",  sep = ""))
+write.csv(COMBO.NICHE.CONTEXT, "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1904_2018.csv",       row.names = FALSE)
 
 
 ## Now save .RData file for the next session...
-save.image("STEP_4_NICHES.RData")
+#save.image("STEP_4_NICHES.RData")
 
 
 

@@ -91,9 +91,11 @@ p <- c('ff',    'things',         'raster',    'dismo',        'sp',           '
 sapply(p, require, character.only = TRUE)
 
 
-## source functions
+## Source functions
+source('./R/HIA_CLEAN_MATCHING.R')
 source('./R/GREEN_CITIES_FUNCTIONS.R')
 source('./R/MAXENT_FUNCTIONS.R')
+source('./R/MAPPING_FUNCTIONS.R')
 
 
 
@@ -128,7 +130,7 @@ RISK.LIST           = read.csv("./data/base/HIA_LIST/HIA/RISK_LIST.csv",        
 RISK.BINOMIAL.CLEAN = read.csv("./data/base/HIA_LIST/HIA/RISK_BINOMIAL_DF.csv",                  stringsAsFactors = FALSE)
 
 
-##
+## Update?
 top.200              = read.csv("./data/base/HIA_LIST/HIA/HIA_TOP_200_1309_2017.csv",       stringsAsFactors = FALSE)
 renee.full           = read.csv("./data/base/HIA_LIST/HIA/RENEE_FULL_LIST.csv",             stringsAsFactors = FALSE) 
 renee.taxa           = read.csv("./data/base/HIA_LIST/HIA/RENEE_TAXA.csv",                  stringsAsFactors = FALSE)
@@ -152,6 +154,8 @@ head(HIA.list)
 
 #########################################################################################################################
 ## intersect(CLEAN.list$Species, GROWING$scientific_name)
+
+
 
 #########################################################################################################################
 ## Create a list of the raw HIA list, but removing the weird characters...
@@ -477,8 +481,32 @@ EVERGREEN.RISK = merge(EVERGREEN.RISK, RISK.LOW, by = "searchTaxon", all = FALSE
 
 ## Check and save
 dim(EVERGREEN.RISK)
-View(EVERGREEN.RISK)
+#View(EVERGREEN.RISK)
 write.csv(EVERGREEN.RISK, "./data/base/HIA_LIST/HIA/EVERGREEN_RISK_MATCH.csv", row.names = FALSE)  
+
+
+
+
+
+#########################################################################################################################
+## 5). MATCH EVERGREEN LIST WITH THE PLANT RISK LIST
+#########################################################################################################################
+
+
+## Get the intersection of all grown spp (that's the CLEAN list), the risky spp and the innovative spp (not sure what this is)
+length(intersect(CLEAN.SPP$Binomial, RISK.BINOMIAL)) ## About 500 species in the extra list
+EXTRA.SPP = CLEAN.SPP[CLEAN.SPP$Binomial %in% intersect(CLEAN.SPP$Binomial, RISK.BINOMIAL), ]
+EXTRA.SPP = EXTRA.SPP[!EXTRA.SPP$Binomial %in% COMBO.NICHE.CONTEXT$searchTaxon, ]
+
+
+## Check and just get the most popular of these?
+dim(EXTRA.SPP)
+View(EXTRA.SPP)
+summary(EXTRA.SPP$Number.of.growers)
+
+
+##
+extra.spp = unique(EXTRA.SPP$Binomial)
 
 
 

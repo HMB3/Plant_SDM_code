@@ -95,7 +95,7 @@ scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cc85bi70", "gf85bi70", "hg85b
 
 ## Now divide the current environmental grids by 10
 env.grids.current <- stack(
-  file.path('./data/base/worldclim/aus/0.5/bio/current',
+  file.path('./data/base/worldclim/aus/1km/bio/current',   ## ./data/base/worldclim/aus/1km/bio
             sprintf('bio_%02d.tif', 1:19)))
 
 for(i in 1:11) {
@@ -106,16 +106,6 @@ for(i in 1:11) {
   
 }
 
-
-## Using .rds files in the combine function is much quicker
-# saveRDS(areal_unit, file.path("F:/green_cities_sdm/data/base/CONTEXTUAL/", 'SUA.rds'))
-# saveRDS(aus,        file.path("F:/green_cities_sdm/data/base/CONTEXTUAL/", 'aus_states.rds'))
-# saveRDS(LAND,       file.path("F:/green_cities_sdm/data/base/CONTEXTUAL/", 'LAND_world.rds'))
-
-# aus        = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds")
-# LAND       = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LAND_world.rds")
-# areal_unit = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/SUA.rds")
-# urban      = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/urbanareas.rda")
 
 #########################################################################################################################
 ## Name the environmental grids to be used in the mapping code :: this is all 19, because we are using the directory structure
@@ -132,7 +122,7 @@ grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',   
 ## Plot the dodgy variables :: 
 # plot(env.grids.current[[8]]);plot(env.grids.current[[9]])
 # plot(env.grids.current[[18]]);plot(env.grids.current[[19]])
-
+# save.image("STEP_8_PREDICT_SDM.RData")
 
 
 
@@ -152,42 +142,42 @@ grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',   
 ## 2030
 env.grids.2030 = tryCatch(project_maxent_grids(scen_list     = scen_2030,
                                                species_list  = kop_spp,
-                                               time_slice    = 30,
                                                maxent_path   = "./output/maxent/SET_VAR_COORDCLEAN",
-                                               climate_path  = "./data/base/worldclim/aus/0.5/bio",
+                                               climate_path  = "./data/base/worldclim/aus/1km/bio",
                                                grid_names    = grid.names,
+                                               time_slice    = 30,
                                                current_grids = env.grids.current),
                           
                           ## Will this work outside a loop?
                           error = function(cond) {
                             
-                            message(paste('Species skipped - probably due to insufficient background records', spp))
+                            message(paste('Species skipped - check', spp))
                             
                           })
 
 
 ## 2050
-env.grids.2050 = tryCatch(project_maxent_grids(scen_list    = scen_2050,
-                                               species_list = kop_spp,
-                                               time_slice   = 50,
-                                               maxent_path  = "./output/maxent/SET_VAR_COORDCLEAN",
-                                               climate_path = "./data/base/worldclim/aus/0.5/bio",
+env.grids.2050 = tryCatch(project_maxent_grids(scen_list     = scen_2050,
+                                               species_list  = kop_spp,
+                                               time_slice    = 50,
+                                               maxent_path   = "./output/maxent/SET_VAR_COORDCLEAN",
+                                               climate_path  = "./data/base/worldclim/aus/1km/bio",
                                                grid_names    = grid.names,
                                                current_grids = env.grids.current),
                           
                           error = function(cond) {
                             
-                            message(paste('Species skipped - probably due to insufficient background records', spp))
+                            message(paste('Species skipped - check', spp))
                             
                           })
 
 
 ## 2070
-env.grids.2070 = tryCatch(project_maxent_grids(scen_list    = scen_2070,
-                                               species_list = kop_spp,
-                                               time_slice   = 70,
-                                               maxent_path  = "./output/maxent/SET_VAR_COORDCLEAN",
-                                               climate_path = "./data/base/worldclim/aus/0.5/bio",
+env.grids.2070 = tryCatch(project_maxent_grids(scen_list     = scen_2070,
+                                               species_list  = kop_spp,
+                                               time_slice    = 70,
+                                               maxent_path   = "./output/maxent/SET_VAR_COORDCLEAN",
+                                               climate_path  = "./data/base/worldclim/aus/1km/bio",
                                                grid_names    = grid.names,
                                                current_grids = env.grids.current),
                           
@@ -209,7 +199,7 @@ env.grids.2070 = tryCatch(project_maxent_grids(scen_list    = scen_2070,
 #########################################################################################################################
 ## First, read in the list of files for the current models, and specify the file path
 path.backwards.sel = "./output/maxent/SEL_VAR/"
-path.set.var       = "./output/maxent/SET_VAR/"
+path.set.var       = "./output/maxent/SET_VAR_COORDCLEAN/"
 #path.kop.var       = "./output/maxent/SEL_VAR/"
 
 
@@ -219,9 +209,9 @@ model.selection.settings = "Set_variables"
 records_setting          = "ALL"
 
 ## Create a file list for each model run
-maxent.tables = list.files(path.set.var )    ## Chagne this for each variable selection strategy
+maxent.tables = list.files(path.set.var)     ## Chagne this for each variable selection strategy
 maxent_path   = path.set.var                 ## Chagne this for each variable selection strategy
-length(maxent.tables)                             ## Should match the number of taxa tested
+length(maxent.tables)                        ## Should match the number of taxa tested
 
 
 ## In linux, check if the folders are empty, then delete if empty as this will break the code:
@@ -272,18 +262,6 @@ dim(MAXENT.SUMMARY)
 head(MAXENT.SUMMARY, 20)[1:9]
 
 
-## Calcualte the number of variables were used for the full models (including linear, quadratic and product features) 
-# lapply(species_list, function(species) {
-# 
-# m <- readRDS(sprintf('%s/%s/full/model.rds', maxent_path, species))
-# 
-# 
-# 
-# 
-# MAXENT.SUMMARY$na_count       = apply(MAXENT.SUMMARY, 1, function(x) sum(is.na(x)))
-# MAXENT.SUMMARY$env_conditions = 14 - (MAXENT.SUMMARY$na_count / 2)                           
-
-
 ## What are the variables we want to see?
 # View(head(MAXENT.SUMMARY, 180)[, c("searchTaxon",
 #                                            "Settings",
@@ -322,7 +300,10 @@ SDM.RESULTS.DIR <- comb_spp[c(1:length(comb_spp))] %>%
 
 
 #########################################################################################################################
-## Now combine the SDM output with the niche context data
+## Now combine the SDM output with the niche context data 
+
+
+## Get the number of aus records too ....................................................................................
 NICHE.CONTEXT = COMBO.NICHE.CONTEXT[, c("searchTaxon",      "Plant.type",        "Origin", 
                                         "Top_200",          "Number.of.growers", "Number.of.States")]
 

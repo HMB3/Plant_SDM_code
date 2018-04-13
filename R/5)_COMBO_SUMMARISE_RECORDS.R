@@ -1,5 +1,5 @@
 #########################################################################################################################
-########################################### SUMMARISE GBIF DATARECORDS ################################################## 
+############################################### SUMMARISE GBIF RECORDS ################################################## 
 #########################################################################################################################
 
 
@@ -16,8 +16,8 @@
 ## Now create a master summary of the recrods so far. What do we need to know?
 ## These numbers could be variables that update each time code is re-run with changes to the variables
 ## Also a table could be made for each source (COMBO, ALA, Council, etc.), But ideally it is just one table
-load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData")   ## All the environmental data, one row for each record
-load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")    ## The niches for each variable, one row for each species
+load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData")    ## All the environmental data, one row for each record
+load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")     ## The niches for each variable, one row for each species
 load("./data/base/HIA_LIST/COMBO/GBIF_TRIM.RData")               ## Latest dataset, 19 million rows
 dim(COMBO.RASTER.CONTEXT)
 

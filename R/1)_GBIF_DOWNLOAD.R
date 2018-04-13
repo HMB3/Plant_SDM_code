@@ -19,30 +19,30 @@ source('./R/HIA_LIST_MATCHING.R')
 
 ## Create one big list of all the taxa
 all.taxa = read.csv("./data/base/HIA_LIST/HIA/RISK_BINOMIAL_DF.csv", stringsAsFactors = FALSE)  ## RISK.BINOMIAL
-all.taxa = as.list(all.taxa[1])
+all.taxa = as.list(all.taxa[1])  ## all.taxa = extra.spp
 
 
 ########################################################################################################################
 ## Use taxonlookup to check the taxonomy: can use this code to check the planted and growing list, etc
-SPP.LOOKUP = lookup_table(all.taxa, by_species = TRUE, missing_action = "NA")    ## convert rows to column and merge
-SPP.LOOKUP = setDT(SPP.LOOKUP , keep.rownames = TRUE)[]
-SPP.LOOKUP = dplyr::rename(SPP.LOOKUP, Binomial = rn)
-
-head(SPP.LOOKUP)                                                                
-View(SPP.LOOKUP)
-
-
-## But, just get the species that don't match (i.e. the NA rows...)
-SPP.LOOKUP.MATCH  = na.omit(SPP.LOOKUP)
-SPP.TAXO.ERRORS  <- SPP.LOOKUP[rowSums(is.na(SPP.LOOKUP)) > 0,]
-dim(SPP.TAXO.ERRORS)
-head(SPP.TAXO.ERRORS)
-
-
-## Write each table out to file:
-write.csv(SPP.LOOKUP,       "SPP_LOOKUP.csv",       row.names = FALSE)
-write.csv(SPP.LOOKUP.MATCH, "SPP_LOOKUP_MATCH.csv", row.names = FALSE)
-write.csv(SPP.TAXO.ERRORS,  "SPP_TAXO.ERRORS.csv",  row.names = FALSE)
+# SPP.LOOKUP = lookup_table(all.taxa, by_species = TRUE, missing_action = "NA")    ## convert rows to column and merge
+# SPP.LOOKUP = setDT(SPP.LOOKUP , keep.rownames = TRUE)[]
+# SPP.LOOKUP = dplyr::rename(SPP.LOOKUP, Binomial = rn)
+# 
+# head(SPP.LOOKUP)                                                                
+# View(SPP.LOOKUP)
+# 
+# 
+# ## But, just get the species that don't match (i.e. the NA rows...)
+# SPP.LOOKUP.MATCH  = na.omit(SPP.LOOKUP)
+# SPP.TAXO.ERRORS  <- SPP.LOOKUP[rowSums(is.na(SPP.LOOKUP)) > 0,]
+# dim(SPP.TAXO.ERRORS)
+# head(SPP.TAXO.ERRORS)
+# 
+# 
+# ## Write each table out to file:
+# write.csv(SPP.LOOKUP,       "SPP_LOOKUP.csv",       row.names = FALSE)
+# write.csv(SPP.LOOKUP.MATCH, "SPP_LOOKUP_MATCH.csv", row.names = FALSE)
+# write.csv(SPP.TAXO.ERRORS,  "SPP_TAXO.ERRORS.csv",  row.names = FALSE)
 
 
 #########################################################################################################################
