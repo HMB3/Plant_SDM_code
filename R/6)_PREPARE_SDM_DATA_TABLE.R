@@ -16,7 +16,7 @@ source('./R/HIA_LIST_MATCHING.R')
 
 
 ## Need to clean this up...
-unique(COMBO.RASTER.CONTEXT$GBIF.SPAT.OUT)                                ## could filter the records here
+unique(COMBO.RASTER.CONTEXT$summary)                                                  ## Could filter the records here
 dim(COMBO.RASTER.CONTEXT)    
 names(COMBO.RASTER.CONTEXT)
 
@@ -162,7 +162,7 @@ names(COMBO.RASTER.CONTEXT)
 # dim(COMBO.RASTER.CLEAN)[1]/dim(COMBO.RASTER.CONTEXT)[1]*100
 
 
-## Create a table with all the variables :: can we add "In Australia" to this list?
+## Create a table with all the variables
 COMBO.RASTER.ALL  <- dplyr::select(COMBO.RASTER.CONTEXT, searchTaxon, lon, lat,
                                    
                                    Annual_mean_temp,     Mean_diurnal_range,  Isothermality,     Temp_seasonality, 
@@ -212,11 +212,11 @@ str(SDM.DATA.ALL)
 #writeOGR(obj = SDM.DATA.ALL.CHECK, dsn = "./data/base/CONTEXTUAL", layer = "SDM_DATA_UNIQUE_CHECK", driver = "ESRI Shapefile")
 
 
-## Save big tables to keep memory spare
+## Save
 dim(SDM.DATA.ALL)
 #save(template.raster, file = paste("./data/base/HIA_LIST/COMBO/SDM_TEMPLATE_RASTER.RData"))
 #save(SDM.DATA.ALL,    file = paste("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_ALL_VAR.RData"))
-saveRDS(SDM.DATA.ALL,    'data/base/HIA_LIST/COMBO/SDM_DATA_TEST_CLEAN.rds')
+saveRDS(SDM.DATA.ALL, 'data/base/HIA_LIST/COMBO/SDM_DATA_CLEAN_042018.rds')
 
 
 ## Remove the other data

@@ -232,39 +232,39 @@ saveRDS(FLAGS, 'data/base/HIA_LIST/COMBO/COMBO_FLAGS.rds')
 # FLAGS = readRDS('data/base/HIA_LIST/COMBO/COMBO_FLAGS.rds')
 
 
-## Flagging ~ 1.8% excluding the spatial outliers. Seems reasonable?
+## Flagging ~ 1.64%, excluding the spatial outliers. Seems reasonable?
 summary(FLAGS)
 summary(FLAGS)[8]/dim(FLAGS)[1]*100
-FLAGS = FLAGS[ ,!(colnames(FLAGS) == "decimallongitude" | colnames(FLAGS) =="decimallatitude")]
+FLAGS = FLAGS[ ,!(colnames(FLAGS) == "decimallongitude" | colnames(FLAGS) == "decimallatitude")]
 names(FLAGS)
 
 
-## A plot like this for each species would be awesome, fantastic work!
+## A plot like this for each species would be awesome
 #plot(FLAGS)
 
 
 #########################################################################################################################
 ## Then split the data into 30 maneageable subsets
-n = 30 
-dim(TIB.TEST)[1]/n
-REP <- rep(1:n, each = round(dim(TIB.TEST)[1]/n, digits = 0))
-REP <- head(REP, dim(TIB.TEST)[1])
-
-identical(dim(TIB.TEST)[1], length(REP))
-tail(REP)
+# n = 30 
+# dim(TIB.TEST)[1]/n
+# REP <- rep(1:n, each = round(dim(TIB.TEST)[1]/n, digits = 0))
+# REP <- head(REP, dim(TIB.TEST)[1])
+# 
+# identical(dim(TIB.TEST)[1], length(REP))
+# tail(REP)
 
 
 ## Because the vector is a non-factorial length, make it the same
-dim(TIB.TEST)[1] - length(REP)
-REP <- c(REP, rep(n, 6))
-dim(TIB.TEST)[1] - length(REP)
-TIB.TEST$REP = REP
-head(TIB.TEST$REP);tail(TIB.TEST$REP)
+# dim(TIB.TEST)[1] - length(REP)
+# REP <- c(REP, rep(n, 6))
+# dim(TIB.TEST)[1] - length(REP)
+# TIB.TEST$REP = REP
+# head(TIB.TEST$REP);tail(TIB.TEST$REP)
 
 
 ## Could create a list of data frames :: save data to run multiple sessions
-OUT <- split( TIB.TEST , f = TIB.TEST$REP )
-dim(OUT[[1]]);dim(OUT[[15]]);dim(OUT[[30]])
+# OUT <- split( TIB.TEST , f = TIB.TEST$REP )
+# dim(OUT[[1]]);dim(OUT[[15]]);dim(OUT[[30]])
 
 
 #save.image("STEP_COORD_CLEAN.RData")
@@ -337,12 +337,12 @@ dim(OUT[[1]]);dim(OUT[[15]]);dim(OUT[[30]])
 ## Join data :: exclude the decimal lat/long, check the length 
 dim(GBIF.TRIM.TEST)[1];dim(FLAGS)[1]#;length(GBIF.SPAT.OUT)
 names(FLAGS)[1] = c("coord_spp")
-identical(GBIF.TRIM.TEST$searchTaxon, FLAGS$coord_spp)                                                    ## order matches
-identical(dim(FLAGS)[1], dim(TEST.GEO)[1])
+identical(COMBO.RASTER.CONTEXT$searchTaxon, FLAGS$coord_spp)                                            ## order matches
+identical(dim(FLAGS)[1], dim(GBIF.TRIM.GEO)[1])
 
 
-TEST.GEO = cbind(GBIF.TRIM.TEST, FLAGS)#, GBIF.SPAT.OUT)
-identical(TEST.GEO$searchTaxon, TEST.GEO$coord_spp)                                                       ## order matches
+TEST.GEO = cbind(COMBO.RASTER.CONTEXT, FLAGS)#, GBIF.SPAT.OUT)
+identical(TEST.GEO$searchTaxon, TEST.GEO$coord_spp)                                                     ## order matches
 
 
 ## Check the values for each flag
@@ -383,11 +383,6 @@ summary(TEST.GEO$summary)
 #########################################################################################################################
 
 
-## This unique ID column can be applied across the project  
-TEST.GEO$OBS <- 1:nrow(TEST.GEO)
-dim(TEST.GEO)[1];length(TEST.GEO$OBS)  
-
-
 ## So ~2.6% of the data is dodgy according to the GBIF fields or spatial outliers
 ## This seems ok as a median figure across the data set?
 #dim(subset(TEST.GEO, summary == "FALSE" | GBIF.SPAT.OUT == "FALSE"))[1]/dim(TEST.GEO)[1]*100
@@ -413,27 +408,28 @@ View(subset(coordyline, summary == "FALSE") #| GBIF.SPAT.OUT == "FALSE")
 
 ## Not sure why the inverse did not work :: get only the records which were not flagged as being dodgy.
 ## dim(subset(TEST.GEO, summary == "TRUE" | GBIF.SPAT.OUT == "TRUE"))
-CLEAN.TRUE = TEST.GEO[!TEST.GEO$OBS %in% CLEAN.FALSE$OBS, ]
-dim(CLEAN.TRUE)
-unique(CLEAN.TRUE$summary)                                              ## works
-#unique(CLEAN.TRUE$GBIF.SPAT.OUT)                                       ## works
+#CLEAN.TRUE = TEST.GEO[!TEST.GEO$OBS %in% CLEAN.FALSE$OBS, ]
+CLEAN.TRUE = subset(TEST.GEO, summary == "TRUE")
+identical(dim(CLEAN.TRUE)[1], (dim(COMBO.RASTER.CONTEXT)[1] - dim(subset(TEST.GEO, summary == "FALSE"))[1]))
+unique(CLEAN.TRUE$summary)                                              
+#unique(CLEAN.TRUE$GBIF.SPAT.OUT)                                       
 
 
 ## How many species?
 str(unique(CLEAN.TRUE$searchTaxon))
 str(unique(TEST.GEO$searchTaxon))
 'Ficus brachypoda' %in% TEST.GEO$searchTaxon  
-(dim(CLEAN.TRUE)[1]/dim(TEST.GEO))*100                                  ## 98% of the data is retained
+(dim(CLEAN.TRUE)[1]/dim(TEST.GEO))*100                                  ## ~98% of the data is retained
 
 
 #########################################################################################################################
 ## Save
 saveRDS(TEST.GEO,   'data/base/HIA_LIST/COMBO/CLEAN_FLAGS_HIA_SPP.rds')
 saveRDS(CLEAN.TRUE, 'data/base/HIA_LIST/COMBO/CLEAN_ONLY_HIA_SPP.rds')
-save.image("STEP_COORD_CLEAN.RData")
+save.image("5_COORD_CLEAN.RData")
 
 
-
+##
 
 
 #########################################################################################################################

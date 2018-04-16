@@ -114,6 +114,8 @@ FIT_MAXENT_RAND_BG <- function(occ,
     not_dupes <- which(!duplicated(cells) & !is.na(cells))
     occ       <- occ[not_dupes, ]
     cells     <- cells[not_dupes]
+    
+    ##
     message(nrow(occ), ' occurrence records (unique cells).')
     
     ## Skip species that have less than a minimum number of records: eg 20 species
