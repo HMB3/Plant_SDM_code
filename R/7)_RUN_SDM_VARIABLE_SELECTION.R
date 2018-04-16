@@ -381,8 +381,7 @@ save.image("STEP_7_RUN_SDM.RData")
 
 
 ## 1). Create a list of species with boundary bias, and without boundary bias (done). Only model those species with > 20 AUS records
-
-## 2). Track the coverage of the modelled spp :: taxonomic/functional/phlogenetic (done).
+##     Track the functional coverage of the modelled spp (done).
 
 ## 3). Re-process the niches for extra species :: we have niches for 6800 taxa, including all but 200 of the risky taxa (done).
 
@@ -398,6 +397,7 @@ save.image("STEP_7_RUN_SDM.RData")
 ##     Choose spp (Hugh, Linda, Rach to review each species, and an indepdendent expert?).
 
 ## 8). Get the Koppen summary idea working for species that are not modelled :: where will the koppens with records be in 2030/50/70? 
+##     Use Darren Kriticos's grid of chaning Koppen with decades (only two GCMs)
 
 ## 9). Model extra species :: take another ~300 spp from the intersection of any grown spp and the risky/innovative species.
 

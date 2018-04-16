@@ -22,6 +22,7 @@
 source('./R/HIA_LIST_MATCHING.R')
 GBIF.LAND = readRDS("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.rds")
 load("./data/base/HIA_LIST/ALA/ALA_LAND_POINTS.RData")
+LAND      = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LAND_world.rds")
 
 
 ## 199 species from the risk list are missing...presumably due to inusfficient data
@@ -64,7 +65,7 @@ ALA.LAND     = dplyr::rename(ALA.LAND,
 
 ## Restrict ALA data to just those species on the big list
 library(plyr)
-HIA.SPP.JOIN     = HIA.SPP
+HIA.SPP.JOIN     = CLEAN.SPP
 HIA.SPP.JOIN     = dplyr::rename(HIA.SPP.JOIN, searchTaxon = Binomial)
 
 
@@ -277,10 +278,8 @@ projection(COMBO.RASTER)
 
 
 #########################################################################################################################
-## Now crunch the big dataset down to just the intersection of the evergreen list and the risk list 
-# COMBO.RASTER  = COMBO.RASTER[COMBO.RASTER$searchTaxon %in% unique(c(GBIF.LAND$searchTaxon, extra.spp)), ]
-# length(unique(GBIF.ALA.COMBO.HIA$searchTaxon))
-
+## See the ABS for details :: there are 563 LGAs
+## http://www.abs.gov.au/ausstats/abs@.nsf/Lookup/by%20Subject/1270.0.55.003~July%202016~Main%20Features~Local%20Government%20Areas%20(LGA)~7
 
 
 ## We want to know the count of species that occur in 'n' LGAs, across a range of climates. Read in LGA and SUA
@@ -420,23 +419,22 @@ summary(COMBO.RASTER.CONVERT$Isothermality)
 summary(COMBO.RASTER$Isothermality)
 
 
-## Plot a few points to see
+## Plot a few points to see :: do those look reasonable?
 plot(LAND, col = 'grey', bg = 'sky blue')
 points(COMBO.RASTER.CONVERT[ which(COMBO.RASTER.CONVERT$Annual_mean_temp < -5), ][, c("lon", "lat")], 
        pch = ".", col = "red", cex = 3, asp = 1)
 
 
-
 #########################################################################################################################
 ## Create niche summaries for each environmental condition like this...
 ## Here's what the function will produce :
-library(plyr)
+#library(plyr)
 head(niche_estimate (DF = COMBO.RASTER.CONVERT, colname = "Annual_mean_temp"))  ## including the q05 and q95
 
 
-## So lets use lapply on the "Search Taxon". Note additonal flags are needed, and the taxonomic lists need to be managed better...
+## So lets use lapply on the "SearchTaxon"
 ## test = run_function_concatenate(list, DF, "DF, colname = x") 
-COMBO.NICHE <- pred_names[c(1:length(pred_names))] %>% 
+COMBO.NICHE <- env.variables %>% 
   
   ## Pipe the list into lapply
   lapply(function(x) {
@@ -463,6 +461,7 @@ COMBO.NICHE = subset(COMBO.NICHE, select = -c(searchTaxon.1,  searchTaxon.2,  se
                                               searchTaxon.16, searchTaxon.17, searchTaxon.18))
 
 
+#########################################################################################################################
 ## Add counts for each species, and record the total number of taxa processed
 COMBO.count = as.data.frame(table(COMBO.RASTER.CONVERT$searchTaxon))$Freq
 Total.taxa.processed = dim(COMBO.NICHE)[1]
@@ -550,7 +549,8 @@ COMBO.NICHE$AREA_OCCUPANCY = GBIF.AOO$value                     ## vectors same 
 ## AOO is calculated as the area of all known or predicted cells for the species. The resolution will be 2x2km as 
 ## required by IUCN. A single value in km2.
 ## Add the counts of LGAs for each species in here:
-COMBO.LGA = join(COMBO.NICHE, LGA.AGG)              ## The tapply needs to go where the niche summaries are
+names(COMBO.NICHE);names(LGA.AGG)
+COMBO.LGA = join(COMBO.NICHE, LGA.AGG)                          ## The tapply needs to go where the niche summaries are
 names(COMBO.LGA)
 
 
@@ -564,13 +564,15 @@ names(COMBO.LGA)
 
 #########################################################################################################################
 ## Now join the horticultural contextual data onto one or both tables ()
-COMBO.RASTER.CONTEXT = join(COMBO.RASTER.CONVERT, HIA.SPP.JOIN, 
-                            by = "searchTaxon", type = "left", match = "all")
+names(COMBO.RASTER.CONVERT);names(CLEAN.SPP)
+COMBO.RASTER.CONTEXT = join(COMBO.RASTER.CONVERT, HIA.SPP.JOIN)
+COMBO.RASTER.CONTEXT  = COMBO.RASTER.CONTEXT[,  c(42, 1, 65, 2:41, 43:61, 62:78)]                ## REDO
+names(COMBO.RASTER.CONTEXT)
 
 
 ## Now join hort context to all the niche
-COMBO.NICHE.CONTEXT = join(COMBO.LGA, HIA.SPP.JOIN, 
-                           by = "searchTaxon", type = "left", match = "all")
+COMBO.NICHE.CONTEXT = join(COMBO.LGA, HIA.SPP.JOIN)
+COMBO.NICHE.CONTEXT =  COMBO.NICHE.CONTEXT[, c(176, 1, 174:175, 177:189, 3:173)] 
 
 
 ## Check taxa again
@@ -644,8 +646,8 @@ missing.taxa
 
 ## Save the summary datasets
 saveRDS(missing.taxa,         file = paste("./data/base/HIA_LIST/COMBO/MISSING_TAXA.rds",                   sep = ""))
-saveRDS(COMBO.RASTER.CONTEXT, file = paste("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_1004_2018.rds", sep = ""))
-saveRDS(COMBO.NICHE.CONTEXT,  file = paste("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1004_2018.rds",  sep = ""))
+saveRDS(COMBO.RASTER.CONTEXT, file = paste("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_1304_2018.rds", sep = ""))
+saveRDS(COMBO.NICHE.CONTEXT,  file = paste("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1304_2018.rds",  sep = ""))
 write.csv(COMBO.NICHE.CONTEXT, "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1904_2018.csv",       row.names = FALSE)
 
 

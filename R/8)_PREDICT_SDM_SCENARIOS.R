@@ -122,7 +122,7 @@ grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',   
 ## Plot the dodgy variables :: 
 # plot(env.grids.current[[8]]);plot(env.grids.current[[9]])
 # plot(env.grids.current[[18]]);plot(env.grids.current[[19]])
-# save.image("STEP_8_PREDICT_SDM.RData")
+
 
 
 
