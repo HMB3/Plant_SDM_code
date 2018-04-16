@@ -11,13 +11,13 @@
 
 #########################################################################################################################
 ## Create maxent maps for a given time period 
-x             = scen_2030[1]
-species       = kop_spp[1]
-time_slice    = 30
-maxent_path   = "./output/maxent/SET_VAR_COORDCLEAN"
-climate_path  = "./data/base/worldclim/aus/1km/bio"
-grid_names    = grid.names
-current_grids = env.grids.current
+# x             = scen_2030[1]
+# species       = kop_spp[1]
+# time_slice    = 30
+# maxent_path   = "./output/maxent/SET_VAR_COORDCLEAN"
+# climate_path  = "./data/base/worldclim/aus/1km/bio"
+# grid_names    = grid.names
+# current_grids = env.grids.current
 
 
 ## One function for all time periods
@@ -108,10 +108,10 @@ project_maxent_grids = function(scen_list, species_list, maxent_path, climate_pa
         writeRaster(pred.future, f_future, overwrite = TRUE)
         
         ## Now create the empty panel just before plotting
-        empty <- init(pred.current, function(x) NA) 
+        empty_ras <- init(pred.current, function(x) NA) 
         
         ## Check projections ..................................................................................................
-        projection(aus);projection(occ)
+        projection(aus);projection(occ);projection(empty_ras)
         projection(pred.current);projection(pred.future)
         
         ########################################################################################################################
@@ -120,7 +120,7 @@ project_maxent_grids = function(scen_list, species_list, maxent_path, climate_pa
             11, 4, units = 'in', res = 300)
         
         ## Need an empty frame
-        print(levelplot(stack(empty,
+        print(levelplot(stack(empty_ras,
                               pred.current, 
                               pred.future, quick = TRUE), margin = FALSE,
                         
@@ -131,7 +131,7 @@ project_maxent_grids = function(scen_list, species_list, maxent_path, climate_pa
                         col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
                         
                         ## Give each plot a name: the third panel is the GCM
-                        names.attr = c('Ausralian records', 'Current', sprintf('%s, 20%s, RCP8.5', scen_name, time_slice)),
+                        names.attr = c('Australian records', 'Current', sprintf('%s, 20%s, RCP8.5', scen_name, time_slice)),
                         colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
                         main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
                 

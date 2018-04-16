@@ -566,25 +566,20 @@ names(COMBO.LGA)
 ## Now join the horticultural contextual data onto one or both tables ()
 names(COMBO.RASTER.CONVERT);names(CLEAN.SPP)
 COMBO.RASTER.CONTEXT = join(COMBO.RASTER.CONVERT, HIA.SPP.JOIN)
-COMBO.RASTER.CONTEXT  = COMBO.RASTER.CONTEXT[,  c(42, 1, 65, 2:41, 43:61, 62:78)]                ## REDO
+COMBO.RASTER.CONTEXT  = COMBO.RASTER.CONTEXT[,  c(42, 1, 65, 2:41, 43:61, 62:64, 66:78)]                ## REDO
 names(COMBO.RASTER.CONTEXT)
 
 
 ## Now join hort context to all the niche
 COMBO.NICHE.CONTEXT = join(COMBO.LGA, HIA.SPP.JOIN)
-COMBO.NICHE.CONTEXT =  COMBO.NICHE.CONTEXT[, c(176, 1, 174:175, 177:189, 3:173)] 
-
+COMBO.NICHE.CONTEXT =  COMBO.NICHE.CONTEXT[, c(2, 176, 1, 174:175, 177:189, 3:173)] 
+names(COMBO.NICHE.CONTEXT)
 
 ## Check taxa again
 'Kennedia beckxiana' %in% COMBO.NICHE.CONTEXT$searchTaxon  
 
 
-## Changing the order is not needed for the raster data
-#COMBO.RASTER.CONTEXT = COMBO.RASTER.CONTEXT[, c(1:5,  45:57, 6:43)]                                      
-#COMBO.NICHE.CONTEXT  = COMBO.NICHE.CONTEXT[,  c(176, 2, 1, 174:175, 177:189, 3:173)]                ## REDO
-
-
-## Set NA to blank, then sort by no. of growers. The extra species are ones I dowloaded accidentally
+## Set NA to blank, then sort by no. of growers
 COMBO.NICHE.CONTEXT$Number.of.growers[is.na(COMBO.NICHE.CONTEXT$Number.of.growers)] <- 0
 COMBO.NICHE.CONTEXT = COMBO.NICHE.CONTEXT[with(COMBO.NICHE.CONTEXT, rev(order(Number.of.growers))), ]
 
@@ -609,8 +604,8 @@ missing.25     = setdiff(unique(HIA.SPP.JOIN[ which(HIA.SPP.JOIN$Number.of.growe
 
 
 ## Same as for
-missing.all    = setdiff(unique(HIA.SPP.JOIN[["searchTaxon"]]),
-                         unique(COMBO.NICHE.CONTEXT[["searchTaxon"]]))
+# missing.all    = setdiff(unique(HIA.SPP.JOIN[["searchTaxon"]]),
+#                          unique(COMBO.NICHE.CONTEXT[["searchTaxon"]]))
 
 ## Which species from the top 200 are missing?
 missing.200    = setdiff(unique(spp.200$Binomial),
@@ -629,7 +624,7 @@ missing.taxa
 
 
 ## The missing species are due to too few records, too many, or taxonomy problems. EG some of the species are varieties, so they 
-## only match to the genus. So 605 - 30 = 575.
+## only match to the genus
 
 
 
@@ -648,7 +643,7 @@ missing.taxa
 saveRDS(missing.taxa,         file = paste("./data/base/HIA_LIST/COMBO/MISSING_TAXA.rds",                   sep = ""))
 saveRDS(COMBO.RASTER.CONTEXT, file = paste("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_1304_2018.rds", sep = ""))
 saveRDS(COMBO.NICHE.CONTEXT,  file = paste("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1304_2018.rds",  sep = ""))
-write.csv(COMBO.NICHE.CONTEXT, "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1904_2018.csv",       row.names = FALSE)
+write.csv(COMBO.NICHE.CONTEXT, "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1304_2018.csv",        row.names = FALSE)
 
 
 ## Now save .RData file for the next session...

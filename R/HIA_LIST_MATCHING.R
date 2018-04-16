@@ -74,11 +74,7 @@ library(Cairo)
 library(lattice)
 library(latticeExtra)
 library(PerformanceAnalytics)
-
-#library("biglm")
-#library("bigmemory")
-#library("biganalytics")
-#library("bigtabulate")
+library(timetk)
 
 
 ##

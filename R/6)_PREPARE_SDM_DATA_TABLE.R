@@ -12,9 +12,6 @@
 #load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_2703_2018.RData")
 COMBO.RASTER.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/CLEAN_ONLY_HIA_SPP.rds")
 template.raster      = raster("./data/template_hasData.tif")
-source('./R/GREEN_CITIES_FUNCTIONS.R')
-source('./R/MAXENT_FUNCTIONS.R')
-source('./R/MAPPING_FUNCTIONS.R')
 source('./R/HIA_LIST_MATCHING.R')
 
 

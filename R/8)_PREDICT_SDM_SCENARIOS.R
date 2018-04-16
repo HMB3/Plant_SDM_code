@@ -17,7 +17,6 @@
 
 ## Load packages ::
 source('./R/HIA_LIST_MATCHING.R')
-#load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1601_2018.RData")
 
 
 #########################################################################################################################
