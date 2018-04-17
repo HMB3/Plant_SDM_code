@@ -110,13 +110,17 @@ source('./R/MAPPING_FUNCTIONS.R')
 
 
 #########################################################################################################################
-## This list derives from all species and varieties sold anywhere in Australia in the last 5 years. Anthony Manea cleaned 
-## Up the data and cross-linked to growth form and exotic/native status and derived a list of ~1000 species that are the 
+## Read in the niche data
+COMBO.NICHE.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018.rds")
+COMBO.NICHE.OLD     = readRDS("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1304_2018.rds")
+str(unique(COMBO.NICHE.CONTEXT$searchTaxon))  ## long enough
+
+
+#########################################################################################################################
+## Horticultural lists ::
+## This evergreen list (HIA.list) derives from all species and varieties sold anywhere in Australia in the last 5 years. Anthony Manea cleaned 
+## up the data and cross-linked to growth form and exotic/native status and derived a list of ~1000 species that are the 
 ## Most commonly sold, covering the right ratio of growth forms, regional representation and native/exotic
-COMBO.NICHE.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1304_2018.rds")
-
-
-## Horticultural lists
 HIA.list            = read.csv("./data/base/HIA_LIST/HIA/GREEN_CITIES_DRAFT_LIST_2709_2017.csv", stringsAsFactors = FALSE)
 HIA.RAW             = read.csv("./data/base/HIA_LIST/HIA/HIA_ORIGINAL_RAW.csv",                  stringsAsFactors = FALSE)
 CLEAN.list          = read.csv("./data/base/HIA_LIST/HIA/HIA.CLEAN.csv",                         stringsAsFactors = FALSE)
@@ -129,7 +133,8 @@ RISK.LIST           = read.csv("./data/base/HIA_LIST/HIA/RISK_LIST.csv",        
 RISK.BINOMIAL.CLEAN = read.csv("./data/base/HIA_LIST/HIA/RISK_BINOMIAL_DF.csv",                  stringsAsFactors = FALSE)
 
 
-## Experimental lists
+#########################################################################################################################
+## Experimental lists :: the next round of experiments will be... 
 top.200              = read.csv("./data/base/HIA_LIST/HIA/HIA_TOP_200_1309_2017.csv",       stringsAsFactors = FALSE)
 renee.full           = read.csv("./data/base/HIA_LIST/HIA/RENEE_FULL_LIST.csv",             stringsAsFactors = FALSE) 
 renee.taxa           = read.csv("./data/base/HIA_LIST/HIA/RENEE_TAXA.csv",                  stringsAsFactors = FALSE)
@@ -138,8 +143,34 @@ MQ.glasshouse        = read.csv("./data/base/HIA_LIST/HIA/MQ_glasshouse.csv",   
 Manuel.experimental  = read.csv("./data/base/HIA_LIST/HIA/Manuel_experimental_species.csv", stringsAsFactors = FALSE)
 
 
+#########################################################################################################################
 ## Modelling lists :: which species have bias, and which have enough records in Australia? 
 SPP.BIAS             = read.csv("./data/base/HIA_LIST/COMBO/SPP_BIAS_LIST.csv",             stringsAsFactors = FALSE)
+SPP.RANDOM           = subset(SPP.BIAS, AUS_BOUND_BIAS == "TRUE")
+SPP.TARGET           = subset(SPP.BIAS, AUS_BOUND_BIAS == "FALSE")
+
+
+## Get a list of species with > 20 records
+summary(COMBO.NICHE.CONTEXT$AUS_RECORDS)
+SPP.AUS = subset(COMBO.NICHE.CONTEXT, AUS_RECORDS >= 20)
+summary(SPP.AUS$COMBO.count);summary(SPP.AUS$AUS_RECORDS)
+
+
+##
+spp.rand             = intersect(SPP.RANDOM$searchTaxon, SPP.AUS$searchTaxon)
+spp.target           = intersect(SPP.TARGET$searchTaxon, SPP.AUS$searchTaxon)
+str(spp.rand);str(spp.target)
+
+
+## Test these values, seems very convenient that all these species have > 200 Australian records?
+RAND = COMBO.NICHE.CONTEXT[COMBO.NICHE.CONTEXT$searchTaxon %in% spp.rand, ]
+TARG = COMBO.NICHE.CONTEXT[COMBO.NICHE.CONTEXT$searchTaxon %in% spp.target, ]
+
+
+## How do the distributions compare?
+summary(COMBO.NICHE.CONTEXT$AUS_RECORDS)
+summary(TARG$AUS_RECORDS)
+summary(RAND$AUS_RECORDS)
 
 
 ##
@@ -499,8 +530,8 @@ write.csv(EVERGREEN.RISK, "./data/base/HIA_LIST/HIA/EVERGREEN_RISK_MATCH.csv", r
 ## Get the intersection of all grown spp (that's the CLEAN list), the risky spp and the innovative spp (not sure what this is)
 length(intersect(CLEAN.SPP$Binomial, RISK.BINOMIAL)) ## About 500 species in the extra list
 EXTRA.SPP = CLEAN.SPP[CLEAN.SPP$Binomial %in% intersect(CLEAN.SPP$Binomial, RISK.BINOMIAL), ]
-EXTRA.SPP = EXTRA.SPP[!EXTRA.SPP$Binomial %in% COMBO.NICHE.CONTEXT$searchTaxon, ]
-
+EXTRA.SPP = EXTRA.SPP[!EXTRA.SPP$Binomial %in% spp.all, ]
+write.csv(EXTRA.SPP, "./data/base/HIA_LIST/COMBO/EXTRA_SPP.csv", row.names = FALSE)
 
 ## Check and just get the most popular of these?
 dim(EXTRA.SPP)
@@ -510,8 +541,9 @@ summary(EXTRA.SPP$Number.of.growers)
 
 ##
 extra.spp = unique(EXTRA.SPP$Binomial)
+length(extra.spp)
 
-
+## Can we get another random selection of plants from the risky list to plug the gap?
 
 
 

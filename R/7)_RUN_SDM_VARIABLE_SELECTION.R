@@ -34,10 +34,9 @@
 #load('data/template_hasData.tif')
 source('./R/HIA_LIST_MATCHING.R')
 
-#load("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_ALL_VAR.RData")
+## Load SDM data
 template.raster = raster("./data/template_hasData.tif")
 template.cells  = readRDS("./data/hasData_cells.rds")
-#load("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_TEST_SPP.RData")
 SDM.DATA.ALL = readRDS("./data/base/HIA_LIST/COMBO/SDM_DATA_CLEAN_042018.rds")
 
 
@@ -47,7 +46,7 @@ dim(SDM.DATA.ALL)
 length(unique(SDM.DATA.ALL$searchTaxon))
 
 
-## What resolution is the template raster at? This will affect the density sampling...
+## What resolution is the template raster at?
 xres(template.raster);yres(template.raster)
 
 
@@ -89,11 +88,11 @@ aus = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds") %>%
 
 #########################################################################################################################
 ## Loop over the species list and plot the occurrence data for each to check the data bias
-TAXA = as.list(sort(unique(SDM.DATA.ALL$searchTaxon)))
+TAXA = as.list(sort(unique(intersect(SDM.DATA.ALL$searchTaxon, extra.spp))))
   
 for (i in 1:length(TAXA)) {
   
-  ## Need to check the OBS column matches up - or do we not need this again?
+  ## Create points for each species
   spp.points <- SDM.DATA.ALL[SDM.DATA.ALL$searchTaxon == TAXA[i], ] %>%
     spTransform(CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'))
   
@@ -128,8 +127,11 @@ for (i in 1:length(TAXA)) {
 
 
 #########################################################################################################################
-## Run Maxent using a random selection of background points. Are the projections ok?
+## Run Maxent using a random selection of background points. 
 projection(template.raster);projection(SDM.DATA.ALL)
+
+
+## Use both targetted selection and random selection
 
 
 ## spp = kop.spp[1]

@@ -474,7 +474,7 @@ COMBO.count = as.data.frame(table(COMBO.RASTER.CONVERT$searchTaxon))$Freq
 Total.taxa.processed = dim(COMBO.NICHE)[1]
 COMBO.NICHE  = cbind(COMBO.count, COMBO.NICHE)
 names(COMBO.NICHE)
-
+dim(COMBO.NICHE)
 
 
 
@@ -561,7 +561,7 @@ names(COMBO.NICHE)
 names(COMBO.NICHE);names(LGA.AGG)
 COMBO.LGA = join(COMBO.NICHE, LGA.AGG)                            ## The tapply needs to go where the niche summaries are
 names(COMBO.LGA)
-
+dim(COMBO.LGA);head(COMBO.LGA$AUS_RECORDS);head(COMBO.LGA$LGA_COUNT)
 
 
 
@@ -582,7 +582,8 @@ names(COMBO.RASTER.CONTEXT)
 ## Now join hort context to all the niche
 COMBO.NICHE.CONTEXT = join(COMBO.LGA, HIA.SPP.JOIN)
 COMBO.NICHE.CONTEXT =  COMBO.NICHE.CONTEXT[, c(2, 176, 1, 174:175, 177:189, 3:173)] 
-names(COMBO.NICHE.CONTEXT)
+head(COMBO.NICHE.CONTEXT$AUS_RECORDS);head(COMBO.NICHE.CONTEXT$LGA_COUNT)
+
 
 ## Check taxa again
 'Kennedia beckxiana' %in% COMBO.NICHE.CONTEXT$searchTaxon  
@@ -650,9 +651,9 @@ missing.taxa
 
 ## Save the summary datasets
 saveRDS(missing.taxa,         file = paste("./data/base/HIA_LIST/COMBO/MISSING_TAXA.rds",                   sep = ""))
-saveRDS(COMBO.RASTER.CONTEXT, file = paste("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_1304_2018.rds", sep = ""))
-saveRDS(COMBO.NICHE.CONTEXT,  file = paste("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1304_2018.rds",  sep = ""))
-write.csv(COMBO.NICHE.CONTEXT, "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1304_2018.csv",        row.names = FALSE)
+saveRDS(COMBO.RASTER.CONTEXT, file = paste("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_APRIL_2018.rds", sep = ""))
+saveRDS(COMBO.NICHE.CONTEXT,  file = paste("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018.rds",  sep = ""))
+write.csv(COMBO.NICHE.CONTEXT, "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018.csv",        row.names = FALSE)
 
 
 ## Now save .RData file for the next session...
