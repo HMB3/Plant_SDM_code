@@ -1,6 +1,13 @@
 #########################################################################################################################
-########################################  CREATE SPECIES LIST ########################################################### 
+########################################  CREATE SPECIES LISTS ########################################################## 
 #########################################################################################################################
+
+
+## This code takes the raw list of plants with 25 or more growers supplied by Matt Plumber and Anthony Manea, and
+## then cleans the list as best as possible in R to use the species binomial as the unit for downloading and analysis.
+
+## All the cleaining methods will throw up some anomalies, which need to be tracked, and checked with the team for how
+## each case is treated (see outstanding tasks at the bottom)
 
 
 #########################################################################################################################
@@ -43,7 +50,7 @@ library(httr)
 
 library(taxonlookup)
 library(Taxonstand)
-library(speciesgeocodeR)
+#library(speciesgeocodeR)
 library(CoordinateCleaner)
 library(spatialEco)
 library(raster)
@@ -101,18 +108,12 @@ source('./R/MAPPING_FUNCTIONS.R')
 ## 1). READ IN DRAFT HIA LIST AND CLEAN
 #########################################################################################################################
 
-## This code takes the raw list of plants with 25 or more growers supplied by Matt Plumber and Anthony Manea, and
-## then cleans the list as best as possible in R to use the species binomial as the unit for downloading and analysis.
-
-## All the cleaining methods will throw up some anomalies, which need to be tracked, and checked with the team for how
-## each case is treated (see outstanding tasks at the bottom)
-
 
 #########################################################################################################################
 ## This list derives from all species and varieties sold anywhere in Australia in the last 5 years. Anthony Manea cleaned 
 ## Up the data and cross-linked to growth form and exotic/native status and derived a list of ~1000 species that are the 
 ## Most commonly sold, covering the right ratio of growth forms, regional representation and native/exotic
-load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1601_2018.RData")
+COMBO.NICHE.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1304_2018.rds")
 
 
 ## Horticultural lists

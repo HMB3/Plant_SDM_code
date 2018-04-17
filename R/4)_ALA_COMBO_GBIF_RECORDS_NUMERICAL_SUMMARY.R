@@ -338,6 +338,7 @@ LGA.JOIN      = over(COMBO.RASTER.SP, LGA.WGS)              ## =SUA.JOIN      = 
 COMBO.SUA.LGA = cbind.data.frame(COMBO.RASTER.SP, LGA.JOIN) 
 #saveRDS(COMBO.SUA.LGA, file = paste("./data/base/HIA_LIST/GBIF/COMBO_SUA_LGA.rds"))
 ## COMBO.SUA.LGA = readRDS("./data/base/HIA_LIST/GBIF/COMBO_SUA_LGA.rds")
+## str(unique(COMBO.SUA.LGA$searchTaxon))
 
 
 #########################################################################################################################
@@ -347,6 +348,10 @@ AUS.AGG   = aggregate(LGA_CODE16 ~ searchTaxon, data = COMBO.SUA.LGA, function(x
 LGA.AGG   = as.data.frame(LGA.AGG)
 LGA.AGG   = cbind.data.frame(AUS.AGG, LGA.AGG)
 names(LGA.AGG) = c("searchTaxon", "AUS_RECORDS", "LGA_COUNT")
+
+
+## Check
+dim(LGA.AGG)
 head(LGA.AGG)
 
 
@@ -354,6 +359,8 @@ head(LGA.AGG)
 names(COMBO.SUA.LGA)
 COMBO.SUA.LGA = subset(COMBO.SUA.LGA, select = -c(lon.1, lat.1))
 names(COMBO.SUA.LGA)
+dim(COMBO.SUA.LGA)
+str(unique(COMBO.SUA.LGA$searchTaxon))
 
 
 # #########################################################################################################################
@@ -479,32 +486,32 @@ names(COMBO.NICHE)
 
 ## These numbers don't look that accurate: Try convert into a sp data frame and projecting into a projected system?
 ## Create a species list to estimate the ranges for
-spp.geo = as.character(unique(COMBO.RASTER$searchTaxon)) 
-data    = COMBO.RASTER
+# spp.geo = as.character(unique(COMBO.RASTER$searchTaxon)) 
+# data    = COMBO.RASTER
 
 
 #########################################################################################################################
 ## AREA OF OCCUPANCY (AOO)
 ## For every species in the list: calculate the AOO
-GBIF.AOO <- spp.geo[c(1:length(spp.geo))] %>% 
-  
-  ## Pipe the list into lapply
-  lapply(function(x) {
-    
-    ## Subset the the data frame 
-    DF      = subset(data, searchTaxon == x)[, c("lon", "lat")]
-    
-    ## Calculate area of occupancy according the the "red" package
-    aoo (DF)
-    
-    ## Warning messages: Ask John if this is a problem
-    ## In rgdal::project(longlat, paste("+proj=utm +zone=", zone,  ... :
-    ## 3644 projected point(s) not finite
-    
-  }) %>% 
-  
-  ## Finally, create one dataframe for all niches
-  as.data.frame
+# GBIF.AOO <- spp.geo[c(1:length(spp.geo))] %>%
+# 
+#   ## Pipe the list into lapply
+#   lapply(function(x) {
+# 
+#     ## Subset the the data frame
+#     DF      = subset(data, searchTaxon == x)[, c("lon", "lat")]
+# 
+#     ## Calculate area of occupancy according the the "red" package
+#     aoo (DF)
+# 
+#     ## Warning messages: Ask John if this is a problem
+#     ## In rgdal::project(longlat, paste("+proj=utm +zone=", zone,  ... :
+#     ## 3644 projected point(s) not finite
+# 
+#   }) %>%
+# 
+#   ## Finally, create one dataframe for all niches
+#   as.data.frame
 
 
 #########################################################################################################################
@@ -537,20 +544,22 @@ GBIF.AOO <- spp.geo[c(1:length(spp.geo))] %>%
 
 #########################################################################################################################
 ## Clean it up :: the order of species should be preserved
-GBIF.AOO = gather(GBIF.AOO)
-str(GBIF.AOO)
-str(unique(GBIF.ALA.COMBO.HIA$searchTaxon))                     ## same number of species...
-
-
-## Now join on the GEOGRAPHIC RANGE
-COMBO.NICHE$AREA_OCCUPANCY = GBIF.AOO$value                     ## vectors same length so don't need to match
+# GBIF.AOO = gather(GBIF.AOO)
+# str(GBIF.AOO)
+# str(unique(GBIF.ALA.COMBO.HIA$searchTaxon))                     ## same number of species...
+# 
+# 
+# ## Now join on the GEOGRAPHIC RANGE
+# COMBO.NICHE$AREA_OCCUPANCY = GBIF.AOO$value                     ## vectors same length so don't need to match
 
 
 ## AOO is calculated as the area of all known or predicted cells for the species. The resolution will be 2x2km as 
 ## required by IUCN. A single value in km2.
+
+#########################################################################################################################
 ## Add the counts of LGAs for each species in here:
 names(COMBO.NICHE);names(LGA.AGG)
-COMBO.LGA = join(COMBO.NICHE, LGA.AGG)                          ## The tapply needs to go where the niche summaries are
+COMBO.LGA = join(COMBO.NICHE, LGA.AGG)                            ## The tapply needs to go where the niche summaries are
 names(COMBO.LGA)
 
 
