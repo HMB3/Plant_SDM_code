@@ -134,6 +134,7 @@ FIT_MAXENT_RAND_BG <- function(occ,
                tempdir(), basename(f), 'ESRI Shapefile')
       
       ## Create a raster of cells with data
+      message('creating background cells for ', name)
       bg_cells <- gdal_rasterize(extension(f, 'shp'), 
                                  tempfile(fileext = '.tif'),
                                  te = c(bbox(template.raster)),
@@ -148,7 +149,6 @@ FIT_MAXENT_RAND_BG <- function(occ,
       bg <- xyFromCell(template.raster, bg_cells)
       
       ## Reduce background sample if it's larger than max_bg_size
-      
       ## There is no minimum number of background records.................................................................
       
       ## What if the species has very few records surrounding its record?
@@ -166,13 +166,16 @@ FIT_MAXENT_RAND_BG <- function(occ,
       }
       
       ## Extract environmental values at the background points :: this was not working for me...
-      ## projection(env.grids.current)
+      ## Is this due to a projection problem? points are mollweide, 
+      ## projection(env.grids)
       bg <- SpatialPointsDataFrame(coords      = as.data.frame(bg), 
                                    data        = as.data.frame(bg),
                                    proj4string = CRS('+proj=moll +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs'))
       
-      ## Is the cell = bg_cells necessary?
-      bg <- extract(env.grids, bg) ## sp = TRUE)
+      ## Is the cell = bg_cells necessary? This bit takes too long....
+      ## For 160 spp this would take about 4 days
+      message('extracting cells for ', name)
+      bg <- extract(env.grids, bg) ## sp = TRUE)   ## In .doExtract(x, i, drop = drop) : some indices are invalid (NA returned)
       ## bg <- SpatialPointsDataFrame(SpatialPoints(bg), data.frame(cell = bg_cells)) 
       
       #####################################################################
@@ -256,10 +259,6 @@ FIT_MAXENT_RAND_BG <- function(occ,
       saveRDS(list(me_xval = me_xval, me_full = me_full, swd = swd, pa = pa), 
               file.path(outdir_sp, 'full', 'maxent_fitted.rds'))
       
-      ## Get the maxent model
-      # m <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', outdir, name)) 
-      # m <- m$me_full  ## class(m);View(m)
-      
       #####################################################################
       ## Save the chart corrleation file too for the variable set
       save_name = gsub(' ', '_', name)
@@ -284,9 +283,13 @@ FIT_MAXENT_RAND_BG <- function(occ,
       ########################################################################################################################
       ## Another .png for the global records: str(LAND$long)
       LAND       = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LAND_world.rds")
+      occ_land   = occ %>% 
+        spTransform(CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+      bg_land    = bg %>% 
+        spTransform(CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
       
-      png(sprintf('%s/%s/full/%s_%s.png', outdir,
-                  name, name, "global_records"),
+      png(sprintf('%s/%s/full/%s_%s.png', maxent_path,
+                  save_name, save_name, "global_records"),
           16180, 10000, units = 'px', res = 600)
       
       ## How do we locate bad records in the dataset after spotting them?
@@ -294,7 +297,7 @@ FIT_MAXENT_RAND_BG <- function(occ,
            lwd = 0.5, asp = 1, axes = TRUE, cex.axis = 3.5,
            col = 'darkolivegreen3', bg = 'lightblue', cex.lab = 3)
       
-      points(occ, pch = ".", cex = 3.5, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2, 
+      points(occ_land, pch = ".", cex = 3.5, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2, 
              main = paste0("Global occurrences for ", name), 
              xlab = "", ylab = "", asp = 1)
       
@@ -307,6 +310,7 @@ FIT_MAXENT_RAND_BG <- function(occ,
       
       ########################################################################################################################
       ## Another PNG for the background points....
+      #if(!file.exists(sprintf('%s/%s/full/%s_%s.png', maxent_path, name, name, "background_records"))) {
       png(sprintf('%s/%s/full/%s_%s.png', outdir,
                   name, name, "background_records"),
           16180, 10000, units = 'px', res = 600)
@@ -317,7 +321,7 @@ FIT_MAXENT_RAND_BG <- function(occ,
            col = 'darkolivegreen3', bg = 'lightblue', cex.lab = 3)
       
       points(bg, pch = ".", cex = 1.6, col = "blue", cex.lab = 3, cex.main = 4, cex.axis = 2, 
-             main = paste0("Global occurrences for ", name), 
+             main = paste0("Bacground points for ", name), 
              xlab = "", ylab = "", asp = 1)
       
       ## Title 
@@ -327,10 +331,19 @@ FIT_MAXENT_RAND_BG <- function(occ,
       ## Finish the device
       dev.off() 
       
+      # } else {
+      #   
+      #   message("Background records maps exists for ", name)
+      #   
+      # }
+      
       ########################################################################################################################
       ## Plot the models: can two plots be combined into one?
       ## Make these unique names, and they can be searched in windows. Otherwise, we can just click into each subfolder. 
       ## To sort, names would need to be: spp + unique_extension
+      m <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', outdir, save_name)) 
+      m <- m$me_full
+      
       png(sprintf('%s/%s/full/%s_current.png', outdir,
                   name, name, "variable_contribution"),
           3236, 2000, units = 'px', res = 300)
@@ -340,7 +353,7 @@ FIT_MAXENT_RAND_BG <- function(occ,
       #     oma      = c(1.5, 1.5, 1.5, 1.5),
       #     font.lab = 2)
       
-      plot(me_full, col = "blue", pch = 19, cex.lab = 2, cex.axis = 5, cex.main = 2, 
+      plot(m, col = "blue", pch = 19, cex.lab = 2, cex.axis = 5, cex.main = 2, 
            main   = paste0("Variables for ", name), 
            xlab   = "Maxent contribution (%)")
       
@@ -353,10 +366,24 @@ FIT_MAXENT_RAND_BG <- function(occ,
           3236, 2000, units = 'px', res = 300)
       
       ## Add detail to the response plot
-      response(me_full, pch = 19, cex.lab = 2, cex.axis = 1.5, lwd = 2) 
+      response(m, pch = 19, cex.lab = 2, cex.axis = 1.5, lwd = 2) 
       
       ## Finish the device
       dev.off()
+      
+      #####################################################################
+      ## Save fitted model object, and the model-fitting data.
+      #       if(replicates > 1) {
+      # 
+      #         saveRDS(list(me_xval = me_xval, me_full = me_full, swd = swd, pa = pa),
+      #                 file.path(outdir_sp, 'maxent_fitted.rds'))
+      # 
+      #       } else {
+      # 
+      #         saveRDS(list(me_xval = NA, me_full = me_full, swd = swd, pa = pa),
+      #                 file.path(outdir_sp, 'maxent_fitted.rds'))
+      # 
+      # }
       
     }
     

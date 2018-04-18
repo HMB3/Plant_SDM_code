@@ -101,6 +101,26 @@ source('./R/MAXENT_FUNCTIONS.R')
 source('./R/MAPPING_FUNCTIONS.R')
 
 
+#########################################################################################################################
+## Read in spatial data
+aus         = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds")
+LAND        = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LAND_world.rds")
+areal_unit  = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/SUA.rds")
+areal_unit  = areal_unit[order(areal_unit$SUA_NAME11),]
+
+Koppen      = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/WC05_1975H_Koppen_Shapefile/WC05_1975H_Koppen_Kriticos_2012.shp", 
+                      layer = "WC05_1975H_Koppen_Kriticos_2012")
+
+Kopp.future = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/CM10_Kop_Shp_V1.2/CM10_Kop_V1.2.shp", 
+                      layer = "CM10_Kop_V1.2")
+
+
+## Set definitions :: best to minimise the number of projection used in this project
+CRS.MOL      <- CRS('+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +units=m +no_defs')
+CRS.WGS.84   <- CRS("+init=epsg:4326")
+CRS.AUS.ALB  <- CRS("+init=EPSG:3577")
+
+
 
 
 
@@ -159,6 +179,7 @@ summary(SPP.AUS$COMBO.count);summary(SPP.AUS$AUS_RECORDS)
 ##
 spp.rand             = intersect(SPP.RANDOM$searchTaxon, SPP.AUS$searchTaxon)
 spp.target           = intersect(SPP.TARGET$searchTaxon, SPP.AUS$searchTaxon)
+spp.model            = 
 str(spp.rand);str(spp.target)
 
 

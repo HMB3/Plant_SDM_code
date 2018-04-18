@@ -87,7 +87,7 @@ str(unique(ALA.LAND.HIA$searchTaxon))   ## Reduced from 30k to 4K
 ## Bind the rows together?
 GBIF.ALA.COMBO.LAND = bind_rows(GBIF.LAND, ALA.LAND.HIA)
 names(GBIF.ALA.COMBO.LAND)
-identical((dim(GBIF.LAND)[1]+dim(ALA.LAND)[1]),dim(GBIF.ALA.COMBO.LAND)[1])   ## only adding the ovelap...
+identical((dim(GBIF.LAND)[1]+dim(ALA.LAND)[1]),dim(GBIF.ALA.COMBO.LAND)[1])      ## only adding the ovelap...
 head(GBIF.ALA.COMBO.LAND)
 
 

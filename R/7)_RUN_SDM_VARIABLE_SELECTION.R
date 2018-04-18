@@ -34,10 +34,11 @@
 #load('data/template_hasData.tif')
 source('./R/HIA_LIST_MATCHING.R')
 
+
 ## Load SDM data
 template.raster = raster("./data/template_hasData.tif")
 template.cells  = readRDS("./data/hasData_cells.rds")
-SDM.DATA.ALL = readRDS("./data/base/HIA_LIST/COMBO/SDM_DATA_CLEAN_042018.rds")
+SDM.DATA.ALL    = readRDS("./data/base/HIA_LIST/COMBO/SDM_DATA_CLEAN_042018.rds")
 
 
 ## Check data :: template, data table and species 
@@ -68,7 +69,7 @@ sdm.select     <- c("Annual_mean_temp", "Temp_seasonality",    "Max_temp_warm_mo
                     "Precip_wet_month", "Precip_dry_month")      
 
 
-## Create raster stack of current environmental conditions if needed
+## Create a raster stack of current environmental conditions if needed
 i  <- match(sdm.predictors, sdm.predictors)
 ff <- file.path('./data/base/worldclim/world/0.5/bio/current',
                 sprintf('bio_%02d.tif', i))
@@ -382,11 +383,10 @@ save.image("STEP_7_RUN_SDM.RData")
 #########################################################################################################################
 
 
-## 1). Create a list of species with boundary bias, and without boundary bias (done). Only model those species with > 20 AUS records.
+## 1). Created a list of species with boundary bias, and without boundary bias (done). Only model those species with > 20 AUS records.
 ##     Create list of species with > 20 records.
-##     Track the functional coverage of the modelled spp (done).
 
-## 3). Re-process the niches for extra species :: we have niches for 6700 taxa, including all but 200 of the Kachenko taxa (done).
+## 3). Re-processed the niches for extra species :: we have niches for 6700 taxa, including all but 200 of the Kachenko taxa (done).
 
 ## 4). Get the random background points maxent function working (need John's help to code).
   
@@ -395,10 +395,11 @@ save.image("STEP_7_RUN_SDM.RData")
 ## 6). Set a minium no. of background points, as well as a maximum (John to advise).
 
 ## 7). Summarise all maxent output, check species thresholds :: maxent tables (AIC), predicted maps, occ/bg points, response curves, etc.
-##     Choose spp (Hugh, Linda, Rach to review each species, and an indepdendent expert?).
+##     Choose final species using all output (Hugh, Linda, Rach to review each species, and an indepdendent expert?).
+##     Track the functional coverage of the modelled spp
 
 ## 8). Get the Koppen summary idea working for species that are not modelled :: where will the koppens with records be in 2030/50/70? 
-##     Use Darren Kriticos's grid of changing Koppen with decades (but this only uses two GCMs)
+##     Use Darren Kriticos's grid of changing Koppen with decades (but this only uses two GCMs).
 
 ## 9). Model extra species :: take another ~300 spp from the intersection of any grown spp and the risky/innovative species.
 

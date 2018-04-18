@@ -197,15 +197,15 @@ env.grids.2070 = tryCatch(project_maxent_grids(scen_list     = scen_2070,
 
 #########################################################################################################################
 ## First, read in the list of files for the current models, and specify the file path
-path.backwards.sel = "./output/maxent/SEL_VAR/"
+#path.backwards.sel = "./output/maxent/SEL_VAR/"
 path.set.var       = "./output/maxent/SET_VAR_COORDCLEAN/"
-#path.kop.var       = "./output/maxent/SEL_VAR/"
 
 
 ## Create an object for the maxent settings
 #model.selection.settings = "Backwards_cor_0.85_pct_5_k_5"        ## Chagne this for each variable selection strategy
 model.selection.settings = "Set_variables"  
-records_setting          = "ALL"
+records_setting          = "COORD_CLEAN"
+
 
 ## Create a file list for each model run
 maxent.tables = list.files(path.set.var)     ## Chagne this for each variable selection strategy
@@ -237,13 +237,13 @@ MAXENT.SUMMARY <- maxent.tables[c(1:length(maxent.tables))] %>%         ## curre
     #m <- readRDS(sprintf('%s/%s/full/model.rds', maxent_path, x))
     m <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, x))
     m <- m$me_full
-    number_var = length(m@lambdas) - 4                                          ## (the last 4 slots of lambdas are not variables) 
+    number_var = length(m@lambdas) - 4                                   ## (the last 4 slots of lambdas are not variables) 
     
     ## Now add a model column
     d = cbind(searchTaxon = x, 
               Settings    = model.selection.settings, 
               Number_var  = number_var, 
-              Records     = records_setting , d)  ## see step 7, make a variable for multiple runs
+              Records     = records_setting, d)  ## see step 7, make a variable for multiple runs
     dim(d)
     
     ## Remove path gunk, and species
@@ -303,13 +303,14 @@ SDM.RESULTS.DIR <- comb_spp[c(1:length(comb_spp))] %>%
 
 
 ## Get the number of aus records too ....................................................................................
-NICHE.CONTEXT = COMBO.NICHE.CONTEXT[, c("searchTaxon",      "Plant.type",        "Origin", 
+NICHE.CONTEXT = COMBO.NICHE.CONTEXT[, c("searchTaxon",      "AUS_RECORDS",       "Plant.type",        "Origin", 
                                         "Top_200",          "Number.of.growers", "Number.of.States")]
 
 
 ## Check with John and Linda which columns will help with model selection
 MAXENT.SUMM   = MAXENT.SUMMARY[, c("searchTaxon",
                                    "Settings",
+                                   "Records",
                                    "Number_var",
                                    "X.Training.samples",                                                                
                                    "Iterations",                                                                        
@@ -330,7 +331,7 @@ View(MAXENT.CHECK.TABLE)
 
 
 ## Save
-#write.csv(MAXENT.CHECK.TABLE, "./output/maxent/MAXENT_CHECK_TABLE.csv", row.names = FALSE)
+## write.csv(MAXENT.CHECK.TABLE, "./output/maxent/MAXENT_CHECK_TABLE.csv", row.names = FALSE)
 
 
 

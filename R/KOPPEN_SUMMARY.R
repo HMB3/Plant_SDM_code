@@ -19,13 +19,20 @@
 
 ## Load the records from step 4
 source('./R/HIA_LIST_MATCHING.R')
-load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_1601_2018.RData")
+COMBO.RASTER.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_1304_2018.rds")
+
+
+## Just look at the experimental species
+mod.compare.spp = trimws(sort(unique(c(renee.full$Species, MQ.glasshouse$Species))))
 
 
 ## Read in the Koppen shapefile :: 1975 centred data
 ## https://www.climond.org/Core/Authenticated/KoppenGeiger.aspx
-Koppen = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/WC05_1975H_Koppen_Shapefile/WC05_1975H_Koppen_Kriticos_2012.shp", 
-                 layer = "WC05_1975H_Koppen_Kriticos_2012")
+Koppen      = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/WC05_1975H_Koppen_Shapefile/WC05_1975H_Koppen_Kriticos_2012.shp", 
+                      layer = "WC05_1975H_Koppen_Kriticos_2012")
+Kopp.future = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/CM10_Kop_Shp_V1.2/CM10_Kop_V1.2.shp", 
+                      layer = "CM10_Kop_V1.2")
+
 head(Koppen)
 str(unique(Koppen$Koppen))
 #plot(Koppen)
@@ -37,8 +44,6 @@ str(unique(Koppen$Koppen))
 
 
 ## Check the unique IDs match
-COMBO.RASTER.CONTEXT$OBS <- 1:nrow(COMBO.RASTER.CONTEXT)
-dim(COMBO.RASTER.CONTEXT)[1];length(COMBO.RASTER.CONTEXT$OBS)  
 head(COMBO.RASTER.CONTEXT, 10)[, c("OBS", "searchTaxon", "lat", "lon")]
 
 
@@ -56,8 +61,6 @@ GBIF.ALA.POINTS = SpatialPointsDataFrame(coords      = COMBO.RASTER.CONTEXT[c("l
                                          data        = COMBO.RASTER.CONTEXT,
                                          proj4string = CRS("+proj=longlat +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +no_defs"))
 
-
-##
 dim(GBIF.ALA.POINTS)
 length(unique(GBIF.ALA.POINTS$searchTaxon))
 
@@ -75,7 +78,7 @@ test = GBIF.ALA.POINTS[GBIF.ALA.POINTS$searchTaxon %in% mod.compare.spp, ]
 
 
 ## The projections need to match for the spatial overlay 
-CRS.new          <- CRS("+init=epsg:4326")        ## EPSG:3577
+CRS.new          <- CRS("+init=epsg:4326")
 Koppen           = spTransform(Koppen, CRS.new)
 GBIF.ALA.POINTS  = spTransform(GBIF.ALA.POINTS, CRS.new)
 
@@ -97,7 +100,7 @@ str(unique(TAXA.KOPPEN.JOIN$searchTaxon))
 
 
 ## Produce a "long" format table with records (rows) * Koppen (columns)
-## Not sure the order matters, but this analysis is framed about Koppen so order on this
+## Not sure the order matters, but this analysis is framed about Koppen so order by that
 TAXA.KOPPEN.JOIN  = TAXA.KOPPEN.JOIN[with(TAXA.KOPPEN.JOIN, order(Koppen)), ]
 TAXA.KOPPEN.COUNT = TAXA.KOPPEN.JOIN[, c("Koppen", "searchTaxon")]
 
@@ -132,10 +135,6 @@ View(KOPPEN.CAST)
 #########################################################################################################################
 ## 3). CREATE A KOPPEN * SPP TABLE FOR 10 EXPERIMENTAL SPECIES 
 #########################################################################################################################
-
-
-## Just look at the experimental species
-mod.compare.spp = trimws(sort(unique(c(renee.full$Species, MQ.glasshouse$Species))))
 
 
 ## Check the contextual data for just the test species
