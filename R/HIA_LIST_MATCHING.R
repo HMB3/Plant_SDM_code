@@ -108,11 +108,11 @@ LAND        = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LAND_world.rds")
 areal_unit  = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/SUA.rds")
 areal_unit  = areal_unit[order(areal_unit$SUA_NAME11),]
 
-Koppen      = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/WC05_1975H_Koppen_Shapefile/WC05_1975H_Koppen_Kriticos_2012.shp", 
-                      layer = "WC05_1975H_Koppen_Kriticos_2012")
-
-Kopp.future = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/CM10_Kop_Shp_V1.2/CM10_Kop_V1.2.shp", 
-                      layer = "CM10_Kop_V1.2")
+# Koppen      = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/WC05_1975H_Koppen_Shapefile/WC05_1975H_Koppen_Kriticos_2012.shp", 
+#                       layer = "WC05_1975H_Koppen_Kriticos_2012")
+# 
+# Kopp.future = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/CM10_Kop_Shp_V1.2/CM10_Kop_V1.2.shp", 
+#                       layer = "CM10_Kop_V1.2")
 
 
 ## Set definitions :: best to minimise the number of projection used in this project
