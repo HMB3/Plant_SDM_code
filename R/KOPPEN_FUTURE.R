@@ -23,43 +23,58 @@ COMBO.RASTER.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_
 
 
 ## Just look at the experimental species
-mod.compare.spp = trimws(sort(unique(c(renee.full$Species, MQ.glasshouse$Species))))
+COMBO.POINTS = COMBO.RASTER.CONTEXT[COMBO.RASTER.CONTEXT$searchTaxon %in% spp.combo, ]
+dim(COMBO.POINTS)
 
 
 ## Read in the Koppen shapefile :: 1975 centred data
 ## https://www.climond.org/Core/Authenticated/KoppenGeiger.aspx
-Kopp.30.single      = readOGR("H:/green_cities_sdm/data/base/CONTEXTUAL/CM10_Kop_Shp_V1.2/KOP_2030_A1B_CS_multi.shp",
-                       layer = "KOP_2030_A1B_CS_multi")
+# Koppen.1975      = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/WC05_1975H_Koppen_Shapefile/WC05_1975H_Koppen_Kriticos_2012.shp",
+#                       layer = "WC05_1975H_Koppen_Kriticos_2012")
+# 
+# Kopp.2030     = readOGR("H:/green_cities_sdm/data/base/CONTEXTUAL/CM10_Kop_Shp_V1.2/KOP_2030_A1B_CS.shp",
+#                         layer = "KOP_2030_A1B_CS")
+# 
+# Kopp.2050     = readOGR("H:/green_cities_sdm/data/base/CONTEXTUAL/CM10_Kop_Shp_V1.2/KOP_2050_A1B_CS.shp",
+#                         layer = "KOP_2050_A1B_CS")
+# 
+# Kopp.2070     = readOGR("H:/green_cities_sdm/data/base/CONTEXTUAL/CM10_Kop_Shp_V1.2/KOP_2070_A1B_CS.shp",
+#                         layer = "KOP_2070_A1B_CS")
+# 
+# saveRDS(Kopp.1975, 'data/base/CONTEXTUAL/KOP_1975.rds')
+# saveRDS(Kopp.2030, 'data/base/CONTEXTUAL/KOP_2030.rds')
+# saveRDS(Kopp.2050, 'data/base/CONTEXTUAL/KOP_2050.rds')
+# saveRDS(Kopp.2070, 'data/base/CONTEXTUAL/KOP_2070.rds')
 
-saveRDS(Kopp.2030, 'data/base/CONTEXTUAL/KOP_2030_MULTI.rds')
 
 ## saveRDS(Kopp.1975, 'data/base/CONTEXTUAL/KOP_1975.rds')
 Kopp.1975   = readRDS('data/base/CONTEXTUAL/KOP_1975.rds')
-Kopp.future =  readRDS('data/base/CONTEXTUAL/KOP_FUTURE.rds')
-Kopp.2030   = readRDS('data/base/CONTEXTUAL/KOP_2030_MULTI.rds')
-
+Kopp.2030   = readRDS('data/base/CONTEXTUAL/KOP_2030.rds')
 Kopp.2050   = readRDS('data/base/CONTEXTUAL/KOP_2050.rds')
 Kopp.2070   = readRDS('data/base/CONTEXTUAL/KOP_2070.rds')
 
 
 ## Check
 head(Kopp.1975)
-names(Kopp.2030) = c("Koppen_2030")
+names(Kopp.2030) = c("Koppen_2030_A1B_CS")
+names(Kopp.2050) = c("Koppen_2050_A1B_CS")
+names(Kopp.2070) = c("Koppen_2070_A1B_CS")
 
 
+## I think this will be ok :: the grouping will take care of the multipart problem
 dim(Kopp.1975)
 dim(Kopp.2030)
+dim(Kopp.2050)
+dim(Kopp.2070)
+
 
 ## All are the same
 sort(unique(Kopp.1975$Koppen))
-sort(unique(Kopp.2030$Koppen))
+sort(unique(Kopp.2030$Koppen_2030_A1B_CS))
+sort(unique(Kopp.2050$Koppen_2050_A1B_CS))
+sort(unique(Kopp.2070$Koppen_2070_A1B_CS))
 
-sort(unique(Kopp.future$X1975H))
-sort(unique(Kopp.future$X030_A1B_CS))
-sort(unique(Kopp.future$X050_A1B_CS))
-sort(unique(Kopp.future$X070_A1B_CS))
 
-## Just get the Koppen zones, the split up data is per grid cell, it's not aggregated...
 
 
 
@@ -69,22 +84,22 @@ sort(unique(Kopp.future$X070_A1B_CS))
 
 
 ## Check the unique IDs match
-head(COMBO.RASTER.CONTEXT, 10)[, c("OBS", "searchTaxon", "lat", "lon")]
+head(COMBO.POINTS, 10)[, c("OBS", "searchTaxon", "lat", "lon")]
 
 
 ## Just get the environmental columns
-OCC.ENV    <- select(COMBO.RASTER.CONTEXT, searchTaxon, OBS,
-                     Annual_mean_temp,     Mean_diurnal_range, Isothermality,      Temp_seasonality,   Max_temp_warm_month, 
-                     Mean_temp_wet_qu,     Mean_temp_dry_qu,   Temp_annual_range,  Mean_temp_warm_qu,  Mean_temp_cold_qu, 
-                     Min_temp_cold_month,
-                     Annual_precip,        Precip_wet_month,   Precip_dry_month,   Precip_seasonality, Precip_wet_qu,     
-                     Precip_dry_qu,        Precip_warm_qu,     Precip_col_qu)
+# OCC.ENV    <- select(COMBO.RASTER.CONTEXT, searchTaxon, OBS,
+#                      Annual_mean_temp,     Mean_diurnal_range, Isothermality,      Temp_seasonality,   Max_temp_warm_month, 
+#                      Mean_temp_wet_qu,     Mean_temp_dry_qu,   Temp_annual_range,  Mean_temp_warm_qu,  Mean_temp_cold_qu, 
+#                      Min_temp_cold_month,
+#                      Annual_precip,        Precip_wet_month,   Precip_dry_month,   Precip_seasonality, Precip_wet_qu,     
+#                      Precip_dry_qu,        Precip_warm_qu,     Precip_col_qu)
 
 
 ## Create spatial points dataframe
-GBIF.ALA.POINTS = SpatialPointsDataFrame(coords      = COMBO.RASTER.CONTEXT[c("lon", "lat")], 
-                                         data        = COMBO.RASTER.CONTEXT,
-                                         proj4string = CRS("+proj=longlat +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +no_defs"))
+GBIF.ALA.POINTS = SpatialPointsDataFrame(coords      = COMBO.POINTS[c("lon", "lat")], 
+                                         data        = COMBO.POINTS,
+                                         proj4string = CRS.WGS.84)
 
 dim(GBIF.ALA.POINTS)
 length(unique(GBIF.ALA.POINTS$searchTaxon))
@@ -99,31 +114,33 @@ length(unique(GBIF.ALA.POINTS$searchTaxon))
 
 
 ## The projections need to match for the spatial overlay 
-CRS.new          <- CRS("+init=epsg:4326")
-Kopp.1975        = spTransform(Kopp.1975, CRS.new)
-Kopp.2030        = spTransform(Kopp.2030, CRS.new)
-Kopp.2050        = spTransform(Kopp.2050, CRS.new)
-Kopp.2070        = spTransform(Kopp.2070, CRS.new)
-GBIF.ALA.POINTS  = spTransform(GBIF.ALA.POINTS, CRS.new)
+Kopp.1975        = spTransform(Kopp.1975, CRS.WGS.84)
+Kopp.2030        = spTransform(Kopp.2030, CRS.WGS.84)
+Kopp.2050        = spTransform(Kopp.2050, CRS.WGS.84)
+Kopp.2070        = spTransform(Kopp.2070, CRS.WGS.84)
 
 
 ## Check they are the same
+projection(Kopp.1975)
 projection(Kopp.2030)
+projection(Kopp.2050)
+projection(Kopp.2070)
 projection(GBIF.ALA.POINTS)
 
 
+#########################################################################################################################
 ## Now, intersect the species with the data :: these objects are huge!
 KOPPEN.TAXA.1975 = over(GBIF.ALA.POINTS, Kopp.1975)
-saveRDS(KOPPEN.TAXA.1975, 'data/base/CONTEXTUAL/KOPPEN_TAXA_1975.rds')
+saveRDS(KOPPEN.TAXA.1975, 'data/base/CONTEXTUAL/KOPPEN_JOIN/KOPPEN_TAXA_1975.rds')
 
 KOPPEN.TAXA.2030 = over(GBIF.ALA.POINTS, Kopp.2030)
-saveRDS(KOPPEN.TAXA.2030, 'data/base/CONTEXTUAL/KOPPEN_TAXA_2030.rds')
+saveRDS(KOPPEN.TAXA.2030, 'data/base/CONTEXTUAL/KOPPEN_JOIN/KOPPEN_TAXA_2030.rds')
 
 KOPPEN.TAXA.2050 = over(GBIF.ALA.POINTS, Kopp.2050)
-saveRDS(KOPPEN.TAXA.2050, 'data/base/CONTEXTUAL/KOPPEN_TAXA_2050.rds')
+saveRDS(KOPPEN.TAXA.2050, 'data/base/CONTEXTUAL/KOPPEN_JOIN/KOPPEN_TAXA_2050.rds')
 
 KOPPEN.TAXA.2070 = over(GBIF.ALA.POINTS, Kopp.2070)
-saveRDS(KOPPEN.TAXA.2070, 'data/base/CONTEXTUAL/KOPPEN_TAXA_2070.rds')
+saveRDS(KOPPEN.TAXA.2070, 'data/base/CONTEXTUAL/KOPPEN_JOIN/KOPPEN_TAXA_2070.rds')
 
 
 ## What do they look like?
@@ -137,14 +154,14 @@ head(GBIF.ALA.POINTS[1])
 
 
 ## Then join the koppen classification onto the data
-TAXA.KOPPEN.JOIN = cbind.data.frame(GBIF.ALA.POINTS, KOPPEN.TAXA)
+TAXA.KOPPEN.2030.JOIN = cbind.data.frame(GBIF.ALA.POINTS, KOPPEN.TAXA.2030)
 str(unique(TAXA.KOPPEN.JOIN$searchTaxon))
 
 
 ## Produce a "long" format table with records (rows) * Koppen (columns)
 ## Not sure the order matters, but this analysis is framed about Koppen so order by that
-TAXA.KOPPEN.JOIN  = TAXA.KOPPEN.JOIN[with(TAXA.KOPPEN.JOIN, order(Koppen)), ]
-TAXA.KOPPEN.COUNT = TAXA.KOPPEN.JOIN[, c("Koppen", "searchTaxon")]
+TAXA.KOPPEN.JOIN  = TAXA.KOPPEN.JOIN[with(TAXA.KOPPEN.JOIN, order(Koppen_2030)), ]
+TAXA.KOPPEN.COUNT = TAXA.KOPPEN.JOIN[, c("Koppen_2030", "searchTaxon")]
 
 
 #########################################################################################################################

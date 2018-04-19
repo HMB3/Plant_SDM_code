@@ -561,8 +561,12 @@ summary(EXTRA.SPP$Number.of.growers)
 
 
 ##
-extra.spp = unique(EXTRA.SPP$Binomial)
-length(extra.spp)
+spp.extra = unique(EXTRA.SPP$Binomial)
+length(spp.extra)
+
+spp.combo = sort(unique(c(spp.all, spp.extra)))
+length(spp.combo)
+
 
 ## Can we get another random selection of plants from the risky list to plug the gap?
 
