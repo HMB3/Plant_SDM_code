@@ -145,22 +145,40 @@ saveRDS(KOPPEN.TAXA.2070, 'data/base/CONTEXTUAL/KOPPEN_JOIN/KOPPEN_TAXA_2070.rds
 
 ## What do they look like?
 dim(KOPPEN.TAXA.1975)
-head(KOPPEN.TAXA.1975)
+length(sort(unique(KOPPEN.TAXA.1975$Koppen)))
+
+dim(KOPPEN.TAXA.2030)
+length(sort(unique(KOPPEN.TAXA.2030$Koppen_2030_A1B_CS)))
+
+dim(KOPPEN.TAXA.2050)
+length(sort(unique(KOPPEN.TAXA.2050$Koppen_2050_A1B_CS)))
 
 dim(KOPPEN.TAXA.2070)
-head(KOPPEN.TAXA.2070)
-
-head(GBIF.ALA.POINTS[1])
+length(sort(unique(KOPPEN.TAXA.2050$Koppen_2070_A1B_CS)))
 
 
 ## Then join the koppen classification onto the data
+TAXA.KOPPEN.1975.JOIN = cbind.data.frame(GBIF.ALA.POINTS, KOPPEN.TAXA.1975)
+str(unique(TAXA.KOPPEN.2030.JOIN$searchTaxon))
+
 TAXA.KOPPEN.2030.JOIN = cbind.data.frame(GBIF.ALA.POINTS, KOPPEN.TAXA.2030)
-str(unique(TAXA.KOPPEN.JOIN$searchTaxon))
+str(unique(TAXA.KOPPEN.2030.JOIN$searchTaxon))
+
+TAXA.KOPPEN.2050.JOIN = cbind.data.frame(GBIF.ALA.POINTS, KOPPEN.TAXA.2050)
+str(unique(TAXA.KOPPEN.2050.JOIN$searchTaxon))
+
+TAXA.KOPPEN.2070.JOIN = cbind.data.frame(GBIF.ALA.POINTS, KOPPEN.TAXA.2070)
+str(unique(TAXA.KOPPEN.2070.JOIN$searchTaxon))
 
 
-## Produce a "long" format table with records (rows) * Koppen (columns)
+## Produce a "long" format table with records (rows) * Koppen (columns).
 ## Not sure the order matters, but this analysis is framed about Koppen so order by that
-TAXA.KOPPEN.JOIN  = TAXA.KOPPEN.JOIN[with(TAXA.KOPPEN.JOIN, order(Koppen_2030)), ]
+TAXA.KOPPEN.1975.JOIN  = TAXA.KOPPEN.JOIN[with(TAXA.KOPPEN.JOIN, order(Koppen_1975)), ]
+TAXA.KOPPEN.2030.JOIN  = TAXA.KOPPEN.JOIN[with(TAXA.KOPPEN.JOIN, order(Koppen_2030)), ]
+TAXA.KOPPEN.2050.JOIN  = TAXA.KOPPEN.JOIN[with(TAXA.KOPPEN.JOIN, order(Koppen_2050)), ]
+TAXA.KOPPEN.2070.JOIN  = TAXA.KOPPEN.JOIN[with(TAXA.KOPPEN.JOIN, order(Koppen_2070)), ]
+
+
 TAXA.KOPPEN.COUNT = TAXA.KOPPEN.JOIN[, c("Koppen_2030", "searchTaxon")]
 
 
