@@ -30,7 +30,8 @@ source('./R/HIA_LIST_MATCHING.R')
 
 ## HB Do an example species :: SPP Brachypoda
 GBIF.TRIM.TEST  = COMBO.RASTER.CONTEXT#[COMBO.RASTER.CONTEXT$searchTaxon %in% spp.all, ]      ## kop.spp for the test spp
-SPP.TEST        = subset(GBIF.TRIM.TEST, searchTaxon == "Cordyline australis")               ## Change this to the captial spp
+SPP.TEST        = subset(GBIF.TRIM.TEST, searchTaxon == "Cordyline australis")                ## Change this to the captial spp
+
 
 str(unique(GBIF.TRIM.TEST$searchTaxon))
 unique(SPP.TEST$searchTaxon)
@@ -194,7 +195,7 @@ points(SPP.TEST$lon,  SPP.TEST$lat, cex = 0.8, col = "red", pch = 19)
 
 
 #########################################################################################################################
-## FLAG GBIF AND SPATIAL OUTLIERS FOR ONE SPECIES
+## FLAG GBIF OUTLIERS
 #########################################################################################################################
 
 
@@ -227,9 +228,10 @@ FLAGS  <- CleanCoordinates(TIB.TEST,
                            duplicates       = TRUE,
                            seas             = FALSE)
 
+
 ## save/load the flags
-saveRDS(FLAGS, 'data/base/HIA_LIST/COMBO/COMBO_FLAGS.rds')
-# FLAGS = readRDS('data/base/HIA_LIST/COMBO/COMBO_FLAGS.rds')
+saveRDS(FLAGS, 'data/base/HIA_LIST/COMBO/COMBO_GBIF_FLAGS.rds')
+# FLAGS = readRDS('data/base/HIA_LIST/COMBO/COMBO_GBFI_FLAGS.rds')
 
 
 ## Flagging ~ 1.64%, excluding the spatial outliers. Seems reasonable?
@@ -243,35 +245,45 @@ names(FLAGS)
 #plot(FLAGS)
 
 
+
+
+
 #########################################################################################################################
-## Then split the data into 5 maneageable subsets
-TIB.MILE  = TIB.TEST[TIB.TEST$searchTaxon %in% spp.mile, ] 
+## FLAG SPATIAL OUTLIERS
+#########################################################################################################################
 
 
-##
-n = 30
+#########################################################################################################################
+## Then split the data into n maneageable subsets to check the spatial outliers, but just for the 120 modelled species
+TIB.MILE  = TIB.TEST[TIB.TEST$species %in% spp.mile, ] 
+
+
+## 8 subsets of 15 species each
+n = 8
 dim(TIB.MILE)[1]/n
 REP <- rep(1:n, each = round(dim(TIB.MILE)[1]/n, digits = 0))
 REP <- head(REP, dim(TIB.MILE)[1])
 
 identical(dim(TIB.MILE)[1], length(REP))
+head(REP)
 tail(REP)
 
 
-## Because the vector is a non-factorial length, make it the same
+## If the vector is a non factoris-abubble length, make it the same
 dim(TIB.MILE)[1] - length(REP)
-REP <- c(REP, rep(n, 6))
+REP <- c(REP, rep(n, dim(TIB.MILE)[1] - length(REP)))
 dim(TIB.MILE)[1] - length(REP)
 TIB.MILE$REP = REP
 head(TIB.MILE$REP);tail(TIB.MILE$REP)
 
 
 ## Could create a list of data frames :: save data to run multiple sessions
+## 100k points shouldn't be too bad to process
 OUT <- split( TIB.MILE , f = TIB.MILE$REP )
-dim(OUT[[1]]);dim(OUT[[15]]);dim(OUT[[30]])
+dim(OUT[[1]]);dim(OUT[[4]]);dim(OUT[[8]])
 
 
-#save.image("STEP_COORD_CLEAN.RData")
+#save.image("STEP_5_COORD_CLEAN.RData")
 #load("STEP_COORD_CLEAN.RData")
 
 
@@ -308,18 +320,123 @@ dim(OUT[[1]]);dim(OUT[[15]]);dim(OUT[[30]])
 
 
 ## One at a time 
-# GBIF.SPAT.OUT.1 = cc_outl(OUT[[1]],
-#                           lon     = "decimallongitude", 
-#                           lat     = "decimallatitude", 
-#                           species = "species", 
-#                           method  = "quantile", 
-#                           mltpl   = 5, 
-#                           tdi     = 1000, 
-#                           value   = "flags")  
+GBIF.SPAT.OUT.1 = cc_outl(OUT[[1]],
+                          lon     = "decimallongitude",
+                          lat     = "decimallatitude",
+                          species = "species",
+                          method  = "quantile",
+                          mltpl   = 5,
+                          tdi     = 1000,
+                          value   = "flags")
 
 
 ## Save spatial outliers
-#saveRDS(GBIF.SPAT.OUT.1, 'data/base/HIA_LIST/COMBO/SPAT_OUT/SPAT_OUT_1.rds')
+saveRDS(GBIF.SPAT.OUT.1, 'data/base/HIA_LIST/COMBO/SPAT_OUT/SPAT_OUT_1.rds')
+
+
+## One at a time 
+GBIF.SPAT.OUT.2 = cc_outl(OUT[[2]],
+                          lon     = "decimallongitude",
+                          lat     = "decimallatitude",
+                          species = "species",
+                          method  = "quantile",
+                          mltpl   = 5,
+                          tdi     = 1000,
+                          value   = "flags")
+
+
+## Save spatial outliers
+saveRDS(GBIF.SPAT.OUT.2, 'data/base/HIA_LIST/COMBO/SPAT_OUT/SPAT_OUT_2.rds')
+
+
+## One at a time 
+GBIF.SPAT.OUT.3 = cc_outl(OUT[[3]],
+                          lon     = "decimallongitude",
+                          lat     = "decimallatitude",
+                          species = "species",
+                          method  = "quantile",
+                          mltpl   = 5,
+                          tdi     = 1000,
+                          value   = "flags")
+
+
+## Save spatial outliers
+saveRDS(GBIF.SPAT.OUT.3, 'data/base/HIA_LIST/COMBO/SPAT_OUT/SPAT_OUT_3.rds')
+
+
+## One at a time 
+GBIF.SPAT.OUT.4 = cc_outl(OUT[[4]],
+                          lon     = "decimallongitude",
+                          lat     = "decimallatitude",
+                          species = "species",
+                          method  = "quantile",
+                          mltpl   = 5,
+                          tdi     = 1000,
+                          value   = "flags")
+
+
+## Save spatial outliers
+saveRDS(GBIF.SPAT.OUT.4, 'data/base/HIA_LIST/COMBO/SPAT_OUT/SPAT_OUT_4.rds')
+
+
+## One at a time 
+GBIF.SPAT.OUT.5 = cc_outl(OUT[[5]],
+                          lon     = "decimallongitude",
+                          lat     = "decimallatitude",
+                          species = "species",
+                          method  = "quantile",
+                          mltpl   = 5,
+                          tdi     = 1000,
+                          value   = "flags")
+
+
+## Save spatial outliers
+saveRDS(GBIF.SPAT.OUT.5, 'data/base/HIA_LIST/COMBO/SPAT_OUT/SPAT_OUT_5.rds')
+
+
+## One at a time 
+GBIF.SPAT.OUT.6 = cc_outl(OUT[[6]],
+                          lon     = "decimallongitude",
+                          lat     = "decimallatitude",
+                          species = "species",
+                          method  = "quantile",
+                          mltpl   = 5,
+                          tdi     = 1000,
+                          value   = "flags")
+
+
+## Save spatial outliers
+saveRDS(GBIF.SPAT.OUT.6, 'data/base/HIA_LIST/COMBO/SPAT_OUT/SPAT_OUT_6.rds')
+
+
+## One at a time 
+GBIF.SPAT.OUT.7 = cc_outl(OUT[[7]],
+                          lon     = "decimallongitude",
+                          lat     = "decimallatitude",
+                          species = "species",
+                          method  = "quantile",
+                          mltpl   = 5,
+                          tdi     = 1000,
+                          value   = "flags")
+
+
+## Save spatial outliers
+saveRDS(GBIF.SPAT.OUT.7, 'data/base/HIA_LIST/COMBO/SPAT_OUT/SPAT_OUT_7.rds')
+
+
+## One at a time 
+GBIF.SPAT.OUT.8 = cc_outl(OUT[[8]],
+                          lon     = "decimallongitude",
+                          lat     = "decimallatitude",
+                          species = "species",
+                          method  = "quantile",
+                          mltpl   = 5,
+                          tdi     = 1000,
+                          value   = "flags")
+
+
+## Save spatial outliers
+saveRDS(GBIF.SPAT.OUT.8, 'data/base/HIA_LIST/COMBO/SPAT_OUT/SPAT_OUT_8.rds')
 
 
 ##
@@ -331,10 +448,8 @@ dim(OUT[[1]]);dim(OUT[[15]]);dim(OUT[[30]])
 ## Check the output ::
 #dim(FLAGS);length(GBIF.SPAT.OUT)
 # GBIF.SPAT.OUT = bind_rows(GBIF.SPAT.OUT.1,  GBIF.SPAT.OUT.2,  GBIF.SPAT.OUT.3,  GBIF.SPAT.OUT.4,  GBIF.SPAT.OUT.5,  GBIF.SPAT.OUT.6,
-#                           GBIF.SPAT.OUT.7,  GBIF.SPAT.OUT.8,  GBIF.SPAT.OUT.9,  GBIF.SPAT.OUT.10, GBIF.SPAT.OUT.11, GBIF.SPAT.OUT.12,
-#                           GBIF.SPAT.OUT.13, GBIF.SPAT.OUT.14, GBIF.SPAT.OUT.15, GBIF.SPAT.OUT.16, GBIF.SPAT.OUT.17, GBIF.SPAT.OUT.18,
-#                           GBIF.SPAT.OUT.19, GBIF.SPAT.OUT.20, GBIF.SPAT.OUT.21, GBIF.SPAT.OUT.22, GBIF.SPAT.OUT.23, GBIF.SPAT.OUT.24,
-#                           GBIF.SPAT.OUT.25, GBIF.SPAT.OUT.26, GBIF.SPAT.OUT.27, GBIF.SPAT.OUT.28, GBIF.SPAT.OUT.29, GBIF.SPAT.OUT.30)
+#                           GBIF.SPAT.OUT.7,  GBIF.SPAT.OUT.8)
+
 
 
 #########################################################################################################################
@@ -350,15 +465,15 @@ identical(TEST.GEO$searchTaxon, TEST.GEO$coord_spp)                             
 
 
 ## Check the values for each flag
-summary(TEST.GEO$validity)
-summary(TEST.GEO$equal)
-summary(TEST.GEO$zeros)
-summary(TEST.GEO$capitals)
-summary(TEST.GEO$centroids)
-summary(TEST.GEO$gbif)
-summary(TEST.GEO$institution)
-summary(TEST.GEO$gbif)
-summary(TEST.GEO$summary)
+# summary(TEST.GEO$validity)
+# summary(TEST.GEO$equal)
+# summary(TEST.GEO$zeros)
+# summary(TEST.GEO$capitals)
+# summary(TEST.GEO$centroids)
+# summary(TEST.GEO$gbif)
+# summary(TEST.GEO$institution)
+# summary(TEST.GEO$gbif)
+# summary(TEST.GEO$summary)
 #summary(TEST.GEO$GBIF.SPAT.OUT)
 
 
@@ -383,7 +498,7 @@ summary(TEST.GEO$summary)
 
 
 #########################################################################################################################
-## SUBSET AND SAVE TABLES
+## SUBSET FOR THE NICHES : JUST USE COORDCLEAN SUMMARY
 #########################################################################################################################
 
 
@@ -423,8 +538,57 @@ unique(CLEAN.TRUE$summary)
 str(unique(CLEAN.TRUE$searchTaxon))
 str(unique(TEST.GEO$searchTaxon))
 'Ficus brachypoda' %in% TEST.GEO$searchTaxon  
-(dim(CLEAN.TRUE)[1]/dim(TEST.GEO))*100                                  ## ~98% of the data is retained
+(dim(CLEAN.TRUE)[1]/dim(TEST.GEO))*100                                  ## ~98% of the records are retained
 
+
+
+
+
+#########################################################################################################################
+## SUBSET FOR SDM DATA : USE COORDCLEAN SUMMARY & SPATIAL OUTLIERS
+#########################################################################################################################
+
+
+## Crunch the big data down to just the species we are modelling
+COMBO.RASTER.MILE  = COMBO.RASTER.CONTEXT[COMBO.RASTER.CONTEXT$searchTaxon %in% spp.mile, ] 
+TEST.SPAT          = cbind(COMBO.RASTER.MILE, FLAGS, GBIF.SPAT.OUT)
+identical(TEST.SPAT$searchTaxon, TEST.SPAT$coord_spp)                                                     ## order matches
+
+
+## So ~2.6% of the data is dodgy according to the GBIF fields or spatial outliers. This seems ok as a median figure 
+dim(subset(TEST.GEO, summary == "FALSE" | GBIF.SPAT.OUT == "FALSE"))[1]/dim(TEST.GEO)[1]*100
+SPAT.FALSE = subset(TEST.GEO, summary == "FALSE" | GBIF.SPAT.OUT == "FALSE")
+
+
+## Check one species
+# coordyline = subset(TEST.GEO, searchTaxon == "Cordyline australis")
+# View(subset(coordyline, summary == "FALSE") #| GBIF.SPAT.OUT == "FALSE")
+#      [, c("searchTaxon", "OBS",
+#           "lon",
+#           "lat",
+#           "validity", 
+#           "equal",
+#           "zeros",
+#           "capitals",
+#           "centroids",
+#           "duplicates",
+#           "gbif",
+#           "institution",
+#           "summary")])
+
+
+## Not sure why the inverse did not work :: get only the records which were not flagged as being dodgy.
+dim(subset(TEST.GEO, summary == "TRUE" | GBIF.SPAT.OUT == "TRUE"))
+SPAT.TRUE = TEST.GEO[!TEST.GEO$OBS %in% SPAT.FALSE$OBS, ]
+identical(dim(SPAT.TRUE)[1], (dim(COMBO.RASTER.CONTEXT)[1] - dim(subset(TEST.GEO, summary == "FALSE"))[1]))
+unique(SPAT.TRUE$summary)                                              
+#unique(CLEAN.TRUE$GBIF.SPAT.OUT)                                       
+
+
+## How many species?
+str(unique(CLEAN.TRUE$searchTaxon))
+str(unique(TEST.GEO$searchTaxon))
+(dim(CLEAN.TRUE)[1]/dim(TEST.GEO))*100                                  ## ~98% of the data is retained
 
 #########################################################################################################################
 ## Save
