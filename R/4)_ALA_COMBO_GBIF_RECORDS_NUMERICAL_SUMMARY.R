@@ -64,7 +64,6 @@ ALA.LAND     = dplyr::rename(ALA.LAND,
 
 
 ## Restrict ALA data to just those species on the big list
-library(plyr)
 HIA.SPP.JOIN     = CLEAN.SPP
 HIA.SPP.JOIN     = dplyr::rename(HIA.SPP.JOIN, searchTaxon = Binomial)
 
@@ -456,7 +455,8 @@ points(COMBO.RASTER.CONVERT[ which(COMBO.RASTER.CONVERT$Annual_mean_temp < -5), 
 #########################################################################################################################
 ## Create niche summaries for each environmental condition like this...
 ## Here's what the function will produce :
-#library(plyr)
+NICHE.DF = completeFun(COMBO.RASTER.CONVERT, "PET")
+dim(NICHE.DF)
 head(niche_estimate (DF = COMBO.RASTER.CONVERT, colname = "Annual_mean_temp"))  ## including the q05 and q95
 
 
@@ -470,7 +470,7 @@ COMBO.NICHE <- env.variables %>%
     ## Now use the niche width function on each colname (so 8 environmental variables)
     ## Also, need to figure out how to make the aggregating column generic (species, genus, etc.)
     ## currently it only works hard-wired
-    niche_estimate (DF = COMBO.RASTER.CONVERT, colname = x)
+    niche_estimate (DF = NICHE.DF, colname = x)
     
     ## would be good to remove the duplicate columns here
     
@@ -580,11 +580,20 @@ saveRDS(COMBO.NICHE, file = paste("./data/base/HIA_LIST/GBIF/COMBO_NICHE.rds"))
 ## required by IUCN. A single value in km2.
 
 #########################################################################################################################
-## Add the counts of LGAs for each species in here:
-names(COMBO.NICHE);names(LGA.AGG)
+## Add the counts of Australian records for each species to the niche database
+names(COMBO.NICHE)
+names(LGA.AGG)
+dim(COMBO.NICHE)
+dim(LGA.AGG)
+
+
 COMBO.LGA = join(COMBO.NICHE, LGA.AGG)                            ## The tapply needs to go where the niche summaries are
 names(COMBO.LGA)
-dim(COMBO.LGA);head(COMBO.LGA$AUS_RECORDS);head(COMBO.LGA$LGA_COUNT)
+
+dim(COMBO.LGA)
+head(COMBO.LGA$AUS_RECORDS)
+head(COMBO.LGA$LGA_COUNT)
+
 
 
 
@@ -596,7 +605,8 @@ dim(COMBO.LGA);head(COMBO.LGA$AUS_RECORDS);head(COMBO.LGA$LGA_COUNT)
 
 #########################################################################################################################
 ## Now join the horticultural contextual data onto one or both tables ()
-names(COMBO.RASTER.CONVERT);names(CLEAN.SPP)
+names(COMBO.RASTER.CONVERT)
+names(CLEAN.SPP)
 COMBO.RASTER.CONTEXT = join(COMBO.RASTER.CONVERT, HIA.SPP.JOIN)
 #COMBO.RASTER.CONTEXT  = COMBO.RASTER.CONTEXT[,  c(42, 1, 65, 2:41, 43:61, 62:64, 66:78)]                ## REDO
 names(COMBO.RASTER.CONTEXT)

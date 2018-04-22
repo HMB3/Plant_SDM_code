@@ -619,12 +619,12 @@ spp_mile      = gsub(" ", "_", spp.mile)
 
 
 ## Add plant type data for the missing species
-MILE.1.SPP[117, "Plant.type"] = "Shrub" 
-MILE.1.SPP[118, "Plant.type"] = "Tree"  
-MILE.1.SPP[119, "Plant.type"] = "herb"  
-MILE.1.SPP[120, "Plant.type"] = "Shrub"  
-MILE.1.SPP[121, "Plant.type"] = "Tree"  
-MILE.1.SPP[122, "Plant.type"] = "Shrub" 
+MILE.1.SPP[115, "Plant.type"] = "Shrub" 
+MILE.1.SPP[116, "Plant.type"] = "Tree"  
+MILE.1.SPP[117, "Plant.type"] = "Shrub"  
+MILE.1.SPP[118, "Plant.type"] = "Shrub"  
+MILE.1.SPP[119, "Plant.type"] = "Tree"  
+MILE.1.SPP[120, "Plant.type"] = "Tree"  
 
 
 ## And as a percentage

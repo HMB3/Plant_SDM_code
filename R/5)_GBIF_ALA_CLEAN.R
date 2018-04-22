@@ -244,27 +244,31 @@ names(FLAGS)
 
 
 #########################################################################################################################
-## Then split the data into 30 maneageable subsets
-# n = 30 
-# dim(TIB.TEST)[1]/n
-# REP <- rep(1:n, each = round(dim(TIB.TEST)[1]/n, digits = 0))
-# REP <- head(REP, dim(TIB.TEST)[1])
-# 
-# identical(dim(TIB.TEST)[1], length(REP))
-# tail(REP)
+## Then split the data into 5 maneageable subsets
+TIB.MILE  = TIB.TEST[TIB.TEST$searchTaxon %in% spp.mile, ] 
+
+
+##
+n = 30
+dim(TIB.MILE)[1]/n
+REP <- rep(1:n, each = round(dim(TIB.MILE)[1]/n, digits = 0))
+REP <- head(REP, dim(TIB.MILE)[1])
+
+identical(dim(TIB.MILE)[1], length(REP))
+tail(REP)
 
 
 ## Because the vector is a non-factorial length, make it the same
-# dim(TIB.TEST)[1] - length(REP)
-# REP <- c(REP, rep(n, 6))
-# dim(TIB.TEST)[1] - length(REP)
-# TIB.TEST$REP = REP
-# head(TIB.TEST$REP);tail(TIB.TEST$REP)
+dim(TIB.MILE)[1] - length(REP)
+REP <- c(REP, rep(n, 6))
+dim(TIB.MILE)[1] - length(REP)
+TIB.MILE$REP = REP
+head(TIB.MILE$REP);tail(TIB.MILE$REP)
 
 
 ## Could create a list of data frames :: save data to run multiple sessions
-# OUT <- split( TIB.TEST , f = TIB.TEST$REP )
-# dim(OUT[[1]]);dim(OUT[[15]]);dim(OUT[[30]])
+OUT <- split( TIB.MILE , f = TIB.MILE$REP )
+dim(OUT[[1]]);dim(OUT[[15]]);dim(OUT[[30]])
 
 
 #save.image("STEP_COORD_CLEAN.RData")
