@@ -319,124 +319,124 @@ dim(OUT[[1]]);dim(OUT[[4]]);dim(OUT[[8]])
 #saveRDS(GBIF.SPAT.OUT.5.7, 'data/base/HIA_LIST/COMBO/SPAT_OUT/SPAT_OUT_5_7.rds')
 
 
-## One at a time 
-GBIF.SPAT.OUT.1 = cc_outl(OUT[[1]],
-                          lon     = "decimallongitude",
-                          lat     = "decimallatitude",
-                          species = "species",
-                          method  = "quantile",
-                          mltpl   = 5,
-                          tdi     = 1000,
-                          value   = "flags")
+# ## One at a time 
+# GBIF.SPAT.OUT.1 = cc_outl(OUT[[1]],
+#                           lon     = "decimallongitude",
+#                           lat     = "decimallatitude",
+#                           species = "species",
+#                           method  = "quantile",
+#                           mltpl   = 5,
+#                           tdi     = 1000,
+#                           value   = "flags")
+# 
+# 
+# ## Save spatial outliers
+# saveRDS(GBIF.SPAT.OUT.1, 'data/base/HIA_LIST/COMBO/SPAT_OUT/SPAT_OUT_1.rds')
+# 
+# 
+# ## One at a time 
+# GBIF.SPAT.OUT.2 = cc_outl(OUT[[2]],
+#                           lon     = "decimallongitude",
+#                           lat     = "decimallatitude",
+#                           species = "species",
+#                           method  = "quantile",
+#                           mltpl   = 5,
+#                           tdi     = 1000,
+#                           value   = "flags")
+# 
+# 
+# ## Save spatial outliers
+# saveRDS(GBIF.SPAT.OUT.2, 'data/base/HIA_LIST/COMBO/SPAT_OUT/SPAT_OUT_2.rds')
+# 
+# 
+# ## One at a time 
+# GBIF.SPAT.OUT.3 = cc_outl(OUT[[3]],
+#                           lon     = "decimallongitude",
+#                           lat     = "decimallatitude",
+#                           species = "species",
+#                           method  = "quantile",
+#                           mltpl   = 5,
+#                           tdi     = 1000,
+#                           value   = "flags")
+# 
+# 
+# ## Save spatial outliers
+# saveRDS(GBIF.SPAT.OUT.3, 'data/base/HIA_LIST/COMBO/SPAT_OUT/SPAT_OUT_3.rds')
+# 
+# 
+# ## One at a time 
+# GBIF.SPAT.OUT.4 = cc_outl(OUT[[4]],
+#                           lon     = "decimallongitude",
+#                           lat     = "decimallatitude",
+#                           species = "species",
+#                           method  = "quantile",
+#                           mltpl   = 5,
+#                           tdi     = 1000,
+#                           value   = "flags")
+# 
+# 
+# ## Save spatial outliers
+# saveRDS(GBIF.SPAT.OUT.4, 'data/base/HIA_LIST/COMBO/SPAT_OUT/SPAT_OUT_4.rds')
+# 
+# 
+# ## One at a time 
+# GBIF.SPAT.OUT.5 = cc_outl(OUT[[5]],
+#                           lon     = "decimallongitude",
+#                           lat     = "decimallatitude",
+#                           species = "species",
+#                           method  = "quantile",
+#                           mltpl   = 5,
+#                           tdi     = 1000,
+#                           value   = "flags")
+# 
+# 
+# ## Save spatial outliers
+# saveRDS(GBIF.SPAT.OUT.5, 'data/base/HIA_LIST/COMBO/SPAT_OUT/SPAT_OUT_5.rds')
+# 
+# 
+# ## One at a time 
+# GBIF.SPAT.OUT.6 = cc_outl(OUT[[6]],
+#                           lon     = "decimallongitude",
+#                           lat     = "decimallatitude",
+#                           species = "species",
+#                           method  = "quantile",
+#                           mltpl   = 5,
+#                           tdi     = 1000,
+#                           value   = "flags")
+# 
+# 
+# ## Save spatial outliers
+# saveRDS(GBIF.SPAT.OUT.6, 'data/base/HIA_LIST/COMBO/SPAT_OUT/SPAT_OUT_6.rds')
+# 
+# 
+# ## One at a time 
+# GBIF.SPAT.OUT.7 = cc_outl(OUT[[7]],
+#                           lon     = "decimallongitude",
+#                           lat     = "decimallatitude",
+#                           species = "species",
+#                           method  = "quantile",
+#                           mltpl   = 5,
+#                           tdi     = 1000,
+#                           value   = "flags")
+# 
+# 
+# ## Save spatial outliers
+# saveRDS(GBIF.SPAT.OUT.7, 'data/base/HIA_LIST/COMBO/SPAT_OUT/SPAT_OUT_7.rds')
+# 
+# 
+# ## One at a time 
+# GBIF.SPAT.OUT.8 = cc_outl(OUT[[8]],
+#                           lon     = "decimallongitude",
+#                           lat     = "decimallatitude",
+#                           species = "species",
+#                           method  = "quantile",
+#                           mltpl   = 5,
+#                           tdi     = 1000,
+#                           value   = "flags")
 
 
 ## Save spatial outliers
-saveRDS(GBIF.SPAT.OUT.1, 'data/base/HIA_LIST/COMBO/SPAT_OUT/SPAT_OUT_1.rds')
-
-
-## One at a time 
-GBIF.SPAT.OUT.2 = cc_outl(OUT[[2]],
-                          lon     = "decimallongitude",
-                          lat     = "decimallatitude",
-                          species = "species",
-                          method  = "quantile",
-                          mltpl   = 5,
-                          tdi     = 1000,
-                          value   = "flags")
-
-
-## Save spatial outliers
-saveRDS(GBIF.SPAT.OUT.2, 'data/base/HIA_LIST/COMBO/SPAT_OUT/SPAT_OUT_2.rds')
-
-
-## One at a time 
-GBIF.SPAT.OUT.3 = cc_outl(OUT[[3]],
-                          lon     = "decimallongitude",
-                          lat     = "decimallatitude",
-                          species = "species",
-                          method  = "quantile",
-                          mltpl   = 5,
-                          tdi     = 1000,
-                          value   = "flags")
-
-
-## Save spatial outliers
-saveRDS(GBIF.SPAT.OUT.3, 'data/base/HIA_LIST/COMBO/SPAT_OUT/SPAT_OUT_3.rds')
-
-
-## One at a time 
-GBIF.SPAT.OUT.4 = cc_outl(OUT[[4]],
-                          lon     = "decimallongitude",
-                          lat     = "decimallatitude",
-                          species = "species",
-                          method  = "quantile",
-                          mltpl   = 5,
-                          tdi     = 1000,
-                          value   = "flags")
-
-
-## Save spatial outliers
-saveRDS(GBIF.SPAT.OUT.4, 'data/base/HIA_LIST/COMBO/SPAT_OUT/SPAT_OUT_4.rds')
-
-
-## One at a time 
-GBIF.SPAT.OUT.5 = cc_outl(OUT[[5]],
-                          lon     = "decimallongitude",
-                          lat     = "decimallatitude",
-                          species = "species",
-                          method  = "quantile",
-                          mltpl   = 5,
-                          tdi     = 1000,
-                          value   = "flags")
-
-
-## Save spatial outliers
-saveRDS(GBIF.SPAT.OUT.5, 'data/base/HIA_LIST/COMBO/SPAT_OUT/SPAT_OUT_5.rds')
-
-
-## One at a time 
-GBIF.SPAT.OUT.6 = cc_outl(OUT[[6]],
-                          lon     = "decimallongitude",
-                          lat     = "decimallatitude",
-                          species = "species",
-                          method  = "quantile",
-                          mltpl   = 5,
-                          tdi     = 1000,
-                          value   = "flags")
-
-
-## Save spatial outliers
-saveRDS(GBIF.SPAT.OUT.6, 'data/base/HIA_LIST/COMBO/SPAT_OUT/SPAT_OUT_6.rds')
-
-
-## One at a time 
-GBIF.SPAT.OUT.7 = cc_outl(OUT[[7]],
-                          lon     = "decimallongitude",
-                          lat     = "decimallatitude",
-                          species = "species",
-                          method  = "quantile",
-                          mltpl   = 5,
-                          tdi     = 1000,
-                          value   = "flags")
-
-
-## Save spatial outliers
-saveRDS(GBIF.SPAT.OUT.7, 'data/base/HIA_LIST/COMBO/SPAT_OUT/SPAT_OUT_7.rds')
-
-
-## One at a time 
-GBIF.SPAT.OUT.8 = cc_outl(OUT[[8]],
-                          lon     = "decimallongitude",
-                          lat     = "decimallatitude",
-                          species = "species",
-                          method  = "quantile",
-                          mltpl   = 5,
-                          tdi     = 1000,
-                          value   = "flags")
-
-
-## Save spatial outliers
-saveRDS(GBIF.SPAT.OUT.8, 'data/base/HIA_LIST/COMBO/SPAT_OUT/SPAT_OUT_8.rds')
+# saveRDS(GBIF.SPAT.OUT.8, 'data/base/HIA_LIST/COMBO/SPAT_OUT/SPAT_OUT_8.rds')
 
 
 ##
@@ -550,14 +550,14 @@ str(unique(TEST.GEO$searchTaxon))
 
 
 ## Crunch the big data down to just the species we are modelling
-COMBO.RASTER.MILE  = COMBO.RASTER.CONTEXT[COMBO.RASTER.CONTEXT$searchTaxon %in% spp.mile, ] 
-TEST.SPAT          = cbind(COMBO.RASTER.MILE, FLAGS, GBIF.SPAT.OUT)
-identical(TEST.SPAT$searchTaxon, TEST.SPAT$coord_spp)                                                     ## order matches
+# COMBO.RASTER.MILE  = COMBO.RASTER.CONTEXT[COMBO.RASTER.CONTEXT$searchTaxon %in% spp.mile, ] 
+# TEST.SPAT          = cbind(COMBO.RASTER.MILE, FLAGS, GBIF.SPAT.OUT)
+# identical(TEST.SPAT$searchTaxon, TEST.SPAT$coord_spp)                                                     ## order matches
 
 
 ## So ~2.6% of the data is dodgy according to the GBIF fields or spatial outliers. This seems ok as a median figure 
-dim(subset(TEST.GEO, summary == "FALSE" | GBIF.SPAT.OUT == "FALSE"))[1]/dim(TEST.GEO)[1]*100
-SPAT.FALSE = subset(TEST.GEO, summary == "FALSE" | GBIF.SPAT.OUT == "FALSE")
+# dim(subset(TEST.GEO, summary == "FALSE" | GBIF.SPAT.OUT == "FALSE"))[1]/dim(TEST.GEO)[1]*100
+# SPAT.FALSE = subset(TEST.GEO, summary == "FALSE" | GBIF.SPAT.OUT == "FALSE")
 
 
 ## Check one species
@@ -577,11 +577,11 @@ SPAT.FALSE = subset(TEST.GEO, summary == "FALSE" | GBIF.SPAT.OUT == "FALSE")
 #           "summary")])
 
 
-## Not sure why the inverse did not work :: get only the records which were not flagged as being dodgy.
-dim(subset(TEST.GEO, summary == "TRUE" | GBIF.SPAT.OUT == "TRUE"))
-SPAT.TRUE = TEST.GEO[!TEST.GEO$OBS %in% SPAT.FALSE$OBS, ]
-identical(dim(SPAT.TRUE)[1], (dim(COMBO.RASTER.CONTEXT)[1] - dim(subset(TEST.GEO, summary == "FALSE"))[1]))
-unique(SPAT.TRUE$summary)                                              
+## Not sure why the inverse did not work :: get only the records which were _not_ flagged as being dodgy.
+# dim(subset(TEST.GEO, summary == "TRUE" | GBIF.SPAT.OUT == "TRUE"))
+# SPAT.TRUE = TEST.GEO[!TEST.GEO$OBS %in% SPAT.FALSE$OBS, ]
+# identical(dim(SPAT.TRUE)[1], (dim(COMBO.RASTER.CONTEXT)[1] - dim(subset(TEST.GEO, summary == "FALSE"))[1]))
+# unique(SPAT.TRUE$summary)                                              
 #unique(CLEAN.TRUE$GBIF.SPAT.OUT)                                       
 
 
@@ -590,11 +590,72 @@ str(unique(CLEAN.TRUE$searchTaxon))
 str(unique(TEST.GEO$searchTaxon))
 (dim(CLEAN.TRUE)[1]/dim(TEST.GEO))*100                                  ## ~98% of the data is retained
 
+
+
+
+
+#########################################################################################################################
+## SUBSET FOR SDM DATA : USE COORDCLEAN SUMMARY & SPATIAL OUTLIERS
+#########################################################################################################################
+
+
+## List of environmental variables
+env.variables = c("Annual_mean_temp",
+                  "Mean_diurnal_range",
+                  "Isothermality",
+                  "Temp_seasonality",
+                  "Max_temp_warm_month",
+                  "Min_temp_cold_month",
+                  "Temp_annual_range",
+                  "Mean_temp_wet_qu",
+                  "Mean_temp_dry_qu",
+                  "Mean_temp_warm_qu",
+                  "Mean_temp_cold_qu",
+                  
+                  "Annual_precip",
+                  "Precip_wet_month",
+                  "Precip_dry_month",
+                  "Precip_seasonality",
+                  "Precip_wet_qu",
+                  "Precip_dry_qu",
+                  "Precip_warm_qu",
+                  "Precip_col_qu",
+                  "PET")
+
+
+## Apply the niche function
+CLEAN.NICHE <- env.variables %>% 
+  
+  ## Pipe the list into lapply
+  lapply(function(x) {
+    
+    ## Now use the niche width function on each colname (so 8 environmental variables)
+    ## Also, need to figure out how to make the aggregating column generic (species, genus, etc.)
+    ## currently it only works hard-wired
+    niche_estimate (DF = CLEAN.TRUE, colname = x)
+    
+    ## would be good to remove the duplicate columns here
+    
+  }) %>% 
+  
+  ## finally, create one dataframe for all niches
+  as.data.frame
+
+
+## Remove duplicate Taxon columns and check the output :: would be great to skip these columns when running the function
+names(COMBO.NICHE)
+COMBO.NICHE = subset(CLEAN.NICHE, select = -c(searchTaxon.1,  searchTaxon.2,  searchTaxon.3,  searchTaxon.4,
+                                              searchTaxon.5,  searchTaxon.6,  searchTaxon.7,  searchTaxon.7,
+                                              searchTaxon.8,  searchTaxon.9,  searchTaxon.10, searchTaxon.11,
+                                              searchTaxon.12, searchTaxon.13, searchTaxon.14, searchTaxon.15,
+                                              searchTaxon.16, searchTaxon.17, searchTaxon.18))
+
+
 #########################################################################################################################
 ## Save
-saveRDS(TEST.GEO,   'data/base/HIA_LIST/COMBO/CLEAN_FLAGS_HIA_SPP.rds')
-saveRDS(CLEAN.TRUE, 'data/base/HIA_LIST/COMBO/CLEAN_ONLY_HIA_SPP.rds')
-save.image("5_COORD_CLEAN.RData")
+saveRDS(TEST.GEO,    'data/base/HIA_LIST/COMBO/CLEAN_FLAGS_HIA_SPP.rds')
+saveRDS(CLEAN.TRUE,  'data/base/HIA_LIST/COMBO/CLEAN_ONLY_HIA_SPP.rds')
+saveRDS(CLEAN.NICHE, 'data/base/HIA_LIST/COMBO/CLEAN_NICHES_PET.rds')
 
 
 
