@@ -615,11 +615,8 @@ names(COMBO.RASTER.CONTEXT)
 ## Now join hort context to all the niche
 COMBO.NICHE.CONTEXT = join(COMBO.LGA, HIA.SPP.JOIN)
 #COMBO.NICHE.CONTEXT =  COMBO.NICHE.CONTEXT[, c(2, 176, 1, 174:175, 177:189, 3:173)] 
-head(COMBO.NICHE.CONTEXT$AUS_RECORDS);head(COMBO.NICHE.CONTEXT$LGA_COUNT)
-
-
-## Check taxa again
-'Kennedia beckxiana' %in% COMBO.NICHE.CONTEXT$searchTaxon  
+head(COMBO.NICHE.CONTEXT$AUS_RECORDS)
+head(COMBO.NICHE.CONTEXT$LGA_COUNT)
 
 
 ## Set NA to blank, then sort by no. of growers
@@ -685,7 +682,7 @@ dim(COMBO.NICHE.CONTEXT)
 ## Save the summary datasets
 #saveRDS(missing.taxa,         file = paste("./data/base/HIA_LIST/COMBO/MISSING_TAXA.rds",                   sep = ""))
 saveRDS(COMBO.RASTER.CONTEXT, file = paste("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_APRIL_2018.rds", sep = ""))
-saveRDS(COMBO.NICHE.CONTEXT,  file = paste("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018.rds",  sep = ""))
+saveRDS(COMBO.NICHE.CONTEXT,  file = paste("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_STANDARD_CLEAN.rds",  sep = ""))
 write.csv(COMBO.NICHE.CONTEXT, "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018.csv",        row.names = FALSE)
 source('./R/5)_GBIF_ALA_CLEAN.R')
 

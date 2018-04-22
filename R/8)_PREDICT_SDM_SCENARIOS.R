@@ -157,7 +157,7 @@ env.grids.2030 = tryCatch(project_maxent_grids(scen_list     = scen_2030,
 
 ## 2050
 env.grids.2050 = tryCatch(project_maxent_grids(scen_list     = scen_2050,
-                                               species_list  = spp_mile,
+                                               species_list  = spp_mile_rev,
                                                time_slice    = 50,
                                                maxent_path   = "./output/maxent/SET_VAR_COORDCLEAN",
                                                climate_path  = "./data/base/worldclim/aus/1km/bio",

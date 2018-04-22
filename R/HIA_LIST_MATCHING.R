@@ -616,6 +616,7 @@ spp.mile.targ = subset(MILE.1.SPP, AUS_BOUND_BIAS == "FALSE")$searchTaxon
 spp.mile.rand = subset(MILE.1.SPP, AUS_BOUND_BIAS == "FALSE")$searchTaxon
 spp.mile      = sort(unique(MILE.1.SPP$searchTaxon))
 spp_mile      = gsub(" ", "_", spp.mile)
+spp_mile_rev  = sort(spp_mile, decreasing = TRUE)
 
 
 ## Add plant type data for the missing species

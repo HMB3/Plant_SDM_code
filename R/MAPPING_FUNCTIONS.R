@@ -58,7 +58,7 @@ project_maxent_grids = function(scen_list, species_list, maxent_path, climate_pa
         message('Doing ', species)
         
         ## Then, check if the species projection has already been run...
-        #if(!file.exists(sprintf('%s/%s/full/%s_%s.tif', maxent_path, species, species, x))) {
+        if(!file.exists(sprintf('%s/%s/full/%s_%s.tif', maxent_path, species, species, x))) {
         
         ## Assign the scenario name (to use later in the plot)
         scen_name = eval(parse(text = sprintf('gcms.%s$GCM[gcms.%s$id == x]', time_slice, time_slice)))           
@@ -144,11 +144,11 @@ project_maxent_grids = function(scen_list, species_list, maxent_path, climate_pa
         
         #}
         
-        # } else {
-        #   
-        #   message(species, ' ', x, ' skipped - prediction already run') ## Skip species which have already been projected
-        #   
-        # }
+        } else {
+
+          message(species, ' ', x, ' skipped - prediction already run') ## Skip species which have already been projected
+
+        }
         
       } else {
         
