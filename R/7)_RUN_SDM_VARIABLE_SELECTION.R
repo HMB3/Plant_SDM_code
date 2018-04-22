@@ -137,7 +137,7 @@ projection(template.raster);projection(SDM.DATA.ALL)
 
 ## spp = kop.spp[1]
 ## Run without cluster
-lapply(kop.spp, function(spp) { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel 
+lapply(spp.mile, function(spp) { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel 
   
   ## Print the taxa being processed to screen
   if(spp %in% SDM.DATA.ALL$searchTaxon) {

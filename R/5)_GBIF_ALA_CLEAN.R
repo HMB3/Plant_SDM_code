@@ -17,7 +17,7 @@
 
 
 ## Load GBIF data
-COMBO.RASTER.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_1304_2018.rds")
+COMBO.RASTER.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_APRIL_2018.rds")
 load("./data/base/CONTEXTUAL/urbanareas.rda")
 LAND = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LAND_world.rds")
 aus  = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds")
@@ -29,7 +29,7 @@ source('./R/HIA_LIST_MATCHING.R')
 
 
 ## HB Do an example species :: SPP Brachypoda
-GBIF.TRIM.TEST  = COMBO.RASTER.CONTEXT[COMBO.RASTER.CONTEXT$searchTaxon %in% spp.all, ]      ## kop.spp for the test spp
+GBIF.TRIM.TEST  = COMBO.RASTER.CONTEXT#[COMBO.RASTER.CONTEXT$searchTaxon %in% spp.all, ]      ## kop.spp for the test spp
 SPP.TEST        = subset(GBIF.TRIM.TEST, searchTaxon == "Cordyline australis")               ## Change this to the captial spp
 
 str(unique(GBIF.TRIM.TEST$searchTaxon))
@@ -61,105 +61,105 @@ points(SPP.TEST$lon,  SPP.TEST$lat, cex = 0.8, col = "red", pch = 19)
 #########################################################################################################################
 
 
-#########################################################################################################################
-## AZ I have further devloped the cleaning functions in the CoordinateCleaner package, which runs additional tests.
-## I suggest you do the following instead
-GBIF.TRIM.GEO = dplyr::rename(SPP.TEST, 
-                              species = searchTaxon,
-                              decimallongitude = lon, 
-                              decimallatitude  = lat)
-
-
-## Now use ?CleanCoordinates :: need to work on a tibble, for some reason !
-TIB.TEST <- timetk::tk_tbl(GBIF.TRIM.GEO)
-TIB.TEST
-
-
-## Run a check :: I've already stripped out the records that fall outside
-## the worldclim raster boundaries, so the sea test is probably not the most important for me
-## Study area is the globe, but we are only projecting models onto Australia
-FLAGS  <- CleanCoordinates(TIB.TEST,
-                           #countries        = "country",    ## too many flagged here...
-                           countrycheck     = TRUE,
-                           duplicates       = TRUE,
-                           capitals.rad     = 0.12,
-                           seas             = FALSE)
-
-
-## Flagging < 1%, but that's just coastal records for this species - pretty dodgy
-summary(FLAGS)
-summary(FLAGS)[10]/dim(FLAGS)[1]*100
-
-
-## A plot like this for each species would be awesome, fantastic work!
-plot(FLAGS)
-
-
-## AZ That looks much better. Depending on your exact study question/area, I suggest to possibly use a buffered 
-## gazetter for the seas test, to avoid falsely flagging records on the coastline
-## you can find one here: https://github.com/azizka/CoordinateCleaner/tree/master/extra_gazetteers
-## you can also tweak the buffer area around capital and centroids using the function arguments
-
-
-## HB All the records in this dataset are inside a worldclim pixel, so prob not too worried about the sea..
-
-
-# Also check out my newest data cleaning tutorial for GBIF data:
-# https://github.com/azizka/CoordinateCleaner/tree/master/Tutorials
-
-
-## Looks good! You need to convert the data frame to a tibble to make it work...
-
-
-## Now the outlier test (you can also run it through CleanCoordinates, but unfortunately it runs for awhile...)
-## You might want to consider some tweaking of the mltpl paramters
-?cc_outl
-
-
-## This creates a data frame of just the clean records
-# ## Not sure where the extra rows are coming from.....???
-# GBIF.CLEAN    <- cc_outl(TIB.TEST, 
-#                          lon     = "decimallongitude", 
-#                          lat     = "decimallatitude", 
-#                          species = "species", 
-#                          method  = "quantile", mltpl = 5, tdi = 1000, 
-#                          value   = "clean",  verbose = T)
+# #########################################################################################################################
+# ## AZ I have further devloped the cleaning functions in the CoordinateCleaner package, which runs additional tests.
+# ## I suggest you do the following instead
+# GBIF.TRIM.GEO = dplyr::rename(SPP.TEST,
+#                               species = searchTaxon,
+#                               decimallongitude = lon,
+#                               decimallatitude  = lat)
 # 
 # 
-# ## This creates a vector of true/false for each record
-# GBIF.SPAT.OUT <- cc_outl(TIB.TEST, 
-#                          lon     = "decimallongitude", 
-#                          lat     = "decimallatitude", 
-#                          species = "species", 
-#                          method  = "quantile", mltpl = 5, tdi = 1000, 
-#                          value   = "FLAGS",  verbose = T)
-
-
-## Check the output ::
-dim(GBIF.CLEAN);length(GBIF.SPAT.OUT)
-
-
-## Join data
-TEST.GEO = cbind(TIB.TEST, FLAGS) #, GBIF.SPAT.OUT)
-class(TEST.GEO)
-names(TEST.GEO)
-dim(TEST.GEO)
-
-
-## Check the values for each field
-unique(TEST.GEO$validity)
-unique(TEST.GEO$equal)
-unique(TEST.GEO$equal)
-unique(TEST.GEO$zeros)
-unique(TEST.GEO$capitals)
-unique(TEST.GEO$centroids)
-unique(TEST.GEO$outliers)
-unique(TEST.GEO$gbif)
-unique(TEST.GEO$institution)
-unique(TEST.GEO$outliers)
-unique(TEST.GEO$gbif)
-unique(TEST.GEO$summary)
-unique(TEST.GEO$GBIF.SPAT.OUT)
+# ## Now use ?CleanCoordinates :: need to work on a tibble, for some reason !
+# TIB.TEST <- timetk::tk_tbl(GBIF.TRIM.GEO)
+# TIB.TEST
+# 
+# 
+# ## Run a check :: I've already stripped out the records that fall outside
+# ## the worldclim raster boundaries, so the sea test is probably not the most important for me
+# ## Study area is the globe, but we are only projecting models onto Australia
+# FLAGS  <- CleanCoordinates(TIB.TEST,
+#                            #countries        = "country",    ## too many flagged here...
+#                            countrycheck     = TRUE,
+#                            duplicates       = TRUE,
+#                            capitals.rad     = 0.12,
+#                            seas             = FALSE)
+# 
+# 
+# ## Flagging < 1%, but that's just coastal records for this species - pretty dodgy
+# summary(FLAGS)
+# summary(FLAGS)[10]/dim(FLAGS)[1]*100
+# 
+# 
+# ## A plot like this for each species would be awesome, fantastic work!
+# plot(FLAGS)
+# 
+# 
+# ## AZ That looks much better. Depending on your exact study question/area, I suggest to possibly use a buffered
+# ## gazetter for the seas test, to avoid falsely flagging records on the coastline
+# ## you can find one here: https://github.com/azizka/CoordinateCleaner/tree/master/extra_gazetteers
+# ## you can also tweak the buffer area around capital and centroids using the function arguments
+# 
+# 
+# ## HB All the records in this dataset are inside a worldclim pixel, so prob not too worried about the sea..
+# 
+# 
+# # Also check out my newest data cleaning tutorial for GBIF data:
+# # https://github.com/azizka/CoordinateCleaner/tree/master/Tutorials
+# 
+# 
+# ## Looks good! You need to convert the data frame to a tibble to make it work...
+# 
+# 
+# ## Now the outlier test (you can also run it through CleanCoordinates, but unfortunately it runs for awhile...)
+# ## You might want to consider some tweaking of the mltpl paramters
+# ?cc_outl
+# 
+# 
+# ## This creates a data frame of just the clean records
+# # ## Not sure where the extra rows are coming from.....???
+# # GBIF.CLEAN    <- cc_outl(TIB.TEST,
+# #                          lon     = "decimallongitude",
+# #                          lat     = "decimallatitude",
+# #                          species = "species",
+# #                          method  = "quantile", mltpl = 5, tdi = 1000,
+# #                          value   = "clean",  verbose = T)
+# #
+# #
+# # ## This creates a vector of true/false for each record
+# # GBIF.SPAT.OUT <- cc_outl(TIB.TEST,
+# #                          lon     = "decimallongitude",
+# #                          lat     = "decimallatitude",
+# #                          species = "species",
+# #                          method  = "quantile", mltpl = 5, tdi = 1000,
+# #                          value   = "FLAGS",  verbose = T)
+# 
+# 
+# ## Check the output ::
+# dim(GBIF.CLEAN);length(GBIF.SPAT.OUT)
+# 
+# 
+# ## Join data
+# TEST.GEO = cbind(TIB.TEST, FLAGS) #, GBIF.SPAT.OUT)
+# class(TEST.GEO)
+# names(TEST.GEO)
+# dim(TEST.GEO)
+# 
+# 
+# ## Check the values for each field
+# unique(TEST.GEO$validity)
+# unique(TEST.GEO$equal)
+# unique(TEST.GEO$equal)
+# unique(TEST.GEO$zeros)
+# unique(TEST.GEO$capitals)
+# unique(TEST.GEO$centroids)
+# unique(TEST.GEO$outliers)
+# unique(TEST.GEO$gbif)
+# unique(TEST.GEO$institution)
+# unique(TEST.GEO$outliers)
+# unique(TEST.GEO$gbif)
+# unique(TEST.GEO$summary)
+# unique(TEST.GEO$GBIF.SPAT.OUT)
 
 
 
@@ -170,19 +170,19 @@ unique(TEST.GEO$GBIF.SPAT.OUT)
 #########################################################################################################################
 
 
-## Just get the clean data
-TEST.CLEAN = subset(TEST.GEO, summary == "TRUE")
-unique(TEST.CLEAN$country)
-
-  
-## HB I haven't removed any spatial outliers yet...
-plot(LAND)
-points(TEST.CLEAN$decimallongitude,  TEST.CLEAN$decimallatitude, cex = 0.2, col = "red", pch = 19)
-
-
-## Still have the outliers on the eastern half of Australia
-plot(aus)
-points(TEST.CLEAN$decimallongitude,  TEST.CLEAN$decimallatitude, cex = 0.8, col = "red", pch = 19)
+# ## Just get the clean data
+# TEST.CLEAN = subset(TEST.GEO, summary == "TRUE")
+# unique(TEST.CLEAN$country)
+# 
+#   
+# ## HB I haven't removed any spatial outliers yet...
+# plot(LAND)
+# points(TEST.CLEAN$decimallongitude,  TEST.CLEAN$decimallatitude, cex = 0.2, col = "red", pch = 19)
+# 
+# 
+# ## Still have the outliers on the eastern half of Australia
+# plot(aus)
+# points(TEST.CLEAN$decimallongitude,  TEST.CLEAN$decimallatitude, cex = 0.8, col = "red", pch = 19)
 
 
 
@@ -390,20 +390,20 @@ CLEAN.FALSE = subset(TEST.GEO, summary == "FALSE")# | GBIF.SPAT.OUT == "FALSE")
 
 
 ## Check one species
-coordyline = subset(TEST.GEO, searchTaxon == "Cordyline australis")
-View(subset(coordyline, summary == "FALSE") #| GBIF.SPAT.OUT == "FALSE")
-     [, c("searchTaxon", "OBS",
-          "lon",
-          "lat",
-          "validity", 
-          "equal",
-          "zeros",
-          "capitals",
-          "centroids",
-          "duplicates",
-          "gbif",
-          "institution",
-          "summary")])
+# coordyline = subset(TEST.GEO, searchTaxon == "Cordyline australis")
+# View(subset(coordyline, summary == "FALSE") #| GBIF.SPAT.OUT == "FALSE")
+#      [, c("searchTaxon", "OBS",
+#           "lon",
+#           "lat",
+#           "validity", 
+#           "equal",
+#           "zeros",
+#           "capitals",
+#           "centroids",
+#           "duplicates",
+#           "gbif",
+#           "institution",
+#           "summary")])
 
 
 ## Not sure why the inverse did not work :: get only the records which were not flagged as being dodgy.

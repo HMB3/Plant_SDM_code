@@ -132,7 +132,7 @@ CRS.AUS.ALB  <- CRS("+init=EPSG:3577")
 #########################################################################################################################
 ## Read in the niche data
 COMBO.NICHE.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018.rds")
-COMBO.NICHE.OLD     = readRDS("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1304_2018.rds")
+#COMBO.NICHE.OLD     = readRDS("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1304_2018.rds")
 str(unique(COMBO.NICHE.CONTEXT$searchTaxon))  ## long enough
 
 
@@ -147,7 +147,7 @@ CLEAN.list          = read.csv("./data/base/HIA_LIST/HIA/HIA.CLEAN.csv",        
 GROWING             = read.csv("./data/base/HIA_LIST/HIA/database_aus_sp_growing.csv",           stringsAsFactors = FALSE)
 MISSING             = read.csv("./data/base/HIA_LIST/HIA/MISSING_SPECIES.csv",                   stringsAsFactors = FALSE)
 MOD_2               = read.csv("./data/base/HIA_LIST/HIA/MOD2_LIST.csv",                         stringsAsFactors = FALSE)
-COMBO.ALL           = read.csv("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_ALL_SPP.csv",     stringsAsFactors = FALSE)
+MOD.2.3             = read.csv("./data/base/HIA_LIST/HIA/MODULE_2_3.csv",                        stringsAsFactors = FALSE)
 KOP.TEST            = read.csv("./data/base/HIA_LIST/COMBO/KOPPEN_TEST_SPP.csv",                 stringsAsFactors = FALSE)
 RISK.LIST           = read.csv("./data/base/HIA_LIST/HIA/RISK_LIST.csv",                         stringsAsFactors = FALSE)
 RISK.BINOMIAL.CLEAN = read.csv("./data/base/HIA_LIST/HIA/RISK_BINOMIAL_DF.csv",                  stringsAsFactors = FALSE)
@@ -370,7 +370,7 @@ setdiff(Manuel.experimental$Species, spp.all)
 
 ## The trial species
 glasshouse.spp = trimws(sort(unique(c(renee.full$Species, MQ.glasshouse$Species))))
-glasshouse.spp = as.data.frame(glasshouse.spp)
+#glasshouse.spp = as.data.frame(glasshouse.spp)
 
                         
 test.spp = trimws(sort(unique(c(renee.full$Species, 
@@ -568,7 +568,77 @@ spp.combo = sort(unique(c(spp.all, spp.extra)))
 length(spp.combo)
 
 
-## Can we get another random selection of plants from the risky list to plug the gap?
+
+
+
+#########################################################################################################################
+## 6). MILESTONE JUNE 2018 LIST
+#########################################################################################################################
+
+
+## We want all the current experimental spp (so the 50 as of April 2018). 
+## The 16 species Manuel is monitoring
+## Plus another 70 of the right sort
+MOD.2 = COMBO.NICHE.CONTEXT[COMBO.NICHE.CONTEXT$searchTaxon %in% MOD_2$Species, ][,  c("searchTaxon",
+                                                                                       "COMBO.count",
+                                                                                       "AUS_RECORDS",
+                                                                                       "Number.of.growers",
+                                                                                       "Top_200")]
+
+
+## So find 80 species which have the most growers, have the most Aus records and with at least 50 of them trees
+dim(subset(COMBO.NICHE.CONTEXT, Number.of.growers > 25 & AUS_RECORDS > 20 & COMBO.count > 100 & Top_200 == "TRUE"))
+MILE.1     = subset(COMBO.NICHE.CONTEXT, Number.of.growers > 25 & AUS_RECORDS > 20 & COMBO.count > 100 & Top_200 == "TRUE")
+spp.mile.1 = unique(sort(c(MOD.2.3$Species, MILE.1$searchTaxon)))
+length(spp.mile.1)
+
+
+## Join
+MILE.1.SPP =  COMBO.NICHE.CONTEXT[COMBO.NICHE.CONTEXT$searchTaxon %in% spp.mile.1, ]
+MILE.1.SPP =  join(MILE.1.SPP, SPP.BIAS, type = "left")
+
+
+MILE.1.SPP = MILE.1.SPP[,  c(1, 15, 16, 18, 7, 17, 3, 4, 5, 190, 19:189)]
+MILE.1.SPP = MILE.1.SPP[with(MILE.1.SPP, order(-Number.of.growers)), ]
+View(MILE.1.SPP)
+
+
+## What is the distribution?
+dim(MILE.1.SPP)
+summary(MILE.1.SPP$Number.of.growers)
+summary(MILE.1.SPP$AUS_RECORDS)
+summary(MILE.1.SPP$COMBO.count)
+
+
+## Also how should these be model
+with(MILE.1.SPP, table(AUS_BOUND_BIAS))
+spp.mile.targ = subset(MILE.1.SPP, AUS_BOUND_BIAS == "FALSE")$searchTaxon
+spp.mile.rand = subset(MILE.1.SPP, AUS_BOUND_BIAS == "FALSE")$searchTaxon
+spp.mile      = sort(unique(MILE.1.SPP$searchTaxon))
+spp_mile      = gsub(" ", "_", spp.mile)
+
+
+## Add plant type data for the missing species
+MILE.1.SPP[117, "Plant.type"] = "Shrub" 
+MILE.1.SPP[118, "Plant.type"] = "Tree"  
+MILE.1.SPP[119, "Plant.type"] = "herb"  
+MILE.1.SPP[120, "Plant.type"] = "Shrub"  
+MILE.1.SPP[121, "Plant.type"] = "Tree"  
+MILE.1.SPP[122, "Plant.type"] = "Shrub" 
+
+
+## And as a percentage
+with(MILE.1, table(Plant.type))
+with(MILE.1.SPP, table(Plant.type))
+#with(MILE.1.SPP, table(Plant.type)/sum(table(Plant.type))*100)
+
+
+## Save ::
+## setdiff(MOD.2.3$Species, MILE.1.SPP$searchTaxon)
+write.csv(MILE.1.SPP, "./data/base/HIA_LIST/COMBO/MILESTONE_TAXA_APRIL_2018.csv", row.names = FALSE)
+write.csv(MOD.2,      "./data/base/HIA_LIST/COMBO/MOD_2_SPP_RECORDS.csv",         row.names = FALSE)
+
+
 
 
 
@@ -581,7 +651,7 @@ length(spp.combo)
 ## Check exceptions with Paul, Linda and Rach
 length(unique(HIA.list$Species))     ## Raw top 25 (1135)
 length(unique(HIA.VARIETY$Species))  ## Varieties  (948), excluding "spp.", eg Philodendron spp. Congo, Nandina domestica Moon Bay
-length(unique(HIA.SPP$Binomial))     ## Binomials (610), keep Michelia yunnanensis Scented Pearl, exclude Spathiphyllum spp. Assorted
+length(unique(HIA.SPP$Binomial))     ## Binomials  (610), keep Michelia yunnanensis Scented Pearl, exclude Spathiphyllum spp. Assorted
 
 
 ## record the "spp." weirdos
@@ -605,19 +675,16 @@ intersect(MOD_2$Species, test.spp)
 
 
 ## Now restrict the niche dataset to just the MOD2 species
-# View(head(COMBO.ALL[COMBO.ALL$searchTaxon %in% MOD_2$Species, ], 13)[, c("searchTaxon",
+# View(head(COMBO.NICHE.CONTEXT[COMBO.NICHE.CONTEXT$searchTaxon %in% MOD_2$Species, ], 13)[, c("searchTaxon",
 #                                                                          "Origin",
 #                                                                          "Top_200",
 #                                                                          "Plant.type",
 #                                                                          "Number.of.growers", 
 #                                                                          "Number.of.States")])
 
-MOD2.SPP = head(COMBO.ALL[COMBO.ALL$searchTaxon %in% MOD_2$Species, ], 15)[, c("searchTaxon",
-                                                                               "Origin",
-                                                                               "Top_200",
-                                                                               "Plant.type",
-                                                                               "Number.of.growers", 
-                                                                               "Number.of.States")]
+MOD2.SPP = COMBO.NICHE.CONTEXT[COMBO.NICHE.CONTEXT$searchTaxon %in% MOD_2$Species, ]
+MOD2.SPP = MOD2.SPP[rev(order(MOD2.SPP$AUS_RECORDS)),]
+View(MOD2.SPP)
 
 
 ## Remaining anomalies:

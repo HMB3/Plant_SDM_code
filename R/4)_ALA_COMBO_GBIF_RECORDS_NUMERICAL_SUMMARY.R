@@ -207,6 +207,10 @@ env.grids.current = stack(
   file.path('./data/base/worldclim/world/0.5/bio/current',
             sprintf('bio_%02d', 1:19))) 
 
+## Also get the PET raster
+PET               = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
+summary(PET)
+
 
 #########################################################################################################################
 ## Then use the extract function for all the rasters, and finaly bind on the COMBO data to the left of the raster values
@@ -263,7 +267,23 @@ saveRDS(COMBO.RASTER, file = paste("./data/base/HIA_LIST/GBIF/COMBO_GBIF_ALA_RAS
 #COMBO.RASTER  = COMBO.RASTER[COMBO.RASTER$searchTaxon %in% HIA.SPP$Binomial, ]
 gc();gc()
 
-## Check
+
+#########################################################################################################################
+## Extract the raster data for PET
+COMBO.POINTS   = SpatialPointsDataFrame(coords      = COMBO.RASTER[c("lon", "lat")], 
+                                        data        = COMBO.RASTER[c("lon", "lat")],
+                                        proj4string = CRS.WGS.84)
+
+
+projection(COMBO.POINTS);projection(PET)
+POINTS.PET <- extract(PET, COMBO.POINTS) %>% 
+  cbind(COMBO.RASTER, .)
+saveRDS(POINTS.PET, file = paste("./data/base/HIA_LIST/GBIF/COMBO_GBIF_ALA_RASTER_PET.rds"))
+COMBO.RASTER = POINTS.PET
+colnames(COMBO.RASTER)[62] <- "PET"
+
+
+## Check 
 dim(COMBO.RASTER)
 names(COMBO.RASTER)
 projection(COMBO.RASTER)
@@ -336,7 +356,7 @@ LGA.WGS = LGA.WGS[, c("LGA_CODE16", "LGA_NAME16")]
 projection(COMBO.RASTER.SP);projection(LGA.WGS);projection(SUA.WGS);projection(AUS.WGS)
 LGA.JOIN      = over(COMBO.RASTER.SP, LGA.WGS)              ## =SUA.JOIN      = over(COMBO.RASTER.SP, SUA.WGS) 
 COMBO.SUA.LGA = cbind.data.frame(COMBO.RASTER.SP, LGA.JOIN) 
-#saveRDS(COMBO.SUA.LGA, file = paste("./data/base/HIA_LIST/GBIF/COMBO_SUA_LGA.rds"))
+saveRDS(COMBO.SUA.LGA, file = paste("./data/base/HIA_LIST/GBIF/COMBO_SUA_LGA.rds"))
 ## COMBO.SUA.LGA = readRDS("./data/base/HIA_LIST/GBIF/COMBO_SUA_LGA.rds")
 ## str(unique(COMBO.SUA.LGA$searchTaxon))
 
@@ -406,7 +426,8 @@ env.variables = c("Annual_mean_temp",
                   "Precip_wet_qu",
                   "Precip_dry_qu",
                   "Precip_warm_qu",
-                  "Precip_col_qu")
+                  "Precip_col_qu",
+                  "PET")
 
 
 #########################################################################################################################
@@ -475,6 +496,8 @@ Total.taxa.processed = dim(COMBO.NICHE)[1]
 COMBO.NICHE  = cbind(COMBO.count, COMBO.NICHE)
 names(COMBO.NICHE)
 dim(COMBO.NICHE)
+saveRDS(COMBO.NICHE, file = paste("./data/base/HIA_LIST/GBIF/COMBO_NICHE.rds"))
+
 
 
 
@@ -575,13 +598,13 @@ dim(COMBO.LGA);head(COMBO.LGA$AUS_RECORDS);head(COMBO.LGA$LGA_COUNT)
 ## Now join the horticultural contextual data onto one or both tables ()
 names(COMBO.RASTER.CONVERT);names(CLEAN.SPP)
 COMBO.RASTER.CONTEXT = join(COMBO.RASTER.CONVERT, HIA.SPP.JOIN)
-COMBO.RASTER.CONTEXT  = COMBO.RASTER.CONTEXT[,  c(42, 1, 65, 2:41, 43:61, 62:64, 66:78)]                ## REDO
+#COMBO.RASTER.CONTEXT  = COMBO.RASTER.CONTEXT[,  c(42, 1, 65, 2:41, 43:61, 62:64, 66:78)]                ## REDO
 names(COMBO.RASTER.CONTEXT)
 
 
 ## Now join hort context to all the niche
 COMBO.NICHE.CONTEXT = join(COMBO.LGA, HIA.SPP.JOIN)
-COMBO.NICHE.CONTEXT =  COMBO.NICHE.CONTEXT[, c(2, 176, 1, 174:175, 177:189, 3:173)] 
+#COMBO.NICHE.CONTEXT =  COMBO.NICHE.CONTEXT[, c(2, 176, 1, 174:175, 177:189, 3:173)] 
 head(COMBO.NICHE.CONTEXT$AUS_RECORDS);head(COMBO.NICHE.CONTEXT$LGA_COUNT)
 
 
@@ -608,29 +631,29 @@ dim(COMBO.NICHE.CONTEXT)
 ## Quickly check how many species match from the original 605. Only 553 are currently there.
 
 
-## Which species from those with > 25 growers are missing?
-missing.25     = setdiff(unique(HIA.SPP.JOIN[ which(HIA.SPP.JOIN$Number.of.growers >= 25), ][["searchTaxon"]]),
-                         unique(COMBO.NICHE.CONTEXT[ which(COMBO.NICHE.CONTEXT$Number.of.growers >= 25), ][["searchTaxon"]]))
-
-
-## Same as for
-# missing.all    = setdiff(unique(HIA.SPP.JOIN[["searchTaxon"]]),
+# ## Which species from those with > 25 growers are missing?
+# missing.25     = setdiff(unique(HIA.SPP.JOIN[ which(HIA.SPP.JOIN$Number.of.growers >= 25), ][["searchTaxon"]]),
+#                          unique(COMBO.NICHE.CONTEXT[ which(COMBO.NICHE.CONTEXT$Number.of.growers >= 25), ][["searchTaxon"]]))
+# 
+# 
+# ## Same as for
+# # missing.all    = setdiff(unique(HIA.SPP.JOIN[["searchTaxon"]]),
+# #                          unique(COMBO.NICHE.CONTEXT[["searchTaxon"]]))
+# 
+# ## Which species from the top 200 are missing?
+# missing.200    = setdiff(unique(spp.200$Binomial),
+#                          unique(COMBO.NICHE.CONTEXT[ which(COMBO.NICHE.CONTEXT$Number.of.growers >= 25), ][["searchTaxon"]]))
+# 
+# 
+# ## Which species from the experimental list are missing?
+# missing.renee  = setdiff(unique(test.spp),
 #                          unique(COMBO.NICHE.CONTEXT[["searchTaxon"]]))
-
-## Which species from the top 200 are missing?
-missing.200    = setdiff(unique(spp.200$Binomial),
-                         unique(COMBO.NICHE.CONTEXT[ which(COMBO.NICHE.CONTEXT$Number.of.growers >= 25), ][["searchTaxon"]]))
-
-
-## Which species from the experimental list are missing?
-missing.renee  = setdiff(unique(test.spp),
-                         unique(COMBO.NICHE.CONTEXT[["searchTaxon"]]))
-
-
-## Overall list
-missing.taxa   = sort(unique(c(missing.25, missing.200, missing.renee)))
-missing.taxa   = as.data.frame(missing.taxa)
-missing.taxa
+# 
+# 
+# ## Overall list
+# missing.taxa   = sort(unique(c(missing.25, missing.200, missing.renee)))
+# missing.taxa   = as.data.frame(missing.taxa)
+# missing.taxa
 
 
 ## The missing species are due to too few records, too many, or taxonomy problems. EG some of the species are varieties, so they 
@@ -650,10 +673,11 @@ missing.taxa
        
 
 ## Save the summary datasets
-saveRDS(missing.taxa,         file = paste("./data/base/HIA_LIST/COMBO/MISSING_TAXA.rds",                   sep = ""))
+#saveRDS(missing.taxa,         file = paste("./data/base/HIA_LIST/COMBO/MISSING_TAXA.rds",                   sep = ""))
 saveRDS(COMBO.RASTER.CONTEXT, file = paste("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_APRIL_2018.rds", sep = ""))
 saveRDS(COMBO.NICHE.CONTEXT,  file = paste("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018.rds",  sep = ""))
 write.csv(COMBO.NICHE.CONTEXT, "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018.csv",        row.names = FALSE)
+source('./R/5)_GBIF_ALA_CLEAN.R')
 
 
 ## Now save .RData file for the next session...
