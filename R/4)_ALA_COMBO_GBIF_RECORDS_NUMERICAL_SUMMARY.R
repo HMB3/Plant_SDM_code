@@ -486,7 +486,7 @@ COMBO.NICHE = subset(COMBO.NICHE, select = -c(searchTaxon.1,  searchTaxon.2,  se
                                               searchTaxon.5,  searchTaxon.6,  searchTaxon.7,  searchTaxon.7,
                                               searchTaxon.8,  searchTaxon.9,  searchTaxon.10, searchTaxon.11,
                                               searchTaxon.12, searchTaxon.13, searchTaxon.14, searchTaxon.15,
-                                              searchTaxon.16, searchTaxon.17, searchTaxon.18))
+                                              searchTaxon.16, searchTaxon.17, searchTaxon.18, searchTaxon.19))
 
 
 #########################################################################################################################
@@ -614,7 +614,7 @@ names(COMBO.RASTER.CONTEXT)
 
 ## Now join hort context to all the niche
 COMBO.NICHE.CONTEXT = join(COMBO.LGA, HIA.SPP.JOIN)
-#COMBO.NICHE.CONTEXT =  COMBO.NICHE.CONTEXT[, c(2, 176, 1, 174:175, 177:189, 3:173)] 
+COMBO.NICHE.CONTEXT =  COMBO.NICHE.CONTEXT[, c(2, 185, 1, 183:184, 186:198, 3:182)] 
 head(COMBO.NICHE.CONTEXT$AUS_RECORDS)
 head(COMBO.NICHE.CONTEXT$LGA_COUNT)
 
@@ -683,7 +683,7 @@ dim(COMBO.NICHE.CONTEXT)
 #saveRDS(missing.taxa,         file = paste("./data/base/HIA_LIST/COMBO/MISSING_TAXA.rds",                   sep = ""))
 saveRDS(COMBO.RASTER.CONTEXT, file = paste("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_APRIL_2018.rds", sep = ""))
 saveRDS(COMBO.NICHE.CONTEXT,  file = paste("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_STANDARD_CLEAN.rds",  sep = ""))
-write.csv(COMBO.NICHE.CONTEXT, "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018.csv",        row.names = FALSE)
+write.csv(COMBO.NICHE.CONTEXT, "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_STANDARD_CLEAN.csv",        row.names = FALSE)
 source('./R/5)_GBIF_ALA_CLEAN.R')
 
 

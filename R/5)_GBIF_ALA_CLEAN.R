@@ -18,6 +18,7 @@
 
 ## Load GBIF data
 COMBO.RASTER.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_APRIL_2018.rds")
+COMBO.NICHE.CONTEXT  = readRDS("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_STANDARD_CLEAN.rds")
 load("./data/base/CONTEXTUAL/urbanareas.rda")
 LAND = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LAND_world.rds")
 aus  = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds")
@@ -231,7 +232,7 @@ FLAGS  <- CleanCoordinates(TIB.TEST,
 
 ## save/load the flags
 saveRDS(FLAGS, 'data/base/HIA_LIST/COMBO/COMBO_GBIF_FLAGS.rds')
-# FLAGS = readRDS('data/base/HIA_LIST/COMBO/COMBO_GBFI_FLAGS.rds')
+# FLAGS = readRDS('data/base/HIA_LIST/COMBO/COMBO_GBIF_FLAGS.rds')
 
 
 ## Flagging ~ 1.64%, excluding the spatial outliers. Seems reasonable?
@@ -624,6 +625,11 @@ env.variables = c("Annual_mean_temp",
 
 
 ## Apply the niche function
+CLEAN.NICHE.DF = completeFun(CLEAN.TRUE, "PET")
+dim(CLEAN.NICHE.DF)
+
+
+## Update
 CLEAN.NICHE <- env.variables %>% 
   
   ## Pipe the list into lapply
@@ -632,7 +638,7 @@ CLEAN.NICHE <- env.variables %>%
     ## Now use the niche width function on each colname (so 8 environmental variables)
     ## Also, need to figure out how to make the aggregating column generic (species, genus, etc.)
     ## currently it only works hard-wired
-    niche_estimate (DF = CLEAN.TRUE, colname = x)
+    niche_estimate (DF = CLEAN.NICHE.DF, colname = x)
     
     ## would be good to remove the duplicate columns here
     
@@ -643,20 +649,40 @@ CLEAN.NICHE <- env.variables %>%
 
 
 ## Remove duplicate Taxon columns and check the output :: would be great to skip these columns when running the function
-names(COMBO.NICHE)
-COMBO.NICHE = subset(CLEAN.NICHE, select = -c(searchTaxon.1,  searchTaxon.2,  searchTaxon.3,  searchTaxon.4,
+names(CLEAN.NICHE)
+CLEAN.NICHE = subset(CLEAN.NICHE, select = -c(searchTaxon.1,  searchTaxon.2,  searchTaxon.3,  searchTaxon.4,
                                               searchTaxon.5,  searchTaxon.6,  searchTaxon.7,  searchTaxon.7,
                                               searchTaxon.8,  searchTaxon.9,  searchTaxon.10, searchTaxon.11,
                                               searchTaxon.12, searchTaxon.13, searchTaxon.14, searchTaxon.15,
-                                              searchTaxon.16, searchTaxon.17, searchTaxon.18))
+                                              searchTaxon.16, searchTaxon.17, searchTaxon.18, searchTaxon.19))
+
+
+
+## Now join hort context to all the niche
+CLEAN.NICHE.CONTEXT = join(COMBO.NICHE.CONTEXT[, c(1:18)], CLEAN.NICHE)
+
+
+## Set NA to blank, then sort by no. of growers
+COMBO.NICHE.CONTEXT$Number.of.growers[is.na(COMBO.NICHE.CONTEXT$Number.of.growers)] <- 0
+COMBO.NICHE.CONTEXT = COMBO.NICHE.CONTEXT[with(COMBO.NICHE.CONTEXT, rev(order(Number.of.growers))), ]
+
+
+## View the data
+head(COMBO.NICHE.CONTEXT$AUS_RECORDS)
+head(COMBO.NICHE.CONTEXT$LGA_COUNT)
+
+names(COMBO.RASTER.CONTEXT)
+names(COMBO.NICHE.CONTEXT)
+dim(COMBO.RASTER.CONTEXT)
+dim(COMBO.NICHE.CONTEXT)
 
 
 #########################################################################################################################
 ## Save
-saveRDS(TEST.GEO,    'data/base/HIA_LIST/COMBO/CLEAN_FLAGS_HIA_SPP.rds')
-saveRDS(CLEAN.TRUE,  'data/base/HIA_LIST/COMBO/CLEAN_ONLY_HIA_SPP.rds')
-saveRDS(CLEAN.NICHE, 'data/base/HIA_LIST/COMBO/CLEAN_NICHES_PET.rds')
-
+saveRDS(TEST.GEO,                'data/base/HIA_LIST/COMBO/CLEAN_FLAGS_HIA_SPP.rds')
+saveRDS(CLEAN.TRUE,              'data/base/HIA_LIST/COMBO/CLEAN_ONLY_HIA_SPP.rds')
+saveRDS(CLEAN.NICHE.CONTEXT,     'data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_COORD_CLEAN.rds')
+write.csv(CLEAN.NICHE.CONTEXT,   "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_COORD_CLEAN.csv", row.names = FALSE)
 
 
 

@@ -107,10 +107,9 @@ aus         = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds")
 LAND        = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LAND_world.rds")
 areal_unit  = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/SUA.rds")
 areal_unit  = areal_unit[order(areal_unit$SUA_NAME11),]
+Koppen      = readRDS('data/base/CONTEXTUAL/Koppen_1975.rds')
 
-# Koppen      = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/WC05_1975H_Koppen_Shapefile/WC05_1975H_Koppen_Kriticos_2012.shp", 
-#                       layer = "WC05_1975H_Koppen_Kriticos_2012")
-# 
+   
 # Kopp.future = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/CM10_Kop_Shp_V1.2/CM10_Kop_V1.2.shp", 
 #                       layer = "CM10_Kop_V1.2")
 
@@ -131,8 +130,8 @@ CRS.AUS.ALB  <- CRS("+init=EPSG:3577")
 
 #########################################################################################################################
 ## Read in the niche data
-COMBO.NICHE.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018.rds")
-#COMBO.NICHE.OLD     = readRDS("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_1304_2018.rds")
+COMBO.NICHE.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_STANDARD_CLEAN.rds")
+CLEAN.NICHE.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_COORD_CLEAN.rds")
 str(unique(COMBO.NICHE.CONTEXT$searchTaxon))  ## long enough
 
 
@@ -304,7 +303,12 @@ DRAFT.HIA.TAXA$Binomial <- sub('(^\\S+ \\S+).*', '\\1', DRAFT.HIA.TAXA$Species) 
 ## And count how many varieties each taxa has?
 ## Before, this needs to change so that every variety that matches a binomial (e.g. magnolia grandiflora) is added to the
 ## Number of varieties. Also, can we take the variety with the highest number of growers? There are 8 different varieties
-## of magnolia, currently I'm not getting the most popular ones.
+## of magnolia, currently I'm not getting the most popular variety.
+
+
+## Some spp/varieties are not working..............................................................................................
+
+
 HIA.VARIETY <- 
   DRAFT.HIA.TAXA$Binomial[DRAFT.HIA.TAXA$Binomial != DRAFT.HIA.TAXA$Species] %>% 
   table %>% 
@@ -329,7 +333,7 @@ HIA.SPP = dplyr::rename(HIA.SPP, HIA.Taxa = Species)
 
 ## Reorder by species
 HIA.SPP = HIA.SPP[with(HIA.SPP, order(Binomial)), ] 
-#View(HIA.SPP)
+View(HIA.SPP)
 
 
 #######################################################################################################################
@@ -588,19 +592,28 @@ MOD.2 = COMBO.NICHE.CONTEXT[COMBO.NICHE.CONTEXT$searchTaxon %in% MOD_2$Species, 
 
 ## So find 80 species which have the most growers, have the most Aus records and with at least 50 of them trees
 dim(subset(COMBO.NICHE.CONTEXT, Number.of.growers > 25 & AUS_RECORDS > 20 & COMBO.count > 100 & Top_200 == "TRUE"))
-MILE.1     = subset(COMBO.NICHE.CONTEXT, Number.of.growers > 25 & AUS_RECORDS > 20 & COMBO.count > 100 & Top_200 == "TRUE")
-spp.mile.1 = unique(sort(c(MOD.2.3$Species, MILE.1$searchTaxon)))
+
+MILE.1         = subset(COMBO.NICHE.CONTEXT, Number.of.growers > 25 & AUS_RECORDS > 20 & COMBO.count > 100 & Top_200 == "TRUE")
+MILE.CLEAN     = subset(CLEAN.NICHE.CONTEXT, Number.of.growers > 25 & AUS_RECORDS > 20 & COMBO.count > 100 & Top_200 == "TRUE")
+spp.mile.1     = unique(sort(c(MOD.2.3$Species, MILE.1$searchTaxon)))
 length(spp.mile.1)
 
 
-## Join
-MILE.1.SPP =  COMBO.NICHE.CONTEXT[COMBO.NICHE.CONTEXT$searchTaxon %in% spp.mile.1, ]
-MILE.1.SPP =  join(MILE.1.SPP, SPP.BIAS, type = "left")
+## Join on the column which shows the kind of data bias
+MILE.1.SPP     =  COMBO.NICHE.CONTEXT[COMBO.NICHE.CONTEXT$searchTaxon %in% spp.mile.1, ]
+MILE.1.SPP     =  join(MILE.1.SPP, SPP.BIAS, type = "left")
 
+MILE.CLEAN.SPP =  CLEAN.NICHE.CONTEXT[CLEAN.NICHE.CONTEXT$searchTaxon %in% spp.mile.1, ]
+MILE.CLEAN.SPP =  join(MILE.CLEAN.SPP, SPP.BIAS, type = "left")
 
-MILE.1.SPP = MILE.1.SPP[,  c(1, 15, 16, 18, 7, 17, 3, 4, 5, 190, 19:189)]
+MILE.1.SPP = MILE.1.SPP[,  c(1, 15, 16, 18, 7, 17, 3, 4, 5, 199, 19:198)]
 MILE.1.SPP = MILE.1.SPP[with(MILE.1.SPP, order(-Number.of.growers)), ]
+
+MILE.CLEAN.SPP = MILE.CLEAN.SPP[,  c(1, 15, 16, 18, 7, 17, 3, 4, 5, 199, 19:198)]
+MILE.CLEAN.SPP = MILE.CLEAN.SPP[with(MILE.CLEAN.SPP, order(-Number.of.growers)), ]
+
 View(MILE.1.SPP)
+View(MILE.CLEAN.SPP)
 
 
 ## What is the distribution?
@@ -611,9 +624,9 @@ summary(MILE.1.SPP$COMBO.count)
 
 
 ## Also how should these be model
-with(MILE.1.SPP, table(AUS_BOUND_BIAS))
+with(MILE.1.SPP, table(MILE.1.SPP$AUS_BOUND_BIAS))
 spp.mile.targ = subset(MILE.1.SPP, AUS_BOUND_BIAS == "FALSE")$searchTaxon
-spp.mile.rand = subset(MILE.1.SPP, AUS_BOUND_BIAS == "FALSE")$searchTaxon
+spp.mile.rand = subset(MILE.1.SPP, AUS_BOUND_BIAS == "TRUE")$searchTaxon
 spp.mile      = sort(unique(MILE.1.SPP$searchTaxon))
 spp_mile      = gsub(" ", "_", spp.mile)
 spp_mile_rev  = sort(spp_mile, decreasing = TRUE)
@@ -636,7 +649,8 @@ with(MILE.1.SPP, table(Plant.type))
 
 ## Save ::
 ## setdiff(MOD.2.3$Species, MILE.1.SPP$searchTaxon)
-write.csv(MILE.1.SPP, "./data/base/HIA_LIST/COMBO/MILESTONE_TAXA_APRIL_2018.csv", row.names = FALSE)
+write.csv(MILE.1.SPP,     "./data/base/HIA_LIST/COMBO/MILESTONE_TAXA_APRIL_2018_STANDARD_CLEAN.csv", row.names = FALSE)
+write.csv(MILE.CLEAN.SPP, "./data/base/HIA_LIST/COMBO/MILESTONE_TAXA_APRIL_2018_COORD_CLEAN.csv",    row.names = FALSE)
 write.csv(MOD.2,      "./data/base/HIA_LIST/COMBO/MOD_2_SPP_RECORDS.csv",         row.names = FALSE)
 
 

@@ -421,6 +421,12 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             ## Now create the empty panel just before plotting, and read in the occurrence and background points and original model
             
             
+            # We need to be able to flick through maps. So we want a three panelled page with 
+            # a) occ points overlaid on Koppen zones, 
+            # b) current continuous suitability, 
+            # c) thresholded suitability.
+            
+            
             ## And change the projection for the operators...........................................................................
             ## '+init=esri:54009'
             empty <- init(combo_suit_thresh, function(x) NA)
