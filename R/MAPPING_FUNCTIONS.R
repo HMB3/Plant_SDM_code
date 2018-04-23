@@ -174,7 +174,7 @@ project_maxent_grids = function(scen_list, species_list, maxent_path, climate_pa
 #########################################################################################################################
 ## Loop over directories, species and one threshold for each, also taking a time_slice argument. Next, make the lists generic too
 ## pervious version in R/old/model_combine.R
-combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds, percentiles, time_slice, area_occ) {
+combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds, percentiles, time_slice, area_occ, Koppen) {
   
   ## How can the shapefiles be read in once, not for each species?...................................................
   
@@ -426,7 +426,6 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             # b) current continuous suitability, 
             # c) thresholded suitability.
             
-            
             ## And change the projection for the operators...........................................................................
             ## '+init=esri:54009'
             empty <- init(combo_suit_thresh, function(x) NA)
@@ -470,7 +469,7 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
                     ## Plot the Aus shapefile with the occurrence points for reference
                     ## Can we assign different shapefiles to different panels, rather than to them all?
                     
-                    layer(sp.polygons(aus)) +
+                    layer(sp.polygons(Koppen)) + ## sp.polygons(aus))
                     layer(sp.points(occ, pch = 20, cex = 0.4, 
                                     col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
             

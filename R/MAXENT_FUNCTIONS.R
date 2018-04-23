@@ -959,6 +959,121 @@ FIT_MAXENT_SELECTION <- function(occ,
 
 
 
+##
+# We need to be able to flick through maps. So we want a three panelled page with 
+# a) occ points overlaid on Koppen zones, 
+# b) current continuous suitability, 
+# c) thresholded suitability.
+
+
+########################################################################################################################
+## Plot the models: can two plots be combined into one?
+## Make these unique names, and they can be searched in windows. Otherwise, we can just click into each subfolder. 
+## To sort, names would need to be: spp + unique_extension
+
+# TAXA = as.list(sort(unique(intersect(SDM.DATA.ALL$searchTaxon, spp.mile))))
+# 
+# for (i in 1:length(TAXA)) {
+# 
+#   ## Create points for each species
+#   spp.points <- SDM.DATA.ALL[SDM.DATA.ALL$searchTaxon == TAXA[i], ] %>%
+#     spTransform(CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'))
+# 
+#   ## Print to file
+#   save_name = gsub(' ', '_', TAXA[i])
+#   save_dir  = "output/maxent/CHECK_MAPS"
+#   
+#   m <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', outdir, save_name)) 
+#   m <- m$me_full
+#   
+#   png(sprintf('%s/%s/full/%s_current_%s.png', outdir,
+#               save_name, save_name, "variable_contribution"),
+#       3236, 2000, units = 'px', res = 300)
+#   
+#   ########################################################################################################################
+#   ## Plot models
+#   plot(m, col = "blue", pch = 19, cex.lab = 2, cex.axis = 5, cex.main = 2, 
+#        main   = paste0("Variables for ", name), 
+#        xlab   = "Maxent contribution (%)")
+#   
+#   ## Finish the device
+#   dev.off()
+#   
+#   ## Plot the response curves too
+#   png(sprintf('%s/%s/full/%s_%s.png', outdir,
+#               save_name, save_name, "response_curves"),
+#       3236, 2000, units = 'px', res = 300)
+#   
+#   ## Add detail to the response plot
+#   response(m, pch = 19, cex.lab = 2, cex.axis = 1.5, lwd = 2) 
+#   
+#   ## Finish the device
+#   dev.off()
+# 
+#   ## Finish the device
+#   dev.off()
+#   
+#   
+#   ########################################################################################################################
+#   ## Another .png for the global records: str(LAND$long)
+#   LAND       = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LAND_world.rds")
+#   occ_land   = occ %>% 
+#     spTransform(CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+#   bg_land   = bg %>% 
+#     spTransform(CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+#   
+#   png(sprintf('%s/%s/full/%s_%s.png', outdir,
+#               save_name, save_name, "global_records"),
+#       16180, 10000, units = 'px', res = 600)
+#   
+#   ## How do we locate bad records in the dataset after spotting them?
+#   plot(LAND, 
+#        lwd = 0.5, asp = 1, axes = TRUE, cex.axis = 3.5,
+#        col = 'darkolivegreen3', bg = 'lightblue', cex.lab = 3)
+#   
+#   points(occ_land, pch = ".", cex = 3.5, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2, 
+#          main = paste0("Global occurrences for ", name), 
+#          xlab = "", ylab = "", asp = 1)
+#   
+#   ## Title 
+#   title(paste0("Global points for ", name),
+#         cex.main = 4,   font.main = 4, col.main = "blue")
+#   
+#   ## Finsh the device
+#   dev.off()
+#   
+#   ########################################################################################################################
+#   ## Another PNG for the background points....
+#   #if(!file.exists(sprintf('%s/%s/full/%s_%s.png', maxent_path, name, name, "background_records"))) {
+#   png(sprintf('%s/%s/full/%s_%s.png', outdir,
+#               save_name, save_name, "background_records"),
+#       16180, 10000, units = 'px', res = 600)
+#   
+#   ## How do we locate bad records in the dataset after spotting them?
+#   plot(LAND,  
+#        lwd = 0.5, asp = 1, axes = TRUE, cex.axis = 3.5,
+#        col = 'darkolivegreen3', bg = 'lightblue', cex.lab = 3)
+#   
+#   points(bg_land , pch = ".", cex = 1.6, col = "blue", cex.lab = 3, cex.main = 4, cex.axis = 2, 
+#          main = paste0("Bacground points for ", name), 
+#          xlab = "", ylab = "", asp = 1)
+#   
+#   ## Title 
+#   title(paste0("Bacground points for ", name),
+#         cex.main = 4,   font.main = 4, col.main = "blue")
+#   
+#   ## Finish the device
+#   dev.off() 
+# 
+# }
+
+
+
+
+
+
+
+
 #########################################################################################################################
 #####################################################  TBC ############################################################## 
 #########################################################################################################################

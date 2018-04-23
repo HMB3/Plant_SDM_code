@@ -628,6 +628,8 @@ with(MILE.1.SPP, table(MILE.1.SPP$AUS_BOUND_BIAS))
 spp.mile.targ = subset(MILE.1.SPP, AUS_BOUND_BIAS == "FALSE")$searchTaxon
 spp.mile.rand = subset(MILE.1.SPP, AUS_BOUND_BIAS == "TRUE")$searchTaxon
 spp.mile      = sort(unique(MILE.1.SPP$searchTaxon))
+spp.mile.rev  = sort(spp.mile, decreasing = TRUE)
+   
 spp_mile      = gsub(" ", "_", spp.mile)
 spp_mile_rev  = sort(spp_mile, decreasing = TRUE)
 

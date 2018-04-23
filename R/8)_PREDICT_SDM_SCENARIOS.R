@@ -17,6 +17,8 @@
 
 ## Load packages ::
 source('./R/HIA_LIST_MATCHING.R')
+Koppen_1975     = raster('data/Koppen_1000m_Mollweide54009.tif')
+Koppen_zones    = unique(readOGR('data/base/CONTEXTUAL/WC05_1975H_Koppen_Shapefile/WC05_1975H_Koppen_Kriticos_2012.shp')@data[, 1:2])
 
 
 #########################################################################################################################
@@ -428,7 +430,8 @@ suitability.2030 = mapply(combine_gcm_threshold,
                           thresholds   = thresh.max.train,
                           percentiles  = percent.10.omiss,
                           time_slice   = 30,
-                          area_occ     = 10)
+                          area_occ     = 10,
+                          Koppen       = Koppen_1975)
 
 
 ## Combine GCM output for 2050 
