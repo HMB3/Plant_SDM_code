@@ -141,9 +141,13 @@ grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',   
 #########################################################################################################################
 ## For each species, use a function to create raster files and maps under all six GCMs at each time step
 ## 2030
+
+## Running current prediction for Backhousia_myrtifolia
+## Error in .local(.Object, ...) : Unable to create dataset
+## Error in .local(.Object, ...) : Dataset copy failed
 env.grids.2030 = tryCatch(project_maxent_grids(scen_list     = scen_2030,
                                                species_list  = spp_mile,
-                                               maxent_path   = "./output/maxent/SET_VAR_COORDCLEAN",
+                                               maxent_path   = "./output/maxent/SET_VAR_KOPPEN",
                                                climate_path  = "./data/base/worldclim/aus/1km/bio",
                                                grid_names    = grid.names,
                                                time_slice    = 30,
@@ -159,9 +163,9 @@ env.grids.2030 = tryCatch(project_maxent_grids(scen_list     = scen_2030,
 
 ## 2050
 env.grids.2050 = tryCatch(project_maxent_grids(scen_list     = scen_2050,
-                                               species_list  = spp_mile_rev,
+                                               species_list  = spp_mile,
                                                time_slice    = 50,
-                                               maxent_path   = "./output/maxent/SET_VAR_COORDCLEAN",
+                                               maxent_path   = "./output/maxent/SET_VAR_KOPPEN",
                                                climate_path  = "./data/base/worldclim/aus/1km/bio",
                                                grid_names    = grid.names,
                                                current_grids = env.grids.current),
@@ -177,7 +181,7 @@ env.grids.2050 = tryCatch(project_maxent_grids(scen_list     = scen_2050,
 env.grids.2070 = tryCatch(project_maxent_grids(scen_list     = scen_2070,
                                                species_list  = spp_mile,
                                                time_slice    = 70,
-                                               maxent_path   = "./output/maxent/SET_VAR_COORDCLEAN",
+                                               maxent_path   = "./output/maxent/SET_VAR_KOPPEN",
                                                climate_path  = "./data/base/worldclim/aus/1km/bio",
                                                grid_names    = grid.names,
                                                current_grids = env.grids.current),

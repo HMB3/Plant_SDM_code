@@ -333,7 +333,7 @@ HIA.SPP = dplyr::rename(HIA.SPP, HIA.Taxa = Species)
 
 ## Reorder by species
 HIA.SPP = HIA.SPP[with(HIA.SPP, order(Binomial)), ] 
-View(HIA.SPP)
+#View(HIA.SPP)
 
 
 #######################################################################################################################
@@ -560,7 +560,7 @@ write.csv(EXTRA.SPP, "./data/base/HIA_LIST/COMBO/EXTRA_SPP.csv", row.names = FAL
 
 ## Check and just get the most popular of these?
 dim(EXTRA.SPP)
-View(EXTRA.SPP)
+#View(EXTRA.SPP)
 summary(EXTRA.SPP$Number.of.growers)
 
 
@@ -612,8 +612,8 @@ MILE.1.SPP = MILE.1.SPP[with(MILE.1.SPP, order(-Number.of.growers)), ]
 MILE.CLEAN.SPP = MILE.CLEAN.SPP[,  c(1, 15, 16, 18, 7, 17, 3, 4, 5, 199, 19:198)]
 MILE.CLEAN.SPP = MILE.CLEAN.SPP[with(MILE.CLEAN.SPP, order(-Number.of.growers)), ]
 
-View(MILE.1.SPP)
-View(MILE.CLEAN.SPP)
+#View(MILE.1.SPP)
+#View(MILE.CLEAN.SPP)
 
 
 ## What is the distribution?
@@ -701,7 +701,7 @@ intersect(MOD_2$Species, test.spp)
 
 MOD2.SPP = COMBO.NICHE.CONTEXT[COMBO.NICHE.CONTEXT$searchTaxon %in% MOD_2$Species, ]
 MOD2.SPP = MOD2.SPP[rev(order(MOD2.SPP$AUS_RECORDS)),]
-View(MOD2.SPP)
+#View(MOD2.SPP)
 
 
 ## Remaining anomalies:
