@@ -564,38 +564,39 @@ FIT_MAXENT_TARG_BG <- function(occ,
       
       #####################################################################
       ## Save objects for future reference
+      save_name = gsub(' ', '_', name)
       if(shapefiles) {
         
         suppressWarnings({
           
           writeOGR(SpatialPolygonsDataFrame(b, data.frame(ID = seq_len(length(b)))),
-                   outdir_sp, 'bg_buffer', 'ESRI Shapefile', overwrite_layer = TRUE)
-          writeOGR(bg,  outdir_sp, 'bg',   'ESRI Shapefile', overwrite_layer = TRUE)
-          writeOGR(occ, outdir_sp, 'occ',  'ESRI Shapefile', overwrite_layer = TRUE)
+                   outdir_sp, paste0(save_name, '_bg_buffer'), 'ESRI Shapefile', overwrite_layer = TRUE)
+          writeOGR(bg,  outdir_sp, paste0(save_name, '_bg'),   'ESRI Shapefile', overwrite_layer = TRUE)
+          writeOGR(occ, outdir_sp, paste0(save_name, '_occ'),  'ESRI Shapefile', overwrite_layer = TRUE)
           
         })
         
       }
       
       ## Save the background and occurrence points as objects
-      saveRDS(bg,  file.path(outdir_sp, 'bg.rds'))
-      saveRDS(occ, file.path(outdir_sp, 'occ.rds'))
+      saveRDS(bg,  file.path(outdir_sp, paste0(save_name, '_bg.rds')))
+      saveRDS(occ, file.path(outdir_sp, paste0(save_name, '_occ.rds')))
       
       #####################################################################
       ## sdm.predictors: the s_ff object containing sdm.predictors to use in the model
       ## Sample sdm.predictors at occurrence and background points
       #####################################################################
       swd_occ <- occ[, sdm.predictors]
-      saveRDS(swd_occ, file.path(outdir_sp, 'occ_swd.rds'))
+      saveRDS(swd_occ, file.path(outdir_sp, paste0(save_name,'_occ_swd.rds')))
       
       swd_bg <- bg[, sdm.predictors]
-      saveRDS(swd_bg, file.path(outdir_sp, 'bg_swd.rds'))
+      saveRDS(swd_bg, file.path(outdir_sp, paste0(save_name, '_bg_swd.rds')))
       
       ## Save shapefiles of the occurrence and background points
       if(shapefiles) {
         
-        writeOGR(swd_occ, outdir_sp,  'occ_swd', 'ESRI Shapefile', overwrite_layer = TRUE)
-        writeOGR(swd_bg,  outdir_sp,  'bg_swd',  'ESRI Shapefile', overwrite_layer = TRUE)
+        writeOGR(swd_occ, outdir_sp,  paste0(save_name, '_occ_swd'), 'ESRI Shapefile', overwrite_layer = TRUE)
+        writeOGR(swd_bg,  outdir_sp,  paste0(save_name, '_bg_swd'),  'ESRI Shapefile', overwrite_layer = TRUE)
         
       }
       
@@ -646,7 +647,6 @@ FIT_MAXENT_TARG_BG <- function(occ,
       
       #####################################################################
       ## Save the chart corrleation file too for the variable set
-      save_name = gsub(' ', '_', name)
       png(sprintf('%s/%s/full/%s_%s.png', outdir,
                   save_name, save_name, "predictor_correlation"),
           3236, 2000, units = 'px', res = 300)
@@ -667,51 +667,51 @@ FIT_MAXENT_TARG_BG <- function(occ,
       
       ########################################################################################################################
       ## Another .png for the global records: str(LAND$long)
-      LAND       = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LAND_world.rds")
-      occ_land   = occ %>% 
-        spTransform(CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
-      bg_land   = bg %>% 
-        spTransform(CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
-      
-      png(sprintf('%s/%s/full/%s_%s.png', outdir,
-                  save_name, save_name, "global_records"),
-          16180, 10000, units = 'px', res = 600)
-      
-      ## How do we locate bad records in the dataset after spotting them?
-      plot(LAND, 
-           lwd = 0.5, asp = 1, axes = TRUE, cex.axis = 3.5,
-           col = 'darkolivegreen3', bg = 'lightblue', cex.lab = 3)
-      
-      points(occ_land, pch = ".", cex = 3.5, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2, 
-             main = paste0("Global occurrences for ", name), 
-             xlab = "", ylab = "", asp = 1)
-      
-      ## Title 
-      title(paste0("Global points for ", name),
-            cex.main = 4,   font.main = 4, col.main = "blue")
-      
-      ## Finsh the device
-      dev.off()
-      
-      ########################################################################################################################
-      ## Another PNG for the background points....
-      #if(!file.exists(sprintf('%s/%s/full/%s_%s.png', maxent_path, name, name, "background_records"))) {
-      png(sprintf('%s/%s/full/%s_%s.png', outdir,
-                  save_name, save_name, "background_records"),
-          16180, 10000, units = 'px', res = 600)
-      
-      ## How do we locate bad records in the dataset after spotting them?
-      plot(LAND,  
-           lwd = 0.5, asp = 1, axes = TRUE, cex.axis = 3.5,
-           col = 'darkolivegreen3', bg = 'lightblue', cex.lab = 3)
-      
-      points(bg_land , pch = ".", cex = 1.6, col = "blue", cex.lab = 3, cex.main = 4, cex.axis = 2, 
-             main = paste0("Bacground points for ", name), 
-             xlab = "", ylab = "", asp = 1)
-      
-      ## Title 
-      title(paste0("Bacground points for ", name),
-            cex.main = 4,   font.main = 4, col.main = "blue")
+      # LAND       = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LAND_world.rds")
+      # occ_land   = occ %>% 
+      #   spTransform(CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+      # bg_land   = bg %>% 
+      #   spTransform(CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+      # 
+      # png(sprintf('%s/%s/full/%s_%s.png', outdir,
+      #             save_name, save_name, "global_records"),
+      #     16180, 10000, units = 'px', res = 600)
+      # 
+      # ## How do we locate bad records in the dataset after spotting them?
+      # plot(LAND, 
+      #      lwd = 0.5, asp = 1, axes = TRUE, cex.axis = 3.5,
+      #      col = 'darkolivegreen3', bg = 'lightblue', cex.lab = 3)
+      # 
+      # points(occ_land, pch = ".", cex = 3.5, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2, 
+      #        main = paste0("Global occurrences for ", name), 
+      #        xlab = "", ylab = "", asp = 1)
+      # 
+      # ## Title 
+      # title(paste0("Global points for ", name),
+      #       cex.main = 4,   font.main = 4, col.main = "blue")
+      # 
+      # ## Finsh the device
+      # dev.off()
+      # 
+      # ########################################################################################################################
+      # ## Another PNG for the background points....
+      # #if(!file.exists(sprintf('%s/%s/full/%s_%s.png', maxent_path, name, name, "background_records"))) {
+      # png(sprintf('%s/%s/full/%s_%s.png', outdir,
+      #             save_name, save_name, "background_records"),
+      #     16180, 10000, units = 'px', res = 600)
+      # 
+      # ## How do we locate bad records in the dataset after spotting them?
+      # plot(LAND,  
+      #      lwd = 0.5, asp = 1, axes = TRUE, cex.axis = 3.5,
+      #      col = 'darkolivegreen3', bg = 'lightblue', cex.lab = 3)
+      # 
+      # points(bg_land , pch = ".", cex = 1.6, col = "blue", cex.lab = 3, cex.main = 4, cex.axis = 2, 
+      #        main = paste0("Bacground points for ", name), 
+      #        xlab = "", ylab = "", asp = 1)
+      # 
+      # ## Title 
+      # title(paste0("Bacground points for ", name),
+      #       cex.main = 4,   font.main = 4, col.main = "blue")
       
       ## Finish the device
       dev.off() 
@@ -727,40 +727,6 @@ FIT_MAXENT_TARG_BG <- function(occ,
       # a) occ points overlaid on Koppen zones, 
       # b) current continuous suitability, 
       # c) thresholded suitability.
-      
-      ########################################################################################################################
-      ## Plot the models: can two plots be combined into one?
-      ## Make these unique names, and they can be searched in windows. Otherwise, we can just click into each subfolder. 
-      ## To sort, names would need to be: spp + unique_extension
-      m <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', outdir, save_name)) 
-      m <- m$me_full
-      
-      png(sprintf('%s/%s/full/%s_current_%s.png', outdir,
-                  save_name, save_name, "variable_contribution"),
-          3236, 2000, units = 'px', res = 300)
-      
-      ## Set the margins
-      # par(mgp      = c(10, 4, 0), 
-      #     oma      = c(1.5, 1.5, 1.5, 1.5),
-      #     font.lab = 2)
-      
-      plot(m, col = "blue", pch = 19, cex.lab = 2, cex.axis = 5, cex.main = 2, 
-           main   = paste0("Variables for ", name), 
-           xlab   = "Maxent contribution (%)")
-      
-      ## Finish the device
-      dev.off()
-      
-      ## Plot the response curves too
-      png(sprintf('%s/%s/full/%s_%s.png', outdir,
-                  save_name, save_name, "response_curves"),
-          3236, 2000, units = 'px', res = 300)
-      
-      ## Add detail to the response plot
-      response(m, pch = 19, cex.lab = 2, cex.axis = 1.5, lwd = 2) 
-      
-      ## Finish the device
-      dev.off()
       
       #####################################################################
       ## Save fitted model object, and the model-fitting data.

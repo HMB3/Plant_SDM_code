@@ -54,6 +54,7 @@ project_maxent_grids = function(scen_list, species_list, maxent_path, climate_pa
     lapply(species_list, function(species) {
       
       ## First, check if the maxent model exists
+      save_name = gsub(' ', '_', species)
       if(file.exists(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, species))) {
         message('Doing ', species)
         
@@ -70,7 +71,7 @@ project_maxent_grids = function(scen_list, species_list, maxent_path, climate_pa
           m <- m$me_full  ## class(m);View(m)
           
           ## Read in the occurrence points used to create the SDM :: need the transform to plot later
-          occ <- readRDS(sprintf('%s/%s/occ.rds', maxent_path, species)) %>%
+          occ <- readRDS(sprintf('%s/%s/%s_occ.rds', maxent_path, species, save_name)) %>%
             spTransform(CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'))  
           ## '+init=epsg:4326' ## '+init=ESRI:3577' ## '+init=ESRI:54009'
           
@@ -430,10 +431,10 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             ## '+init=esri:54009'
             empty <- init(combo_suit_thresh, function(x) NA)
             
-            occ <- readRDS(sprintf('%s/%s/occ_swd.rds', maxent_path, species)) %>%
+            occ <- readRDS(sprintf('%s/%s/%s_occ_swd.rds', maxent_path, species, save_name)) %>%
               spTransform(CRS('+init=epsg:4326'))  
             
-            bg <- readRDS(sprintf('%s/%s/bg_swd.rds', maxent_path, species)) %>%
+            bg <- readRDS(sprintf('%s/%s/%s_bg_swd.rds', maxent_path, species, save_name)) %>%
               spTransform(CRS('+init=epsg:4326'))
             
             #m <- readRDS(sprintf('%s/%s/full/model.rds', maxent_path, species)) 
