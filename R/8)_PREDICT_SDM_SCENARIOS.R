@@ -207,12 +207,10 @@ env.grids.2070 = tryCatch(project_maxent_grids(scen_list     = scen_2070,
 
 #########################################################################################################################
 ## First, read in the list of files for the current models, and specify the file path
-#path.backwards.sel = "./output/maxent/SEL_VAR/"
-path.set.var       = "./output/maxent/SET_VAR_COORDCLEAN/"
+path.set.var       = "./output/maxent/SET_VAR_KOPPEN/"
 
 
 ## Create an object for the maxent settings
-#model.selection.settings = "Backwards_cor_0.85_pct_5_k_5"        ## Chagne this for each variable selection strategy
 model.selection.settings = "Set_variables"  
 records_setting          = "COORD_CLEAN"
 
@@ -284,8 +282,8 @@ head(MAXENT.SUMMARY, 20)[1:9]
 
 ## Now check the match between the species list, and the results list. These need to match, so we can access
 ## the right threshold for each species.
-length(intersect(test_spp, MAXENT.SUMMARY$searchTaxon)) ## accesssing the files from these directories... 
-MAXENT.SUM.TEST  =  MAXENT.SUMMARY[MAXENT.SUMMARY$searchTaxon %in% test_spp, ] 
+length(intersect(spp_mile, MAXENT.SUMMARY$searchTaxon)) ## accesssing the files from these directories... 
+MAXENT.SUM.TEST  =  MAXENT.SUMMARY[MAXENT.SUMMARY$searchTaxon %in% spp_mile, ] 
 comb_spp = unique(MAXENT.SUM.TEST$searchTaxon)
 length(comb_spp)
 
@@ -337,11 +335,11 @@ View(MAXENT.CHECK.TABLE)
 
 ## Also could join on other tables with different settings using rbind
 ## rbind(MAXENT.CHECK.TABLE, MAXENT.CHECK.TABLE.SET)
-## order by species and compare three rows : set, backwards selection, koppen
+## order by species and compare three rows : setvariables, backwards selection, etc
 
 
 ## Save
-## write.csv(MAXENT.CHECK.TABLE, "./output/maxent/MAXENT_CHECK_TABLE.csv", row.names = FALSE)
+## write.csv(MAXENT.CHECK.TABLE, "./output/maxent/MAXENT_CHECK_TABLE_APRIL_2016.csv", row.names = FALSE)
 
 
 
@@ -421,12 +419,22 @@ tail(SDM.RESULTS.DIR, 20);tail(comb_spp, 20); tail(MAXENT.SUM.TEST, 20)[, c("sea
 #########################################################################################################################
 ## Loop over directories, species and one threshold for each, also taking a time_slice argument. Next, make the lists generic too
 ## pervious version in R/old/model_combine.R
-DIR        = SDM.RESULTS.DIR[1] 
-species    = comb_spp[1] 
-thresh     = thresh.max.train[1] 
-percent    = percent.10.omiss[1]
+DIR        = SDM.RESULTS.DIR[102] 
+species    = comb_spp[102] 
+thresh     = thresh.max.train[103] 
+percent    = percent.10.omiss[103]
 time_slice = 30
 area_occ   = 10
+
+
+## Problem species ::
+## Strelitzia_reginae, Betula_pendula
+
+
+# Running zonal stats for Strelitzia_reginae | 2030 combined suitability > 0.4016
+# Error in names(PERECENT.AREA) <- c("SUA_NAME11", "Absent", "Present") : 
+#   'names' attribute [3] must be the same length as the vector [2]
+# In addition: There were 32 warnings (use warnings() to see them)
 
 
 #########################################################################################################################
@@ -434,19 +442,18 @@ area_occ   = 10
 suitability.2030 = mapply(combine_gcm_threshold,
                           DIR_list     = SDM.RESULTS.DIR,
                           species_list = comb_spp,
-                          maxent_path  = "./output/maxent/SET_VAR",
+                          maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
                           thresholds   = thresh.max.train,
                           percentiles  = percent.10.omiss,
                           time_slice   = 30,
-                          area_occ     = 10,
-                          Koppen       = Koppen_1975)
+                          area_occ     = 10)
 
 
 ## Combine GCM output for 2050 
 suitability.2050 = mapply(combine_gcm_threshold, 
                           DIR_list     = SDM.RESULTS.DIR, 
                           species_list = comb_spp, 
-                          maxent_path  = "./output/maxent/SET_VAR",
+                          maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
                           thresholds   = thresh.max.train,
                           percentiles  = percent.10.omiss,
                           time_slice   = 50,
@@ -457,7 +464,7 @@ suitability.2050 = mapply(combine_gcm_threshold,
 suitability.2070 = mapply(combine_gcm_threshold, 
                           DIR_list     = SDM.RESULTS.DIR, 
                           species_list = comb_spp, 
-                          maxent_path  = "./output/maxent/SET_VAR",
+                          maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
                           thresholds   = thresh.max.train,
                           percentiles  = percent.10.omiss,
                           time_slice   = 70,

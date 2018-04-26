@@ -175,15 +175,20 @@ project_maxent_grids = function(scen_list, species_list, maxent_path, climate_pa
 #########################################################################################################################
 ## Loop over directories, species and one threshold for each, also taking a time_slice argument. Next, make the lists generic too
 ## pervious version in R/old/model_combine.R
-combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds, percentiles, time_slice, area_occ, Koppen) {
+combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds, percentiles, time_slice, area_occ) {
   
   ## How can the shapefiles be read in once, not for each species?...................................................
   
   ###################################################################################################################
   ## Read in shapefiles :: this should be done outside the loop
-  aus        = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds")
+  aus        = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds") %>%
+    spTransform(CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'))
+  
   LAND       = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LAND_world.rds")
-  areal_unit = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/SUA.rds")
+  
+  areal_unit = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/SUA.rds") %>%
+    spTransform(CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'))
+  
   areal_unit = areal_unit[order(areal_unit$SUA_NAME11),]
   
   ## Loop over each directory
@@ -320,7 +325,7 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             # z.med   <- spatialEco::zonal.stats(x = areal_unit, y = combo_suit_4GCM, stat = median, trace = TRUE, plot = TRUE)
             
             #########################################################################################################################
-            ## Then, extract the values of the presence raster for each areal unit: generates a list: 32 seconds...
+            ## Then, extract the values of the presence raster for each areal unit: generates a list
             ext  <- extract(combo_suit_4GCM, areal_unit, method = 'simple')
             
             ## A function to tabulate the raster values by aerial unit, returning a data frame
@@ -392,7 +397,7 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             ## If they don't exist, write the rasters for each species/threshold
             if(!file.exists(f_max_train_suit)) {
               
-              ## Write the current suitability raster
+              ## Write the current suitability raster, thresholded using the Maximum training sensitivity plus specificity Logistic threshold
               message('Writing ', species, ' current', ' max train > ', thresh) 
               writeRaster(current_suit_thresh, sprintf('%s/%s/full/%s_%s%s.tif', maxent_path,
                                                        species, species, "current_suit_above_", thresh), overwrite = TRUE) 
@@ -403,9 +408,9 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
                                                      species, species, time_slice, "_Max_train_sensit_above_", thresh), overwrite = TRUE)
               
               ## Write the combined suitability raster, thresholded using the percentile value
-              message('Writing ', species, ' | 20', time_slice, ' 10th percentile > ', percent) 
-              writeRaster(combo_suit_percent, sprintf('%s/%s/full/%s_20%s%s%s.tif', maxent_path,
-                                                      species, species, time_slice, "_10_percentile_omiss_above_", percent), overwrite = TRUE)
+              # message('Writing ', species, ' | 20', time_slice, ' 10th percentile > ', percent) 
+              # writeRaster(combo_suit_percent, sprintf('%s/%s/full/%s_20%s%s%s.tif', maxent_path,
+              #                                         species, species, time_slice, "_10_percentile_omiss_above_", percent), overwrite = TRUE)
               
               ## Write the combined future raster with > 4 GCMs above the maximum training value
               message('Writing ', species, ' | 20', time_slice, ' 10th percentile > ', percent) 
@@ -429,13 +434,14 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             
             ## And change the projection for the operators...........................................................................
             ## '+init=esri:54009'
+            save_name = gsub(' ', '_', species)
             empty <- init(combo_suit_thresh, function(x) NA)
             
             occ <- readRDS(sprintf('%s/%s/%s_occ_swd.rds', maxent_path, species, save_name)) %>%
-              spTransform(CRS('+init=epsg:4326'))  
+              spTransform(CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'))  
             
             bg <- readRDS(sprintf('%s/%s/%s_bg_swd.rds', maxent_path, species, save_name)) %>%
-              spTransform(CRS('+init=epsg:4326'))
+              spTransform(CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'))
             
             #m <- readRDS(sprintf('%s/%s/full/model.rds', maxent_path, species)) 
             m <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, species)) 
@@ -470,7 +476,7 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
                     ## Plot the Aus shapefile with the occurrence points for reference
                     ## Can we assign different shapefiles to different panels, rather than to them all?
                     
-                    layer(sp.polygons(Koppen)) + ## sp.polygons(aus))
+                    layer(sp.polygons(aus)) + ## sp.polygons(aus))
                     layer(sp.points(occ, pch = 20, cex = 0.4, 
                                     col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
             
@@ -479,63 +485,63 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             
             ########################################################################################################################
             ## Another .png for the global records: str(LAND$long)
-            if(!file.exists(sprintf('%s/%s/full/%s_%s.png', maxent_path, species, species, "global_records"))) {
-              
-              png(sprintf('%s/%s/full/%s_%s.png', maxent_path,
-                          species, species, "global_records"),
-                  16180, 10000, units = 'px', res = 600)
-              
-              ## How do we locate bad records in the dataset after spotting them?
-              plot(LAND, 
-                   lwd = 0.5, asp = 1, axes = TRUE, cex.axis = 3.5,
-                   col = 'darkolivegreen3', bg = 'lightblue', cex.lab = 3)
-              
-              points(occ, pch = ".", cex = 3.5, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2, 
-                     main = paste0("Global occurrences for ", species), 
-                     xlab = "", ylab = "", asp = 1)
-              
-              ## Title 
-              title(paste0("Global points for ", species),
-                    cex.main = 4,   font.main = 4, col.main = "blue")
-              
-              ## Finsh the device
-              dev.off()
-              
-            } else {
-              
-              message("Global records maps exists for ", species)
-              
-            }
+            # if(!file.exists(sprintf('%s/%s/full/%s_%s.png', maxent_path, species, species, "global_records"))) {
+            #   
+            #   png(sprintf('%s/%s/full/%s_%s.png', maxent_path,
+            #               species, species, "global_records"),
+            #       16180, 10000, units = 'px', res = 600)
+            #   
+            #   ## How do we locate bad records in the dataset after spotting them?
+            #   plot(LAND, 
+            #        lwd = 0.5, asp = 1, axes = TRUE, cex.axis = 3.5,
+            #        col = 'darkolivegreen3', bg = 'lightblue', cex.lab = 3)
+            #   
+            #   points(occ, pch = ".", cex = 3.5, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2, 
+            #          main = paste0("Global occurrences for ", species), 
+            #          xlab = "", ylab = "", asp = 1)
+            #   
+            #   ## Title 
+            #   title(paste0("Global points for ", species),
+            #         cex.main = 4,   font.main = 4, col.main = "blue")
+            #   
+            #   ## Finsh the device
+            #   dev.off()
+            #   
+            # } else {
+            #   
+            #   message("Global records maps exists for ", species)
+            #   
+            # }
             
             ########################################################################################################################
             ## Another PNG for the background points....
-            if(!file.exists(sprintf('%s/%s/full/%s_%s.png', maxent_path, species, species, "background_records"))) {
-              
-              png(sprintf('%s/%s/full/%s_%s.png', maxent_path,
-                          species, species, "background_records"),
-                  16180, 10000, units = 'px', res = 600)
-              
-              ## How do we locate bad records in the dataset after spotting them?
-              plot(LAND,  
-                   lwd = 0.5, asp = 1, axes = TRUE, cex.axis = 3.5,
-                   col = 'darkolivegreen3', bg = 'lightblue', cex.lab = 3)
-              
-              points(bg, pch = ".", cex = 1.6, col = "blue", cex.lab = 3, cex.main = 4, cex.axis = 2, 
-                     main = paste0("Global occurrences for ", species), 
-                     xlab = "", ylab = "", asp = 1)
-              
-              ## Title 
-              title(paste0("Bacground points for ", species),
-                    cex.main = 4,   font.main = 4, col.main = "blue")
-              
-              ## Finish the device
-              dev.off() 
-              
-            } else {
-              
-              message("Background records maps exists for ", species)
-              
-            }
+            # if(!file.exists(sprintf('%s/%s/full/%s_%s.png', maxent_path, species, species, "background_records"))) {
+            #   
+            #   png(sprintf('%s/%s/full/%s_%s.png', maxent_path,
+            #               species, species, "background_records"),
+            #       16180, 10000, units = 'px', res = 600)
+            #   
+            #   ## How do we locate bad records in the dataset after spotting them?
+            #   plot(LAND,  
+            #        lwd = 0.5, asp = 1, axes = TRUE, cex.axis = 3.5,
+            #        col = 'darkolivegreen3', bg = 'lightblue', cex.lab = 3)
+            #   
+            #   points(bg, pch = ".", cex = 1.6, col = "blue", cex.lab = 3, cex.main = 4, cex.axis = 2, 
+            #          main = paste0("Global occurrences for ", species), 
+            #          xlab = "", ylab = "", asp = 1)
+            #   
+            #   ## Title 
+            #   title(paste0("Bacground points for ", species),
+            #         cex.main = 4,   font.main = 4, col.main = "blue")
+            #   
+            #   ## Finish the device
+            #   dev.off() 
+            #   
+            # } else {
+            #   
+            #   message("Background records maps exists for ", species)
+            #   
+            # }
             
             ########################################################################################################################
             ## Plot the models: can two plots be combined into one?
