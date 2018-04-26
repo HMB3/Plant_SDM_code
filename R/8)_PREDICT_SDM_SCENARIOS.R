@@ -18,7 +18,7 @@
 ## Load packages ::
 source('./R/HIA_LIST_MATCHING.R')
 Koppen_1975     = raster('data/Koppen_1000m_Mollweide54009.tif')
-Koppen_zones    = unique(readOGR('data/base/CONTEXTUAL/WC05_1975H_Koppen_Shapefile/WC05_1975H_Koppen_Kriticos_2012.shp')@data[, 1:2])
+#Koppen_zones    = unique(readOGR('data/base/CONTEXTUAL/WC05_1975H_Koppen_Shapefile/WC05_1975H_Koppen_Kriticos_2012.shp')@data[, 1:2])
 
 
 #########################################################################################################################
@@ -140,11 +140,15 @@ grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',   
 
 #########################################################################################################################
 ## For each species, use a function to create raster files and maps under all six GCMs at each time step
-## 2030
+## First remove species without data from step 7
+no_data      <- c ("Baeckea_virgata", "Kennedia beckxiana")
+spp_mile     <- spp_mile  [! spp_mile %in% no_data]
+spp_mile_rev <- spp_mile_rev  [! spp_mile_rev %in% no_data]
+no_data %in% spp_mile
+no_data %in% spp_mile_rev
 
-## Running current prediction for Backhousia_myrtifolia
-## Error in .local(.Object, ...) : Unable to create dataset
-## Error in .local(.Object, ...) : Dataset copy failed
+
+## 2030
 env.grids.2030 = tryCatch(project_maxent_grids(scen_list     = scen_2030,
                                                species_list  = spp_mile,
                                                maxent_path   = "./output/maxent/SET_VAR_KOPPEN",

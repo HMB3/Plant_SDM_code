@@ -133,8 +133,11 @@ aus = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds") %>%
 #########################################################################################################################
 ## Run Maxent using a random selection of background points. 
 projection(template.raster);projection(SDM.DATA.ALL)
-## Use both targetted selection and random selection
 
+## Doing Baeckea virgata
+## 19 occurrence records (unique cells).
+## [1] "Fewer occurrence records than the number of cross-validation  replicates for species  Baeckea virgata  Model not fit for this species"
+myList[[5]] <- NULL
 
 ## spp = spp.mile[2]
 lapply(spp.mile, function(spp) { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel 
