@@ -118,7 +118,7 @@ Koppen      = readRDS('data/base/CONTEXTUAL/Koppen_1975.rds')
 CRS.MOL      <- CRS('+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +units=m +no_defs')
 CRS.WGS.84   <- CRS("+init=epsg:4326")
 CRS.AUS.ALB  <- CRS("+init=EPSG:3577")
-
+ALB.CONICAL  <- CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs')
 
 
 
@@ -568,7 +568,7 @@ summary(EXTRA.SPP$Number.of.growers)
 spp.extra = unique(EXTRA.SPP$Binomial)
 length(spp.extra)
 
-spp.combo = sort(unique(c(spp.all, spp.extra)))
+spp.combo = sort(unique(c(spp.all, spp.extra, spp.mile)))
 length(spp.combo)
 
 

@@ -192,7 +192,7 @@ env.grids.2070 = tryCatch(project_maxent_grids(scen_list     = scen_2070,
                           
                           error = function(cond) {
                             
-                            message(paste('Species skipped - probably due to insufficient background records', spp))
+                            message(paste('Species skipped - check inputs', spp))
                             
                           })
 
@@ -419,16 +419,23 @@ tail(SDM.RESULTS.DIR, 20);tail(comb_spp, 20); tail(MAXENT.SUM.TEST, 20)[, c("sea
 #########################################################################################################################
 ## Loop over directories, species and one threshold for each, also taking a time_slice argument. Next, make the lists generic too
 ## pervious version in R/old/model_combine.R
-DIR        = SDM.RESULTS.DIR[102] 
-species    = comb_spp[102] 
-thresh     = thresh.max.train[103] 
-percent    = percent.10.omiss[103]
+comb_spp_rev        = sort(comb_spp, decreasing = TRUE)
+SDM.RESULTS.DIR.REV = sort(comb_spp, decreasing = TRUE)
+
+DIR        = SDM.RESULTS.DIR[42] 
+species    = comb_spp[42] 
+thresh     = thresh.max.train[42] 
+percent    = percent.10.omiss[42]
 time_slice = 30
 area_occ   = 10
 
 
 ## Problem species ::
-## Strelitzia_reginae, Betula_pendula
+## Strelitzia_reginae, 
+## Betula_pendula, 
+## Eucalyptus_pauciflora, 
+## Liriodendron_tulipifera - too few Aus records, low suitability 
+## Eucalyptus_mannifera    -
 
 
 # Running zonal stats for Strelitzia_reginae | 2030 combined suitability > 0.4016
@@ -439,36 +446,55 @@ area_occ   = 10
 
 #########################################################################################################################
 ## Combine output and calculate gain and loss for 2030 
-suitability.2030 = mapply(combine_gcm_threshold,
-                          DIR_list     = SDM.RESULTS.DIR,
-                          species_list = comb_spp,
-                          maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
-                          thresholds   = thresh.max.train,
-                          percentiles  = percent.10.omiss,
-                          time_slice   = 30,
-                          area_occ     = 10)
+suitability.2030 = tryCatch(mapply(combine_gcm_threshold,
+                                   DIR_list     = SDM.RESULTS.DIR,
+                                   species_list = comb_spp,
+                                   maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
+                                   thresholds   = thresh.max.train,
+                                   percentiles  = percent.10.omiss,
+                                   time_slice   = 30,
+                                   area_occ     = 10),
+                            
+                            error = function(cond) {
+                              
+                              message(paste('Species skipped - check inputs', spp))
+                              
+                            })
+
 
 
 ## Combine GCM output for 2050 
-suitability.2050 = mapply(combine_gcm_threshold, 
-                          DIR_list     = SDM.RESULTS.DIR, 
-                          species_list = comb_spp, 
-                          maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
-                          thresholds   = thresh.max.train,
-                          percentiles  = percent.10.omiss,
-                          time_slice   = 50,
-                          area_occ     = 10)
+suitability.2050 = tryCatch(mapply(combine_gcm_threshold, 
+                                   DIR_list     = SDM.RESULTS.DIR, 
+                                   species_list = comb_spp, 
+                                   maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
+                                   thresholds   = thresh.max.train,
+                                   percentiles  = percent.10.omiss,
+                                   time_slice   = 50,
+                                   area_occ     = 10),
+                            
+                            error = function(cond) {
+                              
+                              message(paste('Species skipped - check inputs', spp))
+                              
+                            })
 
 
 ## Combine GCM output for 2070 
-suitability.2070 = mapply(combine_gcm_threshold, 
-                          DIR_list     = SDM.RESULTS.DIR, 
-                          species_list = comb_spp, 
-                          maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
-                          thresholds   = thresh.max.train,
-                          percentiles  = percent.10.omiss,
-                          time_slice   = 70,
-                          area_occ     = 10)
+suitability.2070 = tryCatch(mapply(combine_gcm_threshold, 
+                                   DIR_list     = SDM.RESULTS.DIR, 
+                                   species_list = comb_spp, 
+                                   maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
+                                   thresholds   = thresh.max.train,
+                                   percentiles  = percent.10.omiss,
+                                   time_slice   = 70,
+                                   area_occ     = 10),
+                            
+                            error = function(cond) {
+                              
+                              message(paste('Species skipped - check inputs', spp))
+                              
+                            })
 
 
 ## Reverse the list, in order to walk through list on different R sessions

@@ -350,11 +350,17 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             
             #########################################################################################################################
             ## Now mutate the table
+            ## Does this do what we want?...........................................................................................
+            
+            
+            
+            ## Error in names(PERECENT.AREA) <- c("SUA_NAME11", "Absent", "Present") : 
+            ##   'names' attribute [3] must be the same length as the vector [2]
             PERECENT.AREA <- tabs %>%
               
               group_by(name) %>%                                          ## Group by region
               mutate(totcells = sum(Freq),                                ## How many cells overall?
-                     percent.area = round(100 * Freq / totcells, 2)) %>%  ## Cells /total cells
+                     percent.area = round(100 * Freq / totcells, 2)) %>%  ## Cells divided by total cells
               
               dplyr::select(-c(Freq, totcells)) %>%                       ## There is a select func in raster so need to specify
               spread(key = Var1, value = percent.area, fill = 0)     %>%  ## Make wide format

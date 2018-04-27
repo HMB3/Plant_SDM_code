@@ -19,11 +19,12 @@
 
 ## Load the records from step 4
 source('./R/HIA_LIST_MATCHING.R')
-COMBO.RASTER.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_1304_2018.rds")
+COMBO.RASTER.CONTEXT = readRDS('data/base/HIA_LIST/COMBO/CLEAN_ONLY_HIA_SPP.rds')
 
 
 ## Just look at the experimental species
-COMBO.POINTS = COMBO.RASTER.CONTEXT[COMBO.RASTER.CONTEXT$searchTaxon %in% spp.combo, ]
+COMBO.POINTS = COMBO.RASTER.CONTEXT[COMBO.RASTER.CONTEXT$searchTaxon %in% spp.combo , ]
+str(unique(sort(COMBO.POINTS$searchTaxon))) 
 dim(COMBO.POINTS)
 
 
@@ -159,7 +160,7 @@ length(sort(unique(KOPPEN.TAXA.2050$Koppen_2070_A1B_CS)))
 
 ## Then join the koppen classification onto the data
 TAXA.KOPPEN.1975.JOIN = cbind.data.frame(GBIF.ALA.POINTS, KOPPEN.TAXA.1975)
-str(unique(TAXA.KOPPEN.2030.JOIN$searchTaxon))
+str(unique(TAXA.KOPPEN.1975.JOIN$searchTaxon))
 
 TAXA.KOPPEN.2030.JOIN = cbind.data.frame(GBIF.ALA.POINTS, KOPPEN.TAXA.2030)
 str(unique(TAXA.KOPPEN.2030.JOIN$searchTaxon))
@@ -173,24 +174,27 @@ str(unique(TAXA.KOPPEN.2070.JOIN$searchTaxon))
 
 ## Produce a "long" format table with records (rows) * Koppen (columns).
 ## Not sure the order matters, but this analysis is framed about Koppen so order by that
-TAXA.KOPPEN.1975.JOIN  = TAXA.KOPPEN.JOIN[with(TAXA.KOPPEN.JOIN, order(Koppen_1975)), ]
+TAXA.KOPPEN.1975.JOIN  = TAXA.KOPPEN.1975.JOIN [with(TAXA.KOPPEN.1975.JOIN , order(Koppen)), ]
 TAXA.KOPPEN.2030.JOIN  = TAXA.KOPPEN.JOIN[with(TAXA.KOPPEN.JOIN, order(Koppen_2030)), ]
 TAXA.KOPPEN.2050.JOIN  = TAXA.KOPPEN.JOIN[with(TAXA.KOPPEN.JOIN, order(Koppen_2050)), ]
 TAXA.KOPPEN.2070.JOIN  = TAXA.KOPPEN.JOIN[with(TAXA.KOPPEN.JOIN, order(Koppen_2070)), ]
 
 
-TAXA.KOPPEN.COUNT = TAXA.KOPPEN.JOIN[, c("Koppen_2030", "searchTaxon")]
+TAXA.KOPPEN.1975.COUNT = TAXA.KOPPEN.1975.JOIN[, c("Koppen", "searchTaxon")]
+TAXA.KOPPEN.2030.COUNT = TAXA.KOPPEN.2030.JOIN[, c("Koppen", "searchTaxon")]
+TAXA.KOPPEN.2050.COUNT = TAXA.KOPPEN.2050.JOIN[, c("Koppen", "searchTaxon")]
+TAXA.KOPPEN.2070.COUNT = TAXA.KOPPEN.2070.JOIN[, c("Koppen", "searchTaxon")]
 
 
 #########################################################################################################################
 ## Create a table with one row per species, and a column for every koppen  
-KOPPEN.CAST             = dcast(TAXA.KOPPEN.COUNT, searchTaxon ~ Koppen)    ## can't use aggregation function on characters
-dim(KOPPEN.CAST)          ## so two koppen zones are not in the data at all....seems strange?
+KOPPEN.CAST.1975    = dcast(TAXA.KOPPEN.1975.COUNT, searchTaxon ~ Koppen)    ## can't use aggregation function on characters
+dim(KOPPEN.CAST.1975)          ## so two koppen zones are not in the data at all....seems strange?
 
 
 ## Summ the records
-koppen.list             = as.list(names(KOPPEN.CAST[2:dim(KOPPEN.CAST)[2]]))
-KOPPEN.CAST$ALL_RECORDS = rowSums(KOPPEN.CAST[2:dim(KOPPEN.CAST)[2]])
+koppen.list             = as.list(names(KOPPEN.CAST.1975 [2:dim(KOPPEN.CAST.1975 )[2]]))
+KOPPEN.CAST.1975$ALL_RECORDS = rowSums(KOPPEN.CAST.1975 [2:dim(KOPPEN.CAST.1975)[2]])
 
 
 ## Loop over all the Koppens and create a new column for each, which is the % of records in each koppen
