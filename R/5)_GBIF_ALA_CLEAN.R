@@ -12,7 +12,7 @@
 
 
 #########################################################################################################################
-## 1). CHECK DATA FOR AN EXAMPLE SPECIES
+## 1). CHECK DATA FOR AN EXAMPLE SPECIES...
 #########################################################################################################################
 
 
@@ -23,6 +23,18 @@ load("./data/base/CONTEXTUAL/urbanareas.rda")
 LAND = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LAND_world.rds")
 aus  = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds")
 names(COMBO.RASTER.CONTEXT)
+
+
+## Restrict ALA data to just those species on the big list
+HIA.SPP.JOIN     = CLEAN.SPP
+HIA.SPP.JOIN     = dplyr::rename(HIA.SPP.JOIN, searchTaxon = Binomial)
+
+
+## Set NA to blank, then sort by no. of growers to get them to the top
+HIA.SPP.JOIN[is.na(HIA.SPP.JOIN)] <- 0
+HIA.SPP.JOIN = HIA.SPP.JOIN[with(HIA.SPP.JOIN, rev(order(Number.of.growers))), ]
+head(HIA.SPP.JOIN[, c("searchTaxon", "Number.of.growers")])
+View(HIA.SPP.JOIN)
 
 
 ## Create lists
@@ -250,7 +262,7 @@ names(FLAGS)
 
 
 #########################################################################################################################
-## FLAG SPATIAL OUTLIERS
+## 3). FLAG SPATIAL OUTLIERS
 #########################################################################################################################
 
 
@@ -348,109 +360,6 @@ dim(OUT[[1]]);dim(OUT[[4]]);dim(OUT[[8]])
 # 
 # ## Save spatial outliers
 # saveRDS(GBIF.SPAT.OUT.2, 'data/base/HIA_LIST/COMBO/SPAT_OUT/SPAT_OUT_2.rds')
-# 
-# 
-# ## One at a time 
-# GBIF.SPAT.OUT.3 = cc_outl(OUT[[3]],
-#                           lon     = "decimallongitude",
-#                           lat     = "decimallatitude",
-#                           species = "species",
-#                           method  = "quantile",
-#                           mltpl   = 5,
-#                           tdi     = 1000,
-#                           value   = "flags")
-# 
-# 
-# ## Save spatial outliers
-# saveRDS(GBIF.SPAT.OUT.3, 'data/base/HIA_LIST/COMBO/SPAT_OUT/SPAT_OUT_3.rds')
-# 
-# 
-# ## One at a time 
-# GBIF.SPAT.OUT.4 = cc_outl(OUT[[4]],
-#                           lon     = "decimallongitude",
-#                           lat     = "decimallatitude",
-#                           species = "species",
-#                           method  = "quantile",
-#                           mltpl   = 5,
-#                           tdi     = 1000,
-#                           value   = "flags")
-# 
-# 
-# ## Save spatial outliers
-# saveRDS(GBIF.SPAT.OUT.4, 'data/base/HIA_LIST/COMBO/SPAT_OUT/SPAT_OUT_4.rds')
-# 
-# 
-# ## One at a time 
-# GBIF.SPAT.OUT.5 = cc_outl(OUT[[5]],
-#                           lon     = "decimallongitude",
-#                           lat     = "decimallatitude",
-#                           species = "species",
-#                           method  = "quantile",
-#                           mltpl   = 5,
-#                           tdi     = 1000,
-#                           value   = "flags")
-# 
-# 
-# ## Save spatial outliers
-# saveRDS(GBIF.SPAT.OUT.5, 'data/base/HIA_LIST/COMBO/SPAT_OUT/SPAT_OUT_5.rds')
-# 
-# 
-# ## One at a time 
-# GBIF.SPAT.OUT.6 = cc_outl(OUT[[6]],
-#                           lon     = "decimallongitude",
-#                           lat     = "decimallatitude",
-#                           species = "species",
-#                           method  = "quantile",
-#                           mltpl   = 5,
-#                           tdi     = 1000,
-#                           value   = "flags")
-# 
-# 
-# ## Save spatial outliers
-# saveRDS(GBIF.SPAT.OUT.6, 'data/base/HIA_LIST/COMBO/SPAT_OUT/SPAT_OUT_6.rds')
-# 
-# 
-# ## One at a time 
-# GBIF.SPAT.OUT.7 = cc_outl(OUT[[7]],
-#                           lon     = "decimallongitude",
-#                           lat     = "decimallatitude",
-#                           species = "species",
-#                           method  = "quantile",
-#                           mltpl   = 5,
-#                           tdi     = 1000,
-#                           value   = "flags")
-# 
-# 
-# ## Save spatial outliers
-# saveRDS(GBIF.SPAT.OUT.7, 'data/base/HIA_LIST/COMBO/SPAT_OUT/SPAT_OUT_7.rds')
-# 
-# 
-# ## One at a time 
-# GBIF.SPAT.OUT.8 = cc_outl(OUT[[8]],
-#                           lon     = "decimallongitude",
-#                           lat     = "decimallatitude",
-#                           species = "species",
-#                           method  = "quantile",
-#                           mltpl   = 5,
-#                           tdi     = 1000,
-#                           value   = "flags")
-
-
-## Save spatial outliers
-# saveRDS(GBIF.SPAT.OUT.8, 'data/base/HIA_LIST/COMBO/SPAT_OUT/SPAT_OUT_8.rds')
-
-
-##
-# GBIF.SPAT.OUT.1 = readRDS('data/base/HIA_LIST/COMBO/SPAT_OUT_1.rds')
-# length(GBIF.SPAT.OUT.1);length(GBIF.SPAT.OUT.2);length(GBIF.SPAT.OUT.3);length(GBIF.SPAT.OUT.6)
-
-
-
-## Check the output ::
-#dim(FLAGS);length(GBIF.SPAT.OUT)
-# GBIF.SPAT.OUT = bind_rows(GBIF.SPAT.OUT.1,  GBIF.SPAT.OUT.2,  GBIF.SPAT.OUT.3,  GBIF.SPAT.OUT.4,  GBIF.SPAT.OUT.5,  GBIF.SPAT.OUT.6,
-#                           GBIF.SPAT.OUT.7,  GBIF.SPAT.OUT.8)
-
 
 
 #########################################################################################################################
@@ -482,24 +391,7 @@ identical(TEST.GEO$searchTaxon, TEST.GEO$coord_spp)                             
 
 
 #########################################################################################################################
-## PLOT CLEAN DATA
-#########################################################################################################################
-
-
-# plot(LAND)
-# points(GBIF.CLEAN$decimallongitude,  GBIF.CLEAN$decimallatitude, cex = 0.2, col = "red", pch = 19)
-
-
-## Still have the outliers on the eastern half of Australia
-# plot(aus)
-# points(GBIF.CLEAN$decimallongitude,  GBIF.CLEAN$decimallatitude, cex = 0.8, col = "red", pch = 19)
-
-
-
-
-
-#########################################################################################################################
-## SUBSET FOR THE NICHES : JUST USE COORDCLEAN SUMMARY
+## 4). SUBSET FOR THE NICHES : JUST USE COORDCLEAN SUMMARY
 #########################################################################################################################
 
 
@@ -539,68 +431,90 @@ unique(CLEAN.TRUE$summary)
 str(unique(CLEAN.TRUE$searchTaxon))
 str(unique(TEST.GEO$searchTaxon))
 'Ficus brachypoda' %in% TEST.GEO$searchTaxon  
-(dim(CLEAN.TRUE)[1]/dim(TEST.GEO))*100                                  ## ~98% of the records are retained
+(dim(CLEAN.TRUE)[1]/dim(TEST.GEO))*100                                               ## ~98% of the records are retained
+
+
+
+#########################################################################################################################
+## RE-CREATE NICHES
+#########################################################################################################################
+
+
+#########################################################################################################################
+## 5). INTERSECT SPECIES RECORDS WITH LOCAL GOV AREAS AND SIGNIFICANT URBAN AREAS
+#########################################################################################################################
+
+
+#########################################################################################################################
+## See the ABS for details :: there are 563 LGAs
+## http://www.abs.gov.au/ausstats/abs@.nsf/Lookup/by%20Subject/1270.0.55.003~July%202016~Main%20Features~Local%20Government%20Areas%20(LGA)~7
+
+
+## We want to know the count of species that occur in 'n' LGAs, across a range of climates. Read in LGA and SUA
+SUA      = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/IN_SUA_AUS.rds")
+LGA      = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LGA.rds")
+AUS      = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds")
+projection(LGA);projection(SUA);projection(AUS)
+
+
+## Convert the raster data back into a spdf
+COMBO.RASTER.SP   = SpatialPointsDataFrame(coords      = CLEAN.TRUE[c("lon", "lat")], 
+                                           data        = CLEAN.TRUE,
+                                           proj4string = CRS.WGS.84)
+
+
+## Project using a projected rather than geographic coordinate system
+LGA.WGS  = spTransform(LGA, CRS.WGS.84)
+SUA.WGS  = spTransform(SUA, CRS.WGS.84)
+AUS.WGS  = spTransform(AUS, CRS.WGS.84)
+
+
+## Remove the columns we don't need
+LGA.WGS = LGA.WGS[, c("LGA_CODE16", "LGA_NAME16")] 
+
+
+#########################################################################################################################
+## Run join between species records and LGAs/SUAs :: Double check they are the same
+projection(COMBO.RASTER.SP);projection(LGA.WGS);projection(SUA.WGS);projection(AUS.WGS)
+LGA.JOIN      = over(COMBO.RASTER.SP, LGA.WGS)              ## =SUA.JOIN      = over(COMBO.RASTER.SP, SUA.WGS) 
+COMBO.SUA.LGA = cbind.data.frame(COMBO.RASTER.SP, LGA.JOIN) 
+saveRDS(COMBO.SUA.LGA, file = paste("./data/base/HIA_LIST/GBIF/COMBO_SUA_LGA.rds"))
+## COMBO.SUA.LGA = readRDS("./data/base/HIA_LIST/GBIF/COMBO_SUA_LGA.rds")
+## str(unique(COMBO.SUA.LGA$searchTaxon))
+
+
+#########################################################################################################################
+## AGGREGATE THE NUMBER OF LGAs EACH SPECIES IS FOUND IN. NA LGAs ARE OUTSIDE AUS
+LGA.AGG   = tapply(COMBO.SUA.LGA$LGA_NAME16, COMBO.SUA.LGA$searchTaxon, function(x) length(unique(x))) ## group LGA by species name
+AUS.AGG   = aggregate(LGA_CODE16 ~ searchTaxon, data = COMBO.SUA.LGA, function(x) {sum(!is.na(x))}, na.action = NULL)
+LGA.AGG   = as.data.frame(LGA.AGG)
+LGA.AGG   = cbind.data.frame(AUS.AGG, LGA.AGG)
+names(LGA.AGG) = c("searchTaxon", "AUS_RECORDS", "LGA_COUNT")
+
+
+## Check
+dim(LGA.AGG)
+head(LGA.AGG)
+
+
+## 
+names(COMBO.SUA.LGA)
+COMBO.SUA.LGA = subset(COMBO.SUA.LGA, select = -c(lon.1, lat.1))
+names(COMBO.SUA.LGA)
+dim(COMBO.SUA.LGA)
+str(unique(COMBO.SUA.LGA$searchTaxon))
 
 
 
 
 
 #########################################################################################################################
-## SUBSET FOR SDM DATA : USE COORDCLEAN SUMMARY & SPATIAL OUTLIERS
+## 6). CREATE NICHES FOR SELECTED TAXA
 #########################################################################################################################
 
 
-## Crunch the big data down to just the species we are modelling
-# COMBO.RASTER.MILE  = COMBO.RASTER.CONTEXT[COMBO.RASTER.CONTEXT$searchTaxon %in% spp.mile, ] 
-# TEST.SPAT          = cbind(COMBO.RASTER.MILE, FLAGS, GBIF.SPAT.OUT)
-# identical(TEST.SPAT$searchTaxon, TEST.SPAT$coord_spp)                                                     ## order matches
-
-
-## So ~2.6% of the data is dodgy according to the GBIF fields or spatial outliers. This seems ok as a median figure 
-# dim(subset(TEST.GEO, summary == "FALSE" | GBIF.SPAT.OUT == "FALSE"))[1]/dim(TEST.GEO)[1]*100
-# SPAT.FALSE = subset(TEST.GEO, summary == "FALSE" | GBIF.SPAT.OUT == "FALSE")
-
-
-## Check one species
-# coordyline = subset(TEST.GEO, searchTaxon == "Cordyline australis")
-# View(subset(coordyline, summary == "FALSE") #| GBIF.SPAT.OUT == "FALSE")
-#      [, c("searchTaxon", "OBS",
-#           "lon",
-#           "lat",
-#           "validity", 
-#           "equal",
-#           "zeros",
-#           "capitals",
-#           "centroids",
-#           "duplicates",
-#           "gbif",
-#           "institution",
-#           "summary")])
-
-
-## Not sure why the inverse did not work :: get only the records which were _not_ flagged as being dodgy.
-# dim(subset(TEST.GEO, summary == "TRUE" | GBIF.SPAT.OUT == "TRUE"))
-# SPAT.TRUE = TEST.GEO[!TEST.GEO$OBS %in% SPAT.FALSE$OBS, ]
-# identical(dim(SPAT.TRUE)[1], (dim(COMBO.RASTER.CONTEXT)[1] - dim(subset(TEST.GEO, summary == "FALSE"))[1]))
-# unique(SPAT.TRUE$summary)                                              
-#unique(CLEAN.TRUE$GBIF.SPAT.OUT)                                       
-
-
-## How many species?
-str(unique(CLEAN.TRUE$searchTaxon))
-str(unique(TEST.GEO$searchTaxon))
-(dim(CLEAN.TRUE)[1]/dim(TEST.GEO))*100                                  ## ~98% of the data is retained
-
-
-
-
-
 #########################################################################################################################
-## SUBSET FOR SDM DATA : USE COORDCLEAN SUMMARY & SPATIAL OUTLIERS
-#########################################################################################################################
-
-
-## List of environmental variables
+## Now summarise the niches. But figure out a cleaner way of doing this
 env.variables = c("Annual_mean_temp",
                   "Mean_diurnal_range",
                   "Isothermality",
@@ -624,13 +538,40 @@ env.variables = c("Annual_mean_temp",
                   "PET")
 
 
-## Apply the niche function
-CLEAN.NICHE.DF = completeFun(CLEAN.TRUE, "PET")
-dim(CLEAN.NICHE.DF)
+#########################################################################################################################
+## Change the raster values here: See http://worldclim.org/formats1 for description of the interger conversion. 
+## All temperature variables wer multiplied by 10, so divide by 10 to reverse it.
+# COMBO.RASTER.CONVERT = as.data.table(COMBO.SUA.LGA)                           ## Check this works, also inefficient
+# COMBO.RASTER.CONVERT[, (env.variables [c(1:11)]) := lapply(.SD, function(x) 
+#   x / 10 ), .SDcols = env.variables [c(1:11)]]
+# COMBO.RASTER.CONVERT = as.data.frame(COMBO.RASTER.CONVERT)                   ## Find another method without using data.table
+# 
+# 
+# ## Check Looks ok?
+# summary(COMBO.RASTER.CONVERT$Annual_mean_temp)  ## -23 looks too low/. Check where these are ok
+# summary(COMBO.RASTER$Annual_mean_temp)
+# 
+# summary(COMBO.RASTER.CONVERT$Isothermality)
+# summary(COMBO.RASTER$Isothermality)
+# 
+# 
+# ## Plot a few points to see :: do those look reasonable?
+# plot(LAND, col = 'grey', bg = 'sky blue')
+# points(COMBO.RASTER.CONVERT[ which(COMBO.RASTER.CONVERT$Annual_mean_temp < -5), ][, c("lon", "lat")], 
+#        pch = ".", col = "red", cex = 3, asp = 1)
 
 
-## Update
-CLEAN.NICHE <- env.variables %>% 
+#########################################################################################################################
+## Create niche summaries for each environmental condition like this...
+## Here's what the function will produce :
+NICHE.DF = completeFun(COMBO.SUA.LGA, "PET")
+dim(NICHE.DF)
+head(niche_estimate (DF = NICHE.DF, colname = "Annual_mean_temp"))  ## including the q05 and q95
+
+
+## So lets use lapply on the "SearchTaxon"
+## test = run_function_concatenate(list, DF, "DF, colname = x") 
+COMBO.NICHE <- env.variables %>% 
   
   ## Pipe the list into lapply
   lapply(function(x) {
@@ -638,7 +579,7 @@ CLEAN.NICHE <- env.variables %>%
     ## Now use the niche width function on each colname (so 8 environmental variables)
     ## Also, need to figure out how to make the aggregating column generic (species, genus, etc.)
     ## currently it only works hard-wired
-    niche_estimate (DF = CLEAN.NICHE.DF, colname = x)
+    niche_estimate (DF = NICHE.DF, colname = x)
     
     ## would be good to remove the duplicate columns here
     
@@ -649,17 +590,62 @@ CLEAN.NICHE <- env.variables %>%
 
 
 ## Remove duplicate Taxon columns and check the output :: would be great to skip these columns when running the function
-names(CLEAN.NICHE)
-CLEAN.NICHE = subset(CLEAN.NICHE, select = -c(searchTaxon.1,  searchTaxon.2,  searchTaxon.3,  searchTaxon.4,
+names(COMBO.NICHE)
+COMBO.NICHE = subset(COMBO.NICHE, select = -c(searchTaxon.1,  searchTaxon.2,  searchTaxon.3,  searchTaxon.4,
                                               searchTaxon.5,  searchTaxon.6,  searchTaxon.7,  searchTaxon.7,
                                               searchTaxon.8,  searchTaxon.9,  searchTaxon.10, searchTaxon.11,
                                               searchTaxon.12, searchTaxon.13, searchTaxon.14, searchTaxon.15,
                                               searchTaxon.16, searchTaxon.17, searchTaxon.18, searchTaxon.19))
 
 
+#########################################################################################################################
+## Add counts for each species, and record the total number of taxa processed
+COMBO.count = as.data.frame(table(COMBO.RASTER.CONTEXT$searchTaxon))$Freq
+Total.taxa.processed = dim(COMBO.NICHE)[1]
+COMBO.NICHE  = cbind(COMBO.count, COMBO.NICHE)
+names(COMBO.NICHE)
+dim(COMBO.NICHE)
+saveRDS(COMBO.NICHE, file = paste("./data/base/HIA_LIST/GBIF/COMBO_NICHE_CLEAN.rds"))
+
+
+#########################################################################################################################
+## Add the counts of Australian records for each species to the niche database
+names(COMBO.NICHE)
+names(LGA.AGG)
+dim(COMBO.NICHE)
+dim(LGA.AGG)
+
+
+COMBO.LGA = join(COMBO.NICHE, LGA.AGG)                            ## The tapply needs to go where the niche summaries are
+names(COMBO.LGA)
+
+dim(COMBO.LGA)
+head(COMBO.LGA$AUS_RECORDS)
+head(COMBO.LGA$LGA_COUNT)
+
+
+
+
+
+#########################################################################################################################
+## 7). JOIN ON CONTEXTUAL DATA
+#########################################################################################################################
+
+
+#########################################################################################################################
+## Now join the horticultural contextual data onto one or both tables ()
+names(COMBO.RASTER.CONVERT)
+names(CLEAN.SPP)
+COMBO.RASTER.CONTEXT = join(COMBO.RASTER.CONTEXT, HIA.SPP.JOIN)
+#COMBO.RASTER.CONTEXT  = COMBO.RASTER.CONTEXT[,  c(42, 1, 65, 2:41, 43:61, 62:64, 66:78)]                ## REDO
+names(COMBO.RASTER.CONTEXT)
+
 
 ## Now join hort context to all the niche
-CLEAN.NICHE.CONTEXT = join(COMBO.NICHE.CONTEXT[, c(1:18)], CLEAN.NICHE)
+COMBO.NICHE.CONTEXT = join(COMBO.LGA, HIA.SPP.JOIN)
+COMBO.NICHE.CONTEXT =  COMBO.NICHE.CONTEXT[, c(2, 185, 1, 183:184, 186:198, 3:182)] 
+head(COMBO.NICHE.CONTEXT$AUS_RECORDS)
+head(COMBO.NICHE.CONTEXT$LGA_COUNT)
 
 
 ## Set NA to blank, then sort by no. of growers
@@ -668,13 +654,11 @@ COMBO.NICHE.CONTEXT = COMBO.NICHE.CONTEXT[with(COMBO.NICHE.CONTEXT, rev(order(Nu
 
 
 ## View the data
-head(COMBO.NICHE.CONTEXT$AUS_RECORDS)
-head(COMBO.NICHE.CONTEXT$LGA_COUNT)
-
 names(COMBO.RASTER.CONTEXT)
 names(COMBO.NICHE.CONTEXT)
 dim(COMBO.RASTER.CONTEXT)
 dim(COMBO.NICHE.CONTEXT)
+
 
 
 #########################################################################################################################
