@@ -17,7 +17,8 @@
 
 ## Load packages ::
 source('./R/HIA_LIST_MATCHING.R')
-Koppen_1975     = raster('data/Koppen_1000m_Mollweide54009.tif')
+Koppen_1975        = raster('data/Koppen_1000m_Mollweide54009.tif')
+ALL.SUA.POP        = read.csv("./data/base/CONTEXTUAL/ABS_SUA_POP.csv", stringsAsFactors = FALSE)
 #Koppen_zones    = unique(readOGR('data/base/CONTEXTUAL/WC05_1975H_Koppen_Shapefile/WC05_1975H_Koppen_Kriticos_2012.shp')@data[, 1:2])
 
 
@@ -217,6 +218,7 @@ records_setting          = "COORD_CLEAN"
 
 ## Create a file list for each model run
 maxent.tables = list.files(path.set.var)     ## Chagne this for each variable selection strategy
+maxent.tables = intersect(maxent.tables, spp_mile)
 maxent_path   = path.set.var                 ## Chagne this for each variable selection strategy
 length(maxent.tables)                        ## Should match the number of taxa tested
 
@@ -289,14 +291,13 @@ length(comb_spp)
 
 
 #########################################################################################################################
-## Then, make a list all the directories containing the individual GCM rasters...
-## path.backwards.sel
+## Then, make a list all the directories containing the individual GCM rasters...path.backwards.sel
 SDM.RESULTS.DIR <- comb_spp[c(1:length(comb_spp))] %>%
   
   ## Pipe the list into lapply
   lapply(function(species) {
     
-    ## Create the character string
+    ## Create the character string...
     m <-   sprintf('%s%s/full/', path.set.var, species)                ## path.backwards.sel
     m 
     
@@ -362,14 +363,14 @@ View(MAXENT.CHECK.TABLE)
 ## Maximum training sensitivity plus specificity Logistic threshold 
 ## 10 percentile training presence training omission. EG:
 summary(MAXENT.SUM.TEST["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"])   ## .training. should be .test.
-summary(MAXENT.SUM.TEST["X10.percentile.training.presence.training.omission"])
+summary(MAXENT.SUM.TEST["X10.percentile.training.presence.Logistic.threshold"])
 
 
 ## Turn the maxent results into lists :: we can use these to generate the consensus layers 
 thresh.max.train  = as.list(MAXENT.SUM.TEST["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"]) 
 thresh.max.train  = thresh.max.train$Maximum.training.sensitivity.plus.specificity.Logistic.threshold
 
-percent.10.omiss  = as.list(MAXENT.SUM.TEST["X10.percentile.training.presence.training.omission"])
+percent.10.omiss  = as.list(MAXENT.SUM.TEST["X10.percentile.training.presence.Logistic.threshold"])
 percent.10.omiss  = percent.10.omiss$X10.percentile.training.presence.training.omission
 
 
@@ -422,10 +423,10 @@ tail(SDM.RESULTS.DIR, 20);tail(comb_spp, 20); tail(MAXENT.SUM.TEST, 20)[, c("sea
 comb_spp_rev        = sort(comb_spp, decreasing = TRUE)
 SDM.RESULTS.DIR.REV = sort(comb_spp, decreasing = TRUE)
 
-DIR        = SDM.RESULTS.DIR[42] 
-species    = comb_spp[42] 
-thresh     = thresh.max.train[42] 
-percent    = percent.10.omiss[42]
+DIR        = SDM.RESULTS.DIR[1] 
+species    = comb_spp[1] 
+thresh     = thresh.max.train[1] 
+percent    = percent.10.omiss[1]
 time_slice = 30
 area_occ   = 10
 
@@ -497,16 +498,6 @@ suitability.2070 = tryCatch(mapply(combine_gcm_threshold,
                             })
 
 
-## Reverse the list, in order to walk through list on different R sessions
-# suitability.2050 = mapply(combine_gcm_threshold, 
-#                           DIR_list     = sort(unlist(SDM.RESULTS.DIR), decreasing = TRUE), 
-#                           species_list = sort(comb_spp, decreasing = TRUE), 
-#                           thresholds   = sort(thresh.max.train, decreasing = TRUE),
-#                           percentiles  = sort(percent.10.omiss, decreasing = TRUE),
-#                           time_slice   = 50,
-#                           area_occ     = 10)
-
-
 
 
 
@@ -522,11 +513,11 @@ suitability.2070 = tryCatch(mapply(combine_gcm_threshold,
 #########################################################################################################################
 ## Easiest way to do this is to store the results of each iteration as we go...need to change the way the code works!
 ## But, as a workarond, read in the list of files for the current models, and specify the file path
-SUA.tables = list.files("./output/maxent/STD_VAR_ALL/", pattern = 'SUA_summary.csv', full.names = TRUE, recursive = TRUE) 
+SUA.tables = list.files("./output/maxent/SET_VAR_KOPPEN/", pattern = 'SUA_summary.csv', full.names = TRUE, recursive = TRUE) 
 length(SUA.tables)
 
 
-## Now try combing the tables
+## Now combine the SUA tables for each species into one table 
 SUA.PRESENCE <- SUA.tables[c(1:length(SUA.tables))] %>%
   
   ## pipe the list into lapply
@@ -547,7 +538,43 @@ SUA.PRESENCE <- SUA.tables[c(1:length(SUA.tables))] %>%
 
 ## This is a summary of maxent output for current conditions
 dim(SUA.PRESENCE)
-head(SUA.PRESENCE, 150)
+head(SUA.PRESENCE, 200)
+
+
+## Now join on the population
+TOP.SUA.POP = ALL.SUA.POP[, c("SUA", "POP_2017")]
+SUA.PRESENCE$SUA = as.character(SUA.PRESENCE$SUA)
+class(SUA.PRESENCE$SUA)
+class(TOP.SUA.POP$SUA)
+
+
+## 87 SUAs overlap between the ABS shapefile and the table
+unique(sort(TOP.SUA.POP$SUA))
+unique(sort(SUA.PRESENCE$SUA))
+intersect(unique(sort(TOP.SUA.POP$SUA)), unique(sort(SUA.PRESENCE$SUA)))
+SUA.PRESENCE = join(SUA.PRESENCE, TOP.SUA.POP)
+
+
+## Check this combined table
+SUA.PRESENCE = SUA.PRESENCE[, c("SUA",       "POP_2017",     "AREA_SQKM", 
+                                "SPECIES",   "PERIOD",       "AREA_THRESH", 
+                                "MAX_TRAIN", "PERCENT_AREA", "PRESENT")]
+names(SUA.PRESENCE)
+summary(SUA.PRESENCE)
+
+
+## what are the 20 most populated areas
+top_n   = 20
+BIG.SUA = head(TOP.SUA.POP[with(TOP.SUA.POP, rev(order(POP_2017))), ], top_n)
+BIG_SUA = BIG.SUA$SUA
+
+
+## Restrict the big table to just these
+SUA.TOP.PRESENCE  = SUA.PRESENCE[SUA.PRESENCE$SUA %in% BIG_SUA, ] 
+length(unique(SUA.PRESENCE$SPECIES))
+length(unique(SUA.TOP.PRESENCE$SPECIES))                            ## So their are only 87 species which were processed
+summary(SUA.TOP.PRESENCE)
+View(SUA.TOP.PRESENCE)
 
 
 #########################################################################################################################

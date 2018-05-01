@@ -568,10 +568,6 @@ summary(EXTRA.SPP$Number.of.growers)
 spp.extra = unique(EXTRA.SPP$Binomial)
 length(spp.extra)
 
-spp.combo = sort(unique(c(spp.all, spp.extra, spp.mile)))
-length(spp.combo)
-
-
 
 
 
@@ -647,6 +643,14 @@ MILE.1.SPP[120, "Plant.type"] = "Tree"
 with(MILE.1, table(Plant.type))
 with(MILE.1.SPP, table(Plant.type))
 #with(MILE.1.SPP, table(Plant.type)/sum(table(Plant.type))*100)
+
+
+spp.combo      = sort(unique(c(spp.all, spp.extra, spp.mile)))
+combo.rev      = sort(spp.combo, decreasing = TRUE)
+combo_spp      = gsub(" ", "_", spp.combo)
+combo_reverse  = sort(combo_spp, decreasing = TRUE)
+length(spp.combo)
+
 
 
 ## Save ::

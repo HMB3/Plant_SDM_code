@@ -233,7 +233,7 @@ str(unique(TIB.TEST$species))
 
 
 #########################################################################################################################
-## Don't run the outliers test here, it is slower
+## Don't run the outliers test here, it is slower...
 FLAGS  <- CleanCoordinates(TIB.TEST,
                            #countries        = "country",    ## too many flagged here...
                            capitals.rad     = 0.12,
@@ -249,9 +249,9 @@ saveRDS(FLAGS, 'data/base/HIA_LIST/COMBO/COMBO_GBIF_FLAGS.rds')
 
 ## Flagging ~ 1.64%, excluding the spatial outliers. Seems reasonable?
 summary(FLAGS)
-summary(FLAGS)[8]/dim(FLAGS)[1]*100
 FLAGS = FLAGS[ ,!(colnames(FLAGS) == "decimallongitude" | colnames(FLAGS) == "decimallatitude")]
 names(FLAGS)
+summary(FLAGS)[8]/dim(FLAGS)[1]*100
 
 
 ## A plot like this for each species would be awesome
@@ -600,7 +600,10 @@ COMBO.NICHE = subset(COMBO.NICHE, select = -c(searchTaxon.1,  searchTaxon.2,  se
 
 #########################################################################################################################
 ## Add counts for each species, and record the total number of taxa processed
+## dim(COMBO.RASTER.CONTEXT);dim(CLEAN.TRUE)
 COMBO.count = as.data.frame(table(COMBO.RASTER.CONTEXT$searchTaxon))$Freq
+identical(length(COMBO.count), dim(COMBO.NICHE )[1])
+
 Total.taxa.processed = dim(COMBO.NICHE)[1]
 COMBO.NICHE  = cbind(COMBO.count, COMBO.NICHE)
 names(COMBO.NICHE)
@@ -637,7 +640,7 @@ head(COMBO.LGA$LGA_COUNT)
 names(COMBO.RASTER.CONVERT)
 names(CLEAN.SPP)
 COMBO.RASTER.CONTEXT = join(COMBO.RASTER.CONTEXT, HIA.SPP.JOIN)
-#COMBO.RASTER.CONTEXT  = COMBO.RASTER.CONTEXT[,  c(42, 1, 65, 2:41, 43:61, 62:64, 66:78)]                ## REDO
+#COMBO.RASTER.CONTEXT  = COMBO.RASTER.CONTEXT[,  c(42, 1, 65, 2:41, 43:61, 62:64, 66:78)]                         ## REDO
 names(COMBO.RASTER.CONTEXT)
 
 

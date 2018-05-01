@@ -326,7 +326,8 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             
             #########################################################################################################################
             ## Then, extract the values of the presence raster for each areal unit: generates a list
-            ext  <- extract(combo_suit_4GCM, areal_unit, method = 'simple')
+            ext.current  <- extract(current_suit_thresh, areal_unit, method = 'simple')
+            ext.future   <- extract(combo_suit_4GCM,     areal_unit, method = 'simple')
             
             ## A function to tabulate the raster values by aerial unit, returning a data frame
             tabFunc <- function(indx, extracted, region, regname) {
@@ -338,8 +339,11 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             }
             
             ## Run through each areal unit and calculate a table of the count of raster cells
-            tabs <- lapply(seq(ext), tabFunc, ext, areal_unit, "SUA_NAME11")
-            tabs <- do.call("rbind", tabs )
+            tabs.current <- lapply(seq(ext.current), tabFunc, ext.current, areal_unit, "SUA_NAME11")
+            tabs.current <- do.call("rbind", tabs.current )
+            
+            tabs.future  <- lapply(seq(ext.future), tabFunc, ext.future, areal_unit, "SUA_NAME11")
+            tabs.future  <- do.call("rbind", tabs.future )
             
             ## Can we get the count here, so we don't need to run zonal stats as well
             # tabs.count      = tabs
@@ -349,14 +353,20 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             # head(sp.count)
             
             #########################################################################################################################
-            ## Now mutate the table
-            ## Does this do what we want?...........................................................................................
+            ## Now mutate the current table
+            PERECENT.AREA.CURRENT <- tabs.current %>%
+              
+              group_by(name) %>%                                          ## Group by region
+              mutate(totcells = sum(Freq),                                ## How many cells overall?
+                     percent.area = round(100 * Freq / totcells, 2)) %>%  ## Cells divided by total cells
+              
+              dplyr::select(-c(Freq, totcells)) %>%                       ## There is a select func in raster so need to specify
+              spread(key = Var1, value = percent.area, fill = 0)     %>%  ## Make wide format
+              as.data.frame()
             
-            
-            
-            ## Error in names(PERECENT.AREA) <- c("SUA_NAME11", "Absent", "Present") : 
-            ##   'names' attribute [3] must be the same length as the vector [2]
-            PERECENT.AREA <- tabs %>%
+            #########################################################################################################################
+            ## Now mutate the future table
+            PERECENT.AREA.FUTURE <- tabs.future %>%
               
               group_by(name) %>%                                          ## Group by region
               mutate(totcells = sum(Freq),                                ## How many cells overall?
@@ -367,30 +377,27 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
               as.data.frame()
             
             ## Rename and create a column for whether or not the species occupies that area 
-            names(PERECENT.AREA) =  c('SUA_NAME11', 'Absent', 'Present') 
-            PERECENT.AREA$species_present = ifelse(PERECENT.AREA$Present >= area_occ, 1, 0)
-            head(PERECENT.AREA)
+            names(PERECENT.AREA.CURRENT) =  c('SUA_NAME11', 'Absent', 'Present') 
+            names(PERECENT.AREA.FUTURE)  =  c('SUA_NAME11', 'Absent', 'Present') 
+            
+            PERECENT.AREA.CURRENT$species_present = ifelse(PERECENT.AREA.CURRENT$Present >= area_occ, 1, 0)
+            PERECENT.AREA.FUTURE$species_present  = ifelse(PERECENT.AREA.FUTURE$Present  >= area_occ, 1, 0)
+            
+            head(PERECENT.AREA.CURRENT)
+            head(PERECENT.AREA.FUTURE)
             
             ## Create a table with the columns: REGION, AREA SPECIES, STATS (for each time slice)
-            ## Change this so that we can summarise across all species as suggested by Linda 
-            GCM.AREA.SUMMARY <- data.frame(SUA         = areal_unit$SUA_NAME11, 
-                                           AREA_SQKM   = areal_unit$AREA_SQKM,
-                                           SPECIES     = species,
-                                           PERIOD      = time_slice,
-                                           AREA_THRESH = area_occ,
-                                           MAX_TRAIN   = thresh,
-                                           #CELL_COUNT = sp.count$COUNT,
-                                           PERCENT_AREA = PERECENT.AREA$Present,
-                                           PRESENT      = PERECENT.AREA$species_present)
-            
-            ## Rename columns using sprintf, so we can include the suitability threshold and the time slice
-            #' names(GCM.AREA.SUMMARY) <-  c('SUA',
-            #'                               'AREA_SQKM',
-            #'                               'SPECIES',
-            #'                               #'CELL_COUNT',
-            #'                               sprintf("Percent_area_where_4GCMs > thresh in 20%s",   thresh, time_slice),
-            #'                               sprintf('Species_present 4GCMs > %s in 20%s',   thresh, time_slice))
-            View(GCM.AREA.SUMMARY) ## unique(GCM.AREA.SUMMARY$SPECIES)
+            GCM.AREA.SUMMARY <- data.frame(SUA          = areal_unit$SUA_NAME11, 
+                                           AREA_SQKM    = areal_unit$AREA_SQKM,
+                                           SPECIES      = species,
+                                           PERIOD       = time_slice,
+                                           AREA_THRESH  = area_occ,
+                                           MAX_TRAIN    = thresh,
+                                           PERCENT_AREA = PERECENT.AREA.FUTURE$Present,
+                                           AREA_CHANGE  = PERECENT.AREA.FUTURE$Present - PERECENT.AREA.CURRENT$Present,
+                                           PRESENT      = PERECENT.AREA.FUTURE$species_present)
+          
+            View(GCM.AREA.SUMMARY) 
             
             #########################################################################################################################
             ## Then save the table of SUA results for all species to a datafile...

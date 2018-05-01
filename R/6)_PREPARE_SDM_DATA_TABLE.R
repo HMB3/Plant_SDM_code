@@ -216,7 +216,7 @@ str(SDM.DATA.ALL)
 dim(SDM.DATA.ALL)
 #save(template.raster, file = paste("./data/base/HIA_LIST/COMBO/SDM_TEMPLATE_RASTER.RData"))
 #save(SDM.DATA.ALL,    file = paste("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_ALL_VAR.RData"))
-saveRDS(SDM.DATA.ALL, 'data/base/HIA_LIST/COMBO/SDM_DATA_CLEAN_042018.rds')
+saveRDS(SDM.DATA.ALL, 'data/base/HIA_LIST/COMBO/SDM_DATA_CLEAN_052018.rds')
 
 
 ## Remove the other data

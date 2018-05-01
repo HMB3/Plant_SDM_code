@@ -38,7 +38,7 @@ source('./R/HIA_LIST_MATCHING.R')
 ## Load SDM data :: template rasters, point data and koppen zones
 template.raster = raster("./data/template_hasData.tif")
 template.cells  = readRDS("./data/hasData_cells.rds")
-SDM.DATA.ALL    = readRDS("./data/base/HIA_LIST/COMBO/SDM_DATA_CLEAN_042018.rds")
+SDM.DATA.ALL    = readRDS("./data/base/HIA_LIST/COMBO/SDM_DATA_CLEAN_052018.rds")
 Koppen_1975     = raster('data/Koppen_1000m_Mollweide54009.tif')
 Koppen_zones    = unique(readOGR('data/base/CONTEXTUAL/WC05_1975H_Koppen_Shapefile/WC05_1975H_Koppen_Kriticos_2012.shp')@data[, 1:2])
 
@@ -137,10 +137,8 @@ projection(template.raster);projection(SDM.DATA.ALL)
 ## Doing Baeckea virgata
 ## 19 occurrence records (unique cells).
 ## [1] "Fewer occurrence records than the number of cross-validation  replicates for species  Baeckea virgata  Model not fit for this species"
-myList[[5]] <- NULL
-
 ## spp = spp.mile[2]
-lapply(spp.mile, function(spp) { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel 
+lapply(combo.rev, function(spp) { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel 
   
   ## Print the taxa being processed to screen
   if(spp %in% SDM.DATA.ALL$searchTaxon) {

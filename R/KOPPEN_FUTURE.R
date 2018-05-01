@@ -184,23 +184,23 @@ str(unique(TAXA.KOPPEN.2070.JOIN$searchTaxon))
 ## Produce a "long" format table with records (rows) * Koppen (columns).
 ## Not sure the order matters, but this analysis is framed about Koppen so order by that
 TAXA.KOPPEN.1975.JOIN  = TAXA.KOPPEN.1975.JOIN [with(TAXA.KOPPEN.1975.JOIN , order(Koppen)), ]
-TAXA.KOPPEN.2030.JOIN  = TAXA.KOPPEN.JOIN[with(TAXA.KOPPEN.JOIN, order(Koppen_2030)), ]
-TAXA.KOPPEN.2050.JOIN  = TAXA.KOPPEN.JOIN[with(TAXA.KOPPEN.JOIN, order(Koppen_2050)), ]
-TAXA.KOPPEN.2070.JOIN  = TAXA.KOPPEN.JOIN[with(TAXA.KOPPEN.JOIN, order(Koppen_2070)), ]
+TAXA.KOPPEN.2030.JOIN  = TAXA.KOPPEN.2030.JOIN[with(TAXA.KOPPEN.2030.JOIN, order(Koppen_2030_A1B_CS)), ]
+TAXA.KOPPEN.2050.JOIN  = TAXA.KOPPEN.2050.JOIN[with(TAXA.KOPPEN.2050.JOIN, order(Koppen_2050_A1B_CS)), ]
+TAXA.KOPPEN.2070.JOIN  = TAXA.KOPPEN.2070.JOIN[with(TAXA.KOPPEN.2070.JOIN, order(Koppen_2070_A1B_CS)), ]
 
 
 TAXA.KOPPEN.1975.COUNT = TAXA.KOPPEN.1975.JOIN[, c("Koppen", "searchTaxon")]
-TAXA.KOPPEN.2030.COUNT = TAXA.KOPPEN.2030.JOIN[, c("Koppen", "searchTaxon")]
-TAXA.KOPPEN.2050.COUNT = TAXA.KOPPEN.2050.JOIN[, c("Koppen", "searchTaxon")]
-TAXA.KOPPEN.2070.COUNT = TAXA.KOPPEN.2070.JOIN[, c("Koppen", "searchTaxon")]
+TAXA.KOPPEN.2030.COUNT = TAXA.KOPPEN.2030.JOIN[, c("Koppen_2030_A1B_CS", "searchTaxon")]
+TAXA.KOPPEN.2050.COUNT = TAXA.KOPPEN.2050.JOIN[, c("Koppen_2050_A1B_CS", "searchTaxon")]
+TAXA.KOPPEN.2070.COUNT = TAXA.KOPPEN.2070.JOIN[, c("Koppen_2070_A1B_CS", "searchTaxon")]
 
 
 #########################################################################################################################
 ## Create a table with one row per species, and a column for every koppen  
 KOPPEN.CAST.1975    = dcast(TAXA.KOPPEN.1975.COUNT, searchTaxon ~ Koppen)    ## can't use aggregation function on characters
-KOPPEN.CAST.2030    = dcast(TAXA.KOPPEN.2030.COUNT, searchTaxon ~ Koppen)
-KOPPEN.CAST.2050    = dcast(TAXA.KOPPEN.2050.COUNT, searchTaxon ~ Koppen)
-KOPPEN.CAST.2070    = dcast(TAXA.KOPPEN.2070.COUNT, searchTaxon ~ Koppen)
+KOPPEN.CAST.2030    = dcast(TAXA.KOPPEN.2030.COUNT, searchTaxon ~ Koppen_2030_A1B_CS)
+KOPPEN.CAST.2050    = dcast(TAXA.KOPPEN.2050.COUNT, searchTaxon ~ Koppen_2050_A1B_CS)
+KOPPEN.CAST.2070    = dcast(TAXA.KOPPEN.2070.COUNT, searchTaxon ~ Koppen_2070_A1B_CS)
 dim(KOPPEN.CAST.1975)          ## so two koppen zones are not in the data at all....seems strange?
 dim(KOPPEN.CAST.2070)
 
