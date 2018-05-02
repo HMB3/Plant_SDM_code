@@ -208,7 +208,7 @@ env.grids.2070 = tryCatch(project_maxent_grids(scen_list     = scen_2070,
 
 #########################################################################################################################
 ## First, read in the list of files for the current models, and specify the file path
-path.set.var       = "./output/maxent/SET_VAR_KOPPEN/"
+path.set.var             = "./output/maxent/SET_VAR_KOPPEN/"
 
 
 ## Create an object for the maxent settings
@@ -371,7 +371,7 @@ thresh.max.train  = as.list(MAXENT.SUM.TEST["Maximum.training.sensitivity.plus.s
 thresh.max.train  = thresh.max.train$Maximum.training.sensitivity.plus.specificity.Logistic.threshold
 
 percent.10.omiss  = as.list(MAXENT.SUM.TEST["X10.percentile.training.presence.Logistic.threshold"])
-percent.10.omiss  = percent.10.omiss$X10.percentile.training.presence.training.omission
+percent.10.omiss  = percent.10.omiss$X10.percentile.training.presence.Logistic.threshold
 
 
 ## Check the order of lists match, species, SUAs, areas need to match up ................................................
@@ -383,11 +383,11 @@ identical(MAXENT.SUM.TEST$searchTaxon, comb_spp)
 ## The order of the directories matches
 head(SDM.RESULTS.DIR, 20);head(comb_spp, 20); head(MAXENT.SUM.TEST, 20)[, c("searchTaxon",
                                                                             "Maximum.training.sensitivity.plus.specificity.Logistic.threshold", 
-                                                                            "X10.percentile.training.presence.training.omission")]
+                                                                            "X10.percentile.training.presence.Logistic.threshold")]
 
 tail(SDM.RESULTS.DIR, 20);tail(comb_spp, 20); tail(MAXENT.SUM.TEST, 20)[, c("searchTaxon",
                                                                             "Maximum.training.sensitivity.plus.specificity.Logistic.threshold", 
-                                                                            "X10.percentile.training.presence.training.omission")]
+                                                                            "X10.percentile.training.presence.Logistic.threshold")]
 
 
 
@@ -461,7 +461,6 @@ suitability.2030 = tryCatch(mapply(combine_gcm_threshold,
                               message(paste('Species skipped - check inputs', spp))
                               
                             })
-
 
 
 ## Combine GCM output for 2050 
@@ -558,10 +557,10 @@ SUA.PRESENCE = join(SUA.PRESENCE, TOP.SUA.POP)
 ## Check this combined table
 SUA.PRESENCE = SUA.PRESENCE[, c("SUA",       "POP_2017",     "AREA_SQKM", 
                                 "SPECIES",   "PERIOD",       "AREA_THRESH", 
-                                "MAX_TRAIN", "PERCENT_AREA", "PRESENT")]
+                                "MAX_TRAIN", "PERCENT_AREA", "AREA_CHANGE", "PRESENT")]
 names(SUA.PRESENCE)
 summary(SUA.PRESENCE)
-
+# SUA.PRESENCE = SUA.PRESENCE [with(SUA.PRESENCE , rev(order(POP_2017))), ]
 
 ## what are the 20 most populated areas
 top_n   = 20
@@ -571,6 +570,7 @@ BIG_SUA = BIG.SUA$SUA
 
 ## Restrict the big table to just these
 SUA.TOP.PRESENCE  = SUA.PRESENCE[SUA.PRESENCE$SUA %in% BIG_SUA, ] 
+SUA.TOP.PRESENCE  = SUA.TOP.PRESENCE [with(SUA.TOP.PRESENCE , rev(order(POP_2017))), ]
 length(unique(SUA.PRESENCE$SPECIES))
 length(unique(SUA.TOP.PRESENCE$SPECIES))                            ## So their are only 87 species which were processed
 summary(SUA.TOP.PRESENCE)
@@ -579,8 +579,8 @@ View(SUA.TOP.PRESENCE)
 
 #########################################################################################################################
 ## Save basic results and SUA results to file :: CSV and RData files
-write.csv(MAXENT.SUMMARY, "./output/maxent/MAXENT_STD_VAR_SUMMARY.csv", row.names = FALSE)
-write.csv(MAXENT.STD.VAR.SUA,     "./output/maxent/MAXENT_STD_VAR_SUMMARY.csv", row.names = FALSE)
+write.csv(MAXENT.SUMMARY,       "./output/maxent/MAXENT_STD_VAR_SUMMARY.csv", row.names = FALSE)
+write.csv(SUA.TOP.PRESENCE,     "./output/maxent/MAXENT_SUA_SUMMARY.csv",     row.names = FALSE)
 
 
 
@@ -592,20 +592,17 @@ write.csv(MAXENT.STD.VAR.SUA,     "./output/maxent/MAXENT_STD_VAR_SUMMARY.csv", 
 
 
 #########################################################################################################################
-## Check the spatial referencing is ok 
+## create a list of species which need to be mapped using a different threshold. Either the ::
+## 10 percentile training presence Logistic threshold OR
+## 10 percentile training presence training omission
+ 
+## Also Can we calculate these in the table?
+## Gain (ie not suitable now but suitable in future)
+## Loss (ie suitable now but not in future)
+## Stable (suitable in both)
 
-## We are missing two scenarios recommended for Australia: CanESM2 & CESM1-CAM5. These two are not on the worldclim list:
-
-## https://www.climatechangeinaustralia.gov.au/en/support-and-guidance/faqs/eight-climate-models-data/
-
-## http://www.worldclim.org/cmip5_30s
-
-## Consider the final format, which files: table, plots/maps, files. Disk space important for both local and web... 
-## What are the options for presenting consensus layers of all scenarios? E.G. Are there some templates that John
-## has used for previous work?
-
-## These thresholded predictions of habitat suitability could be used to determine the loss or gain of species within areal units
-## (e.g. significant urban areas or LGAs), between time periods (current, 2030, 2070).
+## How should we map each species? 
+## Subtract the current raster from the future combined raster
 
 
 

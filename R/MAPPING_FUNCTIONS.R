@@ -292,7 +292,7 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             ## All the percentiles
             combo_suit_percent  =  Reduce("+", list(suit_ras1_percent, suit_ras2_percent, suit_ras3_percent,
                                                     suit_ras4_percent, suit_ras5_percent, suit_ras6_percent))
-            
+
             #########################################################################################################################
             ## For each species, create a binary raster with cells > 4 GCMs above the maxent threshold = 1, and cells with < 4 GCMs = 0. 
             message('Calculating change for ', species, ' | 20', time_slice, ' combined suitability > ', thresh)
@@ -302,11 +302,16 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             band_4           <- function(x) {ifelse(x >=  4, 1, 0) }
             combo_suit_4GCM  <- calc(combo_suit_thresh, fun = band_4)
             
+            #########################################################################################################################
+            ## Subtract the current from the future
+            Combo_future_minus_current = combo_suit_4GCM - current_suit_thresh
+            
             ## Plot to check
             plot(current_suit_thresh, main = gsub('_', ' ', (sprintf('%s current max_train_sensit > %s', species, thresh))))
             plot(combo_suit_percent,  main = gsub('_', ' ', (sprintf('%s future 10th percentile > %s',   species, percent))))
             plot(combo_suit_thresh,   main = gsub('_', ' ', (sprintf('%s future max_train_sensit > %s',  species, thresh))))
             plot(combo_suit_4GCM,     main = gsub('_', ' ', (sprintf('%s 4+ GCMs > %s',  species, thresh))))
+            plot(Combo_future_minus_current,     main = gsub('_', ' ', (sprintf('%s 4+ GCMs > %s - current',  species, thresh))))
             
             #########################################################################################################################
             ## For each species, calculate the projected rainfall and temperature increase and decreas for each GCM? Could plot this
@@ -315,7 +320,7 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             #########################################################################################################################
             ## Then using this GCM consensus, calculate whether the species is likely to be present in each SUA.
             ## Decide on a threshold of % area (10?) of the SUA that needs to be occupied, for each species to be considered present. 
-            message('Running zonal stats for ', species, ' | 20', time_slice, ' combined suitability > ', thresh)
+            message('Running SUA area calculations for ', species, ' | 20', time_slice, ' combined suitability > ', thresh)
             
             ## Check the order of lists match, species, SUAs, areas need to match up ................................................
             
@@ -387,6 +392,7 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             head(PERECENT.AREA.FUTURE)
             
             ## Create a table with the columns: REGION, AREA SPECIES, STATS (for each time slice)
+            ## ifelse(<condition>, <yes>, ifelse(<condition>, <yes>, <no>))
             GCM.AREA.SUMMARY <- data.frame(SUA          = areal_unit$SUA_NAME11, 
                                            AREA_SQKM    = areal_unit$AREA_SQKM,
                                            SPECIES      = species,
@@ -396,7 +402,20 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
                                            PERCENT_AREA = PERECENT.AREA.FUTURE$Present,
                                            AREA_CHANGE  = PERECENT.AREA.FUTURE$Present - PERECENT.AREA.CURRENT$Present,
                                            PRESENT      = PERECENT.AREA.FUTURE$species_present)
-          
+            
+            
+            ## Can we calculate these in the table?
+            ## Gain (ie not suitable now but suitable in future)
+            ## Loss (ie suitable now but not in future)
+            ## Stable (suitable in both)
+            GCM.AREA.SUMMARY$GAIN_LOSS  <- with(GCM.AREA.SUMMARY, ifelse(
+              GCM.AREA.SUMMARY$AREA_CHANGE <= -1 & GCM.AREA.SUMMARY$AREA_CHANGE < 0, 'LOSS', ifelse(
+                GCM.AREA.SUMMARY$AREA_CHANGE >= 1, 'GAIN', ifelse(
+                  GCM.AREA.SUMMARY$AREA_CHANGE == 0, 'STABLE', 'GAIN'))))
+            
+            
+            ##
+            GCM.AREA.SUMMARY$GAIN_LOSS 
             View(GCM.AREA.SUMMARY) 
             
             #########################################################################################################################
@@ -421,14 +440,19 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
                                                      species, species, time_slice, "_Max_train_sensit_above_", thresh), overwrite = TRUE)
               
               ## Write the combined suitability raster, thresholded using the percentile value
-              # message('Writing ', species, ' | 20', time_slice, ' 10th percentile > ', percent) 
-              # writeRaster(combo_suit_percent, sprintf('%s/%s/full/%s_20%s%s%s.tif', maxent_path,
-              #                                         species, species, time_slice, "_10_percentile_omiss_above_", percent), overwrite = TRUE)
+              message('Writing ', species, ' | 20', time_slice, ' 10th percentile > ', percent)
+              writeRaster(combo_suit_percent, sprintf('%s/%s/full/%s_20%s%s%s.tif', maxent_path,
+                                                      species, species, time_slice, "_10_percentile_omiss_above_", percent), overwrite = TRUE)
               
               ## Write the combined future raster with > 4 GCMs above the maximum training value
               message('Writing ', species, ' | 20', time_slice, ' 10th percentile > ', percent) 
               writeRaster(combo_suit_4GCM, sprintf('%s/%s/full/%s_20%s%s%s.tif', maxent_path,
                                                    species, species, time_slice, "_4GCMs_above_", thresh), overwrite = TRUE)
+              
+              ## Write the future - current thresholded rasters to file
+              message('Writing ', species, ' | 20', time_slice, ' Future - current', thresh) 
+              writeRaster(Combo_future_minus_current, sprintf('%s/%s/full/%s_20%s%s%s.tif', maxent_path,
+                                                              species, species, time_slice, "_minus_current_", thresh), overwrite = TRUE)
               
             } else {
               
