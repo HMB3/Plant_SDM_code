@@ -524,7 +524,8 @@ FIT_MAXENT_TARG_BG <- function(occ,
       #   bg_cells <- Which(b_rast==1 & template.raster==1, cells=TRUE)
       # } else {
 
-      ## Otherwise subset the background records to the buffered polygon
+      ## Subset the background records to the 200km buffered polygon
+      message(name, ' creating background cells')
       system.time(o <- over(bg, b))
       bg <- bg[which(!is.na(o)), ]
       bg_cells <- cellFromXY(template.raster, bg)
@@ -536,9 +537,10 @@ FIT_MAXENT_TARG_BG <- function(occ,
       
       # }
 
-      # Find which of these cells fall within Koppen-Geiger zones that the species occupies
+      ## Find which of these cells fall within Koppen-Geiger zones that the species occupies
       if(!missing('Koppen')) {
         
+        message(name, ' intersecting background cells with Koppen zones')
         zones          <- extract(Koppen, occ)
         cells_in_zones <- Which(Koppen %in% zones, cells = TRUE)
         bg_cells       <- intersect(bg_cells, cells_in_zones)
@@ -546,7 +548,6 @@ FIT_MAXENT_TARG_BG <- function(occ,
         bg             <- bg[which(i %in% bg_cells), ]
         
       }
-      
       
       ## Reduce background sample if it's larger than max_bg_size
       if (nrow(bg) > max_bg_size) {
@@ -563,12 +564,13 @@ FIT_MAXENT_TARG_BG <- function(occ,
       }
       
       #####################################################################
-      ## Save objects for future reference
+      ## Save occ and bg shapefiles objects for future reference
       save_name = gsub(' ', '_', name)
       if(shapefiles) {
         
         suppressWarnings({
           
+          message(name, ' writing occ and bg shapefiles')
           writeOGR(SpatialPolygonsDataFrame(b, data.frame(ID = seq_len(length(b)))),
                    outdir_sp, paste0(save_name, '_bg_buffer'), 'ESRI Shapefile', overwrite_layer = TRUE)
           writeOGR(bg,  outdir_sp, paste0(save_name, '_bg'),   'ESRI Shapefile', overwrite_layer = TRUE)
@@ -625,16 +627,18 @@ FIT_MAXENT_TARG_BG <- function(occ,
         
         ## Run MAXENT for x cross validation data splits of swd : so 5 replicaes, 0-4
         ## EG xval = cross validation : "OUT_DIR\Acacia_boormanii\xval\maxent_0.html"
+        message(name, ' running xval maxent')
         me_xval <- maxent(swd, pa, path = file.path(outdir_sp, 'xval'),
                           args = c(paste0('replicates=', replicates),
                                    'responsecurves=true',
-                                   'outputformat=logistic', # "biasfile = dens.ras"
+                                   'outputformat=logistic',
                                    off, paste(names(rep_args), rep_args, sep = '=')))
         
       }
       
       ## Runs the full maxent model - presumably using all the data in swd
       if(missing(full_args)) full_args <- NULL
+      message(name, ' running full maxent')
       me_full <- maxent(swd, pa, path = file.path(outdir_sp, 'full'),
                         args = c(off, paste(names(full_args), full_args, sep = '='),
                                  'responsecurves=true',

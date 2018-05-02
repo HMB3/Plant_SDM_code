@@ -142,7 +142,7 @@ grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',   
 #########################################################################################################################
 ## For each species, use a function to create raster files and maps under all six GCMs at each time step
 ## First remove species without data from step 7
-no_data      <- c ("Baeckea_virgata", "Kennedia beckxiana")
+no_data      <- c ("Baeckea_virgata", "Kennedia_beckxiana")
 spp_mile     <- spp_mile  [! spp_mile %in% no_data]
 spp_mile_rev <- spp_mile_rev  [! spp_mile_rev %in% no_data]
 no_data %in% spp_mile
@@ -340,7 +340,7 @@ View(MAXENT.CHECK.TABLE)
 
 
 ## Save
-## write.csv(MAXENT.CHECK.TABLE, "./output/maxent/MAXENT_CHECK_TABLE_APRIL_2016.csv", row.names = FALSE)
+## write.csv( , "./output/maxent/MAXENT_CHECK_TABLE_APRIL_2016.csv", row.names = FALSE)
 
 
 
@@ -353,30 +353,45 @@ View(MAXENT.CHECK.TABLE)
 
 #########################################################################################################################
 ## Maxent produces a presence threshold for each species (i.e. the columns in MAXENT.SUMMARY). 
+## The trouble here is that we might need to change the threshold for different species, rather than using the same one 
+## for all of them. That changes the order of lists, which is a problem for looping over them.
+
+## So how can we make the lists match up if they are non-sequential? By including the species in the df before the sublist 
+## This is circular...
+MAXENT.CHECK    = read.csv("./output/maxent/MAXENT_CHECK_TABLE_APRIL_2016.csv", stringsAsFactors = FALSE)
+spp.percentile  = subset(MAXENT.CHECK, CHECK_MAP == 2 & CHECK_MAP == 3)$searchTaxon
+MAXENT.PERCENT  = MAXENT.SUM.TEST[MAXENT.SUM.TEST$searchTaxon %in% spp.percentile, ] 
+identical(spp.percentile, MAXENT.PERCENT$searchTaxon)
 
 
-## For AUC you can report the cross-validated test AUC (if your code currently runs a cross-validated model as well), 
-## and for the model threshold (for binarising) you can just use the training value (or the crossval one... there's little 
-## guidance about this and you can ## really get away with either).
+## John : for AUC you can report the cross-validated test AUC (if your code currently runs a cross-validated model as well), 
+## and for the model threshold (for binarising) you can just use the training value (or the crossval one...there's little 
+## guidance about this and you can really get away with either).
 
 
 ## Maximum training sensitivity plus specificity Logistic threshold 
 ## 10 percentile training presence training omission. EG:
 summary(MAXENT.SUM.TEST["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"])   ## .training. should be .test.
 summary(MAXENT.SUM.TEST["X10.percentile.training.presence.Logistic.threshold"])
+summary(MAXENT.SUM.TEST["X10.percentile.training.presence.training.omission"])
 
 
 ## Turn the maxent results into lists :: we can use these to generate the consensus layers 
 thresh.max.train  = as.list(MAXENT.SUM.TEST["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"]) 
 thresh.max.train  = thresh.max.train$Maximum.training.sensitivity.plus.specificity.Logistic.threshold
 
-percent.10.omiss  = as.list(MAXENT.SUM.TEST["X10.percentile.training.presence.Logistic.threshold"])
-percent.10.omiss  = percent.10.omiss$X10.percentile.training.presence.Logistic.threshold
+percent.10.log    = as.list(MAXENT.SUM.TEST["X10.percentile.training.presence.Logistic.threshold"])
+percent.10.log    = percent.10.log$X10.percentile.training.presence.Logistic.threshold
+
+percent.10.om     = as.list(MAXENT.SUM.TEST["X10.percentile.training.presence.training.omission"])
+percent.10.om     = percent.10.om$X10.percentile.training.presence.training.omission
 
 
 ## Check the order of lists match, species, SUAs, areas need to match up ................................................
 ## It would be safer to read in the thresholds individually, so they match the species folder exactly
-length(SDM.RESULTS.DIR);length(MAXENT.SUM.TEST$searchTaxon);length(thresh.max.train);length(percent.10.omiss);length(comb_spp)
+length(SDM.RESULTS.DIR);length(MAXENT.SUM.TEST$searchTaxon);
+length(thresh.max.train);
+length(percent.10.log);length(percent.10.om);length(comb_spp)
 identical(MAXENT.SUM.TEST$searchTaxon, comb_spp)
 
 
@@ -426,7 +441,7 @@ SDM.RESULTS.DIR.REV = sort(comb_spp, decreasing = TRUE)
 DIR        = SDM.RESULTS.DIR[1] 
 species    = comb_spp[1] 
 thresh     = thresh.max.train[1] 
-percent    = percent.10.omiss[1]
+percent    = percent.10.log[1]
 time_slice = 30
 area_occ   = 10
 
@@ -452,7 +467,7 @@ suitability.2030 = tryCatch(mapply(combine_gcm_threshold,
                                    species_list = comb_spp,
                                    maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
                                    thresholds   = thresh.max.train,
-                                   percentiles  = percent.10.omiss,
+                                   percentiles  = percent.10.log,
                                    time_slice   = 30,
                                    area_occ     = 10),
                             
@@ -469,7 +484,7 @@ suitability.2050 = tryCatch(mapply(combine_gcm_threshold,
                                    species_list = comb_spp, 
                                    maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
                                    thresholds   = thresh.max.train,
-                                   percentiles  = percent.10.omiss,
+                                   percentiles  = percent.10.log,
                                    time_slice   = 50,
                                    area_occ     = 10),
                             
@@ -486,7 +501,7 @@ suitability.2070 = tryCatch(mapply(combine_gcm_threshold,
                                    species_list = comb_spp, 
                                    maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
                                    thresholds   = thresh.max.train,
-                                   percentiles  = percent.10.omiss,
+                                   percentiles  = percent.10.log,
                                    time_slice   = 70,
                                    area_occ     = 10),
                             

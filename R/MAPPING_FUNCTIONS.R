@@ -25,7 +25,7 @@ project_maxent_grids = function(scen_list, species_list, maxent_path, climate_pa
   
   ## Read in Australia
   aus = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds") %>%
-    spTransform(CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'))
+    spTransform(ALB.CONICAL)
   
   ## First, run a loop over each scenario:    
   lapply(scen_list, function(x) {
@@ -72,7 +72,7 @@ project_maxent_grids = function(scen_list, species_list, maxent_path, climate_pa
           
           ## Read in the occurrence points used to create the SDM :: need the transform to plot later
           occ <- readRDS(sprintf('%s/%s/%s_occ.rds', maxent_path, species, save_name)) %>%
-            spTransform(CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'))  
+            spTransform(ALB.CONICAL)  
           ## '+init=epsg:4326' ## '+init=ESRI:3577' ## '+init=ESRI:54009'
           
           ## Create file path fpr current raster doesn't exist, create it
@@ -182,12 +182,12 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
   ###################################################################################################################
   ## Read in shapefiles :: this should be done outside the loop
   aus        = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds") %>%
-    spTransform(CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'))
+    spTransform(ALB.CONICAL)
   
   LAND       = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LAND_world.rds")
   
   areal_unit = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/SUA.rds") %>%
-    spTransform(CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'))
+    spTransform(ALB.CONICAL)
   
   areal_unit = areal_unit[order(areal_unit$SUA_NAME11),]
   
@@ -307,11 +307,11 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             Combo_future_minus_current = combo_suit_4GCM - current_suit_thresh
             
             ## Plot to check
-            plot(current_suit_thresh, main = gsub('_', ' ', (sprintf('%s current max_train_sensit > %s', species, thresh))))
-            plot(combo_suit_percent,  main = gsub('_', ' ', (sprintf('%s future 10th percentile > %s',   species, percent))))
-            plot(combo_suit_thresh,   main = gsub('_', ' ', (sprintf('%s future max_train_sensit > %s',  species, thresh))))
-            plot(combo_suit_4GCM,     main = gsub('_', ' ', (sprintf('%s 4+ GCMs > %s',  species, thresh))))
-            plot(Combo_future_minus_current,     main = gsub('_', ' ', (sprintf('%s 4+ GCMs > %s - current',  species, thresh))))
+            plot(current_suit_thresh,        main = gsub('_', ' ', (sprintf('%s current max_train_sensit > %s', species, thresh))))
+            plot(combo_suit_percent,         main = gsub('_', ' ', (sprintf('%s future 10th percentile > %s',   species, percent))))
+            plot(combo_suit_thresh,          main = gsub('_', ' ', (sprintf('%s future max_train_sensit > %s',  species, thresh))))
+            plot(combo_suit_4GCM,            main = gsub('_', ' ', (sprintf('%s 4+ GCMs > %s',  species, thresh))))
+            plot(Combo_future_minus_current, main = gsub('_', ' ', (sprintf('%s 4+ GCMs > %s - current',  species, thresh))))
             
             #########################################################################################################################
             ## For each species, calculate the projected rainfall and temperature increase and decreas for each GCM? Could plot this
@@ -381,7 +381,7 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
               spread(key = Var1, value = percent.area, fill = 0)     %>%  ## Make wide format
               as.data.frame()
             
-            ## Rename and create a column for whether or not the species occupies that area 
+            ## Rename and create a column for whether or not the species occupies each SUA according to an area threshold (area_occ)
             names(PERECENT.AREA.CURRENT) =  c('SUA_NAME11', 'Absent', 'Present') 
             names(PERECENT.AREA.FUTURE)  =  c('SUA_NAME11', 'Absent', 'Present') 
             
@@ -404,7 +404,7 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
                                            PRESENT      = PERECENT.AREA.FUTURE$species_present)
             
             
-            ## Can we calculate these in the table?
+            ## Now calculate :
             ## Gain (ie not suitable now but suitable in future)
             ## Loss (ie suitable now but not in future)
             ## Stable (suitable in both)
@@ -475,10 +475,10 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             empty <- init(combo_suit_thresh, function(x) NA)
             
             occ <- readRDS(sprintf('%s/%s/%s_occ_swd.rds', maxent_path, species, save_name)) %>%
-              spTransform(CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'))  
+              spTransform(ALB.CONICAL)  
             
             bg <- readRDS(sprintf('%s/%s/%s_bg_swd.rds', maxent_path, species, save_name)) %>%
-              spTransform(CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'))
+              spTransform(ALB.CONICAL)
             
             #m <- readRDS(sprintf('%s/%s/full/model.rds', maxent_path, species)) 
             m <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, species)) 

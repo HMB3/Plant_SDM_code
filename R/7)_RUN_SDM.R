@@ -87,7 +87,7 @@ identical(names(env.grids.current),sdm.predictors)
 ## Create polygon of land surface
 LAND       = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LAND_world.rds")
 aus = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds") %>%
-  spTransform(CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'))
+  spTransform(ALB.CONICAL)
 
 
 #########################################################################################################################
@@ -137,7 +137,7 @@ projection(template.raster);projection(SDM.DATA.ALL)
 ## Doing Baeckea virgata
 ## 19 occurrence records (unique cells).
 ## [1] "Fewer occurrence records than the number of cross-validation  replicates for species  Baeckea virgata  Model not fit for this species"
-## spp = spp.mile[2]
+## spp = spp.combo[31]
 lapply(combo.rev, function(spp) { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel 
   
   ## Print the taxa being processed to screen
@@ -149,9 +149,6 @@ lapply(combo.rev, function(spp) { # for serial, parLapply(cl, species[1:8], func
     
     ## Now get the background points. These can come from any spp, other than the modelled species.
     background <- subset(SDM.DATA.ALL, searchTaxon != spp)
-    
-    ## The create a vector of the sdm.predictors used. 
-    #sdm.predictors <- sdm.select # vector of used sdm.predictors 
     
     ## Finally fit the models using FIT_MAXENT. Use tryCatch to skip any exceptions
     tryCatch(
