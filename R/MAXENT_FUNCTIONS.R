@@ -537,15 +537,20 @@ FIT_MAXENT_TARG_BG <- function(occ,
       
       # }
 
-      ## Find which of these cells fall within Koppen-Geiger zones that the species occupies
+      ## Find which of these cells fall within the Koppen-Geiger zones that the species occupies
       if(!missing('Koppen')) {
         
+        ## Crop the Kopppen raster to the extent of the occurrences, and snap it
         message(name, ' intersecting background cells with Koppen zones')
-        zones          <- extract(Koppen, occ)
-        cells_in_zones <- Which(Koppen %in% zones, cells = TRUE)
-        bg_cells       <- intersect(bg_cells, cells_in_zones)
-        i              <- cellFromXY(template.raster, bg)
-        bg             <- bg[which(i %in% bg_cells), ]
+        Koppen_crop <- crop(Koppen, occ, snap = 'out')
+        
+        ## Only extract and match those cells that overlap between koppen_cropp, occ and bg 
+        zones               <- extract(Koppen_crop, occ)
+        cells_in_zones_crop <- Which(Koppen_crop %in% zones, cells = TRUE)
+        cells_in_zones      <- cellFromXY(Koppen, xyFromCell(Koppen_crop, cells_in_zones_crop))
+        bg_cells            <- intersect(bg_cells, cells_in_zones)
+        i                   <- cellFromXY(template.raster, bg)
+        bg                  <- bg[which(i %in% bg_cells), ]
         
       }
       

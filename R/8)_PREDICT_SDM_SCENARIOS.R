@@ -438,10 +438,10 @@ tail(SDM.RESULTS.DIR, 20);tail(comb_spp, 20); tail(MAXENT.SUM.TEST, 20)[, c("sea
 comb_spp_rev        = sort(comb_spp, decreasing = TRUE)
 SDM.RESULTS.DIR.REV = sort(comb_spp, decreasing = TRUE)
 
-DIR        = SDM.RESULTS.DIR[1] 
-species    = comb_spp[1] 
-thresh     = thresh.max.train[1] 
-percent    = percent.10.log[1]
+DIR        = SDM.RESULTS.DIR[43] 
+species    = comb_spp[43] 
+thresh     = thresh.max.train[43] 
+percent    = percent.10.log[43]
 time_slice = 30
 area_occ   = 10
 

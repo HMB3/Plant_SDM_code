@@ -132,13 +132,19 @@ aus = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds") %>%
 
 #########################################################################################################################
 ## Run Maxent using a random selection of background points. 
-projection(template.raster);projection(SDM.DATA.ALL)
+projection(template.raster);projection(SDM.DATA.ALL);projection(Koppen_1975)
 
-## Doing Baeckea virgata
-## 19 occurrence records (unique cells).
-## [1] "Fewer occurrence records than the number of cross-validation  replicates for species  Baeckea virgata  Model not fit for this species"
-## spp = spp.combo[31]
-lapply(combo.rev, function(spp) { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel 
+
+## Loop over all the species spp = spp.combo[31]
+lapply(spp.combo, function(spp) { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel
+  
+  ## Skip the species if the directory already exists
+  outdir <- 'output/maxent/SET_VAR_KOPPEN'
+  if(dir.exists(file.path(outdir, gsub(' ', '_', spp)))) {
+    message('Skipping ', spp, ' - already run.')
+    invisible(return(NULL))
+    
+  }
   
   ## Print the taxa being processed to screen
   if(spp %in% SDM.DATA.ALL$searchTaxon) {
@@ -150,16 +156,16 @@ lapply(combo.rev, function(spp) { # for serial, parLapply(cl, species[1:8], func
     ## Now get the background points. These can come from any spp, other than the modelled species.
     background <- subset(SDM.DATA.ALL, searchTaxon != spp)
     
-    ## Finally fit the models using FIT_MAXENT. Use tryCatch to skip any exceptions
+    ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
     tryCatch(
       FIT_MAXENT_TARG_BG(occ                     = occurrence, 
                          bg                      = background, 
                          sdm.predictors          = sdm.select, 
                          name                    = spp, 
-                         outdir                  = 'output/maxent/SET_VAR_KOPPEN', 
+                         outdir                  = outdir, 
                          template.raster,
-                         min_n                   = 20,   ## This should be higher...
-                         max_bg_size             = 100000, ## need a min bg size?
+                         min_n                   = 20,     ## This should be higher...
+                         max_bg_size             = 100000, 
                          Koppen                  = Koppen_1975,
                          background_buffer_width = 200000,
                          shapefiles              = TRUE,
@@ -185,6 +191,31 @@ lapply(combo.rev, function(spp) { # for serial, parLapply(cl, species[1:8], func
 
 
 
+
+
+#########################################################################################################################
+## Look through the output directory for species where the code didn't finish. This is usually species with < 27 files
+## in the top "species_name" directory
+dd <- list.dirs('H:/green_cities_sdm/output/maxent/SET_VAR_KOPPEN', recursive = F)
+
+
+## Loop over all the directories in the maxent output folder
+ff <- sapply(dd, function(d) {
+  
+  list.files(d, full.names = TRUE)
+  
+})
+
+
+## Now remove all the files in each directory, if that directory has < 27 files in the top level
+n <- lengths(ff)
+
+lapply(ff[n < 27], function(x) {
+  
+  file.remove(x)
+  unlink(dirname(x[1]), recursive = TRUE)
+  
+})
 
 
 
