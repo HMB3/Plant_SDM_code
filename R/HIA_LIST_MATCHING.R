@@ -99,7 +99,7 @@ source('./R/HIA_CLEAN_MATCHING.R')
 source('./R/GREEN_CITIES_FUNCTIONS.R')
 source('./R/MAXENT_FUNCTIONS.R')
 source('./R/MAPPING_FUNCTIONS.R')
-
+rasterOptions(tmpdir = file.path("'H:/green_cities_sdm/RTEMP")) 
 
 #########################################################################################################################
 ## Read in spatial data

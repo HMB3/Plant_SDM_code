@@ -292,7 +292,7 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             ## All the percentiles
             combo_suit_percent  =  Reduce("+", list(suit_ras1_percent, suit_ras2_percent, suit_ras3_percent,
                                                     suit_ras4_percent, suit_ras5_percent, suit_ras6_percent))
-
+            
             #########################################################################################################################
             ## For each species, create a binary raster with cells > 4 GCMs above the maxent threshold = 1, and cells with < 4 GCMs = 0. 
             message('Calculating change for ', species, ' | 20', time_slice, ' combined suitability > ', thresh)
@@ -303,20 +303,32 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             combo_suit_4GCM  <- calc(combo_suit_thresh, fun = band_4)
             
             #########################################################################################################################
-            ## Subtract the current from the future
-            Combo_future_minus_current = combo_suit_4GCM - current_suit_thresh
+            ## Now create a raster of the gain, loss and stable
+            ## Create a raster stack
+            d <- stack(current_suit_thresh, combo_suit_4GCM)[]
+            r <- raster(current_suit_thresh)
+            z <- as.data.frame(d)
             
-            ## Plot to check
-            plot(current_suit_thresh,        main = gsub('_', ' ', (sprintf('%s current max_train_sensit > %s', species, thresh))))
-            plot(combo_suit_percent,         main = gsub('_', ' ', (sprintf('%s future 10th percentile > %s',   species, percent))))
-            plot(combo_suit_thresh,          main = gsub('_', ' ', (sprintf('%s future max_train_sensit > %s',  species, thresh))))
-            plot(combo_suit_4GCM,            main = gsub('_', ' ', (sprintf('%s 4+ GCMs > %s',  species, thresh))))
-            plot(Combo_future_minus_current, main = gsub('_', ' ', (sprintf('%s 4+ GCMs > %s - current',  species, thresh))))
+            ## Classify the raster stack to make each value (i.e. outcome) unique
+            r[d[, 1]==1 & d[, 2]==0] <- 1  ## 1 in current raster and 0 in future = LOSS
+            r[d[, 1]==0 & d[, 2]==1] <- 2  ## 0 in current raster and 1 in future = GAIN
+            r[d[, 1]==1 & d[, 2]==1] <- 3  ## 1 in current raster and 1 in future = STABLE
             
-            #########################################################################################################################
-            ## For each species, calculate the projected rainfall and temperature increase and decreas for each GCM? Could plot this
-            ## as part of the final figure.
+            ## Now convert the raster to a factor and assign lables to the levels
+            gain_loss <- as.factor(r)
+            levels(gain_loss)[[1]] <- data.frame(ID = 1:3, label = c('Lost', 'Gained', 'Stable'))
             
+            ## Create a table of the gain/loss/stable
+            gain_loss_table = table(z[, 1], z[, 2]) 
+            
+            ## Plot rasters to check
+            # plot(current_suit_thresh,   main = gsub('_', ' ', (sprintf('%s current max_train_sensit > %s', species, thresh))))
+            # plot(combo_suit_percent,    main = gsub('_', ' ', (sprintf('%s future 10th percentile > %s',   species, percent))))
+            # plot(combo_suit_thresh,     main = gsub('_', ' ', (sprintf('%s future max_train_sensit > %s',  species, thresh))))
+            # plot(combo_suit_4GCM,       main = gsub('_', ' ', (sprintf('%s 4+ GCMs > %s',                  species, thresh))))
+            plot(gain_loss,             main = gsub('_', ' ', (sprintf('%s 4+ GCMs > %s plus current',     species, thresh))))
+            
+
             #########################################################################################################################
             ## Then using this GCM consensus, calculate whether the species is likely to be present in each SUA.
             ## Decide on a threshold of % area (10?) of the SUA that needs to be occupied, for each species to be considered present. 
@@ -413,7 +425,6 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
                 GCM.AREA.SUMMARY$AREA_CHANGE >= 1, 'GAIN', ifelse(
                   GCM.AREA.SUMMARY$AREA_CHANGE == 0, 'STABLE', 'GAIN'))))
             
-            
             ##
             GCM.AREA.SUMMARY$GAIN_LOSS 
             View(GCM.AREA.SUMMARY) 
@@ -426,7 +437,7 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             
             #########################################################################################################################
             #########################################################################################################################
-            ## If they don't exist, write the rasters for each species/threshold
+            ## If the rasters don't exist, write them for each species/threshold
             if(!file.exists(f_max_train_suit)) {
               
               ## Write the current suitability raster, thresholded using the Maximum training sensitivity plus specificity Logistic threshold
@@ -449,10 +460,9 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
               writeRaster(combo_suit_4GCM, sprintf('%s/%s/full/%s_20%s%s%s.tif', maxent_path,
                                                    species, species, time_slice, "_4GCMs_above_", thresh), overwrite = TRUE)
               
-              ## Write the future - current thresholded rasters to file
-              message('Writing ', species, ' | 20', time_slice, ' Future - current', thresh) 
-              writeRaster(Combo_future_minus_current, sprintf('%s/%s/full/%s_20%s%s%s.tif', maxent_path,
-                                                              species, species, time_slice, "_minus_current_", thresh), overwrite = TRUE)
+              ## Write out the gain/loss raster
+              writeRaster(gain_loss, sprintf('%s/%s/full/%s_20%s%s%s.tif', maxent_path,
+                                             species, species, time_slice, "_gain_loss_", thresh), datatype = 'INT2U', overwrite = T)
               
             } else {
               
@@ -460,49 +470,32 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
               
             }
             
-            ########################################################################################################################
-            ## Now create the empty panel just before plotting, and read in the occurrence and background points and original model
             
+            #########################################################################################################################
+            #########################################################################################################################
+            ## Now create a level plot of occurences + the gain/loss raster
+            png(sprintf('%s.png', time_slice), 6, 6, units = 'in', res = 300)
             
-            # We need to be able to flick through maps. So we want a three panelled page with 
-            # a) occ points overlaid on Koppen zones, 
-            # b) current continuous suitability, 
-            # c) thresholded suitability.
-            
-            ## And change the projection for the operators...........................................................................
-            ## '+init=esri:54009'
-            save_name = gsub(' ', '_', species)
-            empty <- init(combo_suit_thresh, function(x) NA)
-            
-            occ <- readRDS(sprintf('%s/%s/%s_occ_swd.rds', maxent_path, species, save_name)) %>%
-              spTransform(ALB.CONICAL)  
-            
-            bg <- readRDS(sprintf('%s/%s/%s_bg_swd.rds', maxent_path, species, save_name)) %>%
-              spTransform(ALB.CONICAL)
-            
-            #m <- readRDS(sprintf('%s/%s/full/model.rds', maxent_path, species)) 
-            m <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, species)) 
-            m <- m$me_full  ## class(m);View(m)
-            
+            p <- levelplot(gain_loss, col.regions = c('purple', 'red', 'green'), scales = list(draw = FALSE)) +
+              layer(sp.polygons(aus))
+          
             ## Use the 'levelplot' function to make a multipanel output: occurences, percentiles and thresholds
             message('Writing figure for ', species, ' | 20', time_slice, ' > ', thresh) 
             
-            png(sprintf('%s/%s/full/%s_20%s_suitability_above_%s.png', maxent_path,
-                        species, species, time_slice, thresh),
+            png(sprintf('%s/%s/full/%s_20%s%s%s.tif', maxent_path,
+                        species, species, time_slice, "_gain_loss_", thresh),
                 11, 4, units = 'in', res = 300)
             
             ## Need an empty frame
             print(levelplot(stack(empty,                ## needs to have a different colour scale,
-                                  combo_suit_percent,
-                                  combo_suit_thresh), margin = FALSE,
+                                  gain_loss), margin = FALSE,
                             
                             ## Create a colour scheme using colbrewer: 100 is to make it continuos
                             ## Also, make it a one-directional colour scheme
                             scales      = list(draw = FALSE), 
-                            at = seq(0, 6, length = 100),
-                            col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
+                            col.regions = col.regions = c('purple', 'red', 'green'),
                             
-                            ## Give each plot a name
+                            ## Give each plot a name ::
                             names.attr = c('Aus occurrences', 
                                            sprintf('20%s GCM 10thp train omission > %s', time_slice, percent), 
                                            sprintf('20%s GCM Max train logis > %s',      time_slice, thresh)),
@@ -720,6 +713,71 @@ calculate.anomaly = function(scen_list, time_slice, climate_path) {
 
 
 
+
+
+#########################################################################################################################
+## STACK FUNCTIONS
+#########################################################################################################################
+
+
+dist_change_binary <- function(from, to) {
+  
+  ## Create a raster stack
+  d <- stack(from, to)[]
+  r <- raster(from)
+  
+  ## Classify the raster stack to make each value (i.e. outcome) unique
+  r[d[, 1]==1 & d[, 2]==0] <- 1  ## 1 in current raster and 0 in future = LOSS
+  r[d[, 1]==0 & d[, 2]==1] <- 2  ## 0 in current raster and 1 in future = GAIN
+  r[d[, 1]==1 & d[, 2]==1] <- 3  ## 1 in current raster and 1 in future = STABLE
+  
+  r_f <- as.factor(r)
+  
+  levels(r_f)[[1]] <- data.frame(ID=1:3, label=c('Lost', 'Gained', 'Stable'))
+  
+  ## Now create a level plot
+  png(sprintf('%s.png', time_slice), 6, 6, units='in', res=300)
+  
+  p <- levelplot(r_f, col.regions=c('purple', 'red', 'green'), scales = list(draw = FALSE)) +
+    layer(sp.polygons(aus))
+  print(p)
+  dev.off()
+  
+  #writeRaster(r_f, sprintf('%s.tif', ), datatype='INT2U', overwrite=T)
+  
+  r_f
+  
+}
+
+
+# ## Need an empty frame
+# print(levelplot(stack(empty,                ## needs to have a different colour scale,
+#                       combo_suit_percent,
+#                       combo_suit_thresh), margin = FALSE,
+#                 
+#                 ## Create a colour scheme using colbrewer: 100 is to make it continuos
+#                 ## Also, make it a one-directional colour scheme
+#                 scales      = list(draw = FALSE), 
+#                 at = seq(0, 6, length = 100),
+#                 col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
+#                 
+#                 ## Give each plot a name
+#                 names.attr = c('Aus occurrences', 
+#                                sprintf('20%s GCM 10thp train omission > %s', time_slice, percent), 
+#                                sprintf('20%s GCM Max train logis > %s',      time_slice, thresh)),
+#                 
+#                 colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
+#                 main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
+#         
+#         ## Plot the Aus shapefile with the occurrence points for reference
+#         ## Can we assign different shapefiles to different panels, rather than to them all?
+#         
+#         layer(sp.polygons(aus)) + ## sp.polygons(aus))
+#         layer(sp.points(occ, pch = 20, cex = 0.4, 
+#                         col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
+# 
+# ## Finish the device
+# dev.off()
 
 
 #########################################################################################################################

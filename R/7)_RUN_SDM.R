@@ -33,6 +33,7 @@
 #load('data/hasData_cells.rds')
 #load('data/template_hasData.tif')
 source('./R/HIA_LIST_MATCHING.R')
+rasterOptions(tmpdir = file.path("'H:/green_cities_sdm/RTEMP")) 
 
 
 ## Load SDM data :: template rasters, point data and koppen zones
@@ -136,9 +137,9 @@ projection(template.raster);projection(SDM.DATA.ALL);projection(Koppen_1975)
 
 
 ## Loop over all the species spp = spp.combo[31]
-lapply(spp.combo, function(spp) { # for serial, parLapply(cl, species[1:8], function(x) { # for parallel
+lapply(spp.combo, function(spp){ 
   
-  ## Skip the species if the directory already exists
+  ## Skip the species if the directory already exists, before the loop
   outdir <- 'output/maxent/SET_VAR_KOPPEN'
   if(dir.exists(file.path(outdir, gsub(' ', '_', spp)))) {
     message('Skipping ', spp, ' - already run.')
@@ -191,6 +192,82 @@ lapply(spp.combo, function(spp) { # for serial, parLapply(cl, species[1:8], func
 
 
 
+#########################################################################################################################
+## Run analyses using parallel processing
+
+## To run the function in a cluster, we need to export all the objects which are not defined in the function call
+cl <- makeCluster(4)
+clusterExport(cl, c('template.raster', 'SDM.DATA.ALL', 'FIT_MAXENT', 'FIT_MAXENT_TARG_BG'))
+clusterEvalQ(cl, {
+  
+  ## These packages are required :: check they are updated
+  require(ff)
+  require(rgeos)
+  require(sp)
+  require(raster)
+  require(rJava)
+  require(dismo)
+  require(things)
+  
+})
+
+
+## Loop over all the species spp = spp.combo[31]
+parLapply(cl, spp.combo, function(spp) { # for serial, lapply(spp.combo, function(spp)
+  
+  ## Skip the species if the directory already exists, before the loop
+  outdir <- 'output/maxent/SET_VAR_KOPPEN'
+  if(dir.exists(file.path(outdir, gsub(' ', '_', spp)))) {
+    message('Skipping ', spp, ' - already run.')
+    invisible(return(NULL))
+    
+  }
+  
+  ## Print the taxa being processed to screen
+  if(spp %in% SDM.DATA.ALL$searchTaxon) {
+    message('Doing ', spp) 
+    
+    ## Subset the records to only the taxa being processed
+    occurrence <- subset(SDM.DATA.ALL, searchTaxon == spp)
+    
+    ## Now get the background points. These can come from any spp, other than the modelled species.
+    background <- subset(SDM.DATA.ALL, searchTaxon != spp)
+    
+    ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
+    tryCatch(
+      FIT_MAXENT_TARG_BG(occ                     = occurrence, 
+                         bg                      = background, 
+                         sdm.predictors          = sdm.select, 
+                         name                    = spp, 
+                         outdir                  = outdir, 
+                         template.raster,
+                         min_n                   = 20,     ## This should be higher...
+                         max_bg_size             = 100000, 
+                         Koppen                  = Koppen_1975,
+                         background_buffer_width = 200000,
+                         shapefiles              = TRUE,
+                         features                = 'lpq',
+                         replicates              = 5,
+                         responsecurves          = TRUE),
+      
+      ## https://stackoverflow.com/questions/19394886/trycatch-in-r-not-working-properly
+      #function(e) message('Species skipped ', spp)) ## skip any species for which the function fails
+      error = function(cond) {
+        
+        message(paste('Species skipped ', spp))
+        
+      })
+    
+  } else {
+    
+    message(spp, ' skipped - no data.')         ## This condition ignores species which have no data...
+    
+  }  
+  
+})
+
+
+stopCluster(cl)
 
 
 #########################################################################################################################

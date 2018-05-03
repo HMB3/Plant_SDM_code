@@ -20,6 +20,8 @@
 #########################################################################################################################
 ## To save time, load in previous data
 source('./R/HIA_LIST_MATCHING.R')
+rasterOptions(tmpdir = file.path("'H:/green_cities_sdm/RTEMP")) 
+
 GBIF.LAND = readRDS("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.rds")
 load("./data/base/HIA_LIST/ALA/ALA_LAND_POINTS.RData")
 LAND      = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LAND_world.rds")

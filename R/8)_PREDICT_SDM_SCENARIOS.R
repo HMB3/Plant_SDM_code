@@ -17,6 +17,8 @@
 
 ## Load packages ::
 source('./R/HIA_LIST_MATCHING.R')
+rasterOptions(tmpdir = file.path("'H:/green_cities_sdm/RTEMP")) 
+
 Koppen_1975        = raster('data/Koppen_1000m_Mollweide54009.tif')
 ALL.SUA.POP        = read.csv("./data/base/CONTEXTUAL/ABS_SUA_POP.csv", stringsAsFactors = FALSE)
 #Koppen_zones    = unique(readOGR('data/base/CONTEXTUAL/WC05_1975H_Koppen_Shapefile/WC05_1975H_Koppen_Kriticos_2012.shp')@data[, 1:2])
@@ -380,10 +382,10 @@ summary(MAXENT.SUM.TEST["X10.percentile.training.presence.training.omission"])
 thresh.max.train  = as.list(MAXENT.SUM.TEST["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"]) 
 thresh.max.train  = thresh.max.train$Maximum.training.sensitivity.plus.specificity.Logistic.threshold
 
-percent.10.log    = as.list(MAXENT.SUM.TEST["X10.percentile.training.presence.Logistic.threshold"])
+percent.10.log    = as.list(MAXENT.SUM.TEST["X10.percentile.training.presence.Logistic.threshold"])  ## for the twos 
 percent.10.log    = percent.10.log$X10.percentile.training.presence.Logistic.threshold
 
-percent.10.om     = as.list(MAXENT.SUM.TEST["X10.percentile.training.presence.training.omission"])
+percent.10.om     = as.list(MAXENT.SUM.TEST["X10.percentile.training.presence.training.omission"])   ## discount
 percent.10.om     = percent.10.om$X10.percentile.training.presence.training.omission
 
 
@@ -452,6 +454,9 @@ area_occ   = 10
 ## Eucalyptus_pauciflora, 
 ## Liriodendron_tulipifera - too few Aus records, low suitability 
 ## Eucalyptus_mannifera    -
+
+Error in names(PERECENT.AREA.FUTURE) = c("SUA_NAME11", "Absent", "Present") : 
+  'names' attribute [3] must be the same length as the vector [2]
 
 
 # Running zonal stats for Strelitzia_reginae | 2030 combined suitability > 0.4016
