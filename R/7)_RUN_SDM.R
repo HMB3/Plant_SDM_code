@@ -33,8 +33,7 @@
 #load('data/hasData_cells.rds')
 #load('data/template_hasData.tif')
 source('./R/HIA_LIST_MATCHING.R')
-rasterOptions(tmpdir = file.path("'H:/green_cities_sdm/RTEMP")) 
-
+ 
 
 ## Load SDM data :: template rasters, point data and koppen zones
 template.raster = raster("./data/template_hasData.tif")

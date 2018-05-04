@@ -322,13 +322,13 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             gain_loss_table = table(z[, 1], z[, 2]) 
             
             ## Plot rasters to check
-            # plot(current_suit_thresh,   main = gsub('_', ' ', (sprintf('%s current max_train_sensit > %s', species, thresh))))
-            # plot(combo_suit_percent,    main = gsub('_', ' ', (sprintf('%s future 10th percentile > %s',   species, percent))))
-            # plot(combo_suit_thresh,     main = gsub('_', ' ', (sprintf('%s future max_train_sensit > %s',  species, thresh))))
-            # plot(combo_suit_4GCM,       main = gsub('_', ' ', (sprintf('%s 4+ GCMs > %s',                  species, thresh))))
+            plot(current_suit_thresh,   main = gsub('_', ' ', (sprintf('%s current max_train_sensit > %s', species, thresh))))
+            plot(combo_suit_percent,    main = gsub('_', ' ', (sprintf('%s future 10th percentile > %s',   species, percent))))
+            plot(combo_suit_thresh,     main = gsub('_', ' ', (sprintf('%s future max_train_sensit > %s',  species, thresh))))
+            plot(combo_suit_4GCM,       main = gsub('_', ' ', (sprintf('%s 4+ GCMs > %s',                  species, thresh))))
             plot(gain_loss,             main = gsub('_', ' ', (sprintf('%s 4+ GCMs > %s plus current',     species, thresh))))
             
-
+            
             #########################################################################################################################
             ## Then using this GCM consensus, calculate whether the species is likely to be present in each SUA.
             ## Decide on a threshold of % area (10?) of the SUA that needs to be occupied, for each species to be considered present. 
@@ -361,13 +361,7 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             
             tabs.future  <- lapply(seq(ext.future), tabFunc, ext.future, areal_unit, "SUA_NAME11")
             tabs.future  <- do.call("rbind", tabs.future )
-            
-            ## Can we get the count here, so we don't need to run zonal stats as well
-            # tabs.count      = tabs
-            # tabs.count$Freq = ifelse(tabs.count$Var1 == 0, 0, tabs.count$Freq) 
-            # sp.count <- aggregate(tabs.count$Freq, by = list(Category = tabs$name), FUN = sum)
-            # names(sp.count) = c('SUA_NAME11', 'COUNT')
-            # head(sp.count)
+
             
             #########################################################################################################################
             ## Now mutate the current table
@@ -474,109 +468,39 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             #########################################################################################################################
             #########################################################################################################################
             ## Now create a level plot of occurences + the gain/loss raster
-            png(sprintf('%s.png', time_slice), 6, 6, units = 'in', res = 300)
             
-            p <- levelplot(gain_loss, col.regions = c('purple', 'red', 'green'), scales = list(draw = FALSE)) +
-              layer(sp.polygons(aus))
-          
-            ## Use the 'levelplot' function to make a multipanel output: occurences, percentiles and thresholds
-            message('Writing figure for ', species, ' | 20', time_slice, ' > ', thresh) 
-            
-            png(sprintf('%s/%s/full/%s_20%s%s%s.tif', maxent_path,
-                        species, species, time_slice, "_gain_loss_", thresh),
-                11, 4, units = 'in', res = 300)
-            
-            ## Need an empty frame
-            print(levelplot(stack(empty,                ## needs to have a different colour scale,
-                                  gain_loss), margin = FALSE,
-                            
-                            ## Create a colour scheme using colbrewer: 100 is to make it continuos
-                            ## Also, make it a one-directional colour scheme
-                            scales      = list(draw = FALSE), 
-                            col.regions = col.regions = c('purple', 'red', 'green'),
-                            
-                            ## Give each plot a name ::
-                            names.attr = c('Aus occurrences', 
-                                           sprintf('20%s GCM 10thp train omission > %s', time_slice, percent), 
-                                           sprintf('20%s GCM Max train logis > %s',      time_slice, thresh)),
-                            
-                            colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
-                            main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
-                    
-                    ## Plot the Aus shapefile with the occurrence points for reference
-                    ## Can we assign different shapefiles to different panels, rather than to them all?
-                    
-                    layer(sp.polygons(aus)) + ## sp.polygons(aus))
-                    layer(sp.points(occ, pch = 20, cex = 0.4, 
-                                    col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
-            
-            ## Finish the device
-            dev.off()
-            
+            ## First get the occurrence data and the models
+            # save_name = gsub(' ', '_', species)
+            # empty <- init(combo_suit_thresh, function(x) NA)
+            # 
+            # occ <- readRDS(sprintf('%s/%s/%s_occ_swd.rds', maxent_path, species, save_name)) %>%
+            #   spTransform(ALB.CONICAL)  
+            # 
+            # bg <- readRDS(sprintf('%s/%s/%s_bg_swd.rds', maxent_path, species, save_name)) %>%
+            #   spTransform(ALB.CONICAL)
+            # 
+            # ## Then add 
+
+            # message('Writing figure for ', species, ' | 20', time_slice, ' > ', thresh)
+            # 
+            # png(sprintf('%s/%s/full/%s_20%s%s%s.png', maxent_path,
+            #             species, species, time_slice, "_gain_loss_", thresh),
+            #     11, 4, units = 'in', res = 300)
+            # 
+            # ## Need an empty frame
+            # p <- levelplot(stack(gain_loss), col.regions = c('purple', 'red', 'green'), scales = list(draw = FALSE)) +
+            #   layer(sp.polygons(aus))
+            # 
+            # print(p)
+            # 
+            # ## Finish the device
+            # dev.off()
+
             ########################################################################################################################
-            ## Another .png for the global records: str(LAND$long)
-            # if(!file.exists(sprintf('%s/%s/full/%s_%s.png', maxent_path, species, species, "global_records"))) {
-            #   
-            #   png(sprintf('%s/%s/full/%s_%s.png', maxent_path,
-            #               species, species, "global_records"),
-            #       16180, 10000, units = 'px', res = 600)
-            #   
-            #   ## How do we locate bad records in the dataset after spotting them?
-            #   plot(LAND, 
-            #        lwd = 0.5, asp = 1, axes = TRUE, cex.axis = 3.5,
-            #        col = 'darkolivegreen3', bg = 'lightblue', cex.lab = 3)
-            #   
-            #   points(occ, pch = ".", cex = 3.5, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2, 
-            #          main = paste0("Global occurrences for ", species), 
-            #          xlab = "", ylab = "", asp = 1)
-            #   
-            #   ## Title 
-            #   title(paste0("Global points for ", species),
-            #         cex.main = 4,   font.main = 4, col.main = "blue")
-            #   
-            #   ## Finsh the device
-            #   dev.off()
-            #   
-            # } else {
-            #   
-            #   message("Global records maps exists for ", species)
-            #   
-            # }
+            ## Plot the models
+            m <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, species)) 
+            m <- m$me_full
             
-            ########################################################################################################################
-            ## Another PNG for the background points....
-            # if(!file.exists(sprintf('%s/%s/full/%s_%s.png', maxent_path, species, species, "background_records"))) {
-            #   
-            #   png(sprintf('%s/%s/full/%s_%s.png', maxent_path,
-            #               species, species, "background_records"),
-            #       16180, 10000, units = 'px', res = 600)
-            #   
-            #   ## How do we locate bad records in the dataset after spotting them?
-            #   plot(LAND,  
-            #        lwd = 0.5, asp = 1, axes = TRUE, cex.axis = 3.5,
-            #        col = 'darkolivegreen3', bg = 'lightblue', cex.lab = 3)
-            #   
-            #   points(bg, pch = ".", cex = 1.6, col = "blue", cex.lab = 3, cex.main = 4, cex.axis = 2, 
-            #          main = paste0("Global occurrences for ", species), 
-            #          xlab = "", ylab = "", asp = 1)
-            #   
-            #   ## Title 
-            #   title(paste0("Bacground points for ", species),
-            #         cex.main = 4,   font.main = 4, col.main = "blue")
-            #   
-            #   ## Finish the device
-            #   dev.off() 
-            #   
-            # } else {
-            #   
-            #   message("Background records maps exists for ", species)
-            #   
-            # }
-            
-            ########################################################################################################################
-            ## Plot the models: can two plots be combined into one?
-            ## Make these unique names, and they can be searched in windows. Otherwise, we can just click into each subfolder. 
-            ## To sort, names would need to be: spp + unique_extension
             if(!file.exists(sprintf('%s/%s/full/%s_current.png', maxent_path, species, species, "variable_contribution"))) {
               
               png(sprintf('%s/%s/full/%s_current.png', maxent_path,
@@ -614,8 +538,6 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
               
             }
             
-            ## current.list = as.data.frame(env.grids.current)
-            ## test = similarity(occ, env.grids.current, full = FALSE)
             
           } else {
             

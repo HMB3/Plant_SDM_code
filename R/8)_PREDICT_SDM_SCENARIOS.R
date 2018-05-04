@@ -17,8 +17,6 @@
 
 ## Load packages ::
 source('./R/HIA_LIST_MATCHING.R')
-rasterOptions(tmpdir = file.path("'H:/green_cities_sdm/RTEMP")) 
-
 Koppen_1975        = raster('data/Koppen_1000m_Mollweide54009.tif')
 ALL.SUA.POP        = read.csv("./data/base/CONTEXTUAL/ABS_SUA_POP.csv", stringsAsFactors = FALSE)
 #Koppen_zones    = unique(readOGR('data/base/CONTEXTUAL/WC05_1975H_Koppen_Shapefile/WC05_1975H_Koppen_Kriticos_2012.shp')@data[, 1:2])
@@ -391,8 +389,7 @@ percent.10.om     = percent.10.om$X10.percentile.training.presence.training.omis
 
 ## Check the order of lists match, species, SUAs, areas need to match up ................................................
 ## It would be safer to read in the thresholds individually, so they match the species folder exactly
-length(SDM.RESULTS.DIR);length(MAXENT.SUM.TEST$searchTaxon);
-length(thresh.max.train);
+length(SDM.RESULTS.DIR);length(MAXENT.SUM.TEST$searchTaxon);length(thresh.max.train);
 length(percent.10.log);length(percent.10.om);length(comb_spp)
 identical(MAXENT.SUM.TEST$searchTaxon, comb_spp)
 
@@ -455,8 +452,8 @@ area_occ   = 10
 ## Liriodendron_tulipifera - too few Aus records, low suitability 
 ## Eucalyptus_mannifera    -
 
-Error in names(PERECENT.AREA.FUTURE) = c("SUA_NAME11", "Absent", "Present") : 
-  'names' attribute [3] must be the same length as the vector [2]
+# Error in names(PERECENT.AREA.FUTURE) = c("SUA_NAME11", "Absent", "Present") : 
+#   'names' attribute [3] must be the same length as the vector [2]
 
 
 # Running zonal stats for Strelitzia_reginae | 2030 combined suitability > 0.4016
