@@ -358,10 +358,12 @@ View(MAXENT.CHECK.TABLE)
 
 ## So how can we make the lists match up if they are non-sequential? By including the species in the df before the sublist 
 ## This is circular...
-MAXENT.CHECK    = read.csv("./output/maxent/MAXENT_CHECK_TABLE_APRIL_2016.csv", stringsAsFactors = FALSE)
-spp.percentile  = subset(MAXENT.CHECK, CHECK_MAP == 2 & CHECK_MAP == 3)$searchTaxon
-MAXENT.PERCENT  = MAXENT.SUM.TEST[MAXENT.SUM.TEST$searchTaxon %in% spp.percentile, ] 
-identical(spp.percentile, MAXENT.PERCENT$searchTaxon)
+MAXENT.CHECK      = read.csv("./output/maxent/MAXENT_CHECK_RATING.csv", stringsAsFactors = FALSE)
+spp.lower.thresh  = subset(MAXENT.CHECK, CHECK_MAP == 2 | CHECK_MAP == 3)$searchTaxon
+spp_lower_thresh  = gsub(" ", "_", spp.lower.thresh)
+
+MAXENT.LOWER      = MAXENT.SUM.TEST[MAXENT.SUM.TEST$searchTaxon %in% spp_lower_thresh, ] 
+identical(spp_lower_thresh, MAXENT.PERCENT$searchTaxon)
 
 
 ## John : for AUC you can report the cross-validated test AUC (if your code currently runs a cross-validated model as well), 
@@ -377,14 +379,37 @@ summary(MAXENT.SUM.TEST["X10.percentile.training.presence.training.omission"])
 
 
 ## Turn the maxent results into lists :: we can use these to generate the consensus layers 
-thresh.max.train  = as.list(MAXENT.SUM.TEST["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"]) 
-thresh.max.train  = thresh.max.train$Maximum.training.sensitivity.plus.specificity.Logistic.threshold
+thresh.max.train    = as.list(MAXENT.SUM.TEST["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"]) 
+thresh.max.train    = thresh.max.train$Maximum.training.sensitivity.plus.specificity.Logistic.threshold
 
-percent.10.log    = as.list(MAXENT.SUM.TEST["X10.percentile.training.presence.Logistic.threshold"])  ## for the twos 
-percent.10.log    = percent.10.log$X10.percentile.training.presence.Logistic.threshold
+percent.10.log      = as.list(MAXENT.SUM.TEST["X10.percentile.training.presence.Logistic.threshold"])  ## for the twos 
+percent.10.log.low  = as.list(MAXENT.LOWER["X10.percentile.training.presence.Logistic.threshold"])
 
-percent.10.om     = as.list(MAXENT.SUM.TEST["X10.percentile.training.presence.training.omission"])   ## discount
-percent.10.om     = percent.10.om$X10.percentile.training.presence.training.omission
+percent.10.log      = percent.10.log$X10.percentile.training.presence.Logistic.threshold
+percent.10.log.low  = percent.10.log.low$X10.percentile.training.presence.Logistic.threshold
+
+percent.10.om       = as.list(MAXENT.SUM.TEST["X10.percentile.training.presence.training.omission"])   ## discount
+percent.10.om.low   = as.list(MAXENT.LOWER["X10.percentile.training.presence.training.omission"])
+
+percent.10.om       = percent.10.om$X10.percentile.training.presence.training.omission
+percent.10.om.low   = percent.10.om.low$X10.percentile.training.presence.training.omission
+
+
+#########################################################################################################################
+## Then, make a list all the directories containing the individual GCM rasters...path.backwards.sel
+SDM.RESULTS.DIR.LOW <- spp_lower_thresh [c(1:length(spp_lower_thresh ))] %>%
+  
+  ## Pipe the list into lapply
+  lapply(function(species) {
+    
+    ## Create the character string...
+    m <-   sprintf('%s%s/full/', path.set.var, species)                ## path.backwards.sel
+    m 
+    
+  }) %>%
+  
+  ## Bind the list together
+  c()
 
 
 ## Check the order of lists match, species, SUAs, areas need to match up ................................................
@@ -392,6 +417,10 @@ percent.10.om     = percent.10.om$X10.percentile.training.presence.training.omis
 length(SDM.RESULTS.DIR);length(MAXENT.SUM.TEST$searchTaxon);length(thresh.max.train);
 length(percent.10.log);length(percent.10.om);length(comb_spp)
 identical(MAXENT.SUM.TEST$searchTaxon, comb_spp)
+
+
+## Also, check that the lower threshold lists are ok too
+length(percent.10.log.low);length(percent.10.om.low);length(spp_lower_thresh)
 
 
 ## The order of the directories matches
@@ -432,7 +461,7 @@ tail(SDM.RESULTS.DIR, 20);tail(comb_spp, 20); tail(MAXENT.SUM.TEST, 20)[, c("sea
 
 
 #########################################################################################################################
-## Loop over directories, species and one threshold for each, also taking a time_slice argument. Next, make the lists generic too
+## Loop over directories, species and one threshold for each, also taking a time_slice argument.
 ## pervious version in R/old/model_combine.R
 comb_spp_rev        = sort(comb_spp, decreasing = TRUE)
 SDM.RESULTS.DIR.REV = sort(comb_spp, decreasing = TRUE)
@@ -460,6 +489,11 @@ area_occ   = 10
 # Error in names(PERECENT.AREA) <- c("SUA_NAME11", "Absent", "Present") : 
 #   'names' attribute [3] must be the same length as the vector [2]
 # In addition: There were 32 warnings (use warnings() to see them)
+
+
+#########################################################################################################################
+## Use the strictest threshold first
+#########################################################################################################################
 
 
 #########################################################################################################################
@@ -504,6 +538,63 @@ suitability.2070 = tryCatch(mapply(combine_gcm_threshold,
                                    maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
                                    thresholds   = thresh.max.train,
                                    percentiles  = percent.10.log,
+                                   time_slice   = 70,
+                                   area_occ     = 10),
+                            
+                            error = function(cond) {
+                              
+                              message(paste('Species skipped - check inputs', spp))
+                              
+                            })
+
+
+#########################################################################################################################
+## Then use the more forgiving threshold
+#########################################################################################################################
+
+
+#########################################################################################################################
+## Combine output and calculate gain and loss for 2030 
+suitability.2030 = tryCatch(mapply(combine_gcm_threshold,
+                                   DIR_list     = SDM.RESULTS.DIR.LOW,
+                                   species_list = spp_lower_thresh,
+                                   maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
+                                   thresholds   = percent.10.log.low,
+                                   percentiles  = percent.10.om.low,
+                                   time_slice   = 30,
+                                   area_occ     = 10),
+                            
+                            error = function(cond) {
+                              
+                              message(paste('Species skipped - check inputs', spp))
+                              
+                            })
+
+
+## Combine GCM output for 2050 
+suitability.2050 = tryCatch(mapply(combine_gcm_threshold, 
+                                   DIR_list     = SDM.RESULTS.DIR.LOW,
+                                   species_list = spp_lower_thresh,
+                                   maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
+                                   thresholds   = percent.10.log.low,
+                                   percentiles  = percent.10.om.low,
+                                   time_slice   = 50,
+                                   area_occ     = 10),
+                            
+                            error = function(cond) {
+                              
+                              message(paste('Species skipped - check inputs', spp))
+                              
+                            })
+
+
+## Combine GCM output for 2070 
+suitability.2070 = tryCatch(mapply(combine_gcm_threshold, 
+                                   DIR_list     = SDM.RESULTS.DIR.LOW,
+                                   species_list = spp_lower_thresh,
+                                   maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
+                                   thresholds   = percent.10.log.low,
+                                   percentiles  = percent.10.om.low,
                                    time_slice   = 70,
                                    area_occ     = 10),
                             
