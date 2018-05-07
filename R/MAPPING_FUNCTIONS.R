@@ -438,6 +438,8 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
               
               ## Create another column for the species which are not present
               if(dim(PERECENT.AREA.CURRENT)[2] == 2 & dim(PERECENT.AREA.FUTURE)[2] == 2) { 
+                
+                ## If both future and present are 0, give them all 0
                 PERECENT.AREA.CURRENT$Present = 0
                 PERECENT.AREA.FUTURE$Present  = 0
                 
@@ -484,7 +486,8 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
                 
               } else {
                 
-                ## Create another column for the species which are not present
+                ## This means that dim(PERECENT.AREA.CURRENT)[2] == 3 & dim(PERECENT.AREA.FUTURE)[2] == 2
+                ## So add a column for future which is 0 (i.e. empty)
                 PERECENT.AREA.FUTURE$Present = 0
                 
                 names(PERECENT.AREA.CURRENT) =  c('SUA_NAME11', 'Absent', 'Present') 
