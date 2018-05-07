@@ -17,6 +17,7 @@
 
 ## Load packages ::
 source('./R/HIA_LIST_MATCHING.R')
+rasterTmpFile()
 Koppen_1975        = raster('data/Koppen_1000m_Mollweide54009.tif')
 ALL.SUA.POP        = read.csv("./data/base/CONTEXTUAL/ABS_SUA_POP.csv", stringsAsFactors = FALSE)
 #Koppen_zones    = unique(readOGR('data/base/CONTEXTUAL/WC05_1975H_Koppen_Shapefile/WC05_1975H_Koppen_Kriticos_2012.shp')@data[, 1:2])
@@ -217,10 +218,10 @@ records_setting          = "COORD_CLEAN"
 
 
 ## Create a file list for each model run
-maxent.tables = list.files(path.set.var)     ## Chagne this for each variable selection strategy
+maxent.tables = list.files(path.set.var)             ## Chagne this for each variable selection strategy
 maxent.tables = intersect(maxent.tables, spp_mile)
-maxent_path   = path.set.var                 ## Chagne this for each variable selection strategy
-length(maxent.tables)                        ## Should match the number of taxa tested
+maxent_path   = path.set.var                         ## Chagne this for each variable selection strategy
+length(maxent.tables)                                ## Should match the number of taxa tested
 
 
 ## In linux, check if the folders are empty, then delete if empty as this will break the code:
@@ -363,7 +364,7 @@ spp.lower.thresh  = subset(MAXENT.CHECK, CHECK_MAP == 2 | CHECK_MAP == 3)$search
 spp_lower_thresh  = gsub(" ", "_", spp.lower.thresh)
 
 MAXENT.LOWER      = MAXENT.SUM.TEST[MAXENT.SUM.TEST$searchTaxon %in% spp_lower_thresh, ] 
-identical(spp_lower_thresh, MAXENT.PERCENT$searchTaxon)
+identical(spp_lower_thresh, MAXENT.LOWER$searchTaxon)
 
 
 ## John : for AUC you can report the cross-validated test AUC (if your code currently runs a cross-validated model as well), 
@@ -551,6 +552,15 @@ suitability.2070 = tryCatch(mapply(combine_gcm_threshold,
 #########################################################################################################################
 ## Then use the more forgiving threshold
 #########################################################################################################################
+
+
+## Test it first
+DIR        = SDM.RESULTS.DIR.LOW[13]
+species    = spp_lower_thresh[13]
+thresh     = percent.10.log.low[13]
+percent    = percent.10.om.low[13]
+time_slice = 30
+area_occ   = 10
 
 
 #########################################################################################################################

@@ -207,9 +207,9 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
       f_mean = sprintf('%s/%s/full/%s_20%s_suitability_mean.tif', maxent_path, species, species, time_slice)
       
       ## The mean of the GCMs doesn't exist, create it
-      if(!file.exists(f_mean)) {
+      if(!file.exists(f_mean)) { 
         
-        raster.list       = list.files(as.character(DIR), pattern = sprintf('bi%s.tif', time_slice), full.names = TRUE)  
+        raster.list       = list.files(as.character(DIR), pattern = sprintf('bi%s.tif$', time_slice), full.names = TRUE)  
         suit              = stack(raster.list)
         suit.list         = unstack(suit)
         combo_suit_mean   = mean(suit)                            ## plot(mean.suit)
@@ -220,7 +220,7 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
       } else {
         
         ## Create another level without the mean calculation
-        raster.list = list.files(as.character(DIR), pattern = sprintf('bi%s.tif', time_slice), full.names = TRUE)  
+        raster.list = list.files(as.character(DIR), pattern = sprintf('bi%s.tif$', time_slice), full.names = TRUE)  
         suit        = stack(raster.list)
         suit.list   = unstack(suit)
         
@@ -309,7 +309,7 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             r <- raster(current_suit_thresh)
             z <- as.data.frame(d)
             
-            ## Classify the raster stack to make each value (i.e. outcome) unique
+            ## Then classify the raster stack to make each value (i.e. outcome) unique
             r[d[, 1]==1 & d[, 2]==0] <- 1  ## 1 in current raster and 0 in future = LOSS
             r[d[, 1]==0 & d[, 2]==1] <- 2  ## 0 in current raster and 1 in future = GAIN
             r[d[, 1]==1 & d[, 2]==1] <- 3  ## 1 in current raster and 1 in future = STABLE
@@ -361,7 +361,7 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             
             tabs.future  <- lapply(seq(ext.future), tabFunc, ext.future, areal_unit, "SUA_NAME11")
             tabs.future  <- do.call("rbind", tabs.future )
-
+            
             
             #########################################################################################################################
             ## Now mutate the current table
@@ -388,46 +388,97 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
               as.data.frame()
             
             ## Rename and create a column for whether or not the species occupies each SUA according to an area threshold (area_occ)
-            names(PERECENT.AREA.CURRENT) =  c('SUA_NAME11', 'Absent', 'Present') 
-            names(PERECENT.AREA.FUTURE)  =  c('SUA_NAME11', 'Absent', 'Present') 
-            
-            PERECENT.AREA.CURRENT$species_present = ifelse(PERECENT.AREA.CURRENT$Present >= area_occ, 1, 0)
-            PERECENT.AREA.FUTURE$species_present  = ifelse(PERECENT.AREA.FUTURE$Present  >= area_occ, 1, 0)
-            
-            head(PERECENT.AREA.CURRENT)
-            head(PERECENT.AREA.FUTURE)
-            
-            ## Create a table with the columns: REGION, AREA SPECIES, STATS (for each time slice)
-            ## ifelse(<condition>, <yes>, ifelse(<condition>, <yes>, <no>))
-            GCM.AREA.SUMMARY <- data.frame(SUA          = areal_unit$SUA_NAME11, 
-                                           AREA_SQKM    = areal_unit$AREA_SQKM,
-                                           SPECIES      = species,
-                                           PERIOD       = time_slice,
-                                           AREA_THRESH  = area_occ,
-                                           MAX_TRAIN    = thresh,
-                                           PERCENT_AREA = PERECENT.AREA.FUTURE$Present,
-                                           AREA_CHANGE  = PERECENT.AREA.FUTURE$Present - PERECENT.AREA.CURRENT$Present,
-                                           PRESENT      = PERECENT.AREA.FUTURE$species_present)
-            
-            
-            ## Now calculate :
-            ## Gain (ie not suitable now but suitable in future)
-            ## Loss (ie suitable now but not in future)
-            ## Stable (suitable in both)
-            GCM.AREA.SUMMARY$GAIN_LOSS  <- with(GCM.AREA.SUMMARY, ifelse(
-              GCM.AREA.SUMMARY$AREA_CHANGE <= -1 & GCM.AREA.SUMMARY$AREA_CHANGE < 0, 'LOSS', ifelse(
-                GCM.AREA.SUMMARY$AREA_CHANGE >= 1, 'GAIN', ifelse(
-                  GCM.AREA.SUMMARY$AREA_CHANGE == 0, 'STABLE', 'GAIN'))))
-            
-            ##
-            GCM.AREA.SUMMARY$GAIN_LOSS 
-            View(GCM.AREA.SUMMARY) 
-            
-            #########################################################################################################################
-            ## Then save the table of SUA results for all species to a datafile...
-            ## This would be the file to loop over to create a summary of species per SUA
-            write.csv(GCM.AREA.SUMMARY, sprintf('%s/%s/full/%s_20%s_%s%s.csv', maxent_path,
-                                                species, species, time_slice, area_occ, "pc_area_SUA_summary"), row.names = FALSE)
+            ## Create a loop here. If the future area is 0, do something else
+            if(dim(PERECENT.AREA.FUTURE)[2] == 3) { 
+              
+              names(PERECENT.AREA.CURRENT) =  c('SUA_NAME11', 'Absent', 'Present') 
+              names(PERECENT.AREA.FUTURE)  =  c('SUA_NAME11', 'Absent', 'Present')   ## has 0 length for some species
+              
+              PERECENT.AREA.CURRENT$species_present = ifelse(PERECENT.AREA.CURRENT$Present >= area_occ, 1, 0)
+              PERECENT.AREA.FUTURE$species_present  = ifelse(PERECENT.AREA.FUTURE$Present  >= area_occ, 1, 0)
+              
+              head(PERECENT.AREA.CURRENT)
+              head(PERECENT.AREA.FUTURE)
+              
+              ## Create a table with the columns: REGION, AREA SPECIES, STATS (for each time slice)
+              ## ifelse(<condition>, <yes>, ifelse(<condition>, <yes>, <no>))
+              GCM.AREA.SUMMARY <- data.frame(SUA          = areal_unit$SUA_NAME11, 
+                                             AREA_SQKM    = areal_unit$AREA_SQKM,
+                                             SPECIES      = species,
+                                             PERIOD       = time_slice,
+                                             AREA_THRESH  = area_occ,
+                                             MAX_TRAIN    = thresh,
+                                             PERCENT_AREA = PERECENT.AREA.FUTURE$Present,
+                                             AREA_CHANGE  = PERECENT.AREA.FUTURE$Present - PERECENT.AREA.CURRENT$Present,
+                                             PRESENT      = PERECENT.AREA.FUTURE$species_present)
+              
+              
+              ## Now calculate :
+              ## Gain (ie not suitable now but suitable in future)
+              ## Loss (ie suitable now but not in future)
+              ## Stable (suitable in both)
+              GCM.AREA.SUMMARY$GAIN_LOSS  <- with(GCM.AREA.SUMMARY, ifelse(
+                GCM.AREA.SUMMARY$AREA_CHANGE <= -1 & GCM.AREA.SUMMARY$AREA_CHANGE < 0, 'LOSS', ifelse(
+                  GCM.AREA.SUMMARY$AREA_CHANGE >= 1, 'GAIN', ifelse(
+                    GCM.AREA.SUMMARY$AREA_CHANGE == 0, 'STABLE', 'GAIN'))))
+              
+              ##
+              GCM.AREA.SUMMARY$GAIN_LOSS 
+              View(GCM.AREA.SUMMARY) 
+              
+              #########################################################################################################################
+              ## Then save the table of SUA results for all species to a datafile...
+              ## This would be the file to loop over to create a summary of species per SUA
+              write.csv(GCM.AREA.SUMMARY, sprintf('%s/%s/full/%s_20%s_%s%s%s.csv', maxent_path,
+                                                  species, species, time_slice, area_occ, "pc_area_SUA_summary", thresh), row.names = FALSE)
+              
+            } else {
+              
+              ## Create another column for the species which are not present
+              PERECENT.AREA.FUTURE$Present = 0
+              
+              names(PERECENT.AREA.CURRENT) =  c('SUA_NAME11', 'Absent', 'Present') 
+              names(PERECENT.AREA.FUTURE)  =  c('SUA_NAME11', 'Absent', 'Present')   ## has 0 length for some species
+              
+              PERECENT.AREA.CURRENT$species_present = ifelse(PERECENT.AREA.CURRENT$Present >= area_occ, 1, 0)
+              PERECENT.AREA.FUTURE$species_present  = ifelse(PERECENT.AREA.FUTURE$Present  >= area_occ, 1, 0)
+              
+              head(PERECENT.AREA.CURRENT)
+              head(PERECENT.AREA.FUTURE)
+              
+              ## Create a table with the columns: REGION, AREA SPECIES, STATS (for each time slice)
+              ## ifelse(<condition>, <yes>, ifelse(<condition>, <yes>, <no>))
+              GCM.AREA.SUMMARY <- data.frame(SUA          = areal_unit$SUA_NAME11, 
+                                             AREA_SQKM    = areal_unit$AREA_SQKM,
+                                             SPECIES      = species,
+                                             PERIOD       = time_slice,
+                                             AREA_THRESH  = area_occ,
+                                             MAX_TRAIN    = thresh,
+                                             PERCENT_AREA = PERECENT.AREA.FUTURE$Present,
+                                             AREA_CHANGE  = PERECENT.AREA.FUTURE$Present - PERECENT.AREA.CURRENT$Present,
+                                             PRESENT      = PERECENT.AREA.FUTURE$species_present)
+              
+              
+              ## Now calculate :
+              ## Gain (ie not suitable now but suitable in future)
+              ## Loss (ie suitable now but not in future)
+              ## Stable (suitable in both)
+              GCM.AREA.SUMMARY$GAIN_LOSS  <- with(GCM.AREA.SUMMARY, ifelse(
+                GCM.AREA.SUMMARY$AREA_CHANGE <= -1 & GCM.AREA.SUMMARY$AREA_CHANGE < 0, 'LOSS', ifelse(
+                  GCM.AREA.SUMMARY$AREA_CHANGE >= 1, 'GAIN', ifelse(
+                    GCM.AREA.SUMMARY$AREA_CHANGE == 0, 'STABLE', 'GAIN'))))
+              
+              ##
+              GCM.AREA.SUMMARY$GAIN_LOSS 
+              View(GCM.AREA.SUMMARY) 
+              
+              #########################################################################################################################
+              ## Then save the table of SUA results for all species to a datafile...
+              ## This would be the file to loop over to create a summary of species per SUA
+              write.csv(GCM.AREA.SUMMARY, sprintf('%s/%s/full/%s_20%s_%s%s%s.csv', maxent_path,
+                                                  species, species, time_slice, area_occ, "pc_area_SUA_summary", thresh), row.names = FALSE)
+              
+            }
             
             #########################################################################################################################
             #########################################################################################################################
@@ -436,8 +487,8 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
               
               ## Write the current suitability raster, thresholded using the Maximum training sensitivity plus specificity Logistic threshold
               message('Writing ', species, ' current', ' max train > ', thresh) 
-              writeRaster(current_suit_thresh, sprintf('%s/%s/full/%s_%s%s.tif', maxent_path,
-                                                       species, species, "current_suit_above_", thresh), overwrite = TRUE) 
+              writeRaster(current_suit_thresh, sprintf('%s/%s/full/%s_20%s_%s%s%s.tif', maxent_path,
+                                                       species, species, time_slice, area_occ, "pc_area_SUA_summary_", thresh), overwrite = TRUE) 
               
               ## Write the combined suitability raster, thresholded using the maximum training value
               message('Writing ', species, ' | 20', time_slice, ' max train > ', thresh) 
@@ -456,7 +507,7 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
               
               ## Write out the gain/loss raster
               writeRaster(gain_loss, sprintf('%s/%s/full/%s_20%s%s%s.tif', maxent_path,
-                                             species, species, time_slice, "_gain_loss_", thresh), datatype = 'INT2U', overwrite = T)
+                                             species, species, time_slice, "_gain_loss_", thresh), datatype = 'INT2U', overwrite = TRUE)
               
             } else {
               
@@ -480,7 +531,7 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             #   spTransform(ALB.CONICAL)
             # 
             # ## Then add 
-
+            
             # message('Writing figure for ', species, ' | 20', time_slice, ' > ', thresh)
             # 
             # png(sprintf('%s/%s/full/%s_20%s%s%s.png', maxent_path,
@@ -495,7 +546,7 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             # 
             # ## Finish the device
             # dev.off()
-
+            
             ########################################################################################################################
             ## Plot the models
             m <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, species)) 
