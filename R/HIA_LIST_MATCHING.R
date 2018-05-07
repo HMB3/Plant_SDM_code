@@ -160,6 +160,11 @@ renee.taxa           = read.csv("./data/base/HIA_LIST/HIA/RENEE_TAXA.csv",      
 renee.50             = read.csv("./data/base/HIA_LIST/HIA/RENEE_TOP_50.csv",                stringsAsFactors = FALSE)
 MQ.glasshouse        = read.csv("./data/base/HIA_LIST/HIA/MQ_glasshouse.csv",               stringsAsFactors = FALSE)
 Manuel.experimental  = read.csv("./data/base/HIA_LIST/HIA/Manuel_experimental_species.csv", stringsAsFactors = FALSE)
+Manuel.group         = read.csv("./MANUEL/SUA_by_SPP.csv", stringsAsFactors = FALSE)
+
+
+##
+head(Manuel.group)
 
 
 #########################################################################################################################

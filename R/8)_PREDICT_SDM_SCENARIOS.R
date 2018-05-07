@@ -467,19 +467,20 @@ tail(SDM.RESULTS.DIR, 20);tail(comb_spp, 20); tail(MAXENT.SUM.TEST, 20)[, c("sea
 comb_spp_rev        = sort(comb_spp, decreasing = TRUE)
 SDM.RESULTS.DIR.REV = sort(comb_spp, decreasing = TRUE)
 
-DIR        = SDM.RESULTS.DIR[43] 
-species    = comb_spp[43] 
-thresh     = thresh.max.train[43] 
-percent    = percent.10.log[43]
+DIR        = SDM.RESULTS.DIR[17] 
+species    = comb_spp[17] 
+thresh     = thresh.max.train[17] 
+percent    = percent.10.log[17]
 time_slice = 30
 area_occ   = 10
 
 
 ## Problem species ::
-## Strelitzia_reginae, 
-## Betula_pendula, 
-## Eucalyptus_pauciflora, 
+## Strelitzia_reginae      - solved 
+## Betula_pendula,         - solved   
+## Eucalyptus_pauciflora   - solved 
 ## Liriodendron_tulipifera - too few Aus records, low suitability 
+## Fraxinus_pennsylvanica  - 
 ## Eucalyptus_mannifera    -
 
 # Error in names(PERECENT.AREA.FUTURE) = c("SUA_NAME11", "Absent", "Present") : 
@@ -499,6 +500,9 @@ area_occ   = 10
 
 #########################################################################################################################
 ## Combine output and calculate gain and loss for 2030 
+## Liriodendron_tulipifera
+## Fraxinus_pennsylvanica
+## Quercus_palustris
 suitability.2030 = tryCatch(mapply(combine_gcm_threshold,
                                    DIR_list     = SDM.RESULTS.DIR,
                                    species_list = comb_spp,
