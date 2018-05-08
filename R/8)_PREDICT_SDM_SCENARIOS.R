@@ -467,11 +467,11 @@ tail(SDM.RESULTS.DIR, 20);tail(comb_spp, 20); tail(MAXENT.SUM.TEST, 20)[, c("sea
 comb_spp_rev        = sort(comb_spp, decreasing = TRUE)
 SDM.RESULTS.DIR.REV = sort(comb_spp, decreasing = TRUE)
 
-DIR        = SDM.RESULTS.DIR[17] 
-species    = comb_spp[17] 
-thresh     = thresh.max.train[17] 
-percent    = percent.10.log[17]
-time_slice = 70
+DIR        = SDM.RESULTS.DIR[53] 
+species    = comb_spp[53] 
+thresh     = thresh.max.train[53] 
+percent    = percent.10.log[53]
+time_slice = 30
 area_occ   = 10
 
 
@@ -482,6 +482,7 @@ area_occ   = 10
 ## Liriodendron_tulipifera - too few Aus records, low suitability 
 ## Fraxinus_pennsylvanica  - 
 ## Eucalyptus_mannifera    -
+## Xanthostemon_paradoxus  - 116
 
 # Error in names(PERECENT.AREA.FUTURE) = c("SUA_NAME11", "Absent", "Present") : 
 #   'names' attribute [3] must be the same length as the vector [2]
@@ -503,6 +504,7 @@ area_occ   = 10
 ## Liriodendron_tulipifera
 ## Fraxinus_pennsylvanica
 ## Quercus_palustris
+## Xanthostemon_paradoxus
 suitability.2030 = tryCatch(mapply(combine_gcm_threshold,
                                    DIR_list     = SDM.RESULTS.DIR,
                                    species_list = comb_spp,
