@@ -590,8 +590,8 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
                   
                   ## Write the current suitability raster, thresholded using the Maximum training sensitivity plus specificity Logistic threshold
                   message('Writing ', species, ' current', ' max train > ', thresh) 
-                  writeRaster(current_suit_thresh, sprintf('%s/%s/full/%s_20%s_%s%s%s.tif', maxent_path,
-                                                           species, species, time_slice, area_occ, "pc_area_SUA_summary_", thresh), overwrite = TRUE) 
+                  writeRaster(current_suit_thresh, sprintf('%s/%s/full/%s_%s%s.tif', maxent_path,
+                                                           species, species, "current_suit_above_", thresh), overwrite = TRUE) 
                   
                   ## Write the combined suitability raster, thresholded using the maximum training value
                   message('Writing ', species, ' | 20', time_slice, ' max train > ', thresh) 
