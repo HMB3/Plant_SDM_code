@@ -326,7 +326,7 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             
             ## Plot rasters to check
             plot(current_suit_thresh,   main = gsub('_', ' ', (sprintf('%s current suit > %s', species, thresh))))
-            plot(combo_suit_percent,    main = gsub('_', ' ', (sprintf('%s future suit > %s %s 20%s',  species, percent, time_sliceL))))
+            plot(combo_suit_percent,    main = gsub('_', ' ', (sprintf('%s future suit > %s in 20%s',  species, percent, time_slice))))
             plot(combo_suit_thresh,     main = gsub('_', ' ', (sprintf('%s future suit > %s',  species, thresh))))
             plot(combo_suit_4GCM,       main = gsub('_', ' ', (sprintf('%s 4+ GCMs > %s',                  species, thresh))))
             plot(gain_loss,             main = gsub('_', ' ', (sprintf('%s 4+ GCMs > %s plus current',     species, thresh))))
@@ -694,11 +694,11 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
                 
               }
               
-            } else {
-              
-              message(species, ' 20', time_slice, ' combined suitability > ', thresh, ' skipped - already exists')   ## 
-              
             }
+            
+          } else {
+            
+            message(species, ' 20', time_slice, ' combined suitability > ', thresh, ' skipped - already exists')   ## 
             
           }
           

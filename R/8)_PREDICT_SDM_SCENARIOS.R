@@ -467,10 +467,10 @@ tail(SDM.RESULTS.DIR, 20);tail(comb_spp, 20); tail(MAXENT.SUM.TEST, 20)[, c("sea
 comb_spp_rev        = sort(comb_spp, decreasing = TRUE)
 SDM.RESULTS.DIR.REV = sort(comb_spp, decreasing = TRUE)
 
-DIR        = SDM.RESULTS.DIR[53] 
-species    = comb_spp[53] 
-thresh     = thresh.max.train[53] 
-percent    = percent.10.log[53]
+DIR        = SDM.RESULTS.DIR[113] 
+species    = comb_spp[113] 
+thresh     = thresh.max.train[113] 
+percent    = percent.10.log[113]
 time_slice = 30
 area_occ   = 10
 
@@ -506,11 +506,11 @@ area_occ   = 10
 ## Quercus_palustris
 ## Xanthostemon_paradoxus
 suitability.2030 = tryCatch(mapply(combine_gcm_threshold,
-                                   DIR_list     = SDM.RESULTS.DIR,
-                                   species_list = comb_spp,
+                                   DIR_list     = SDM.RESULTS.DIR[73:102],
+                                   species_list = comb_spp[73:102],
                                    maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
-                                   thresholds   = thresh.max.train,
-                                   percentiles  = percent.10.log,
+                                   thresholds   = thresh.max.train[73:102],
+                                   percentiles  = percent.10.log[73:102],
                                    time_slice   = 30,
                                    area_occ     = 10),
                             
@@ -523,11 +523,11 @@ suitability.2030 = tryCatch(mapply(combine_gcm_threshold,
 
 ## Combine GCM output for 2050 
 suitability.2050 = tryCatch(mapply(combine_gcm_threshold, 
-                                   DIR_list     = SDM.RESULTS.DIR, 
-                                   species_list = comb_spp, 
+                                   DIR_list     = SDM.RESULTS.DIR[73:102], 
+                                   species_list = comb_spp[73:102], 
                                    maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
-                                   thresholds   = thresh.max.train,
-                                   percentiles  = percent.10.log,
+                                   thresholds   = thresh.max.train[73:102],
+                                   percentiles  = percent.10.log[73:102],
                                    time_slice   = 50,
                                    area_occ     = 10),
                             
@@ -540,11 +540,11 @@ suitability.2050 = tryCatch(mapply(combine_gcm_threshold,
 
 ## Combine GCM output for 2070 
 suitability.2070 = tryCatch(mapply(combine_gcm_threshold, 
-                                   DIR_list     = SDM.RESULTS.DIR, 
-                                   species_list = comb_spp, 
+                                   DIR_list     = SDM.RESULTS.DIR[73:102], 
+                                   species_list = comb_spp[73:102], 
                                    maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
-                                   thresholds   = thresh.max.train,
-                                   percentiles  = percent.10.log,
+                                   thresholds   = thresh.max.train[73:102],
+                                   percentiles  = percent.10.log[73:102],
                                    time_slice   = 70,
                                    area_occ     = 10),
                             
