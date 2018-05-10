@@ -596,7 +596,14 @@ dim(subset(COMBO.NICHE.CONTEXT, Number.of.growers > 25 & AUS_RECORDS > 20 & COMB
 
 MILE.1         = subset(COMBO.NICHE.CONTEXT, Number.of.growers > 25 & AUS_RECORDS > 20 & COMBO.count > 100 & Top_200 == "TRUE")
 MILE.CLEAN     = subset(CLEAN.NICHE.CONTEXT, Number.of.growers > 25 & AUS_RECORDS > 20 & COMBO.count > 100 & Top_200 == "TRUE")
-spp.mile.1     = unique(sort(c(MOD.2.3$Species, MILE.1$searchTaxon)))
+MILE.1.EXTRA   = subset(CLEAN.NICHE.CONTEXT, Number.of.growers > 25 & AUS_RECORDS > 20 & COMBO.count > 100)
+MILE.1.EXTRA   = MILE.1.EXTRA[with(MILE.1.EXTRA, order(-Number.of.growers)), ]
+MILE.1.EXTRA   = MILE.1.EXTRA [!MILE.1.EXTRA$searchTaxon %in% MILE.CLEAN$searchTaxon, ]
+summary(MILE.1.EXTRA$AUS_RECORDS)
+summary(MILE.1.EXTRA$COMBO.count)
+
+spp.mile.extra     = head(MILE.1.EXTRA$searchTaxon, 84)
+spp.mile.1         = unique(sort(c(MOD.2.3$Species, MILE.1$searchTaxon, spp.mile.extra)))
 length(spp.mile.1)
 
 
@@ -635,22 +642,40 @@ spp_mile      = gsub(" ", "_", spp.mile)
 spp_mile_rev  = sort(spp_mile, decreasing = TRUE)
 
 
-## Add plant type data for the missing species
-MILE.1.SPP[115, "Plant.type"] = "Shrub" 
-MILE.1.SPP[116, "Plant.type"] = "Tree"  
-MILE.1.SPP[117, "Plant.type"] = "Shrub"  
-MILE.1.SPP[118, "Plant.type"] = "Shrub"  
-MILE.1.SPP[119, "Plant.type"] = "Tree"  
-MILE.1.SPP[120, "Plant.type"] = "Tree"  
+## Add plant type data for the missing species not sure here
+unique(MILE.CLEAN.SPP$Plant.type)
+
+## Rename the species with missing functional types
+MILE.CLEAN.SPP[193, "Plant.type"] = "Tree"  ; MILE.CLEAN.SPP[193, "Origin"] = "Native"
+MILE.CLEAN.SPP[194, "Plant.type"] = "Tree"  ; MILE.CLEAN.SPP[194, "Origin"] = "Native"
+MILE.CLEAN.SPP[195, "Plant.type"] = "Shrub" ; MILE.CLEAN.SPP[195, "Origin"] = "Native"
+MILE.CLEAN.SPP[196, "Plant.type"] = "Shrub" ; MILE.CLEAN.SPP[196, "Origin"] = "Native"
+MILE.CLEAN.SPP[197, "Plant.type"] = "Tree"  ; MILE.CLEAN.SPP[197, "Origin"] = "Native"
+MILE.CLEAN.SPP[198, "Plant.type"] = "Tree"  ; MILE.CLEAN.SPP[198, "Origin"] = "Native"
 
 
-## And as a percentage
-with(MILE.1, table(Plant.type))
-with(MILE.1.SPP, table(Plant.type))
-#with(MILE.1.SPP, table(Plant.type)/sum(table(Plant.type))*100)
+## And create a table of the functional types
+with(MILE.1, table(Plant.type,     useNA = "always"))
+with(MILE.1.SPP, table(Plant.type, useNA = "always"))
 
 
-spp.combo      = sort(unique(c(spp.all, spp.extra, spp.mile)))
+## Origin 
+MILE.CLEAN.SPP[180, "Orign"] = "Native"
+MILE.CLEAN.SPP[182, "Orign"] = "Native"
+MILE.CLEAN.SPP[183, "Orign"] = "Native"
+MILE.CLEAN.SPP[184, "Orign"] = "Native"
+MILE.CLEAN.SPP[188, "Orign"] = "Exotic"
+MILE.CLEAN.SPP[192, "Orign"] = "Native"
+View(MILE.CLEAN.SPP)
+
+
+########################################################################################################################
+## Proportions
+round(with(MILE.CLEAN.SPP, table(Plant.type)/sum(table(Plant.type))*100), 1)
+
+
+## 
+spp.combo      = sort(unique(c(spp.all, spp.extra, spp.mile, MILE.CLEAN.SPP$searchTaxon)))
 combo.rev      = sort(spp.combo, decreasing = TRUE)
 combo_spp      = gsub(" ", "_", spp.combo)
 combo_reverse  = sort(combo_spp, decreasing = TRUE)
@@ -662,7 +687,7 @@ length(spp.combo)
 ## setdiff(MOD.2.3$Species, MILE.1.SPP$searchTaxon)
 write.csv(MILE.1.SPP,     "./data/base/HIA_LIST/COMBO/MILESTONE_TAXA_APRIL_2018_STANDARD_CLEAN.csv", row.names = FALSE)
 write.csv(MILE.CLEAN.SPP, "./data/base/HIA_LIST/COMBO/MILESTONE_TAXA_APRIL_2018_COORD_CLEAN.csv",    row.names = FALSE)
-write.csv(MOD.2,      "./data/base/HIA_LIST/COMBO/MOD_2_SPP_RECORDS.csv",         row.names = FALSE)
+write.csv(MOD.2,          "./data/base/HIA_LIST/COMBO/MOD_2_SPP_RECORDS.csv",         row.names = FALSE)
 
 
 
