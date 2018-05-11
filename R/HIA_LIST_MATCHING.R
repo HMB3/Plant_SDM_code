@@ -674,6 +674,7 @@ View(MILE.CLEAN.SPP)
 round(with(MILE.CLEAN.SPP, table(Plant.type)/sum(table(Plant.type))*100), 1)
 
 
+
 ## 
 spp.combo      = sort(unique(c(spp.all, spp.extra, spp.mile, MILE.CLEAN.SPP$searchTaxon)))
 combo.rev      = sort(spp.combo, decreasing = TRUE)
@@ -691,6 +692,12 @@ write.csv(MOD.2,          "./data/base/HIA_LIST/COMBO/MOD_2_SPP_RECORDS.csv",   
 
 
 
+########################################################################################################################
+## Final counts
+dim(COMBO.NICHE.CONTEXT) 
+HIA.COUNT   = COMBO.NICHE.CONTEXT[COMBO.NICHE.CONTEXT$searchTaxon %in% HIA.SPP$Binomial, ]
+LOW.RECORDS = dim(subset (HIA.COUNT, COMBO.count < 20))[1] + (dim(HIA.SPP)[1] - dim(HIA.COUNT)[1]) 
+LOW.NO      = dim(HIA.SPP)[1] - 455
 
 
 #########################################################################################################################

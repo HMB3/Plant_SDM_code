@@ -331,6 +331,41 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             plot(combo_suit_4GCM,       main = gsub('_', ' ', (sprintf('%s 4+ GCMs > %s',                  species, thresh))))
             plot(gain_loss,             main = gsub('_', ' ', (sprintf('%s 4+ GCMs > %s plus current',     species, thresh))))
             
+            #########################################################################################################################
+            #########################################################################################################################
+            ## Now write the rasters
+            ## If the rasters don't exist, write them for each species/threshold
+            #if(!file.exists(f_max_train_suit)) {
+            
+            ## Write the current suitability raster, thresholded using the Maximum training sensitivity plus specificity Logistic threshold
+            message('Writing ', species, ' current', ' max train > ', thresh) 
+            writeRaster(current_suit_thresh, sprintf('%s/%s/full/%s_%s%s.tif', maxent_path,
+                                                     species, species, "current_suit_above_", thresh), overwrite = TRUE) 
+            
+            ## Write the combined suitability raster, thresholded using the maximum training value
+            message('Writing ', species, ' | 20', time_slice, ' max train > ', thresh) 
+            writeRaster(combo_suit_thresh, sprintf('%s/%s/full/%s_20%s%s%s.tif', maxent_path,
+                                                   species, species, time_slice, "_Max_train_sensit_above_", thresh), overwrite = TRUE)
+            
+            ## Write the combined suitability raster, thresholded using the percentile value
+            message('Writing ', species, ' | 20', time_slice, ' 10th percentile > ', percent)
+            writeRaster(combo_suit_percent, sprintf('%s/%s/full/%s_20%s%s%s.tif', maxent_path,
+                                                    species, species, time_slice, "_10_percentile_omiss_above_", percent), overwrite = TRUE)
+            
+            ## Write the combined future raster with > 4 GCMs above the maximum training value
+            message('Writing ', species, ' | 20', time_slice, ' 10th percentile > ', percent) 
+            writeRaster(combo_suit_4GCM, sprintf('%s/%s/full/%s_20%s%s%s.tif', maxent_path,
+                                                 species, species, time_slice, "_4GCMs_above_", thresh), overwrite = TRUE)
+            
+            ## Write out the gain/loss raster
+            writeRaster(gain_loss, sprintf('%s/%s/full/%s_20%s%s%s.tif', maxent_path,
+                                           species, species, time_slice, "_gain_loss_", thresh), datatype = 'INT2U', overwrite = TRUE)
+            
+            # } else {
+            #   
+            #   message(species, ' 20', time_slice, ' combined suitability > ', thresh, ' skipped - already exists')   ## 
+            #   
+            # }
             
             #########################################################################################################################
             ## Then using this GCM consensus, calculate whether the species is likely to be present in each SUA.
@@ -515,7 +550,6 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
                                                  AREA_CHANGE  = PERECENT.AREA.FUTURE$Present - PERECENT.AREA.CURRENT$Present,
                                                  PRESENT      = PERECENT.AREA.FUTURE$species_present)
                   
-                  
                   ## Now calculate :
                   ## Gain (ie not suitable now but suitable in future)
                   ## Loss (ie suitable now but not in future)
@@ -582,42 +616,6 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
                                                       species, species, time_slice, area_occ, "pc_area_SUA_summary_", thresh), row.names = FALSE)
                   
                 }
-                
-                #########################################################################################################################
-                #########################################################################################################################
-                ## If the rasters don't exist, write them for each species/threshold
-                if(!file.exists(f_max_train_suit)) {
-                  
-                  ## Write the current suitability raster, thresholded using the Maximum training sensitivity plus specificity Logistic threshold
-                  message('Writing ', species, ' current', ' max train > ', thresh) 
-                  writeRaster(current_suit_thresh, sprintf('%s/%s/full/%s_%s%s.tif', maxent_path,
-                                                           species, species, "current_suit_above_", thresh), overwrite = TRUE) 
-                  
-                  ## Write the combined suitability raster, thresholded using the maximum training value
-                  message('Writing ', species, ' | 20', time_slice, ' max train > ', thresh) 
-                  writeRaster(combo_suit_thresh, sprintf('%s/%s/full/%s_20%s%s%s.tif', maxent_path,
-                                                         species, species, time_slice, "_Max_train_sensit_above_", thresh), overwrite = TRUE)
-                  
-                  ## Write the combined suitability raster, thresholded using the percentile value
-                  message('Writing ', species, ' | 20', time_slice, ' 10th percentile > ', percent)
-                  writeRaster(combo_suit_percent, sprintf('%s/%s/full/%s_20%s%s%s.tif', maxent_path,
-                                                          species, species, time_slice, "_10_percentile_omiss_above_", percent), overwrite = TRUE)
-                  
-                  ## Write the combined future raster with > 4 GCMs above the maximum training value
-                  message('Writing ', species, ' | 20', time_slice, ' 10th percentile > ', percent) 
-                  writeRaster(combo_suit_4GCM, sprintf('%s/%s/full/%s_20%s%s%s.tif', maxent_path,
-                                                       species, species, time_slice, "_4GCMs_above_", thresh), overwrite = TRUE)
-                  
-                  ## Write out the gain/loss raster
-                  writeRaster(gain_loss, sprintf('%s/%s/full/%s_20%s%s%s.tif', maxent_path,
-                                                 species, species, time_slice, "_gain_loss_", thresh), datatype = 'INT2U', overwrite = TRUE)
-                  
-                } else {
-                  
-                  message(species, ' 20', time_slice, ' combined suitability > ', thresh, ' skipped - already exists')   ## 
-                  
-                }
-                
                 
                 #########################################################################################################################
                 #########################################################################################################################

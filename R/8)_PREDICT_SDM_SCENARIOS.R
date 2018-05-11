@@ -313,7 +313,7 @@ SDM.RESULTS.DIR <- comb_spp[c(1:length(comb_spp))] %>%
 
 
 ## Get the number of aus records too ....................................................................................
-NICHE.CONTEXT = COMBO.NICHE.CONTEXT[, c("searchTaxon",      "AUS_RECORDS",       "Plant.type",        "Origin", 
+NICHE.CONTEXT = COMBO.NICHE.CONTEXT[, c("searchTaxon",      "COMBO.count",       "AUS_RECORDS",       "Plant.type",        "Origin", 
                                         "Top_200",          "Number.of.growers", "Number.of.States")]
 
 
@@ -467,10 +467,10 @@ tail(SDM.RESULTS.DIR, 20);tail(comb_spp, 20); tail(MAXENT.SUM.TEST, 20)[, c("sea
 comb_spp_rev        = sort(comb_spp, decreasing = TRUE)
 SDM.RESULTS.DIR.REV = sort(comb_spp, decreasing = TRUE)
 
-DIR        = SDM.RESULTS.DIR[113] 
-species    = comb_spp[113] 
-thresh     = thresh.max.train[113] 
-percent    = percent.10.log[113]
+DIR        = SDM.RESULTS.DIR[96] 
+species    = comb_spp[96] 
+thresh     = thresh.max.train[96] 
+percent    = percent.10.log[96]
 time_slice = 30
 area_occ   = 10
 
@@ -483,9 +483,6 @@ area_occ   = 10
 ## Fraxinus_pennsylvanica  - 
 ## Eucalyptus_mannifera    -
 ## Xanthostemon_paradoxus  - 116
-
-# Error in names(PERECENT.AREA.FUTURE) = c("SUA_NAME11", "Absent", "Present") : 
-#   'names' attribute [3] must be the same length as the vector [2]
 
 
 # Running zonal stats for Strelitzia_reginae | 2030 combined suitability > 0.4016
@@ -506,11 +503,11 @@ area_occ   = 10
 ## Quercus_palustris
 ## Xanthostemon_paradoxus
 suitability.2030 = tryCatch(mapply(combine_gcm_threshold,
-                                   DIR_list     = SDM.RESULTS.DIR[73:102],
-                                   species_list = comb_spp[73:102],
+                                   DIR_list     = SDM.RESULTS.DIR,
+                                   species_list = comb_spp,
                                    maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
-                                   thresholds   = thresh.max.train[73:102],
-                                   percentiles  = percent.10.log[73:102],
+                                   thresholds   = thresh.max.train,
+                                   percentiles  = percent.10.log,
                                    time_slice   = 30,
                                    area_occ     = 10),
                             
@@ -523,11 +520,11 @@ suitability.2030 = tryCatch(mapply(combine_gcm_threshold,
 
 ## Combine GCM output for 2050 
 suitability.2050 = tryCatch(mapply(combine_gcm_threshold, 
-                                   DIR_list     = SDM.RESULTS.DIR[73:102], 
-                                   species_list = comb_spp[73:102], 
+                                   DIR_list     = SDM.RESULTS.DIR[95:133], 
+                                   species_list = comb_spp[95:133], 
                                    maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
-                                   thresholds   = thresh.max.train[73:102],
-                                   percentiles  = percent.10.log[73:102],
+                                   thresholds   = thresh.max.train[95:133],
+                                   percentiles  = percent.10.log[95:133],
                                    time_slice   = 50,
                                    area_occ     = 10),
                             
@@ -540,11 +537,11 @@ suitability.2050 = tryCatch(mapply(combine_gcm_threshold,
 
 ## Combine GCM output for 2070 
 suitability.2070 = tryCatch(mapply(combine_gcm_threshold, 
-                                   DIR_list     = SDM.RESULTS.DIR[73:102], 
-                                   species_list = comb_spp[73:102], 
+                                   DIR_list     = SDM.RESULTS.DIR[95:133], 
+                                   species_list = comb_spp[95:133], 
                                    maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
-                                   thresholds   = thresh.max.train[73:102],
-                                   percentiles  = percent.10.log[73:102],
+                                   thresholds   = thresh.max.train[95:133],
+                                   percentiles  = percent.10.log[95:133],
                                    time_slice   = 70,
                                    area_occ     = 10),
                             
