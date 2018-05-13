@@ -143,11 +143,14 @@ grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',   
 #########################################################################################################################
 ## For each species, use a function to create raster files and maps under all six GCMs at each time step
 ## First remove species without data from step 7
-no_data      <- c ("Baeckea_virgata", "Kennedia_beckxiana")
+no_data      <- c ("Baeckea_virgata", "Kennedia_beckxiana", "Grevillea_rivularis")
 spp_mile     <- spp_mile  [! spp_mile %in% no_data]
 spp_mile_rev <- spp_mile_rev  [! spp_mile_rev %in% no_data]
 no_data %in% spp_mile
 no_data %in% spp_mile_rev
+
+
+## This is tricky, can the species check come before the division?
 
 
 ## 2030
@@ -222,7 +225,7 @@ maxent.tables = list.files(path.set.var)             ## Chagne this for each var
 maxent.tables = intersect(maxent.tables, spp_mile)
 maxent_path   = path.set.var                         ## Chagne this for each variable selection strategy
 length(maxent.tables)                                ## Should match the number of taxa tested
-
+no_data %in% maxent.tables
 
 ## In linux, check if the folders are empty, then delete if empty as this will break the code:
 # cd F:/green_cities_sdm/output/maxent/STD_VAR_ALL
@@ -520,11 +523,11 @@ suitability.2030 = tryCatch(mapply(combine_gcm_threshold,
 
 ## Combine GCM output for 2050 
 suitability.2050 = tryCatch(mapply(combine_gcm_threshold, 
-                                   DIR_list     = SDM.RESULTS.DIR[95:133], 
-                                   species_list = comb_spp[95:133], 
+                                   DIR_list     = SDM.RESULTS.DIR, 
+                                   species_list = comb_spp, 
                                    maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
-                                   thresholds   = thresh.max.train[95:133],
-                                   percentiles  = percent.10.log[95:133],
+                                   thresholds   = thresh.max.train,
+                                   percentiles  = percent.10.log,
                                    time_slice   = 50,
                                    area_occ     = 10),
                             
@@ -631,9 +634,8 @@ suitability.2070 = tryCatch(mapply(combine_gcm_threshold,
 
 
 #########################################################################################################################
-## Easiest way to do this is to store the results of each iteration as we go...need to change the way the code works!
-## But, as a workarond, read in the list of files for the current models, and specify the file path
-SUA.tables = list.files("./output/maxent/SET_VAR_KOPPEN/", pattern = 'SUA_summary.csv', full.names = TRUE, recursive = TRUE) 
+## The multiple thresholds present a problem. They will probably need to be put in separate folders?
+SUA.tables = list.files("./output/maxent/SET_VAR_KOPPEN/", pattern = 'area_SUA_summary_', full.names = TRUE, recursive = TRUE) 
 length(SUA.tables)
 
 
@@ -684,7 +686,7 @@ summary(SUA.PRESENCE)
 # SUA.PRESENCE = SUA.PRESENCE [with(SUA.PRESENCE , rev(order(POP_2017))), ]
 
 ## what are the 20 most populated areas
-top_n   = 20
+top_n   = 10
 BIG.SUA = head(TOP.SUA.POP[with(TOP.SUA.POP, rev(order(POP_2017))), ], top_n)
 BIG_SUA = BIG.SUA$SUA
 
@@ -698,8 +700,31 @@ summary(SUA.TOP.PRESENCE)
 View(SUA.TOP.PRESENCE)
 
 
+## Could subset again
+SUA.TOP.PRESENCE.2030      = subset(SUA.TOP.PRESENCE, PERIOD == 30)
+SUA.TOP.PRESENCE.2050      = subset(SUA.TOP.PRESENCE, PERIOD == 50)
+SUA.TOP.PRESENCE.2070      = subset(SUA.TOP.PRESENCE, PERIOD == 70)
+
+SUA.TOP.PRESENCE.2030.MILE = SUA.TOP.PRESENCE.2030[SUA.TOP.PRESENCE.2030$SPECIES %in% spp_mile, ]
+SUA.TOP.PRESENCE.2070.MILE = SUA.TOP.PRESENCE.2030[SUA.TOP.PRESENCE.2070$SPECIES %in% spp_mile, ]
+
+
+## Check
+head(SUA.TOP.PRESENCE.2030.MILE)
+unique(SUA.TOP.PRESENCE.2030.MILE$SPECIES)
+
+
+## Just one species
+SUA.TOP.PRESENCE.2030.MILE.X.GLAUCA = subset(SUA.TOP.PRESENCE, SPECIES == "Xanthorrhoea_glauca")
+
+
+
+
 #########################################################################################################################
 ## Save basic results and SUA results to file :: CSV and RData files
+write.csv(SUA.TOP.PRESENCE.2030.MILE.X.GLAUCA,  "./output/tables/SUA_TOP_PRESENCE_2030_MILE_X_GLAUCA.csv", row.names = FALSE)
+write.csv(SUA.TOP.PRESENCE,                     "./output/tables/MAXENT_SUA_SUMMARY.csv",     row.names = FALSE)
+
 write.csv(MAXENT.SUMMARY,       "./output/maxent/MAXENT_STD_VAR_SUMMARY.csv", row.names = FALSE)
 write.csv(SUA.TOP.PRESENCE,     "./output/maxent/MAXENT_SUA_SUMMARY.csv",     row.names = FALSE)
 
