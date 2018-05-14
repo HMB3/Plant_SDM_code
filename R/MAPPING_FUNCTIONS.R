@@ -446,7 +446,8 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
                                              PERIOD       = time_slice,
                                              AREA_THRESH  = area_occ,
                                              MAX_TRAIN    = thresh,
-                                             PERCENT_AREA = PERECENT.AREA.FUTURE$Present,
+                                             CURRENT_AREA = PERECENT.AREA.CURRENT$Present,
+                                             FUTURE_AREA  = PERECENT.AREA.FUTURE$Present,
                                              AREA_CHANGE  = PERECENT.AREA.FUTURE$Present - PERECENT.AREA.CURRENT$Present,
                                              PRESENT      = PERECENT.AREA.FUTURE$species_present)
               

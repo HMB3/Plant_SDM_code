@@ -344,7 +344,7 @@ View(MAXENT.CHECK.TABLE)
 
 
 ## Save
-## write.csv( , "./output/maxent/MAXENT_CHECK_TABLE_APRIL_2016.csv", row.names = FALSE)
+## write.csv(MAXENT.CHECK.TABLE, "./output/maxent/MAXENT_CHECK_TABLE_APRIL_2016.csv", row.names = FALSE)
 
 
 
@@ -501,10 +501,7 @@ area_occ   = 10
 
 #########################################################################################################################
 ## Combine output and calculate gain and loss for 2030 
-## Liriodendron_tulipifera
-## Fraxinus_pennsylvanica
-## Quercus_palustris
-## Xanthostemon_paradoxus
+
 suitability.2030 = tryCatch(mapply(combine_gcm_threshold,
                                    DIR_list     = SDM.RESULTS.DIR,
                                    species_list = comb_spp,
