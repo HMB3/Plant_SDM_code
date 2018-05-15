@@ -694,24 +694,35 @@ length(spp.combo)
 
 
 ## Add the module to the species output
-renee.full$Module = 2
-MOD_2$Module      = 3
+renee.full$Module = 3
+MOD_2$Module      = 2
 spp.modules = join(renee.full, MOD_2, type = "full")
 names(spp.modules) = c("searchTaxon", "Module")
 
 
 ## Join modules to milestones
-MILE.CLEAN.MODULE = join(MILE.CLEAN.SPP, spp.modules, type = "full")
-MILE.CLEAN.MODULE[is.na(MILE.CLEAN.MODULE)] <- 1
-MILE.CLEAN.MODULE$Module
+MILE.CLEAN.MODULE = join(MILE.CLEAN.SPP, spp.modules, type = "left")
+MILE.CLEAN.MODULE$Module[is.na(MILE.CLEAN.MODULE$Module)] <- 1
+MILE.CLEAN.MODULE = MILE.CLEAN.MODULE[MILE.CLEAN.MODULE$searchTaxon %in% MILE.CLEAN.SPP$searchTaxon, ]
+MILE.CLEAN.MODULE = MILE.CLEAN.MODULE[!duplicated(MILE.CLEAN.MODULE$searchTaxon),]
+ 
 
+## Bar plot 
+module.counts <- table(MILE.CLEAN.MODULE$Module)
+barplot(counts, main = "Species per module",
+        xlab = "Module", ylab = "number of species", col = c("lightblue", "pink", "orange"))
+        #legend = rownames(counts))
+
+
+## Pie chart
+pie(module.counts, col = c("lightblue", "pink", "orange"))
 
 
 ## Save ::
 ## setdiff(MOD.2.3$Species, MILE.1.SPP$searchTaxon)
-write.csv(MILE.1.SPP,     "./data/base/HIA_LIST/COMBO/MILESTONE_TAXA_APRIL_2018_STANDARD_CLEAN.csv", row.names = FALSE)
-write.csv(MILE.CLEAN.SPP, "./data/base/HIA_LIST/COMBO/MILESTONE_TAXA_APRIL_2018_COORD_CLEAN.csv",    row.names = FALSE)
-write.csv(MOD.2,          "./data/base/HIA_LIST/COMBO/MOD_2_SPP_RECORDS.csv",         row.names = FALSE)
+write.csv(MILE.1.SPP,        "./data/base/HIA_LIST/COMBO/MILESTONE_TAXA_APRIL_2018_STANDARD_CLEAN.csv",      row.names = FALSE)
+write.csv(MILE.CLEAN.MODULE, "./data/base/HIA_LIST/COMBO/MILESTONE_TAXA_APRIL_2018_COORD_CLEAN_MODULES.csv", row.names = FALSE)
+write.csv(MOD.2,             "./data/base/HIA_LIST/COMBO/MOD_2_SPP_RECORDS.csv",                             row.names = FALSE)
 
 
 

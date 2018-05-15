@@ -690,15 +690,24 @@ SUA.PRESENCE = join(SUA.PRESENCE, TOP.SUA.POP)
 
 
 ## Check this combined table
-SUA.PRESENCE = SUA.PRESENCE[, c("SUA",       "POP_2017",     "AREA_SQKM", 
-                                "SPECIES",   "PERIOD",       "AREA_THRESH", 
-                                "MAX_TRAIN", "PERCENT_AREA", "AREA_CHANGE", "PRESENT")]
+SUA.PRESENCE = SUA.PRESENCE[, c("SUA",         "POP_2017",     "AREA_SQKM", 
+                                "SPECIES",     "PERIOD",       "AREA_THRESH", 
+                                "MAX_TRAIN",   "CURRENT_AREA", "FUTURE_AREA", 
+                                "AREA_CHANGE", "PRESENT",      "GAIN_LOSS")]
 names(SUA.PRESENCE)
 summary(SUA.PRESENCE)
+
+
+## There are still NA results for some taxa
+SUA.COMPLETE = completeFun(SUA.PRESENCE, "CURRENT_AREA")
+SUA.COMPLETE = completeFun(SUA.COMPLETE, "FUTURE_AREA")
+length(unique(SUA.COMPLETE$SPECIES))
+
+
 # SUA.PRESENCE = SUA.PRESENCE [with(SUA.PRESENCE , rev(order(POP_2017))), ]
 
 ## what are the 20 most populated areas
-top_n   = 10
+top_n   = 5
 BIG.SUA = head(TOP.SUA.POP[with(TOP.SUA.POP, rev(order(POP_2017))), ], top_n)
 BIG_SUA = BIG.SUA$SUA
 
@@ -707,7 +716,7 @@ BIG_SUA = BIG.SUA$SUA
 SUA.TOP.PRESENCE  = SUA.PRESENCE[SUA.PRESENCE$SUA %in% BIG_SUA, ] 
 SUA.TOP.PRESENCE  = SUA.TOP.PRESENCE [with(SUA.TOP.PRESENCE , rev(order(POP_2017))), ]
 length(unique(SUA.PRESENCE$SPECIES))
-length(unique(SUA.TOP.PRESENCE$SPECIES))                            ## So their are only 87 species which were processed
+length(unique(SUA.TOP.PRESENCE$SPECIES))                            ## So their are 195 species processed
 summary(SUA.TOP.PRESENCE)
 View(SUA.TOP.PRESENCE)
 
@@ -735,6 +744,7 @@ SUA.TOP.PRESENCE.2030.MILE.X.GLAUCA = subset(SUA.TOP.PRESENCE, SPECIES == "Xanth
 #########################################################################################################################
 ## Save basic results and SUA results to file :: CSV and RData files
 write.csv(SUA.TOP.PRESENCE.2030.MILE.X.GLAUCA,  "./output/tables/SUA_TOP_PRESENCE_2030_MILE_X_GLAUCA.csv", row.names = FALSE)
+write.csv(SUA.PRESENCE, "./output/tables/MAXENT_SUA_SUMMARY.csv",     row.names = FALSE)
 write.csv(SUA.TOP.PRESENCE,                     "./output/tables/MAXENT_SUA_SUMMARY.csv",     row.names = FALSE)
 
 write.csv(MAXENT.SUMMARY,       "./output/maxent/MAXENT_STD_VAR_SUMMARY.csv", row.names = FALSE)
