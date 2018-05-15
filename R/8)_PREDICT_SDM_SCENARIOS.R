@@ -501,7 +501,6 @@ area_occ   = 10
 
 #########################################################################################################################
 ## Combine output and calculate gain and loss for 2030 
-
 suitability.2030 = tryCatch(mapply(combine_gcm_threshold,
                                    DIR_list     = SDM.RESULTS.DIR,
                                    species_list = comb_spp,
@@ -537,12 +536,28 @@ suitability.2050 = tryCatch(mapply(combine_gcm_threshold,
 
 ## Combine GCM output for 2070 
 suitability.2070 = tryCatch(mapply(combine_gcm_threshold, 
-                                   DIR_list     = SDM.RESULTS.DIR[95:133], 
-                                   species_list = comb_spp[95:133], 
+                                   DIR_list     = SDM.RESULTS.DIR, 
+                                   species_list = comb_spp, 
                                    maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
-                                   thresholds   = thresh.max.train[95:133],
-                                   percentiles  = percent.10.log[95:133],
+                                   thresholds   = thresh.max.train,
+                                   percentiles  = percent.10.log,
                                    time_slice   = 70,
+                                   area_occ     = 10),
+                            
+                            error = function(cond) {
+                              
+                              message(paste('Species skipped - check inputs', spp))
+                              
+                            })
+
+
+suitability.2030 = tryCatch(mapply(SUA_table,
+                                   DIR_list     = SDM.RESULTS.DIR,
+                                   species_list = comb_spp,
+                                   maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
+                                   thresholds   = thresh.max.train,
+                                   percentiles  = percent.10.log,
+                                   time_slice   = 30,
                                    area_occ     = 10),
                             
                             error = function(cond) {

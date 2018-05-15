@@ -161,10 +161,21 @@ renee.50             = read.csv("./data/base/HIA_LIST/HIA/RENEE_TOP_50.csv",    
 MQ.glasshouse        = read.csv("./data/base/HIA_LIST/HIA/MQ_glasshouse.csv",               stringsAsFactors = FALSE)
 Manuel.experimental  = read.csv("./data/base/HIA_LIST/HIA/Manuel_experimental_species.csv", stringsAsFactors = FALSE)
 Manuel.group         = read.csv("./MANUEL/SUA_by_SPP.csv", stringsAsFactors = FALSE)
+TREE.NETWORK         = read.csv("./MANUEL/COMBO_APNI.csv", stringsAsFactors = FALSE)
 
 
-##
-head(Manuel.group)
+#########################################################################################################################
+## Update Manuel's data
+TREE.NETWORK = TREE.NETWORK[,c("searchTaxon",      "Plant.type",      "Origin",    "APNI",    "PLANTED_GROWING",  "Top_200",             
+                               "ACT",              "NSW",             "NT",        "QLD",     "SA",    "VIC",    "WA",              
+                               "Number.of.States", "No.of.Varieties", "Number.of.growers",    "AREA_OCCUPANCY",  "LGA.AGG")]
+names(TREE.NETWORK)
+
+## Merge Manules data with the new climate data
+CLEAN.CLIMATE = COMBO.NICHE.CONTEXT[, c(1, 19:198)] 
+CLEAN.CLIMATE = join(TREE.NETWORK, CLEAN.CLIMATE)
+write.csv(CLEAN.CLIMATE, "./data/base/HIA_LIST/COMBO/TREE_NETWORK_NICHES.csv", row.names = FALSE)
+
 
 
 #########################################################################################################################
@@ -674,13 +685,25 @@ View(MILE.CLEAN.SPP)
 round(with(MILE.CLEAN.SPP, table(Plant.type)/sum(table(Plant.type))*100), 1)
 
 
-
 ## 
 spp.combo      = sort(unique(c(spp.all, spp.extra, spp.mile, MILE.CLEAN.SPP$searchTaxon)))
 combo.rev      = sort(spp.combo, decreasing = TRUE)
 combo_spp      = gsub(" ", "_", spp.combo)
 combo_reverse  = sort(combo_spp, decreasing = TRUE)
 length(spp.combo)
+
+
+## Add the module to the species output
+renee.full$Module = 2
+MOD_2$Module      = 3
+spp.modules = join(renee.full, MOD_2, type = "full")
+names(spp.modules) = c("searchTaxon", "Module")
+
+
+## Join modules to milestones
+MILE.CLEAN.MODULE = join(MILE.CLEAN.SPP, spp.modules, type = "full")
+MILE.CLEAN.MODULE[is.na(MILE.CLEAN.MODULE)] <- 1
+MILE.CLEAN.MODULE$Module
 
 
 
