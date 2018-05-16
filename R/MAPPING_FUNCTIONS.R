@@ -868,13 +868,19 @@ SUA_table = function(DIR_list, species_list, maxent_path, thresholds, percentile
           gain_loss <- as.factor(r)
           levels(gain_loss)[[1]] <- data.frame(ID = 1:3, label = c('Lost', 'Gained', 'Stable'))
           
-          ## Create a table of the gain/loss/stable
-          gain_loss_table = table(z[, 1], z[, 2]) 
+          ## Create a table of the gain/loss/stable :: write this to file as well
+          gain_loss_table  = table(z[, 1], z[, 2])
+          gain_loss_df     = as.data.frame(raster::freq(gain_loss))
+          
+          ## Save the gain/loss table
+          saveRDS(gain_loss_df, sprintf('%s/%s/full/%s_20%s_%s%s.rds', maxent_path,
+                                              species, species, time_slice, "gain_loss_table_", thresh))
+          
           
           ## Plot rasters to check
-          plot(current_suit_thresh,   main = gsub('_', ' ', (sprintf('%s current suit > %s', species, thresh))))
-          plot(combo_suit_percent,    main = gsub('_', ' ', (sprintf('%s future suit > %s in 20%s',  species, percent, time_slice))))
-          plot(combo_suit_thresh,     main = gsub('_', ' ', (sprintf('%s future suit > %s',  species, thresh))))
+          plot(current_suit_thresh,   main = gsub('_', ' ', (sprintf('%s current suit > %s',             species, thresh))))
+          plot(combo_suit_percent,    main = gsub('_', ' ', (sprintf('%s future suit > %s in 20%s',      species, percent, time_slice))))
+          plot(combo_suit_thresh,     main = gsub('_', ' ', (sprintf('%s future suit > %s',              species, thresh))))
           plot(combo_suit_4GCM,       main = gsub('_', ' ', (sprintf('%s 4+ GCMs > %s',                  species, thresh))))
           plot(gain_loss,             main = gsub('_', ' ', (sprintf('%s 4+ GCMs > %s plus current',     species, thresh))))
           

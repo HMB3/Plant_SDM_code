@@ -363,11 +363,18 @@ View(MAXENT.CHECK.TABLE)
 ## So how can we make the lists match up if they are non-sequential? By including the species in the df before the sublist 
 ## This is circular...
 MAXENT.CHECK      = read.csv("./output/maxent/MAXENT_CHECK_RATING.csv", stringsAsFactors = FALSE)
+BEST.SPP          = subset(MAXENT.CHECK, CHECK_MAP == 1)$searchTaxon
+
 spp.lower.thresh  = subset(MAXENT.CHECK, CHECK_MAP == 2 | CHECK_MAP == 3)$searchTaxon
 spp_lower_thresh  = gsub(" ", "_", spp.lower.thresh)
 
+spp.best.thresh   = subset(MAXENT.CHECK, CHECK_MAP == 1)$searchTaxon
+spp_best_thresh   = gsub(" ", "_", spp.best.thresh)
+
 MAXENT.LOWER      = MAXENT.SUM.TEST[MAXENT.SUM.TEST$searchTaxon %in% spp_lower_thresh, ] 
+MAXENT.BEST       = MAXENT.SUM.TEST[MAXENT.SUM.TEST$searchTaxon %in% spp_best_thresh, ] 
 identical(spp_lower_thresh, MAXENT.LOWER$searchTaxon)
+identical(spp_best_thresh,  MAXENT.BEST$searchTaxon)
 
 
 ## John : for AUC you can report the cross-validated test AUC (if your code currently runs a cross-validated model as well), 
@@ -383,20 +390,27 @@ summary(MAXENT.SUM.TEST["X10.percentile.training.presence.training.omission"])
 
 
 ## Turn the maxent results into lists :: we can use these to generate the consensus layers 
-thresh.max.train    = as.list(MAXENT.SUM.TEST["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"]) 
-thresh.max.train    = thresh.max.train$Maximum.training.sensitivity.plus.specificity.Logistic.threshold
+thresh.max.train       = as.list(MAXENT.SUM.TEST["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"]) 
+thresh.max.train       = thresh.max.train$Maximum.training.sensitivity.plus.specificity.Logistic.threshold
 
-percent.10.log      = as.list(MAXENT.SUM.TEST["X10.percentile.training.presence.Logistic.threshold"])  ## for the twos 
-percent.10.log.low  = as.list(MAXENT.LOWER["X10.percentile.training.presence.Logistic.threshold"])
+thresh.max.train.best  = as.list(MAXENT.BEST["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"]) 
+thresh.max.train.best  = thresh.max.train.best$Maximum.training.sensitivity.plus.specificity.Logistic.threshold
 
-percent.10.log      = percent.10.log$X10.percentile.training.presence.Logistic.threshold
-percent.10.log.low  = percent.10.log.low$X10.percentile.training.presence.Logistic.threshold
+percent.10.log         = as.list(MAXENT.SUM.TEST["X10.percentile.training.presence.Logistic.threshold"])  ## for the twos 
+percent.10.log.low     = as.list(MAXENT.LOWER["X10.percentile.training.presence.Logistic.threshold"])
+percent.10.log.best    = as.list(MAXENT.BEST["X10.percentile.training.presence.Logistic.threshold"])
 
-percent.10.om       = as.list(MAXENT.SUM.TEST["X10.percentile.training.presence.training.omission"])   ## discount
-percent.10.om.low   = as.list(MAXENT.LOWER["X10.percentile.training.presence.training.omission"])
+percent.10.log         = percent.10.log$X10.percentile.training.presence.Logistic.threshold
+percent.10.log.low     = percent.10.log.low$X10.percentile.training.presence.Logistic.threshold
+percent.10.log.best    = percent.10.log.best$X10.percentile.training.presence.Logistic.threshold
 
-percent.10.om       = percent.10.om$X10.percentile.training.presence.training.omission
-percent.10.om.low   = percent.10.om.low$X10.percentile.training.presence.training.omission
+percent.10.om          = as.list(MAXENT.SUM.TEST["X10.percentile.training.presence.training.omission"])   ## discount
+percent.10.om.low      = as.list(MAXENT.LOWER["X10.percentile.training.presence.training.omission"])
+percent.10.om.best     = as.list(MAXENT.BEST["X10.percentile.training.presence.training.omission"])
+
+percent.10.om          = percent.10.om$X10.percentile.training.presence.training.omission
+percent.10.om.low      = percent.10.om.low$X10.percentile.training.presence.training.omission
+percent.10.om.best     = percent.10.om.best$X10.percentile.training.presence.training.omission
 
 
 #########################################################################################################################
@@ -414,6 +428,23 @@ SDM.RESULTS.DIR.LOW <- spp_lower_thresh [c(1:length(spp_lower_thresh ))] %>%
   
   ## Bind the list together
   c()
+
+
+## The good models
+SDM.RESULTS.DIR.BEST <- spp_best_thresh [c(1:length(spp_best_thresh ))] %>%
+  
+  ## Pipe the list into lapply
+  lapply(function(species) {
+    
+    ## Create the character string...
+    m <-   sprintf('%s%s/full/', path.set.var, species)                ## path.backwards.sel
+    m 
+    
+  }) %>%
+  
+  ## Bind the list together
+  c()
+
 
 
 ## Check the order of lists match, species, SUAs, areas need to match up ................................................
@@ -551,20 +582,20 @@ suitability.2070 = tryCatch(mapply(combine_gcm_threshold,
                             })
 
 
-suitability.2030 = tryCatch(mapply(SUA_table,
-                                   DIR_list     = SDM.RESULTS.DIR,
-                                   species_list = comb_spp,
-                                   maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
-                                   thresholds   = thresh.max.train,
-                                   percentiles  = percent.10.log,
-                                   time_slice   = 30,
-                                   area_occ     = 10),
-                            
-                            error = function(cond) {
-                              
-                              message(paste('Species skipped - check inputs', spp))
-                              
-                            })
+# suitability.2030 = tryCatch(mapply(SUA_table,
+#                                    DIR_list     = SDM.RESULTS.DIR,
+#                                    species_list = comb_spp,
+#                                    maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
+#                                    thresholds   = thresh.max.train,
+#                                    percentiles  = percent.10.log,
+#                                    time_slice   = 30,
+#                                    area_occ     = 10),
+#                             
+#                             error = function(cond) {
+#                               
+#                               message(paste('Species skipped - check inputs', spp))
+#                               
+#                             })
 
 
 #########################################################################################################################
@@ -675,8 +706,9 @@ dim(SUA.PRESENCE)
 head(SUA.PRESENCE, 200)
 
 
+#########################################################################################################################
 ## Now join on the population
-TOP.SUA.POP = ALL.SUA.POP[, c("SUA", "POP_2017")]
+TOP.SUA.POP      = ALL.SUA.POP[, c("SUA", "POP_2017")]
 SUA.PRESENCE$SUA = as.character(SUA.PRESENCE$SUA)
 class(SUA.PRESENCE$SUA)
 class(TOP.SUA.POP$SUA)
@@ -689,22 +721,45 @@ intersect(unique(sort(TOP.SUA.POP$SUA)), unique(sort(SUA.PRESENCE$SUA)))
 SUA.PRESENCE = join(SUA.PRESENCE, TOP.SUA.POP)
 
 
+## Join on the Maxent rating
+RATING = MAXENT.CHECK
+names(RATING)  = c("SPECIES", "RATING")
+RATING$SPECIES = gsub(" ", "_", RATING$SPECIES)
+length(intersect(RATING$SPECIES, SUA.PRESENCE$SPECIES))
+SUA.PRESENCE = join(SUA.PRESENCE, RATING, type = "inner")
+
+
 ## Check this combined table
 SUA.PRESENCE = SUA.PRESENCE[, c("SUA",         "POP_2017",     "AREA_SQKM", 
                                 "SPECIES",     "PERIOD",       "AREA_THRESH", 
                                 "MAX_TRAIN",   "CURRENT_AREA", "FUTURE_AREA", 
-                                "AREA_CHANGE", "PRESENT",      "GAIN_LOSS")]
+                                "AREA_CHANGE", "PRESENT",      "GAIN_LOSS", "RATING")]
 names(SUA.PRESENCE)
 summary(SUA.PRESENCE)
+unique(SUA.PRESENCE$RATING)
 
 
 ## There are still NA results for some taxa
 SUA.COMPLETE = completeFun(SUA.PRESENCE, "CURRENT_AREA")
 SUA.COMPLETE = completeFun(SUA.COMPLETE, "FUTURE_AREA")
 length(unique(SUA.COMPLETE$SPECIES))
+names(SUA.COMPLETE)
 
 
-# SUA.PRESENCE = SUA.PRESENCE [with(SUA.PRESENCE , rev(order(POP_2017))), ]
+
+
+#########################################################################################################################
+## Find the species with the greatest increase
+summary(SUA.COMPLETE$AREA_CHANGE)
+INCREASE.50 = subset(SUA.COMPLETE, AREA_CHANGE >= 50)
+summary(INCREASE.50$AREA_CHANGE)
+unique(INCREASE.50$SPECIES)
+
+
+#########################################################################################################################
+## Rank by population
+## SUA.PRESENCE = SUA.PRESENCE [with(SUA.PRESENCE , rev(order(POP_2017))), ]
+
 
 ## what are the 20 most populated areas
 top_n   = 5
@@ -743,9 +798,8 @@ SUA.TOP.PRESENCE.2030.MILE.X.GLAUCA = subset(SUA.TOP.PRESENCE, SPECIES == "Xanth
 
 #########################################################################################################################
 ## Save basic results and SUA results to file :: CSV and RData files
-write.csv(SUA.TOP.PRESENCE.2030.MILE.X.GLAUCA,  "./output/tables/SUA_TOP_PRESENCE_2030_MILE_X_GLAUCA.csv", row.names = FALSE)
-write.csv(SUA.PRESENCE, "./output/tables/MAXENT_SUA_SUMMARY.csv",     row.names = FALSE)
-write.csv(SUA.TOP.PRESENCE,                     "./output/tables/MAXENT_SUA_SUMMARY.csv",     row.names = FALSE)
+write.csv(SUA.COMPLETE,                          "./output/tables/MAXENT_SUA_SUMMARY.csv",     row.names = FALSE)
+#write.csv(SUA.TOP.PRESENCE,                     "./output/tables/MAXENT_SUA_SUMMARY.csv",     row.names = FALSE)
 
 write.csv(MAXENT.SUMMARY,       "./output/maxent/MAXENT_STD_VAR_SUMMARY.csv", row.names = FALSE)
 write.csv(SUA.TOP.PRESENCE,     "./output/maxent/MAXENT_SUA_SUMMARY.csv",     row.names = FALSE)
