@@ -8,11 +8,11 @@
 ## a prediction of habitat suitability for current and future environmental conditions. The input data table is in the 
 ## format of all species occurrences (rows) and environmental variables (columns).
 
-## The predictions from all GCMs (currently using six) are then combined into a single habitat suitability layer.
-## A version of this habitat suitability layer could be supplied to HIA.
+## The predictions from all 6 GCMs are then combined into a single habitat suitability layer.
+## And the area of habitat gained, lost or remaining stable is calculated. 
 
 ## Using this combined layer, the % of area occupied by species within areal units (e.g. significant urban areas or LGAs), 
-## under each projection (2030, 2050 and 2070) could also be calculated. 
+## under each projection (2030, 2050 and 2070) is also be calculated. 
 
 
 ## Load packages ::
@@ -363,12 +363,11 @@ View(MAXENT.CHECK.TABLE)
 ## So how can we make the lists match up if they are non-sequential? By including the species in the df before the sublist 
 ## This is circular...
 MAXENT.CHECK      = read.csv("./output/maxent/MAXENT_CHECK_RATING.csv", stringsAsFactors = FALSE)
-BEST.SPP          = subset(MAXENT.CHECK, CHECK_MAP == 1)$searchTaxon
 
 spp.lower.thresh  = subset(MAXENT.CHECK, CHECK_MAP == 2 | CHECK_MAP == 3)$searchTaxon
 spp_lower_thresh  = gsub(" ", "_", spp.lower.thresh)
 
-spp.best.thresh   = subset(MAXENT.CHECK, CHECK_MAP == 1)$searchTaxon
+spp.best.thresh   = subset(MAXENT.CHECK, CHECK_MAP == 1 | CHECK_MAP == 2)$searchTaxon
 spp_best_thresh   = gsub(" ", "_", spp.best.thresh)
 
 MAXENT.LOWER      = MAXENT.SUM.TEST[MAXENT.SUM.TEST$searchTaxon %in% spp_lower_thresh, ] 
@@ -666,148 +665,6 @@ suitability.2070 = tryCatch(mapply(combine_gcm_threshold,
 
 
 
-
-#########################################################################################################################
-## 5). COMBINE TABLES OF SPECIES PRESENCES IN SUAs FOR ALL SPECIES ACROSS MULTIPLE GCMs: 
-#########################################################################################################################
-
-
-## In order to summarise by species and SUA, we could build one big table and then query that to create histograms, etc.  
-## This could be stored in memory if it's too big.
-
-
-#########################################################################################################################
-## The multiple thresholds present a problem. They will probably need to be put in separate folders?
-SUA.tables = list.files("./output/maxent/SET_VAR_KOPPEN/", pattern = 'area_SUA_summary_', full.names = TRUE, recursive = TRUE) 
-length(SUA.tables)
-
-
-## Now combine the SUA tables for each species into one table 
-SUA.PRESENCE <- SUA.tables[c(1:length(SUA.tables))] %>%
-  
-  ## pipe the list into lapply
-  lapply(function(x) {
-    
-    ## create the character string
-    f <- paste0(x)
-    
-    ## load each .RData file
-    d <- read.csv(f)
-    d
-    
-  }) %>%
-  
-  ## finally, bind all the rows together
-  bind_rows
-
-
-## This is a summary of maxent output for current conditions
-dim(SUA.PRESENCE)
-head(SUA.PRESENCE, 200)
-
-
-#########################################################################################################################
-## Now join on the population
-TOP.SUA.POP      = ALL.SUA.POP[, c("SUA", "POP_2017")]
-SUA.PRESENCE$SUA = as.character(SUA.PRESENCE$SUA)
-class(SUA.PRESENCE$SUA)
-class(TOP.SUA.POP$SUA)
-
-
-## 87 SUAs overlap between the ABS shapefile and the table
-unique(sort(TOP.SUA.POP$SUA))
-unique(sort(SUA.PRESENCE$SUA))
-intersect(unique(sort(TOP.SUA.POP$SUA)), unique(sort(SUA.PRESENCE$SUA)))
-SUA.PRESENCE = join(SUA.PRESENCE, TOP.SUA.POP)
-
-
-## Join on the Maxent rating
-RATING = MAXENT.CHECK
-names(RATING)  = c("SPECIES", "RATING")
-RATING$SPECIES = gsub(" ", "_", RATING$SPECIES)
-length(intersect(RATING$SPECIES, SUA.PRESENCE$SPECIES))
-SUA.PRESENCE = join(SUA.PRESENCE, RATING, type = "inner")
-
-
-## Check this combined table
-SUA.PRESENCE = SUA.PRESENCE[, c("SUA",         "POP_2017",     "AREA_SQKM", 
-                                "SPECIES",     "PERIOD",       "AREA_THRESH", 
-                                "MAX_TRAIN",   "CURRENT_AREA", "FUTURE_AREA", 
-                                "AREA_CHANGE", "PRESENT",      "GAIN_LOSS", "RATING")]
-names(SUA.PRESENCE)
-summary(SUA.PRESENCE)
-unique(SUA.PRESENCE$RATING)
-
-
-## There are still NA results for some taxa
-SUA.COMPLETE = completeFun(SUA.PRESENCE, "CURRENT_AREA")
-SUA.COMPLETE = completeFun(SUA.COMPLETE, "FUTURE_AREA")
-length(unique(SUA.COMPLETE$SPECIES))
-names(SUA.COMPLETE)
-
-
-
-
-#########################################################################################################################
-## Find the species with the greatest increase
-summary(SUA.COMPLETE$AREA_CHANGE)
-INCREASE.50 = subset(SUA.COMPLETE, AREA_CHANGE >= 50)
-summary(INCREASE.50$AREA_CHANGE)
-unique(INCREASE.50$SPECIES)
-
-
-#########################################################################################################################
-## Rank by population
-## SUA.PRESENCE = SUA.PRESENCE [with(SUA.PRESENCE , rev(order(POP_2017))), ]
-
-
-## what are the 20 most populated areas
-top_n   = 5
-BIG.SUA = head(TOP.SUA.POP[with(TOP.SUA.POP, rev(order(POP_2017))), ], top_n)
-BIG_SUA = BIG.SUA$SUA
-
-
-## Restrict the big table to just these
-SUA.TOP.PRESENCE  = SUA.PRESENCE[SUA.PRESENCE$SUA %in% BIG_SUA, ] 
-SUA.TOP.PRESENCE  = SUA.TOP.PRESENCE [with(SUA.TOP.PRESENCE , rev(order(POP_2017))), ]
-length(unique(SUA.PRESENCE$SPECIES))
-length(unique(SUA.TOP.PRESENCE$SPECIES))                            ## So their are 195 species processed
-summary(SUA.TOP.PRESENCE)
-View(SUA.TOP.PRESENCE)
-
-
-## Could subset again
-SUA.TOP.PRESENCE.2030      = subset(SUA.TOP.PRESENCE, PERIOD == 30)
-SUA.TOP.PRESENCE.2050      = subset(SUA.TOP.PRESENCE, PERIOD == 50)
-SUA.TOP.PRESENCE.2070      = subset(SUA.TOP.PRESENCE, PERIOD == 70)
-
-SUA.TOP.PRESENCE.2030.MILE = SUA.TOP.PRESENCE.2030[SUA.TOP.PRESENCE.2030$SPECIES %in% spp_mile, ]
-SUA.TOP.PRESENCE.2070.MILE = SUA.TOP.PRESENCE.2030[SUA.TOP.PRESENCE.2070$SPECIES %in% spp_mile, ]
-
-
-## Check
-head(SUA.TOP.PRESENCE.2030.MILE)
-unique(SUA.TOP.PRESENCE.2030.MILE$SPECIES)
-
-
-## Just one species
-SUA.TOP.PRESENCE.2030.MILE.X.GLAUCA = subset(SUA.TOP.PRESENCE, SPECIES == "Xanthorrhoea_glauca")
-
-
-
-
-#########################################################################################################################
-## Save basic results and SUA results to file :: CSV and RData files
-write.csv(SUA.COMPLETE,                          "./output/tables/MAXENT_SUA_SUMMARY.csv",     row.names = FALSE)
-#write.csv(SUA.TOP.PRESENCE,                     "./output/tables/MAXENT_SUA_SUMMARY.csv",     row.names = FALSE)
-
-write.csv(MAXENT.SUMMARY,       "./output/maxent/MAXENT_STD_VAR_SUMMARY.csv", row.names = FALSE)
-write.csv(SUA.TOP.PRESENCE,     "./output/maxent/MAXENT_SUA_SUMMARY.csv",     row.names = FALSE)
-
-
-
-
-
 #########################################################################################################################
 ## OUTSTANDING PREDICTION TASKS:
 #########################################################################################################################
@@ -817,7 +674,7 @@ write.csv(SUA.TOP.PRESENCE,     "./output/maxent/MAXENT_SUA_SUMMARY.csv",     ro
 ## create a list of species which need to be mapped using a different threshold. Either the ::
 ## 10 percentile training presence Logistic threshold OR
 ## 10 percentile training presence training omission
- 
+
 ## Also Can we calculate these in the table?
 ## Gain (ie not suitable now but suitable in future)
 ## Loss (ie suitable now but not in future)

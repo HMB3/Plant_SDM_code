@@ -258,6 +258,8 @@ renee.list       = renee.taxa[c("Species", "Growth_Form")]
 ## This merge won't get the ones that match to binomial
 HIA.list$Binomial <- sub('(^\\S+ \\S+).*', '\\1', HIA.list$Species) # \\s = white space; \\S = not white space
 
+n <- tapply(HIA.list$Number.of.growers, HIA.list$Binomial, sum, na.rm = TRUE)
+HIA.list$Number.of.growers.total <- n[HIA.list$Binomial]
 
 ## Check this reduces the number of Top 200 missing from this list
 HIA.list = merge(HIA.list, spp.200, by = "Binomial", all.x = TRUE) 
@@ -323,8 +325,6 @@ DRAFT.HIA.TAXA$Binomial <- sub('(^\\S+ \\S+).*', '\\1', DRAFT.HIA.TAXA$Species) 
 
 
 ## Some spp/varieties are not working..............................................................................................
-
-
 HIA.VARIETY <- 
   DRAFT.HIA.TAXA$Binomial[DRAFT.HIA.TAXA$Binomial != DRAFT.HIA.TAXA$Species] %>% 
   table %>% 
