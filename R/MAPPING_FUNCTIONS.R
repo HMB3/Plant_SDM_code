@@ -322,12 +322,24 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             levels(gain_loss)[[1]] <- data.frame(ID = 1:3, label = c('Lost', 'Gained', 'Stable'))
             
             ## Create a table of the gain/loss/stable :: write this to file as well
-            gain_loss_table  = table(z[, 1], z[, 2])
-            gain_loss_df     = as.data.frame(raster::freq(gain_loss))
+            gain_loss_table      = table(z[, 1], z[, 2])
+            gain_loss_df         = as.data.frame(raster::freq(gain_loss))
+            gain_loss_df$SPECIES = species
+            gain_loss_df$PERIOD  = time_slice
+            
+            names(gain_loss_df)  = c("CHANGE", "COUNT", "SPECIES", "PERIOD")
+            gain_loss_df         = gain_loss_df[, c("SPECIES", "PERIOD", "CHANGE", "COUNT")]
+            
+            ## Change values and remove the NA row
+            gain_loss_df$CHANGE[gain_loss_df$CHANGE == 1] <- "LOST"
+            gain_loss_df$CHANGE[gain_loss_df$CHANGE == 2] <- "GAINED"
+            gain_loss_df$CHANGE[gain_loss_df$CHANGE == 3] <- "STABLE"
+            gain_loss_df = head(gain_loss_df, 3)
+            head(gain_loss_df)
             
             ## Save the gain/loss table
-            saveRDS(gain_loss_df, sprintf('%s/%s/full/%s_20%s_%s%s.rds', maxent_path,
-                                          species, species, time_slice, "gain_loss_table_", thresh))
+            write.csv(gain_loss_df, sprintf('%s/%s/full/%s_20%s_%s%s.csv', maxent_path,
+                                            species, species, time_slice, "gain_loss_table_", thresh), row.names = FALSE)
             
             ## Plot rasters to check
             plot(current_suit_thresh,   main = gsub('_', ' ', (sprintf('%s current suit > %s', species, thresh))))
@@ -877,13 +889,24 @@ SUA_table = function(DIR_list, species_list, maxent_path, thresholds, percentile
           levels(gain_loss)[[1]] <- data.frame(ID = 1:3, label = c('Lost', 'Gained', 'Stable'))
           
           ## Create a table of the gain/loss/stable :: write this to file as well
-          gain_loss_table  = table(z[, 1], z[, 2])
-          gain_loss_df     = as.data.frame(raster::freq(gain_loss))
+          gain_loss_table      = table(z[, 1], z[, 2])
+          gain_loss_df         = as.data.frame(raster::freq(gain_loss))
+          gain_loss_df$SPECIES = species
+          gain_loss_df$PERIOD  = time_slice
+          
+          names(gain_loss_df)  = c("CHANGE", "COUNT", "SPECIES", "PERIOD")
+          gain_loss_df         = gain_loss_df[, c("SPECIES", "PERIOD", "CHANGE", "COUNT")]
+          
+          ## Change values and remove the NA row
+          gain_loss_df$CHANGE[gain_loss_df$CHANGE == 1] <- "LOST"
+          gain_loss_df$CHANGE[gain_loss_df$CHANGE == 2] <- "GAINED"
+          gain_loss_df$CHANGE[gain_loss_df$CHANGE == 3] <- "STABLE"
+          gain_loss_df = head(gain_loss_df, 3)
+          head(gain_loss_df)
           
           ## Save the gain/loss table
-          saveRDS(gain_loss_df, sprintf('%s/%s/full/%s_20%s_%s%s.rds', maxent_path,
-                                        species, species, time_slice, "gain_loss_table_", thresh))
-          
+          write.csv(gain_loss_df, sprintf('%s/%s/full/%s_20%s_%s%s.csv', maxent_path,
+                                          species, species, time_slice, "gain_loss_table_", thresh), row.names = FALSE)
           
           ## Plot rasters to check
           plot(current_suit_thresh,   main = gsub('_', ' ', (sprintf('%s current suit > %s',             species, thresh))))
