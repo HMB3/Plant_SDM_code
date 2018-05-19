@@ -165,20 +165,6 @@ TREE.NETWORK         = read.csv("./MANUEL/COMBO_APNI.csv", stringsAsFactors = FA
 
 
 #########################################################################################################################
-## Update Manuel's data
-TREE.NETWORK = TREE.NETWORK[,c("searchTaxon",      "Plant.type",      "Origin",    "APNI",    "PLANTED_GROWING",  "Top_200",             
-                               "ACT",              "NSW",             "NT",        "QLD",     "SA",    "VIC",    "WA",              
-                               "Number.of.States", "No.of.Varieties", "Number.of.growers",    "AREA_OCCUPANCY",  "LGA.AGG")]
-names(TREE.NETWORK)
-
-## Merge Manules data with the new climate data
-CLEAN.CLIMATE = COMBO.NICHE.CONTEXT[, c(1, 19:198)] 
-CLEAN.CLIMATE = join(TREE.NETWORK, CLEAN.CLIMATE)
-write.csv(CLEAN.CLIMATE, "./data/base/HIA_LIST/COMBO/TREE_NETWORK_NICHES.csv", row.names = FALSE)
-
-
-
-#########################################################################################################################
 ## Modelling lists :: which species have bias, and which have enough records in Australia? 
 SPP.BIAS             = read.csv("./data/base/HIA_LIST/COMBO/SPP_BIAS_LIST.csv",             stringsAsFactors = FALSE)
 SPP.RANDOM           = subset(SPP.BIAS, AUS_BOUND_BIAS == "TRUE")
@@ -258,8 +244,45 @@ renee.list       = renee.taxa[c("Species", "Growth_Form")]
 ## This merge won't get the ones that match to binomial
 HIA.list$Binomial <- sub('(^\\S+ \\S+).*', '\\1', HIA.list$Species) # \\s = white space; \\S = not white space
 
+
+## Now sum the number of growers across multiple varieties
+## Just get the count for each unique binomial
 n <- tapply(HIA.list$Number.of.growers, HIA.list$Binomial, sum, na.rm = TRUE)
 HIA.list$Number.of.growers.total <- n[HIA.list$Binomial]
+TOT.GROW = HIA.list[c("Binomial",
+                        "Number.of.growers.total")]
+names(TOT.GROW) = c("searchTaxon", "Total.growers")
+TOT.GROW        = TOT.GROW[!duplicated(TOT.GROW[,c('searchTaxon')]),] 
+
+
+## Join the total growers to the NICHE data
+COMBO.NICHE.CONTEXT = join(COMBO.NICHE.CONTEXT, TOT.GROW)
+COMBO.NICHE.CONTEXT =  COMBO.NICHE.CONTEXT[, c(1:14, 199, 16:198)] 
+names(COMBO.NICHE.CONTEXT[1:15])
+
+
+CLEAN.NICHE.CONTEXT = join(CLEAN.NICHE.CONTEXT, TOT.GROW)
+CLEAN.NICHE.CONTEXT =  CLEAN.NICHE.CONTEXT[, c(1:14, 199, 16:198)] 
+names(CLEAN.NICHE.CONTEXT[1:15])
+
+
+## Important, join on the total growers here
+names(COMBO.NICHE.CONTEXT)
+
+
+#########################################################################################################################
+## Update Manuel's data
+TREE.NETWORK = TREE.NETWORK[,c("searchTaxon",      "Plant.type",      "Origin",    "APNI",    "PLANTED_GROWING",  "Top_200",             
+                               "ACT",              "NSW",             "NT",        "QLD",     "SA",    "VIC",    "WA",              
+                               "Number.of.States", "No.of.Varieties", "Number.of.growers",    "AREA_OCCUPANCY",  "LGA.AGG")]
+names(TREE.NETWORK)
+
+## Merge Manules data with the new climate data
+CLEAN.CLIMATE = COMBO.NICHE.CONTEXT[, c(1, 15, 19:198)] 
+CLEAN.CLIMATE = join(TREE.NETWORK, CLEAN.CLIMATE)
+names(CLEAN.CLIMATE)
+write.csv(CLEAN.CLIMATE, "./data/base/HIA_LIST/COMBO/TREE_NETWORK_NICHES.csv", row.names = FALSE)
+
 
 ## Check this reduces the number of Top 200 missing from this list
 HIA.list = merge(HIA.list, spp.200, by = "Binomial", all.x = TRUE) 
@@ -272,7 +295,7 @@ str(HIA.list)
 head(HIA.list)
 unique(HIA.list$Top_200)
 unique(HIA.list$Origin)
-length(unique(HIA.list$Binomial)) ## 660 unique binomials
+length(unique(HIA.list$Binomial)) ## 654 unique binomials
 names(HIA.list)
 
 
@@ -331,7 +354,7 @@ HIA.VARIETY <-
   as.data.frame %>% 
   setNames(c('Binomial', 'No.of.Varieties')) %>% 
   full_join(DRAFT.HIA.TAXA) %>% 
-  dplyr::select(Species, Binomial, No.of.Varieties, Plant.type:WA, Number.of.growers, Number.of.States, Origin, Top_200)
+  dplyr::select(Species, Binomial, No.of.Varieties, Plant.type:WA, Number.of.growers.total, Number.of.States, Origin, Top_200)
 
 HIA.VARIETY %>% 
   filter(Binomial==Species)
@@ -548,7 +571,7 @@ EVERGREEN.RISK = COMBO.NICHE.CONTEXT[COMBO.NICHE.CONTEXT$searchTaxon %in% RISK.B
                                                                                                "Origin",
                                                                                                "Top_200",
                                                                                                "Plant.type",
-                                                                                               "Number.of.growers", 
+                                                                                               "Total.growers", 
                                                                                                "Number.of.States",
                                                                                                "No.of.Varieties")]
 
@@ -598,17 +621,17 @@ length(spp.extra)
 MOD.2 = COMBO.NICHE.CONTEXT[COMBO.NICHE.CONTEXT$searchTaxon %in% MOD_2$Species, ][,  c("searchTaxon",
                                                                                        "COMBO.count",
                                                                                        "AUS_RECORDS",
-                                                                                       "Number.of.growers",
+                                                                                       "Total.growers",
                                                                                        "Top_200")]
 
 
 ## So find 80 species which have the most growers, have the most Aus records and with at least 50 of them trees
-dim(subset(COMBO.NICHE.CONTEXT, Number.of.growers > 25 & AUS_RECORDS > 20 & COMBO.count > 100 & Top_200 == "TRUE"))
+dim(subset(COMBO.NICHE.CONTEXT, Total.growers > 25 & AUS_RECORDS > 20 & COMBO.count > 100 & Top_200 == "TRUE"))
 
-MILE.1         = subset(COMBO.NICHE.CONTEXT, Number.of.growers > 25 & AUS_RECORDS > 20 & COMBO.count > 100 & Top_200 == "TRUE")
-MILE.CLEAN     = subset(CLEAN.NICHE.CONTEXT, Number.of.growers > 25 & AUS_RECORDS > 20 & COMBO.count > 100 & Top_200 == "TRUE")
-MILE.1.EXTRA   = subset(CLEAN.NICHE.CONTEXT, Number.of.growers > 25 & AUS_RECORDS > 20 & COMBO.count > 100)
-MILE.1.EXTRA   = MILE.1.EXTRA[with(MILE.1.EXTRA, order(-Number.of.growers)), ]
+MILE.1         = subset(COMBO.NICHE.CONTEXT, Total.growers > 25 & AUS_RECORDS > 20 & COMBO.count > 100 & Top_200 == "TRUE")
+MILE.CLEAN     = subset(CLEAN.NICHE.CONTEXT, Total.growers > 25 & AUS_RECORDS > 20 & COMBO.count > 100 & Top_200 == "TRUE")
+MILE.1.EXTRA   = subset(CLEAN.NICHE.CONTEXT, Total.growers > 25 & AUS_RECORDS > 20 & COMBO.count > 100)
+MILE.1.EXTRA   = MILE.1.EXTRA[with(MILE.1.EXTRA, order(-Total.growers)), ]
 MILE.1.EXTRA   = MILE.1.EXTRA [!MILE.1.EXTRA$searchTaxon %in% MILE.CLEAN$searchTaxon, ]
 summary(MILE.1.EXTRA$AUS_RECORDS)
 summary(MILE.1.EXTRA$COMBO.count)
@@ -626,10 +649,10 @@ MILE.CLEAN.SPP =  CLEAN.NICHE.CONTEXT[CLEAN.NICHE.CONTEXT$searchTaxon %in% spp.m
 MILE.CLEAN.SPP =  join(MILE.CLEAN.SPP, SPP.BIAS, type = "left")
 
 MILE.1.SPP = MILE.1.SPP[,  c(1, 15, 16, 18, 7, 17, 3, 4, 5, 199, 19:198)]
-MILE.1.SPP = MILE.1.SPP[with(MILE.1.SPP, order(-Number.of.growers)), ]
+MILE.1.SPP = MILE.1.SPP[with(MILE.1.SPP, order(-Total.growers)), ]
 
 MILE.CLEAN.SPP = MILE.CLEAN.SPP[,  c(1, 15, 16, 18, 7, 17, 3, 4, 5, 199, 19:198)]
-MILE.CLEAN.SPP = MILE.CLEAN.SPP[with(MILE.CLEAN.SPP, order(-Number.of.growers)), ]
+MILE.CLEAN.SPP = MILE.CLEAN.SPP[with(MILE.CLEAN.SPP, order(-Total.growers)), ]
 
 #View(MILE.1.SPP)
 #View(MILE.CLEAN.SPP)
@@ -637,7 +660,7 @@ MILE.CLEAN.SPP = MILE.CLEAN.SPP[with(MILE.CLEAN.SPP, order(-Number.of.growers)),
 
 ## What is the distribution?
 dim(MILE.1.SPP)
-summary(MILE.1.SPP$Number.of.growers)
+summary(MILE.1.SPP$Total.growers)
 summary(MILE.1.SPP$AUS_RECORDS)
 summary(MILE.1.SPP$COMBO.count)
 
@@ -680,6 +703,10 @@ MILE.CLEAN.SPP[192, "Orign"] = "Native"
 View(MILE.CLEAN.SPP)
 
 
+## Check the join was ok
+length(unique(MILE.CLEAN.SPP$searchTaxon))
+
+
 ########################################################################################################################
 ## Proportions
 round(with(MILE.CLEAN.SPP, table(Plant.type)/sum(table(Plant.type))*100), 1)
@@ -709,7 +736,7 @@ MILE.CLEAN.MODULE = MILE.CLEAN.MODULE[!duplicated(MILE.CLEAN.MODULE$searchTaxon)
 
 ## Bar plot 
 module.counts <- table(MILE.CLEAN.MODULE$Module)
-barplot(counts, main = "Species per module",
+barplot(module.counts, main = "Species per module",
         xlab = "Module", ylab = "number of species", col = c("lightblue", "pink", "orange"))
         #legend = rownames(counts))
 
@@ -771,7 +798,7 @@ intersect(MOD_2$Species, test.spp)
 #                                                                          "Origin",
 #                                                                          "Top_200",
 #                                                                          "Plant.type",
-#                                                                          "Number.of.growers", 
+#                                                                          "Total.growers", 
 #                                                                          "Number.of.States")])
 
 MOD2.SPP = COMBO.NICHE.CONTEXT[COMBO.NICHE.CONTEXT$searchTaxon %in% MOD_2$Species, ]

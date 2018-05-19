@@ -22,7 +22,7 @@ length(GAIN.LOSS.list)
 
 
 ## Now combine the SUA tables for each species into one table 
-GAIN.LOSS.STABLE <- GAIN.LOSS.list[c(1:30)] %>%
+GAIN.LOSS.STABLE <- GAIN.LOSS.list %>%
   
   ## pipe the list into lapply
   lapply(function(x) {
@@ -40,15 +40,45 @@ GAIN.LOSS.STABLE <- GAIN.LOSS.list[c(1:30)] %>%
   bind_rows
 
 
-## This is a summary of maxent output for current conditions
+## This is a summary of maxent output for current conditions :: some of the species did not process properly
+summary(GAIN.LOSS.STABLE)
+GAIN.LOSS.STABLE[!complete.cases(GAIN.LOSS.STABLE), ]
+
+
 dim(GAIN.LOSS.STABLE)
 head(GAIN.LOSS.STABLE, 30)
+length(unique(GAIN.LOSS.STABLE$SPECIES))                                  ## 143 species rated as either 1 or 2 by Linda
 
 
 #########################################################################################################################
 ## Get the species with the highest gain
-GAIN.OVERALL = subset(GAIN.LOSS.STABLE, CHANGE == "GAINED")
-GAIN.OVERALL = GAIN.OVERALL[with(GAIN.OVERALL, rev(order(COUNT))), ]
+GAIN.OVERALL   = subset(GAIN.LOSS.STABLE, CHANGE == "GAINED") 
+GAIN.OVERALL   = GAIN.OVERALL[with(GAIN.OVERALL, rev(order(COUNT))), ]
+
+LOSS.OVERALL   = subset(GAIN.LOSS.STABLE, CHANGE == "LOST")
+LOSS.OVERALL   = LOSS.OVERALL[with(LOSS.OVERALL, rev(order(COUNT))), ]
+
+
+## Have a look
+head(GAIN.OVERALL, 50)
+head(LOSS.OVERALL, 50)
+GAIN.OVERALL[!complete.cases(GAIN.OVERALL), ]
+LOSS.OVERALL[!complete.cases(LOSS.OVERALL), ]
+
+
+## Break it down
+summary(GAIN.OVERALL$COUNT)
+summary(LOSS.OVERALL$COUNT)
+
+
+#########################################################################################################################
+## Now write CSV 
+write.csv(GAIN.LOSS.STABLE, "./output/tables/OVERALL_GAIN_LOSS_STABLE.csv", row.names = FALSE)
+write.csv(GAIN.OVERALL,     "./output/tables/OVERALL_GAIN.csv",             row.names = FALSE)
+write.csv(LOSS.OVERALL,     "./output/tables/OVERALL_LOSS.csv",             row.names = FALSE)
+
+
+
 
 
 #########################################################################################################################
@@ -257,6 +287,11 @@ plot(sum.2050)
 plot(sum.2070)
 
 
+#########################################################################################################################
+## write out rasters
+writeRaster(sum.2030, 'output/maxent/checked_spp_2030_richness.tif')
+writeRaster(sum.2050, 'output/maxent/checked_spp_2050_richness.tif')
+writeRaster(sum.2070, 'output/maxent/checked_spp_2070_richness.tif')
 
 
 
