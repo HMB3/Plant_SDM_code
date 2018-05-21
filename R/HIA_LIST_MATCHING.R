@@ -132,6 +132,8 @@ ALB.CONICAL  <- CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 
 ## Read in the niche data
 COMBO.NICHE.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_STANDARD_CLEAN.rds")
 CLEAN.NICHE.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_COORD_CLEAN.rds")
+MAXENT.CHECK        = read.csv("./output/maxent/MAXENT_CHECK_RATING.csv", stringsAsFactors = FALSE)
+OVERALL.LOSS        = read.csv("./output/tables/OVERALL_LOSS.csv", stringsAsFactors = FALSE)
 str(unique(COMBO.NICHE.CONTEXT$searchTaxon))  ## long enough
 
 
@@ -743,6 +745,19 @@ barplot(module.counts, main = "Species per module",
 
 ## Pie chart
 pie(module.counts, col = c("lightblue", "pink", "orange"))
+
+
+########################################################################################################################
+# Check the overlap between the models that have been checked, and the most popular
+setdiff(MILE.CLEAN.MODULE$searchTaxon, MAXENT.CHECK$searchTaxon)
+top.losers = head(unique(OVERALL.LOSS$SPECIES), 20)
+top.losers = gsub("_",  " ", top.losers)
+
+
+##
+MILE.LOSE  = MILE.CLEAN.MODULE[MILE.CLEAN.MODULE$searchTaxon %in% top.losers, ]
+MILE.LOSE  = MILE.LOSE[rev(order(MILE.LOSE$Total.growers)),]
+View(MILE.LOSE)
 
 
 ## Save ::
