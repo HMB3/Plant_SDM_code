@@ -18,8 +18,9 @@ source('./R/HIA_LIST_MATCHING.R')
 
 
 ## Create one big list of all the taxa
-all.taxa = read.csv("./data/base/HIA_LIST/HIA/RISK_BINOMIAL_DF.csv", stringsAsFactors = FALSE)  ## RISK.BINOMIAL
-all.taxa = as.list(all.taxa[1])  ## all.taxa = c("Callistemon citrinus", "Cryptocarya laevigata", "Cupianopsis anacardiodes")
+all.taxa     = read.csv("./MANUEL/nurseries_no_climate.csv", stringsAsFactors = FALSE)  ## RISK.BINOMIAL
+all.taxa     = all.taxa$species  ## all.taxa = c("Callistemon citrinus", "Cryptocarya laevigata", "Cupianopsis anacardiodes")
+all.taxa.rev = all.taxa[rev(order(all.taxa))]
 
 
 ########################################################################################################################

@@ -101,6 +101,7 @@ source('./R/MAXENT_FUNCTIONS.R')
 source('./R/MAPPING_FUNCTIONS.R')
 rasterOptions(tmpdir = file.path('H:/green_cities_sdm/RTEMP')) 
 
+
 #########################################################################################################################
 ## Read in spatial data
 aus         = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds")
@@ -132,8 +133,9 @@ ALB.CONICAL  <- CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 
 ## Read in the niche data
 COMBO.NICHE.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_STANDARD_CLEAN.rds")
 CLEAN.NICHE.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_COORD_CLEAN.rds")
-MAXENT.CHECK        = read.csv("./output/maxent/MAXENT_CHECK_RATING.csv", stringsAsFactors = FALSE)
-OVERALL.LOSS        = read.csv("./output/tables/OVERALL_LOSS.csv", stringsAsFactors = FALSE)
+MAXENT.CHECK        = read.csv("./output/maxent/MAXENT_CHECK_RATING.csv",       stringsAsFactors = FALSE)
+OVERALL.LOSS        = read.csv("./output/tables/OVERALL_LOSS.csv",              stringsAsFactors = FALSE)
+APPENDIX            = read.csv("./data/base/HIA_LIST/COMBO/Appendix_table.csv", stringsAsFactors = FALSE)
 str(unique(COMBO.NICHE.CONTEXT$searchTaxon))  ## long enough
 
 
@@ -162,8 +164,17 @@ renee.taxa           = read.csv("./data/base/HIA_LIST/HIA/RENEE_TAXA.csv",      
 renee.50             = read.csv("./data/base/HIA_LIST/HIA/RENEE_TOP_50.csv",                stringsAsFactors = FALSE)
 MQ.glasshouse        = read.csv("./data/base/HIA_LIST/HIA/MQ_glasshouse.csv",               stringsAsFactors = FALSE)
 Manuel.experimental  = read.csv("./data/base/HIA_LIST/HIA/Manuel_experimental_species.csv", stringsAsFactors = FALSE)
-Manuel.group         = read.csv("./MANUEL/SUA_by_SPP.csv", stringsAsFactors = FALSE)
-TREE.NETWORK         = read.csv("./MANUEL/COMBO_APNI.csv", stringsAsFactors = FALSE)
+Manuel.group         = read.csv("./MANUEL/SUA_by_SPP.csv",                                  stringsAsFactors = FALSE)
+TREE.NETWORK         = read.csv("./MANUEL/COMBO_APNI.csv",                                  stringsAsFactors = FALSE)
+NURSE.MATCH          = read.csv("./MANUEL/nurseries.csv",                                   stringsAsFactors = FALSE)
+campbelltown         = read.csv("./data/base/HIA_LIST/HIA/campbelltown_species.csv",        stringsAsFactors = FALSE)
+
+
+##
+intersect(campbelltown$Species, CLEAN.NICHE.CONTEXT$searchTaxon)
+intersect(NURSE.MATCH$species, CLEAN.NICHE.CONTEXT$searchTaxon)
+new.spp  = trimws(unique((sort(c(NURSE.MATCH$species, campbelltown$Species)))))
+camp.spp = trimws(campbelltown$Species)
 
 
 #########################################################################################################################
@@ -677,6 +688,12 @@ spp.mile.rev  = sort(spp.mile, decreasing = TRUE)
 spp_mile      = gsub(" ", "_", spp.mile)
 spp_mile_rev  = sort(spp_mile, decreasing = TRUE)
 
+spp_new      = gsub(" ", "_", new.spp)
+spp_new_rev  = sort(spp_new, decreasing = TRUE)
+
+
+spp_camp     = gsub(" ", "_", camp.spp)
+
 
 ## Add plant type data for the missing species not sure here
 unique(MILE.CLEAN.SPP$Plant.type)
@@ -760,11 +777,24 @@ MILE.LOSE  = MILE.LOSE[rev(order(MILE.LOSE$Total.growers)),]
 View(MILE.LOSE)
 
 
+## Intersect existing list with the number of growers
+APP.GROW = COMBO.NICHE.CONTEXT[,  c("searchTaxon",
+                                    "Total.growers")]
+APPENDIX = join(APPENDIX, APP.GROW)
+
+
+## Proportions for this appendix
+with(APPENDIX , table(Plant.type))
+round(with(APPENDIX , table(Plant.type)/sum(table(Plant.type))*100), 1)
+
+
 ## Save ::
 ## setdiff(MOD.2.3$Species, MILE.1.SPP$searchTaxon)
-write.csv(MILE.1.SPP,        "./data/base/HIA_LIST/COMBO/MILESTONE_TAXA_APRIL_2018_STANDARD_CLEAN.csv",      row.names = FALSE)
-write.csv(MILE.CLEAN.MODULE, "./data/base/HIA_LIST/COMBO/MILESTONE_TAXA_APRIL_2018_COORD_CLEAN_MODULES.csv", row.names = FALSE)
-write.csv(MOD.2,             "./data/base/HIA_LIST/COMBO/MOD_2_SPP_RECORDS.csv",                             row.names = FALSE)
+write.csv(MILE.1.SPP,          "./data/base/HIA_LIST/COMBO/MILESTONE_TAXA_APRIL_2018_STANDARD_CLEAN.csv",      row.names = FALSE)
+write.csv(MILE.CLEAN.MODULE,   "./data/base/HIA_LIST/COMBO/MILESTONE_TAXA_APRIL_2018_COORD_CLEAN_MODULES.csv", row.names = FALSE)
+write.csv(MOD.2,               "./data/base/HIA_LIST/COMBO/MOD_2_SPP_RECORDS.csv",                             row.names = FALSE)
+write.csv(COMBO.NICHE.CONTEXT, "./data/base/HIA_LIST/COMBO/COMBO_TOT_GROWERS.csv",                             row.names = FALSE)
+write.csv(APPENDIX,            "./data/base/HIA_LIST/COMBO/APPENDIX_TOT_GROWERS.csv",                          row.names = FALSE)
 
 
 

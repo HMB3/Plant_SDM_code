@@ -16,13 +16,16 @@
 
 #########################################################################################################################
 ## Load previous data
-load("./data/base/HIA_LIST/COMBO/GBIF_TRIM_LATEST.RData")
+GBIF.TRIM = load("./data/base/HIA_LIST/COMBO/GBIF_TRIM_LATEST.RData")
 rasterOptions(tmpdir = file.path("'H:/green_cities_sdm/RTEMP")) 
 # dim(GBIF.TRIM)
 # names(GBIF.TRIM)
 # length(unique(GBIF.TRIM$searchTaxon))  ## has the list updated with extra species? YES! unique(GBIF.TRIM$searchTaxon)
 # setdiff(RISK.BINOMIAL, GBIF.TRIM$searchTaxon) 
 
+
+## Just get the newly downloaded species
+GBIF.TRIM = GBIF.TRIM[GBIF.TRIM$searchTaxon %in% new.spp, ]
 
 
 #########################################################################################################################

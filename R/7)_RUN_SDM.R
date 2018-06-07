@@ -94,34 +94,34 @@ aus = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds") %>%
 
 #########################################################################################################################
 ## Loop over the species list and plot the occurrence data for each to check the data bias
-TAXA = as.list(sort(unique(intersect(SDM.DATA.ALL$searchTaxon, spp.mile))))
-
-for (i in 1:length(TAXA)) {
-
-  ## Create points for each species
-  spp.points <- SDM.DATA.ALL[SDM.DATA.ALL$searchTaxon == TAXA[i], ] %>%
-    spTransform(CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'))
-
-  ## Print to file
-  save_name = gsub(' ', '_', TAXA[i])
-  save_dir  = "output/maxent/summary"
-  png(sprintf('%s/%s_%s.png', save_dir,
-              save_name, "Australian_points"),
-      3236, 2000, units = 'px', res = 300)
-
-  ## set margins
-  par(mar   = c(3, 3, 5, 3),  ## b, l, t, r
-      #mgp   = c(9.8, 2.5, 0),
-      oma   = c(1.5, 1.5, 1.5, 1.5))
-
-  ## Plot just the Australian points
-  plot(aus, main = TAXA[i])
-  points(spp.points, col = "red", cex = .3, pch = 19)
-
-  ## Finish the device
-  dev.off()
-
-}
+# TAXA = as.list(sort(unique(intersect(SDM.DATA.ALL$searchTaxon, spp.mile))))
+# 
+# for (i in 1:length(TAXA)) {
+# 
+#   ## Create points for each species
+#   spp.points <- SDM.DATA.ALL[SDM.DATA.ALL$searchTaxon == TAXA[i], ] %>%
+#     spTransform(CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'))
+# 
+#   ## Print to file
+#   save_name = gsub(' ', '_', TAXA[i])
+#   save_dir  = "output/maxent/summary"
+#   png(sprintf('%s/%s_%s.png', save_dir,
+#               save_name, "Australian_points"),
+#       3236, 2000, units = 'px', res = 300)
+# 
+#   ## set margins
+#   par(mar   = c(3, 3, 5, 3),  ## b, l, t, r
+#       #mgp   = c(9.8, 2.5, 0),
+#       oma   = c(1.5, 1.5, 1.5, 1.5))
+# 
+#   ## Plot just the Australian points
+#   plot(aus, main = TAXA[i])
+#   points(spp.points, col = "red", cex = .3, pch = 19)
+# 
+#   ## Finish the device
+#   dev.off()
+# 
+# }
 
 
 
@@ -134,6 +134,8 @@ for (i in 1:length(TAXA)) {
 
 #########################################################################################################################
 ## Run Maxent using a random selection of background points. 
+## synonyms = c("Waterhousea floribunda", "Sannantha virgata", "Callistemon citrinus")
+## 'Angophora costata' %in% SDM.DATA.ALL$searchTaxon  
 projection(template.raster);projection(SDM.DATA.ALL);projection(Koppen_1975)
 
 

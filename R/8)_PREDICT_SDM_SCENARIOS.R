@@ -148,6 +148,7 @@ spp_mile     <- spp_mile  [! spp_mile %in% no_data]
 spp_mile_rev <- spp_mile_rev  [! spp_mile_rev %in% no_data]
 no_data %in% spp_mile
 no_data %in% spp_mile_rev
+# spp_mile = c(spp_mile[1], "Melaleuca_viminalis")
 
 
 ## This is tricky, can the species check come before the division?
@@ -222,7 +223,7 @@ records_setting          = "COORD_CLEAN"
 
 ## Create a file list for each model run
 maxent.tables = list.files(path.set.var)             ## Chagne this for each variable selection strategy
-maxent.tables = intersect(maxent.tables, spp_mile)
+maxent.tables = intersect(maxent.tables, spp_mile)   ## Change this for new species lists
 maxent_path   = path.set.var                         ## Chagne this for each variable selection strategy
 length(maxent.tables)                                ## Should match the number of taxa tested
 no_data %in% maxent.tables
@@ -496,10 +497,6 @@ tail(SDM.RESULTS.DIR, 20);tail(comb_spp, 20); tail(MAXENT.SUM.TEST, 20)[, c("sea
 
 #########################################################################################################################
 ## Loop over directories, species and one threshold for each, also taking a time_slice argument.
-## pervious version in R/old/model_combine.R
-comb_spp_rev        = sort(comb_spp, decreasing = TRUE)
-SDM.RESULTS.DIR.REV = sort(comb_spp, decreasing = TRUE)
-
 DIR        = SDM.RESULTS.DIR[96] 
 species    = comb_spp[96] 
 thresh     = thresh.max.train[96] 

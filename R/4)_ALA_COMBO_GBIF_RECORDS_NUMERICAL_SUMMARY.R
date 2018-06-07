@@ -210,7 +210,7 @@ env.grids.current = stack(
 
 ## Also get the PET raster
 PET               = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
-summary(PET)
+#summary(PET)
 
 
 #########################################################################################################################
