@@ -151,12 +151,13 @@ no_data %in% spp_mile_rev
 # spp_mile = c(spp_mile[1], "Melaleuca_viminalis")
 
 
-## This is tricky, can the species check come before the division?
+## Create a variable for the list to iterate over, which can be used in all the functions
+spp_list = spp_camp
 
 
 ## 2030
 env.grids.2030 = tryCatch(project_maxent_grids(scen_list     = scen_2030,
-                                               species_list  = spp_mile,
+                                               species_list  = spp_list ,
                                                maxent_path   = "./output/maxent/SET_VAR_KOPPEN",
                                                climate_path  = "./data/base/worldclim/aus/1km/bio",
                                                grid_names    = grid.names,
@@ -173,7 +174,7 @@ env.grids.2030 = tryCatch(project_maxent_grids(scen_list     = scen_2030,
 
 ## 2050
 env.grids.2050 = tryCatch(project_maxent_grids(scen_list     = scen_2050,
-                                               species_list  = spp_mile,
+                                               species_list  = spp_list ,
                                                time_slice    = 50,
                                                maxent_path   = "./output/maxent/SET_VAR_KOPPEN",
                                                climate_path  = "./data/base/worldclim/aus/1km/bio",
@@ -189,7 +190,7 @@ env.grids.2050 = tryCatch(project_maxent_grids(scen_list     = scen_2050,
 
 ## 2070
 env.grids.2070 = tryCatch(project_maxent_grids(scen_list     = scen_2070,
-                                               species_list  = spp_mile,
+                                               species_list  = spp_list ,
                                                time_slice    = 70,
                                                maxent_path   = "./output/maxent/SET_VAR_KOPPEN",
                                                climate_path  = "./data/base/worldclim/aus/1km/bio",
@@ -223,7 +224,7 @@ records_setting          = "COORD_CLEAN"
 
 ## Create a file list for each model run
 maxent.tables = list.files(path.set.var)             ## Chagne this for each variable selection strategy
-maxent.tables = intersect(maxent.tables, spp_mile)   ## Change this for new species lists
+maxent.tables = intersect(maxent.tables, spp_list )   ## Change this for new species lists
 maxent_path   = path.set.var                         ## Chagne this for each variable selection strategy
 length(maxent.tables)                                ## Should match the number of taxa tested
 no_data %in% maxent.tables
@@ -289,8 +290,8 @@ head(MAXENT.SUMMARY, 20)[1:9]
 
 ## Now check the match between the species list, and the results list. These need to match, so we can access
 ## the right threshold for each species.
-length(intersect(spp_mile, MAXENT.SUMMARY$searchTaxon)) ## accesssing the files from these directories... 
-MAXENT.SUM.TEST  =  MAXENT.SUMMARY[MAXENT.SUMMARY$searchTaxon %in% spp_mile, ] 
+length(intersect(spp_list , MAXENT.SUMMARY$searchTaxon)) ## accesssing the files from these directories... 
+MAXENT.SUM.TEST  =  MAXENT.SUMMARY[MAXENT.SUMMARY$searchTaxon %in% spp_list , ] 
 comb_spp = unique(MAXENT.SUM.TEST$searchTaxon)
 length(comb_spp)
 
@@ -318,7 +319,7 @@ SDM.RESULTS.DIR <- comb_spp[c(1:length(comb_spp))] %>%
 
 ## Get the number of aus records too ....................................................................................
 NICHE.CONTEXT = COMBO.NICHE.CONTEXT[, c("searchTaxon",      "COMBO.count",       "AUS_RECORDS",       "Plant.type",        "Origin", 
-                                        "Top_200",          "Number.of.growers", "Number.of.States")]
+                                        "Top_200",          "Total.growers", "Number.of.States")]
 
 
 ## Check with John and Linda which columns will help with model selection
