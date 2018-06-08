@@ -152,12 +152,12 @@ no_data %in% spp_mile_rev
 
 
 ## Create a variable for the list to iterate over, which can be used in all the functions
-spp_list = spp_camp
+spp_list = spp_camp # c(spp_list[28], spp_list[29])
 
 
 ## 2030
 env.grids.2030 = tryCatch(project_maxent_grids(scen_list     = scen_2030,
-                                               species_list  = spp_list ,
+                                               species_list  = spp_list,
                                                maxent_path   = "./output/maxent/SET_VAR_KOPPEN",
                                                climate_path  = "./data/base/worldclim/aus/1km/bio",
                                                grid_names    = grid.names,
@@ -174,7 +174,7 @@ env.grids.2030 = tryCatch(project_maxent_grids(scen_list     = scen_2030,
 
 ## 2050
 env.grids.2050 = tryCatch(project_maxent_grids(scen_list     = scen_2050,
-                                               species_list  = spp_list ,
+                                               species_list  = spp_list,
                                                time_slice    = 50,
                                                maxent_path   = "./output/maxent/SET_VAR_KOPPEN",
                                                climate_path  = "./data/base/worldclim/aus/1km/bio",
@@ -190,7 +190,7 @@ env.grids.2050 = tryCatch(project_maxent_grids(scen_list     = scen_2050,
 
 ## 2070
 env.grids.2070 = tryCatch(project_maxent_grids(scen_list     = scen_2070,
-                                               species_list  = spp_list ,
+                                               species_list  = spp_list,
                                                time_slice    = 70,
                                                maxent_path   = "./output/maxent/SET_VAR_KOPPEN",
                                                climate_path  = "./data/base/worldclim/aus/1km/bio",
@@ -224,7 +224,7 @@ records_setting          = "COORD_CLEAN"
 
 ## Create a file list for each model run
 maxent.tables = list.files(path.set.var)             ## Chagne this for each variable selection strategy
-maxent.tables = intersect(maxent.tables, spp_list )   ## Change this for new species lists
+maxent.tables = intersect(maxent.tables, spp_list)   ## Change this for new species lists
 maxent_path   = path.set.var                         ## Chagne this for each variable selection strategy
 length(maxent.tables)                                ## Should match the number of taxa tested
 no_data %in% maxent.tables
@@ -529,6 +529,8 @@ area_occ   = 10
 
 #########################################################################################################################
 ## Combine output and calculate gain and loss for 2030 
+## c(comb_spp[9], comb_spp[11])
+DIR        = SDM.RESULTS.DIR.LOW[13]
 suitability.2030 = tryCatch(mapply(combine_gcm_threshold,
                                    DIR_list     = SDM.RESULTS.DIR,
                                    species_list = comb_spp,
@@ -600,8 +602,7 @@ suitability.2070 = tryCatch(mapply(combine_gcm_threshold,
 #########################################################################################################################
 
 
-## Test it first
-DIR        = SDM.RESULTS.DIR.LOW[13]
+## Test it first 
 species    = spp_lower_thresh[13]
 thresh     = percent.10.log.low[13]
 percent    = percent.10.om.low[13]

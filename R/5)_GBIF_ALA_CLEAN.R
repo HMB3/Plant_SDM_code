@@ -43,7 +43,7 @@ source('./R/HIA_LIST_MATCHING.R')
 
 ## HB Do an example species :: SPP Brachypoda
 GBIF.TRIM.TEST  = COMBO.RASTER.CONTEXT#[COMBO.RASTER.CONTEXT$searchTaxon %in% spp.all, ]      ## kop.spp for the test spp
-SPP.TEST        = subset(GBIF.TRIM.TEST, searchTaxon == "Cordyline australis")                ## Change this to the captial spp
+SPP.TEST        = subset(GBIF.TRIM.TEST, searchTaxon == "Ficus hillii")                ## Change this to the captial spp
 
 
 str(unique(GBIF.TRIM.TEST$searchTaxon))
