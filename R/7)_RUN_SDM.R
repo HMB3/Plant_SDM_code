@@ -140,7 +140,7 @@ projection(template.raster);projection(SDM.DATA.ALL);projection(Koppen_1975)
 
 
 ## Loop over all the species spp = spp.combo[31]
-lapply(spp.combo, function(spp){ 
+lapply(new.spp, function(spp){ 
   
   ## Skip the species if the directory already exists, before the loop
   outdir <- 'output/maxent/SET_VAR_KOPPEN'

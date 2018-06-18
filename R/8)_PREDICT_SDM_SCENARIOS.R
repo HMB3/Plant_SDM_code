@@ -215,6 +215,7 @@ env.grids.2070 = tryCatch(project_maxent_grids(scen_list     = scen_2070,
 #########################################################################################################################
 ## First, read in the list of files for the current models, and specify the file path
 path.set.var             = "./output/maxent/SET_VAR_KOPPEN/"
+spp_list                 = spp_mile
 
 
 ## Create an object for the maxent settings

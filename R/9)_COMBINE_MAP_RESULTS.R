@@ -10,6 +10,20 @@
 source('./R/HIA_LIST_MATCHING.R')
 
 
+## Read in SUAs and create species lists
+ALL.SUA.POP       = read.csv("./data/base/CONTEXTUAL/ABS_SUA_POP.csv", stringsAsFactors = FALSE)
+MAXENT.CHECK      = read.csv("./output/maxent/MAXENT_CHECK_RATING.csv", stringsAsFactors = FALSE)
+
+spp.lower.thresh  = subset(MAXENT.CHECK, CHECK_MAP == 2 | CHECK_MAP == 3)$searchTaxon
+spp_lower_thresh  = gsub(" ", "_", spp.lower.thresh)
+
+spp.best.thresh   = subset(MAXENT.CHECK, CHECK_MAP == 1 | CHECK_MAP == 2)$searchTaxon
+spp_best_thresh   = gsub(" ", "_", spp.best.thresh)
+
+
+
+
+
 #########################################################################################################################
 ## 1). COMBINE OVERALL TABLES OF SPECIES GAIN/LOSS ACROSS AUSTRALIA
 #########################################################################################################################
@@ -234,7 +248,17 @@ best.dirs <- list.dirs(path = "./output/maxent/SET_VAR_KOPPEN/", full.names = FA
 best.dirs = best.dirs [best.dirs %in% spp_best_thresh]
 
 
-## Loop over the directories for the best species
+## Loop over the directories for the best species: current maps
+raster.current <- sapply(best.dirs, function(x) {
+  
+  ## List the files for that time slice
+  list.files(paste0("./output/maxent/SET_VAR_KOPPEN/", x), pattern = 'current_suit_above', full.names = TRUE, recursive = TRUE)
+  
+})
+
+
+
+## 2030 maps
 raster.2030 <- sapply(best.dirs, function(x) {
   
   ## List the files for that time slice
@@ -243,7 +267,7 @@ raster.2030 <- sapply(best.dirs, function(x) {
 })
 
 
-## Loop over the directories for the best species
+## 2050 maps
 raster.2050 <- sapply(best.dirs, function(x) {
   
   ## List the files for that time slice
@@ -252,7 +276,7 @@ raster.2050 <- sapply(best.dirs, function(x) {
 })
 
 
-## Loop over the directories for the best species
+## 2070 maps
 raster.2070 <- sapply(best.dirs, function(x) {
   
   ## List the files for that time slice
@@ -263,18 +287,25 @@ raster.2070 <- sapply(best.dirs, function(x) {
 
 #########################################################################################################################
 ## Now unlist so we can create a raster stack
+raster.current  = unlist(raster.current)
 raster.2030  = unlist(raster.2030)
 raster.2050  = unlist(raster.2050)
 raster.2070  = unlist(raster.2070)
 
 
+## Check length
+length(raster.current);length(raster.2030);length(raster.2050);length(raster.2070)
+
+
 ## Then create raster stacks and sum
-stack.2030   = stack(raster.2030)
-stack.2050   = stack(raster.2050)
-stack.2070   = stack(raster.2070)
+stack.current   = stack(raster.current, quick = TRUE)
+stack.2030      = stack(raster.2030, quick = TRUE)
+stack.2050      = stack(raster.2050, quick = TRUE)
+stack.2070      = stack(raster.2070, quick = TRUE)
 
 
 ## Summing takes a long time
+sum.current  = sum(stack.current) 
 sum.2030     = sum(stack.2030) 
 sum.2050     = sum(stack.2050) 
 sum.2070     = sum(stack.2070) 
@@ -282,6 +313,7 @@ sum.2070     = sum(stack.2070)
 
 #########################################################################################################################
 ## Plot to check
+plot(sum.current)
 plot(sum.2030)
 plot(sum.2050)
 plot(sum.2070)
@@ -289,9 +321,10 @@ plot(sum.2070)
 
 #########################################################################################################################
 ## write out rasters
-writeRaster(sum.2030, 'output/maxent/checked_spp_2030_richness.tif')
-writeRaster(sum.2050, 'output/maxent/checked_spp_2050_richness.tif')
-writeRaster(sum.2070, 'output/maxent/checked_spp_2070_richness.tif')
+writeRaster(sum.current, 'output/maxent/checked_spp_current_richness.tif')
+writeRaster(sum.2030,    'output/maxent/checked_spp_2030_richness.tif')
+writeRaster(sum.2050,    'output/maxent/checked_spp_2050_richness.tif')
+writeRaster(sum.2070,    'output/maxent/checked_spp_2070_richness.tif')
 
 
 

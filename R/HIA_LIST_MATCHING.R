@@ -719,7 +719,7 @@ MILE.CLEAN.SPP[183, "Orign"] = "Native"
 MILE.CLEAN.SPP[184, "Orign"] = "Native"
 MILE.CLEAN.SPP[188, "Orign"] = "Exotic"
 MILE.CLEAN.SPP[192, "Orign"] = "Native"
-View(MILE.CLEAN.SPP)
+#View(MILE.CLEAN.SPP)
 
 
 ## Check the join was ok
@@ -774,7 +774,7 @@ top.losers = gsub("_",  " ", top.losers)
 ##
 MILE.LOSE  = MILE.CLEAN.MODULE[MILE.CLEAN.MODULE$searchTaxon %in% top.losers, ]
 MILE.LOSE  = MILE.LOSE[rev(order(MILE.LOSE$Total.growers)),]
-View(MILE.LOSE)
+#View(MILE.LOSE)
 
 
 ## Intersect existing list with the number of growers
