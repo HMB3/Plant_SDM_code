@@ -23,7 +23,8 @@ packages <- c('ggplot2',    'plyr',      'reshape2',  'RColorBrewer',  'scales',
               'ff',         'things',    'raster',    'rgdal',         'data.table',  'RColorBrewer',
               'sp',         'rgeos',     'gdalUtils', 'rmaxent',       'dplyr',       'rasterVis',
               'readr',      'readr',     'parallel',  'dismo',         'tidyr',       'envirem',
-              'Taxonstand', 'biomod2',   'vegan',     'session',       'rapportools', 'BiodiversityR') # class(packages)
+              'Taxonstand', 'biomod2',   'vegan',     'session',       'rapportools', 'BiodiversityR',
+              'spThin') # class(packages)
 
 
 #########################################################################################################################

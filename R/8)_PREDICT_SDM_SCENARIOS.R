@@ -143,16 +143,21 @@ grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',   
 #########################################################################################################################
 ## For each species, use a function to create raster files and maps under all six GCMs at each time step
 ## First remove species without data from step 7
-no_data      <- c ("Baeckea_virgata", "Kennedia_beckxiana", "Grevillea_rivularis")
-spp_mile     <- spp_mile  [! spp_mile %in% no_data]
-spp_mile_rev <- spp_mile_rev  [! spp_mile_rev %in% no_data]
-no_data %in% spp_mile
-no_data %in% spp_mile_rev
+spp_list                 = spp_new
+no_data      <- c ("Baeckea_virgata", "Kennedia_beckxiana", "Grevillea_rivularis", "Arctostaphylos_densiflora", 
+                   "Cupressocyparis_leylandii", "Eucalyptus_intermedia", "Ficus_hillii", "Pentaceras_australi", 
+                   "Pentaceras_australis", "Pouteria_australis", "Pouteria_chartacea", "Pouteria_eerwah", 
+                   "Radermachera_gigantea", "Randia_benthamiana", "Raphiolepis_umbellata", "Tilia_mongolica", 
+                   "Trema_aspera", "Xanthostemon_verticillatus")
+spp_list     <- spp_list [! spp_list %in% no_data]
+#spp_list_rev <- spp_list_rev  [! spp_list_rev %in% no_data]
+no_data %in% spp_list
+#no_data %in% spp_list_rev
 # spp_mile = c(spp_mile[1], "Melaleuca_viminalis")
 
 
 ## Create a variable for the list to iterate over, which can be used in all the functions
-spp_list = spp_camp # c(spp_list[28], spp_list[29])
+#spp_list = spp_camp # c(spp_list[28], spp_list[29])
 
 
 ## 2030
@@ -215,7 +220,6 @@ env.grids.2070 = tryCatch(project_maxent_grids(scen_list     = scen_2070,
 #########################################################################################################################
 ## First, read in the list of files for the current models, and specify the file path
 path.set.var             = "./output/maxent/SET_VAR_KOPPEN/"
-spp_list                 = spp_mile
 
 
 ## Create an object for the maxent settings
@@ -363,10 +367,40 @@ View(MAXENT.CHECK.TABLE)
 ## The trouble here is that we might need to change the threshold for different species, rather than using the same one 
 ## for all of them. That changes the order of lists, which is a problem for looping over them.
 
-## So how can we make the lists match up if they are non-sequential? By including the species in the df before the sublist 
-## This is circular...
-MAXENT.CHECK      = read.csv("./output/maxent/MAXENT_CHECK_RATING.csv", stringsAsFactors = FALSE)
+## Read in the table of checked maps. Then subset to just the species with dodgy maps
+#MAXENT.CHECK      = read.csv("./output/maxent/MAXENT_CHECK_RATING.csv", stringsAsFactors = FALSE)
+MAXENT.CHECK   = read.csv("./output/maxent/CHECK_SPP_MAPS_BIAS_JUNE_2016.csv", stringsAsFactors = FALSE)
+#MAXENT.CHECK   = read.csv("./output/maxent/CAMPBELLTOWN_RATINGS.csv",          stringsAsFactors = FALSE)
 
+
+#########################################################################################################################
+## Isolate the species which have bad maps
+MX.POOR        = subset(MAXENT.CHECK, CHECK_MAP == 2 | CHECK_MAP == 3)#[, c("searchTaxon", "CHECK_MAP", "Top_200", "Origin")]
+MX.POOR.TOP    = subset(MX.POOR,     Top_200 == "TRUE")[, c("searchTaxon", "CHECK_MAP")]
+MX.POOR.E      = subset(MX.POOR,     Origin == "Exotic")[, c("searchTaxon", "CHECK_MAP")]
+MX.POOR.TOP.E  = subset(MX.POOR,     Origin == "Exotic" & Top_200 == "TRUE")[, c("searchTaxon", "CHECK_MAP")]
+
+
+## Merge with full results
+MX.POOR.TOP.E = join(MX.POOR.TOP.E, MAXENT.CHECK.TABLE, type = "left")
+MX.POOR.TOP.E = MX.POOR.TOP.E[with(MX.POOR.TOP.E , rev(order(Total.growers))), ]
+
+
+
+MX.POOR        = MX.POOR[with(MX.POOR , rev(order(Total.growers))), ]
+MX.POOR.TOP    = MX.POOR.TOP[with(MX.POOR.TOP , rev(order(Total.growers))), ]
+MX.POOR.E      = MX.POOR.E[with(MX.POOR.E , rev(order(Total.growers))), ]
+MX.POOR.TOP.E  = MX.POOR.TOP.E[with(MX.POOR.TOP.E , rev(order(Total.growers))), ]
+
+View(MX.POOR.E)
+View(MX.POOR.TOP.E)
+
+
+## How do we use this to check if the poor maps are due to errors in the code?
+
+
+#########################################################################################################################
+## Now create a list of thresholds to loop over using the mapping functions
 spp.lower.thresh  = subset(MAXENT.CHECK, CHECK_MAP == 2 | CHECK_MAP == 3)$searchTaxon
 spp_lower_thresh  = gsub(" ", "_", spp.lower.thresh)
 
@@ -499,10 +533,10 @@ tail(SDM.RESULTS.DIR, 20);tail(comb_spp, 20); tail(MAXENT.SUM.TEST, 20)[, c("sea
 
 #########################################################################################################################
 ## Loop over directories, species and one threshold for each, also taking a time_slice argument.
-DIR        = SDM.RESULTS.DIR[96] 
-species    = comb_spp[96] 
-thresh     = thresh.max.train[96] 
-percent    = percent.10.log[96]
+DIR        = SDM.RESULTS.DIR[3] 
+species    = comb_spp[3] 
+thresh     = thresh.max.train[3] 
+percent    = percent.10.log[3]
 time_slice = 30
 area_occ   = 10
 

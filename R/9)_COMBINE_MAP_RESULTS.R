@@ -304,6 +304,10 @@ stack.2050      = stack(raster.2050, quick = TRUE)
 stack.2070      = stack(raster.2070, quick = TRUE)
 
 
+## writeRaster(stack.2030, filename = 'output/maxent/multilayer.tif', options = "INTERLEAVE=BAND", overwrite = TRUE)
+## mystack = stack("multilayer.tif")
+
+
 ## Summing takes a long time
 sum.current  = sum(stack.current) 
 sum.2030     = sum(stack.2030) 

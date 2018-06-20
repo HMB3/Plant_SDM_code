@@ -82,6 +82,7 @@ library(lattice)
 library(latticeExtra)
 library(PerformanceAnalytics)
 library(timetk)
+library(spThin)
 
 
 ##
