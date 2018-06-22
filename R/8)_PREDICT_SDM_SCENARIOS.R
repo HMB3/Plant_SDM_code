@@ -143,7 +143,7 @@ grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',   
 #########################################################################################################################
 ## For each species, use a function to create raster files and maps under all six GCMs at each time step
 ## First remove species without data from step 7
-spp_list                 = spp_new
+spp_list        = combo_spp
 no_data      <- c ("Baeckea_virgata", "Kennedia_beckxiana", "Grevillea_rivularis", "Arctostaphylos_densiflora", 
                    "Cupressocyparis_leylandii", "Eucalyptus_intermedia", "Ficus_hillii", "Pentaceras_australi", 
                    "Pentaceras_australis", "Pouteria_australis", "Pouteria_chartacea", "Pouteria_eerwah", 
@@ -220,7 +220,7 @@ env.grids.2070 = tryCatch(project_maxent_grids(scen_list     = scen_2070,
 #########################################################################################################################
 ## First, read in the list of files for the current models, and specify the file path
 path.set.var             = "./output/maxent/SET_VAR_KOPPEN/"
-
+#spp_list                 = combo_spp 
 
 ## Create an object for the maxent settings
 model.selection.settings = "Set_variables"  
@@ -295,7 +295,7 @@ head(MAXENT.SUMMARY, 20)[1:9]
 
 ## Now check the match between the species list, and the results list. These need to match, so we can access
 ## the right threshold for each species.
-length(intersect(spp_list , MAXENT.SUMMARY$searchTaxon)) ## accesssing the files from these directories... 
+length(intersect(spp_list , MAXENT.SUMMARY$searchTaxon)) ## Accesssing the files from these directories... 
 MAXENT.SUM.TEST  =  MAXENT.SUMMARY[MAXENT.SUMMARY$searchTaxon %in% spp_list , ] 
 comb_spp = unique(MAXENT.SUM.TEST$searchTaxon)
 length(comb_spp)
