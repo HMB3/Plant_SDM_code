@@ -98,7 +98,7 @@ unique(SPP.REC.NSW$AUS_STATE)
 dim(SPP.REC.NSW)
 
 
-## S0 27% of all the clean data from the whole world is in NSW...
+## So 27% of all the clean data from the whole world is in NSW...
 dim(SPP.REC.NSW)[1]/dim(COMBO.STATE.RAIN)[1]*100
 dim(SPP.REC.QLD)[1]/dim(COMBO.STATE.RAIN)[1]*100
 dim(SPP.REC.VIC)[1]/dim(COMBO.STATE.RAIN)[1]*100
@@ -108,13 +108,14 @@ dim(SPP.REC.SA)[1]/dim(COMBO.STATE.RAIN)[1]*100
 ## Of the Austraian data, most is in NSW
 unique(COMBO.STATE.RAIN$AUS_STATE)
 state.counts <- table(COMBO.STATE.RAIN$AUS_STATE)
-barplot(state.counts, main = "Records per state",
+barplot(state.counts, main = "All records per state",
         xlab = "State", 
         ylab = "No. records", 
         col = c("lightblue", "pink", "orange", "green", "grey", "beige", "coral", "chocolate4", "aquamarine", "blueviolet"))
 
+
 ## Pie chart
-pie(state.counts)
+pie(state.counts, main = "AUS records per state")
 
 
 #########################################################################################################################    
@@ -124,92 +125,12 @@ pie(state.counts)
 ## a new data.frame with the specified number of samples from each group. 
 
 
+## Let's take a 50% sample from all rainfall groups
+unique(SPP.REC.NSW$AUS_RN_ZN)
+set.seed(1)
+SPP.REC.NSW = stratified(SPP.REC.NSW, "AUS_RN_ZN", .5)
 
 
-
-#########################################################################################################################
-## Now thin the records 
-thinned_records <-
-  spThin::thin(loc.data  = SPP.TEST, 
-               lat.col  = "lat", 
-               long.col = "lon", 
-               spec.col = "searchTaxon", 
-               thin.par = 20, 
-               reps     = 1, 
-               locs.thinned.list.return = TRUE, 
-               write.files              = FALSE)
-
-
-## Check it has worked
-class(thinned_dataset_test[[1]])
-thinned = thinned_dataset_test[[1]]
-
-
-## Create spatialpoints data frames
-TEST   = SpatialPointsDataFrame(coords      = thinned[c("Longitude", "Latitude")], 
-                                data        = thinned,
-                                proj4string = CRS.WGS.84)
-
-TEST.INT   = SpatialPointsDataFrame(coords  = SPP.TEST[c("lon", "lat")], 
-                                    data        = SPP.TEST,
-                                    proj4string = CRS.WGS.84)
-
-
-## Then you can intersect the orginal data with the thinned data, to retrieve the columns
-test.int = raster::intersect(TEST, TEST.INT)
-
-
-
-## In the case above, we found that 10 repetitions were sufficient to return spatially thinned datasets with the 
-## optimal number of occurrence records (124). Because this is a random process, it is possible that a similarly 
-## repeated run would not return any datasets with the optimal number of occurrence records. To visually assess 
-## whether we are using enough reps to approach the optimal number we use the function plotThin, This function 
-## produces three plots: 1) the cumulative number of records retained versus the number of repetitions, 2) the 
-## log cumulative number of records retained versus the log number of repetitions, and 3) a histogram of the 
-## maximum number of records retained for each thinned dataset.
-
-
-
-
-
-#########################################################################################################################
-## FLAG GBIF AND SPATIAL OUTLIERS FOR ONE SPECIES
-#########################################################################################################################
-
-
-
-
-
-#########################################################################################################################
-## 2). NOW, CLEAN WHOLE DATASET
-#########################################################################################################################
-
-
-#########################################################################################################################
-## FLAG GBIF OUTLIERS
-#########################################################################################################################
-
-
-
-#########################################################################################################################
-## 3). FLAG SPATIAL OUTLIERS
-#########################################################################################################################
-
-
-
-
-
-
-#########################################################################################################################
-## 4). SUBSET FOR THE NICHES : JUST USE COORDCLEAN SUMMARY
-#########################################################################################################################
-
-
-
-
-#########################################################################################################################
-## 5). INTERSECT SPECIES RECORDS WITH LOCAL GOV AREAS AND SIGNIFICANT URBAN AREAS
-#########################################################################################################################
 
 
 

@@ -110,6 +110,7 @@ LAND        = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LAND_world.rds")
 areal_unit  = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/SUA.rds")
 areal_unit  = areal_unit[order(areal_unit$SUA_NAME11),]
 Koppen      = readRDS('data/base/CONTEXTUAL/Koppen_1975.rds')
+AUS_RAIN    = readRDS('data/base/CONTEXTUAL/BOM/AUS_RAIN.rds')
 
    
 # Kopp.future = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/CM10_Kop_Shp_V1.2/CM10_Kop_V1.2.shp", 

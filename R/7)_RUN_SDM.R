@@ -305,27 +305,19 @@ lapply(ff[n < 27], function(x) {
 ## OUTSTANDING SDM TASKS:
 #########################################################################################################################
 
+## 1). Make list of exotic spp on the top 200 sellers, which have no data and/or produce bad maps
 
-## 1). Created a list of species with boundary bias, and without boundary bias (done). Only model those species with > 20 AUS records.
-##     Create list of species with > 20 records.
+## 2). Re-download ALA data. Add exotic urban inventory data tha Ale is compiling (create diagram of data integration, to highlight knowlegde gaps)
 
-## 3). Re-processed the niches for extra species :: we have niches for 6700 taxa, including all but 200 of the Kachenko taxa (done).
+## 3). Try to thin records for ~100 spp with boundar bias: random sampling of those species records, by state and environment
 
-## 4). Don't model species with strong boundary bias :: these models are unreliable, best to get the data from QLD and Victoria.
+## 4). Use more forgiving thresholds (10%) for all species, OR just those with bad maps
   
-## 5). Add the koppen zone constraint to the maxent functions  (done).
+## 5). Calculate the TSS for all species (and MESS maps for a few species)
 
+## 6). Get species list from 8 biggest SUAs - Area report from ALA (not working) + Expert list if we have them
 
-## 6). Summarise all maxent output, check species thresholds :: maxent tables (AIC), predicted maps, occ/bg points, response curves, etc.
-##     Choose final species using all output (Hugh, Linda, Rach to review each species, and an indepdendent expert?).
-##     Track the functional coverage of the modelled spp
-
-## 7). Get the Koppen summary idea working for species that are not modelled :: where will the koppens with records be in 2030/50/70? 
-##     Use Darren Kriticos's grid of changing Koppen with decades (but this only uses two GCMs).
-
-## 8). Model extra species :: take another ~n spp from the intersection of any grown spp and the risky/innovative species.
-
-## 9). Decide format to present ~n species to HIA
+## 7). Decide on gamma diversity for this article - could it go to GEB? Plan figures and tables for MS
 
 
 
