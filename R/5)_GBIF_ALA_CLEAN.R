@@ -15,13 +15,12 @@
 ## 1). CHECK DATA FOR AN EXAMPLE SPECIES...
 #########################################################################################################################
 
+## Create lists
+source('./R/HIA_LIST_MATCHING.R')
 
 ## Load GBIF data
 COMBO.RASTER.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_APRIL_2018.rds")
 COMBO.NICHE.CONTEXT  = readRDS("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_STANDARD_CLEAN.rds")
-load("./data/base/CONTEXTUAL/urbanareas.rda")
-LAND = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LAND_world.rds")
-aus  = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds")
 names(COMBO.RASTER.CONTEXT)
 
 
@@ -35,10 +34,6 @@ HIA.SPP.JOIN[is.na(HIA.SPP.JOIN)] <- 0
 HIA.SPP.JOIN = HIA.SPP.JOIN[with(HIA.SPP.JOIN, rev(order(Number.of.growers))), ]
 head(HIA.SPP.JOIN[, c("searchTaxon", "Number.of.growers")])
 View(HIA.SPP.JOIN)
-
-
-## Create lists
-source('./R/HIA_LIST_MATCHING.R')
 
 
 ## HB Do an example species :: SPP Brachypoda
@@ -243,7 +238,7 @@ FLAGS  <- CleanCoordinates(TIB.TEST,
 
 
 ## save/load the flags
-saveRDS(FLAGS, 'data/base/HIA_LIST/COMBO/COMBO_GBIF_FLAGS.rds')
+#saveRDS(FLAGS, 'data/base/HIA_LIST/COMBO/COMBO_GBIF_FLAGS.rds')
 # FLAGS = readRDS('data/base/HIA_LIST/COMBO/COMBO_GBIF_FLAGS.rds')
 
 
@@ -268,32 +263,32 @@ summary(FLAGS)[8]/dim(FLAGS)[1]*100
 
 #########################################################################################################################
 ## Then split the data into n maneageable subsets to check the spatial outliers, but just for the 120 modelled species
-TIB.MILE  = TIB.TEST[TIB.TEST$species %in% spp.mile, ] 
-
-
-## 8 subsets of 15 species each
-n = 8
-dim(TIB.MILE)[1]/n
-REP <- rep(1:n, each = round(dim(TIB.MILE)[1]/n, digits = 0))
-REP <- head(REP, dim(TIB.MILE)[1])
-
-identical(dim(TIB.MILE)[1], length(REP))
-head(REP)
-tail(REP)
-
-
-## If the vector is a non factoris-abubble length, make it the same
-dim(TIB.MILE)[1] - length(REP)
-REP <- c(REP, rep(n, dim(TIB.MILE)[1] - length(REP)))
-dim(TIB.MILE)[1] - length(REP)
-TIB.MILE$REP = REP
-head(TIB.MILE$REP);tail(TIB.MILE$REP)
-
-
-## Could create a list of data frames :: save data to run multiple sessions
-## 100k points shouldn't be too bad to process
-OUT <- split( TIB.MILE , f = TIB.MILE$REP )
-dim(OUT[[1]]);dim(OUT[[4]]);dim(OUT[[8]])
+# TIB.MILE  = TIB.TEST[TIB.TEST$species %in% spp.mile, ] 
+# 
+# 
+# ## 8 subsets of 15 species each
+# n = 8
+# dim(TIB.MILE)[1]/n
+# REP <- rep(1:n, each = round(dim(TIB.MILE)[1]/n, digits = 0))
+# REP <- head(REP, dim(TIB.MILE)[1])
+# 
+# identical(dim(TIB.MILE)[1], length(REP))
+# head(REP)
+# tail(REP)
+# 
+# 
+# ## If the vector is a non factoris-abubble length, make it the same
+# dim(TIB.MILE)[1] - length(REP)
+# REP <- c(REP, rep(n, dim(TIB.MILE)[1] - length(REP)))
+# dim(TIB.MILE)[1] - length(REP)
+# TIB.MILE$REP = REP
+# head(TIB.MILE$REP);tail(TIB.MILE$REP)
+# 
+# 
+# ## Could create a list of data frames :: save data to run multiple sessions
+# ## 100k points shouldn't be too bad to process
+# OUT <- split( TIB.MILE , f = TIB.MILE$REP )
+# dim(OUT[[1]]);dim(OUT[[4]]);dim(OUT[[8]])
 
 
 #save.image("STEP_5_COORD_CLEAN.RData")
@@ -385,8 +380,7 @@ unique(CLEAN.TRUE$summary)
 ## How many species?
 str(unique(CLEAN.TRUE$searchTaxon))
 str(unique(TEST.GEO$searchTaxon))
-'Ficus brachypoda' %in% TEST.GEO$searchTaxon  
-(dim(CLEAN.TRUE)[1]/dim(TEST.GEO))*100                                               ## ~98% of the records are retained
+(dim(CLEAN.TRUE)[1]/dim(TEST.GEO))*100                                               ## x% of the records are retained
 
 
 
@@ -406,9 +400,6 @@ str(unique(TEST.GEO$searchTaxon))
 
 
 ## We want to know the count of species that occur in 'n' LGAs, across a range of climates. Read in LGA and SUA
-SUA      = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/IN_SUA_AUS.rds")
-LGA      = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LGA.rds")
-AUS      = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds")
 projection(LGA);projection(SUA);projection(AUS)
 
 
@@ -433,7 +424,7 @@ LGA.WGS = LGA.WGS[, c("LGA_CODE16", "LGA_NAME16")]
 projection(COMBO.RASTER.SP);projection(LGA.WGS);projection(SUA.WGS);projection(AUS.WGS)
 LGA.JOIN      = over(COMBO.RASTER.SP, LGA.WGS)              ## =SUA.JOIN      = over(COMBO.RASTER.SP, SUA.WGS) 
 COMBO.SUA.LGA = cbind.data.frame(COMBO.RASTER.SP, LGA.JOIN) 
-saveRDS(COMBO.SUA.LGA, file = paste("./data/base/HIA_LIST/GBIF/COMBO_SUA_LGA.rds"))
+#saveRDS(COMBO.SUA.LGA, file = paste("./data/base/HIA_LIST/GBIF/COMBO_SUA_LGA.rds"))
 ## COMBO.SUA.LGA = readRDS("./data/base/HIA_LIST/GBIF/COMBO_SUA_LGA.rds")
 ## str(unique(COMBO.SUA.LGA$searchTaxon))
 
@@ -563,7 +554,7 @@ Total.taxa.processed = dim(COMBO.NICHE)[1]
 COMBO.NICHE  = cbind(COMBO.count, COMBO.NICHE)
 names(COMBO.NICHE)
 dim(COMBO.NICHE)
-saveRDS(COMBO.NICHE, file = paste("./data/base/HIA_LIST/GBIF/COMBO_NICHE_CLEAN.rds"))
+#saveRDS(COMBO.NICHE, file = paste("./data/base/HIA_LIST/GBIF/COMBO_NICHE_CLEAN.rds"))
 
 
 #########################################################################################################################

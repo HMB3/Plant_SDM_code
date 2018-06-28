@@ -42,7 +42,6 @@ template.raster = raster("./data/template_hasData.tif")
 template.cells  = readRDS("./data/hasData_cells.rds")
 SDM.DATA.ALL    = readRDS("./data/base/HIA_LIST/COMBO/SDM_DATA_CLEAN_052018.rds")
 Koppen_1975     = raster('data/Koppen_1000m_Mollweide54009.tif')
-Koppen_zones    = unique(readOGR('data/base/CONTEXTUAL/WC05_1975H_Koppen_Shapefile/WC05_1975H_Koppen_Kriticos_2012.shp')@data[, 1:2])
 
 
 ## Check data :: template, data table and species 
@@ -139,8 +138,12 @@ aus = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds") %>%
 projection(template.raster);projection(SDM.DATA.ALL);projection(Koppen_1975)
 
 
+## Create new variable for analysis species
+analysis.spp = unique(SDM.DATA.ALL$searchTaxon)   ## could use this in future
+
+
 ## Loop over all the species spp = spp.combo[31]
-lapply(new.spp, function(spp){ 
+lapply(analysis.spp, function(spp){ 
   
   ## Skip the species if the directory already exists, before the loop
   outdir <- 'output/maxent/SET_VAR_KOPPEN'
@@ -309,7 +312,7 @@ lapply(ff[n < 27], function(x) {
 
 ## 2). Re-download ALA data. Add exotic urban inventory data that Ale is compiling (create diagram of data integration, to highlight knowlegde gaps)
 
-## 3). Try to thin records for ~100 spp with boundar bias: random sampling of those species records, by state and environment
+## 3). Try to thin records for ~100 spp with boundary bias: random sampling of those species records, by state and environment
 
 ## 4). Use more forgiving thresholds (10%) for all species, OR just those with bad maps:
 ##    "Maximum.training.sensitivity.plus.specificity.Logistic.threshold"

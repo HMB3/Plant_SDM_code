@@ -104,13 +104,21 @@ rasterOptions(tmpdir = file.path('H:/green_cities_sdm/RTEMP'))
 
 
 #########################################################################################################################
-## Read in spatial data
-aus         = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds")
-LAND        = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LAND_world.rds")
-areal_unit  = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/SUA.rds")
-areal_unit  = areal_unit[order(areal_unit$SUA_NAME11),]
-Koppen      = readRDS('data/base/CONTEXTUAL/Koppen_1975.rds')
-AUS_RAIN    = readRDS('data/base/CONTEXTUAL/BOM/AUS_RAIN.rds')
+## Read in spatial data once, rather than in each script
+aus           = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds")
+LAND          = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LAND_world.rds")
+areal_unit    = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/SUA.rds")
+areal_unit    = areal_unit[order(areal_unit$SUA_NAME11),]
+Koppen        = readRDS('data/base/CONTEXTUAL/Koppen_1975.rds')
+Koppen_zones  = unique(readOGR('data/base/CONTEXTUAL/WC05_1975H_Koppen_Shapefile/WC05_1975H_Koppen_Kriticos_2012.shp')@data[, 1:2])
+Koppen_1975   = raster('data/Koppen_1000m_Mollweide54009.tif')
+AUS_RAIN      = readRDS('data/base/CONTEXTUAL/BOM/AUS_RAIN.rds')
+SUA           = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/IN_SUA_AUS.rds")
+LGA           = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LGA.rds")
+AUS           = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds")
+
+load("./data/base/CONTEXTUAL/urbanareas.rda")
+
 
    
 # Kopp.future = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/CM10_Kop_Shp_V1.2/CM10_Kop_V1.2.shp", 
@@ -266,7 +274,7 @@ HIA.list$Binomial <- sub('(^\\S+ \\S+).*', '\\1', HIA.list$Species) # \\s = whit
 n <- tapply(HIA.list$Number.of.growers, HIA.list$Binomial, sum, na.rm = TRUE)
 HIA.list$Number.of.growers.total <- n[HIA.list$Binomial]
 TOT.GROW = HIA.list[c("Binomial",
-                        "Number.of.growers.total")]
+                      "Number.of.growers.total")]
 names(TOT.GROW) = c("searchTaxon", "Total.growers")
 TOT.GROW        = TOT.GROW[!duplicated(TOT.GROW[,c('searchTaxon')]),] 
 

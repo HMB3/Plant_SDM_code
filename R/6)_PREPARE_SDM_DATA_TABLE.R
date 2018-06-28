@@ -8,9 +8,8 @@
 ## SDM analysis
 
 
-#load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_2703_2018.RData")
-#load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_2703_2018.RData")
-COMBO.RASTER.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/CLEAN_ONLY_HIA_SPP.rds")
+#COMBO.RASTER.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/CLEAN_ONLY_HIA_SPP.rds")
+COMBO.RASTER.CONTEXT = CLEAN.TRUE
 template.raster      = raster("./data/template_hasData.tif")
 source('./R/HIA_LIST_MATCHING.R')
 
@@ -223,13 +222,13 @@ str(SDM.DATA.ALL)
 dim(SDM.DATA.ALL)
 #save(template.raster, file = paste("./data/base/HIA_LIST/COMBO/SDM_TEMPLATE_RASTER.RData"))
 #save(SDM.DATA.ALL,    file = paste("./data/base/HIA_LIST/COMBO/HIA_SDM_DATA_ALL_VAR.RData"))
-saveRDS(SDM.DATA.ALL, 'data/base/HIA_LIST/COMBO/SDM_DATA_CLEAN_052018.rds')
+#saveRDS(SDM.DATA.ALL, 'data/base/HIA_LIST/COMBO/SDM_DATA_CLEAN_052018.rds')
 
 
 ## Remove the other data
 # rm(COMBO.RASTER.ALL)
 # rm(COMBO.RASTER.SPLIT.ALL)
-save.image("STEP_6_PREPARE_SDM.RData")
+#save.image("STEP_6_PREPARE_SDM.RData")
 
 
 #########################################################################################################################

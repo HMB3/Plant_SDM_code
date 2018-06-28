@@ -57,11 +57,6 @@ ALA.LAND     = dplyr::rename(ALA.LAND,
                              coordinateUncertaintyInMeters = uncertainty_m)
 
 
-## Rename the field values: cultivated and uncultivated?
-#ALA.LAND$CULT  = gsub("x", "CULTIVATED",   ALA.LAND$CULT)
-#ALA.LAND$CULT  = gsub("x", "UNCULTIVATED", ALA.LAND$CULT)
-
-
 ## Restrict ALA data to just those species on the big list
 HIA.SPP.JOIN     = CLEAN.SPP
 HIA.SPP.JOIN     = dplyr::rename(HIA.SPP.JOIN, searchTaxon = Binomial)
@@ -76,7 +71,7 @@ View(HIA.SPP.JOIN)
 
 ## Get just those ALA species which are on the combined list of HIA and planted/growing
 ## ALA.LAND.HIA  = ALA.LAND[ALA.LAND$searchTaxon %in% HIA.SPP.JOIN$searchTaxon, ] 
-ALA.LAND.HIA  = ALA.LAND[ALA.LAND$searchTaxon %in% unique(GBIF.LAND$searchTaxon), ] ## OR, %in% all.taxa. Old data includes Paul's extra species
+ALA.LAND.HIA  = ALA.LAND[ALA.LAND$searchTaxon %in% unique(GBIF.LAND$searchTaxon), ] ## 
 str(unique(ALA.LAND$searchTaxon))       ##
 str(unique(ALA.LAND.HIA$searchTaxon))   ## Reduced from 30k to 4K
 
@@ -337,33 +332,33 @@ projection(COMBO.RASTER)
 
 #########################################################################################################################
 ## Now summarise the niches. But figure out a cleaner way of doing this
-# env.variables = c("Annual_mean_temp",
-#                   "Mean_diurnal_range",
-#                   "Isothermality",
-#                   "Temp_seasonality",
-#                   "Max_temp_warm_month",
-#                   "Min_temp_cold_month",
-#                   "Temp_annual_range",
-#                   "Mean_temp_wet_qu",
-#                   "Mean_temp_dry_qu",
-#                   "Mean_temp_warm_qu",
-#                   "Mean_temp_cold_qu",
-# 
-#                   "Annual_precip",
-#                   "Precip_wet_month",
-#                   "Precip_dry_month",
-#                   "Precip_seasonality",
-#                   "Precip_wet_qu",
-#                   "Precip_dry_qu",
-#                   "Precip_warm_qu",
-#                   "Precip_col_qu",
-#                   "PET")
+env.variables = c("Annual_mean_temp",
+                  "Mean_diurnal_range",
+                  "Isothermality",
+                  "Temp_seasonality",
+                  "Max_temp_warm_month",
+                  "Min_temp_cold_month",
+                  "Temp_annual_range",
+                  "Mean_temp_wet_qu",
+                  "Mean_temp_dry_qu",
+                  "Mean_temp_warm_qu",
+                  "Mean_temp_cold_qu",
+
+                  "Annual_precip",
+                  "Precip_wet_month",
+                  "Precip_dry_month",
+                  "Precip_seasonality",
+                  "Precip_wet_qu",
+                  "Precip_dry_qu",
+                  "Precip_warm_qu",
+                  "Precip_col_qu",
+                  "PET")
 
 
 #########################################################################################################################
 ## Change the raster values here: See http://worldclim.org/formats1 for description of the interger conversion. 
 ## All temperature variables wer multiplied by 10, so divide by 10 to reverse it.
-COMBO.RASTER.CONVERT = as.data.table(COMBO.SUA.LGA)                           ## Check this works, also inefficient
+COMBO.RASTER.CONVERT = as.data.table(COMBO.RASTER)                           ## Check this works, also inefficient
 COMBO.RASTER.CONVERT[, (env.variables [c(1:11)]) := lapply(.SD, function(x) 
   x / 10 ), .SDcols = env.variables [c(1:11)]]
 COMBO.RASTER.CONVERT = as.data.frame(COMBO.RASTER.CONVERT)                   ## Find another method without using data.table
@@ -378,9 +373,9 @@ summary(COMBO.RASTER$Isothermality)
 
 
 ## Plot a few points to see :: do those look reasonable?
-plot(LAND, col = 'grey', bg = 'sky blue')
-points(COMBO.RASTER.CONVERT[ which(COMBO.RASTER.CONVERT$Annual_mean_temp < -5), ][, c("lon", "lat")], 
-       pch = ".", col = "red", cex = 3, asp = 1)
+# plot(LAND, col = 'grey', bg = 'sky blue')
+# points(COMBO.RASTER.CONVERT[ which(COMBO.RASTER.CONVERT$Annual_mean_temp < -5), ][, c("lon", "lat")], 
+#        pch = ".", col = "red", cex = 3, asp = 1, main = "temp records < -5")
 
 
 #########################################################################################################################
@@ -540,6 +535,7 @@ names(COMBO.RASTER.CONVERT)
 names(CLEAN.SPP)
 COMBO.RASTER.CONTEXT = join(COMBO.RASTER.CONVERT, HIA.SPP.JOIN)
 #COMBO.RASTER.CONTEXT  = COMBO.RASTER.CONTEXT[,  c(42, 1, 65, 2:41, 43:61, 62:64, 66:78)]                ## REDO
+dim(COMBO.RASTER.CONTEXT)
 names(COMBO.RASTER.CONTEXT)
 
 
@@ -553,14 +549,6 @@ names(COMBO.RASTER.CONTEXT)
 # ## Set NA to blank, then sort by no. of growers
 # COMBO.NICHE.CONTEXT$Number.of.growers[is.na(COMBO.NICHE.CONTEXT$Number.of.growers)] <- 0
 # COMBO.NICHE.CONTEXT = COMBO.NICHE.CONTEXT[with(COMBO.NICHE.CONTEXT, rev(order(Number.of.growers))), ]
-
-
-## View the data
-names(COMBO.RASTER.CONTEXT)
-names(COMBO.NICHE.CONTEXT)
-dim(COMBO.RASTER.CONTEXT)
-dim(COMBO.NICHE.CONTEXT)
-
 
 
 
