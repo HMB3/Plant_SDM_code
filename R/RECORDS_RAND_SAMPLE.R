@@ -73,19 +73,8 @@ saveRDS(COMBO.STATE.RAIN, file = paste("./data/base/HIA_LIST/COMBO/COMBO_STATE_R
 
 
 #########################################################################################################################
-## 2). CREATE A RANDOM SUB-SAMPLE OF X% OF SPP RECORS FROM NSW, THEN STRATIFY BY RAINFALL AMOUNT
+## 2). CREATE A RANDOM SUB-SAMPLE OF X% OF SPP RECORS
 #########################################################################################################################
-
-
-## Try for an example species ::
-SPP.TEST            = subset(COMBO.STATE.RAIN, searchTaxon == "Banksia integrifolia") 
-unique(SPP.TEST$searchTaxon)
-dim(SPP.TEST)[1]
-
-
-## Looks biased...
-plot(aus)
-points(SPP.TEST$lon,  SPP.TEST$lat, cex = 0.8, col = "red", pch = 19)
 
 
 #########################################################################################################################
@@ -119,26 +108,65 @@ pie(state.counts, main = "AUS records per state")
 
 
 #########################################################################################################################    
-#########################################################################################################################
 ## Now create a random subset of points from NSW, stratified by rainfall category. The stratified function samples from 
 ## a data.frame in which one of the columns can be used as a "stratification" or "grouping" variable. The result is 
 ## a new data.frame with the specified number of samples from each group. 
 
 
-## Let's take a 50% sample from all rainfall groups
+## Using only points in NSW, let's take a 50% sample from all rainfall groups
 unique(SPP.REC.NSW$AUS_RN_ZN)
 set.seed(1)
-SPP.REC.NSW = stratified(SPP.REC.NSW, "AUS_RN_ZN", .5)
+RAND.REC.NSW = stratified(SPP.REC.NSW, "AUS_RN_ZN", .5)
+dim(RAND.REC.NSW)[1]/dim(SPP.REC.NSW)[1]
 
 
+## The points are unevenly distributed across the rainfall zones, so we can't sample randomly from these categories 
+round(with(SPP.REC.NSW, table(AUS_RN_ZN)/sum(table(AUS_RN_ZN))*100), 1)
+round(with(RAND.REC.NSW, table(AUS_RN_ZN)/sum(table(AUS_RN_ZN))*100), 1)
+
+table(SPP.REC.NSW$AUS_RN_ZN)
+table(RAND.REC.NSW$AUS_RN_ZN)
 
 
+## Plot an example species ::
+SPP.ORIG    = subset(COMBO.STATE.RAIN, searchTaxon == "Banksia integrifolia") 
+unique(SPP.ORIG$searchTaxon)
+dim(SPP.TEST)[1]
 
 
+## Original records are biased to NSW
+plot(aus)
+points(SPP.ORIG$lon,  SPP.ORIG$lat, 
+       cex = 0.8, col = "red", pch = 19, main = "Original data")
+
+
+## Randomly sampled data
+SPP.RAND    = subset(RAND.REC.NSW, searchTaxon == "Banksia integrifolia")
+unique(SPP.RAND$searchTaxon)
+dim(SPP.RAND)[1]
+
+
+##
+plot(aus)
+points(SPP.RAND$lon,  SPP.RAND$lat, 
+       cex = 0.8, col = "red", pch = 19, main = "Subsampled data")
+
+
+## Check these points in ArcMap
+SPP.ORIG$SAMPLE = "Original";SPP.RAND$SAMPLE = "Sampled"
+SPP.SAMPLE = as.data.frame(rbind(SPP.ORIG, SPP.RAND))
+unique(SPP.SAMPLE$SAMPLE)
+
+
+## They need this data 
+SPP.SAMPLE   = SpatialPointsDataFrame(coords      = SPP.SAMPLE[c("lon", "lat")], 
+                                      data        = SPP.SAMPLE,
+                                      proj4string = CRS.WGS.84)
+writeOGR(obj = SPP.SAMPLE, dsn = "./data/base/HIA_LIST/COMBO", layer = "SPP_RAND_SAMPLE", driver = "ESRI Shapefile")
 
 
 #########################################################################################################################
-## Save
+## Write the points out to check in arc
 saveRDS(TEST.GEO,                'data/base/HIA_LIST/COMBO/CLEAN_FLAGS_HIA_SPP.rds')
 saveRDS(CLEAN.TRUE,              'data/base/HIA_LIST/COMBO/CLEAN_ONLY_HIA_SPP.rds')
 saveRDS(CLEAN.NICHE.CONTEXT,     'data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_COORD_CLEAN.rds')

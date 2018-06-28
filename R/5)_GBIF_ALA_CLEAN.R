@@ -317,51 +317,6 @@ dim(OUT[[1]]);dim(OUT[[4]]);dim(OUT[[8]])
 # saveRDS(GBIF.SPAT.OUT, 'data/base/HIA_LIST/COMBO/SPAT_OUT/SPAT_OUT.rds')
 
 
-##
-# GBIF.SPAT.OUT.5.7 = sapply( OUT[c(5,7)] , function(x) cc_outl( x,
-#                                                                lon     = "decimallongitude",
-#                                                                lat     = "decimallatitude",
-#                                                                species = "species",
-#                                                                method  = "quantile",
-#                                                                mltpl   = 5,
-#                                                                tdi     = 1000,
-#                                                                value   = "flags") )
-
-
-## Save spatial outliers
-#saveRDS(GBIF.SPAT.OUT.5.7, 'data/base/HIA_LIST/COMBO/SPAT_OUT/SPAT_OUT_5_7.rds')
-
-
-# ## One at a time 
-# GBIF.SPAT.OUT.1 = cc_outl(OUT[[1]],
-#                           lon     = "decimallongitude",
-#                           lat     = "decimallatitude",
-#                           species = "species",
-#                           method  = "quantile",
-#                           mltpl   = 5,
-#                           tdi     = 1000,
-#                           value   = "flags")
-# 
-# 
-# ## Save spatial outliers
-# saveRDS(GBIF.SPAT.OUT.1, 'data/base/HIA_LIST/COMBO/SPAT_OUT/SPAT_OUT_1.rds')
-# 
-# 
-# ## One at a time 
-# GBIF.SPAT.OUT.2 = cc_outl(OUT[[2]],
-#                           lon     = "decimallongitude",
-#                           lat     = "decimallatitude",
-#                           species = "species",
-#                           method  = "quantile",
-#                           mltpl   = 5,
-#                           tdi     = 1000,
-#                           value   = "flags")
-# 
-# 
-# ## Save spatial outliers
-# saveRDS(GBIF.SPAT.OUT.2, 'data/base/HIA_LIST/COMBO/SPAT_OUT/SPAT_OUT_2.rds')
-
-
 #########################################################################################################################
 ## Join data :: exclude the decimal lat/long, check the length 
 dim(GBIF.TRIM.TEST)[1];dim(FLAGS)[1]#;length(GBIF.SPAT.OUT)
@@ -436,12 +391,12 @@ str(unique(TEST.GEO$searchTaxon))
 
 
 #########################################################################################################################
-## RE-CREATE NICHES
+## 5). RE-CREATE NICHES
 #########################################################################################################################
 
 
 #########################################################################################################################
-## 5). INTERSECT SPECIES RECORDS WITH LOCAL GOV AREAS AND SIGNIFICANT URBAN AREAS
+## INTERSECT SPECIES RECORDS WITH LOCAL GOV AREAS AND SIGNIFICANT URBAN AREAS
 #########################################################################################################################
 
 

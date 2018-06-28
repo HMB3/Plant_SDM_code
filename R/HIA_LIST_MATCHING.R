@@ -156,6 +156,7 @@ MOD.2.3             = read.csv("./data/base/HIA_LIST/HIA/MODULE_2_3.csv",       
 KOP.TEST            = read.csv("./data/base/HIA_LIST/COMBO/KOPPEN_TEST_SPP.csv",                 stringsAsFactors = FALSE)
 RISK.LIST           = read.csv("./data/base/HIA_LIST/HIA/RISK_LIST.csv",                         stringsAsFactors = FALSE)
 RISK.BINOMIAL.CLEAN = read.csv("./data/base/HIA_LIST/HIA/RISK_BINOMIAL_DF.csv",                  stringsAsFactors = FALSE)
+MAXENT.RATING       = read.csv("./output/maxent/MAXENT_RATING_26_2018.csv",                      stringsAsFactors = FALSE)
 
 
 #########################################################################################################################
@@ -755,15 +756,15 @@ MILE.CLEAN.MODULE = MILE.CLEAN.MODULE[MILE.CLEAN.MODULE$searchTaxon %in% MILE.CL
 MILE.CLEAN.MODULE = MILE.CLEAN.MODULE[!duplicated(MILE.CLEAN.MODULE$searchTaxon),]
  
 
-## Bar plot 
-module.counts <- table(MILE.CLEAN.MODULE$Module)
-barplot(module.counts, main = "Species per module",
-        xlab = "Module", ylab = "number of species", col = c("lightblue", "pink", "orange"))
-        #legend = rownames(counts))
-
-
-## Pie chart
-pie(module.counts, col = c("lightblue", "pink", "orange"))
+# ## Bar plot 
+# module.counts <- table(MILE.CLEAN.MODULE$Module)
+# barplot(module.counts, main = "Species per module",
+#         xlab = "Module", ylab = "number of species", col = c("lightblue", "pink", "orange"))
+#         #legend = rownames(counts))
+# 
+# 
+# ## Pie chart
+# pie(module.counts, col = c("lightblue", "pink", "orange"))
 
 
 ########################################################################################################################
@@ -806,6 +807,61 @@ dim(COMBO.NICHE.CONTEXT)
 HIA.COUNT   = COMBO.NICHE.CONTEXT[COMBO.NICHE.CONTEXT$searchTaxon %in% HIA.SPP$Binomial, ]
 LOW.RECORDS = dim(subset (HIA.COUNT, COMBO.count < 20))[1] + (dim(HIA.SPP)[1] - dim(HIA.COUNT)[1]) 
 LOW.NO      = dim(HIA.SPP)[1] - 455
+
+
+
+
+
+#########################################################################################################################
+## CHECK POORLY RECORDED SPECIES
+#########################################################################################################################
+
+
+## Which species are poorly records from the top 200?
+COMBO.NICHE.200 = subset(COMBO.NICHE.CONTEXT, Top_200 == "TRUE")
+HIA.200         = subset(HIA.SPP, Top_200 == "TRUE")
+setdiff(HIA.200$Binomial, COMBO.NICHE.200$searchTaxon)
+intersect(HIA.200$Binomial, COMBO.NICHE.200$searchTaxon)
+
+
+## Which species have the least records?
+COMBO.NICHE.200 = COMBO.NICHE.200[order(COMBO.NICHE.200$COMBO.count),]
+#View(COMBO.NICHE.200)
+
+
+## Add the maxent rating to the combo.niche file
+COMBO.200.RATING = join(COMBO.NICHE.200, MAXENT.RATING[, c("searchTaxon", "CHECK_MAP")], type = "left")
+
+
+
+## Various errors here...
+check.200 = c("Rhododendron simsii", "Bismarckia nobilis",      
+              "Chamaedorea cataractarum",  "Cyathea cooperi",         
+              "Doryanthes palmeri",  "Dracaena marginata",  
+              "Melaleuca quinquenervia", "Metrosideros thomasii",     
+              "Metrosideros vitiensis",  "Photinia fraseri",       
+              "Photinia robusta",    "Poa labillardierei",      
+              "Atractocarpus fitzalanii",  "Syzygium floribundum",    
+              "Syzygium hemilamprum", "Pennisetum setaceum", "Agapanthus praecox",
+              "Magnolia figo", "Gardenia jasminoides", 
+              "Gardenia jasminoides", "Dracaena fragrans", "Camellia oleifera",
+              "Sannantha virgata", "Ficinia nodosa")
+
+
+run.200 = c("Cyathea cooperi", "Melaleuca quinquenervia", "Atractocarpus fitzalanii",  
+            "Syzygium floribundum", "Syzygium hemilamprum", "Agapanthus praecox", 
+            "Pennisetum setaceum", "Agapanthus praecox",
+            "Magnolia figo", "Gardenia jasminoides", 
+            "Gardenia jasminoides", "Dracaena fragrans", "Camellia oleifera",
+            "Sannantha virgata", "Ficinia nodosa")
+
+
+## Write to file
+write.csv(COMBO.NICHE.200,  "./data/base/HIA_LIST/COMBO/COMBO_NICHE_200.csv",    row.names = FALSE)
+write.csv(COMBO.NICHE.200,  "./data/base/HIA_LIST/COMBO/COMBO_NICHE_200.csv",    row.names = FALSE)
+write.csv(HIA.COUNT,        "./data/base/HIA_LIST/COMBO/COMBO_NICHE_HIA.csv",    row.names = FALSE)
+write.csv(COMBO.200.RATING, "./data/base/HIA_LIST/COMBO/COMBO_NICHE_RATING.csv", row.names = FALSE)
+
 
 
 #########################################################################################################################

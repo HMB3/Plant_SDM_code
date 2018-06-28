@@ -12,7 +12,7 @@
 ## And the area of habitat gained, lost or remaining stable is calculated. 
 
 ## Using this combined layer, the % of area occupied by species within areal units (e.g. significant urban areas or LGAs), 
-## under each projection (2030, 2050 and 2070) is also be calculated. 
+## under each projection (2030, 2050 and 2070) can also be calculated. 
 
 
 ## Load packages ::

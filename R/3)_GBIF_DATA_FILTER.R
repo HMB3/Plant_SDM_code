@@ -24,7 +24,7 @@ rasterOptions(tmpdir = file.path("'H:/green_cities_sdm/RTEMP"))
 # setdiff(RISK.BINOMIAL, GBIF.TRIM$searchTaxon) 
 
 
-## Just get the newly downloaded species
+## Just get the newly downloaded species................................................................................
 GBIF.TRIM = GBIF.TRIM[GBIF.TRIM$searchTaxon %in% new.spp, ]
 
 
@@ -85,7 +85,7 @@ GBIF.UNRESOLVED <- GBIF.TRIM %>%
 
 
 ## Unique(GBIF.UNRESOLVED$New.Taxonomic.status)
-saveRDS(GBIF.UNRESOLVED, file = paste("./data/base/HIA_LIST/GBIF/GBIF_UNRESOLVED.rds"))
+#saveRDS(GBIF.UNRESOLVED, file = paste("./data/base/HIA_LIST/GBIF/GBIF_UNRESOLVED.rds"))
 
 
 ## Just keep these columns:
@@ -96,8 +96,8 @@ GBIF.TRIM.TAXO <- GBIF.TRIM %>%
 
 
 ## Unique(GBIF.UNRESOLVED$New.Taxonomic.status)
-saveRDS(GBIF.TAXO,       file = paste("./data/base/HIA_LIST/GBIF/GBIF_TAXO.rds"))
-saveRDS(GBIF.TRIM.TAXO,  file = paste("./data/base/HIA_LIST/GBIF/GBIF_TRIM_TAXO.rds"))
+#saveRDS(GBIF.TAXO,       file = paste("./data/base/HIA_LIST/GBIF/GBIF_TAXO.rds"))
+#saveRDS(GBIF.TRIM.TAXO,  file = paste("./data/base/HIA_LIST/GBIF/GBIF_TRIM_TAXO.rds"))
 
 
 
@@ -164,7 +164,7 @@ GBIF.CULTIVATED <- GBIF.TRIM.TAXO %>%
 # dim(GBIF.CULTIVATED)
 # names(GBIF.CULTIVATED)
 # unique(GBIF.CULTIVATED$CULTIVATED)
-saveRDS(GBIF.CULTIVATED, file = paste("./data/base/HIA_LIST/GBIF/GBIF_CULTIVATED.rds"))
+#saveRDS(GBIF.CULTIVATED, file = paste("./data/base/HIA_LIST/GBIF/GBIF_CULTIVATED.rds"))
 
 
 
@@ -258,18 +258,6 @@ GBIF.CLEAN <- GBIF.TRIM.TAXO %>%
 
 
 ## The table above gives the details, but worth documenting how many records are knocked out by each filter
-## Consider what these filters accomplish. Is it really worth knocking out that many records automatically?
-#dim(GBIF.CLEAN)
-
-Remaining.percent = dim(GBIF.CLEAN)[1]/Total.count*100
-Filters.applied = "NA COORD | < 1950/NA | UNRESOLVED TAXONOMY" ## INCLUDE CULTIVATED RECORDS
-#Remaining.percent ## 57% of records remain after cleaning 
-gc()
-
-
-## Check
-# dim(GBIF.CLEAN)
-# head(GBIF.CLEAN)
 
 
 ## What does this dataframe look like?
@@ -361,17 +349,17 @@ gc()
 
 #########################################################################################################################
 ## save data
-saveRDS(GBIF.LAND, file = paste("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.rds"))
+#saveRDS(GBIF.LAND, file = paste("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.rds"))
 gc()
 
 
 ## Now save .rds file for the next session
-save.image("STEP_3_GBIF_CLEAN.RData")
+#save.image("STEP_3_GBIF_CLEAN.RData")
 #load("STEP_3_GBIF_CLEAN.RData")
 
 
 ## 196 species from the risk list are missing...presumably due to inusfficient data
-length(setdiff(RISK.BINOMIAL.CLEAN$Plant_name, GBIF.TRIM.TAXO$searchTaxon)) 
+length(unique(GBIF.TRIM.TAXO$searchTaxon)) 
 
 
 

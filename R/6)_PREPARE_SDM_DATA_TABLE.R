@@ -21,6 +21,13 @@ dim(COMBO.RASTER.CONTEXT)
 names(COMBO.RASTER.CONTEXT)
 
 
+## Check the records for some species
+spp.check = "Furcraea foetida"
+occ.check = subset(COMBO.RASTER.CONTEXT, searchTaxon == spp.check)
+dim(occ.check)
+
+
+
 
 
 #########################################################################################################################

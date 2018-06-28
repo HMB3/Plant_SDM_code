@@ -19,8 +19,11 @@ source('./R/HIA_LIST_MATCHING.R')  ## This file contains all the packages, funct
 spp.download = list.files("./data/base/HIA_LIST/GBIF/SPECIES/", pattern = ".RData")
 spp.download = gsub("_GBIF_records.RData", "", spp.download)
 spp.download = trimws(spp.download)
-new.spp      = trimws(new.spp)
-spp.down.new = intersect(new.spp, spp.download)
+new.spp      = trimws(check.200)
+spp.download = intersect(new.spp, spp.download)
+
+
+
 
 ## Check the difference between the risk list and the downloaded list
 #outstanding.spp = setdiff(spp.download, unique(COMBO.RASTER.CONTEXT$searchTaxon))
@@ -127,6 +130,7 @@ intersect(names(GBIF.TRIM), gbif.keep)
 
 
 ## Check how many records match the search term?
+dim(GBIF.TRIM)
 setdiff(RISK.BINOMIAL, GBIF.TRIM$searchTaxon) 
 
 

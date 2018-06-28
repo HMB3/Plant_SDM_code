@@ -27,8 +27,9 @@ load("./data/base/HIA_LIST/ALA/ALA_LAND_POINTS.RData")
 LAND      = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LAND_world.rds")
 
 
-## 199 species from the risk list are missing...presumably due to inusfficient data
-length(setdiff(RISK.BINOMIAL.CLEAN$Plant_name, GBIF.LAND$searchTaxon))
+## check ALA data
+check.spp = "Sannantha virgata"
+dim(subset(ALA.LAND, scientificname == "check.spp"))
 
 
 
@@ -46,10 +47,6 @@ length(unique(GBIF.LAND$searchTaxon))
 names(GBIF.LAND)
 names(ALA.LAND)
 setdiff(names(GBIF.LAND), names(ALA.LAND))
-
-
-## Test if the new risky species are there
-summary(RISK.BINOMIAL  %in% GBIF.LAND$searchTaxon)
 
 
 #########################################################################################################################
@@ -100,12 +97,6 @@ length(unique(GBIF.ALA.COMBO.LAND$searchTaxon))                                 
 summary(RISK.BINOMIAL  %in% GBIF.LAND$searchTaxon)
 
 
-## What species are unique to each dataset?
-# length(setdiff(unique(GBIF.LAND$searchTaxon),  unique(ALA.LAND$searchTaxon)))
-# length(setdiff(unique(ALA.LAND$searchTaxon),   unique(GBIF.LAND$searchTaxon)))
-# length(intersect(unique(ALA.LAND$searchTaxon), unique(GBIF.LAND$searchTaxon)))
-
-
 #########################################################################################################################
 ## Now crunch the big dataset down to just the species on the 25 growers or more list: the extras are just overkill......
 #GBIF.ALA.COMBO.HIA  = GBIF.ALA.COMBO.LAND[GBIF.ALA.COMBO.LAND$searchTaxon %in% unique(c(test.spp, HIA.SPP$Binomial)), ]
@@ -117,15 +108,6 @@ length(unique(GBIF.ALA.COMBO.HIA$searchTaxon))
 GBIF.ALA.COMBO.HIA$OBS <- 1:nrow(GBIF.ALA.COMBO.HIA)
 dim(GBIF.ALA.COMBO.HIA)[1];length(GBIF.ALA.COMBO.HIA$OBS)  
 names(GBIF.ALA.COMBO.HIA)
-
-
-## Now move this out to a separet file, so the cleaning code can be run separately
-# saveRDS(GBIF.ALA.COMBO.HIA, file = paste("./data/base/HIA_LIST/COMBO/GBIF_ALA_COMBO_PRE_CLEAN.RData"))
-
-
-#########################################################################################################################
-## DON'T REMOVE SPATIAL OUTLIERS FROM NICHE CALCULATION
-#########################################################################################################################
 
 
 #########################################################################################################################
@@ -140,32 +122,11 @@ COMBO.POINTS   = SpatialPointsDataFrame(coords      = GBIF.ALA.COMBO.HIA[c("lon"
                                         data        = GBIF.ALA.COMBO.HIA[c("lon", "lat")],
                                         proj4string = CRS.WGS.84)
 
-# coordinates(GBIF.ALA.COMBO.HIA) = GBIF.ALA.COMBO.HIA[c("lon", "lat")]
-# proj4string(GBIF.ALA.COMBO.HIA) = CRS.MOL
-# res = spTransform(GBIF.ALA.COMBO.HIA, CRS.MOL)
-# head(res)
-
 
 ## Check
 dim(COMBO.POINTS)
 projection(COMBO.POINTS)
 names(COMBO.POINTS)
-
-
-
-
-
-#########################################################################################################################
-## CREATE NEW COLUMNS FOR ALA CULTIVATED/NOT 
-#########################################################################################################################
-
-
-## Need the ALA data to have the columns for cultivated/not: Need the original data frame. Also we don't need to worry
-## that much about the duplicate recrods between GBIF and ALA, given we will just take one records per grid cell. Having
-## duplicate records when estimating the niche won't make much difference either, assuming the are close together in space.
-
-## Multiple records of the same specimen from different herbaria could be a problem though. Rachel's criteria of same month,
-## year, lat/long could help here though. Ask Stu for this code.
 
 
 
@@ -210,21 +171,6 @@ env.grids.current = stack(
 
 ## Also get the PET raster
 PET               = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
-#summary(PET)
-
-
-#########################################################################################################################
-## Then use the extract function for all the rasters, and finaly bind on the COMBO data to the left of the raster values
-## Can we use a cluster to speed this up?
-
-## Speed this up is to use only the unique cells?
-# COMBO.XY <- cellFromXY(world.temp, COMBO.POINTS) %>% 
-#   
-#   ## get the unique raster cells
-#   unique %>% 
-#   
-#   ## Get coordinates of the center of raster cells for a row, column, or cell number of WORLDCLIM raster
-#   xyFromCell(world.temp, .)
 
 
 #########################################################################################################################
@@ -262,10 +208,8 @@ COMBO.RASTER = dplyr::rename(COMBO.RASTER,
 
 
 ## Save/load
-summary(COMBO.RASTER)
-saveRDS(COMBO.RASTER, file = paste("./data/base/HIA_LIST/GBIF/COMBO_GBIF_ALA_RASTER.rds"))
-#COMBO.RASTER = readRDS("./data/base/HIA_LIST/GBIF/COMBO_GBIF_ALA_RASTER.rds")
-#COMBO.RASTER  = COMBO.RASTER[COMBO.RASTER$searchTaxon %in% HIA.SPP$Binomial, ]
+#summary(COMBO.RASTER)
+#saveRDS(COMBO.RASTER, file = paste("./data/base/HIA_LIST/GBIF/COMBO_GBIF_ALA_RASTER.rds"))
 gc();gc()
 
 
@@ -279,7 +223,7 @@ COMBO.POINTS   = SpatialPointsDataFrame(coords      = COMBO.RASTER[c("lon", "lat
 projection(COMBO.POINTS);projection(PET)
 POINTS.PET <- extract(PET, COMBO.POINTS) %>% 
   cbind(COMBO.RASTER, .)
-saveRDS(POINTS.PET, file = paste("./data/base/HIA_LIST/GBIF/COMBO_GBIF_ALA_RASTER_PET.rds"))
+#saveRDS(POINTS.PET, file = paste("./data/base/HIA_LIST/GBIF/COMBO_GBIF_ALA_RASTER_PET.rds"))
 COMBO.RASTER = POINTS.PET
 colnames(COMBO.RASTER)[62] <- "PET"
 
@@ -304,29 +248,29 @@ projection(COMBO.RASTER)
 
 
 ## We want to know the count of species that occur in 'n' LGAs, across a range of climates. Read in LGA and SUA
-SUA      = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/IN_SUA_AUS.rds")
-LGA      = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LGA.rds")
-AUS      = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds")
-projection(LGA);projection(SUA);projection(AUS)
-
-
-## Convert the raster data back into a spdf
-COMBO.RASTER.SP   = SpatialPointsDataFrame(coords      = COMBO.RASTER[c("lon", "lat")], 
-                                           data        = COMBO.RASTER,
-                                           proj4string = CRS.WGS.84)
-
-
-## Project using a projected rather than geographic coordinate system
-LGA.WGS  = spTransform(LGA, CRS.WGS.84)
-SUA.WGS  = spTransform(SUA, CRS.WGS.84)
-AUS.WGS  = spTransform(AUS, CRS.WGS.84)
+# SUA      = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/IN_SUA_AUS.rds")
+# LGA      = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LGA.rds")
+# AUS      = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds")
+# projection(LGA);projection(SUA);projection(AUS)
+# 
+# 
+# ## Convert the raster data back into a spdf
+# COMBO.RASTER.SP   = SpatialPointsDataFrame(coords      = COMBO.RASTER[c("lon", "lat")], 
+#                                            data        = COMBO.RASTER,
+#                                            proj4string = CRS.WGS.84)
+# 
+# 
+# ## Project using a projected rather than geographic coordinate system
+# LGA.WGS  = spTransform(LGA, CRS.WGS.84)
+# SUA.WGS  = spTransform(SUA, CRS.WGS.84)
+# AUS.WGS  = spTransform(AUS, CRS.WGS.84)
 
 
 ## Remove the columns we don't need
-LGA.WGS = LGA.WGS[, c("LGA_CODE16", "LGA_NAME16")] 
+# LGA.WGS = LGA.WGS[, c("LGA_CODE16", "LGA_NAME16")] 
 
 
-## Now create a shapefile which is just the SUA: in or out...
+## This creates a shapefile which is just the SUA: in or out...
 # IN.SUA <- SUA[ !(SUA$SUA_NAME11 %in% c("Not in any Significant Urban Area (NSW)", 
 #                                        "Not in any Significant Urban Area (Vic.)",
 #                                        "Not in any Significant Urban Area (Qld)",
@@ -354,48 +298,33 @@ LGA.WGS = LGA.WGS[, c("LGA_CODE16", "LGA_NAME16")]
 
 #########################################################################################################################
 ## Run join between species records and LGAs/SUAs :: Double check they are the same
-projection(COMBO.RASTER.SP);projection(LGA.WGS);projection(SUA.WGS);projection(AUS.WGS)
-LGA.JOIN      = over(COMBO.RASTER.SP, LGA.WGS)              ## =SUA.JOIN      = over(COMBO.RASTER.SP, SUA.WGS) 
-COMBO.SUA.LGA = cbind.data.frame(COMBO.RASTER.SP, LGA.JOIN) 
-saveRDS(COMBO.SUA.LGA, file = paste("./data/base/HIA_LIST/GBIF/COMBO_SUA_LGA.rds"))
-## COMBO.SUA.LGA = readRDS("./data/base/HIA_LIST/GBIF/COMBO_SUA_LGA.rds")
-## str(unique(COMBO.SUA.LGA$searchTaxon))
+# projection(COMBO.RASTER.SP);projection(LGA.WGS);projection(SUA.WGS);projection(AUS.WGS)
+# LGA.JOIN      = over(COMBO.RASTER.SP, LGA.WGS)            
+# COMBO.SUA.LGA = cbind.data.frame(COMBO.RASTER.SP, LGA.JOIN) 
+#saveRDS(COMBO.SUA.LGA, file = paste("./data/base/HIA_LIST/GBIF/COMBO_SUA_LGA.rds"))
+
 
 
 #########################################################################################################################
 ## AGGREGATE THE NUMBER OF LGAs EACH SPECIES IS FOUND IN. NA LGAs ARE OUTSIDE AUS
-LGA.AGG   = tapply(COMBO.SUA.LGA$LGA_NAME16, COMBO.SUA.LGA$searchTaxon, function(x) length(unique(x))) ## group LGA by species name
-AUS.AGG   = aggregate(LGA_CODE16 ~ searchTaxon, data = COMBO.SUA.LGA, function(x) {sum(!is.na(x))}, na.action = NULL)
-LGA.AGG   = as.data.frame(LGA.AGG)
-LGA.AGG   = cbind.data.frame(AUS.AGG, LGA.AGG)
-names(LGA.AGG) = c("searchTaxon", "AUS_RECORDS", "LGA_COUNT")
+# LGA.AGG   = tapply(COMBO.SUA.LGA$LGA_NAME16, COMBO.SUA.LGA$searchTaxon, function(x) length(unique(x))) ## group LGA by species name
+# AUS.AGG   = aggregate(LGA_CODE16 ~ searchTaxon, data = COMBO.SUA.LGA, function(x) {sum(!is.na(x))}, na.action = NULL)
+# LGA.AGG   = as.data.frame(LGA.AGG)
+# LGA.AGG   = cbind.data.frame(AUS.AGG, LGA.AGG)
+# names(LGA.AGG) = c("searchTaxon", "AUS_RECORDS", "LGA_COUNT")
 
 
 ## Check
-dim(LGA.AGG)
-head(LGA.AGG)
-
-
-## 
-names(COMBO.SUA.LGA)
-COMBO.SUA.LGA = subset(COMBO.SUA.LGA, select = -c(lon.1, lat.1))
-names(COMBO.SUA.LGA)
-dim(COMBO.SUA.LGA)
-str(unique(COMBO.SUA.LGA$searchTaxon))
-
-
-# #########################################################################################################################
-# ## Check which species have records in Aus :: 14
-# dim(subset(COMBO.SUA.LGA, AUS_RECORDS >= 20))[1]
-# dim(subset(COMBO.SUA.LGA, AUS_RECORDS >= 20 & Top_200 == "TRUE"))[1]
-# NICHE.AUS.OK = subset(COMBO.SUA.LGA, AUS_RECORDS >= 20)
-# NICHE.AUS.POP = subset(COMBO.SUA.LGA, AUS_RECORDS >= 20 & Top_200 == "TRUE")
+# dim(LGA.AGG)
+# head(LGA.AGG)
 # 
 # 
-# ## What is the breakdown here? Need to add phylogenetic
-# unique(NICHE.AUS.OK$Number.of.States)
-# summary(NICHE.AUS.OK$AUS_RECORDS)
-# with(NICHE.AUS.OK, table(Plant.type)/sum(table(Plant.type))*100)
+# ## 
+# names(COMBO.SUA.LGA)
+# COMBO.SUA.LGA = subset(COMBO.SUA.LGA, select = -c(lon.1, lat.1))
+# names(COMBO.SUA.LGA)
+# dim(COMBO.SUA.LGA)
+# str(unique(COMBO.SUA.LGA$searchTaxon))
 
 
 
@@ -408,27 +337,27 @@ str(unique(COMBO.SUA.LGA$searchTaxon))
 
 #########################################################################################################################
 ## Now summarise the niches. But figure out a cleaner way of doing this
-env.variables = c("Annual_mean_temp",
-                  "Mean_diurnal_range",
-                  "Isothermality",
-                  "Temp_seasonality",
-                  "Max_temp_warm_month",
-                  "Min_temp_cold_month",
-                  "Temp_annual_range",
-                  "Mean_temp_wet_qu",
-                  "Mean_temp_dry_qu",
-                  "Mean_temp_warm_qu",
-                  "Mean_temp_cold_qu",
-
-                  "Annual_precip",
-                  "Precip_wet_month",
-                  "Precip_dry_month",
-                  "Precip_seasonality",
-                  "Precip_wet_qu",
-                  "Precip_dry_qu",
-                  "Precip_warm_qu",
-                  "Precip_col_qu",
-                  "PET")
+# env.variables = c("Annual_mean_temp",
+#                   "Mean_diurnal_range",
+#                   "Isothermality",
+#                   "Temp_seasonality",
+#                   "Max_temp_warm_month",
+#                   "Min_temp_cold_month",
+#                   "Temp_annual_range",
+#                   "Mean_temp_wet_qu",
+#                   "Mean_temp_dry_qu",
+#                   "Mean_temp_warm_qu",
+#                   "Mean_temp_cold_qu",
+# 
+#                   "Annual_precip",
+#                   "Precip_wet_month",
+#                   "Precip_dry_month",
+#                   "Precip_seasonality",
+#                   "Precip_wet_qu",
+#                   "Precip_dry_qu",
+#                   "Precip_warm_qu",
+#                   "Precip_col_qu",
+#                   "PET")
 
 
 #########################################################################################################################
@@ -457,48 +386,48 @@ points(COMBO.RASTER.CONVERT[ which(COMBO.RASTER.CONVERT$Annual_mean_temp < -5), 
 #########################################################################################################################
 ## Create niche summaries for each environmental condition like this...
 ## Here's what the function will produce :
-NICHE.DF = completeFun(COMBO.RASTER.CONVERT, "PET")
-dim(NICHE.DF)
-head(niche_estimate (DF = COMBO.RASTER.CONVERT, colname = "Annual_mean_temp"))  ## including the q05 and q95
-
-
-## So lets use lapply on the "SearchTaxon"
-## test = run_function_concatenate(list, DF, "DF, colname = x") 
-COMBO.NICHE <- env.variables %>% 
-  
-  ## Pipe the list into lapply
-  lapply(function(x) {
-    
-    ## Now use the niche width function on each colname (so 8 environmental variables)
-    ## Also, need to figure out how to make the aggregating column generic (species, genus, etc.)
-    ## currently it only works hard-wired
-    niche_estimate (DF = NICHE.DF, colname = x)
-    
-    ## would be good to remove the duplicate columns here
-    
-  }) %>% 
-  
-  ## finally, create one dataframe for all niches
-  as.data.frame
-
-
-## Remove duplicate Taxon columns and check the output :: would be great to skip these columns when running the function
-names(COMBO.NICHE)
-COMBO.NICHE = subset(COMBO.NICHE, select = -c(searchTaxon.1,  searchTaxon.2,  searchTaxon.3,  searchTaxon.4,
-                                              searchTaxon.5,  searchTaxon.6,  searchTaxon.7,  searchTaxon.7,
-                                              searchTaxon.8,  searchTaxon.9,  searchTaxon.10, searchTaxon.11,
-                                              searchTaxon.12, searchTaxon.13, searchTaxon.14, searchTaxon.15,
-                                              searchTaxon.16, searchTaxon.17, searchTaxon.18, searchTaxon.19))
-
-
-#########################################################################################################################
-## Add counts for each species, and record the total number of taxa processed
-COMBO.count = as.data.frame(table(COMBO.RASTER.CONVERT$searchTaxon))$Freq
-Total.taxa.processed = dim(COMBO.NICHE)[1]
-COMBO.NICHE  = cbind(COMBO.count, COMBO.NICHE)
-names(COMBO.NICHE)
-dim(COMBO.NICHE)
-saveRDS(COMBO.NICHE, file = paste("./data/base/HIA_LIST/GBIF/COMBO_NICHE.rds"))
+# NICHE.DF = completeFun(COMBO.RASTER.CONVERT, "PET")
+# dim(NICHE.DF)
+# head(niche_estimate (DF = COMBO.RASTER.CONVERT, colname = "Annual_mean_temp"))  ## including the q05 and q95
+# 
+# 
+# ## So lets use lapply on the "SearchTaxon"
+# ## test = run_function_concatenate(list, DF, "DF, colname = x") 
+# COMBO.NICHE <- env.variables %>% 
+#   
+#   ## Pipe the list into lapply
+#   lapply(function(x) {
+#     
+#     ## Now use the niche width function on each colname (so 8 environmental variables)
+#     ## Also, need to figure out how to make the aggregating column generic (species, genus, etc.)
+#     ## currently it only works hard-wired
+#     niche_estimate (DF = NICHE.DF, colname = x)
+#     
+#     ## would be good to remove the duplicate columns here
+#     
+#   }) %>% 
+#   
+#   ## finally, create one dataframe for all niches
+#   as.data.frame
+# 
+# 
+# ## Remove duplicate Taxon columns and check the output :: would be great to skip these columns when running the function
+# names(COMBO.NICHE)
+# COMBO.NICHE = subset(COMBO.NICHE, select = -c(searchTaxon.1,  searchTaxon.2,  searchTaxon.3,  searchTaxon.4,
+#                                               searchTaxon.5,  searchTaxon.6,  searchTaxon.7,  searchTaxon.7,
+#                                               searchTaxon.8,  searchTaxon.9,  searchTaxon.10, searchTaxon.11,
+#                                               searchTaxon.12, searchTaxon.13, searchTaxon.14, searchTaxon.15,
+#                                               searchTaxon.16, searchTaxon.17, searchTaxon.18, searchTaxon.19))
+# 
+# 
+# #########################################################################################################################
+# ## Add counts for each species, and record the total number of taxa processed
+# COMBO.count = as.data.frame(table(COMBO.RASTER.CONVERT$searchTaxon))$Freq
+# Total.taxa.processed = dim(COMBO.NICHE)[1]
+# COMBO.NICHE  = cbind(COMBO.count, COMBO.NICHE)
+# names(COMBO.NICHE)
+# dim(COMBO.NICHE)
+#saveRDS(COMBO.NICHE, file = paste("./data/base/HIA_LIST/GBIF/COMBO_NICHE.rds"))
 
 
 
@@ -583,18 +512,18 @@ saveRDS(COMBO.NICHE, file = paste("./data/base/HIA_LIST/GBIF/COMBO_NICHE.rds"))
 
 #########################################################################################################################
 ## Add the counts of Australian records for each species to the niche database
-names(COMBO.NICHE)
-names(LGA.AGG)
-dim(COMBO.NICHE)
-dim(LGA.AGG)
-
-
-COMBO.LGA = join(COMBO.NICHE, LGA.AGG)                            ## The tapply needs to go where the niche summaries are
-names(COMBO.LGA)
-
-dim(COMBO.LGA)
-head(COMBO.LGA$AUS_RECORDS)
-head(COMBO.LGA$LGA_COUNT)
+# names(COMBO.NICHE)
+# names(LGA.AGG)
+# dim(COMBO.NICHE)
+# dim(LGA.AGG)
+# 
+# 
+# COMBO.LGA = join(COMBO.NICHE, LGA.AGG)                            ## The tapply needs to go where the niche summaries are
+# names(COMBO.LGA)
+# 
+# dim(COMBO.LGA)
+# head(COMBO.LGA$AUS_RECORDS)
+# head(COMBO.LGA$LGA_COUNT)
 
 
 
@@ -615,15 +544,15 @@ names(COMBO.RASTER.CONTEXT)
 
 
 ## Now join hort context to all the niche
-COMBO.NICHE.CONTEXT = join(COMBO.LGA, HIA.SPP.JOIN)
-COMBO.NICHE.CONTEXT =  COMBO.NICHE.CONTEXT[, c(2, 185, 1, 183:184, 186:198, 3:182)] 
-head(COMBO.NICHE.CONTEXT$AUS_RECORDS)
-head(COMBO.NICHE.CONTEXT$LGA_COUNT)
-
-
-## Set NA to blank, then sort by no. of growers
-COMBO.NICHE.CONTEXT$Number.of.growers[is.na(COMBO.NICHE.CONTEXT$Number.of.growers)] <- 0
-COMBO.NICHE.CONTEXT = COMBO.NICHE.CONTEXT[with(COMBO.NICHE.CONTEXT, rev(order(Number.of.growers))), ]
+# COMBO.NICHE.CONTEXT = join(COMBO.LGA, HIA.SPP.JOIN)
+# COMBO.NICHE.CONTEXT =  COMBO.NICHE.CONTEXT[, c(2, 185, 1, 183:184, 186:198, 3:182)] 
+# head(COMBO.NICHE.CONTEXT$AUS_RECORDS)
+# head(COMBO.NICHE.CONTEXT$LGA_COUNT)
+# 
+# 
+# ## Set NA to blank, then sort by no. of growers
+# COMBO.NICHE.CONTEXT$Number.of.growers[is.na(COMBO.NICHE.CONTEXT$Number.of.growers)] <- 0
+# COMBO.NICHE.CONTEXT = COMBO.NICHE.CONTEXT[with(COMBO.NICHE.CONTEXT, rev(order(Number.of.growers))), ]
 
 
 ## View the data
@@ -683,10 +612,10 @@ dim(COMBO.NICHE.CONTEXT)
 
 ## Save the summary datasets
 #saveRDS(missing.taxa,         file = paste("./data/base/HIA_LIST/COMBO/MISSING_TAXA.rds",                   sep = ""))
-saveRDS(COMBO.RASTER.CONTEXT, file = paste("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_APRIL_2018.rds", sep = ""))
-saveRDS(COMBO.NICHE.CONTEXT,  file = paste("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_STANDARD_CLEAN.rds",  sep = ""))
-write.csv(COMBO.NICHE.CONTEXT, "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_STANDARD_CLEAN.csv",        row.names = FALSE)
-source('./R/5)_GBIF_ALA_CLEAN.R')
+#saveRDS(COMBO.RASTER.CONTEXT, file = paste("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_APRIL_2018.rds", sep = ""))
+#saveRDS(COMBO.NICHE.CONTEXT,  file = paste("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_STANDARD_CLEAN.rds",  sep = ""))
+#write.csv(COMBO.NICHE.CONTEXT, "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_STANDARD_CLEAN.csv",        row.names = FALSE)
+
 
 
 ## Now save .RData file for the next session...
