@@ -19,8 +19,8 @@
 spp.download = list.files("./data/base/HIA_LIST/GBIF/SPECIES/", pattern = ".RData")
 spp.download = gsub("_GBIF_records.RData", "", spp.download)
 spp.download = trimws(spp.download)
-new.spp      = trimws(check.200)
-spp.download = intersect(new.spp, spp.download)
+bind.spp     = trimws(GBIF.spp)
+spp.download = intersect(bind.spp, spp.download)
 
 
 

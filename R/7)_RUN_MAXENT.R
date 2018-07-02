@@ -5,13 +5,7 @@
 
 #########################################################################################################################
 ## This code takes a table of all species occurrences (rows) and environmental values (columns), and runs SDMs for a list
-## of taxa. These taxa will be modelled in two sets:
-
-## Species with Australian boundary bias (e.g. Lomandra Longifolia) will be modelled using random selection of background
-## points.
-
-## Species without Australian boundary bias (e.g. Ficus Brachypoda) will be modelled using targetted selection of 
-## background points.
+## of taxa.
 
 
 ## The HIA brief again:
@@ -24,25 +18,14 @@
 ## requirements.
 
 
-## Alex bush :: can we do that for our species - native/exotic, native/urban range
-
 
 #########################################################################################################################
 ## Load packages, functions and data
-#load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.RData")
-#load("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT.RData")
-#load("./data/base/HIA_LIST/COMBO/SDM_TEMPLATE_RASTER.RData")
-#load('data/hasData_cells.rds')
-#load('data/template_hasData.tif')
 #source('./R/HIA_LIST_MATCHING.R')
- 
-
-## Load SDM data :: template rasters, point data and koppen zones
-#SDM.DATA.ALL    = readRDS("./data/base/HIA_LIST/COMBO/SDM_DATA_CLEAN_052018.rds")
 
 
 #########################################################################################################################
-## 1). PREPARE DATA TABLES FOR SDM ANALYSIS
+## 1). PREPARE DATA TABLE FOR SDM ANALYSIS
 #########################################################################################################################
 
 
@@ -79,9 +62,6 @@ SDM.DATA.ALL <- mapply(function(x, cells) {
 
 
 ## Check to see we have 19 variables + the species for the standard predictors, and 19 for all predictors
-str(SDM.DATA.ALL)
-
-
 ## Check data :: template, data table and species 
 dim(template.raster)
 dim(SDM.DATA.ALL)
@@ -158,7 +138,7 @@ identical(names(env.grids.current),sdm.predictors)
 
 
 #########################################################################################################################
-## 3). RUN SDMs USING A-PRIORI VARIABLES
+## 2). RUN SDMs USING A-PRIORI VARIABLES
 #########################################################################################################################
 
 
@@ -229,107 +209,107 @@ lapply(analysis.spp, function(spp){
 
 
 
-#########################################################################################################################
-## Run analyses using parallel processing
-
-## To run the function in a cluster, we need to export all the objects which are not defined in the function call
-cl <- makeCluster(4)
-clusterExport(cl, c('template.raster', 'SDM.DATA.ALL', 'FIT_MAXENT', 'FIT_MAXENT_TARG_BG'))
-clusterEvalQ(cl, {
-  
-  ## These packages are required :: check they are updated
-  require(ff)
-  require(rgeos)
-  require(sp)
-  require(raster)
-  require(rJava)
-  require(dismo)
-  require(things)
-  
-})
-
-
-## Loop over all the species spp = spp.combo[31]
-parLapply(cl, spp.combo, function(spp) { # for serial, lapply(spp.combo, function(spp)
-  
-  ## Skip the species if the directory already exists, before the loop
-  outdir <- 'output/maxent/SET_VAR_KOPPEN'
-  if(dir.exists(file.path(outdir, gsub(' ', '_', spp)))) {
-    message('Skipping ', spp, ' - already run.')
-    invisible(return(NULL))
-    
-  }
-  
-  ## Print the taxa being processed to screen
-  if(spp %in% SDM.DATA.ALL$searchTaxon) {
-    message('Doing ', spp) 
-    
-    ## Subset the records to only the taxa being processed
-    occurrence <- subset(SDM.DATA.ALL, searchTaxon == spp)
-    
-    ## Now get the background points. These can come from any spp, other than the modelled species.
-    background <- subset(SDM.DATA.ALL, searchTaxon != spp)
-    
-    ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
-    tryCatch(
-      FIT_MAXENT_TARG_BG(occ                     = occurrence, 
-                         bg                      = background, 
-                         sdm.predictors          = sdm.select, 
-                         name                    = spp, 
-                         outdir                  = outdir, 
-                         template.raster,
-                         min_n                   = 20,     ## This should be higher...
-                         max_bg_size             = 100000, 
-                         Koppen                  = Koppen_1975,
-                         background_buffer_width = 200000,
-                         shapefiles              = TRUE,
-                         features                = 'lpq',
-                         replicates              = 5,
-                         responsecurves          = TRUE),
-      
-      ## https://stackoverflow.com/questions/19394886/trycatch-in-r-not-working-properly
-      #function(e) message('Species skipped ', spp)) ## skip any species for which the function fails
-      error = function(cond) {
-        
-        message(paste('Species skipped ', spp))
-        
-      })
-    
-  } else {
-    
-    message(spp, ' skipped - no data.')         ## This condition ignores species which have no data...
-    
-  }  
-  
-})
-
-
-stopCluster(cl)
-
-
-#########################################################################################################################
-## Look through the output directory for species where the code didn't finish. This is usually species with < 27 files
-## in the top "species_name" directory
-dd <- list.dirs('H:/green_cities_sdm/output/maxent/SET_VAR_KOPPEN', recursive = F)
-
-
-## Loop over all the directories in the maxent output folder
-ff <- sapply(dd, function(d) {
-  
-  list.files(d, full.names = TRUE)
-  
-})
-
-
-## Now remove all the files in each directory, if that directory has < 27 files in the top level
-n <- lengths(ff)
-
-lapply(ff[n < 27], function(x) {
-  
-  file.remove(x)
-  unlink(dirname(x[1]), recursive = TRUE)
-  
-})
+# #########################################################################################################################
+# ## Run analyses using parallel processing
+# 
+# ## To run the function in a cluster, we need to export all the objects which are not defined in the function call
+# cl <- makeCluster(4)
+# clusterExport(cl, c('template.raster', 'SDM.DATA.ALL', 'FIT_MAXENT', 'FIT_MAXENT_TARG_BG'))
+# clusterEvalQ(cl, {
+#   
+#   ## These packages are required :: check they are updated
+#   require(ff)
+#   require(rgeos)
+#   require(sp)
+#   require(raster)
+#   require(rJava)
+#   require(dismo)
+#   require(things)
+#   
+# })
+# 
+# 
+# ## Loop over all the species spp = spp.combo[31]
+# parLapply(cl, spp.combo, function(spp) { # for serial, lapply(spp.combo, function(spp)
+#   
+#   ## Skip the species if the directory already exists, before the loop
+#   outdir <- 'output/maxent/SET_VAR_KOPPEN'
+#   if(dir.exists(file.path(outdir, gsub(' ', '_', spp)))) {
+#     message('Skipping ', spp, ' - already run.')
+#     invisible(return(NULL))
+#     
+#   }
+#   
+#   ## Print the taxa being processed to screen
+#   if(spp %in% SDM.DATA.ALL$searchTaxon) {
+#     message('Doing ', spp) 
+#     
+#     ## Subset the records to only the taxa being processed
+#     occurrence <- subset(SDM.DATA.ALL, searchTaxon == spp)
+#     
+#     ## Now get the background points. These can come from any spp, other than the modelled species.
+#     background <- subset(SDM.DATA.ALL, searchTaxon != spp)
+#     
+#     ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
+#     tryCatch(
+#       FIT_MAXENT_TARG_BG(occ                     = occurrence, 
+#                          bg                      = background, 
+#                          sdm.predictors          = sdm.select, 
+#                          name                    = spp, 
+#                          outdir                  = outdir, 
+#                          template.raster,
+#                          min_n                   = 20,     ## This should be higher...
+#                          max_bg_size             = 100000, 
+#                          Koppen                  = Koppen_1975,
+#                          background_buffer_width = 200000,
+#                          shapefiles              = TRUE,
+#                          features                = 'lpq',
+#                          replicates              = 5,
+#                          responsecurves          = TRUE),
+#       
+#       ## https://stackoverflow.com/questions/19394886/trycatch-in-r-not-working-properly
+#       #function(e) message('Species skipped ', spp)) ## skip any species for which the function fails
+#       error = function(cond) {
+#         
+#         message(paste('Species skipped ', spp))
+#         
+#       })
+#     
+#   } else {
+#     
+#     message(spp, ' skipped - no data.')         ## This condition ignores species which have no data...
+#     
+#   }  
+#   
+# })
+# 
+# 
+# stopCluster(cl)
+# 
+# 
+# #########################################################################################################################
+# ## Look through the output directory for species where the code didn't finish. This is usually species with < 27 files
+# ## in the top "species_name" directory
+# dd <- list.dirs('H:/green_cities_sdm/output/maxent/SET_VAR_KOPPEN', recursive = F)
+# 
+# 
+# ## Loop over all the directories in the maxent output folder
+# ff <- sapply(dd, function(d) {
+#   
+#   list.files(d, full.names = TRUE)
+#   
+# })
+# 
+# 
+# ## Now remove all the files in each directory, if that directory has < 27 files in the top level
+# n <- lengths(ff)
+# 
+# lapply(ff[n < 27], function(x) {
+#   
+#   file.remove(x)
+#   unlink(dirname(x[1]), recursive = TRUE)
+#   
+# })
 
 
 

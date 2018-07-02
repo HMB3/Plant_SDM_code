@@ -864,13 +864,15 @@ check.200 = c("Rhododendron simsii", "Bismarckia nobilis",
               "Sannantha virgata", "Ficinia nodosa")
 
 
-run.200 = c("Cyathea cooperi", "Melaleuca quinquenervia", "Atractocarpus fitzalanii",  
-            "Syzygium floribundum", "Syzygium hemilamprum", "Agapanthus praecox", 
-            "Pennisetum setaceum", "Agapanthus praecox",
-            "Magnolia figo", "Gardenia jasminoides", 
-            "Gardenia jasminoides", "Dracaena fragrans", "Camellia oleifera",
-            "Sannantha virgata", "Ficinia nodosa")
+run.200  = c("Cyathea cooperi", "Melaleuca quinquenervia", "Atractocarpus fitzalanii",  
+             "Syzygium floribundum", "Syzygium hemilamprum", "Agapanthus praecox", 
+             "Pennisetum setaceum", "Agapanthus praecox",
+             "Magnolia figo", "Gardenia jasminoides", 
+             "Gardenia jasminoides", "Dracaena fragrans", "Camellia oleifera",
+             "Sannantha virgata", "Ficinia nodosa")
 
+
+run_200  = gsub(" ", "_", run.200)
 
 ## Write to file
 write.csv(COMBO.NICHE.200,  "./data/base/HIA_LIST/COMBO/COMBO_NICHE_200.csv",    row.names = FALSE)

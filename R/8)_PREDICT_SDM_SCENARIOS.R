@@ -8,11 +8,13 @@
 ## a prediction of habitat suitability for current and future environmental conditions. The input data table is in the 
 ## format of all species occurrences (rows) and environmental variables (columns).
 
-## The predictions from all 6 GCMs are then combined into a single habitat suitability layer.
-## And the area of habitat gained, lost or remaining stable is calculated. 
 
-## Using this combined layer, the % of area occupied by species within areal units (e.g. significant urban areas or LGAs), 
-## under each projection (2030, 2050 and 2070) can also be calculated. 
+## The predictions from all 6 GCMs are then combined into a single habitat suitability layer.
+## And the total area of habitat gained, lost or remaining stable is calculated (i.e. for AUS). 
+
+
+## Using this combined layer, the % of area occupied by species within areal units (significant urban areas or SUAs), 
+## under each projection (2030, 2050 and 2070) is also be calculated. 
 
 
 ## Load packages ::
@@ -22,7 +24,7 @@ rasterTmpFile()
 
 
 #########################################################################################################################
-## 1). READ IN THE CURRENT AND FUTURE ENVIRONMENTAL DATA FOR MULTIPLE GCMs
+## 1). READ IN THE CURRENT AND FUTURE ENVIRONMENTAL DATA FOR SIX GCMs
 #########################################################################################################################
 
 
@@ -41,6 +43,7 @@ rasterTmpFile()
 #          "hg85bi50", "in85bi50")
 
 
+## We can only get the bioclim variables for 6 of these projections......................................................
 ## Create a lookup table of GCMs using the WORLDCLIM website
 h <- read_html('http://www.worldclim.org/cmip5_30s') 
 gcms <- h %>% 
@@ -116,13 +119,6 @@ grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',   
                'Precip_wet_month',    'Precip_dry_month',    'Precip_seasonality', 'Precip_wet_qu',
                'Precip_dry_qu',       'Precip_warm_qu',      'Precip_col_qu')
 
-## Also, plot GCM anomalies...
-#source(./R/GCM_ANOMALY.R)
-
-
-## Plot the dodgy variables :: 
-# plot(env.grids.current[[8]]);plot(env.grids.current[[9]])
-# plot(env.grids.current[[18]]);plot(env.grids.current[[19]])
 
 
 
@@ -133,15 +129,10 @@ grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',   
 #########################################################################################################################
 
 
-## Change climate paths to match the projected Mollweide system rasters in the 1km directories...........................
-## Also warp the shapefiles into the same system.........................................................................
-## And change the projection for the operators...........................................................................
-
-
 #########################################################################################################################
 ## For each species, use a function to create raster files and maps under all six GCMs at each time step
 ## First remove species without data from step 7
-map_spp_list        = combo_spp
+#map_spp_list = combo_spp
 no_data      <- c ("Baeckea_virgata", "Kennedia_beckxiana", "Grevillea_rivularis", "Arctostaphylos_densiflora", 
                    "Cupressocyparis_leylandii", "Eucalyptus_intermedia", "Ficus_hillii", "Pentaceras_australi", 
                    "Pentaceras_australis", "Pouteria_australis", "Pouteria_chartacea", "Pouteria_eerwah", 
@@ -217,7 +208,8 @@ env.grids.2070 = tryCatch(project_maxent_grids(scen_list     = scen_2070,
 path.set.var             = "./output/maxent/SET_VAR_KOPPEN/"
 #map_spp_list                 = combo_spp 
 
-## Create an object for the maxent settings
+
+## Create an object for the maxent settings :: using the same variable for every model
 model.selection.settings = "Set_variables"  
 records_setting          = "COORD_CLEAN"
 
@@ -238,7 +230,7 @@ no_data %in% maxent.tables
 ## Could turn this into a function, and loop over a list of subfolders...
 ## Then pipe the table list into lapply
 ## MAXENT.SUMMARY = bind_maxent_tables(table_list)
-MAXENT.SUMMARY <- maxent.tables[c(1:length(maxent.tables))] %>%         ## currently 534 species with enough records
+MAXENT.SUMMARY <- maxent.tables[c(1:length(maxent.tables))] %>%         ## currently x species with enough records
   
   ## pipe the list into lapply
   lapply(function(x) {
@@ -297,7 +289,7 @@ length(comb_spp)
 
 
 #########################################################################################################################
-## Then, make a list all the directories containing the individual GCM rasters...path.backwards.sel
+## Then, make a list of all the directories containing the individual GCM rasters...path.backwards.sel
 SDM.RESULTS.DIR <- comb_spp[c(1:length(comb_spp))] %>%
   
   ## Pipe the list into lapply
@@ -315,8 +307,6 @@ SDM.RESULTS.DIR <- comb_spp[c(1:length(comb_spp))] %>%
 
 #########################################################################################################################
 ## Now combine the SDM output with the niche context data 
-
-
 ## Get the number of aus records too ....................................................................................
 NICHE.CONTEXT = COMBO.NICHE.CONTEXT[, c("searchTaxon",      "COMBO.count",       "AUS_RECORDS",       "Plant.type",        "Origin", 
                                         "Top_200",          "Total.growers", "Number.of.States")]
@@ -514,26 +504,13 @@ tail(SDM.RESULTS.DIR, 20);tail(comb_spp, 20); tail(MAXENT.SUM.TEST, 20)[, c("sea
 
 
 #########################################################################################################################
-## Why can't we define the shapefiles in the global environment, outside the function?
-# SUA = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/IN.SUA.shp", layer = "IN.SUA")
-# CRS.new  <- CRS("+init=epsg:4326") # EPSG:3577
-# SUA.WGS  = spTransform(SUA, CRS.new)
-# writeOGR(obj = SUA.WGS, dsn = "./data/base/CONTEXTUAL", layer = "IN_SUA_WGS", driver = "ESRI Shapefile")
-
-
-# SUA.WGS = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/IN_SUA_WGS.shp", layer = "IN_SUA_WGS")
-# SUA.WGS = SUA.WGS [order(SUA.WGS $SUA_NAME11),]
-# SUA_RAS <- rasterize(SUA.WGS, env.grids.current[[1]])
-
-
-#########################################################################################################################
 ## Loop over directories, species and one threshold for each, also taking a time_slice argument.
-DIR        = SDM.RESULTS.DIR[3] 
-species    = comb_spp[3] 
-thresh     = thresh.max.train[3] 
-percent    = percent.10.log[3]
-time_slice = 30
-area_occ   = 10
+# DIR        = SDM.RESULTS.DIR[3] 
+# species    = comb_spp[3] 
+# thresh     = thresh.max.train[3] 
+# percent    = percent.10.log[3]
+# time_slice = 30
+# area_occ   = 10
 
 
 ## Problem species ::
@@ -559,59 +536,7 @@ area_occ   = 10
 
 #########################################################################################################################
 ## Combine output and calculate gain and loss for 2030 
-## c(comb_spp[9], comb_spp[11])
-DIR        = SDM.RESULTS.DIR.LOW[13]
-suitability.2030 = tryCatch(mapply(combine_gcm_threshold,
-                                   DIR_list     = SDM.RESULTS.DIR,
-                                   species_list = comb_spp,
-                                   maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
-                                   thresholds   = thresh.max.train,
-                                   percentiles  = percent.10.log,
-                                   time_slice   = 30,
-                                   area_occ     = 10),
-                            
-                            error = function(cond) {
-                              
-                              message(paste('Species skipped - check inputs', spp))
-                              
-                            })
-
-
-## Combine GCM output for 2050 
-suitability.2050 = tryCatch(mapply(combine_gcm_threshold, 
-                                   DIR_list     = SDM.RESULTS.DIR, 
-                                   species_list = comb_spp, 
-                                   maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
-                                   thresholds   = thresh.max.train,
-                                   percentiles  = percent.10.log,
-                                   time_slice   = 50,
-                                   area_occ     = 10),
-                            
-                            error = function(cond) {
-                              
-                              message(paste('Species skipped - check inputs', spp))
-                              
-                            })
-
-
-## Combine GCM output for 2070 
-suitability.2070 = tryCatch(mapply(combine_gcm_threshold, 
-                                   DIR_list     = SDM.RESULTS.DIR, 
-                                   species_list = comb_spp, 
-                                   maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
-                                   thresholds   = thresh.max.train,
-                                   percentiles  = percent.10.log,
-                                   time_slice   = 70,
-                                   area_occ     = 10),
-                            
-                            error = function(cond) {
-                              
-                              message(paste('Species skipped - check inputs', spp))
-                              
-                            })
-
-
-# suitability.2030 = tryCatch(mapply(SUA_table,
+# suitability.2030 = tryCatch(mapply(combine_gcm_threshold,
 #                                    DIR_list     = SDM.RESULTS.DIR,
 #                                    species_list = comb_spp,
 #                                    maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
@@ -625,6 +550,43 @@ suitability.2070 = tryCatch(mapply(combine_gcm_threshold,
 #                               message(paste('Species skipped - check inputs', spp))
 #                               
 #                             })
+# 
+# 
+# ## Combine GCM output for 2050 
+# suitability.2050 = tryCatch(mapply(combine_gcm_threshold, 
+#                                    DIR_list     = SDM.RESULTS.DIR, 
+#                                    species_list = comb_spp, 
+#                                    maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
+#                                    thresholds   = thresh.max.train,
+#                                    percentiles  = percent.10.log,
+#                                    time_slice   = 50,
+#                                    area_occ     = 10),
+#                             
+#                             error = function(cond) {
+#                               
+#                               message(paste('Species skipped - check inputs', spp))
+#                               
+#                             })
+# 
+# 
+# ## Combine GCM output for 2070 
+# suitability.2070 = tryCatch(mapply(combine_gcm_threshold, 
+#                                    DIR_list     = SDM.RESULTS.DIR, 
+#                                    species_list = comb_spp, 
+#                                    maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
+#                                    thresholds   = thresh.max.train,
+#                                    percentiles  = percent.10.log,
+#                                    time_slice   = 70,
+#                                    area_occ     = 10),
+#                             
+#                             error = function(cond) {
+#                               
+#                               message(paste('Species skipped - check inputs', spp))
+#                               
+#                             })
+
+
+
 
 
 #########################################################################################################################
@@ -632,7 +594,7 @@ suitability.2070 = tryCatch(mapply(combine_gcm_threshold,
 #########################################################################################################################
 
 
-## Test it first 
+## To test it first species works 
 species    = spp_lower_thresh[13]
 thresh     = percent.10.log.low[13]
 percent    = percent.10.om.low[13]
