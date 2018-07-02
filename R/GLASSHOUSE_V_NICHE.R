@@ -15,12 +15,13 @@ COMBO.RASTER.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/CLEAN_ONLY_HIA_SPP.rd
 
 
 ## Read in heat risk data
-HEAT.RISK = read.csv("./data/base/HIA_LIST/RENEE/MOD3_HEAT_RANKS.csv", stringsAsFactors = FALSE)
+HEAT.RISK = read.csv("./data/base/HIA_LIST/RENEE/MOD3_HEAT_RANKS_072018.csv", stringsAsFactors = FALSE)
 HEAT.DAYS = raster("./data/base/AWAP/mean_days_35_degrees.tif")
 plot(HEAT.DAYS, main = "DAYS > 35 deg")
 
 
 ## Why don't they match up exactly?
+colnames(HEAT.RISK)[colnames(HEAT.RISK)=="Species"] <- "searchTaxon"
 HEAT.RISK.NICHE = merge(COMBO.NICHE.CONTEXT, HEAT.RISK, by = "searchTaxon")
 dim(HEAT.RISK.NICHE)
 names(HEAT.RISK.NICHE)

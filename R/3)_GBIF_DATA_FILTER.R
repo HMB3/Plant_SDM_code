@@ -4,20 +4,96 @@
 
 
 #########################################################################################################################
-## This code filters the GBIF data to the most reliable recrods. Two sources of uncertainty:
+## This code filters combines the GBIF data into one file, and filters to the most reliable recrods. 
+## Two sources of uncertainty:
 
 ## Taxonomic
 ## Spatial 
 
 
-## A record with the same lat/long to x decimal places, collected in the same month by the same person is a duplicate
-## Use the TPL and CoordinateCleaner packages 
+
+#########################################################################################################################
+## 1). LOAD TAXA, ADD SEARCH TAXA, DROP COLUMNS AND COMBINE SPECIES DATAFRAMES INTO ONE
+#########################################################################################################################
+
+
+#########################################################################################################################
+## Create a list of species from the downloaded files
+spp.download = list.files("./data/base/HIA_LIST/GBIF/SPECIES/", pattern = ".RData")
+spp.download = gsub("_GBIF_records.RData", "", spp.download)
+spp.download = trimws(spp.download)
+bind.spp     = trimws(GBIF.spp)
+spp.download = intersect(bind.spp, spp.download)
+
+
+## memory is a problem. Can these sorts of operations be run in parallel?
+memory.limit()
+gc()
+
+
+## Check GBIF column names:
+sort(unique(gbifColsToDrop))
+sort(unique(gbif.keep))
+intersect(unique(gbifColsToDrop), unique(gbif.keep))     ## Check we don't get rid of any of the columns we want to keep
+
+
+#########################################################################################################################
+## Combine all the taxa into a single dataframe at once
+GBIF.ALL <- spp.download[c(1:length(spp.download))] %>%   ## spp.download[c(1:length(spp.download))] 
+  
+  ## Pipe the list into lapply
+  lapply(function(x) {
+    
+    ## Create a character string of each .RData file
+    f <- sprintf("./data/base/HIA_LIST/GBIF/SPECIES/%s_GBIF_records.RData", x)
+    
+    ## Load each file
+    d <- get(load(f))
+    
+    ## Now drop the columns which we don't need
+    dat <- data.frame(searchTaxon = x, d[, !colnames(d) %in% gbifColsToDrop],
+                      stringsAsFactors = FALSE)
+    
+    if(!is.character(dat$gbifID)) {
+      
+      dat$gbifID <- as.character(dat$gbifID)
+      
+    }
+    
+    ## Need to print the object within the loop
+    dat
+    
+  }) %>%
+  
+  ## Finally, bind all the rows together
+  bind_rows
+
+
+#########################################################################################################################
+## CHECK SEARCHED AND RETURNED TAXONOMIC NAMES FROM GBIF
+## What are the names? Can't get date for GBIF across 
+sort(names(GBIF.ALL))
+str(GBIF.ALL$recordedBy)
+str(GBIF.ALL$dateIdentified)
+
+
+## Now get just the columns we want to keep. Note gc() frees up RAM
+GBIF.TRIM <- GBIF.ALL %>% 
+  select(one_of(gbif.keep))
+
+
+## Check names
+dim(GBIF.TRIM)
+names(GBIF.TRIM)
+setdiff(names(GBIF.TRIM), gbif.keep)
+intersect(names(GBIF.TRIM), gbif.keep)
+
 
 
 #########################################################################################################################
 ## Load previous data
 #GBIF.TRIM = load("./data/base/HIA_LIST/COMBO/GBIF_TRIM_LATEST.RData")
-rasterOptions(tmpdir = file.path("'H:/green_cities_sdm/RTEMP")) 
+#rasterOptions(tmpdir = file.path("'H:/green_cities_sdm/RTEMP")) 
 # dim(GBIF.TRIM)
 # names(GBIF.TRIM)
 # length(unique(GBIF.TRIM$searchTaxon))  ## has the list updated with extra species? YES! unique(GBIF.TRIM$searchTaxon)
@@ -25,11 +101,11 @@ rasterOptions(tmpdir = file.path("'H:/green_cities_sdm/RTEMP"))
 
 
 ## Just get the newly downloaded species................................................................................
-GBIF.TRIM = GBIF.TRIM[GBIF.TRIM$searchTaxon %in% new.spp, ]
+GBIF.TRIM = GBIF.TRIM[GBIF.TRIM$searchTaxon %in% GBIF.spp, ]
 
 
 #########################################################################################################################
-## 1). CHECK TAXONOMY RETURNED BY GBIF USING TAXONSTAND
+## 2). CHECK TAXONOMY RETURNED BY GBIF USING TAXONSTAND
 ######################################################################################################################### 
 
 
@@ -39,6 +115,7 @@ GBIF.TAXO <- TPL(unique(GBIF.TRIM$scientificName), infra = TRUE,
 sort(names(GBIF.TAXO))
 
 
+######################################################################################################################### 
 # The procedure used for taxonomic standardization is based on function TPLck. A progress bar
 # indicates the proportion of taxon names processed so far. In case the TPL website cannot be reached
 # temporarily, the function returns an error but repeats trying to match the given taxon multiple times
@@ -104,7 +181,7 @@ GBIF.TRIM.TAXO <- GBIF.TRIM %>%
 
 
 #########################################################################################################################
-## 2). MARK CULTIVATED RECORDS
+## 3). MARK CULTIVATED RECORDS
 #########################################################################################################################
 
 
@@ -171,7 +248,7 @@ GBIF.CULTIVATED <- GBIF.TRIM.TAXO %>%
 
 
 #########################################################################################################################
-## 3). CREATE TABLE OF PRE-CLEAN FLAGS 
+## 4). CREATE TABLE OF PRE-CLEAN FLAGS 
 #########################################################################################################################
 
 
@@ -238,7 +315,7 @@ GBIF.PROBLEMS <- with(GBIF.TRIM.TAXO,
 
 
 #########################################################################################################################
-## 4). FILTER RECORDS 
+## 5). FILTER RECORDS 
 #########################################################################################################################
 
 
@@ -268,15 +345,12 @@ GBIF.CLEAN <- GBIF.TRIM.TAXO %>%
 
 
 #########################################################################################################################
-## 5). REMOVE POINTS OUTSIDE WORLDCLIM LAYERS...
+## 6). REMOVE POINTS OUTSIDE WORLDCLIM LAYERS...
 #########################################################################################################################
 
 
 ## Can use WORLDCIM rasters to get only records where wordlclim data is. 
 ## At the global scale, there probably is no alterntive to using WORLDCLIM...
-
-
-## Problem matching with Dina's grid? ....................................................................
 
 
 ## First, get one of the BIOCLIM variables
@@ -356,10 +430,6 @@ gc()
 ## Now save .rds file for the next session
 #save.image("STEP_3_GBIF_CLEAN.RData")
 #load("STEP_3_GBIF_CLEAN.RData")
-
-
-## 196 species from the risk list are missing...presumably due to inusfficient data
-length(unique(GBIF.TRIM.TAXO$searchTaxon)) 
 
 
 

@@ -123,7 +123,6 @@ grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',   
 
 
 
-
 #########################################################################################################################
 ## 2). PROJECT MAXENT MODELS FOR MULTIPLE CLIMATE SCEANARIOS AT 2030, 2050 AND 2070
 #########################################################################################################################
@@ -265,9 +264,10 @@ MAXENT.SUMMARY <- maxent.tables[c(1:length(maxent.tables))] %>%         ## curre
 
 
 ## This is a summary of maxent output for current conditions
+## Also which species have AUC < 0.7?
 dim(MAXENT.SUMMARY)
 head(MAXENT.SUMMARY, 20)[1:9]
-
+dim(subset(MAXENT.SUMMARY, Training.AUC < 0.7))
 
 ## What are the variables we want to see?
 # View(head(MAXENT.SUMMARY, 180)[, c("searchTaxon",
@@ -284,13 +284,13 @@ head(MAXENT.SUMMARY, 20)[1:9]
 ## the right threshold for each species.
 length(intersect(map_spp_list, MAXENT.SUMMARY$searchTaxon)) ## Accesssing the files from these directories... 
 MAXENT.SUM.TEST  =  MAXENT.SUMMARY[MAXENT.SUMMARY$searchTaxon %in% map_spp_list , ] 
-comb_spp = unique(MAXENT.SUM.TEST$searchTaxon)
-length(comb_spp)
+map_spp = unique(MAXENT.SUM.TEST$searchTaxon)
+length(map_spp)
 
 
 #########################################################################################################################
 ## Then, make a list of all the directories containing the individual GCM rasters...path.backwards.sel
-SDM.RESULTS.DIR <- comb_spp[c(1:length(comb_spp))] %>%
+SDM.RESULTS.DIR <- map_spp[c(1:length(map_spp))] %>%
   
   ## Pipe the list into lapply
   lapply(function(species) {
@@ -471,8 +471,8 @@ SDM.RESULTS.DIR.BEST <- spp_best_thresh [c(1:length(spp_best_thresh ))] %>%
 ## Check the order of lists match, species, SUAs, areas need to match up ................................................
 ## It would be safer to read in the thresholds individually, so they match the species folder exactly
 length(SDM.RESULTS.DIR);length(MAXENT.SUM.TEST$searchTaxon);length(thresh.max.train);
-length(percent.10.log);length(percent.10.om);length(comb_spp)
-identical(MAXENT.SUM.TEST$searchTaxon, comb_spp)
+length(percent.10.log);length(percent.10.om);length(map_spp)
+identical(MAXENT.SUM.TEST$searchTaxon, map_spp)
 
 
 ## Also, check that the lower threshold lists are ok too
@@ -480,11 +480,11 @@ length(percent.10.log.low);length(percent.10.om.low);length(spp_lower_thresh)
 
 
 ## The order of the directories matches
-head(SDM.RESULTS.DIR, 20);head(comb_spp, 20); head(MAXENT.SUM.TEST, 20)[, c("searchTaxon",
+head(SDM.RESULTS.DIR, 20);head(map_spp, 20); head(MAXENT.SUM.TEST, 20)[, c("searchTaxon",
                                                                             "Maximum.training.sensitivity.plus.specificity.Logistic.threshold", 
                                                                             "X10.percentile.training.presence.Logistic.threshold")]
 
-tail(SDM.RESULTS.DIR, 20);tail(comb_spp, 20); tail(MAXENT.SUM.TEST, 20)[, c("searchTaxon",
+tail(SDM.RESULTS.DIR, 20);tail(map_spp, 20); tail(MAXENT.SUM.TEST, 20)[, c("searchTaxon",
                                                                             "Maximum.training.sensitivity.plus.specificity.Logistic.threshold", 
                                                                             "X10.percentile.training.presence.Logistic.threshold")]
 
@@ -506,7 +506,7 @@ tail(SDM.RESULTS.DIR, 20);tail(comb_spp, 20); tail(MAXENT.SUM.TEST, 20)[, c("sea
 #########################################################################################################################
 ## Loop over directories, species and one threshold for each, also taking a time_slice argument.
 # DIR        = SDM.RESULTS.DIR[3] 
-# species    = comb_spp[3] 
+# species    = map_spp[3] 
 # thresh     = thresh.max.train[3] 
 # percent    = percent.10.log[3]
 # time_slice = 30
@@ -538,7 +538,7 @@ tail(SDM.RESULTS.DIR, 20);tail(comb_spp, 20); tail(MAXENT.SUM.TEST, 20)[, c("sea
 ## Combine output and calculate gain and loss for 2030 
 # suitability.2030 = tryCatch(mapply(combine_gcm_threshold,
 #                                    DIR_list     = SDM.RESULTS.DIR,
-#                                    species_list = comb_spp,
+#                                    species_list = map_spp,
 #                                    maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
 #                                    thresholds   = thresh.max.train,
 #                                    percentiles  = percent.10.log,
@@ -555,7 +555,7 @@ tail(SDM.RESULTS.DIR, 20);tail(comb_spp, 20); tail(MAXENT.SUM.TEST, 20)[, c("sea
 # ## Combine GCM output for 2050 
 # suitability.2050 = tryCatch(mapply(combine_gcm_threshold, 
 #                                    DIR_list     = SDM.RESULTS.DIR, 
-#                                    species_list = comb_spp, 
+#                                    species_list = map_spp, 
 #                                    maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
 #                                    thresholds   = thresh.max.train,
 #                                    percentiles  = percent.10.log,
@@ -572,7 +572,7 @@ tail(SDM.RESULTS.DIR, 20);tail(comb_spp, 20); tail(MAXENT.SUM.TEST, 20)[, c("sea
 # ## Combine GCM output for 2070 
 # suitability.2070 = tryCatch(mapply(combine_gcm_threshold, 
 #                                    DIR_list     = SDM.RESULTS.DIR, 
-#                                    species_list = comb_spp, 
+#                                    species_list = map_spp, 
 #                                    maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
 #                                    thresholds   = thresh.max.train,
 #                                    percentiles  = percent.10.log,

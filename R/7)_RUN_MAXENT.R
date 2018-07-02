@@ -149,7 +149,7 @@ identical(names(env.grids.current),sdm.predictors)
 projection(template.raster);projection(SDM.DATA.ALL);projection(Koppen_1975)
 
 
-## Create new variable for analysis species
+## Create new variable for analysis species - hence SDM.DATA.ALL needs to be update each time...........................
 analysis.spp = unique(SDM.DATA.ALL$searchTaxon)   ## could use this in future
 
 
@@ -340,8 +340,6 @@ lapply(analysis.spp, function(spp){
 ##    "X10.percentile.training.presence.training.omission"
   
 ## 5). Calculate the TSS for all species (and MESS maps for a few species)
-
-## 6). Get species list from 8 biggest SUAs - Area report from ALA (not working) + Expert list if we have them
 
 ## 7). Decide on gamma diversity for this article - 200 spp - could it go to GEB? Plan figures and tables for MS
 
