@@ -22,9 +22,18 @@
 source('./R/HIA_LIST_MATCHING.R')
 rasterOptions(tmpdir = file.path("'H:/green_cities_sdm/RTEMP")) 
 
+
+## GBIF and ALA data
 GBIF.LAND = readRDS("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.rds")
 load("./data/base/HIA_LIST/ALA/ALA_LAND_POINTS.RData")
 LAND      = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LAND_world.rds")
+
+
+## Alessandros urban inventory data......................................................................................
+# AUS.URBAN   = readRDS("./data/base/HIA_LIST/URBAN/AUS_URBAN_POINTS.rds")
+# AUS.NURSE   = readRDS("./data/base/HIA_LIST/URBAN/BUSH_NURSERY_POINTS.rds")
+# AUS.INAT    = readRDS("./data/base/HIA_LIST/URBAN/INAT_POINTS.rds")
+
 
 
 ## check ALA data
@@ -80,7 +89,7 @@ str(unique(ALA.LAND.HIA$searchTaxon))   ## Reduced from 30k to 4K
 ## Bind the rows together?
 GBIF.ALA.COMBO.LAND = bind_rows(GBIF.LAND, ALA.LAND.HIA)
 names(GBIF.ALA.COMBO.LAND)
-identical((dim(GBIF.LAND)[1]+dim(ALA.LAND)[1]),dim(GBIF.ALA.COMBO.LAND)[1])      ## only adding the ovelap...
+identical((dim(GBIF.LAND)[1]+dim(ALA.LAND)[1]),dim(GBIF.ALA.COMBO.LAND)[1])      ## Only adding the ovelap...
 head(GBIF.ALA.COMBO.LAND)
 
 
@@ -128,7 +137,24 @@ names(COMBO.POINTS)
 
 
 #########################################################################################################################
-## 2). PROJECT RASTERS AND EXTRACT ALL WORLDCLIM DATA FOR SPECIES RECORDS
+## 2). MERGE OCCURRENCE DATA WITH COUNCIL AND OTHER URBAN DATA
+#########################################################################################################################
+
+
+## what does the data look like?
+names(COMBO.POINTS);names(AUS.URBAN);names(AUS.NURSE);names(AUS.INAT)
+
+
+## Bind the rows together?
+GBIF.ALA.COMBO.LAND = bind_rows(COMBO.POINTS, AUS.URBAN, AUS.NURSE, AUS.INAT)
+names(GBIF.ALA.COMBO.LAND)
+
+
+
+
+
+#########################################################################################################################
+## 3). PROJECT RASTERS AND EXTRACT ALL WORLDCLIM DATA FOR SPECIES RECORDS
 #########################################################################################################################
 
 
@@ -233,100 +259,7 @@ projection(COMBO.RASTER)
 
 
 #########################################################################################################################
-## 3). INTERSECT SPECIES RECORDS WITH LOCAL GOV AREAS AND SIGNIFICANT URBAN AREAS
-#########################################################################################################################
-
-
-#########################################################################################################################
-## See the ABS for details :: there are 563 LGAs
-## http://www.abs.gov.au/ausstats/abs@.nsf/Lookup/by%20Subject/1270.0.55.003~July%202016~Main%20Features~Local%20Government%20Areas%20(LGA)~7
-
-
-## We want to know the count of species that occur in 'n' LGAs, across a range of climates. Read in LGA and SUA
-# SUA      = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/IN_SUA_AUS.rds")
-# LGA      = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LGA.rds")
-# AUS      = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds")
-# projection(LGA);projection(SUA);projection(AUS)
-# 
-# 
-# ## Convert the raster data back into a spdf
-# COMBO.RASTER.SP   = SpatialPointsDataFrame(coords      = COMBO.RASTER[c("lon", "lat")], 
-#                                            data        = COMBO.RASTER,
-#                                            proj4string = CRS.WGS.84)
-# 
-# 
-# ## Project using a projected rather than geographic coordinate system
-# LGA.WGS  = spTransform(LGA, CRS.WGS.84)
-# SUA.WGS  = spTransform(SUA, CRS.WGS.84)
-# AUS.WGS  = spTransform(AUS, CRS.WGS.84)
-
-
-## Remove the columns we don't need
-# LGA.WGS = LGA.WGS[, c("LGA_CODE16", "LGA_NAME16")] 
-
-
-## This creates a shapefile which is just the SUA: in or out...
-# IN.SUA <- SUA[ !(SUA$SUA_NAME11 %in% c("Not in any Significant Urban Area (NSW)", 
-#                                        "Not in any Significant Urban Area (Vic.)",
-#                                        "Not in any Significant Urban Area (Qld)",
-#                                        "Not in any Significant Urban Area (SA)",
-#                                        "Not in any Significant Urban Area (WA)",
-#                                        "Not in any Significant Urban Area (Tas.)",
-#                                        "Not in any Significant Urban Area (NT)",
-#                                        "Not in any Significant Urban Area (OT)",
-#                                        "Not in any Significant Urban Area (ACT)")), ]
-# 
-# plot(IN.SUA)
-# writeOGR(obj = IN.SUA, dsn = "./data/base/CONTEXTUAL", layer = "IN.SUA", driver = "ESRI Shapefile")
-
-
-## Then, we want to create a layer which is just in the urban area, or not. This would need to combine the above fields into one
-# IN.SUA   = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/INSIDE_AUS_SUA.shp", layer = "INSIDE_AUS_SUA")
-# saveRDS(IN.SUA, file.path("F:/green_cities_sdm/data/base/CONTEXTUAL/", 'IN_SUA_AUS.rds'))
-# 
-# IN.SUA   = IN.SUA[,-(1)];
-# IN.SUA   = IN.SUA[,-(2)]
-# names(IN.SUA)
-# IN.SUA  = spTransform(IN.SUA, CRS.WGS.84)
-
-
-
-#########################################################################################################################
-## Run join between species records and LGAs/SUAs :: Double check they are the same
-# projection(COMBO.RASTER.SP);projection(LGA.WGS);projection(SUA.WGS);projection(AUS.WGS)
-# LGA.JOIN      = over(COMBO.RASTER.SP, LGA.WGS)            
-# COMBO.SUA.LGA = cbind.data.frame(COMBO.RASTER.SP, LGA.JOIN) 
-#saveRDS(COMBO.SUA.LGA, file = paste("./data/base/HIA_LIST/GBIF/COMBO_SUA_LGA.rds"))
-
-
-
-#########################################################################################################################
-## AGGREGATE THE NUMBER OF LGAs EACH SPECIES IS FOUND IN. NA LGAs ARE OUTSIDE AUS
-# LGA.AGG   = tapply(COMBO.SUA.LGA$LGA_NAME16, COMBO.SUA.LGA$searchTaxon, function(x) length(unique(x))) ## group LGA by species name
-# AUS.AGG   = aggregate(LGA_CODE16 ~ searchTaxon, data = COMBO.SUA.LGA, function(x) {sum(!is.na(x))}, na.action = NULL)
-# LGA.AGG   = as.data.frame(LGA.AGG)
-# LGA.AGG   = cbind.data.frame(AUS.AGG, LGA.AGG)
-# names(LGA.AGG) = c("searchTaxon", "AUS_RECORDS", "LGA_COUNT")
-
-
-## Check
-# dim(LGA.AGG)
-# head(LGA.AGG)
-# 
-# 
-# ## 
-# names(COMBO.SUA.LGA)
-# COMBO.SUA.LGA = subset(COMBO.SUA.LGA, select = -c(lon.1, lat.1))
-# names(COMBO.SUA.LGA)
-# dim(COMBO.SUA.LGA)
-# str(unique(COMBO.SUA.LGA$searchTaxon))
-
-
-
-
-
-#########################################################################################################################
-## 5). CREATE NICHES FOR SELECTED TAXA
+## 4). CREATE NICHES FOR SELECTED TAXA
 #########################################################################################################################
 
 
@@ -378,214 +311,6 @@ summary(COMBO.RASTER$Isothermality)
 #        pch = ".", col = "red", cex = 3, asp = 1, main = "temp records < -5")
 
 
-#########################################################################################################################
-## Create niche summaries for each environmental condition like this...
-## Here's what the function will produce :
-# NICHE.DF = completeFun(COMBO.RASTER.CONVERT, "PET")
-# dim(NICHE.DF)
-# head(niche_estimate (DF = COMBO.RASTER.CONVERT, colname = "Annual_mean_temp"))  ## including the q05 and q95
-# 
-# 
-# ## So lets use lapply on the "SearchTaxon"
-# ## test = run_function_concatenate(list, DF, "DF, colname = x") 
-# COMBO.NICHE <- env.variables %>% 
-#   
-#   ## Pipe the list into lapply
-#   lapply(function(x) {
-#     
-#     ## Now use the niche width function on each colname (so 8 environmental variables)
-#     ## Also, need to figure out how to make the aggregating column generic (species, genus, etc.)
-#     ## currently it only works hard-wired
-#     niche_estimate (DF = NICHE.DF, colname = x)
-#     
-#     ## would be good to remove the duplicate columns here
-#     
-#   }) %>% 
-#   
-#   ## finally, create one dataframe for all niches
-#   as.data.frame
-# 
-# 
-# ## Remove duplicate Taxon columns and check the output :: would be great to skip these columns when running the function
-# names(COMBO.NICHE)
-# COMBO.NICHE = subset(COMBO.NICHE, select = -c(searchTaxon.1,  searchTaxon.2,  searchTaxon.3,  searchTaxon.4,
-#                                               searchTaxon.5,  searchTaxon.6,  searchTaxon.7,  searchTaxon.7,
-#                                               searchTaxon.8,  searchTaxon.9,  searchTaxon.10, searchTaxon.11,
-#                                               searchTaxon.12, searchTaxon.13, searchTaxon.14, searchTaxon.15,
-#                                               searchTaxon.16, searchTaxon.17, searchTaxon.18, searchTaxon.19))
-# 
-# 
-# #########################################################################################################################
-# ## Add counts for each species, and record the total number of taxa processed
-# COMBO.count = as.data.frame(table(COMBO.RASTER.CONVERT$searchTaxon))$Freq
-# Total.taxa.processed = dim(COMBO.NICHE)[1]
-# COMBO.NICHE  = cbind(COMBO.count, COMBO.NICHE)
-# names(COMBO.NICHE)
-# dim(COMBO.NICHE)
-#saveRDS(COMBO.NICHE, file = paste("./data/base/HIA_LIST/GBIF/COMBO_NICHE.rds"))
-
-
-
-
-
-#########################################################################################################################
-## 6). CALCULATE AREA OF OCCUPANCY RANGES 
-#########################################################################################################################
-
-
-## These numbers don't look that accurate: Try convert into a sp data frame and projecting into a projected system?
-## Create a species list to estimate the ranges for
-# spp.geo = as.character(unique(COMBO.RASTER$searchTaxon)) 
-# data    = COMBO.RASTER
-
-
-#########################################################################################################################
-## AREA OF OCCUPANCY (AOO)
-## For every species in the list: calculate the AOO
-# GBIF.AOO <- spp.geo[c(1:length(spp.geo))] %>%
-# 
-#   ## Pipe the list into lapply
-#   lapply(function(x) {
-# 
-#     ## Subset the the data frame
-#     DF      = subset(data, searchTaxon == x)[, c("lon", "lat")]
-# 
-#     ## Calculate area of occupancy according the the "red" package
-#     aoo (DF)
-# 
-#     ## Warning messages: Ask John if this is a problem
-#     ## In rgdal::project(longlat, paste("+proj=utm +zone=", zone,  ... :
-#     ## 3644 projected point(s) not finite
-# 
-#   }) %>%
-# 
-#   ## Finally, create one dataframe for all niches
-#   as.data.frame
-
-
-#########################################################################################################################
-## EXTENT OF OCCURRENCE
-## For every species in the list: calculate the EOO
-# GBIF.EOO <- spp.geo[c(1:length(spp.geo))] %>% 
-#   
-#   ## Pipe the list into lapply
-#   lapply(function(x) {
-#     
-#     ## Subset the the data frame 
-#     DF      = subset(data, searchTaxon == x)[, c("searchTaxon", "lon", "lat")]
-#     DF.GEO  = dplyr::rename(DF, 
-#                             identifier = searchTaxon,
-#                             XCOOR      = lon,
-#                             YCOOR      = lat)
-#     
-#     ## Calculate area of occupancy according the the "red" package
-#     CalcRange (DF.GEO)
-#     
-#     ## Warning messages: Ask John if this is a problem
-#     ## In rgdal::project(longlat, paste("+proj=utm +zone=", zone,  ... :
-#     ## 3644 projected point(s) not finite
-#     
-#   }) %>% 
-#   
-#   ## Finally, create one dataframe for all niches
-#   as.data.frame
-
-
-#########################################################################################################################
-## Clean it up :: the order of species should be preserved
-# GBIF.AOO = gather(GBIF.AOO)
-# str(GBIF.AOO)
-# str(unique(GBIF.ALA.COMBO.HIA$searchTaxon))                     ## same number of species...
-# 
-# 
-# ## Now join on the GEOGRAPHIC RANGE
-# COMBO.NICHE$AREA_OCCUPANCY = GBIF.AOO$value                     ## vectors same length so don't need to match
-
-
-## AOO is calculated as the area of all known or predicted cells for the species. The resolution will be 2x2km as 
-## required by IUCN. A single value in km2.
-
-#########################################################################################################################
-## Add the counts of Australian records for each species to the niche database
-# names(COMBO.NICHE)
-# names(LGA.AGG)
-# dim(COMBO.NICHE)
-# dim(LGA.AGG)
-# 
-# 
-# COMBO.LGA = join(COMBO.NICHE, LGA.AGG)                            ## The tapply needs to go where the niche summaries are
-# names(COMBO.LGA)
-# 
-# dim(COMBO.LGA)
-# head(COMBO.LGA$AUS_RECORDS)
-# head(COMBO.LGA$LGA_COUNT)
-
-
-
-
-
-#########################################################################################################################
-## 7). JOIN ON CONTEXTUAL DATA
-#########################################################################################################################
-
-
-#########################################################################################################################
-## Now join the horticultural contextual data onto one or both tables ()
-names(COMBO.RASTER.CONVERT)
-names(CLEAN.SPP)
-COMBO.RASTER.CONTEXT = join(COMBO.RASTER.CONVERT, HIA.SPP.JOIN)
-#COMBO.RASTER.CONTEXT  = COMBO.RASTER.CONTEXT[,  c(42, 1, 65, 2:41, 43:61, 62:64, 66:78)]                ## REDO
-dim(COMBO.RASTER.CONTEXT)
-names(COMBO.RASTER.CONTEXT)
-
-
-## Now join hort context to all the niche
-# COMBO.NICHE.CONTEXT = join(COMBO.LGA, HIA.SPP.JOIN)
-# COMBO.NICHE.CONTEXT =  COMBO.NICHE.CONTEXT[, c(2, 185, 1, 183:184, 186:198, 3:182)] 
-# head(COMBO.NICHE.CONTEXT$AUS_RECORDS)
-# head(COMBO.NICHE.CONTEXT$LGA_COUNT)
-# 
-# 
-# ## Set NA to blank, then sort by no. of growers
-# COMBO.NICHE.CONTEXT$Number.of.growers[is.na(COMBO.NICHE.CONTEXT$Number.of.growers)] <- 0
-# COMBO.NICHE.CONTEXT = COMBO.NICHE.CONTEXT[with(COMBO.NICHE.CONTEXT, rev(order(Number.of.growers))), ]
-
-
-
-
-#########################################################################################################################
-## Quickly check how many species match from the original 605. Only 553 are currently there.
-
-
-# ## Which species from those with > 25 growers are missing?
-# missing.25     = setdiff(unique(HIA.SPP.JOIN[ which(HIA.SPP.JOIN$Number.of.growers >= 25), ][["searchTaxon"]]),
-#                          unique(COMBO.NICHE.CONTEXT[ which(COMBO.NICHE.CONTEXT$Number.of.growers >= 25), ][["searchTaxon"]]))
-# 
-# 
-# ## Same as for
-# # missing.all    = setdiff(unique(HIA.SPP.JOIN[["searchTaxon"]]),
-# #                          unique(COMBO.NICHE.CONTEXT[["searchTaxon"]]))
-# 
-# ## Which species from the top 200 are missing?
-# missing.200    = setdiff(unique(spp.200$Binomial),
-#                          unique(COMBO.NICHE.CONTEXT[ which(COMBO.NICHE.CONTEXT$Number.of.growers >= 25), ][["searchTaxon"]]))
-# 
-# 
-# ## Which species from the experimental list are missing?
-# missing.renee  = setdiff(unique(test.spp),
-#                          unique(COMBO.NICHE.CONTEXT[["searchTaxon"]]))
-# 
-# 
-# ## Overall list
-# missing.taxa   = sort(unique(c(missing.25, missing.200, missing.renee)))
-# missing.taxa   = as.data.frame(missing.taxa)
-# missing.taxa
-
-
-## The missing species are due to too few records, too many, or taxonomy problems. EG some of the species are varieties, so they 
-## only match to the genus
-
-
 
 
 #########################################################################################################################
@@ -599,9 +324,7 @@ names(COMBO.RASTER.CONTEXT)
        
 
 ## Save the summary datasets
-#saveRDS(missing.taxa,         file = paste("./data/base/HIA_LIST/COMBO/MISSING_TAXA.rds",                   sep = ""))
-#saveRDS(COMBO.RASTER.CONTEXT, file = paste("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_APRIL_2018.rds", sep = ""))
-#saveRDS(COMBO.NICHE.CONTEXT,  file = paste("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_STANDARD_CLEAN.rds",  sep = ""))
+#saveRDS(COMBO.RASTER.CONVERT, file = paste("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONVERT_APRIL_2018.rds", sep = ""))
 #write.csv(COMBO.NICHE.CONTEXT, "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_STANDARD_CLEAN.csv",        row.names = FALSE)
 
 
@@ -618,15 +341,13 @@ names(COMBO.RASTER.CONTEXT)
 #########################################################################################################################
 
 
-## Check geographic range: doesn't look right for some species        - Keep a spreadsheet of all species...
+## Integrate Ale's dataset
 
-## Estimate native/naturalised ranges as a separate colum             - APC data + Ubran polygons for AUS, USA, EU: only a subset
+## Integrate Manuel's dataset
 
-## GBIF taxonomic errors                                              - Use taxonstand
+## Integrate Bush's data, etc.
 
-## Keep cultivated records as a separate column/file                  - Get cultivated column from ALA data...
 
-## Duplicates between GBIF and ALA                                    - See email from CSIRO - only a problem for niches...
 
 
 

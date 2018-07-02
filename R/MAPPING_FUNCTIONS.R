@@ -32,7 +32,6 @@ project_maxent_grids = function(scen_list, species_list, maxent_path, climate_pa
     
     ## Create a raster stack for each of the 6 GCMs, not for each species
     s <- stack(sprintf('%s/20%s/%s/%s%s.tif', climate_path, time_slice, x, x, 1:19))
-    #s <- stack(sprintf('%s/20%s/%s/%s%s.tif', climate_path, time_slice, x, x, 1:19))
     projection(s)
     
     ## Rename both the current and future environmental stack...

@@ -125,7 +125,6 @@ aus = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds") %>%
 
 
 
-
 #########################################################################################################################
 ## 3). RUN SDMs USING A-PRIORI VARIABLES
 #########################################################################################################################
@@ -311,6 +310,15 @@ lapply(ff[n < 27], function(x) {
 ## 1). Make list of exotic spp on the top 200 sellers, which have no data and/or produce bad maps
 
 ## 2). Re-download ALA data. Add exotic urban inventory data that Ale is compiling (create diagram of data integration, to highlight knowlegde gaps)
+##     Four columns ::
+##     Species
+##     Common name
+##     LAT/LONG
+##     SOURCE
+
+##     Extra sources:
+##     iNaturalist  - Got the data for plants, 20k records from Oceania
+##     Flickr       - looks hard....
 
 ## 3). Try to thin records for ~100 spp with boundary bias: random sampling of those species records, by state and environment
 
@@ -323,7 +331,7 @@ lapply(ff[n < 27], function(x) {
 
 ## 6). Get species list from 8 biggest SUAs - Area report from ALA (not working) + Expert list if we have them
 
-## 7). Decide on gamma diversity for this article - could it go to GEB? Plan figures and tables for MS
+## 7). Decide on gamma diversity for this article - 200 spp - could it go to GEB? Plan figures and tables for MS
 
 
 

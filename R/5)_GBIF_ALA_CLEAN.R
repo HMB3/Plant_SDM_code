@@ -384,13 +384,10 @@ str(unique(TEST.GEO$searchTaxon))
 
 
 
-#########################################################################################################################
-## 5). RE-CREATE NICHES
-#########################################################################################################################
 
 
 #########################################################################################################################
-## INTERSECT SPECIES RECORDS WITH LOCAL GOV AREAS AND SIGNIFICANT URBAN AREAS
+## 5). INTERSECT SPECIES RECORDS WITH LOCAL GOV AREAS AND SIGNIFICANT URBAN AREAS
 #########################################################################################################################
 
 
@@ -417,6 +414,32 @@ AUS.WGS  = spTransform(AUS, CRS.WGS.84)
 
 ## Remove the columns we don't need
 LGA.WGS = LGA.WGS[, c("LGA_CODE16", "LGA_NAME16")] 
+
+
+#########################################################################################################################
+## This creates a shapefile which is just the SUA: in or out...
+# IN.SUA <- SUA[ !(SUA$SUA_NAME11 %in% c("Not in any Significant Urban Area (NSW)", 
+#                                        "Not in any Significant Urban Area (Vic.)",
+#                                        "Not in any Significant Urban Area (Qld)",
+#                                        "Not in any Significant Urban Area (SA)",
+#                                        "Not in any Significant Urban Area (WA)",
+#                                        "Not in any Significant Urban Area (Tas.)",
+#                                        "Not in any Significant Urban Area (NT)",
+#                                        "Not in any Significant Urban Area (OT)",
+#                                        "Not in any Significant Urban Area (ACT)")), ]
+# 
+# plot(IN.SUA)
+# writeOGR(obj = IN.SUA, dsn = "./data/base/CONTEXTUAL", layer = "IN.SUA", driver = "ESRI Shapefile")
+
+
+## Then, we want to create a layer which is just in the urban area, or not. This would need to combine the above fields into one
+# IN.SUA   = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/INSIDE_AUS_SUA.shp", layer = "INSIDE_AUS_SUA")
+# saveRDS(IN.SUA, file.path("F:/green_cities_sdm/data/base/CONTEXTUAL/", 'IN_SUA_AUS.rds'))
+# 
+# IN.SUA   = IN.SUA[,-(1)];
+# IN.SUA   = IN.SUA[,-(2)]
+# names(IN.SUA)
+# IN.SUA  = spTransform(IN.SUA, CRS.WGS.84)
 
 
 #########################################################################################################################
@@ -574,10 +597,104 @@ head(COMBO.LGA$LGA_COUNT)
 
 
 
+#########################################################################################################################
+## 7). CALCULATE AREA OF OCCUPANCY RANGES 
+#########################################################################################################################
+
+
+## These numbers don't look that accurate: Try convert into a sp data frame and projecting into a projected system?
+## Create a species list to estimate the ranges for
+# spp.geo = as.character(unique(COMBO.RASTER$searchTaxon)) 
+# data    = COMBO.RASTER
 
 
 #########################################################################################################################
-## 7). JOIN ON CONTEXTUAL DATA
+## AREA OF OCCUPANCY (AOO)
+## For every species in the list: calculate the AOO
+# GBIF.AOO <- spp.geo[c(1:length(spp.geo))] %>%
+# 
+#   ## Pipe the list into lapply
+#   lapply(function(x) {
+# 
+#     ## Subset the the data frame
+#     DF      = subset(data, searchTaxon == x)[, c("lon", "lat")]
+# 
+#     ## Calculate area of occupancy according the the "red" package
+#     aoo (DF)
+# 
+#     ## Warning messages: Ask John if this is a problem
+#     ## In rgdal::project(longlat, paste("+proj=utm +zone=", zone,  ... :
+#     ## 3644 projected point(s) not finite
+# 
+#   }) %>%
+# 
+#   ## Finally, create one dataframe for all niches
+#   as.data.frame
+
+
+#########################################################################################################################
+## EXTENT OF OCCURRENCE
+## For every species in the list: calculate the EOO
+# GBIF.EOO <- spp.geo[c(1:length(spp.geo))] %>% 
+#   
+#   ## Pipe the list into lapply
+#   lapply(function(x) {
+#     
+#     ## Subset the the data frame 
+#     DF      = subset(data, searchTaxon == x)[, c("searchTaxon", "lon", "lat")]
+#     DF.GEO  = dplyr::rename(DF, 
+#                             identifier = searchTaxon,
+#                             XCOOR      = lon,
+#                             YCOOR      = lat)
+#     
+#     ## Calculate area of occupancy according the the "red" package
+#     CalcRange (DF.GEO)
+#     
+#     ## Warning messages: Ask John if this is a problem
+#     ## In rgdal::project(longlat, paste("+proj=utm +zone=", zone,  ... :
+#     ## 3644 projected point(s) not finite
+#     
+#   }) %>% 
+#   
+#   ## Finally, create one dataframe for all niches
+#   as.data.frame
+
+
+#########################################################################################################################
+## Clean it up :: the order of species should be preserved
+# GBIF.AOO = gather(GBIF.AOO)
+# str(GBIF.AOO)
+# str(unique(GBIF.ALA.COMBO.HIA$searchTaxon))                     ## same number of species...
+# 
+# 
+# ## Now join on the GEOGRAPHIC RANGE
+# COMBO.NICHE$AREA_OCCUPANCY = GBIF.AOO$value                     ## vectors same length so don't need to match
+
+
+## AOO is calculated as the area of all known or predicted cells for the species. The resolution will be 2x2km as 
+## required by IUCN. A single value in km2.
+
+#########################################################################################################################
+## Add the counts of Australian records for each species to the niche database
+# names(COMBO.NICHE)
+# names(LGA.AGG)
+# dim(COMBO.NICHE)
+# dim(LGA.AGG)
+# 
+# 
+# COMBO.LGA = join(COMBO.NICHE, LGA.AGG)                            ## The tapply needs to go where the niche summaries are
+# names(COMBO.LGA)
+# 
+# dim(COMBO.LGA)
+# head(COMBO.LGA$AUS_RECORDS)
+# head(COMBO.LGA$LGA_COUNT)
+
+
+
+
+
+#########################################################################################################################
+## 8). JOIN ON CONTEXTUAL DATA
 #########################################################################################################################
 
 
