@@ -16,10 +16,8 @@
 
 
 ## Load packages ::
-source('./R/HIA_LIST_MATCHING.R')
+#source('./R/HIA_LIST_MATCHING.R')
 rasterTmpFile()
-Koppen_1975        = raster('data/Koppen_1000m_Mollweide54009.tif')
-ALL.SUA.POP        = read.csv("./data/base/CONTEXTUAL/ABS_SUA_POP.csv", stringsAsFactors = FALSE)
 #Koppen_zones    = unique(readOGR('data/base/CONTEXTUAL/WC05_1975H_Koppen_Shapefile/WC05_1975H_Koppen_Kriticos_2012.shp')@data[, 1:2])
 
 
@@ -143,26 +141,21 @@ grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',   
 #########################################################################################################################
 ## For each species, use a function to create raster files and maps under all six GCMs at each time step
 ## First remove species without data from step 7
-spp_list        = combo_spp
+map_spp_list        = combo_spp
 no_data      <- c ("Baeckea_virgata", "Kennedia_beckxiana", "Grevillea_rivularis", "Arctostaphylos_densiflora", 
                    "Cupressocyparis_leylandii", "Eucalyptus_intermedia", "Ficus_hillii", "Pentaceras_australi", 
                    "Pentaceras_australis", "Pouteria_australis", "Pouteria_chartacea", "Pouteria_eerwah", 
                    "Radermachera_gigantea", "Randia_benthamiana", "Raphiolepis_umbellata", "Tilia_mongolica", 
                    "Trema_aspera", "Xanthostemon_verticillatus")
-spp_list     <- spp_list [! spp_list %in% no_data]
-#spp_list_rev <- spp_list_rev  [! spp_list_rev %in% no_data]
-no_data %in% spp_list
-#no_data %in% spp_list_rev
-# spp_mile = c(spp_mile[1], "Melaleuca_viminalis")
+map_spp_list     <- map_spp_list [! map_spp_list %in% no_data]
+no_data %in% map_spp_list
 
 
-## Create a variable for the list to iterate over, which can be used in all the functions
-#spp_list = spp_camp # c(spp_list[28], spp_list[29])
 
-
-## 2030
+#########################################################################################################################
+## Create 2030 maps
 env.grids.2030 = tryCatch(project_maxent_grids(scen_list     = scen_2030,
-                                               species_list  = spp_list,
+                                               species_list  = map_spp_list,
                                                maxent_path   = "./output/maxent/SET_VAR_KOPPEN",
                                                climate_path  = "./data/base/worldclim/aus/1km/bio",
                                                grid_names    = grid.names,
@@ -177,9 +170,10 @@ env.grids.2030 = tryCatch(project_maxent_grids(scen_list     = scen_2030,
                           })
 
 
-## 2050
+#########################################################################################################################
+## Create 2050 maps
 env.grids.2050 = tryCatch(project_maxent_grids(scen_list     = scen_2050,
-                                               species_list  = spp_list,
+                                               species_list  = map_spp_list,
                                                time_slice    = 50,
                                                maxent_path   = "./output/maxent/SET_VAR_KOPPEN",
                                                climate_path  = "./data/base/worldclim/aus/1km/bio",
@@ -193,9 +187,10 @@ env.grids.2050 = tryCatch(project_maxent_grids(scen_list     = scen_2050,
                           })
 
 
-## 2070
+#########################################################################################################################
+## Create 2070 maps
 env.grids.2070 = tryCatch(project_maxent_grids(scen_list     = scen_2070,
-                                               species_list  = spp_list,
+                                               species_list  = map_spp_list,
                                                time_slice    = 70,
                                                maxent_path   = "./output/maxent/SET_VAR_KOPPEN",
                                                climate_path  = "./data/base/worldclim/aus/1km/bio",
@@ -220,7 +215,7 @@ env.grids.2070 = tryCatch(project_maxent_grids(scen_list     = scen_2070,
 #########################################################################################################################
 ## First, read in the list of files for the current models, and specify the file path
 path.set.var             = "./output/maxent/SET_VAR_KOPPEN/"
-#spp_list                 = combo_spp 
+#map_spp_list                 = combo_spp 
 
 ## Create an object for the maxent settings
 model.selection.settings = "Set_variables"  
@@ -229,7 +224,7 @@ records_setting          = "COORD_CLEAN"
 
 ## Create a file list for each model run
 maxent.tables = list.files(path.set.var)             ## Chagne this for each variable selection strategy
-maxent.tables = intersect(maxent.tables, spp_list)   ## Change this for new species lists
+maxent.tables = intersect(maxent.tables, map_spp_list)   ## Change this for new species lists
 maxent_path   = path.set.var                         ## Chagne this for each variable selection strategy
 length(maxent.tables)                                ## Should match the number of taxa tested
 no_data %in% maxent.tables
@@ -295,8 +290,8 @@ head(MAXENT.SUMMARY, 20)[1:9]
 
 ## Now check the match between the species list, and the results list. These need to match, so we can access
 ## the right threshold for each species.
-length(intersect(spp_list , MAXENT.SUMMARY$searchTaxon)) ## Accesssing the files from these directories... 
-MAXENT.SUM.TEST  =  MAXENT.SUMMARY[MAXENT.SUMMARY$searchTaxon %in% spp_list , ] 
+length(intersect(map_spp_list, MAXENT.SUMMARY$searchTaxon)) ## Accesssing the files from these directories... 
+MAXENT.SUM.TEST  =  MAXENT.SUMMARY[MAXENT.SUMMARY$searchTaxon %in% map_spp_list , ] 
 comb_spp = unique(MAXENT.SUM.TEST$searchTaxon)
 length(comb_spp)
 

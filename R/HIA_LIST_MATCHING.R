@@ -113,9 +113,17 @@ Koppen        = readRDS('data/base/CONTEXTUAL/Koppen_1975.rds')
 Koppen_zones  = unique(readOGR('data/base/CONTEXTUAL/WC05_1975H_Koppen_Shapefile/WC05_1975H_Koppen_Kriticos_2012.shp')@data[, 1:2])
 Koppen_1975   = raster('data/Koppen_1000m_Mollweide54009.tif')
 AUS_RAIN      = readRDS('data/base/CONTEXTUAL/BOM/AUS_RAIN.rds')
+
+
 SUA           = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/IN_SUA_AUS.rds")
 LGA           = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LGA.rds")
 AUS           = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds")
+ALL.SUA.POP   = read.csv("./data/base/CONTEXTUAL/ABS_SUA_POP.csv", stringsAsFactors = FALSE)
+
+
+##
+template.raster = raster("./data/template_hasData.tif")
+template.cells  = readRDS("./data/hasData_cells.rds")
 
 load("./data/base/CONTEXTUAL/urbanareas.rda")
 

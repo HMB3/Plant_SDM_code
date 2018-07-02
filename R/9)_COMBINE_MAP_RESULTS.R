@@ -11,8 +11,8 @@ source('./R/HIA_LIST_MATCHING.R')
 
 
 ## Read in SUAs and create species lists
-ALL.SUA.POP       = read.csv("./data/base/CONTEXTUAL/ABS_SUA_POP.csv", stringsAsFactors = FALSE)
-MAXENT.CHECK      = read.csv("./output/maxent/MAXENT_CHECK_RATING.csv", stringsAsFactors = FALSE)
+ALL.SUA.POP       = read.csv("./data/base/CONTEXTUAL/ABS_SUA_POP.csv",    stringsAsFactors = FALSE)
+MAXENT.CHECK      = read.csv("./output/maxent/MAXENT_RATING_26_2018.csv", stringsAsFactors = FALSE)
 
 spp.lower.thresh  = subset(MAXENT.CHECK, CHECK_MAP == 2 | CHECK_MAP == 3)$searchTaxon
 spp_lower_thresh  = gsub(" ", "_", spp.lower.thresh)

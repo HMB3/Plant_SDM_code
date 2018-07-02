@@ -16,7 +16,7 @@
 
 #########################################################################################################################
 ## Load previous data
-GBIF.TRIM = load("./data/base/HIA_LIST/COMBO/GBIF_TRIM_LATEST.RData")
+#GBIF.TRIM = load("./data/base/HIA_LIST/COMBO/GBIF_TRIM_LATEST.RData")
 rasterOptions(tmpdir = file.path("'H:/green_cities_sdm/RTEMP")) 
 # dim(GBIF.TRIM)
 # names(GBIF.TRIM)

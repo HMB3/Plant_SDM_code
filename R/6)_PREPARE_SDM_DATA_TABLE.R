@@ -8,21 +8,20 @@
 ## SDM analysis
 
 
-#COMBO.RASTER.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/CLEAN_ONLY_HIA_SPP.rds")
-COMBO.RASTER.CONTEXT = CLEAN.TRUE
-template.raster      = raster("./data/template_hasData.tif")
-source('./R/HIA_LIST_MATCHING.R')
+#CLEAN.TRUE = readRDS("./data/base/HIA_LIST/COMBO/CLEAN_ONLY_HIA_SPP.rds")
+names(CLEAN.TRUE)
+#source('./R/HIA_LIST_MATCHING.R')
 
 
 ## Need to clean this up...
-unique(COMBO.RASTER.CONTEXT$summary)                                                  ## Could filter the records here
-dim(COMBO.RASTER.CONTEXT)    
-names(COMBO.RASTER.CONTEXT)
+unique(CLEAN.TRUE$summary)                                                  ## Could filter the records here
+dim(CLEAN.TRUE)    
+names(CLEAN.TRUE)
 
 
 ## Check the records for some species
 spp.check = "Furcraea foetida"
-occ.check = subset(COMBO.RASTER.CONTEXT, searchTaxon == spp.check)
+occ.check = subset(CLEAN.TRUE, searchTaxon == spp.check)
 dim(occ.check)
 
 
@@ -158,18 +157,18 @@ dim(occ.check)
 #########################################################################################################################
 ## Just get the columns needed for modelling: this would include cultivated/non, and inside/outside
 ## Get an ID column here too, and use it to join back on the other columns to the unique cells data
-# COMBO.RASTER.CONTEXT$OBS <- 1:nrow(COMBO.RASTER.CONTEXT)
-# dim(COMBO.RASTER.CONTEXT)[1];length(COMBO.RASTER.CONTEXT$OBS)
+# CLEAN.TRUE$OBS <- 1:nrow(CLEAN.TRUE)
+# dim(CLEAN.TRUE)[1];length(CLEAN.TRUE$OBS)
 
 
 #########################################################################################################################
 ## Remove the "false" records according to CoordinateClean
-# COMBO.RASTER.CLEAN = subset(COMBO.RASTER.CONTEXT, summary == "TRUE" | GBIF.SPAT.OUT == "TRUE")
-# dim(COMBO.RASTER.CLEAN)[1]/dim(COMBO.RASTER.CONTEXT)[1]*100
+# COMBO.RASTER.CLEAN = subset(CLEAN.TRUE, summary == "TRUE" | GBIF.SPAT.OUT == "TRUE")
+# dim(COMBO.RASTER.CLEAN)[1]/dim(CLEAN.TRUE)[1]*100
 
 
 ## Create a table with all the variables
-COMBO.RASTER.ALL  <- dplyr::select(COMBO.RASTER.CONTEXT, searchTaxon, lon, lat,
+COMBO.RASTER.ALL  <- dplyr::select(CLEAN.TRUE, searchTaxon, lon, lat,
                                    
                                    Annual_mean_temp,     Mean_diurnal_range,  Isothermality,     Temp_seasonality, 
                                    Max_temp_warm_month,  Min_temp_cold_month, Temp_annual_range, Mean_temp_wet_qu,
@@ -210,7 +209,7 @@ str(SDM.DATA.ALL)
 
 #########################################################################################################################
 ## Now join back on the contextual columns for data cleaning
-# SDM.DATA.ALL.CHECK = merge(SDM.DATA.ALL, COMBO.RASTER.CONTEXT, all = FALSE)   ## skip "by" argument if colname same
+# SDM.DATA.ALL.CHECK = merge(SDM.DATA.ALL, CLEAN.TRUE, all = FALSE)   ## skip "by" argument if colname same
 # dim(SDM.DATA.ALL.CHECK);dim(SDM.DATA.ALL)
 
 

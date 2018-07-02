@@ -34,14 +34,11 @@
 #load("./data/base/HIA_LIST/COMBO/SDM_TEMPLATE_RASTER.RData")
 #load('data/hasData_cells.rds')
 #load('data/template_hasData.tif')
-source('./R/HIA_LIST_MATCHING.R')
+#source('./R/HIA_LIST_MATCHING.R')
  
 
 ## Load SDM data :: template rasters, point data and koppen zones
-template.raster = raster("./data/template_hasData.tif")
-template.cells  = readRDS("./data/hasData_cells.rds")
-SDM.DATA.ALL    = readRDS("./data/base/HIA_LIST/COMBO/SDM_DATA_CLEAN_052018.rds")
-Koppen_1975     = raster('data/Koppen_1000m_Mollweide54009.tif')
+#SDM.DATA.ALL    = readRDS("./data/base/HIA_LIST/COMBO/SDM_DATA_CLEAN_052018.rds")
 
 
 ## Check data :: template, data table and species 
@@ -83,12 +80,6 @@ ff <- file.path('./data/base/worldclim/world/0.5/bio/current',
 env.grids.current = stack(sub('0.5', '1km', ff))
 names(env.grids.current) <- sdm.predictors[i]
 identical(names(env.grids.current),sdm.predictors)
-
-
-## Create polygon of land surface
-LAND       = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LAND_world.rds")
-aus = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds") %>%
-  spTransform(ALB.CONICAL)
 
 
 #########################################################################################################################

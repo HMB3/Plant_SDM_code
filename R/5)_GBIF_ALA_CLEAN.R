@@ -15,13 +15,14 @@
 ## 1). CHECK DATA FOR AN EXAMPLE SPECIES...
 #########################################################################################################################
 
+
 ## Create lists
-source('./R/HIA_LIST_MATCHING.R')
+#source('./R/HIA_LIST_MATCHING.R')
 
 ## Load GBIF data
-COMBO.RASTER.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_APRIL_2018.rds")
-COMBO.NICHE.CONTEXT  = readRDS("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_STANDARD_CLEAN.rds")
-names(COMBO.RASTER.CONTEXT)
+# COMBO.RASTER.CONVERT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_APRIL_2018.rds")
+# COMBO.NICHE.CONTEXT  = readRDS("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_STANDARD_CLEAN.rds")
+names(COMBO.RASTER.CONVERT)
 
 
 ## Restrict ALA data to just those species on the big list
@@ -36,11 +37,12 @@ head(HIA.SPP.JOIN[, c("searchTaxon", "Number.of.growers")])
 View(HIA.SPP.JOIN)
 
 
-## HB Do an example species :: SPP Brachypoda
-GBIF.TRIM.TEST  = COMBO.RASTER.CONTEXT#[COMBO.RASTER.CONTEXT$searchTaxon %in% spp.all, ]      ## kop.spp for the test spp
-SPP.TEST        = subset(GBIF.TRIM.TEST, searchTaxon == "Ficus hillii")                ## Change this to the captial spp
+## HB do an example species :: SPP Brachypoda
+GBIF.TRIM.TEST  = COMBO.RASTER.CONVERT#[COMBO.RASTER.CONVERT$searchTaxon %in% spp.all, ]      
+SPP.TEST        = subset(GBIF.TRIM.TEST, searchTaxon == "Ficus hillii")                       
 
 
+## Does it work?
 str(unique(GBIF.TRIM.TEST$searchTaxon))
 unique(SPP.TEST$searchTaxon)
 'Cordyline australis' %in% GBIF.TRIM.TEST$searchTaxon  
@@ -209,8 +211,8 @@ points(SPP.TEST$lon,  SPP.TEST$lat, cex = 0.8, col = "red", pch = 19)
 
 #########################################################################################################################
 ## Rename the columns to fit the CleanCoordinates format
-str(unique(COMBO.RASTER.CONTEXT$searchTaxon))
-GBIF.TRIM.GEO = dplyr::rename(COMBO.RASTER.CONTEXT, 
+str(unique(COMBO.RASTER.CONVERT$searchTaxon))
+GBIF.TRIM.GEO = dplyr::rename(COMBO.RASTER.CONVERT, 
                               species = searchTaxon,
                               decimallongitude = lon, 
                               decimallatitude  = lat)
@@ -316,11 +318,11 @@ summary(FLAGS)[8]/dim(FLAGS)[1]*100
 ## Join data :: exclude the decimal lat/long, check the length 
 dim(GBIF.TRIM.TEST)[1];dim(FLAGS)[1]#;length(GBIF.SPAT.OUT)
 names(FLAGS)[1] = c("coord_spp")
-identical(COMBO.RASTER.CONTEXT$searchTaxon, FLAGS$coord_spp)                                            ## order matches
+identical(COMBO.RASTER.CONVERT$searchTaxon, FLAGS$coord_spp)                                            ## order matches
 identical(dim(FLAGS)[1], dim(GBIF.TRIM.GEO)[1])
 
 
-TEST.GEO = cbind(COMBO.RASTER.CONTEXT, FLAGS)#, GBIF.SPAT.OUT)
+TEST.GEO = cbind(COMBO.RASTER.CONVERT, FLAGS)#, GBIF.SPAT.OUT)
 identical(TEST.GEO$searchTaxon, TEST.GEO$coord_spp)                                                     ## order matches
 
 
@@ -372,7 +374,7 @@ CLEAN.FALSE = subset(TEST.GEO, summary == "FALSE")# | GBIF.SPAT.OUT == "FALSE")
 ## dim(subset(TEST.GEO, summary == "TRUE" | GBIF.SPAT.OUT == "TRUE"))
 #CLEAN.TRUE = TEST.GEO[!TEST.GEO$OBS %in% CLEAN.FALSE$OBS, ]
 CLEAN.TRUE = subset(TEST.GEO, summary == "TRUE")
-identical(dim(CLEAN.TRUE)[1], (dim(COMBO.RASTER.CONTEXT)[1] - dim(subset(TEST.GEO, summary == "FALSE"))[1]))
+identical(dim(CLEAN.TRUE)[1], (dim(COMBO.RASTER.CONVERT)[1] - dim(subset(TEST.GEO, summary == "FALSE"))[1]))
 unique(CLEAN.TRUE$summary)                                              
 #unique(CLEAN.TRUE$GBIF.SPAT.OUT)                                       
 
@@ -569,8 +571,8 @@ COMBO.NICHE = subset(COMBO.NICHE, select = -c(searchTaxon.1,  searchTaxon.2,  se
 
 #########################################################################################################################
 ## Add counts for each species, and record the total number of taxa processed
-## dim(COMBO.RASTER.CONTEXT);dim(CLEAN.TRUE)
-COMBO.count = as.data.frame(table(COMBO.RASTER.CONTEXT$searchTaxon))$Freq
+## dim(COMBO.RASTER.CONVERT);dim(CLEAN.TRUE)
+COMBO.count = as.data.frame(table(COMBO.RASTER.CONVERT$searchTaxon))$Freq
 identical(length(COMBO.count), dim(COMBO.NICHE )[1])
 
 Total.taxa.processed = dim(COMBO.NICHE)[1]
@@ -702,7 +704,7 @@ head(COMBO.LGA$LGA_COUNT)
 ## Now join the horticultural contextual data onto one or both tables ()
 names(COMBO.RASTER.CONVERT)
 names(CLEAN.SPP)
-COMBO.RASTER.CONTEXT = join(COMBO.RASTER.CONTEXT, HIA.SPP.JOIN)
+COMBO.RASTER.CONTEXT = join(COMBO.RASTER.CONVERT, HIA.SPP.JOIN)
 #COMBO.RASTER.CONTEXT  = COMBO.RASTER.CONTEXT[,  c(42, 1, 65, 2:41, 43:61, 62:64, 66:78)]                         ## REDO
 names(COMBO.RASTER.CONTEXT)
 
@@ -729,10 +731,10 @@ dim(COMBO.NICHE.CONTEXT)
 
 #########################################################################################################################
 ## Save
-saveRDS(TEST.GEO,                'data/base/HIA_LIST/COMBO/CLEAN_FLAGS_HIA_SPP.rds')
-saveRDS(CLEAN.TRUE,              'data/base/HIA_LIST/COMBO/CLEAN_ONLY_HIA_SPP.rds')
-saveRDS(CLEAN.NICHE.CONTEXT,     'data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_COORD_CLEAN.rds')
-write.csv(CLEAN.NICHE.CONTEXT,   "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_COORD_CLEAN.csv", row.names = FALSE)
+# saveRDS(TEST.GEO,                'data/base/HIA_LIST/COMBO/CLEAN_FLAGS_HIA_SPP.rds')
+# saveRDS(CLEAN.TRUE,              'data/base/HIA_LIST/COMBO/CLEAN_ONLY_HIA_SPP.rds')
+# saveRDS(CLEAN.NICHE.CONTEXT,     'data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_COORD_CLEAN.rds')
+# write.csv(CLEAN.NICHE.CONTEXT,   "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_COORD_CLEAN.csv", row.names = FALSE)
 
 
 

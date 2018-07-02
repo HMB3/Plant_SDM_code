@@ -19,26 +19,19 @@
 
 #########################################################################################################################
 ## To save time, load in previous data
-source('./R/HIA_LIST_MATCHING.R')
-rasterOptions(tmpdir = file.path("'H:/green_cities_sdm/RTEMP")) 
+#source('./R/HIA_LIST_MATCHING.R')
+#rasterOptions(tmpdir = file.path("'H:/green_cities_sdm/RTEMP")) 
 
 
 ## GBIF and ALA data
-GBIF.LAND = readRDS("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.rds")
+#GBIF.LAND = readRDS("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.rds")
 load("./data/base/HIA_LIST/ALA/ALA_LAND_POINTS.RData")
-LAND      = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LAND_world.rds")
 
 
 ## Alessandros urban inventory data......................................................................................
 # AUS.URBAN   = readRDS("./data/base/HIA_LIST/URBAN/AUS_URBAN_POINTS.rds")
 # AUS.NURSE   = readRDS("./data/base/HIA_LIST/URBAN/BUSH_NURSERY_POINTS.rds")
 # AUS.INAT    = readRDS("./data/base/HIA_LIST/URBAN/INAT_POINTS.rds")
-
-
-
-## check ALA data
-check.spp = "Sannantha virgata"
-dim(subset(ALA.LAND, scientificname == "check.spp"))
 
 
 
@@ -141,13 +134,13 @@ names(COMBO.POINTS)
 #########################################################################################################################
 
 
-## what does the data look like?
-names(COMBO.POINTS);names(AUS.URBAN);names(AUS.NURSE);names(AUS.INAT)
-
-
-## Bind the rows together?
-GBIF.ALA.COMBO.LAND = bind_rows(COMBO.POINTS, AUS.URBAN, AUS.NURSE, AUS.INAT)
-names(GBIF.ALA.COMBO.LAND)
+# ## what does the data look like?
+# names(COMBO.POINTS);names(AUS.URBAN);names(AUS.NURSE);names(AUS.INAT)
+# 
+# 
+# ## Bind the rows together?
+# GBIF.ALA.COMBO.LAND = bind_rows(COMBO.POINTS, AUS.URBAN, AUS.NURSE, AUS.INAT)
+# names(GBIF.ALA.COMBO.LAND)
 
 
 

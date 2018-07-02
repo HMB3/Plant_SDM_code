@@ -15,8 +15,8 @@
 
 #########################################################################################################################
 ## Read in the list of files for the standard variables, and specify the file path
-table.list = list.files("./output/maxent/STD_VAR_ALL/")
-path = "./output/maxent/STD_VAR_ALL/"
+table.list = list.files("./output/maxent/SET_VAR_KOPPEN/")
+path = "./output/maxent/SET_VAR_KOPPEN/"
 
 
 ## Could turn this into a function, and loop over a list of subfolders...
