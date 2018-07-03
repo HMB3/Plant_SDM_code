@@ -14,7 +14,6 @@
 #########################################################################################################################
 ## Read in all data to run the SDM code :: species lists, shapefile, rasters & tables
 source('./R/HIA_LIST_MATCHING.R')
-rasterOptions(tmpdir = file.path("'H:/green_cities_sdm/RTEMP"))
 
 
 ## Set global species list variables here...............................................................................
@@ -23,24 +22,34 @@ map_spp_list = run_200
 
 
 #########################################################################################################################
-## Now source each step in the workflow :: 
-## Step 3
-source('./R/3)_GBIF_DATA_COMBINE_FILTER.R')
+## Now source each step in the workflow 
+## Step 3 :: combine GBIF occurrence data and filter to records > 1950
+source('./R/3)_GBIF_DATA_COMBINE_FILTER.R', echo = TRUE)
 
 
-## Step 4
-source('./R/4)_ALA_GBIF_URBAN_COMBINE.R')
+## Step 4 :: combine GBIF, ALA and urban occurrence data into a single table, extracts environmental condtions 
+## & add contextual info for each record (taxonomic and horticultural) 
+source('./R/4)_ALA_GBIF_URBAN_COMBINE.R', echo = TRUE)
 
 
-## Step 5
-source('./R/5)_GBIF_ALA_CLEAN.R')
+## Step 5 :: clean the occurrence data using the 'CleanCoordinates' function in the CoordinateCleaner package to remove
+## records near herbaria, duplicates, etc.
+source('./R/5)_GBIF_ALA_CLEAN.R', echo = TRUE)
 
 
-## Step 7
-source('./R/7)_RUN_MAXENT.R')
+## Step 7 :: Run maxent on a table of all species
+source('./R/7)_RUN_MAXENT.R', echo = TRUE)
+
+
+## Step 8 :: Create habitat suitability maps for each species using six GCMs and three time slices (2030/50/70). 
+## Then summary maxent results and estimate species presences in significant urban areas under climate change
+## Takes awhile, so probably run different time slices in separate R sessions
+source('./R/8)_PREDICT_SDM_SCENARIOS.R', echo = TRUE)
 
 
 
 
 
-
+#########################################################################################################################
+###################################################### TBC ############################################################## 
+#########################################################################################################################

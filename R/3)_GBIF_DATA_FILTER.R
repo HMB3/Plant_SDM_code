@@ -4,12 +4,18 @@
 
 
 #########################################################################################################################
-## This code filters combines the GBIF data into one file, and filters to the most reliable recrods. 
-## Two sources of uncertainty:
+## This code combines the GBIF data into one file, and filters to the most reliable recrods. 
+## Two main sources of uncertainty:
+
 
 ## Taxonomic
 ## Spatial 
 
+
+#########################################################################################################################
+## Read in all data to run the SDM code :: species lists, shapefile, rasters & tables
+#source('./R/HIA_LIST_MATCHING.R')
+rasterTmpFile()
 
 
 #########################################################################################################################
@@ -89,7 +95,6 @@ setdiff(names(GBIF.TRIM), gbif.keep)
 intersect(names(GBIF.TRIM), gbif.keep)
 
 
-
 #########################################################################################################################
 ## Load previous data
 #GBIF.TRIM = load("./data/base/HIA_LIST/COMBO/GBIF_TRIM_LATEST.RData")
@@ -102,6 +107,9 @@ intersect(names(GBIF.TRIM), gbif.keep)
 
 ## Just get the newly downloaded species................................................................................
 GBIF.TRIM = GBIF.TRIM[GBIF.TRIM$searchTaxon %in% GBIF.spp, ]
+
+
+
 
 
 #########################################################################################################################
@@ -248,12 +256,12 @@ GBIF.CULTIVATED <- GBIF.TRIM.TAXO %>%
 
 
 #########################################################################################################################
-## 4). CREATE TABLE OF PRE-CLEAN FLAGS 
+## 4). CREATE TABLE OF PRE-CLEAN FLAGS AND FILTER RECORDS
 #########################################################################################################################
 
 
 #########################################################################################################################
-## Then create a table which counts the number of records meeting each criteria:
+## Create a table which counts the number of records meeting each criteria:
 ## Note that TRUE indicates there is a problem (e.g. if a record has no lat/long, it will = TRUE)
 GBIF.PROBLEMS <- with(GBIF.TRIM.TAXO,
                       
@@ -311,16 +319,8 @@ GBIF.PROBLEMS <- with(GBIF.TRIM.TAXO,
 #identical(dim(GBIF.TRIM.TAXO)[1], Total.count)  ## identical matches two objects
 
 
-
-
-
 #########################################################################################################################
-## 5). FILTER RECORDS 
-#########################################################################################################################
-
-
-## Filter the GBIF records using conditions which are not too restrictive
-#dim(GBIF.TRIM.TAXO)
+## Now filter the GBIF records using conditions which are not too restrictive
 GBIF.CLEAN <- GBIF.TRIM.TAXO %>% 
   
   ## Note that these filters are very forgiving...
@@ -335,10 +335,8 @@ GBIF.CLEAN <- GBIF.TRIM.TAXO %>%
 
 
 ## The table above gives the details, but worth documenting how many records are knocked out by each filter
-
-
 ## What does this dataframe look like?
-#names(GBIF.CLEAN)
+names(GBIF.CLEAN)
 
 
 
@@ -406,7 +404,11 @@ GBIF.LAND = filter(GBIF.CLEAN, cellFromXY(world.temp, GBIF.CLEAN[c("lon", "lat")
 
 ## how many records were on land?
 records.ocean = dim(GBIF.CLEAN)[1] - dim(GBIF.LAND)[1]  ## 91575 records are in the ocean   
-#records.ocean
+
+
+## Print the dataframe dimensions to screen
+dim(GBIF.LAND)
+length(unique(GBIF.LAND$searchTaxon))
 
 
 ## Free some memory
@@ -420,11 +422,9 @@ gc()
 # plot(LAND)
 
 
-
 #########################################################################################################################
 ## save data
 #saveRDS(GBIF.LAND, file = paste("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.rds"))
-gc()
 
 
 ## Now save .rds file for the next session

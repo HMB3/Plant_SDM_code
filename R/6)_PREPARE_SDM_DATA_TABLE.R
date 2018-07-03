@@ -8,9 +8,14 @@
 ## SDM analysis
 
 
+#########################################################################################################################
+## Read in all data to run the SDM code :: species lists, shapefile, rasters & tables
+#source('./R/HIA_LIST_MATCHING.R')
+rasterTmpFile()
+
+
 #CLEAN.TRUE = readRDS("./data/base/HIA_LIST/COMBO/CLEAN_ONLY_HIA_SPP.rds")
 names(CLEAN.TRUE)
-#source('./R/HIA_LIST_MATCHING.R')
 
 
 ## Need to clean this up...

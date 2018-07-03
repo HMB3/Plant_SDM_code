@@ -13,16 +13,13 @@
 
 
 #########################################################################################################################
-## Create a list of species from the downloaded files
-#load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_1601_2018.RData")
-#source('./R/HIA_LIST_MATCHING.R')  ## This file contains all the packages, functions and core biological lists
+## Read in all data to run the SDM code :: species lists, shapefile, rasters & tables
+#source('./R/HIA_LIST_MATCHING.R')
 spp.download = list.files("./data/base/HIA_LIST/GBIF/SPECIES/", pattern = ".RData")
 spp.download = gsub("_GBIF_records.RData", "", spp.download)
 spp.download = trimws(spp.download)
 bind.spp     = trimws(GBIF.spp)
 spp.download = intersect(bind.spp, spp.download)
-
-
 
 
 ## Check the difference between the risk list and the downloaded list

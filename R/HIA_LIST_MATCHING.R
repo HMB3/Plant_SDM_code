@@ -103,6 +103,7 @@ source('./R/MAPPING_FUNCTIONS.R')
 rasterOptions(tmpdir = file.path('H:/green_cities_sdm/RTEMP')) 
 
 
+
 #########################################################################################################################
 ## Read in spatial data once, rather than in each script
 aus           = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds")

@@ -300,10 +300,7 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             #band_ras     <- function(x) {ifelse(x >=  4, 4, ifelse(x > 0 & x < 4, 3, x)) }
             band_4           <- function(x) {ifelse(x >=  4, 1, 0) }
             combo_suit_4GCM  <- calc(combo_suit_thresh, fun = band_4)
-            
-            ## Another problem is that there is no current OR future 
-            #if(summary(combo_suit_4GCM)[3, "layer"] > 0) {
-            
+          
             #########################################################################################################################
             ## Now create a raster of the gain, loss and stable
             ## Create a raster stack

@@ -6,8 +6,11 @@
 ## This code combines the tables of area occupied by each species in each SUA, and converts it to one big table. 
 ## This table can be queried to create histograms, etc.  
 
-## Load project data
-source('./R/HIA_LIST_MATCHING.R')
+
+#########################################################################################################################
+## Read in all data to run the SDM code :: species lists, shapefile, rasters & tables
+#source('./R/HIA_LIST_MATCHING.R')
+rasterTmpFile()
 
 
 ## Read in SUAs and create species lists
@@ -27,6 +30,13 @@ spp_best_thresh   = gsub(" ", "_", spp.best.thresh)
 #########################################################################################################################
 ## 1). COMBINE OVERALL TABLES OF SPECIES GAIN/LOSS ACROSS AUSTRALIA
 #########################################################################################################################
+
+
+## We only want to add the species used for the analysis, not all species folders. Can we restrict the list to just the 
+## species on map_list?
+
+
+## Might not need this code as much, if just summing the rasters in ArcMap..............................................
 
 
 #########################################################################################################################

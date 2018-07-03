@@ -513,16 +513,6 @@ tail(SDM.RESULTS.DIR, 20);tail(map_spp, 20); tail(MAXENT.SUM.TEST, 20)[, c("sear
 # area_occ   = 10
 
 
-## Problem species ::
-## Strelitzia_reginae      - solved 
-## Betula_pendula,         - solved   
-## Eucalyptus_pauciflora   - solved 
-## Liriodendron_tulipifera - too few Aus records, low suitability 
-## Fraxinus_pennsylvanica  - 
-## Eucalyptus_mannifera    -
-## Xanthostemon_paradoxus  - 116
-
-
 # Running zonal stats for Strelitzia_reginae | 2030 combined suitability > 0.4016
 # Error in names(PERECENT.AREA) <- c("SUA_NAME11", "Absent", "Present") : 
 #   'names' attribute [3] must be the same length as the vector [2]
@@ -586,20 +576,17 @@ tail(SDM.RESULTS.DIR, 20);tail(map_spp, 20); tail(MAXENT.SUM.TEST, 20)[, c("sear
 #                             })
 
 
-
-
-
 #########################################################################################################################
 ## Then use the more forgiving threshold
 #########################################################################################################################
 
 
 ## To test it first species works 
-species    = spp_lower_thresh[13]
-thresh     = percent.10.log.low[13]
-percent    = percent.10.om.low[13]
-time_slice = 30
-area_occ   = 10
+# species    = spp_lower_thresh[13]
+# thresh     = percent.10.log.low[13]
+# percent    = percent.10.om.low[13]
+# time_slice = 30
+# area_occ   = 10
 
 
 #########################################################################################################################
@@ -661,20 +648,16 @@ suitability.2070 = tryCatch(mapply(combine_gcm_threshold,
 #########################################################################################################################
 
 
-#########################################################################################################################
-## create a list of species which need to be mapped using a different threshold. Either the ::
-## 10 percentile training presence Logistic threshold OR
-## 10 percentile training presence training omission
+## 3). Try to thin records for ~100 spp with boundary bias: random sampling of those species records, by state and environment
 
-## Also Can we calculate these in the table?
-## Gain (ie not suitable now but suitable in future)
-## Loss (ie suitable now but not in future)
-## Stable (suitable in both)
+## 4). Use more forgiving thresholds (10%) for all species, OR just those with bad maps:
+##    "Maximum.training.sensitivity.plus.specificity.Logistic.threshold"
+##    "X10.percentile.training.presence.Logistic.threshold"
+##    "X10.percentile.training.presence.training.omission"
 
-## How should we map each species? 
-## Subtract the current raster from the future combined raster
+## 5). Calculate the TSS for all species (and MESS maps for a few species)
 
-
+## 7). Decide on gamma diversity for this article - 200 spp - could it go to GEB? Plan figures and tables for MS
 
 
 

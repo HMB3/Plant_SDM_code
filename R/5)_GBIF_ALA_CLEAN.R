@@ -12,12 +12,15 @@
 
 
 #########################################################################################################################
+## Read in all data to run the SDM code :: species lists, shapefile, rasters & tables
+#source('./R/HIA_LIST_MATCHING.R')
+rasterTmpFile()
+
+
+#########################################################################################################################
 ## 1). CHECK DATA FOR AN EXAMPLE SPECIES...
 #########################################################################################################################
 
-
-## Create lists
-#source('./R/HIA_LIST_MATCHING.R')
 
 ## Load GBIF data
 # COMBO.RASTER.CONVERT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_APRIL_2018.rds")
@@ -380,9 +383,7 @@ unique(CLEAN.TRUE$summary)
 
 
 ## How many species?
-str(unique(CLEAN.TRUE$searchTaxon))
-str(unique(TEST.GEO$searchTaxon))
-(dim(CLEAN.TRUE)[1]/dim(TEST.GEO))*100                                               ## x% of the records are retained
+(dim(CLEAN.TRUE)[1]/dim(TEST.GEO)[1])*100                                               ## x% of the records are retained
 
 
 
@@ -728,6 +729,12 @@ dim(COMBO.RASTER.CONTEXT)
 dim(COMBO.NICHE.CONTEXT)
 
 
+## Print the dataframe dimensions to screen
+dim(CLEAN.TRUE)
+dim(COMBO.NICHE.CONTEXT)
+length(unique(CLEAN.TRUE$searchTaxon))
+length(COMBO.NICHE.CONTEXT$searchTaxon)
+
 
 #########################################################################################################################
 ## Save
@@ -735,6 +742,7 @@ dim(COMBO.NICHE.CONTEXT)
 # saveRDS(CLEAN.TRUE,              'data/base/HIA_LIST/COMBO/CLEAN_ONLY_HIA_SPP.rds')
 # saveRDS(CLEAN.NICHE.CONTEXT,     'data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_COORD_CLEAN.rds')
 # write.csv(CLEAN.NICHE.CONTEXT,   "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_COORD_CLEAN.csv", row.names = FALSE)
+
 
 
 
