@@ -214,10 +214,10 @@ records_setting          = "COORD_CLEAN"
 
 
 ## Create a file list for each model run
-maxent.tables = list.files(path.set.var)             ## Chagne this for each variable selection strategy
+maxent.tables = list.files(path.set.var)                 ## Chagne this for each variable selection strategy
 maxent.tables = intersect(maxent.tables, map_spp_list)   ## Change this for new species lists
-maxent_path   = path.set.var                         ## Chagne this for each variable selection strategy
-length(maxent.tables)                                ## Should match the number of taxa tested
+maxent_path   = path.set.var                             ## Chagne this for each variable selection strategy
+length(maxent.tables)                                    ## Should match the number of taxa tested
 no_data %in% maxent.tables
 
 ## In linux, check if the folders are empty, then delete if empty as this will break the code:
@@ -362,7 +362,7 @@ table(MAXT.CHECK.25$CHECK_MAP)
 MAXT.CHECK.25 = MAXT.CHECK.25[with(MAXT.CHECK.25 , rev(order(Total.growers))), ]
 View(MAXT.CHECK.25)
 dim(MAXT.CHECK.25)
-SUMary(MAXT.CHECK.25$Total.growers)
+summary(MAXT.CHECK.25$Total.growers)
 
 
 ## Now write out the species list to re-process

@@ -17,6 +17,7 @@ source('./R/HIA_LIST_MATCHING.R')
 
 
 ## Set global species list variables here...............................................................................
+## Make these match up.................................................................................................
 GBIF.spp     = run.200
 map_spp_list = run_200
 

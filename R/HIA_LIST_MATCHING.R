@@ -892,14 +892,30 @@ run.200  = c("Cyathea cooperi", "Melaleuca quinquenervia", "Atractocarpus fitzal
              "Gardenia jasminoides", "Dracaena fragrans", "Camellia oleifera",
              "Sannantha virgata", "Ficinia nodosa")
 
+run_200  = gsub(" ", "_", run.200)
+
+#MAXENT.CHECK      = read.csv("./output/maxent/MAXENT_CHECK_RATING.csv", stringsAsFactors = FALSE)
+MAXENT.CHECK   = read.csv("./output/maxent/MAXENT_RATING_26_2018.csv", stringsAsFactors = FALSE)
+MAXENT.CHECK   = join(MAXENT.CHECK, TOT.GROW)
+MAXENT.CHECK   = MAXENT.CHECK [, c(1:7, 19, 8:18)]
+MAXT.CHECK.25  = subset(MAXENT.CHECK, Total.growers >= 25 & CHECK_MAP == 1 | CHECK_MAP == 2)
+MAXT.CHECK.25  = completeFun(MAXT.CHECK.25, "Total.growers")
+
+#MAXT.CHECK.25  = head(MAXT.CHECK.25, 150)
+table(MAXT.CHECK.25$CHECK_MAP)
+MAXT.CHECK.25 = MAXT.CHECK.25[with(MAXT.CHECK.25 , rev(order(Total.growers))), ]
+View(MAXT.CHECK.25)
+dim(MAXT.CHECK.25)
+summary(MAXT.CHECK.25$Total.growers)
+
 
 run_200  = gsub(" ", "_", run.200)
 
 ## Write to file
-write.csv(COMBO.NICHE.200,  "./data/base/HIA_LIST/COMBO/COMBO_NICHE_200.csv",    row.names = FALSE)
-write.csv(COMBO.NICHE.200,  "./data/base/HIA_LIST/COMBO/COMBO_NICHE_200.csv",    row.names = FALSE)
-write.csv(HIA.COUNT,        "./data/base/HIA_LIST/COMBO/COMBO_NICHE_HIA.csv",    row.names = FALSE)
-write.csv(COMBO.200.RATING, "./data/base/HIA_LIST/COMBO/COMBO_NICHE_RATING.csv", row.names = FALSE)
+# write.csv(COMBO.NICHE.200,  "./data/base/HIA_LIST/COMBO/COMBO_NICHE_200.csv",    row.names = FALSE)
+# write.csv(COMBO.NICHE.200,  "./data/base/HIA_LIST/COMBO/COMBO_NICHE_200.csv",    row.names = FALSE)
+# write.csv(HIA.COUNT,        "./data/base/HIA_LIST/COMBO/COMBO_NICHE_HIA.csv",    row.names = FALSE)
+# write.csv(COMBO.200.RATING, "./data/base/HIA_LIST/COMBO/COMBO_NICHE_RATING.csv", row.names = FALSE)
 
 
 
