@@ -309,7 +309,7 @@ SDM.RESULTS.DIR <- map_spp[c(1:length(map_spp))] %>%
 ## Now combine the SDM output with the niche context data 
 ## Get the number of aus records too ....................................................................................
 NICHE.CONTEXT = COMBO.NICHE.CONTEXT[, c("searchTaxon",      "COMBO.count",       "AUS_RECORDS",       "Plant.type",        "Origin", 
-                                        "Top_200",          "Total.growers", "Number.of.States")]
+                                        "Top_200",          "Total.growers",     "Number.of.States")]
 
 
 ## Check with John and Linda which columns will help with model selection
@@ -324,7 +324,7 @@ MAXENT.SUMM   = MAXENT.SUMMARY[, c("searchTaxon",
                                    "Maximum.training.sensitivity.plus.specificity.Logistic.threshold")]
 
 
-## Remove the underscore and join
+## Remove the underscore, and join
 MAXENT.SUMM$searchTaxon = gsub("_", " ", MAXENT.SUMM$searchTaxon)
 MAXENT.CHECK.TABLE      = join(NICHE.CONTEXT, MAXENT.SUMM, type = "inner")
 View(MAXENT.CHECK.TABLE)
@@ -335,7 +335,7 @@ View(MAXENT.CHECK.TABLE)
 ## order by species and compare three rows : setvariables, backwards selection, etc
 
 
-## Save
+## Save - could add date as a sprintf variable to save multiple versions?
 ## write.csv(MAXENT.CHECK.TABLE, "./output/maxent/MAXENT_CHECK_TABLE_APRIL_2016.csv", row.names = FALSE)
 
 
@@ -354,31 +354,46 @@ View(MAXENT.CHECK.TABLE)
 
 ## Read in the table of checked maps. Then subset to just the species with dodgy maps
 #MAXENT.CHECK      = read.csv("./output/maxent/MAXENT_CHECK_RATING.csv", stringsAsFactors = FALSE)
-MAXENT.CHECK   = read.csv("./output/maxent/CHECK_SPP_MAPS_BIAS_JUNE_2016.csv", stringsAsFactors = FALSE)
-#MAXENT.CHECK   = read.csv("./output/maxent/CAMPBELLTOWN_RATINGS.csv",          stringsAsFactors = FALSE)
+MAXENT.CHECK   = read.csv("./output/maxent/MAXENT_RATING_26_2018.csv", stringsAsFactors = FALSE)
+MAXENT.CHECK   = join(MAXENT.CHECK, TOT.GROW)
+MAXENT.CHECK   = MAXENT.CHECK [, c(1:7, 19, 8:18)]
+MAXT.CHECK.25  = subset(MAXENT.CHECK, Total.growers >= 25 & CHECK_MAP == 1 | CHECK_MAP == 2)
+MAXT.CHECK.25  = completeFun(MAXT.CHECK.25, "Total.growers")
+
+#MAXT.CHECK.25  = head(MAXT.CHECK.25, 150)
+table(MAXT.CHECK.25$CHECK_MAP)
+MAXT.CHECK.25 = MAXT.CHECK.25[with(MAXT.CHECK.25 , rev(order(Total.growers))), ]
+View(MAXT.CHECK.25)
+dim(MAXT.CHECK.25)
+summary(MAXT.CHECK.25$Total.growers)
+
+
+## Now write out the species list to re-process
+#write.csv(MAXT.CHECK.25, "./output/maxent/MAXENT_SUA_SPP.csv", row.names = FALSE)
+
 
 
 #########################################################################################################################
 ## Isolate the species which have bad maps
-MX.POOR        = subset(MAXENT.CHECK, CHECK_MAP == 2 | CHECK_MAP == 3)#[, c("searchTaxon", "CHECK_MAP", "Top_200", "Origin")]
-MX.POOR.TOP    = subset(MX.POOR,     Top_200 == "TRUE")[, c("searchTaxon", "CHECK_MAP")]
-MX.POOR.E      = subset(MX.POOR,     Origin == "Exotic")[, c("searchTaxon", "CHECK_MAP")]
-MX.POOR.TOP.E  = subset(MX.POOR,     Origin == "Exotic" & Top_200 == "TRUE")[, c("searchTaxon", "CHECK_MAP")]
-
-
-## Merge with full results
-MX.POOR.TOP.E = join(MX.POOR.TOP.E, MAXENT.CHECK.TABLE, type = "left")
-MX.POOR.TOP.E = MX.POOR.TOP.E[with(MX.POOR.TOP.E , rev(order(Total.growers))), ]
-
-
-
-MX.POOR        = MX.POOR[with(MX.POOR , rev(order(Total.growers))), ]
-MX.POOR.TOP    = MX.POOR.TOP[with(MX.POOR.TOP , rev(order(Total.growers))), ]
-MX.POOR.E      = MX.POOR.E[with(MX.POOR.E , rev(order(Total.growers))), ]
-MX.POOR.TOP.E  = MX.POOR.TOP.E[with(MX.POOR.TOP.E , rev(order(Total.growers))), ]
-
-View(MX.POOR.E)
-View(MX.POOR.TOP.E)
+# MX.POOR        = subset(MAXENT.CHECK, CHECK_MAP == 2 | CHECK_MAP == 3)#[, c("searchTaxon", "CHECK_MAP", "Top_200", "Origin")]
+# MX.POOR.TOP    = subset(MX.POOR,     Top_200 == "TRUE")[, c("searchTaxon", "CHECK_MAP")]
+# MX.POOR.E      = subset(MX.POOR,     Origin == "Exotic")[, c("searchTaxon", "CHECK_MAP")]
+# MX.POOR.TOP.E  = subset(MX.POOR,     Origin == "Exotic" & Top_200 == "TRUE")[, c("searchTaxon", "CHECK_MAP")]
+# 
+# 
+# ## Merge with full results
+# MX.POOR.TOP.E = join(MX.POOR.TOP.E, MAXENT.CHECK.TABLE, type = "left")
+# MX.POOR.TOP.E = MX.POOR.TOP.E[with(MX.POOR.TOP.E , rev(order(Total.growers))), ]
+# 
+# 
+# 
+# MX.POOR        = MX.POOR[with(MX.POOR , rev(order(Total.growers))), ]
+# MX.POOR.TOP    = MX.POOR.TOP[with(MX.POOR.TOP , rev(order(Total.growers))), ]
+# MX.POOR.E      = MX.POOR.E[with(MX.POOR.E , rev(order(Total.growers))), ]
+# MX.POOR.TOP.E  = MX.POOR.TOP.E[with(MX.POOR.TOP.E , rev(order(Total.growers))), ]
+# 
+# View(MX.POOR.E)
+# View(MX.POOR.TOP.E)
 
 
 ## How do we use this to check if the poor maps are due to errors in the code?
@@ -403,8 +418,7 @@ identical(spp_best_thresh,  MAXENT.BEST$searchTaxon)
 ## guidance about this and you can really get away with either).
 
 
-## Maximum training sensitivity plus specificity Logistic threshold 
-## 10 percentile training presence training omission. EG:
+## How do the thresholds compare?
 summary(MAXENT.SUM.TEST["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"])   ## .training. should be .test.
 summary(MAXENT.SUM.TEST["X10.percentile.training.presence.Logistic.threshold"])
 summary(MAXENT.SUM.TEST["X10.percentile.training.presence.training.omission"])
@@ -587,6 +601,8 @@ tail(SDM.RESULTS.DIR, 20);tail(map_spp, 20); tail(MAXENT.SUM.TEST, 20)[, c("sear
 # percent    = percent.10.om.low[13]
 # time_slice = 30
 # area_occ   = 10
+
+## SDM.RESULTS.DIR.LOW length doesn' match...............................................................................
 
 
 #########################################################################################################################

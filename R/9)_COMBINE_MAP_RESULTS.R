@@ -37,6 +37,7 @@ spp_best_thresh   = gsub(" ", "_", spp.best.thresh)
 
 
 ## Might not need this code as much, if just summing the rasters in ArcMap..............................................
+## raster.list[raster.list %like% "Euc"]
 
 
 #########################################################################################################################
@@ -72,6 +73,10 @@ GAIN.LOSS.STABLE[!complete.cases(GAIN.LOSS.STABLE), ]
 dim(GAIN.LOSS.STABLE)
 head(GAIN.LOSS.STABLE, 30)
 length(unique(GAIN.LOSS.STABLE$SPECIES))                                  ## 143 species rated as either 1 or 2 by Linda
+
+
+## Can subset to just the analysis species 
+GAIN.LOSS.STABLE  =  GAIN.LOSS.STABLE[GAIN.LOSS.STABLE$searchTaxon %in% map_spp_list , ] 
 
 
 #########################################################################################################################
@@ -228,6 +233,8 @@ unique(SUA.TOP.PRESENCE.2030.MILE$SPECIES)
 SUA.TOP.PRESENCE.2030.MILE.X.GLAUCA = subset(SUA.TOP.PRESENCE, SPECIES == "Xanthorrhoea_glauca")
 
 
+## Also, subset to just the analysis species here 
+SUA.TOP.PRESENCE = subset()
 
 
 #########################################################################################################################

@@ -17,14 +17,14 @@ source('./R/HIA_LIST_MATCHING.R')
 
 
 ## Set global species list variables here...............................................................................
-GBIF.spp     = run.200
-map_spp_list = run_200
+GBIF.spp     = trait.spp
+map_spp_list = trait_spp
 
 
 #########################################################################################################################
 ## Now source each step in the workflow 
 ## Step 3 :: combine GBIF occurrence data and filter to records > 1950
-source('./R/3)_GBIF_DATA_COMBINE_FILTER.R', echo = TRUE)
+source('./R/3)_GBIF_DATA_FILTER.R', echo = TRUE)
 
 
 ## Step 4 :: combine GBIF, ALA and urban occurrence data into a single table, extracts environmental condtions 

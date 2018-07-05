@@ -717,6 +717,13 @@ head(COMBO.NICHE.CONTEXT$AUS_RECORDS)
 head(COMBO.NICHE.CONTEXT$LGA_COUNT)
 
 
+## Join on the total growers? The synonyms won't match here
+names(COMBO.NICHE.CONTEXT)
+COMBO.NICHE.CONTEXT$searchTaxon [! COMBO.NICHE.CONTEXT$searchTaxon  %in% TOT.GROW$searchTaxon]
+COMBO.NICHE.CONTEXT$searchTaxon [! COMBO.NICHE.CONTEXT$searchTaxon  %in% HIA.list$Binomial]
+COMBO.NICHE.CONTEXT$Total.growers = join(COMBO.NICHE.CONTEXT, TOT.GROW)$Total.growers
+
+
 ## Set NA to blank, then sort by no. of growers
 COMBO.NICHE.CONTEXT$Number.of.growers[is.na(COMBO.NICHE.CONTEXT$Number.of.growers)] <- 0
 COMBO.NICHE.CONTEXT = COMBO.NICHE.CONTEXT[with(COMBO.NICHE.CONTEXT, rev(order(Number.of.growers))), ]

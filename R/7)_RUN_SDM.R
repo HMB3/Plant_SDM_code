@@ -359,11 +359,12 @@ lapply(ff[n < 27], function(x) {
 ##    "X10.percentile.training.presence.Logistic.threshold"
 ##    "X10.percentile.training.presence.training.omission"
   
-## 5). Calculate the TSS for all species (and MESS maps for a few species)
+## 5). Calculate the TSS for all species (and MESS maps for a few problematic species)
 
 ## 6). Get species list from 8 biggest SUAs - Area report from ALA (not working) + Expert list if we have them
 
-## 7). Decide on gamma diversity for this article - 200 spp - could it go to GEB? Plan figures and tables for MS
+## 7). Decide on gamma diversity for this article - 150 spp - could it go to GEB? Plan figures and tables for MS
+##     The approach doesn't change with Gamma, so draft it now.
 
 
 

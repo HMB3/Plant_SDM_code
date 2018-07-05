@@ -125,7 +125,6 @@ ALL.SUA.POP   = read.csv("./data/base/CONTEXTUAL/ABS_SUA_POP.csv", stringsAsFact
 ##
 template.raster = raster("./data/template_hasData.tif")
 template.cells  = readRDS("./data/hasData_cells.rds")
-
 load("./data/base/CONTEXTUAL/urbanareas.rda")
 
 
@@ -177,6 +176,20 @@ MAXENT.RATING       = read.csv("./output/maxent/MAXENT_RATING_26_2018.csv",     
 
 
 #########################################################################################################################
+## Experimental trait lists ::
+HEAT.RISK  = read.csv("./data/base/HIA_LIST/RENEE/MOD3_HEAT_RANKS_072018.csv",                   stringsAsFactors = FALSE)
+TRAIT.SPP  = read.csv("./data/base/HIA_LIST/RENEE/MOD3_TRAIT_SPP.csv",                           stringsAsFactors = FALSE)
+
+
+## Now find the match between the trait species and the trait species... 
+colnames(HEAT.RISK)[colnames(HEAT.RISK)=="Species"] <- "searchTaxon"
+colnames(TRAIT.SPP)[colnames(TRAIT.SPP)=="Species"] <- "searchTaxon"
+TRAIT.SPP = merge(TRAIT.SPP, HEAT.RISK, by = "searchTaxon")
+trait.spp = unique(TRAIT.SPP$searchTaxon)
+trait_spp = gsub(" ", "_", trait.spp)
+
+
+#########################################################################################################################
 ## Experimental lists :: the next round of experiments will be... 
 top.200              = read.csv("./data/base/HIA_LIST/HIA/HIA_TOP_200_1309_2017.csv",       stringsAsFactors = FALSE)
 renee.full           = read.csv("./data/base/HIA_LIST/HIA/RENEE_FULL_LIST.csv",             stringsAsFactors = FALSE) 
@@ -188,6 +201,13 @@ Manuel.group         = read.csv("./MANUEL/SUA_by_SPP.csv",                      
 TREE.NETWORK         = read.csv("./MANUEL/COMBO_APNI.csv",                                  stringsAsFactors = FALSE)
 NURSE.MATCH          = read.csv("./MANUEL/nurseries.csv",                                   stringsAsFactors = FALSE)
 campbelltown         = read.csv("./data/base/HIA_LIST/HIA/campbelltown_species.csv",        stringsAsFactors = FALSE)
+
+
+
+## The species for the SUA analysis
+SUA.spp = read.csv("./output/maxent/MAXENT_SUA_SPP.csv", stringsAsFactors = FALSE)
+SUA.spp = SUA.spp$searchTaxon
+SUA_spp = gsub(" ", "_", SUA.spp)
 
 
 ##

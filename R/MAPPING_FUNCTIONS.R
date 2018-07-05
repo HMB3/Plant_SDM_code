@@ -53,6 +53,7 @@ project_maxent_grids = function(scen_list, species_list, maxent_path, climate_pa
     lapply(species_list, function(species) {
       
       ## First, check if the maxent model exists
+      ## Can we skip the species before dividing the rasters?................................................................
       save_name = gsub(' ', '_', species)
       if(file.exists(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, species))) {
         message('Doing ', species)

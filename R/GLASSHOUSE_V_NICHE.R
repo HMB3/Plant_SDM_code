@@ -15,31 +15,48 @@
 
 #########################################################################################################################
 ## Read in niche data
-CLEAN.NICHE.CONTEXT  = readRDS("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_COORD_CLEAN.rds")
+CLEAN.NICHE.CONTEXT  = readRDS("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_COORD_CLEAN_NEW_SPP.rds")
 COMBO.RASTER.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/CLEAN_ONLY_HIA_SPP.rds")
 
 
+##
+dim(CLEAN.NICHE.CONTEXT)
+dim(COMBO.RASTER.CONTEXT)
+
+
 ## Read in heat risk data
-HEAT.RISK = read.csv("./data/base/HIA_LIST/RENEE/MOD3_HEAT_RANKS_072018.csv", stringsAsFactors = FALSE)
+HEAT.RISK  = read.csv("./data/base/HIA_LIST/RENEE/MOD3_HEAT_RANKS_072018.csv", stringsAsFactors = FALSE)
+TRAIT.SPP  = read.csv("./data/base/HIA_LIST/RENEE/MOD3_TRAIT_SPP.csv", stringsAsFactors = FALSE)
 HEAT.DAYS = raster("./data/base/AWAP/mean_days_35_degrees.tif")
 plot(HEAT.DAYS, main = "DAYS > 35 deg")
 
 
-## Why don't they match up exactly?
+## Now find the match between the trait species and the trait species... 
 colnames(HEAT.RISK)[colnames(HEAT.RISK)=="Species"] <- "searchTaxon"
-HEAT.NICHE.AUS = merge(COMBO.NICHE.CONTEXT, HEAT.RISK, by = "searchTaxon")
+colnames(TRAIT.SPP)[colnames(TRAIT.SPP)=="Species"] <- "searchTaxon"
+TRAIT.SPP = merge(TRAIT.SPP, HEAT.RISK, by = "searchTaxon")
+
+
+## How many experimental species do we have climate data for?
+setdiff(TRAIT.SPP$searchTaxon, COMBO.NICHE.CONTEXT$searchTaxon)
+intersect(TRAIT.SPP$searchTaxon, COMBO.NICHE.CONTEXT$searchTaxon)
+
+
+## Merge traits and species
+HEAT.NICHE.AUS = merge(COMBO.NICHE.CONTEXT, TRAIT.SPP, by = "searchTaxon")
 HEAT.NICHE.AUS = completeFun(HEAT.NICHE.AUS , "Tcrit_C")
 
 dim(HEAT.NICHE.AUS)
 names(HEAT.NICHE.AUS)
 
 
-## But how many species have good records?
-COMBO.RASTER.GLASSHOUSE  = COMBO.RASTER.CONTEXT[COMBO.RASTER.CONTEXT$searchTaxon %in% unique(HEAT.RISK$searchTaxon), ] 
-COMBO.NICHE.GLASSHOUSE   = COMBO.NICHE.CONTEXT[COMBO.NICHE.CONTEXT$searchTaxon %in% unique(HEAT.RISK$searchTaxon), ] 
-GLASSHOUSE.COUNT         = head(COMBO.NICHE.GLASSHOUSE, 36)[, c("searchTaxon", "COMBO.count", "AUS_RECORDS" )]
+## But how many species have good records? This will change a bit with Alessandro's data
+#COMBO.RASTER.GLASSHOUSE  = COMBO.RASTER.CONTEXT[COMBO.RASTER.CONTEXT$searchTaxon %in% unique(TRAIT.SPP$searchTaxon), ] 
+COMBO.NICHE.GLASSHOUSE   = COMBO.NICHE.CONTEXT[COMBO.NICHE.CONTEXT$searchTaxon %in% unique(TRAIT.SPP$searchTaxon), ] 
+GLASSHOUSE.COUNT         = head(COMBO.NICHE.GLASSHOUSE, 36)[, c("searchTaxon", "COMBO.count", "AUS_RECORDS", "Origin", "Plant.type")]
 GLASSHOUSE.COUNT         = GLASSHOUSE.COUNT[with(GLASSHOUSE.COUNT, order(COMBO.count)), ]
 View(GLASSHOUSE.COUNT)
+summary(GLASSHOUSE.COUNT$searchTaxon)
 
 
 #########################################################################################################################
@@ -108,11 +125,11 @@ DSM.HEAT.PLOT  = HEAT.NICHE.RISK[, c("Desicc_Max", "HEAT_DAYS_max",  "HEAT_DAYS_
                                     "HEAT_DAYS_q95_q05", "HEAT_DAYS_range")]
 
 
-## rename
-names(OSMP.HEAT.PLOT) = c("OSMPO", "HEAT_MX","HEAT_95","HEAT_95_5", "HEAT_RG");
-names(TLP.HEAT.PLOT)  = c("TLP",   "HEAT_MX","HEAT_95","HEAT_95_5", "HEAT_RG");
-names(TCR.HEAT.PLOT)  = c("Tcrit",   "HEAT_MX","HEAT_95","HEAT_95_5", "HEAT_RG");
-names(DSM.HEAT.PLOT)  = c("DSM",   "HEAT_MX","HEAT_95","HEAT_95_5", "HEAT_RG")
+## Rename
+names(OSMP.HEAT.PLOT) = c("OSMPO", "HEAT_MX", "HEAT_95", "HEAT_95_5", "HEAT_RG");
+names(TLP.HEAT.PLOT)  = c("TLP",   "HEAT_MX", "HEAT_95", "HEAT_95_5", "HEAT_RG");
+names(TCR.HEAT.PLOT)  = c("Tcrit", "HEAT_MX", "HEAT_95", "HEAT_95_5", "HEAT_RG");
+names(DSM.HEAT.PLOT)  = c("DSM",   "HEAT_MX", "HEAT_95", "HEAT_95_5", "HEAT_RG")
 summary(OSMP.HEAT.PLOT)
 
 
