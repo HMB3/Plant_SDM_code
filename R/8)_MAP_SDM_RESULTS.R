@@ -1,5 +1,5 @@
 #########################################################################################################################
-###################### PREDICT MAXENT TO FUTURE CLIMATES AND SUMMARISE THE RESULTS ###################################### 
+###################### PREDICT MAXENT TO FUTURE CLIMATES AND SUMARISE THE RESULTS ###################################### 
 #########################################################################################################################
 
 
@@ -228,8 +228,8 @@ no_data %in% maxent.tables
 
 ## Could turn this into a function, and loop over a list of subfolders...
 ## Then pipe the table list into lapply
-## MAXENT.SUMMARY = bind_maxent_tables(table_list)
-MAXENT.SUMMARY <- maxent.tables[c(1:length(maxent.tables))] %>%         ## currently x species with enough records
+## MAXENT.RESULTS = bind_maxent_tables(table_list)
+MAXENT.RESULTS <- maxent.tables[c(1:length(maxent.tables))] %>%         ## currently x species with enough records
   
   ## pipe the list into lapply
   lapply(function(x) {
@@ -263,14 +263,14 @@ MAXENT.SUMMARY <- maxent.tables[c(1:length(maxent.tables))] %>%         ## curre
   bind_rows
 
 
-## This is a summary of maxent output for current conditions
+## This is a SUMary of maxent output for current conditions
 ## Also which species have AUC < 0.7?
-dim(MAXENT.SUMMARY)
-head(MAXENT.SUMMARY, 20)[1:9]
-dim(subset(MAXENT.SUMMARY, Training.AUC < 0.7))
+dim(MAXENT.RESULTS)
+head(MAXENT.RESULTS, 20)[1:9]
+dim(subset(MAXENT.RESULTS, Training.AUC < 0.7))
 
 ## What are the variables we want to see?
-# View(head(MAXENT.SUMMARY, 180)[, c("searchTaxon",
+# View(head(MAXENT.RESULTS, 180)[, c("searchTaxon",
 #                                            "Settings",
 #                                            "Number_var",
 #                                            "X.Training.samples",                                                                
@@ -282,9 +282,9 @@ dim(subset(MAXENT.SUMMARY, Training.AUC < 0.7))
 
 ## Now check the match between the species list, and the results list. These need to match, so we can access
 ## the right threshold for each species.
-length(intersect(map_spp_list, MAXENT.SUMMARY$searchTaxon)) ## Accesssing the files from these directories... 
-MAXENT.SUM.TEST  =  MAXENT.SUMMARY[MAXENT.SUMMARY$searchTaxon %in% map_spp_list , ] 
-map_spp = unique(MAXENT.SUM.TEST$searchTaxon)
+length(intersect(map_spp_list, MAXENT.RESULTS$searchTaxon)) ## Accesssing the files from these directories... 
+MAXENT.RESULTS.TEST  =  MAXENT.RESULTS[MAXENT.RESULTS$searchTaxon %in% map_spp_list , ] 
+map_spp = unique(MAXENT.RESULTS.TEST$searchTaxon)
 length(map_spp)
 
 
@@ -303,38 +303,35 @@ SDM.RESULTS.DIR <- map_spp[c(1:length(map_spp))] %>%
   
   ## Bind the list together
   c()
+length(SDM.RESULTS.DIR)
 
 
 #########################################################################################################################
 ## Now combine the SDM output with the niche context data 
 ## Get the number of aus records too ....................................................................................
-NICHE.CONTEXT = COMBO.NICHE.CONTEXT[, c("searchTaxon",      "COMBO.count",       "AUS_RECORDS",       "Plant.type",        "Origin", 
+NICHE.CONTEXT = COMBO.NICHE.CONTEXT[, c("searchTaxon",      "COMBO.count",       "AUS_RECORDS",       "Plant.type", "Origin", 
                                         "Top_200",          "Total.growers",     "Number.of.States")]
 
 
 ## Check with John and Linda which columns will help with model selection
-MAXENT.SUMM   = MAXENT.SUMMARY[, c("searchTaxon",
-                                   "Settings",
-                                   "Records",
-                                   "Number_var",
-                                   "X.Training.samples",                                                                
-                                   "Iterations",                                                                        
-                                   "Training.AUC",                                                                      
-                                   "X.Background.points",  
-                                   "Maximum.training.sensitivity.plus.specificity.Logistic.threshold")]
+MAXENT.RESULTS   = MAXENT.RESULTS[, c("searchTaxon",
+                                      "Settings",
+                                      "Records",
+                                      "Number_var",
+                                      "X.Training.samples",                                                                
+                                      "Iterations",                                                                        
+                                      "Training.AUC",                                                                      
+                                      "X.Background.points",  
+                                      "Maximum.training.sensitivity.plus.specificity.Logistic.threshold")]
 
 
 ## Remove the underscore, and join
-MAXENT.SUMM$searchTaxon = gsub("_", " ", MAXENT.SUMM$searchTaxon)
-MAXENT.CHECK.TABLE      = join(NICHE.CONTEXT, MAXENT.SUMM, type = "inner")
-View(MAXENT.CHECK.TABLE)
+MAXENT.RESULTS$searchTaxon = gsub("_", " ", MAXENT.RESULTS$searchTaxon)
+MAXENT.RESULTS.TABLE       = join(NICHE.CONTEXT, MAXENT.RESULTS, type = "inner")
+View(MAXENT.RESULTS.TABLE)
 
 
-## Also could join on other tables with different settings using rbind
-## rbind(MAXENT.CHECK.TABLE, MAXENT.CHECK.TABLE.SET)
-## order by species and compare three rows : setvariables, backwards selection, etc
-
-
+#########################################################################################################################
 ## Save - could add date as a sprintf variable to save multiple versions?
 ## write.csv(MAXENT.CHECK.TABLE, "./output/maxent/MAXENT_CHECK_TABLE_APRIL_2016.csv", row.names = FALSE)
 
@@ -348,7 +345,7 @@ View(MAXENT.CHECK.TABLE)
 
 
 #########################################################################################################################
-## Maxent produces a presence threshold for each species (i.e. the columns in MAXENT.SUMMARY). 
+## Maxent produces a presence threshold for each species (i.e. the columns in MAXENT.RESULTS). 
 ## The trouble here is that we might need to change the threshold for different species, rather than using the same one 
 ## for all of them. That changes the order of lists, which is a problem for looping over them.
 
@@ -365,7 +362,7 @@ table(MAXT.CHECK.25$CHECK_MAP)
 MAXT.CHECK.25 = MAXT.CHECK.25[with(MAXT.CHECK.25 , rev(order(Total.growers))), ]
 View(MAXT.CHECK.25)
 dim(MAXT.CHECK.25)
-summary(MAXT.CHECK.25$Total.growers)
+SUMary(MAXT.CHECK.25$Total.growers)
 
 
 ## Now write out the species list to re-process
@@ -401,14 +398,15 @@ summary(MAXT.CHECK.25$Total.growers)
 
 #########################################################################################################################
 ## Now create a list of thresholds to loop over using the mapping functions
+## Might not need any of this, if we are just going to use the more forgiving thresholds?
 spp.lower.thresh  = subset(MAXENT.CHECK, CHECK_MAP == 2 | CHECK_MAP == 3)$searchTaxon
 spp_lower_thresh  = gsub(" ", "_", spp.lower.thresh)
 
 spp.best.thresh   = subset(MAXENT.CHECK, CHECK_MAP == 1 | CHECK_MAP == 2)$searchTaxon
 spp_best_thresh   = gsub(" ", "_", spp.best.thresh)
 
-MAXENT.LOWER      = MAXENT.SUM.TEST[MAXENT.SUM.TEST$searchTaxon %in% spp_lower_thresh, ] 
-MAXENT.BEST       = MAXENT.SUM.TEST[MAXENT.SUM.TEST$searchTaxon %in% spp_best_thresh, ] 
+MAXENT.LOWER      = MAXENT.RESULTS.TEST[MAXENT.RESULTS.TEST$searchTaxon %in% spp_lower_thresh, ] 
+MAXENT.BEST       = MAXENT.RESULTS.TEST[MAXENT.RESULTS.TEST$searchTaxon %in% spp_best_thresh, ] 
 identical(spp_lower_thresh, MAXENT.LOWER$searchTaxon)
 identical(spp_best_thresh,  MAXENT.BEST$searchTaxon)
 
@@ -419,19 +417,19 @@ identical(spp_best_thresh,  MAXENT.BEST$searchTaxon)
 
 
 ## How do the thresholds compare?
-summary(MAXENT.SUM.TEST["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"])   ## .training. should be .test.
-summary(MAXENT.SUM.TEST["X10.percentile.training.presence.Logistic.threshold"])
-summary(MAXENT.SUM.TEST["X10.percentile.training.presence.training.omission"])
+SUMary(MAXENT.RESULTS.TEST["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"])   ## .training. should be .test.
+SUMary(MAXENT.RESULTS.TEST["X10.percentile.training.presence.Logistic.threshold"])
+SUMary(MAXENT.RESULTS.TEST["X10.percentile.training.presence.training.omission"])
 
 
 ## Turn the maxent results into lists :: we can use these to generate the consensus layers 
-thresh.max.train       = as.list(MAXENT.SUM.TEST["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"]) 
+thresh.max.train       = as.list(MAXENT.RESULTS.TEST["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"]) 
 thresh.max.train       = thresh.max.train$Maximum.training.sensitivity.plus.specificity.Logistic.threshold
 
 thresh.max.train.best  = as.list(MAXENT.BEST["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"]) 
 thresh.max.train.best  = thresh.max.train.best$Maximum.training.sensitivity.plus.specificity.Logistic.threshold
 
-percent.10.log         = as.list(MAXENT.SUM.TEST["X10.percentile.training.presence.Logistic.threshold"])  ## for the twos 
+percent.10.log         = as.list(MAXENT.RESULTS.TEST["X10.percentile.training.presence.Logistic.threshold"])  ## for the twos 
 percent.10.log.low     = as.list(MAXENT.LOWER["X10.percentile.training.presence.Logistic.threshold"])
 percent.10.log.best    = as.list(MAXENT.BEST["X10.percentile.training.presence.Logistic.threshold"])
 
@@ -439,7 +437,7 @@ percent.10.log         = percent.10.log$X10.percentile.training.presence.Logisti
 percent.10.log.low     = percent.10.log.low$X10.percentile.training.presence.Logistic.threshold
 percent.10.log.best    = percent.10.log.best$X10.percentile.training.presence.Logistic.threshold
 
-percent.10.om          = as.list(MAXENT.SUM.TEST["X10.percentile.training.presence.training.omission"])   ## discount
+percent.10.om          = as.list(MAXENT.RESULTS.TEST["X10.percentile.training.presence.training.omission"])   ## discount
 percent.10.om.low      = as.list(MAXENT.LOWER["X10.percentile.training.presence.training.omission"])
 percent.10.om.best     = as.list(MAXENT.BEST["X10.percentile.training.presence.training.omission"])
 
@@ -484,9 +482,9 @@ SDM.RESULTS.DIR.BEST <- spp_best_thresh [c(1:length(spp_best_thresh ))] %>%
 
 ## Check the order of lists match, species, SUAs, areas need to match up ................................................
 ## It would be safer to read in the thresholds individually, so they match the species folder exactly
-length(SDM.RESULTS.DIR);length(MAXENT.SUM.TEST$searchTaxon);length(thresh.max.train);
+length(SDM.RESULTS.DIR);length(MAXENT.RESULTS.TEST$searchTaxon);length(thresh.max.train);
 length(percent.10.log);length(percent.10.om);length(map_spp)
-identical(MAXENT.SUM.TEST$searchTaxon, map_spp)
+identical(MAXENT.RESULTS.TEST$searchTaxon, map_spp)
 
 
 ## Also, check that the lower threshold lists are ok too
@@ -494,11 +492,11 @@ length(percent.10.log.low);length(percent.10.om.low);length(spp_lower_thresh)
 
 
 ## The order of the directories matches
-head(SDM.RESULTS.DIR, 20);head(map_spp, 20); head(MAXENT.SUM.TEST, 20)[, c("searchTaxon",
+head(SDM.RESULTS.DIR, 20);head(map_spp, 20); head(MAXENT.RESULTS.TEST, 20)[, c("searchTaxon",
                                                                             "Maximum.training.sensitivity.plus.specificity.Logistic.threshold", 
                                                                             "X10.percentile.training.presence.Logistic.threshold")]
 
-tail(SDM.RESULTS.DIR, 20);tail(map_spp, 20); tail(MAXENT.SUM.TEST, 20)[, c("searchTaxon",
+tail(SDM.RESULTS.DIR, 20);tail(map_spp, 20); tail(MAXENT.RESULTS.TEST, 20)[, c("searchTaxon",
                                                                             "Maximum.training.sensitivity.plus.specificity.Logistic.threshold", 
                                                                             "X10.percentile.training.presence.Logistic.threshold")]
 
@@ -507,7 +505,7 @@ tail(SDM.RESULTS.DIR, 20);tail(map_spp, 20); tail(MAXENT.SUM.TEST, 20)[, c("sear
 
 
 #########################################################################################################################
-## 5). SUMMARIZE MAXENT RESULTS FOR EACH SPECIES ACROSS MULTIPLE GCMs
+## 5). SUMARIZE MAXENT RESULTS FOR EACH SPECIES ACROSS MULTIPLE GCMs
 #########################################################################################################################
 
 
