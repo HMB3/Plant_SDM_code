@@ -316,8 +316,10 @@ MAXENT.SUMMARY   = MAXENT.RESULTS[, c("searchTaxon",
 
 
 ## Remove the underscore, and join
+## join does not support the sorting order..............................................................................
 MAXENT.RESULTS$searchTaxon = gsub("_", " ", MAXENT.RESULTS$searchTaxon)
-MAXENT.RESULTS.TABLE       = join(NICHE.CONTEXT, MAXENT.RESULTS, type = "inner")
+Mpe = "inner")  ## join does not support the sorting
+MAXENT.RESULTS.TABLE       = join(MAXENT.RESULTS.TABLE, MAXENT.CHECK, type = "inner")AXENT.RESULTS.TABLE       = join(NICHE.CONTEXT, MAXENT.RESULTS, ty  ## join does not support the sorting
 View(MAXENT.RESULTS.TABLE)
 
 
@@ -338,26 +340,6 @@ View(MAXENT.RESULTS.TABLE)
 ## Maxent produces a presence threshold for each species (i.e. the columns in MAXENT.RESULTS). 
 ## The trouble here is that we might need to change the threshold for different species, rather than using the same one 
 ## for all of them. That changes the order of lists, which is a problem for looping over them.
-
-## Read in the table of checked maps. Then subset to just the species with dodgy maps
-#MAXENT.CHECK      = read.csv("./output/maxent/MAXENT_CHECK_RATING.csv", stringsAsFactors = FALSE)
-MAXENT.CHECK   = read.csv("./output/maxent/MAXENT_RATING_26_2018.csv", stringsAsFactors = FALSE)
-MAXENT.CHECK   = join(MAXENT.CHECK, TOT.GROW)
-MAXENT.CHECK   = MAXENT.CHECK [, c(1:7, 19, 8:18)]
-MAXT.CHECK.25  = subset(MAXENT.CHECK, Total.growers >= 25 & CHECK_MAP == 1 | CHECK_MAP == 2)
-MAXT.CHECK.25  = completeFun(MAXT.CHECK.25, "Total.growers")
-
-#MAXT.CHECK.25  = head(MAXT.CHECK.25, 150)
-table(MAXT.CHECK.25$CHECK_MAP)
-MAXT.CHECK.25 = MAXT.CHECK.25[with(MAXT.CHECK.25 , rev(order(Total.growers))), ]
-View(MAXT.CHECK.25)
-dim(MAXT.CHECK.25)
-summary(MAXT.CHECK.25$Total.growers)
-
-
-## Now write out the species list to re-process
-#write.csv(MAXT.CHECK.25, "./output/maxent/MAXENT_SUA_SPP.csv", row.names = FALSE)
-
 
 
 #########################################################################################################################
@@ -389,6 +371,8 @@ summary(MAXT.CHECK.25$Total.growers)
 #########################################################################################################################
 ## Now create a list of thresholds to loop over using the mapping functions
 ## Might not need any of this, if we are just going to use the more forgiving thresholds?
+
+## Change this to be the subset results list
 spp.lower.thresh  = subset(MAXENT.CHECK, CHECK_MAP == 2 | CHECK_MAP == 3)$searchTaxon
 spp_lower_thresh  = gsub(" ", "_", spp.lower.thresh)
 
