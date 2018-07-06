@@ -1,5 +1,5 @@
 #########################################################################################################################
-###################### PREDICT MAXENT TO FUTURE CLIMATES AND SUMARISE THE RESULTS ###################################### 
+###################### PREDICT MAXENT TO FUTURE CLIMATES AND SUMARISE THE RESULTS ####################################### 
 #########################################################################################################################
 
 
@@ -130,8 +130,7 @@ grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',   
 
 #########################################################################################################################
 ## For each species, use a function to create raster files and maps under all six GCMs at each time step
-## First remove species without data from step 7
-#map_spp_list = combo_spp
+## First remove species without data from the modelling step 7
 no_data      <- c ("Baeckea_virgata", "Kennedia_beckxiana", "Grevillea_rivularis", "Arctostaphylos_densiflora", 
                    "Cupressocyparis_leylandii", "Eucalyptus_intermedia", "Ficus_hillii", "Pentaceras_australi", 
                    "Pentaceras_australis", "Pouteria_australis", "Pouteria_chartacea", "Pouteria_eerwah", 
@@ -262,11 +261,11 @@ MAXENT.RESULTS <- maxent.tables[c(1:length(maxent.tables))] %>%         ## curre
   bind_rows
 
 
-## This is a SUMary of maxent output for current conditions
+## This is a summary of maxent output for current conditions
 ## Also which species have AUC < 0.7?
 dim(MAXENT.RESULTS)
 head(MAXENT.RESULTS, 20)[1:9]
-dim(subset(MAXENT.RESULTS, Training.AUC < 0.7))
+dim(subset(MAXENT.RESULTS, Training.AUC < 0.7))  ## all models should be above 0.7
 
 
 ## Now check the match between the species list, and the results list. These need to match, so we can access
@@ -318,9 +317,12 @@ MAXENT.SUMMARY   = MAXENT.RESULTS[, c("searchTaxon",
 ## Remove the underscore, and join
 ## join does not support the sorting order..............................................................................
 MAXENT.RESULTS$searchTaxon = gsub("_", " ", MAXENT.RESULTS$searchTaxon)
-Mpe = "inner")  ## join does not support the sorting
-MAXENT.RESULTS.TABLE       = join(MAXENT.RESULTS.TABLE, MAXENT.CHECK, type = "inner")AXENT.RESULTS.TABLE       = join(NICHE.CONTEXT, MAXENT.RESULTS, ty  ## join does not support the sorting
+MAXENT.RESULTS.TABLE       = join(NICHE.CONTEXT, MAXENT.RESULTS,      type = "inner")  ## join does not support the sorting
+MAXENT.RESULTS.TABLE       = join(MAXENT.RESULTS.TABLE, MAXENT.CHECK, type = "inner") 
+MAXENT.RESULTS.TABLE       = MAXENT.RESULTS.TABLE[order(MAXENT.RESULTS.TABLE$searchTaxon),] 
+
 View(MAXENT.RESULTS.TABLE)
+identical(MAXENT.RESULTS.TABLE$searchTaxon, GBIF.spp)
 
 
 #########################################################################################################################
@@ -373,16 +375,16 @@ View(MAXENT.RESULTS.TABLE)
 ## Might not need any of this, if we are just going to use the more forgiving thresholds?
 
 ## Change this to be the subset results list
-spp.lower.thresh  = subset(MAXENT.CHECK, CHECK_MAP == 2 | CHECK_MAP == 3)$searchTaxon
+spp.lower.thresh  = subset(MAXENT.RESULTS.TABLE, CHECK_MAP == 2 | CHECK_MAP == 3)$searchTaxon
 spp_lower_thresh  = gsub(" ", "_", spp.lower.thresh)
 
-spp.best.thresh   = subset(MAXENT.CHECK, CHECK_MAP == 1 | CHECK_MAP == 2)$searchTaxon
+spp.best.thresh   = subset(MAXENT.RESULTS.TABLE, CHECK_MAP == 1 | CHECK_MAP == 2)$searchTaxon
 spp_best_thresh   = gsub(" ", "_", spp.best.thresh)
 
-MAXENT.LOWER      = MAXENT.RESULTS.TEST[MAXENT.RESULTS.TEST$searchTaxon %in% spp_lower_thresh, ] 
-MAXENT.BEST       = MAXENT.RESULTS.TEST[MAXENT.RESULTS.TEST$searchTaxon %in% spp_best_thresh, ] 
-identical(spp_lower_thresh, MAXENT.LOWER$searchTaxon)
-identical(spp_best_thresh,  MAXENT.BEST$searchTaxon)
+MAXENT.LOWER      = MAXENT.RESULTS.TABLE[MAXENT.RESULTS.TABLE$searchTaxon %in% spp.lower.thresh, ] 
+MAXENT.BEST       = MAXENT.RESULTS.TABLE[MAXENT.RESULTS.TABLE$searchTaxon %in% spp.best.thresh, ] 
+identical(spp.lower.thresh, MAXENT.LOWER$searchTaxon)
+identical(spp.best.thresh,  MAXENT.BEST$searchTaxon)
 
 
 ## John : for AUC you can report the cross-validated test AUC (if your code currently runs a cross-validated model as well), 
@@ -390,20 +392,20 @@ identical(spp_best_thresh,  MAXENT.BEST$searchTaxon)
 ## guidance about this and you can really get away with either).
 
 
-## How do the thresholds compare?
-SUMary(MAXENT.RESULTS.TEST["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"])   ## .training. should be .test.
-SUMary(MAXENT.RESULTS.TEST["X10.percentile.training.presence.Logistic.threshold"])
-SUMary(MAXENT.RESULTS.TEST["X10.percentile.training.presence.training.omission"])
+## How do the thresholds compare for the set of species modelled?
+summary(MAXENT.RESULTS.TABLE["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"])    ## The strictest threshold
+summary(MAXENT.RESULTS.TABLE["X10.percentile.training.presence.Logistic.threshold"])                 ## The next strictest
+summary(MAXENT.RESULTS.TABLE["X10.percentile.training.presence.training.omission"])                  ## The most forgiving
 
 
 ## Turn the maxent results into lists :: we can use these to generate the consensus layers 
-thresh.max.train       = as.list(MAXENT.RESULTS.TEST["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"]) 
+thresh.max.train       = as.list(MAXENT.RESULTS.TABLE["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"]) 
 thresh.max.train       = thresh.max.train$Maximum.training.sensitivity.plus.specificity.Logistic.threshold
 
 thresh.max.train.best  = as.list(MAXENT.BEST["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"]) 
 thresh.max.train.best  = thresh.max.train.best$Maximum.training.sensitivity.plus.specificity.Logistic.threshold
 
-percent.10.log         = as.list(MAXENT.RESULTS.TEST["X10.percentile.training.presence.Logistic.threshold"])  ## for the twos 
+percent.10.log         = as.list(MAXENT.RESULTS.TABLE["X10.percentile.training.presence.Logistic.threshold"])  ## for the twos 
 percent.10.log.low     = as.list(MAXENT.LOWER["X10.percentile.training.presence.Logistic.threshold"])
 percent.10.log.best    = as.list(MAXENT.BEST["X10.percentile.training.presence.Logistic.threshold"])
 
@@ -411,7 +413,7 @@ percent.10.log         = percent.10.log$X10.percentile.training.presence.Logisti
 percent.10.log.low     = percent.10.log.low$X10.percentile.training.presence.Logistic.threshold
 percent.10.log.best    = percent.10.log.best$X10.percentile.training.presence.Logistic.threshold
 
-percent.10.om          = as.list(MAXENT.RESULTS.TEST["X10.percentile.training.presence.training.omission"])   ## discount
+percent.10.om          = as.list(MAXENT.RESULTS.TABLE["X10.percentile.training.presence.training.omission"])   ## discount
 percent.10.om.low      = as.list(MAXENT.LOWER["X10.percentile.training.presence.training.omission"])
 percent.10.om.best     = as.list(MAXENT.BEST["X10.percentile.training.presence.training.omission"])
 
@@ -574,17 +576,21 @@ tail(SDM.RESULTS.DIR, 20);tail(map_spp, 20); tail(MAXENT.RESULTS.TEST, 20)[, c("
 # time_slice = 30
 # area_occ   = 10
 
-## SDM.RESULTS.DIR.LOW length doesn' match...............................................................................
+## Here we don't want to use the lower threshold .......................................................................
+## What we really want is to use the lower threshold for all the species. So what are the lower thresholds called again?
+## So actually, that would be looping over 
+## percent.10.log.best AND
+## percent.10.om.best
 
 
 #########################################################################################################################
 ## Combine output and calculate gain and loss for 2030 
 suitability.2030 = tryCatch(mapply(combine_gcm_threshold,
-                                   DIR_list     = SDM.RESULTS.DIR.LOW,
+                                   DIR_list     = SDM.RESULTS.DIR,
                                    species_list = spp_lower_thresh,
                                    maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
-                                   thresholds   = percent.10.log.low,
-                                   percentiles  = percent.10.om.low,
+                                   thresholds   = percent.10.log.best,
+                                   percentiles  = percent.10.om.best,
                                    time_slice   = 30,
                                    area_occ     = 10),
                             
@@ -597,11 +603,11 @@ suitability.2030 = tryCatch(mapply(combine_gcm_threshold,
 
 ## Combine GCM output for 2050 
 suitability.2050 = tryCatch(mapply(combine_gcm_threshold, 
-                                   DIR_list     = SDM.RESULTS.DIR.LOW,
+                                   DIR_list     = SDM.RESULTS.DIR,
                                    species_list = spp_lower_thresh,
                                    maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
-                                   thresholds   = percent.10.log.low,
-                                   percentiles  = percent.10.om.low,
+                                   thresholds   = percent.10.log.best,
+                                   percentiles  = percent.10.om.best,
                                    time_slice   = 50,
                                    area_occ     = 10),
                             
@@ -614,11 +620,11 @@ suitability.2050 = tryCatch(mapply(combine_gcm_threshold,
 
 ## Combine GCM output for 2070 
 suitability.2070 = tryCatch(mapply(combine_gcm_threshold, 
-                                   DIR_list     = SDM.RESULTS.DIR.LOW,
+                                   DIR_list     = SDM.RESULTS.DIR,
                                    species_list = spp_lower_thresh,
                                    maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
-                                   thresholds   = percent.10.log.low,
-                                   percentiles  = percent.10.om.low,
+                                   thresholds   = percent.10.log.best,
+                                   percentiles  = percent.10.om.best,
                                    time_slice   = 70,
                                    area_occ     = 10),
                             

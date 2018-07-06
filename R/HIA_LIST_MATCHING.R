@@ -206,7 +206,8 @@ campbelltown         = read.csv("./data/base/HIA_LIST/HIA/campbelltown_species.c
 
 ## The species for the SUA analysis
 SUA.spp = read.csv("./output/maxent/MAXENT_SUA_SPP.csv", stringsAsFactors = FALSE)
-SUA.spp = unique(sort(SUA.spp$searchTaxon))
+SUA.spp = SUA.spp[order(SUA.spp$searchTaxon),] 
+SUA.spp = unique(SUA.spp$searchTaxon)
 SUA_spp = gsub(" ", "_", SUA.spp)
 
 
