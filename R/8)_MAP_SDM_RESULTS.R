@@ -205,7 +205,6 @@ env.grids.2070 = tryCatch(project_maxent_grids(scen_list     = scen_2070,
 #########################################################################################################################
 ## First, read in the list of files for the current models, and specify the file path
 path.set.var             = "./output/maxent/SET_VAR_KOPPEN/"
-#map_spp_list                 = combo_spp 
 
 
 ## Create an object for the maxent settings :: using the same variable for every model
@@ -304,6 +303,7 @@ SDM.RESULTS.DIR <- map_spp[c(1:length(map_spp))] %>%
   ## Bind the list together
   c()
 length(SDM.RESULTS.DIR)
+SDM.RESULTS.DIR
 
 
 #########################################################################################################################
@@ -314,7 +314,7 @@ NICHE.CONTEXT = COMBO.NICHE.CONTEXT[, c("searchTaxon",      "COMBO.count",      
 
 
 ## Check with John and Linda which columns will help with model selection
-MAXENT.RESULTS   = MAXENT.RESULTS[, c("searchTaxon",
+MAXENT.SUMMARY   = MAXENT.RESULTS[, c("searchTaxon",
                                       "Settings",
                                       "Records",
                                       "Number_var",
