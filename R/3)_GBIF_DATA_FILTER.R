@@ -355,7 +355,7 @@ names(GBIF.CLEAN)
 
 
 ## First, get one of the BIOCLIM variables
-#world.temp = raster("./data/base/worldclim/world/0.5/bio/current/bio_01")
+world.temp = raster("./data/base/worldclim/world/0.5/bio/current/bio_01")
 #plot(world.temp)
 
 

@@ -3,7 +3,7 @@
 #########################################################################################################################
 
 
-## This code runs the whole SDM workflow for a subset of species
+## This code runs the whole SDM workflow for the HIA project, for a subset of species (e.g. those checked by Linda)
 
 
 #########################################################################################################################
@@ -24,7 +24,7 @@ map_spp_list = head(SUA_spp, 7)
 
 #########################################################################################################################
 ## Now source each step in the workflow 
-## Step 3 :: combine GBIF occurrence data and filter to records > 1950
+## Step 3 :: combine GBIF occurrence data with ALA data (and hopefully urban data) and filter to records > 1950
 source('./R/3)_GBIF_DATA_FILTER.R', echo = TRUE)
 
 

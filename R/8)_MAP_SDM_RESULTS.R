@@ -131,7 +131,7 @@ grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',   
 #########################################################################################################################
 ## For each species, use a function to create raster files and maps under all six GCMs at each time step
 ## First remove species without data from the modelling step 7
-no_data      <- c ("Baeckea_virgata", "Kennedia_beckxiana", "Grevillea_rivularis", "Arctostaphylos_densiflora", 
+no_data      <- c ("Baeckea_virgata",           "Kennedia_beckxiana",    "Grevillea_rivularis", "Arctostaphylos_densiflora", 
                    "Cupressocyparis_leylandii", "Eucalyptus_intermedia", "Ficus_hillii", "Pentaceras_australi", 
                    "Pentaceras_australis", "Pouteria_australis", "Pouteria_chartacea", "Pouteria_eerwah", 
                    "Radermachera_gigantea", "Randia_benthamiana", "Raphiolepis_umbellata", "Tilia_mongolica", 
@@ -317,9 +317,10 @@ MAXENT.SUMMARY   = MAXENT.RESULTS[, c("searchTaxon",
 ## Remove the underscore, and join
 ## join does not support the sorting order..............................................................................
 MAXENT.RESULTS$searchTaxon = gsub("_", " ", MAXENT.RESULTS$searchTaxon)
-MAXENT.RESULTS.TABLE       = join(NICHE.CONTEXT, MAXENT.RESULTS,      type = "inner")  ## join does not support the sorting
-MAXENT.RESULTS.TABLE       = join(MAXENT.RESULTS.TABLE, MAXENT.CHECK, type = "inner") 
+MAXENT.RESULTS.NICHE       = join(NICHE.CONTEXT, MAXENT.RESULTS,      type = "inner")  ## join does not support the sorting
+MAXENT.RESULTS.TABLE       = join(MAXENT.RESULTS.NICHE, MAXENT.CHECK, type = "inner") 
 MAXENT.RESULTS.TABLE       = MAXENT.RESULTS.TABLE[order(MAXENT.RESULTS.TABLE$searchTaxon),] 
+dim(MAXENT.RESULTS.TABLE)
 
 View(MAXENT.RESULTS.TABLE)
 identical(MAXENT.RESULTS.TABLE$searchTaxon, GBIF.spp)
@@ -582,12 +583,14 @@ tail(SDM.RESULTS.DIR, 20);tail(map_spp, 20); tail(MAXENT.RESULTS.TEST, 20)[, c("
 ## percent.10.log.best AND
 ## percent.10.om.best
 
+## Also, consider if it's worth adding an argument for threshold. This can just be changed later......................... 
+
 
 #########################################################################################################################
 ## Combine output and calculate gain and loss for 2030 
 suitability.2030 = tryCatch(mapply(combine_gcm_threshold,
                                    DIR_list     = SDM.RESULTS.DIR,
-                                   species_list = spp_lower_thresh,
+                                   species_list = map_spp_list,
                                    maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
                                    thresholds   = percent.10.log.best,
                                    percentiles  = percent.10.om.best,
@@ -604,7 +607,7 @@ suitability.2030 = tryCatch(mapply(combine_gcm_threshold,
 ## Combine GCM output for 2050 
 suitability.2050 = tryCatch(mapply(combine_gcm_threshold, 
                                    DIR_list     = SDM.RESULTS.DIR,
-                                   species_list = spp_lower_thresh,
+                                   species_list = map_spp_list,
                                    maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
                                    thresholds   = percent.10.log.best,
                                    percentiles  = percent.10.om.best,
@@ -621,7 +624,7 @@ suitability.2050 = tryCatch(mapply(combine_gcm_threshold,
 ## Combine GCM output for 2070 
 suitability.2070 = tryCatch(mapply(combine_gcm_threshold, 
                                    DIR_list     = SDM.RESULTS.DIR,
-                                   species_list = spp_lower_thresh,
+                                   species_list = map_spp_list,
                                    maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
                                    thresholds   = percent.10.log.best,
                                    percentiles  = percent.10.om.best,

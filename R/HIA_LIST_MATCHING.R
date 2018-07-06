@@ -871,7 +871,6 @@ COMBO.NICHE.200 = COMBO.NICHE.200[order(COMBO.NICHE.200$COMBO.count),]
 COMBO.200.RATING = join(COMBO.NICHE.200, MAXENT.RATING[, c("searchTaxon", "CHECK_MAP")], type = "left")
 
 
-
 ## Various errors here...
 check.200 = c("Rhododendron simsii", "Bismarckia nobilis",      
               "Chamaedorea cataractarum",  "Cyathea cooperi",         
@@ -898,18 +897,18 @@ run_200  = gsub(" ", "_", run.200)
 
 ## Read in the table of checked maps. Then subset to just the species with dodgy maps
 #MAXENT.CHECK      = read.csv("./output/maxent/MAXENT_CHECK_RATING.csv", stringsAsFactors = FALSE)
-MAXENT.CHECK   = read.csv("./output/maxent/MAXENT_RATING_26_2018.csv", stringsAsFactors = FALSE)
-MAXENT.CHECK   = join(MAXENT.CHECK, TOT.GROW)
-MAXENT.CHECK   = MAXENT.CHECK [, c(1:7, 19, 8:18)]
-MAXT.CHECK.25  = subset(MAXENT.CHECK, Total.growers >= 25 & CHECK_MAP == 1 | CHECK_MAP == 2)
-MAXT.CHECK.25  = completeFun(MAXT.CHECK.25, "Total.growers")
-
-#MAXT.CHECK.25  = head(MAXT.CHECK.25, 150)
-table(MAXT.CHECK.25$CHECK_MAP)
-MAXT.CHECK.25 = MAXT.CHECK.25[with(MAXT.CHECK.25 , rev(order(Total.growers))), ]
-View(MAXT.CHECK.25)
-dim(MAXT.CHECK.25)
-summary(MAXT.CHECK.25$Total.growers)
+# MAXENT.CHECK   = read.csv("./output/maxent/MAXENT_RATING_26_2018.csv", stringsAsFactors = FALSE)
+# MAXENT.CHECK   = join(MAXENT.CHECK, TOT.GROW)
+# MAXENT.CHECK   = MAXENT.CHECK [, c(1:7, 19, 8:18)]
+# MAXT.CHECK.25  = subset(MAXENT.CHECK, Total.growers >= 25 & CHECK_MAP == 1 | CHECK_MAP == 2)
+# MAXT.CHECK.25  = completeFun(MAXT.CHECK.25, "Total.growers")
+# 
+# #MAXT.CHECK.25  = head(MAXT.CHECK.25, 150)
+# table(MAXT.CHECK.25$CHECK_MAP)
+# MAXT.CHECK.25 = MAXT.CHECK.25[with(MAXT.CHECK.25 , rev(order(Total.growers))), ]
+# View(MAXT.CHECK.25)
+# dim(MAXT.CHECK.25)
+# summary(MAXT.CHECK.25$Total.growers)
 
 
 ## Now write out the species list to re-process
