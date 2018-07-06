@@ -268,23 +268,13 @@ dim(MAXENT.RESULTS)
 head(MAXENT.RESULTS, 20)[1:9]
 dim(subset(MAXENT.RESULTS, Training.AUC < 0.7))
 
-## What are the variables we want to see?
-# View(head(MAXENT.RESULTS, 180)[, c("searchTaxon",
-#                                            "Settings",
-#                                            "Number_var",
-#                                            "X.Training.samples",                                                                
-#                                            "Iterations",                                                                        
-#                                            "Training.AUC",                                                                      
-#                                            "X.Background.points",  
-#                                            "Maximum.training.sensitivity.plus.specificity.Logistic.threshold")])
-
 
 ## Now check the match between the species list, and the results list. These need to match, so we can access
 ## the right threshold for each species.
 length(intersect(map_spp_list, MAXENT.RESULTS$searchTaxon)) ## Accesssing the files from these directories... 
 MAXENT.RESULTS.TEST  =  MAXENT.RESULTS[MAXENT.RESULTS$searchTaxon %in% map_spp_list , ] 
 map_spp = unique(MAXENT.RESULTS.TEST$searchTaxon)
-length(map_spp)
+length(map_spp);identical(map_spp, map_spp_list)
 
 
 #########################################################################################################################

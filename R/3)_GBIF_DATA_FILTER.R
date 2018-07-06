@@ -81,6 +81,7 @@ GBIF.ALL <- spp.download[c(1:length(spp.download))] %>%   ## spp.download[c(1:le
 sort(names(GBIF.ALL))
 str(GBIF.ALL$recordedBy)
 str(GBIF.ALL$dateIdentified)
+identical(unique(GBIF.ALL$searchTaxon), GBIF.spp)
 
 
 ## Now get just the columns we want to keep. Note gc() frees up RAM
@@ -107,6 +108,7 @@ intersect(names(GBIF.TRIM), gbif.keep)
 
 ## Just get the newly downloaded species................................................................................
 GBIF.TRIM = GBIF.TRIM[GBIF.TRIM$searchTaxon %in% GBIF.spp, ]
+dim(GBIF.TRIM)
 
 
 
@@ -177,7 +179,6 @@ GBIF.UNRESOLVED <- GBIF.TRIM %>%
 ## Taxonomic.status, Infraspecific.rank, New.Taxonomic.status, New.ID, New_binomial, taxo_agree
 GBIF.TRIM.TAXO <- GBIF.TRIM %>% 
   select(one_of(TPL.keep))
-# names(GBIF.TRIM.TAXO)
 
 
 ## Unique(GBIF.UNRESOLVED$New.Taxonomic.status)
@@ -191,6 +192,9 @@ GBIF.TRIM.TAXO <- GBIF.TRIM %>%
 #########################################################################################################################
 ## 3). MARK CULTIVATED RECORDS
 #########################################################################################################################
+
+
+## This only works on species lists with cultivated recrods..............................................................
 
 
 ## To create search terms, we can look for keywords in differemt languages: e.g. garden cultivated, etc.
@@ -214,35 +218,34 @@ GBIF.COUNTRY = GBIF.COUNTRY[order(GBIF.COUNTRY$count, decreasing = TRUE), ]
 ## Can these terms be searched for across the whole data frame (i.e. any column)?
 ## Also lot's of Australian species don't have these columns, which might make it tricky to run the clean 
 ## unique(GBIF.TRIM.TAXO$country)
-## test = apply(df, 1, function(r) any(r %in% c("M017", "M018")))
 
 ## Try using the big list of synonyms across all the data
 ## grepl("garden|cultiva",   GBIF.TRIM.TAXO$locality,           ignore.case = TRUE) | 
-GBIF.TRIM.TAXO$CULTIVATED <- ifelse(grepl(cultivated.synonyms,   GBIF.TRIM.TAXO$locality,           ignore.case = TRUE) | 
-                                      grepl(cultivated.synonyms, GBIF.TRIM.TAXO$habitat,            ignore.case = TRUE) | 
+GBIF.TRIM.TAXO$CULTIVATED <- ifelse(grepl(cultivated.synonyms,   GBIF.TRIM.TAXO$locality,           ignore.case = TRUE) |
+                                      grepl(cultivated.synonyms, GBIF.TRIM.TAXO$habitat,            ignore.case = TRUE) |
                                       grepl(cultivated.synonyms, GBIF.TRIM.TAXO$eventRemarks,       ignore.case = TRUE) |
                                       grepl(cultivated.synonyms, GBIF.TRIM.TAXO$cloc,               ignore.case = TRUE) |
                                       grepl("managed",           GBIF.TRIM.TAXO$establishmentMeans, ignore.case = TRUE),
-                                    
+
                                     "CULTIVATED", "UNKNOWN")
-
-
-## How many records are knocked out by using this definition?
-## This is probably a bit strict, in that for some of the fields, garden doesn't = cultivated
+ 
+ 
+# ## How many records are knocked out by using this definition?
+# ## This is probably a bit strict, in that for some of the fields, garden doesn't = cultivated
 GBIF.CULTIVATED = subset(GBIF.TRIM.TAXO, CULTIVATED == "CULTIVATED")
 dim(GBIF.CULTIVATED)[1]
-
-
+ 
+ 
 ## Still very few records being returned as "cultivated"?
-dim(GBIF.CULTIVATED)[1]/dim(GBIF.TRIM.TAXO)[1]
+# dim(GBIF.CULTIVATED)[1]/dim(GBIF.TRIM.TAXO)[1]
 #View(GBIF.CULTIVATED)
 
 
 ## Also keep the cultivated records:
-GBIF.CULTIVATED <- GBIF.TRIM.TAXO %>% 
-  
-  ## Note that these filters are very forgiving...
-  filter(CULTIVATED == "CULTIVATED")
+# GBIF.CULTIVATED <- GBIF.TRIM.TAXO %>% 
+#   
+#   ## Note that these filters are very forgiving...
+#   filter(CULTIVATED == "CULTIVATED")
 
 
 ## Unique(GBIF.UNRESOLVED$New.Taxonomic.status)
@@ -352,8 +355,8 @@ names(GBIF.CLEAN)
 
 
 ## First, get one of the BIOCLIM variables
-world.temp = raster("./data/base/worldclim/world/0.5/bio/current/bio_01")
-plot(world.temp)
+#world.temp = raster("./data/base/worldclim/world/0.5/bio/current/bio_01")
+#plot(world.temp)
 
 
 ## Now get the XY centroids of the unique 1km * 1km WORLDCLIM blocks where GBIF records are found
