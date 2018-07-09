@@ -176,6 +176,13 @@ MAXENT.RATING       = read.csv("./output/maxent/MAXENT_RATING_26_2018.csv",     
 
 
 #########################################################################################################################
+## European garden nursery lists
+EURO.SPP            = read.csv("./data/base/HIA_LIST/URBAN/Euro_garden_flora_spp.csv",            stringsAsFactors = FALSE)
+EURO.NURSE          = read.csv("./data/base/HIA_LIST/URBAN/Euro_garden_flora_spp_nurse.csv",      stringsAsFactors = FALSE)
+EURO.NURSE.LOC      = read.csv("./data/base/HIA_LIST/URBAN/Euro_garden_flora_nurse_location.csv", stringsAsFactors = FALSE)
+
+
+#########################################################################################################################
 ## Experimental trait lists ::
 HEAT.RISK  = read.csv("./data/base/HIA_LIST/RENEE/MOD3_HEAT_RANKS_072018.csv",                   stringsAsFactors = FALSE)
 TRAIT.SPP  = read.csv("./data/base/HIA_LIST/RENEE/MOD3_TRAIT_SPP.csv",                           stringsAsFactors = FALSE)
@@ -335,7 +342,7 @@ names(TREE.NETWORK)
 CLEAN.CLIMATE = COMBO.NICHE.CONTEXT[, c(1, 15, 19:198)] 
 CLEAN.CLIMATE = join(TREE.NETWORK, CLEAN.CLIMATE)
 names(CLEAN.CLIMATE)
-write.csv(CLEAN.CLIMATE, "./data/base/HIA_LIST/COMBO/TREE_NETWORK_NICHES.csv", row.names = FALSE)
+#write.csv(CLEAN.CLIMATE, "./data/base/HIA_LIST/COMBO/TREE_NETWORK_NICHES.csv", row.names = FALSE)
 
 
 ## Check this reduces the number of Top 200 missing from this list
@@ -367,7 +374,7 @@ dim(subset(top.200,  Origin == "Native"))[1]/dim(top.200)[1]*100
 
 
 #########################################################################################################################
-## 2). DRAFT LIST PREP: THIS NEEDS TO CHANGE IN CONSULTATION WITH RACH, PAUL, ETC
+## 2). DRAFT LIST PREP
 #########################################################################################################################
 
 
@@ -508,7 +515,71 @@ kop_spp      = gsub(" ", "_", kop.spp)
 
 ## Which species are only on the test list?
 setdiff(test.spp, spp.all)
-save(test.spp, file = paste("./data/base/HIA_LIST/GBIF/test.spp.RData", sep = ""))
+#save(test.spp, file = paste("./data/base/HIA_LIST/GBIF/test.spp.RData", sep = ""))
+
+
+
+
+
+#########################################################################################################################
+## 4). WHAT IS THE MATCH BETWEEN THE EVERGREEN LIST AND THE EUROPEAN NURSERY LIST
+#########################################################################################################################
+
+
+#########################################################################################################################
+## What is the unique species list of the European nurseries?
+EURO.SPP = unique(sort(EURO.SPP$Updated_species_name))
+
+
+## Check for the raw match 
+length(intersect(RAW.HIA.SPP, EURO.SPP))                       ## 258  binomials match
+length(intersect(HIA.list$Binomial,  EURO.SPP))                ## 321  binomials match
+length(intersect(top.200$Species,    EURO.SPP))                ## 127  binomials match
+length(intersect(CLEAN.NICHE.CONTEXT$searchTaxon, EURO.SPP))   ## 1575 binomials match
+
+
+## Check for the raw difference
+length(setdiff(RAW.HIA.SPP, EURO.SPP))                         
+length(intersect(HIA.list$Binomial,  EURO.SPP))                
+length(intersect(top.200$Species,    EURO.SPP))                
+length(intersect(CLEAN.NICHE.CONTEXT$searchTaxon, EURO.SPP))   
+
+
+#########################################################################################################################
+## Now create a table of species * lat/long
+names(EURO.NURSE)
+names(EURO.NURSE.LOC)
+head(EURO.NURSE);head(EURO.NURSE.LOC)
+names(EURO.NURSE.LOC)[names(EURO.NURSE.LOC) == 'Nursery_Location'] <- 'Nursery'
+
+
+## The nursery lists are the same length in both files
+identical(length(unique(EURO.NURSE$Nursery)), length(unique(EURO.NURSE.LOC$Nursery)))
+
+
+## Join the lat/long onto the species names
+EURO.NURSE    = EURO.NURSE [, c("Species", "Nursery")]
+SPP.NURSE.LOC = join(EURO.NURSE, EURO.NURSE.LOC, type = "left")
+
+
+## Check
+dim(SPP.NURSE.LOC)
+dim(EURO.NURSE)
+names(SPP.NURSE.LOC)
+
+
+## How many species are singletons?
+NURSE.count   = as.data.frame(table(SPP.NURSE.LOC$Species))
+names(NURSE.count) = c("Species", "Count")
+NURSE.count = NURSE.count[with(NURSE.count, rev(order(Count))), ]
+View(NURSE.count)
+summary(NURSE.count)
+
+## Bind the count to the table
+SPP.NURSE.LOC = cbind(SPP.NURSE.LOC, NURSE.count)
+
+
+## Then, check the distribution across Europe!
 
 
 
@@ -634,14 +705,14 @@ EVERGREEN.RISK = merge(EVERGREEN.RISK, RISK.LOW, by = "searchTaxon", all = FALSE
 ## Check and save
 dim(EVERGREEN.RISK)
 #View(EVERGREEN.RISK)
-write.csv(EVERGREEN.RISK, "./data/base/HIA_LIST/HIA/EVERGREEN_RISK_MATCH.csv", row.names = FALSE)  
+#write.csv(EVERGREEN.RISK, "./data/base/HIA_LIST/HIA/EVERGREEN_RISK_MATCH.csv", row.names = FALSE)  
 
 
 
 
 
 #########################################################################################################################
-## 5). MATCH EVERGREEN LIST WITH THE PLANT RISK LIST
+## 6). MATCH EVERGREEN LIST WITH THE PLANT RISK LIST
 #########################################################################################################################
 
 
@@ -649,7 +720,7 @@ write.csv(EVERGREEN.RISK, "./data/base/HIA_LIST/HIA/EVERGREEN_RISK_MATCH.csv", r
 length(intersect(CLEAN.SPP$Binomial, RISK.BINOMIAL)) ## About 500 species in the extra list
 EXTRA.SPP = CLEAN.SPP[CLEAN.SPP$Binomial %in% intersect(CLEAN.SPP$Binomial, RISK.BINOMIAL), ]
 EXTRA.SPP = EXTRA.SPP[!EXTRA.SPP$Binomial %in% spp.all, ]
-write.csv(EXTRA.SPP, "./data/base/HIA_LIST/COMBO/EXTRA_SPP.csv", row.names = FALSE)
+#write.csv(EXTRA.SPP, "./data/base/HIA_LIST/COMBO/EXTRA_SPP.csv", row.names = FALSE)
 
 ## Check and just get the most popular of these?
 dim(EXTRA.SPP)
@@ -831,11 +902,11 @@ round(with(APPENDIX , table(Plant.type)/sum(table(Plant.type))*100), 1)
 
 ## Save ::
 ## setdiff(MOD.2.3$Species, MILE.1.SPP$searchTaxon)
-write.csv(MILE.1.SPP,          "./data/base/HIA_LIST/COMBO/MILESTONE_TAXA_APRIL_2018_STANDARD_CLEAN.csv",      row.names = FALSE)
-write.csv(MILE.CLEAN.MODULE,   "./data/base/HIA_LIST/COMBO/MILESTONE_TAXA_APRIL_2018_COORD_CLEAN_MODULES.csv", row.names = FALSE)
-write.csv(MOD.2,               "./data/base/HIA_LIST/COMBO/MOD_2_SPP_RECORDS.csv",                             row.names = FALSE)
-write.csv(COMBO.NICHE.CONTEXT, "./data/base/HIA_LIST/COMBO/COMBO_TOT_GROWERS.csv",                             row.names = FALSE)
-write.csv(APPENDIX,            "./data/base/HIA_LIST/COMBO/APPENDIX_TOT_GROWERS.csv",                          row.names = FALSE)
+# write.csv(MILE.1.SPP,          "./data/base/HIA_LIST/COMBO/MILESTONE_TAXA_APRIL_2018_STANDARD_CLEAN.csv",      row.names = FALSE)
+# write.csv(MILE.CLEAN.MODULE,   "./data/base/HIA_LIST/COMBO/MILESTONE_TAXA_APRIL_2018_COORD_CLEAN_MODULES.csv", row.names = FALSE)
+# write.csv(MOD.2,               "./data/base/HIA_LIST/COMBO/MOD_2_SPP_RECORDS.csv",                             row.names = FALSE)
+# write.csv(COMBO.NICHE.CONTEXT, "./data/base/HIA_LIST/COMBO/COMBO_TOT_GROWERS.csv",                             row.names = FALSE)
+# write.csv(APPENDIX,            "./data/base/HIA_LIST/COMBO/APPENDIX_TOT_GROWERS.csv",                          row.names = FALSE)
 
 
 
