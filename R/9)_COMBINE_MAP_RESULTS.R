@@ -8,46 +8,22 @@
 
 
 #########################################################################################################################
-## Read in all data to run the SDM code :: species lists, shapefile, rasters & tables
-#source('./R/HIA_LIST_MATCHING.R')
-rasterTmpFile()
-
-
-## Read in SUAs and create species lists
-ALL.SUA.POP       = read.csv("./data/base/CONTEXTUAL/ABS_SUA_POP.csv",    stringsAsFactors = FALSE)
-MAXENT.CHECK      = read.csv("./output/maxent/MAXENT_RATING_26_2018.csv", stringsAsFactors = FALSE)
-
-spp.lower.thresh  = subset(MAXENT.CHECK, CHECK_MAP == 2 | CHECK_MAP == 3)$searchTaxon
-spp_lower_thresh  = gsub(" ", "_", spp.lower.thresh)
-
-spp.best.thresh   = subset(MAXENT.CHECK, CHECK_MAP == 1 | CHECK_MAP == 2)$searchTaxon
-spp_best_thresh   = gsub(" ", "_", spp.best.thresh)
-
-
-
-
-
-#########################################################################################################################
 ## 1). COMBINE OVERALL TABLES OF SPECIES GAIN/LOSS ACROSS AUSTRALIA
 #########################################################################################################################
 
 
-## We only want to add the species used for the analysis, not all species folders. Can we restrict the list to just the 
-## species on map_list?
-
-
-## Might not need this code as much, if just summing the rasters in ArcMap..............................................
+## We only want to add the species used for the analysis, not all species folders. The list can be restricted after 
 ## raster.list[raster.list %like% "Euc"]
 
 
 #########################################################################################################################
-## Create a list of the gain/loss tables 
+## Create a list of the gain/loss tables :: this is all species... 
 GAIN.LOSS.list = list.files("./output/maxent/SET_VAR_KOPPEN/", pattern = 'gain_loss_table_', full.names = TRUE, recursive = TRUE) 
 length(GAIN.LOSS.list)
 
 
 ## Now combine the SUA tables for each species into one table 
-GAIN.LOSS.STABLE <- GAIN.LOSS.list %>%
+GAIN.LOSS.TABLE <- GAIN.LOSS.list %>%
   
   ## pipe the list into lapply
   lapply(function(x) {
@@ -65,32 +41,31 @@ GAIN.LOSS.STABLE <- GAIN.LOSS.list %>%
   bind_rows
 
 
-## This is a summary of maxent output for current conditions :: some of the species did not process properly
-summary(GAIN.LOSS.STABLE)
-GAIN.LOSS.STABLE[!complete.cases(GAIN.LOSS.STABLE), ]
+## Subset to just the analysis species - some species did not process properly?
+GAIN.LOSS.TABLE  =  GAIN.LOSS.TABLE[GAIN.LOSS.TABLE$SPECIES %in% map_spp_list , ] 
 
 
-dim(GAIN.LOSS.STABLE)
-head(GAIN.LOSS.STABLE, 30)
-length(unique(GAIN.LOSS.STABLE$SPECIES))                                  ## 143 species rated as either 1 or 2 by Linda
+GAIN.LOSS.TABLE[!complete.cases(GAIN.LOSS.TABLE), ]
+summary(GAIN.LOSS.TABLE)
 
+dim(GAIN.LOSS.TABLE)
+head(GAIN.LOSS.TABLE, 10)
+length(unique(GAIN.LOSS.TABLE$SPECIES))                                   ## x species
 
-## Can subset to just the analysis species 
-GAIN.LOSS.STABLE  =  GAIN.LOSS.STABLE[GAIN.LOSS.STABLE$searchTaxon %in% map_spp_list , ] 
 
 
 #########################################################################################################################
 ## Get the species with the highest gain
-GAIN.OVERALL   = subset(GAIN.LOSS.STABLE, CHANGE == "GAINED") 
+GAIN.OVERALL   = subset(GAIN.LOSS.TABLE, CHANGE == "GAINED") 
 GAIN.OVERALL   = GAIN.OVERALL[with(GAIN.OVERALL, rev(order(COUNT))), ]
 
-LOSS.OVERALL   = subset(GAIN.LOSS.STABLE, CHANGE == "LOST")
+LOSS.OVERALL   = subset(GAIN.LOSS.TABLE, CHANGE == "LOST")
 LOSS.OVERALL   = LOSS.OVERALL[with(LOSS.OVERALL, rev(order(COUNT))), ]
 
 
 ## Have a look
-head(GAIN.OVERALL, 50)
-head(LOSS.OVERALL, 50)
+head(GAIN.OVERALL)
+head(LOSS.OVERALL)
 GAIN.OVERALL[!complete.cases(GAIN.OVERALL), ]
 LOSS.OVERALL[!complete.cases(LOSS.OVERALL), ]
 
@@ -102,7 +77,7 @@ summary(LOSS.OVERALL$COUNT)
 
 #########################################################################################################################
 ## Now write CSV 
-write.csv(GAIN.LOSS.STABLE, "./output/tables/OVERALL_GAIN_LOSS_STABLE.csv", row.names = FALSE)
+write.csv(GAIN.LOSS.TABLE, "./output/tables/OVERALL_GAIN_LOSS_TABLE.csv",   row.names = FALSE)
 write.csv(GAIN.OVERALL,     "./output/tables/OVERALL_GAIN.csv",             row.names = FALSE)
 write.csv(LOSS.OVERALL,     "./output/tables/OVERALL_LOSS.csv",             row.names = FALSE)
 
@@ -116,7 +91,7 @@ write.csv(LOSS.OVERALL,     "./output/tables/OVERALL_LOSS.csv",             row.
 
 
 #########################################################################################################################
-## The multiple thresholds could present a problem.
+## The multiple thresholds could present a problem
 SUA.tables = list.files("./output/maxent/SET_VAR_KOPPEN/", pattern = 'area_SUA_summary_', full.names = TRUE, recursive = TRUE) 
 length(SUA.tables)
 
@@ -130,7 +105,7 @@ SUA.PRESENCE <- SUA.tables[c(1:length(SUA.tables))] %>%
     ## create the character string
     f <- paste0(x)
     
-    ## load each .RData file
+    ## load each .csv file
     d <- read.csv(f)
     d
     
@@ -142,7 +117,7 @@ SUA.PRESENCE <- SUA.tables[c(1:length(SUA.tables))] %>%
 
 ## This is a summary of maxent output for current conditions
 dim(SUA.PRESENCE)
-head(SUA.PRESENCE, 200)
+head(SUA.PRESENCE, 50)
 
 
 #########################################################################################################################
@@ -160,7 +135,7 @@ intersect(unique(sort(TOP.SUA.POP$SUA)), unique(sort(SUA.PRESENCE$SUA)))
 SUA.PRESENCE = join(SUA.PRESENCE, TOP.SUA.POP)
 
 
-## Join on the Maxent rating
+## Probably don't need the Maxent rating anyore, just use the species which have already been checked.....................
 RATING = MAXENT.CHECK
 names(RATING)  = c("SPECIES", "RATING")
 RATING$SPECIES = gsub(" ", "_", RATING$SPECIES)
@@ -178,17 +153,15 @@ summary(SUA.PRESENCE)
 unique(SUA.PRESENCE$RATING)
 
 
-## There are still NA results for some taxa
+## Are there are still NA results for some taxa?........................................................................
 SUA.COMPLETE = completeFun(SUA.PRESENCE, "CURRENT_AREA")
 SUA.COMPLETE = completeFun(SUA.COMPLETE, "FUTURE_AREA")
 length(unique(SUA.COMPLETE$SPECIES))
-names(SUA.COMPLETE)
-
-
+summary(SUA.COMPLETE$POP_2017)
 
 
 #########################################################################################################################
-## Find the species with the greatest increase
+## Find the species with the greatest increase?
 summary(SUA.COMPLETE$AREA_CHANGE)
 INCREASE.50 = subset(SUA.COMPLETE, AREA_CHANGE >= 50)
 summary(INCREASE.50$AREA_CHANGE)
@@ -206,7 +179,7 @@ BIG.SUA = head(TOP.SUA.POP[with(TOP.SUA.POP, rev(order(POP_2017))), ], top_n)
 BIG_SUA = BIG.SUA$SUA
 
 
-## Restrict the big table to just these
+## Restrict the big table to just the largest SUAs
 SUA.TOP.PRESENCE  = SUA.PRESENCE[SUA.PRESENCE$SUA %in% BIG_SUA, ] 
 SUA.TOP.PRESENCE  = SUA.TOP.PRESENCE [with(SUA.TOP.PRESENCE , rev(order(POP_2017))), ]
 length(unique(SUA.PRESENCE$SPECIES))
@@ -215,35 +188,11 @@ summary(SUA.TOP.PRESENCE)
 View(SUA.TOP.PRESENCE)
 
 
-## Could subset again
-SUA.TOP.PRESENCE.2030      = subset(SUA.TOP.PRESENCE, PERIOD == 30)
-SUA.TOP.PRESENCE.2050      = subset(SUA.TOP.PRESENCE, PERIOD == 50)
-SUA.TOP.PRESENCE.2070      = subset(SUA.TOP.PRESENCE, PERIOD == 70)
-
-SUA.TOP.PRESENCE.2030.MILE = SUA.TOP.PRESENCE.2030[SUA.TOP.PRESENCE.2030$SPECIES %in% spp_mile, ]
-SUA.TOP.PRESENCE.2070.MILE = SUA.TOP.PRESENCE.2030[SUA.TOP.PRESENCE.2070$SPECIES %in% spp_mile, ]
-
-
-## Check
-head(SUA.TOP.PRESENCE.2030.MILE)
-unique(SUA.TOP.PRESENCE.2030.MILE$SPECIES)
-
-
-## Just one species
-SUA.TOP.PRESENCE.2030.MILE.X.GLAUCA = subset(SUA.TOP.PRESENCE, SPECIES == "Xanthorrhoea_glauca")
-
-
-## Also, subset to just the analysis species here 
-SUA.TOP.PRESENCE = subset()
-
-
 #########################################################################################################################
-## Save basic results and SUA results to file :: CSV and RData files
-write.csv(SUA.COMPLETE,                          "./output/tables/MAXENT_SUA_SUMMARY.csv",     row.names = FALSE)
-#write.csv(SUA.TOP.PRESENCE,                     "./output/tables/MAXENT_SUA_SUMMARY.csv",     row.names = FALSE)
-
-write.csv(MAXENT.SUMMARY,       "./output/maxent/MAXENT_STD_VAR_SUMMARY.csv", row.names = FALSE)
-write.csv(SUA.TOP.PRESENCE,     "./output/maxent/MAXENT_SUA_SUMMARY.csv",     row.names = FALSE)
+## Save basic results and SUA results to file
+write.csv(SUA.COMPLETE,     "./output/tables/MAXENT_SUA_PRESENCE.csv",    row.names = FALSE)
+write.csv(MAXENT.SUMMARY,   "./output/maxent/MAXENT_STD_VAR_SUMMARY.csv", row.names = FALSE)
+write.csv(SUA.TOP.PRESENCE, "./output/maxent/MAXNET_SUA_TOP.csv",         row.names = FALSE)
 
 
 
@@ -254,8 +203,7 @@ write.csv(SUA.TOP.PRESENCE,     "./output/maxent/MAXENT_SUA_SUMMARY.csv",     ro
 #########################################################################################################################
 
 
-## Create a list of rasters 
-## raster.list[raster.list %like% "Euc"]
+## Probably don't need this anymore - just use ArcMap to sum the rasters
 
 
 #########################################################################################################################
@@ -362,7 +310,7 @@ writeRaster(sum.2070,    'output/maxent/checked_spp_2070_richness.tif')
 ## Also Can we calculate these in the table?
 ## Gain (ie not suitable now but suitable in future)
 ## Loss (ie suitable now but not in future)
-## Stable (suitable in both)
+## TABLE (suitable in both)
 
 ## How should we map each species? 
 ## Subtract the current raster from the future combined raster

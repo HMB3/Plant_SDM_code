@@ -218,6 +218,7 @@ maxent_path   = path.set.var                             ## Chagne this for each
 length(maxent.tables)                                    ## Should match the number of taxa tested
 no_data %in% maxent.tables
 
+
 ## In linux, check if the folders are empty, then delete if empty as this will break the code:
 # cd F:/green_cities_sdm/output/maxent/STD_VAR_ALL
 # find . -type d -empty -print
@@ -328,7 +329,7 @@ identical(MAXENT.RESULTS.TABLE$searchTaxon, GBIF.spp)
 
 #########################################################################################################################
 ## Save - could add date as a sprintf variable to save multiple versions?
-## write.csv(MAXENT.CHECK.TABLE, "./output/maxent/MAXENT_CHECK_TABLE_APRIL_2016.csv", row.names = FALSE)
+## write.csv(MAXENT.SUMMARY, "./output/maxent/MAXENT_SUMMARY_JULY_2016.csv", row.names = FALSE)
 
 
 
@@ -393,7 +394,7 @@ identical(spp.best.thresh,  MAXENT.BEST$searchTaxon)
 ## guidance about this and you can really get away with either).
 
 
-## How do the thresholds compare for the set of species modelled?
+## How do the differnt thresholds compare for the set of species modelled?
 summary(MAXENT.RESULTS.TABLE["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"])    ## The strictest threshold
 summary(MAXENT.RESULTS.TABLE["X10.percentile.training.presence.Logistic.threshold"])                 ## The next strictest
 summary(MAXENT.RESULTS.TABLE["X10.percentile.training.presence.training.omission"])                  ## The most forgiving
@@ -424,8 +425,8 @@ percent.10.om.best     = percent.10.om.best$X10.percentile.training.presence.tra
 
 
 #########################################################################################################################
-## Then, make a list all the directories containing the individual GCM rasters...path.backwards.sel
-SDM.RESULTS.DIR.LOW <- spp_lower_thresh [c(1:length(spp_lower_thresh ))] %>%
+## Then, make a list of all the directories containing the individual GCM rasters...path.backwards.sel
+SDM.RESULTS.DIR.LOW <- spp_lower_thresh [c(1:length(spp_lower_thresh))] %>%
   
   ## Pipe the list into lapply
   lapply(function(species) {
@@ -493,87 +494,14 @@ tail(SDM.RESULTS.DIR, 20);tail(map_spp, 20); tail(MAXENT.RESULTS.TEST, 20)[, c("
 
 
 #########################################################################################################################
-## Loop over directories, species and one threshold for each, also taking a time_slice argument.
-# DIR        = SDM.RESULTS.DIR[3] 
-# species    = map_spp[3] 
-# thresh     = thresh.max.train[3] 
-# percent    = percent.10.log[3]
-# time_slice = 30
-# area_occ   = 10
-
-
-# Running zonal stats for Strelitzia_reginae | 2030 combined suitability > 0.4016
-# Error in names(PERECENT.AREA) <- c("SUA_NAME11", "Absent", "Present") : 
-#   'names' attribute [3] must be the same length as the vector [2]
-# In addition: There were 32 warnings (use warnings() to see them)
-
-
-#########################################################################################################################
-## Use the strictest threshold first
-#########################################################################################################################
-
-
-#########################################################################################################################
-## Combine output and calculate gain and loss for 2030 
-# suitability.2030 = tryCatch(mapply(combine_gcm_threshold,
-#                                    DIR_list     = SDM.RESULTS.DIR,
-#                                    species_list = map_spp,
-#                                    maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
-#                                    thresholds   = thresh.max.train,
-#                                    percentiles  = percent.10.log,
-#                                    time_slice   = 30,
-#                                    area_occ     = 10),
-#                             
-#                             error = function(cond) {
-#                               
-#                               message(paste('Species skipped - check inputs', spp))
-#                               
-#                             })
-# 
-# 
-# ## Combine GCM output for 2050 
-# suitability.2050 = tryCatch(mapply(combine_gcm_threshold, 
-#                                    DIR_list     = SDM.RESULTS.DIR, 
-#                                    species_list = map_spp, 
-#                                    maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
-#                                    thresholds   = thresh.max.train,
-#                                    percentiles  = percent.10.log,
-#                                    time_slice   = 50,
-#                                    area_occ     = 10),
-#                             
-#                             error = function(cond) {
-#                               
-#                               message(paste('Species skipped - check inputs', spp))
-#                               
-#                             })
-# 
-# 
-# ## Combine GCM output for 2070 
-# suitability.2070 = tryCatch(mapply(combine_gcm_threshold, 
-#                                    DIR_list     = SDM.RESULTS.DIR, 
-#                                    species_list = map_spp, 
-#                                    maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
-#                                    thresholds   = thresh.max.train,
-#                                    percentiles  = percent.10.log,
-#                                    time_slice   = 70,
-#                                    area_occ     = 10),
-#                             
-#                             error = function(cond) {
-#                               
-#                               message(paste('Species skipped - check inputs', spp))
-#                               
-#                             })
-
-
-#########################################################################################################################
 ## Then use the more forgiving threshold
 #########################################################################################################################
 
 
 ## To test it first species works 
-# species    = spp_lower_thresh[13]
-# thresh     = percent.10.log.low[13]
-# percent    = percent.10.om.low[13]
+# species    = map_spp_list[1]
+# thresh     = percent.10.log.best[1]
+# percent    = percent.10.om.best[1]
 # time_slice = 30
 # area_occ   = 10
 

@@ -367,7 +367,7 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
                                                     species, species, time_slice, "_10_percentile_omiss_above_", percent), overwrite = TRUE)
             
             ## Write the combined future raster with > 4 GCMs above the maximum training value
-            message('Writing ', species, ' | 20', time_slice, ' 10th percentile > ', percent) 
+            message('Writing ', species, ' | 20', time_slice, ' 4 GCMs > ', percent) 
             writeRaster(combo_suit_4GCM, sprintf('%s/%s/full/%s_20%s%s%s.tif', maxent_path,
                                                  species, species, time_slice, "_4GCMs_above_", thresh), overwrite = TRUE)
             
@@ -464,7 +464,6 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
                                              FUTURE_AREA  = PERECENT.AREA.FUTURE$Present,
                                              AREA_CHANGE  = PERECENT.AREA.FUTURE$Present - PERECENT.AREA.CURRENT$Present,
                                              PRESENT      = PERECENT.AREA.FUTURE$species_present)
-              
               
               ## Now calculate :
               ## Gain (ie not suitable now but suitable in future)
