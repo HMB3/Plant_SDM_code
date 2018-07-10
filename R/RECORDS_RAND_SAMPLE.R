@@ -25,8 +25,8 @@ source('./R/HIA_LIST_MATCHING.R')
 
 #########################################################################################################################
 ## Load GBIF data and rain shapefile
-COMBO.RASTER.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/CLEAN_ONLY_HIA_SPP.rds")
-BIAS.DATA.ALL        = readRDS("./data/base/HIA_LIST/COMBO/SDM_DATA_CLEAN_052018.rds")
+#COMBO.RASTER.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/CLEAN_ONLY_HIA_SPP.rds")
+BIAS.DATA.ALL        = readRDS("./data/base/HIA_LIST/COMBO/SDM_DATA_CLEAN_052018.rds")        ## use the species data set
 SPP.BIAS             = read.csv("./output/maxent/SPP_BOUNDARY_BIAS.csv", stringsAsFactors = FALSE)
 SPP.BIAS             = subset(SPP.BIAS, AUS_BOUND_BIAS == "TRUE")$searchTaxon
 View(SPP.BIAS)
@@ -64,6 +64,7 @@ COMBO.RASTER.SP   = SpatialPointsDataFrame(coords      = BIAS.DATA.ALL[c("lon", 
 AUS.WGS    = spTransform(aus, CRS.WGS.84)
 RAIN.WGS   = spTransform(AUS_RAIN, CRS.WGS.84)
 AUS.STATE  = AUS.WGS[, c("name")]
+names(AUS.STATE)[names(AUS.STATE) == 'name'] <- 'AUS_STATE'
 AUS.RAIN   = RAIN.WGS[, c("AUS_RN_ZN")] 
 
 
@@ -71,7 +72,9 @@ AUS.RAIN   = RAIN.WGS[, c("AUS_RN_ZN")]
 projection(COMBO.RASTER.SP);projection(AUS.STATE);projection(AUS.RAIN)
 STATE.JOIN          = over(COMBO.RASTER.SP, AUS.STATE)                   ## =SUA.JOIN      = over(COMBO.RASTER.SP, SUA.WGS) 
 COMBO.STATE         = cbind.data.frame(COMBO.RASTER.SP, STATE.JOIN)
-
+names(COMBO.STATE)
+unique(COMBO.STATE$AUS_STATE)
+saveRDS(COMBO.STATE, file = paste("./data/base/HIA_LIST/COMBO/COMBO_STATE.rds"))
 
 ## Recreate sp dataframe
 COMBO.STATE.SP   = SpatialPointsDataFrame(coords      = COMBO.STATE[c("lon", "lat")], 
@@ -85,9 +88,9 @@ COMBO.STATE.RAIN    = cbind.data.frame(COMBO.STATE.SP, RAIN.JOIN)
 names(COMBO.STATE.RAIN)
 
 
-## Reanme and remove
-colnames(COMBO.STATE.RAIN)[colnames(COMBO.STATE.RAIN)=="name"] <- "AUS_STATE"
-COMBO.STATE.RAIN = subset(COMBO.STATE.RAIN, select = -c(lon.1,  lat.1,  optional.1,  optional.2, lon.2, lat.2))
+## Rename and remove
+COMBO.STATE.RAIN = subset(COMBO.STATE.RAIN, select = -c(lon.1,  lat.1, optional, optional.1, lon.2, lat.2))
+names(COMBO.STATE.RAIN)
 unique(COMBO.STATE.RAIN$AUS_STATE)
 unique(COMBO.STATE.RAIN$AUS_RN_ZN)
 
@@ -97,6 +100,36 @@ saveRDS(COMBO.STATE.RAIN, file = paste("./data/base/HIA_LIST/COMBO/COMBO_STATE_R
 #COMBO.STATE.RAIN = readRDS("./data/base/HIA_LIST/COMBO/COMBO_STATE_RAIN.rds")
 
 
+#########################################################################################################################
+## Now create the variables needed to access current environmental conditions + their names in the functions
+sdm.predictors <- c("Annual_mean_temp",    "Mean_diurnal_range",  "Isothermality",      "Temp_seasonality",  
+                    "Max_temp_warm_month", "Min_temp_cold_month", "Temp_annual_range",  
+                    "Mean_temp_wet_qu",    "Mean_temp_dry_qu",    
+                    "Mean_temp_warm_qu",   "Mean_temp_cold_qu",   
+                    
+                    "Annual_precip",       "Precip_wet_month",   "Precip_dry_month",    "Precip_seasonality",  
+                    "Precip_wet_qu",       "Precip_dry_qu",      
+                    "Precip_warm_qu",      "Precip_col_qu")
+
+
+## A-priori worldclim predictors
+sdm.select     <- c("Annual_mean_temp", "Temp_seasonality",    "Max_temp_warm_month", "Min_temp_cold_month",
+                    "Annual_precip",    "Precip_seasonality",  
+                    "Precip_wet_month", "Precip_dry_month")      
+
+
+## Create a raster stack of current environmental conditions if needed
+i  <- match(sdm.predictors, sdm.predictors)
+ff <- file.path('./data/base/worldclim/world/0.5/bio/current',
+                sprintf('bio_%02d.tif', i))
+
+
+## Name the grids :: these should be indentical
+env.grids.current = stack(sub('0.5', '1km', ff))
+names(env.grids.current) <- sdm.predictors[i]
+identical(names(env.grids.current),sdm.predictors)
+
+
 
 
 
@@ -104,10 +137,11 @@ saveRDS(COMBO.STATE.RAIN, file = paste("./data/base/HIA_LIST/COMBO/COMBO_STATE_R
 ## 2). CREATE A RANDOM SUB-SAMPLE OF X% OF SPP RECORDS
 #########################################################################################################################
 
-# The Biodiverse approach would snap the coordinates to the centre of each cell.  It would be better to select one point at 
-# random within each cell, which should be pretty simple in R.  
 
-# The random sample for a large starting number would probably be reasonable.With either of the above approaches you also 
+# Shawn :: The Biodiverse approach would snap the coordinates to the centre of each cell.  It would be better to select 
+# one point at random within each cell, which should be pretty simple in R.  
+
+# The random sample for a large starting number would probably be reasonable. With either of the above approaches, you also 
 # have the problem that you might lose some of your environmental variability, in which case it might be better to thin 
 # in environmental space as well as geospatial.  Maybe a stratified thinning would be sensible?
 
@@ -117,10 +151,15 @@ saveRDS(COMBO.STATE.RAIN, file = paste("./data/base/HIA_LIST/COMBO/COMBO_STATE_R
 ## For each species in the list :: 
 
 
-## subsample x% records within a all rainfall bands in NSW, and also in 
+## subset the data to just those species records
 
+## subset the data to just those species records in NSW
 
-## 
+## subset the data to just those species records outside NSW
+
+## Subsample within all rainfall bands - take 50% of total records
+
+## Then combine the stratified sample with records outside NSW
 
 
 
@@ -129,24 +168,9 @@ saveRDS(COMBO.STATE.RAIN, file = paste("./data/base/HIA_LIST/COMBO/COMBO_STATE_R
 ## Can split sampling by state, before analysis
 
 ## First, subset the species data to 
-
 unique(COMBO.STATE.RAIN$AUS_RN_ZN)
 unique(COMBO.STATE.RAIN$AUS_STATE)
 
-
-
-SPP.REC.NSW = subset(COMBO.STATE.RAIN, AUS_STATE == "New South Wales") 
-SPP.REC.QLD = subset(COMBO.STATE.RAIN, AUS_STATE == "Queensland") 
-SPP.REC.VIC = subset(COMBO.STATE.RAIN, AUS_STATE == "Victoria")
-SPP.REC.SA  = subset(COMBO.STATE.RAIN, AUS_STATE == "South Australia") 
-unique(SPP.REC.NSW$AUS_STATE)
-dim(SPP.REC.NSW)
-
-
-## Using only points in NSW, let's take a 50% sample from all rainfall groups
-set.seed(1)
-RAND.REC.NSW = stratified(SPP.REC.NSW, "AUS_RN_ZN", .5)
-dim(RAND.REC.NSW)[1]/dim(SPP.REC.NSW)[1]
 
 
 #########################################################################################################################
@@ -163,26 +187,35 @@ lapply(SPP.BIAS, function(spp){
   }
   
   ## Print the taxa being processed to screen
-  if(spp %in% SDM.DATA.ALL$searchTaxon) {
+  if(spp %in% COMBO.STATE.RAIN$searchTaxon) {
     message('Doing ', spp) 
     
-    ######################################################################################################################
-    ## Do the stratification by rainfall, etc, in here
-    
+    ## Do the stratification by rainfall, etc, in here...................................................................
     
     ## First, subset the records to only the taxa being processed
     occurrence <- subset(COMBO.STATE.RAIN, searchTaxon == spp)
     
+    ## Now subset to the species data to those records inside and outside NSW
+    ## Could change this to a generic state argument
+    occurrence.nsw <- subset(occurrence, AUS_STATE == "New South Wales")
+    occurrence.out <- subset(occurrence, AUS_STATE != "New South Wales")
     
-    ## Now subset to just NSW?
-    occurrence <- subset(COMBO.STATE.RAIN, searchTaxon == spp)
+    ## Now take a 50% random sample from all rainfall groups, just for the points within NSW
+    ## Set a large starting number R? How large is large?
+    set.seed(123458)
+    strat.nsw = stratified(occurrence.nsw, "AUS_RN_ZN", .5)
+    
+    ## Now combine the two data frames
+    occ.strat = rbind(strat.nsw, occurrence.out)
+    names(occ.strat)
+    dim(occ.strat);dim(occurrence)
     
     ## Now get the background points. These can come from any spp, other than the modelled species.
-    background <- subset(SDM.DATA.ALL, searchTaxon != spp)
+    background <- subset(COMBO.STATE.RAIN, searchTaxon != spp)
     
     ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
     tryCatch(
-      FIT_MAXENT_TARG_BG(occ                     = occurrence, 
+      FIT_MAXENT_TARG_BG(occ                     = occ.strat, 
                          bg                      = background, 
                          sdm.predictors          = sdm.select, 
                          name                    = spp, 
@@ -212,8 +245,6 @@ lapply(SPP.BIAS, function(spp){
   }  
   
 })
-
-
 
 
 
