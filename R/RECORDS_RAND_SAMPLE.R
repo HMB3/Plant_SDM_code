@@ -6,11 +6,16 @@
 ## This code spatially thins species occurrence records to help address problems associated with spatial sampling biases. 
 ## Ideally, thinning removes the fewest records necessary to substantially reduce the effects of sampling bias, while 
 ## simultaneously retaining the greatest amount of useful information. 
-## See: https://cran.r-project.org/web/packages/spThin/vignettes/spThin_vignette.html
+
+## Use the stratified function: https://www.rdocumentation.org/packages/fifer/versions/1.0/topics/stratified
+## OR, spThin https://cran.r-project.org/web/packages/spThin/vignettes/spThin_vignette.html
 
 
 ## Create lists
 source('./R/HIA_LIST_MATCHING.R')
+
+
+
 
 
 #########################################################################################################################
@@ -18,21 +23,44 @@ source('./R/HIA_LIST_MATCHING.R')
 #########################################################################################################################
 
 
+#########################################################################################################################
 ## Load GBIF data and rain shapefile
 COMBO.RASTER.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/CLEAN_ONLY_HIA_SPP.rds")
+BIAS.DATA.ALL        = readRDS("./data/base/HIA_LIST/COMBO/SDM_DATA_CLEAN_052018.rds")
 SPP.BIAS             = read.csv("./output/maxent/SPP_BOUNDARY_BIAS.csv", stringsAsFactors = FALSE)
 SPP.BIAS             = subset(SPP.BIAS, AUS_BOUND_BIAS == "TRUE")$searchTaxon
 View(SPP.BIAS)
 
 
+## Project the SDM data into WGS
+projection(BIAS.DATA.ALL)
+# spTransform(BIAS.DATA.ALL, CRS.WGS.84)
+# projection(BIAS.DATA.ALL)
+
+
+## Get the coordinates
+BIAS.COORDS = coordinates(BIAS.DATA.ALL)
+class(BIAS.COORDS)
+tail(BIAS.COORDS)
+tail(BIAS.DATA.ALL)[, c(1:3)]   ## indices match
+
+
+## Bind the coordinates to the SDM table: can use spCbind for sp data frames
+BIAS.COORDS   = as.data.frame(BIAS.COORDS)
+BIAS.DATA.ALL = cbind(as.data.frame(BIAS.DATA.ALL), BIAS.COORDS)
+BIAS.DATA.ALL = test2[, c(1:22)]
+names(BIAS.DATA.ALL)
+dim(BIAS.DATA.ALL)
+
+
 #########################################################################################################################
-## Intersect rainfall and temperature data
-COMBO.RASTER.SP   = SpatialPointsDataFrame(coords      = COMBO.RASTER.CONTEXT[c("lon", "lat")], 
-                                           data        = COMBO.RASTER.CONTEXT,
+## Intersect BOM rainfall data
+COMBO.RASTER.SP   = SpatialPointsDataFrame(coords      = BIAS.DATA.ALL[c("lon", "lat")], 
+                                           data        = BIAS.DATA.ALL,
                                            proj4string = CRS.WGS.84)
 
 
-## Project data
+## Project data : takes ages...
 AUS.WGS    = spTransform(aus, CRS.WGS.84)
 RAIN.WGS   = spTransform(AUS_RAIN, CRS.WGS.84)
 AUS.STATE  = AUS.WGS[, c("name")]
@@ -73,7 +101,126 @@ saveRDS(COMBO.STATE.RAIN, file = paste("./data/base/HIA_LIST/COMBO/COMBO_STATE_R
 
 
 #########################################################################################################################
-## 2). CREATE A RANDOM SUB-SAMPLE OF X% OF SPP RECORS
+## 2). CREATE A RANDOM SUB-SAMPLE OF X% OF SPP RECORDS
+#########################################################################################################################
+
+# The Biodiverse approach would snap the coordinates to the centre of each cell.  It would be better to select one point at 
+# random within each cell, which should be pretty simple in R.  
+
+# The random sample for a large starting number would probably be reasonable.With either of the above approaches you also 
+# have the problem that you might lose some of your environmental variability, in which case it might be better to thin 
+# in environmental space as well as geospatial.  Maybe a stratified thinning would be sensible?
+
+
+## Use the stratified function: https://www.rdocumentation.org/packages/fifer/versions/1.0/topics/stratified
+
+## For each species in the list :: 
+
+
+## subsample x% records within a all rainfall bands in NSW, and also in 
+
+
+## 
+
+
+
+
+#########################################################################################################################
+## Can split sampling by state, before analysis
+
+## First, subset the species data to 
+
+unique(COMBO.STATE.RAIN$AUS_RN_ZN)
+unique(COMBO.STATE.RAIN$AUS_STATE)
+
+
+
+SPP.REC.NSW = subset(COMBO.STATE.RAIN, AUS_STATE == "New South Wales") 
+SPP.REC.QLD = subset(COMBO.STATE.RAIN, AUS_STATE == "Queensland") 
+SPP.REC.VIC = subset(COMBO.STATE.RAIN, AUS_STATE == "Victoria")
+SPP.REC.SA  = subset(COMBO.STATE.RAIN, AUS_STATE == "South Australia") 
+unique(SPP.REC.NSW$AUS_STATE)
+dim(SPP.REC.NSW)
+
+
+## Using only points in NSW, let's take a 50% sample from all rainfall groups
+set.seed(1)
+RAND.REC.NSW = stratified(SPP.REC.NSW, "AUS_RN_ZN", .5)
+dim(RAND.REC.NSW)[1]/dim(SPP.REC.NSW)[1]
+
+
+#########################################################################################################################
+## Loop over all the species with bias: spp = SPP.BIAS[1]
+lapply(SPP.BIAS, function(spp){ 
+  
+  ## Skip the species if the directory already exists, before the loop
+  ## Create a separate directory for these subsampled species. Then we can compare the folder output with the originals
+  outdir <- 'output/maxent/SPP_BIAS'
+  if(dir.exists(file.path(outdir, gsub(' ', '_', spp)))) {
+    message('Skipping ', spp, ' - already run.')
+    invisible(return(NULL))
+    
+  }
+  
+  ## Print the taxa being processed to screen
+  if(spp %in% SDM.DATA.ALL$searchTaxon) {
+    message('Doing ', spp) 
+    
+    ######################################################################################################################
+    ## Do the stratification by rainfall, etc, in here
+    
+    
+    ## First, subset the records to only the taxa being processed
+    occurrence <- subset(COMBO.STATE.RAIN, searchTaxon == spp)
+    
+    
+    ## Now subset to just NSW?
+    occurrence <- subset(COMBO.STATE.RAIN, searchTaxon == spp)
+    
+    ## Now get the background points. These can come from any spp, other than the modelled species.
+    background <- subset(SDM.DATA.ALL, searchTaxon != spp)
+    
+    ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
+    tryCatch(
+      FIT_MAXENT_TARG_BG(occ                     = occurrence, 
+                         bg                      = background, 
+                         sdm.predictors          = sdm.select, 
+                         name                    = spp, 
+                         outdir                  = outdir, 
+                         template.raster,
+                         min_n                   = 20,     ## This should be higher...
+                         max_bg_size             = 100000, 
+                         Koppen                  = Koppen_1975,
+                         background_buffer_width = 200000,
+                         shapefiles              = TRUE,
+                         features                = 'lpq',
+                         replicates              = 5,
+                         responsecurves          = TRUE),
+      
+      ## https://stackoverflow.com/questions/19394886/trycatch-in-r-not-working-properly
+      #function(e) message('Species skipped ', spp)) ## skip any species for which the function fails
+      error = function(cond) {
+        
+        message(paste('Species skipped ', spp))
+        
+      })
+    
+  } else {
+    
+    message(spp, ' skipped - no data.')         ## This condition ignores species which have no data...
+    
+  }  
+  
+})
+
+
+
+
+
+
+
+#########################################################################################################################
+## 3). CREATE A RANDOM SUB-SAMPLE OF X% OF SPP RECORS
 #########################################################################################################################
 
 
@@ -167,10 +314,7 @@ writeOGR(obj = SPP.SAMPLE, dsn = "./data/base/HIA_LIST/COMBO", layer = "SPP_RAND
 
 #########################################################################################################################
 ## Write the points out to check in arc
-saveRDS(TEST.GEO,                'data/base/HIA_LIST/COMBO/CLEAN_FLAGS_HIA_SPP.rds')
-saveRDS(CLEAN.TRUE,              'data/base/HIA_LIST/COMBO/CLEAN_ONLY_HIA_SPP.rds')
-saveRDS(CLEAN.NICHE.CONTEXT,     'data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_COORD_CLEAN.rds')
-write.csv(CLEAN.NICHE.CONTEXT,   "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_COORD_CLEAN.csv", row.names = FALSE)
+
 
 
 

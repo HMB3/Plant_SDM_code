@@ -134,6 +134,7 @@ load("./data/base/CONTEXTUAL/urbanareas.rda")
 
 ## Set definitions :: best to minimise the number of projection used in this project
 CRS.MOL      <- CRS('+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +units=m +no_defs')
+CRS.MOL.SDM  <- CRS('+init=ESRI:54009 +proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0')
 CRS.WGS.84   <- CRS("+init=epsg:4326")
 CRS.AUS.ALB  <- CRS("+init=EPSG:3577")
 ALB.CONICAL  <- CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs')
