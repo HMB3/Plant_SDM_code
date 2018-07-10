@@ -350,7 +350,8 @@ lapply(ff[n < 27], function(x) {
 
 ##     Extra sources:
 ##     iNaturalist  - Got the data for plants, 20k records from Oceania
-##     Flickr       - looks hard....
+##     Euro nurseries
+##     Aus nurseries (bush data)
 
 ## 3). Try to thin records for ~100 spp with boundary bias: random sampling of those species records, by state and environment
 
@@ -360,8 +361,6 @@ lapply(ff[n < 27], function(x) {
 ##    "X10.percentile.training.presence.training.omission"
   
 ## 5). Calculate the TSS for all species (and MESS maps for a few problematic species)
-
-## 6). Get species list from 8 biggest SUAs - Area report from ALA (not working) + Expert list if we have them
 
 ## 7). Decide on gamma diversity for this article - 150 spp - could it go to GEB? Plan figures and tables for MS
 ##     The approach doesn't change with Gamma, so draft it now.

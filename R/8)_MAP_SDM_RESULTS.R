@@ -133,7 +133,7 @@ grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',   
 ## First remove species without data from the modelling step 7
 no_data      <- c ("Baeckea_virgata",           "Kennedia_beckxiana",    "Grevillea_rivularis", "Arctostaphylos_densiflora", 
                    "Cupressocyparis_leylandii", "Eucalyptus_intermedia", "Ficus_hillii", "Pentaceras_australi", 
-                   "Pentaceras_australis", "Pouteria_australis", "Pouteria_chartacea", "Pouteria_eerwah", 
+                   "Pentaceras_australis",      "Pouteria_australis", "Pouteria_chartacea", "Pouteria_eerwah", 
                    "Radermachera_gigantea", "Randia_benthamiana", "Raphiolepis_umbellata", "Tilia_mongolica", 
                    "Trema_aspera", "Xanthostemon_verticillatus")
 map_spp_list     <- map_spp_list [! map_spp_list %in% no_data]
@@ -499,11 +499,12 @@ tail(SDM.RESULTS.DIR, 20);tail(map_spp, 20); tail(MAXENT.RESULTS.TEST, 20)[, c("
 
 
 ## To test it first species works 
-# species    = map_spp_list[1]
-# thresh     = percent.10.log.best[1]
-# percent    = percent.10.om.best[1]
-# time_slice = 30
-# area_occ   = 10
+DIR        = SDM.RESULTS.DIR[1]
+species    = map_spp_list[1]
+thresh     = percent.10.log.best[1]
+percent    = percent.10.om.best[1]
+time_slice = 30
+area_occ   = 10
 
 ## Here we don't want to use the lower threshold .......................................................................
 ## What we really want is to use the lower threshold for all the species. So what are the lower thresholds called again?

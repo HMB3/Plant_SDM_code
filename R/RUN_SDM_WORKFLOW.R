@@ -17,7 +17,7 @@ source('./R/HIA_LIST_MATCHING.R')
 
 
 ## Set global species list variables here...............................................................................
-## Make these match up..................................................................................................
+## These species are the ones checked by Linda
 GBIF.spp     = head(SUA.spp, 7)
 map_spp_list = head(SUA_spp, 7)
 

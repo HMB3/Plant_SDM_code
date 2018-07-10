@@ -96,7 +96,6 @@ sapply(p, require, character.only = TRUE)
 
 
 ## Source functions
-source('./R/HIA_CLEAN_MATCHING.R')
 source('./R/GREEN_CITIES_FUNCTIONS.R')
 source('./R/MAXENT_FUNCTIONS.R')
 source('./R/MAPPING_FUNCTIONS.R')
@@ -551,9 +550,6 @@ names(EURO.NURSE)
 names(EURO.NURSE.LOC)
 head(EURO.NURSE);head(EURO.NURSE.LOC)
 names(EURO.NURSE.LOC)[names(EURO.NURSE.LOC) == 'Nursery_Location'] <- 'Nursery'
-
-
-## The nursery lists are the same length in both files
 identical(length(unique(EURO.NURSE$Nursery)), length(unique(EURO.NURSE.LOC$Nursery)))
 
 
@@ -572,11 +568,7 @@ names(SPP.NURSE.LOC)
 NURSE.count   = as.data.frame(table(SPP.NURSE.LOC$Species))
 names(NURSE.count) = c("Species", "Count")
 NURSE.count = NURSE.count[with(NURSE.count, rev(order(Count))), ]
-View(NURSE.count)
 summary(NURSE.count)
-
-## Bind the count to the table
-SPP.NURSE.LOC = cbind(SPP.NURSE.LOC, NURSE.count)
 
 
 ## Then, check the distribution across Europe!
