@@ -7,8 +7,11 @@
 ## Ideally, thinning removes the fewest records necessary to substantially reduce the effects of sampling bias, while 
 ## simultaneously retaining the greatest amount of useful information. 
 
+
+## Using the SDM dataset which has already been thinned to 1km, rather than the original dataset
+
 ## Use the stratified function: https://www.rdocumentation.org/packages/fifer/versions/1.0/topics/stratified
-## OR, spThin https://cran.r-project.org/web/packages/spThin/vignettes/spThin_vignette.html
+## spThin didn't really work https://cran.r-project.org/web/packages/spThin/vignettes/spThin_vignette.html
 
 
 ## Create lists
@@ -16,26 +19,20 @@ source('./R/HIA_LIST_MATCHING.R')
 
 
 
-
-
 #########################################################################################################################
-## 1). ADD COLUMN FOR AUS RAINFALL AND STATE CATEGORIES
+## 1). ADD COLUMNS FOR AUS RAINFALL AND STATE CATEGORIES
 #########################################################################################################################
 
 
 #########################################################################################################################
 ## Load GBIF data and rain shapefile
-#COMBO.RASTER.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/CLEAN_ONLY_HIA_SPP.rds")
-BIAS.DATA.ALL        = readRDS("./data/base/HIA_LIST/COMBO/SDM_DATA_CLEAN_052018.rds")        ## use the species data set
-SPP.BIAS             = read.csv("./output/maxent/SPP_BOUNDARY_BIAS.csv", stringsAsFactors = FALSE)
-SPP.BIAS             = subset(SPP.BIAS, AUS_BOUND_BIAS == "TRUE")$searchTaxon
-View(SPP.BIAS)
+BIAS.DATA.ALL        = readRDS("./data/base/HIA_LIST/COMBO/SDM_DATA_CLEAN_052018.rds")        
+SPP.BIAS             = intersect(SPP.BIAS, SUA.spp)    ## just re-run the models for species on the list
 
 
 ## Project the SDM data into WGS
+BIAS.DATA.ALL <- spTransform(BIAS.DATA.ALL, CRS("+init=epsg:4326 +proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
 projection(BIAS.DATA.ALL)
-# spTransform(BIAS.DATA.ALL, CRS.WGS.84)
-# projection(BIAS.DATA.ALL)
 
 
 ## Get the coordinates
@@ -47,20 +44,20 @@ tail(BIAS.DATA.ALL)[, c(1:3)]   ## indices match
 
 ## Bind the coordinates to the SDM table: can use spCbind for sp data frames
 BIAS.COORDS   = as.data.frame(BIAS.COORDS)
-BIAS.DATA.ALL = cbind(as.data.frame(BIAS.DATA.ALL), BIAS.COORDS)
-BIAS.DATA.ALL = test2[, c(1:22)]
-names(BIAS.DATA.ALL)
-dim(BIAS.DATA.ALL)
+BIAS.DATA.DF = cbind(as.data.frame(BIAS.DATA.ALL), BIAS.COORDS)
+BIAS.DATA.DF = BIAS.DATA.DF[, c(1:22)]
+names(BIAS.DATA.DF)
+dim(BIAS.DATA.DF)
 
 
 #########################################################################################################################
-## Intersect BOM rainfall data
-COMBO.RASTER.SP   = SpatialPointsDataFrame(coords      = BIAS.DATA.ALL[c("lon", "lat")], 
-                                           data        = BIAS.DATA.ALL,
+## Intersect BOM with rainfall data
+COMBO.RASTER.SP   = SpatialPointsDataFrame(coords      = BIAS.DATA.DF[c("lon", "lat")], 
+                                           data        = BIAS.DATA.DF,
                                            proj4string = CRS.WGS.84)
 
 
-## Project data : takes ages...
+## Project data
 AUS.WGS    = spTransform(aus, CRS.WGS.84)
 RAIN.WGS   = spTransform(AUS_RAIN, CRS.WGS.84)
 AUS.STATE  = AUS.WGS[, c("name")]
@@ -68,8 +65,19 @@ names(AUS.STATE)[names(AUS.STATE) == 'name'] <- 'AUS_STATE'
 AUS.RAIN   = RAIN.WGS[, c("AUS_RN_ZN")] 
 
 
+## Save these files out to test in ArcMap
+## dim(COMBO.RASTER.SP);names(COMBO.RASTER.SP)
+# writeOGR(obj = SDM.DATA.ALL, dsn = "./data/base/HIA_LIST/COMBO", layer = "SDM_DATA_TEST", driver = "ESRI Shapefile")
+# writeOGR(obj = RAIN.WGS, dsn = "./data/base/HIA_LIST/COMBO", layer = "RAIN.WGS", driver = "ESRI Shapefile")
+
+
+
 ## Run join between species records and Australian STATES
+## This join is not working...............................................................................................
 projection(COMBO.RASTER.SP);projection(AUS.STATE);projection(AUS.RAIN)
+plot(COMBO.RASTER.SP)
+
+
 STATE.JOIN          = over(COMBO.RASTER.SP, AUS.STATE)                   ## =SUA.JOIN      = over(COMBO.RASTER.SP, SUA.WGS) 
 COMBO.STATE         = cbind.data.frame(COMBO.RASTER.SP, STATE.JOIN)
 names(COMBO.STATE)
@@ -86,7 +94,7 @@ COMBO.STATE.SP   = SpatialPointsDataFrame(coords      = COMBO.STATE[c("lon", "la
 RAIN.JOIN           = over(COMBO.STATE.SP, AUS.RAIN)
 COMBO.STATE.RAIN    = cbind.data.frame(COMBO.STATE.SP, RAIN.JOIN)
 names(COMBO.STATE.RAIN)
-
+unique(COMBO.STATE$AUS_STATE)
 
 ## Rename and remove
 COMBO.STATE.RAIN = subset(COMBO.STATE.RAIN, select = -c(lon.1,  lat.1, optional, optional.1, lon.2, lat.2))
@@ -153,20 +161,17 @@ identical(names(env.grids.current),sdm.predictors)
 
 ## subset the data to just those species records
 
-## subset the data to just those species records in NSW
-
-## subset the data to just those species records outside NSW
+## subset the data to just those species records in NSW, and outside NSW
 
 ## Subsample within all rainfall bands - take 50% of total records
 
-## Then combine the stratified sample with records outside NSW
+## Then combine the stratified sample with those records outside NSW
 
 
 
 
 #########################################################################################################################
 ## Can split sampling by state, before analysis
-
 ## First, subset the species data to 
 unique(COMBO.STATE.RAIN$AUS_RN_ZN)
 unique(COMBO.STATE.RAIN$AUS_STATE)
