@@ -113,7 +113,7 @@ areal_unit    = areal_unit[order(areal_unit$SUA_NAME11),]
 Koppen        = readRDS('data/base/CONTEXTUAL/Koppen_1975.rds')
 Koppen_zones  = unique(readOGR('data/base/CONTEXTUAL/WC05_1975H_Koppen_Shapefile/WC05_1975H_Koppen_Kriticos_2012.shp')@data[, 1:2])
 Koppen_1975   = raster('data/Koppen_1000m_Mollweide54009.tif')
-AUS_RAIN      = readRDS('data/base/CONTEXTUAL/BOM/AUS_RAIN.rds')
+AUS_RAIN      = readRDS('data/base/CONTEXTUAL/BOM/BOM_RAIN_AGG.rds')
 
 SUA           = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/IN_SUA_AUS.rds")
 LGA           = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LGA.rds")
@@ -127,9 +127,9 @@ template.cells  = readRDS("./data/hasData_cells.rds")
 load("./data/base/CONTEXTUAL/urbanareas.rda")
 
 
-   
-# Kopp.future = readOGR("F:/green_cities_sdm/data/base/CONTEXTUAL/CM10_Kop_Shp_V1.2/CM10_Kop_V1.2.shp", 
-#                       layer = "CM10_Kop_V1.2")
+# AUS_RAIN = readOGR("H:/green_cities_sdm/data/base/CONTEXTUAL/BOM/BOM_RAIN_AGG.shp",
+#                    layer = "BOM_RAIN_AGG")
+# saveRDS(AUS_RAIN, file = paste("./data/base/CONTEXTUAL/BOM/BOM_RAIN_AGG.rds"))
 
 
 ## Set definitions :: best to minimise the number of projection used in this project
@@ -746,20 +746,26 @@ summary(NURSE.count)
 # 
 # ## So find 80 species which have the most growers, have the most Aus records and with at least 50 of them trees
 # dim(subset(COMBO.NICHE.CONTEXT, Total.growers > 25 & AUS_RECORDS > 20 & COMBO.count > 100 & Top_200 == "TRUE"))
-# 
-# MILE.1         = subset(COMBO.NICHE.CONTEXT, Total.growers > 25 & AUS_RECORDS > 20 & COMBO.count > 100 & Top_200 == "TRUE")
-# MILE.CLEAN     = subset(CLEAN.NICHE.CONTEXT, Total.growers > 25 & AUS_RECORDS > 20 & COMBO.count > 100 & Top_200 == "TRUE")
-# MILE.1.EXTRA   = subset(CLEAN.NICHE.CONTEXT, Total.growers > 25 & AUS_RECORDS > 20 & COMBO.count > 100)
-# MILE.1.EXTRA   = MILE.1.EXTRA[with(MILE.1.EXTRA, order(-Total.growers)), ]
-# MILE.1.EXTRA   = MILE.1.EXTRA [!MILE.1.EXTRA$searchTaxon %in% MILE.CLEAN$searchTaxon, ]
-# summary(MILE.1.EXTRA$AUS_RECORDS)
-# summary(MILE.1.EXTRA$COMBO.count)
-# 
-# spp.mile.extra     = head(MILE.1.EXTRA$searchTaxon, 84)
-# spp.mile.1         = unique(sort(c(MOD.2.3$Species, MILE.1$searchTaxon, spp.mile.extra)))
-# length(spp.mile.1)
-# 
-# 
+
+
+## This is the code which chooses the other species..........................................................................
+## would need to be updated to create
+
+
+
+MILE.1         = subset(COMBO.NICHE.CONTEXT, Total.growers > 25 & AUS_RECORDS > 20 & COMBO.count > 100 & Top_200 == "TRUE")
+MILE.CLEAN     = subset(CLEAN.NICHE.CONTEXT, Total.growers > 25 & AUS_RECORDS > 20 & COMBO.count > 100 & Top_200 == "TRUE")
+MILE.1.EXTRA   = subset(CLEAN.NICHE.CONTEXT, Total.growers > 25 & AUS_RECORDS > 20 & COMBO.count > 100)
+MILE.1.EXTRA   = MILE.1.EXTRA[with(MILE.1.EXTRA, order(-Total.growers)), ]
+MILE.1.EXTRA   = MILE.1.EXTRA [!MILE.1.EXTRA$searchTaxon %in% MILE.CLEAN$searchTaxon, ]
+summary(MILE.1.EXTRA$AUS_RECORDS)
+summary(MILE.1.EXTRA$COMBO.count)
+
+spp.mile.extra     = head(MILE.1.EXTRA$searchTaxon, 84)
+spp.mile.1         = unique(sort(c(MOD.2.3$Species, MILE.1$searchTaxon, spp.mile.extra)))
+length(spp.mile.1)
+
+ 
 # ## Join on the column which shows the kind of data bias
 # MILE.1.SPP     =  COMBO.NICHE.CONTEXT[COMBO.NICHE.CONTEXT$searchTaxon %in% spp.mile.1, ]
 # MILE.1.SPP     =  join(MILE.1.SPP, SPP.BIAS, type = "left")

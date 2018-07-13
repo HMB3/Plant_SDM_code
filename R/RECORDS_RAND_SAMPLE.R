@@ -7,8 +7,7 @@
 ## Ideally, thinning removes the fewest records necessary to substantially reduce the effects of sampling bias, while 
 ## simultaneously retaining the greatest amount of useful information. 
 
-
-## Using the SDM dataset which has already been thinned to 1km, rather than the original dataset
+## Use the SDM dataset - one record per 1km cell - rather than the original dataset......................................
 
 ## Use the stratified function: https://www.rdocumentation.org/packages/fifer/versions/1.0/topics/stratified
 ## spThin didn't really work https://cran.r-project.org/web/packages/spThin/vignettes/spThin_vignette.html
@@ -16,7 +15,6 @@
 
 ## Create lists
 source('./R/HIA_LIST_MATCHING.R')
-
 
 
 #########################################################################################################################
@@ -42,7 +40,7 @@ tail(BIAS.COORDS)
 tail(BIAS.DATA.ALL)[, c(1:3)]   ## indices match
 
 
-## Bind the coordinates to the SDM table: can use spCbind for sp data frames
+## Bind the coordinates to the SDM table
 BIAS.COORDS   = as.data.frame(BIAS.COORDS)
 BIAS.DATA.DF = cbind(as.data.frame(BIAS.DATA.ALL), BIAS.COORDS)
 BIAS.DATA.DF = BIAS.DATA.DF[, c(1:22)]
@@ -52,12 +50,12 @@ dim(BIAS.DATA.DF)
 
 #########################################################################################################################
 ## Intersect BOM with rainfall data
-COMBO.RASTER.SP   = SpatialPointsDataFrame(coords      = BIAS.DATA.DF[c("lon", "lat")], 
+BIAS.DATA.SP   = SpatialPointsDataFrame(coords      = BIAS.DATA.DF[c("lon", "lat")], 
                                            data        = BIAS.DATA.DF,
                                            proj4string = CRS.WGS.84)
 
 
-## Project data
+## Project data :: this takes a long time for rain, lots of features
 AUS.WGS    = spTransform(aus, CRS.WGS.84)
 RAIN.WGS   = spTransform(AUS_RAIN, CRS.WGS.84)
 AUS.STATE  = AUS.WGS[, c("name")]
@@ -65,47 +63,76 @@ names(AUS.STATE)[names(AUS.STATE) == 'name'] <- 'AUS_STATE'
 AUS.RAIN   = RAIN.WGS[, c("AUS_RN_ZN")] 
 
 
-## Save these files out to test in ArcMap
-## dim(COMBO.RASTER.SP);names(COMBO.RASTER.SP)
-# writeOGR(obj = SDM.DATA.ALL, dsn = "./data/base/HIA_LIST/COMBO", layer = "SDM_DATA_TEST", driver = "ESRI Shapefile")
-# writeOGR(obj = RAIN.WGS, dsn = "./data/base/HIA_LIST/COMBO", layer = "RAIN.WGS", driver = "ESRI Shapefile")
+## Check projections and plot
+projection(BIAS.DATA.SP);projection(AUS.STATE);projection(AUS.RAIN)
+BIAS.DATA.CHECK  <- BIAS.DATA.SP[BIAS.DATA.SP$searchTaxon == "Acacia floribunda",]
+plot(BIAS.DATA.CHECK)
+plot(RAIN.WGS, main = "Average Australian rainfall, 1961-1990")
+plot(AUS.STATE, main = "Australian states")
 
 
+#########################################################################################################################
+## Run join between species records and Australian states...
+STATE.JOIN        = over(BIAS.DATA.SP, AUS.STATE)                   
+BIAS.STATE        = cbind.data.frame(BIAS.DATA.SP, STATE.JOIN)
+names(BIAS.STATE)
+unique(BIAS.STATE$AUS_STATE)
+saveRDS(BIAS.STATE, file = paste("./data/base/HIA_LIST/COMBO/BIAS_STATE.rds"))
 
-## Run join between species records and Australian STATES
-## This join is not working...............................................................................................
-projection(COMBO.RASTER.SP);projection(AUS.STATE);projection(AUS.RAIN)
-plot(COMBO.RASTER.SP)
-
-
-STATE.JOIN          = over(COMBO.RASTER.SP, AUS.STATE)                   ## =SUA.JOIN      = over(COMBO.RASTER.SP, SUA.WGS) 
-COMBO.STATE         = cbind.data.frame(COMBO.RASTER.SP, STATE.JOIN)
-names(COMBO.STATE)
-unique(COMBO.STATE$AUS_STATE)
-saveRDS(COMBO.STATE, file = paste("./data/base/HIA_LIST/COMBO/COMBO_STATE.rds"))
 
 ## Recreate sp dataframe
-COMBO.STATE.SP   = SpatialPointsDataFrame(coords      = COMBO.STATE[c("lon", "lat")], 
-                                          data        = COMBO.STATE,
+BIAS.STATE.SP   = SpatialPointsDataFrame(coords       = BIAS.STATE[c("lon", "lat")], 
+                                          data        = BIAS.STATE,
                                           proj4string = CRS.WGS.84)
 
 
+#########################################################################################################################
 ## Now join RAIN categories
-RAIN.JOIN           = over(COMBO.STATE.SP, AUS.RAIN)
-COMBO.STATE.RAIN    = cbind.data.frame(COMBO.STATE.SP, RAIN.JOIN)
-names(COMBO.STATE.RAIN)
-unique(COMBO.STATE$AUS_STATE)
+RAIN.JOIN          = over(BIAS.STATE.SP, AUS.RAIN)
+BIAS.STATE.RAIN    = cbind.data.frame(BIAS.STATE.SP, RAIN.JOIN)
+names(BIAS.STATE.RAIN)
+unique(BIAS.STATE$AUS_STATE)
+
 
 ## Rename and remove
-COMBO.STATE.RAIN = subset(COMBO.STATE.RAIN, select = -c(lon.1,  lat.1, optional, optional.1, lon.2, lat.2))
-names(COMBO.STATE.RAIN)
-unique(COMBO.STATE.RAIN$AUS_STATE)
-unique(COMBO.STATE.RAIN$AUS_RN_ZN)
+BIAS.STATE.RAIN = subset(BIAS.STATE.RAIN, select = -c(lon.1,  lat.1, optional, optional.1, lon.2, lat.2))
+names(BIAS.STATE.RAIN)
+unique(BIAS.STATE.RAIN$AUS_STATE)
+unique(BIAS.STATE.RAIN$AUS_RN_ZN)
 
 
 ## Save data
-saveRDS(COMBO.STATE.RAIN, file = paste("./data/base/HIA_LIST/COMBO/COMBO_STATE_RAIN.rds"))
-#COMBO.STATE.RAIN = readRDS("./data/base/HIA_LIST/COMBO/COMBO_STATE_RAIN.rds")
+saveRDS(BIAS.STATE.RAIN, file = paste("./data/base/HIA_LIST/COMBO/BIAS_STATE_RAIN.rds"))
+#BIAS.STATE.RAIN = readRDS("./data/base/HIA_LIST/COMBO/BIAS_STATE_RAIN.rds")
+
+
+
+
+
+#########################################################################################################################
+## 2). CREATE A RANDOM SUB-SAMPLE OF X% OF SPP RECORDS, STRATIFIED BY RAINFALL, THE RUN SDMs AGAIN FOR SELECTED TAXA
+#########################################################################################################################
+
+
+# Shawn :: The Biodiverse approach would snap the coordinates to the centre of each cell.  It would be better to select 
+# one point at random within each cell, which should be pretty simple in R.  
+
+# The random sample for a large starting number would probably be reasonable. With either of the above approaches, you also 
+# have the problem that you might lose some of your environmental variability, in which case it might be better to thin 
+# in environmental space as well as geospatial.  Maybe a stratified thinning would be sensible?
+
+
+## Use the stratified function: https://www.rdocumentation.org/packages/fifer/versions/1.0/topics/stratified
+
+## For each species in the list :: 
+
+## subset the data to just those species records
+
+## subset the data to just those species records in NSW, and outside NSW
+
+## Subsample within all rainfall bands - take 50% of total records
+
+## Then combine the stratified sample with those records outside NSW
 
 
 #########################################################################################################################
@@ -138,43 +165,10 @@ names(env.grids.current) <- sdm.predictors[i]
 identical(names(env.grids.current),sdm.predictors)
 
 
-
-
-
 #########################################################################################################################
-## 2). CREATE A RANDOM SUB-SAMPLE OF X% OF SPP RECORDS
-#########################################################################################################################
-
-
-# Shawn :: The Biodiverse approach would snap the coordinates to the centre of each cell.  It would be better to select 
-# one point at random within each cell, which should be pretty simple in R.  
-
-# The random sample for a large starting number would probably be reasonable. With either of the above approaches, you also 
-# have the problem that you might lose some of your environmental variability, in which case it might be better to thin 
-# in environmental space as well as geospatial.  Maybe a stratified thinning would be sensible?
-
-
-## Use the stratified function: https://www.rdocumentation.org/packages/fifer/versions/1.0/topics/stratified
-
-## For each species in the list :: 
-
-
-## subset the data to just those species records
-
-## subset the data to just those species records in NSW, and outside NSW
-
-## Subsample within all rainfall bands - take 50% of total records
-
-## Then combine the stratified sample with those records outside NSW
-
-
-
-
-#########################################################################################################################
-## Can split sampling by state, before analysis
-## First, subset the species data to 
-unique(COMBO.STATE.RAIN$AUS_RN_ZN)
-unique(COMBO.STATE.RAIN$AUS_STATE)
+## Check data subsets
+unique(BIAS.STATE.RAIN$AUS_RN_ZN)
+unique(BIAS.STATE.RAIN$AUS_STATE)
 
 
 
@@ -192,31 +186,39 @@ lapply(SPP.BIAS, function(spp){
   }
   
   ## Print the taxa being processed to screen
-  if(spp %in% COMBO.STATE.RAIN$searchTaxon) {
+  if(spp %in% BIAS.STATE.RAIN$searchTaxon) {
     message('Doing ', spp) 
     
     ## Do the stratification by rainfall, etc, in here...................................................................
     
     ## First, subset the records to only the taxa being processed
-    occurrence <- subset(COMBO.STATE.RAIN, searchTaxon == spp)
+    occurrence <- subset(BIAS.STATE.RAIN, searchTaxon == spp)
     
     ## Now subset to the species data to those records inside and outside NSW
-    ## Could change this to a generic state argument
+    ## Could change this to a generic "state" argument
     occurrence.nsw <- subset(occurrence, AUS_STATE == "New South Wales")
     occurrence.out <- subset(occurrence, AUS_STATE != "New South Wales")
+    
+    unique(occurrence.nsw$AUS_STATE)
+    unique(occurrence.out$AUS_STATE)
     
     ## Now take a 50% random sample from all rainfall groups, just for the points within NSW
     ## Set a large starting number R? How large is large?
     set.seed(123458)
     strat.nsw = stratified(occurrence.nsw, "AUS_RN_ZN", .5)
+    dim(strat.nsw)[1]/dim(occurrence.nsw)[1]*100
     
-    ## Now combine the two data frames
+    ## Now combine the two data frames :: about 50% of the original data remains
     occ.strat = rbind(strat.nsw, occurrence.out)
     names(occ.strat)
-    dim(occ.strat);dim(occurrence)
+    dim(occ.strat)[1]/dim(occurrence)[1]*100
     
     ## Now get the background points. These can come from any spp, other than the modelled species.
-    background <- subset(COMBO.STATE.RAIN, searchTaxon != spp)
+    ## Also should the background points come from NSW too?
+    background <- subset(BIAS.STATE.RAIN, searchTaxon != spp)
+    
+    background <- spTransform(background, CRS("+init=ESRI:54009 +proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0"))
+    occ.strat  <- spTransform(occ.strat,   CRS("+init=ESRI:54009 +proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0"))
     
     ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
     tryCatch(
@@ -260,92 +262,92 @@ lapply(SPP.BIAS, function(spp){
 #########################################################################################################################
 
 
-#########################################################################################################################
-## OR, split sampling by state ::
-SPP.REC.NSW = subset(COMBO.STATE.RAIN, AUS_STATE == "New South Wales") 
-SPP.REC.QLD = subset(COMBO.STATE.RAIN, AUS_STATE == "Queensland") 
-SPP.REC.VIC = subset(COMBO.STATE.RAIN, AUS_STATE == "Victoria")
-SPP.REC.SA  = subset(COMBO.STATE.RAIN, AUS_STATE == "South Australia") 
-unique(SPP.REC.NSW$AUS_STATE)
-dim(SPP.REC.NSW)
-
-
-## So 27% of all the clean data from the whole world is in NSW...
-dim(SPP.REC.NSW)[1]/dim(COMBO.STATE.RAIN)[1]*100
-dim(SPP.REC.QLD)[1]/dim(COMBO.STATE.RAIN)[1]*100
-dim(SPP.REC.VIC)[1]/dim(COMBO.STATE.RAIN)[1]*100
-dim(SPP.REC.SA)[1]/dim(COMBO.STATE.RAIN)[1]*100
-
-
-## Of the Austraian data, most is in NSW
-unique(COMBO.STATE.RAIN$AUS_STATE)
-state.counts <- table(COMBO.STATE.RAIN$AUS_STATE)
-barplot(state.counts, main = "All records per state",
-        xlab = "State", 
-        ylab = "No. records", 
-        col = c("lightblue", "pink", "orange", "green", "grey", "beige", "coral", "chocolate4", "aquamarine", "blueviolet"))
-
-
-## Pie chart
-pie(state.counts, main = "AUS records per state")
-
-
-#########################################################################################################################    
-## Now create a random subset of points from NSW, stratified by rainfall category. The stratified function samples from 
-## a data.frame in which one of the columns can be used as a "stratification" or "grouping" variable. The result is 
-## a new data.frame with the specified number of samples from each group. 
-
-
-## Using only points in NSW, let's take a 50% sample from all rainfall groups
-unique(SPP.REC.NSW$AUS_RN_ZN)
-set.seed(1)
-RAND.REC.NSW = stratified(SPP.REC.NSW, "AUS_RN_ZN", .5)
-dim(RAND.REC.NSW)[1]/dim(SPP.REC.NSW)[1]
-
-
-## The points are unevenly distributed across the rainfall zones, so we can't sample randomly from these categories 
-round(with(SPP.REC.NSW, table(AUS_RN_ZN)/sum(table(AUS_RN_ZN))*100), 1)
-round(with(RAND.REC.NSW, table(AUS_RN_ZN)/sum(table(AUS_RN_ZN))*100), 1)
-
-table(SPP.REC.NSW$AUS_RN_ZN)
-table(RAND.REC.NSW$AUS_RN_ZN)
-
-
-## Plot an example species ::
-SPP.ORIG    = subset(COMBO.STATE.RAIN, searchTaxon == "Banksia integrifolia") 
-unique(SPP.ORIG$searchTaxon)
-dim(SPP.TEST)[1]
-
-
-## Original records are biased to NSW
-plot(aus)
-points(SPP.ORIG$lon,  SPP.ORIG$lat, 
-       cex = 0.8, col = "red", pch = 19, main = "Original data")
-
-
-## Randomly sampled data
-SPP.RAND    = subset(RAND.REC.NSW, searchTaxon == "Banksia integrifolia")
-unique(SPP.RAND$searchTaxon)
-dim(SPP.RAND)[1]
-
-
-##
-plot(aus)
-points(SPP.RAND$lon,  SPP.RAND$lat, 
-       cex = 0.8, col = "red", pch = 19, main = "Subsampled data")
-
-
-## Check these points in ArcMap
-SPP.ORIG$SAMPLE = "Original";SPP.RAND$SAMPLE = "Sampled"
-SPP.SAMPLE = as.data.frame(rbind(SPP.ORIG, SPP.RAND))
-unique(SPP.SAMPLE$SAMPLE)
-
-
-## They need this data 
-SPP.SAMPLE   = SpatialPointsDataFrame(coords      = SPP.SAMPLE[c("lon", "lat")], 
-                                      data        = SPP.SAMPLE,
-                                      proj4string = CRS.WGS.84)
-writeOGR(obj = SPP.SAMPLE, dsn = "./data/base/HIA_LIST/COMBO", layer = "SPP_RAND_SAMPLE", driver = "ESRI Shapefile")
+# #########################################################################################################################
+# ## OR, split sampling by state ::
+# SPP.REC.NSW = subset(BIAS.STATE.RAIN, AUS_STATE == "New South Wales") 
+# SPP.REC.QLD = subset(BIAS.STATE.RAIN, AUS_STATE == "Queensland") 
+# SPP.REC.VIC = subset(BIAS.STATE.RAIN, AUS_STATE == "Victoria")
+# SPP.REC.SA  = subset(BIAS.STATE.RAIN, AUS_STATE == "South Australia") 
+# unique(SPP.REC.NSW$AUS_STATE)
+# dim(SPP.REC.NSW)
+# 
+# 
+# ## So 27% of all the clean data from the whole world is in NSW...
+# dim(SPP.REC.NSW)[1]/dim(BIAS.STATE.RAIN)[1]*100
+# dim(SPP.REC.QLD)[1]/dim(BIAS.STATE.RAIN)[1]*100
+# dim(SPP.REC.VIC)[1]/dim(BIAS.STATE.RAIN)[1]*100
+# dim(SPP.REC.SA)[1]/dim(BIAS.STATE.RAIN)[1]*100
+# 
+# 
+# ## Of the Austraian data, most is in NSW
+# unique(BIAS.STATE.RAIN$AUS_STATE)
+# state.counts <- table(BIAS.STATE.RAIN$AUS_STATE)
+# barplot(state.counts, main = "All records per state",
+#         xlab = "State", 
+#         ylab = "No. records", 
+#         col = c("lightblue", "pink", "orange", "green", "grey", "beige", "coral", "chocolate4", "aquamarine", "blueviolet"))
+# 
+# 
+# ## Pie chart
+# pie(state.counts, main = "AUS records per state")
+# 
+# 
+# #########################################################################################################################    
+# ## Now create a random subset of points from NSW, stratified by rainfall category. The stratified function samples from 
+# ## a data.frame in which one of the columns can be used as a "stratification" or "grouping" variable. The result is 
+# ## a new data.frame with the specified number of samples from each group. 
+# 
+# 
+# ## Using only points in NSW, let's take a 50% sample from all rainfall groups
+# unique(SPP.REC.NSW$AUS_RN_ZN)
+# set.seed(1)
+# RAND.REC.NSW = stratified(SPP.REC.NSW, "AUS_RN_ZN", .5)
+# dim(RAND.REC.NSW)[1]/dim(SPP.REC.NSW)[1]
+# 
+# 
+# ## The points are unevenly distributed across the rainfall zones, so we can't sample randomly from these categories 
+# round(with(SPP.REC.NSW, table(AUS_RN_ZN)/sum(table(AUS_RN_ZN))*100), 1)
+# round(with(RAND.REC.NSW, table(AUS_RN_ZN)/sum(table(AUS_RN_ZN))*100), 1)
+# 
+# table(SPP.REC.NSW$AUS_RN_ZN)
+# table(RAND.REC.NSW$AUS_RN_ZN)
+# 
+# 
+# ## Plot an example species ::
+# SPP.ORIG    = subset(BIAS.STATE.RAIN, searchTaxon == "Banksia integrifolia") 
+# unique(SPP.ORIG$searchTaxon)
+# dim(SPP.TEST)[1]
+# 
+# 
+# ## Original records are biased to NSW
+# plot(aus)
+# points(SPP.ORIG$lon,  SPP.ORIG$lat, 
+#        cex = 0.8, col = "red", pch = 19, main = "Original data")
+# 
+# 
+# ## Randomly sampled data
+# SPP.RAND    = subset(RAND.REC.NSW, searchTaxon == "Banksia integrifolia")
+# unique(SPP.RAND$searchTaxon)
+# dim(SPP.RAND)[1]
+# 
+# 
+# ##
+# plot(aus)
+# points(SPP.RAND$lon,  SPP.RAND$lat, 
+#        cex = 0.8, col = "red", pch = 19, main = "Subsampled data")
+# 
+# 
+# ## Check these points in ArcMap
+# SPP.ORIG$SAMPLE = "Original";SPP.RAND$SAMPLE = "Sampled"
+# SPP.SAMPLE = as.data.frame(rbind(SPP.ORIG, SPP.RAND))
+# unique(SPP.SAMPLE$SAMPLE)
+# 
+# 
+# ## They need this data 
+# SPP.SAMPLE   = SpatialPointsDataFrame(coords      = SPP.SAMPLE[c("lon", "lat")], 
+#                                       data        = SPP.SAMPLE,
+#                                       proj4string = CRS.WGS.84)
+# writeOGR(obj = SPP.SAMPLE, dsn = "./data/base/HIA_LIST/BIAS", layer = "SPP_RAND_SAMPLE", driver = "ESRI Shapefile")
 
 
 #########################################################################################################################

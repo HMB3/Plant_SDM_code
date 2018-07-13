@@ -125,34 +125,34 @@ identical(names(env.grids.current),sdm.predictors)
 
 #########################################################################################################################
 ## Loop over the species list and plot the occurrence data for each to check the data bias
-# TAXA = as.list(sort(unique(intersect(SDM.DATA.ALL$searchTaxon, spp.mile))))
-# 
-# for (i in 1:length(TAXA)) {
-# 
-#   ## Create points for each species
-#   spp.points <- SDM.DATA.ALL[SDM.DATA.ALL$searchTaxon == TAXA[i], ] %>%
-#     spTransform(CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'))
-# 
-#   ## Print to file
-#   save_name = gsub(' ', '_', TAXA[i])
-#   save_dir  = "output/maxent/summary"
-#   png(sprintf('%s/%s_%s.png', save_dir,
-#               save_name, "Australian_points"),
-#       3236, 2000, units = 'px', res = 300)
-# 
-#   ## set margins
-#   par(mar   = c(3, 3, 5, 3),  ## b, l, t, r
-#       #mgp   = c(9.8, 2.5, 0),
-#       oma   = c(1.5, 1.5, 1.5, 1.5))
-# 
-#   ## Plot just the Australian points
-#   plot(aus, main = TAXA[i])
-#   points(spp.points, col = "red", cex = .3, pch = 19)
-# 
-#   ## Finish the device
-#   dev.off()
-# 
-# }
+TAXA = as.list(sort(unique(intersect(SDM.DATA.ALL$searchTaxon, spp.mile))))
+
+for (i in 1:length(TAXA)) {
+
+  ## Create points for each species
+  spp.points <- SDM.DATA.ALL[SDM.DATA.ALL$searchTaxon == TAXA[i], ] %>%
+    spTransform(CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'))
+
+  ## Print to file
+  save_name = gsub(' ', '_', TAXA[i])
+  save_dir  = "output/maxent/summary"
+  png(sprintf('%s/%s_%s.png', save_dir,
+              save_name, "Australian_points"),
+      3236, 2000, units = 'px', res = 300)
+
+  ## set margins
+  par(mar   = c(3, 3, 5, 3),  ## b, l, t, r
+      #mgp   = c(9.8, 2.5, 0),
+      oma   = c(1.5, 1.5, 1.5, 1.5))
+
+  ## Plot just the Australian points
+  plot(aus, main = TAXA[i])
+  points(spp.points, col = "red", cex = .3, pch = 19)
+
+  ## Finish the device
+  dev.off()
+
+}
 
 
 
@@ -339,7 +339,7 @@ lapply(ff[n < 27], function(x) {
 ## OUTSTANDING SDM TASKS:
 #########################################################################################################################
 
-## 1). Make list of exotic spp on the top 200 sellers, which have no data and/or produce bad maps
+## 1). Made a list of exotic spp on the top 200 sellers, which have no data and/or produce bad maps
 
 ## 2). Re-download ALA data. Add exotic urban inventory data that Ale is compiling (create diagram of data integration, to highlight knowlegde gaps)
 ##     Four columns ::
@@ -360,9 +360,11 @@ lapply(ff[n < 27], function(x) {
 ##    "X10.percentile.training.presence.Logistic.threshold"
 ##    "X10.percentile.training.presence.training.omission"
   
-## 5). Calculate the TSS for all species (and MESS maps for a few problematic species)
+## 5). Calculate the TSS for all species (and MESS maps for a few problematic species, just for appendix)
 
-## 7). Decide on gamma diversity for this article - 150 spp - could it go to GEB? Plan figures and tables for MS
+## 7). Decide on gamma diversity for this article - trace the 136 species checked already. Which are not on the top 200?
+##     150 spp - could it go to GEB? 
+##     Plan figures and tables for MS
 ##     The approach doesn't change with Gamma, so draft it now.
 
 
