@@ -7,24 +7,27 @@
 ## PROJECT MAXENT MODELS
 #########################################################################################################################
 
+
 ## flag isses with.......................................................................................................
+
 
 #########################################################################################################################
 ## Create maxent maps for a given time period 
 # x             = scen_2030[1]
-# species       = kop_spp[1]
+# species       = SPP_BIAS[1]
 # time_slice    = 30
-# maxent_path   = "./output/maxent/SET_VAR_COORDCLEAN"
+# maxent_path   = "./output/maxent/SPP_BIAS"
 # climate_path  = "./data/base/worldclim/aus/1km/bio"
 # grid_names    = grid.names
 # current_grids = env.grids.current
+# scen_list     = scen_2030
 
 
 ## One function for all time periods
 project_maxent_grids = function(scen_list, species_list, maxent_path, climate_path, grid_names, time_slice, current_grids) {
   
   ## Read in Australia
-  aus = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds") %>%
+  aus = AUS %>%
     spTransform(ALB.CONICAL)
   
   ## First, run a loop over each scenario:    

@@ -642,6 +642,8 @@ FIT_MAXENT_TARG_BG <- function(occ,
       }
       
       ## Runs the full maxent model - presumably using all the data in swd
+      ## This uses DISMO to output standard files, but the names can't be altered
+      ## IE we really want to add the species name to the .csv file   
       if(missing(full_args)) full_args <- NULL
       message(name, ' running full maxent')
       me_full <- maxent(swd, pa, path = file.path(outdir_sp, 'full'),
@@ -1043,8 +1045,38 @@ FIT_MAXENT_SELECTION <- function(occ,
 # }
 
 
-
-
+maxtss2 <- function(x) {
+  
+  # x: a directory containing the cross-validated Maxent output
+  # x = 'output/maxent/BIAS_TSS'
+  ## Notes:
+  ## tss  = sens + spec - 1
+  ## sens = 1 - omission 
+  ## spec = 1 - FPA
+  ## tss  = 1 - omission + 1 - fpa - 1
+  ##      = 1 - (omission + fpa)
+  ##     
+  
+  ff <- list.files(x, 'omission\\.csv$', full.names = TRUE)
+  
+  max_tss <- sapply(ff, function(f) {
+    
+    d <- read.csv(f)
+    i <- which.min(d$Test.omission + d$Fractional.area)
+    
+    c(max_tss = 1 - min(d$Test.omission + d$Fractional.area),
+      thr     = d$Corresponding.logistic.value[i])
+    
+  })
+  
+  out <- t(max_tss)
+  rownames(out) <- basename(rownames(out))
+  
+  list(max_tss      = out, 
+       max_tss_mean = mean(out[, 'max_tss']), 
+       max_tss_sd   = sd(out[, 'max_tss']))
+  
+}
 
 
 

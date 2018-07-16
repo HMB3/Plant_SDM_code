@@ -26,6 +26,7 @@ source('./R/HIA_LIST_MATCHING.R')
 ## Load GBIF data and rain shapefile
 BIAS.DATA.ALL        = readRDS("./data/base/HIA_LIST/COMBO/SDM_DATA_CLEAN_052018.rds")        
 SPP.BIAS             = intersect(SPP.BIAS, SUA.spp)    ## just re-run the models for species on the list
+SPP_BIAS             = gsub(" ", "_", SPP.BIAS)
 
 
 ## Project the SDM data into WGS
@@ -51,8 +52,8 @@ dim(BIAS.DATA.DF)
 #########################################################################################################################
 ## Intersect BOM with rainfall data
 BIAS.DATA.SP   = SpatialPointsDataFrame(coords      = BIAS.DATA.DF[c("lon", "lat")], 
-                                           data        = BIAS.DATA.DF,
-                                           proj4string = CRS.WGS.84)
+                                        data        = BIAS.DATA.DF,
+                                        proj4string = CRS.WGS.84)
 
 
 ## Project data :: this takes a long time for rain, lots of features
@@ -82,8 +83,8 @@ saveRDS(BIAS.STATE, file = paste("./data/base/HIA_LIST/COMBO/BIAS_STATE.rds"))
 
 ## Recreate sp dataframe
 BIAS.STATE.SP   = SpatialPointsDataFrame(coords       = BIAS.STATE[c("lon", "lat")], 
-                                          data        = BIAS.STATE,
-                                          proj4string = CRS.WGS.84)
+                                         data        = BIAS.STATE,
+                                         proj4string = CRS.WGS.84)
 
 
 #########################################################################################################################
@@ -99,6 +100,11 @@ BIAS.STATE.RAIN = subset(BIAS.STATE.RAIN, select = -c(lon.1,  lat.1, optional, o
 names(BIAS.STATE.RAIN)
 unique(BIAS.STATE.RAIN$AUS_STATE)
 unique(BIAS.STATE.RAIN$AUS_RN_ZN)
+
+
+BIAS.STATE.SP   = SpatialPointsDataFrame(coords       = BIAS.STATE[c("lon", "lat")], 
+                                         data        = BIAS.STATE,
+                                         proj4string = CRS.WGS.84)
 
 
 ## Save data
@@ -154,6 +160,7 @@ sdm.select     <- c("Annual_mean_temp", "Temp_seasonality",    "Max_temp_warm_mo
 
 
 ## Create a raster stack of current environmental conditions if needed
+## This code is probably not needed... 
 i  <- match(sdm.predictors, sdm.predictors)
 ff <- file.path('./data/base/worldclim/world/0.5/bio/current',
                 sprintf('bio_%02d.tif', i))
@@ -169,7 +176,6 @@ identical(names(env.grids.current),sdm.predictors)
 ## Check data subsets
 unique(BIAS.STATE.RAIN$AUS_RN_ZN)
 unique(BIAS.STATE.RAIN$AUS_STATE)
-
 
 
 #########################################################################################################################
@@ -209,7 +215,7 @@ lapply(SPP.BIAS, function(spp){
     dim(strat.nsw)[1]/dim(occurrence.nsw)[1]*100
     
     ## Now combine the two data frames :: about 50% of the original data remains
-    occ.strat = rbind(strat.nsw, occurrence.out)
+    occ.strat = as.data.frame(bind_rows(strat.nsw, occurrence.out))
     names(occ.strat)
     dim(occ.strat)[1]/dim(occurrence)[1]*100
     
@@ -217,8 +223,19 @@ lapply(SPP.BIAS, function(spp){
     ## Also should the background points come from NSW too?
     background <- subset(BIAS.STATE.RAIN, searchTaxon != spp)
     
-    background <- spTransform(background, CRS("+init=ESRI:54009 +proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0"))
+    ## Re-convert to a spatial points df
+    background    = SpatialPointsDataFrame(coords      = background[c("lon", "lat")], 
+                                           data        = background,
+                                           proj4string = CRS.WGS.84)
+    
+    occ.strat    = SpatialPointsDataFrame(coords      = occ.strat[c("lon", "lat")], 
+                                          data        = occ.strat,
+                                          proj4string = CRS.WGS.84)
+    
+    ## Re-project
+    background <- spTransform(background,  CRS("+init=ESRI:54009 +proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0"))
     occ.strat  <- spTransform(occ.strat,   CRS("+init=ESRI:54009 +proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0"))
+    #writeOGR(obj = SPP.SAMPLE, dsn = "./data/base/HIA_LIST/BIAS", layer = "SPP_RAND_SAMPLE", driver = "ESRI Shapefile")
     
     ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
     tryCatch(
@@ -258,100 +275,224 @@ lapply(SPP.BIAS, function(spp){
 
 
 #########################################################################################################################
-## 3). CREATE A RANDOM SUB-SAMPLE OF X% OF SPP RECORS
-#########################################################################################################################
+## Simple check of the stratification -
 
 
-# #########################################################################################################################
-# ## OR, split sampling by state ::
-# SPP.REC.NSW = subset(BIAS.STATE.RAIN, AUS_STATE == "New South Wales") 
-# SPP.REC.QLD = subset(BIAS.STATE.RAIN, AUS_STATE == "Queensland") 
-# SPP.REC.VIC = subset(BIAS.STATE.RAIN, AUS_STATE == "Victoria")
-# SPP.REC.SA  = subset(BIAS.STATE.RAIN, AUS_STATE == "South Australia") 
-# unique(SPP.REC.NSW$AUS_STATE)
-# dim(SPP.REC.NSW)
-# 
-# 
-# ## So 27% of all the clean data from the whole world is in NSW...
-# dim(SPP.REC.NSW)[1]/dim(BIAS.STATE.RAIN)[1]*100
-# dim(SPP.REC.QLD)[1]/dim(BIAS.STATE.RAIN)[1]*100
-# dim(SPP.REC.VIC)[1]/dim(BIAS.STATE.RAIN)[1]*100
-# dim(SPP.REC.SA)[1]/dim(BIAS.STATE.RAIN)[1]*100
-# 
-# 
-# ## Of the Austraian data, most is in NSW
-# unique(BIAS.STATE.RAIN$AUS_STATE)
-# state.counts <- table(BIAS.STATE.RAIN$AUS_STATE)
-# barplot(state.counts, main = "All records per state",
-#         xlab = "State", 
-#         ylab = "No. records", 
-#         col = c("lightblue", "pink", "orange", "green", "grey", "beige", "coral", "chocolate4", "aquamarine", "blueviolet"))
-# 
-# 
-# ## Pie chart
-# pie(state.counts, main = "AUS records per state")
-# 
-# 
-# #########################################################################################################################    
-# ## Now create a random subset of points from NSW, stratified by rainfall category. The stratified function samples from 
-# ## a data.frame in which one of the columns can be used as a "stratification" or "grouping" variable. The result is 
-# ## a new data.frame with the specified number of samples from each group. 
-# 
-# 
-# ## Using only points in NSW, let's take a 50% sample from all rainfall groups
-# unique(SPP.REC.NSW$AUS_RN_ZN)
-# set.seed(1)
-# RAND.REC.NSW = stratified(SPP.REC.NSW, "AUS_RN_ZN", .5)
-# dim(RAND.REC.NSW)[1]/dim(SPP.REC.NSW)[1]
-# 
-# 
-# ## The points are unevenly distributed across the rainfall zones, so we can't sample randomly from these categories 
-# round(with(SPP.REC.NSW, table(AUS_RN_ZN)/sum(table(AUS_RN_ZN))*100), 1)
-# round(with(RAND.REC.NSW, table(AUS_RN_ZN)/sum(table(AUS_RN_ZN))*100), 1)
-# 
-# table(SPP.REC.NSW$AUS_RN_ZN)
-# table(RAND.REC.NSW$AUS_RN_ZN)
-# 
-# 
-# ## Plot an example species ::
-# SPP.ORIG    = subset(BIAS.STATE.RAIN, searchTaxon == "Banksia integrifolia") 
-# unique(SPP.ORIG$searchTaxon)
-# dim(SPP.TEST)[1]
-# 
-# 
-# ## Original records are biased to NSW
-# plot(aus)
-# points(SPP.ORIG$lon,  SPP.ORIG$lat, 
-#        cex = 0.8, col = "red", pch = 19, main = "Original data")
-# 
-# 
-# ## Randomly sampled data
-# SPP.RAND    = subset(RAND.REC.NSW, searchTaxon == "Banksia integrifolia")
-# unique(SPP.RAND$searchTaxon)
-# dim(SPP.RAND)[1]
-# 
-# 
-# ##
-# plot(aus)
-# points(SPP.RAND$lon,  SPP.RAND$lat, 
-#        cex = 0.8, col = "red", pch = 19, main = "Subsampled data")
-# 
-# 
-# ## Check these points in ArcMap
-# SPP.ORIG$SAMPLE = "Original";SPP.RAND$SAMPLE = "Sampled"
-# SPP.SAMPLE = as.data.frame(rbind(SPP.ORIG, SPP.RAND))
-# unique(SPP.SAMPLE$SAMPLE)
-# 
-# 
-# ## They need this data 
-# SPP.SAMPLE   = SpatialPointsDataFrame(coords      = SPP.SAMPLE[c("lon", "lat")], 
-#                                       data        = SPP.SAMPLE,
-#                                       proj4string = CRS.WGS.84)
-# writeOGR(obj = SPP.SAMPLE, dsn = "./data/base/HIA_LIST/BIAS", layer = "SPP_RAND_SAMPLE", driver = "ESRI Shapefile")
+## Compare the occurrence points that are output by the SDM code from the BIA folder with the previous folder
+
+
+
 
 
 #########################################################################################################################
-## Write the points out to check in arc
+## 3). CREATE MAPS FOR SIX GCMs
+#########################################################################################################################
+
+
+#########################################################################################################################
+## Create a list of GCM scenarios, which are used to create maps of habitat suitability 
+
+
+## Eight of the 40 CMIP5 models assessed in this project have been selected for use in provision of application-ready data. 
+## This facilitates efficient exploration of climate projections for Australia.
+## https://www.climatechangeinaustralia.gov.au/en/support-and-guidance/faqs/eight-climate-models-data/
+
+## The full list is:
+# scen = c("ip85bi50", "mc85bi50", "mg85bi50", "mi85bi50", "mp85bi50", 
+#          "mr85bi50", "no85bi50", "ac85bi50", "bc85bi50", "cc85bi50", 
+#          "cn85bi50", "gf85bi50", "gs85bi50", "hd85bi50", "he85bi50",
+#          "hg85bi50", "in85bi50")
+
+
+## We can only get the bioclim variables for 6 of these projections......................................................
+## Create a lookup table of GCMs using the WORLDCLIM website
+h <- read_html('http://www.worldclim.org/cmip5_30s') 
+gcms <- h %>% 
+  html_node('table') %>% 
+  html_table(header = TRUE) %>% 
+  filter(rcp85 != '')
+
+id.50 <- h %>% 
+  html_nodes(xpath = "//a[text()='bi']/@href") %>% 
+  as.character %>% 
+  grep('85bi50', ., value = TRUE) %>% 
+  basename %>% 
+  sub('\\.zip.', '', .)
+
+id.70 <- h %>% 
+  html_nodes(xpath = "//a[text()='bi']/@href") %>% 
+  as.character %>% 
+  grep('85bi70', ., value = TRUE) %>% 
+  basename %>% 
+  sub('\\.zip.', '', .)
+
+
+## Work around because the 2030 data comes from CC in Aus, not worldclim
+id.30 = gsub("50", "30", id.50)
+
+
+## Create the IDs
+gcms.30 <- cbind(gcms, id.30)
+gcms.30$GCM = sub(" \\(#\\)", "", gcms$GCM)
+
+gcms.50 <- cbind(gcms, id.50)
+gcms.50$GCM = sub(" \\(#\\)", "", gcms$GCM)  ## sub replaces first instance in a string, gsub = global
+
+gcms.70 <- cbind(gcms, id.70)
+gcms.70$GCM = sub(" \\(#\\)", "", gcms$GCM) 
+
+
+## Now create the scenario lists across which to loop
+gcms.50 ; gcms.70 ; gcms.30
+
+
+## Just get the 6 models picked by CSIRO for Australia, for 2030, 2050 and 2070
+scen_2030 = c("mc85bi30", "no85bi30", "ac85bi30", "cc85bi30", "gf85bi30", "hg85bi30")
+scen_2050 = c("mc85bi50", "no85bi50", "ac85bi50", "cc85bi50", "gf85bi50", "hg85bi50")
+scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cc85bi70", "gf85bi70", "hg85bi70")
+
+
+## Now divide the current environmental grids by 10
+env.grids.current <- stack(
+  file.path('./data/base/worldclim/aus/1km/bio/current',   ## ./data/base/worldclim/aus/1km/bio
+            sprintf('bio_%02d.tif', 1:19)))
+
+for(i in 1:11) {
+  
+  ## simple loop
+  message(i)
+  env.grids.current[[i]] <- env.grids.current[[i]]/10
+  
+}
+
+
+#########################################################################################################################
+## Name the environmental grids to be used in the mapping code :: this is all 19, because we are using the directory structure
+grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',      'Temp_seasonality', 
+               'Max_temp_warm_month', 'Min_temp_cold_month', 'Temp_annual_range',  'Mean_temp_wet_qu',
+               'Mean_temp_dry_qu',    'Mean_temp_warm_qu',   'Mean_temp_cold_qu',  'Annual_precip',
+               'Precip_wet_month',    'Precip_dry_month',    'Precip_seasonality', 'Precip_wet_qu',
+               'Precip_dry_qu',       'Precip_warm_qu',      'Precip_col_qu')
+
+
+#########################################################################################################################
+## Create 2030 maps BIAS_REV = sort(SPP_BIAS, decreasing = TRUE)
+env.grids.2030 = tryCatch(project_maxent_grids(scen_list     = scen_2030,
+                                               species_list  = SPP_BIAS,
+                                               maxent_path   = "./output/maxent/SPP_BIAS/",
+                                               climate_path  = "./data/base/worldclim/aus/1km/bio",
+                                               grid_names    = grid.names,
+                                               time_slice    = 30,
+                                               current_grids = env.grids.current),
+                          
+                          ## Will this work outside a loop?
+                          error = function(cond) {
+                            
+                            message(paste('Species skipped - check', spp))
+                            
+                          })
+
+
+
+
+
+#########################################################################################################################
+## 3). COMPARE MAXENT RESULTS WITH AND WITHOUT SAMPLING
+#########################################################################################################################
+
+
+#########################################################################################################################
+## First, read in the list of files for the current models, and specify the file path
+BIAS.set.var             = "./output/maxent/SPP_BIAS/"
+
+
+## Create an object for the maxent settings :: using the same variable for every model
+BIAS.selection.settings = "Set_variables"  
+records_setting          = "COORD_CLEAN"
+
+
+## Create a file list for each model run
+BIAS.tables = list.files(BIAS.set.var)                 ## Chagne this for each variable selection strategy
+BIAS_path   = BIAS.set.var                             ## Chagne this for each variable selection strategy
+length(BIAS.tables)                                    ## Should match the number of taxa tested
+
+
+#########################################################################################################################
+## Could turn this into a function, and loop over a list of subfolders...
+## Then pipe the table list into lapply
+## BIAS.RESULTS = bind_BIAS_tables(table_list)
+BIAS.RESULTS <- BIAS.tables[c(1:length(BIAS.tables))] %>%         ## currently x species with enough records
+  
+  ## pipe the list into lapply
+  lapply(function(x) {
+    
+    ## Create the character string
+    f <- paste0(BIAS_path, x, "/full/maxentResults.csv")
+    
+    ## Load each .RData file
+    d <- read.csv(f)
+    
+    ##
+    #m <- readRDS(sprintf('%s/%s/full/model.rds', BIAS_path, x))
+    m <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', BIAS_path, x))
+    m <- m$me_full
+    number_var = length(m@lambdas) - 4                                   ## (the last 4 slots of lambdas are not variables) 
+    
+    ## Now add a model column
+    d = cbind(searchTaxon = x, 
+              Settings    = model.selection.settings, 
+              Number_var  = number_var, 
+              Records     = records_setting, d)  ## see step 7, make a variable for multiple runs
+    dim(d)
+    
+    ## Remove path gunk, and species
+    d$Species    = NULL
+    d
+    
+  }) %>%
+  
+  ## Finally, bind all the rows together
+  bind_rows
+
+
+#########################################################################################################################
+## Create a TSS file list for each model run
+TSS.tables = list.files(TSS.set.var, pattern = 'species_omission\\.csv$', full.names = TRUE, recursive = TRUE)
+TSS_path   = TSS.set.var                            
+length(TSS.tables)                                   
+
+
+max_tss <- sapply(TSS.tables, function(f) {
+  
+  d <- read.csv(f)
+  i <- which.min(d$Test.omission + d$Fractional.area)
+  
+  c(max_tss = 1 - min(d$Test.omission + d$Fractional.area),
+    thr     = d$Corresponding.logistic.value[i])
+
+  
+})
+
+
+## How can we process max TSS?
+max_tss = as.data.frame(max_tss)
+class(max_tss)
+head(max_tss)
+BIAS.RESULTS = c(BIAS.RESULTS, max_tss)
+BIAS.RESULTS = BIAS.RESULTS[, c(1:9, 65, 10:64)]
+names(BIAS.RESULTS)
+
+
+## This is a summary of BIAS output for current conditions
+## Also which species have AUC < 0.7?
+dim(BIAS.RESULTS)
+head(BIAS.RESULTS, 20)[1:9]
+dim(subset(BIAS.RESULTS, Training.AUC < 0.7))
+
+
+#########################################################################################################################
+## Calculate TSS
+
 
 
 
