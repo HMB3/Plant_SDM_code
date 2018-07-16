@@ -212,9 +212,9 @@ records_setting          = "COORD_CLEAN"
 
 
 ## Create a file list for each model run
-maxent.tables = list.files(path.set.var)                 ## Chagne this for each variable selection strategy
-maxent.tables = intersect(maxent.tables, map_spp_list)   ## Change this for new species lists
-maxent_path   = path.set.var                             ## Chagne this for each variable selection strategy
+maxent.tables = list.files(path.set.var)                 
+maxent.tables = intersect(maxent.tables, map_spp_list)   
+maxent_path   = path.set.var                             
 length(maxent.tables)                                    ## Should match the number of taxa tested
 no_data %in% maxent.tables
 
@@ -239,8 +239,6 @@ MAXENT.RESULTS <- maxent.tables[c(1:length(maxent.tables))] %>%         ## curre
     ## Load each .RData file
     d <- read.csv(f)
     
-    ##
-    #m <- readRDS(sprintf('%s/%s/full/model.rds', maxent_path, x))
     m <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, x))
     m <- m$me_full
     number_var = length(m@lambdas) - 4                                   ## (the last 4 slots of lambdas are not variables) 
@@ -262,11 +260,51 @@ MAXENT.RESULTS <- maxent.tables[c(1:length(maxent.tables))] %>%         ## curre
   bind_rows
 
 
+#########################################################################################################################
+## Create True Skill Statistic values (TSS) for each species
+TSS.tables = list.files(path.set.var, pattern = 'species_omission\\.csv$', full.names = TRUE, recursive = TRUE)
+
+
+## Get the maxium TSS value using the omission data
+max_tss <- sapply(TSS.tables, function(f) {
+  
+  d <- read.csv(f)
+  i <- which.min(d$Test.omission + d$Fractional.area)
+  
+  c(max_tss = 1 - min(d$Test.omission + d$Fractional.area),
+    thr     = d$Corresponding.logistic.value[i])
+  
+})
+
+
+## Add a species variable to the TSS results, so we can subset to just the species analysed
+max_tss  = as.data.frame(max_tss)
+setDT(max_tss, keep.rownames = TRUE)[]
+max_tss  = as.data.frame(max_tss)
+names(max_tss)[names(max_tss) == 'rn'] <- 'searchTaxon'
+
+max_tss$searchTaxon = gsub("./output/maxent/SET_VAR_KOPPEN//",   "", max_tss$searchTaxon)
+max_tss$searchTaxon = gsub("/full/species_omission.csv.max_tss", "", max_tss$searchTaxon)
+head(max_tss$searchTaxon)
+
+
+## Add max TSS to the results table
+MAXENT.RESULTS = merge(MAXENT.RESULTS, max_tss, by = "searchTaxon", ALL = FALSE)
+MAXENT.RESULTS = MAXENT.RESULTS[, c(1:9, 65, 10:64)]
+names(MAXENT.RESULTS)
+
+
+
 ## This is a summary of maxent output for current conditions
 ## Also which species have AUC < 0.7?
 dim(MAXENT.RESULTS)
-head(MAXENT.RESULTS, 20)[1:9]
+head(MAXENT.RESULTS, 20)[1:10]
 dim(subset(MAXENT.RESULTS, Training.AUC < 0.7))  ## all models should be above 0.7
+
+
+## Are the TSS values ok?
+hist(BIAS.RESULTS$max_tss)
+plot(BIAS.RESULTS$Training.AUC, BIAS.RESULTS$max_tss)
 
 
 ## Now check the match between the species list, and the results list. These need to match, so we can access

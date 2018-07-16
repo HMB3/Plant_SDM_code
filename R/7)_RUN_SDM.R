@@ -341,7 +341,7 @@ lapply(ff[n < 27], function(x) {
 
 ## 1). Made a list of exotic spp on the top 200 sellers, which have no data and/or produce bad maps
 
-## 2). Re-download ALA data. Add exotic urban inventory data that Ale is compiling (create diagram of data integration, to highlight knowlegde gaps)
+## 2). Re-download ALA data. Add exotic urban inventory data that Ale is compiling 
 ##     Four columns ::
 ##     Species
 ##     Common name
@@ -354,13 +354,14 @@ lapply(ff[n < 27], function(x) {
 ##     Aus nurseries (bush data)
 
 ## 3). Try to thin records for ~100 spp with boundary bias: random sampling of those species records, by state and environment
+##     Play around with the parameters, see how the maps change.
 
 ## 4). Use more forgiving thresholds (10%) for all species, OR just those with bad maps:
 ##    "Maximum.training.sensitivity.plus.specificity.Logistic.threshold"
 ##    "X10.percentile.training.presence.Logistic.threshold"
 ##    "X10.percentile.training.presence.training.omission"
   
-## 5). Calculate the TSS for all species (and MESS maps for a few problematic species, just for appendix)
+## 5). Calculate the TSS for all species - doesn't seem to be working that well, skewed high numbers
 
 ## 7). Decide on gamma diversity for this article - trace the 136 species checked already. Which are not on the top 200?
 ##     150 spp - could it go to GEB? 

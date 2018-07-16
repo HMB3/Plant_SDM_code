@@ -456,12 +456,11 @@ BIAS.RESULTS <- BIAS.tables[c(1:length(BIAS.tables))] %>%         ## currently x
 
 
 #########################################################################################################################
-## Create a TSS file list for each model run
-TSS.tables = list.files(TSS.set.var, pattern = 'species_omission\\.csv$', full.names = TRUE, recursive = TRUE)
-TSS_path   = TSS.set.var                            
-length(TSS.tables)                                   
+## Create True Skill Statistic values (TSS) for each species
+TSS.tables = list.files(BIAS.set.var, pattern = 'species_omission\\.csv$', full.names = TRUE, recursive = TRUE)
+                                  
 
-
+## Get the maxium TSS value using the omission data
 max_tss <- sapply(TSS.tables, function(f) {
   
   d <- read.csv(f)
@@ -470,15 +469,11 @@ max_tss <- sapply(TSS.tables, function(f) {
   c(max_tss = 1 - min(d$Test.omission + d$Fractional.area),
     thr     = d$Corresponding.logistic.value[i])
 
-  
 })
 
 
-## How can we process max TSS?
-max_tss = as.data.frame(max_tss)
-class(max_tss)
-head(max_tss)
-BIAS.RESULTS = c(BIAS.RESULTS, max_tss)
+## Add max TSS to the results table
+BIAS.RESULTS$max_tss = max_tss
 BIAS.RESULTS = BIAS.RESULTS[, c(1:9, 65, 10:64)]
 names(BIAS.RESULTS)
 
@@ -486,13 +481,13 @@ names(BIAS.RESULTS)
 ## This is a summary of BIAS output for current conditions
 ## Also which species have AUC < 0.7?
 dim(BIAS.RESULTS)
-head(BIAS.RESULTS, 20)[1:9]
+head(BIAS.RESULTS, 20)[1:10]
 dim(subset(BIAS.RESULTS, Training.AUC < 0.7))
 
 
-#########################################################################################################################
-## Calculate TSS
-
+## Are the TSS values ok?
+hist(BIAS.RESULTS$max_tss)
+plot(BIAS.RESULTS$Training.AUC, BIAS.RESULTS$max_tss)
 
 
 
