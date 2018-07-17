@@ -151,7 +151,7 @@ ALB.CONICAL  <- CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 
 ## Read in the niche data
 COMBO.NICHE.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_STANDARD_CLEAN.rds")
 CLEAN.NICHE.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_COORD_CLEAN.rds")
-MAXENT.CHECK        = read.csv("./output/maxent/MAXENT_CHECK_RATING.csv",       stringsAsFactors = FALSE)
+MAXENT.CHECK        = read.csv("./output/maxent/MAXENT_CHECK_1707_2018.csv",    stringsAsFactors = FALSE)
 OVERALL.LOSS        = read.csv("./output/tables/OVERALL_LOSS.csv",              stringsAsFactors = FALSE)
 APPENDIX            = read.csv("./data/base/HIA_LIST/COMBO/Appendix_table.csv", stringsAsFactors = FALSE)
 str(unique(COMBO.NICHE.CONTEXT$searchTaxon))  ## long enough
@@ -759,12 +759,35 @@ MILE.CLEAN     = subset(CLEAN.NICHE.CONTEXT, Total.growers > 25 & AUS_RECORDS > 
 MILE.1.EXTRA   = subset(CLEAN.NICHE.CONTEXT, Total.growers > 25 & AUS_RECORDS > 20 & COMBO.count > 100)
 MILE.1.EXTRA   = MILE.1.EXTRA[with(MILE.1.EXTRA, order(-Total.growers)), ]
 MILE.1.EXTRA   = MILE.1.EXTRA [!MILE.1.EXTRA$searchTaxon %in% MILE.CLEAN$searchTaxon, ]
+
+
 summary(MILE.1.EXTRA$AUS_RECORDS)
 summary(MILE.1.EXTRA$COMBO.count)
 
 spp.mile.extra     = head(MILE.1.EXTRA$searchTaxon, 84)
 spp.mile.1         = unique(sort(c(MOD.2.3$Species, MILE.1$searchTaxon, spp.mile.extra)))
 length(spp.mile.1)
+
+
+#########################################################################################################################
+## Now just get the species with good models and enough data
+MODEL.CHECK = merge(COMBO.NICHE.CONTEXT, MAXENT.CHECK)
+MODEL.CHECK = MODEL.CHECK[, c("searchTaxon",
+                              "COMBO.count",
+                              "AUS_RECORDS",
+                              "Total.growers",
+                              "Origin",
+                              "Plant.type",
+                              "Top_200",                                                                        
+                              "CHECK_MAP")]
+
+
+## Add a column for module two and 3
+non.HIA = intersect(setdiff(MOD.2.3$Species, top.200$Species), SUA.spp)
+MODEL.CHECK$MODULE = ifelse(MODEL.CHECK$searchTaxon %in% MOD.2.3$Species, "Two_three", "One")
+MODEL.CHECK = MODEL.CHECK[with(MODEL.CHECK, order(-Total.growers)), ]
+View(MODEL.CHECK)
+write.csv(MODEL.CHECK, "./data/base/HIA_LIST/COMBO/MODEL_SPECIES_CHECK_RANGE.csv", row.names = FALSE)
 
  
 # ## Join on the column which shows the kind of data bias
