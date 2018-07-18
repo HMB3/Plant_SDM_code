@@ -787,7 +787,18 @@ non.HIA = intersect(setdiff(MOD.2.3$Species, top.200$Species), SUA.spp)
 MODEL.CHECK$MODULE = ifelse(MODEL.CHECK$searchTaxon %in% MOD.2.3$Species, "Two_three", "One")
 MODEL.CHECK = MODEL.CHECK[with(MODEL.CHECK, order(-Total.growers)), ]
 View(MODEL.CHECK)
-write.csv(MODEL.CHECK, "./data/base/HIA_LIST/COMBO/MODEL_SPECIES_CHECK_RANGE.csv", row.names = FALSE)
+
+
+## Now how many trees do we have? 68 modelled, another 86 with ok data.
+## This will increase with Alessandro's data. Re-create niche file, and re-run the criteria.
+MODEL.CHECK[1, "Plant.type"]
+checked.trees = subset(MODEL.CHECK, Total.growers >= 25 & CHECK_MAP <= 2 & Plant.type == "Tree")$searchTaxon ## 67
+extra.trees   = subset(MILE.1.EXTRA, Plant.type == "Tree")$searchTaxon
+MS.trees      = unique(c(checked.trees, extra.trees))
+new.trees     = setdiff(extra.trees, checked.trees)
+new_trees     = gsub(" ", "_", new.trees)
+
+#write.csv(MODEL.CHECK, "./data/base/HIA_LIST/COMBO/MODEL_SPECIES_CHECK_RANGE.csv", row.names = FALSE)
 
  
 # ## Join on the column which shows the kind of data bias

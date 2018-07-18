@@ -17,13 +17,9 @@ source('./R/HIA_LIST_MATCHING.R')
 
 
 ## Set global species list variables here...............................................................................
-## These species are the ones checked by Linda
-# GBIF.spp     = head(SUA.spp, 7)
-# map_spp_list = head(SUA_spp, 7)
-
-
-GBIF.spp     = c(head(SPP.BIAS, 10), head(SUA.spp, 10))
-map_spp_list = c(head(SPP_BIAS, 10), head(SUA_spp, 10))
+## Now running more tree species
+GBIF.spp     = new.trees
+map_spp_list = new_trees
 
 
 #########################################################################################################################

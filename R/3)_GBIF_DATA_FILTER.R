@@ -119,121 +119,121 @@ dim(GBIF.TRIM)
 ######################################################################################################################### 
 
 
-## Use "Taxonstand". This also assumes that the ALA data is clean
-GBIF.TAXO <- TPL(unique(GBIF.TRIM$scientificName), infra = TRUE,
-                 corr = TRUE, repeats = 100)  ## to stop it timing out...
-sort(names(GBIF.TAXO))
-
-
-######################################################################################################################### 
-# The procedure used for taxonomic standardization is based on function TPLck. A progress bar
-# indicates the proportion of taxon names processed so far. In case the TPL website cannot be reached
-# temporarily, the function returns an error but repeats trying to match the given taxon multiple times
-# (see repeats). If standardization is still not successful, the input taxon is returned in field ’Taxon’
-# with NA in all other fields
-
-
-## Then join the GBIF data to the taxonomic check, using "scientificName" as the join field... 
-GBIF.TRIM <- GBIF.TRIM %>%
-  left_join(., GBIF.TAXO, by = c("scientificName" = "Taxon"))
-
-
-## So we can filter by the agreement between "scientificName", and "New.Taxonomic.status"?
-## A better way could be to create a new filter for agreement between the search taxon genus and species,
-## and the new genus and species. Which of these columns to keep?
-
-
-#########################################################################################################################
-## Now create a column for the agreement between the new genus and the old genus
-## First, trim the spaces out
-GBIF.TRIM$searchTaxon  = trimws(GBIF.TRIM$searchTaxon)
-
-
-## Then combine the genus and species returned by TPL into
-GBIF.TRIM$TPL_binomial  = with(GBIF.TRIM, paste(New.Genus, New.Species, sep = " "))
-
-
-## Now match the searchTaxon with the binomial returned by TPL :: this would be the best field to filter on
-GBIF.TRIM$taxo_agree <- ifelse(
-  GBIF.TRIM$searchTaxon == GBIF.TRIM$TPL_binomial, TRUE, FALSE)
-
-
-## Also keep the unresolved records:
-GBIF.UNRESOLVED <- GBIF.TRIM %>% 
-  
-  ## Note that these filters are very forgiving...
-  ## Unless we include the NAs, very few records are returned!
-  filter(New.Taxonomic.status == 'Unresolved')
-
-
-## Also keep the managed records:
-# unique(GBIF.UNRESOLVED$New.Taxonomic.status)
-# dim(GBIF.UNRESOLVED)   ## 1.2 million unresolved records, quite a lot!
-
-
-## Unique(GBIF.UNRESOLVED$New.Taxonomic.status)
-#saveRDS(GBIF.UNRESOLVED, file = paste("./data/base/HIA_LIST/GBIF/GBIF_UNRESOLVED.rds"))
-
-
-## Just keep these columns:
-## Taxonomic.status, Infraspecific.rank, New.Taxonomic.status, New.ID, New_binomial, taxo_agree
-GBIF.TRIM.TAXO <- GBIF.TRIM %>% 
-  select(one_of(TPL.keep))
-
-
-## Unique(GBIF.UNRESOLVED$New.Taxonomic.status)
-#saveRDS(GBIF.TAXO,       file = paste("./data/base/HIA_LIST/GBIF/GBIF_TAXO.rds"))
-#saveRDS(GBIF.TRIM.TAXO,  file = paste("./data/base/HIA_LIST/GBIF/GBIF_TRIM_TAXO.rds"))
-
-
-
-
-
-#########################################################################################################################
-## 3). MARK CULTIVATED RECORDS
-#########################################################################################################################
-
-
-## This only works on species lists with cultivated recrods..............................................................
-
-
-## To create search terms, we can look for keywords in differemt languages: e.g. garden cultivated, etc.
-GBIF.COUNTRY = GBIF.TRIM.TAXO[, c("country")]
-GBIF.COUNTRY = as.data.frame(table(GBIF.COUNTRY))
-names(GBIF.COUNTRY) <-  c('country', 'count')
-GBIF.COUNTRY = GBIF.COUNTRY[order(GBIF.COUNTRY$count, decreasing = TRUE), ]
-
-
-## Look for synonyms in the countries which have the most GBIF records
-#GBIF.COUNTRY
-#write.csv(GBIF.COUNTRY, "./data/base/HIA_LIST/GBIF/SPECIES/GBIF_COUNTRY.csv", row.names = FALSE)
-
-
-## This creates a list of synonyms:
-#cultivated.synonyms
-
-
-#########################################################################################################################
-## Now search for these words in particular columns
-## Can these terms be searched for across the whole data frame (i.e. any column)?
-## Also lot's of Australian species don't have these columns, which might make it tricky to run the clean 
-## unique(GBIF.TRIM.TAXO$country)
-
-## Try using the big list of synonyms across all the data
-## grepl("garden|cultiva",   GBIF.TRIM.TAXO$locality,           ignore.case = TRUE) | 
-GBIF.TRIM.TAXO$CULTIVATED <- ifelse(grepl(cultivated.synonyms,   GBIF.TRIM.TAXO$locality,           ignore.case = TRUE) |
-                                      grepl(cultivated.synonyms, GBIF.TRIM.TAXO$habitat,            ignore.case = TRUE) |
-                                      grepl(cultivated.synonyms, GBIF.TRIM.TAXO$eventRemarks,       ignore.case = TRUE) |
-                                      grepl(cultivated.synonyms, GBIF.TRIM.TAXO$cloc,               ignore.case = TRUE) |
-                                      grepl("managed",           GBIF.TRIM.TAXO$establishmentMeans, ignore.case = TRUE),
-
-                                    "CULTIVATED", "UNKNOWN")
- 
- 
-# ## How many records are knocked out by using this definition?
-# ## This is probably a bit strict, in that for some of the fields, garden doesn't = cultivated
-GBIF.CULTIVATED = subset(GBIF.TRIM.TAXO, CULTIVATED == "CULTIVATED")
-dim(GBIF.CULTIVATED)[1]
+# ## Use "Taxonstand". This also assumes that the ALA data is clean
+# GBIF.TAXO <- TPL(unique(GBIF.TRIM$scientificName), infra = TRUE,
+#                  corr = TRUE, repeats = 100)  ## to stop it timing out...
+# sort(names(GBIF.TAXO))
+# 
+# 
+# ######################################################################################################################### 
+# # The procedure used for taxonomic standardization is based on function TPLck. A progress bar
+# # indicates the proportion of taxon names processed so far. In case the TPL website cannot be reached
+# # temporarily, the function returns an error but repeats trying to match the given taxon multiple times
+# # (see repeats). If standardization is still not successful, the input taxon is returned in field ’Taxon’
+# # with NA in all other fields
+# 
+# 
+# ## Then join the GBIF data to the taxonomic check, using "scientificName" as the join field... 
+# GBIF.TRIM <- GBIF.TRIM %>%
+#   left_join(., GBIF.TAXO, by = c("scientificName" = "Taxon"))
+# 
+# 
+# ## So we can filter by the agreement between "scientificName", and "New.Taxonomic.status"?
+# ## A better way could be to create a new filter for agreement between the search taxon genus and species,
+# ## and the new genus and species. Which of these columns to keep?
+# 
+# 
+# #########################################################################################################################
+# ## Now create a column for the agreement between the new genus and the old genus
+# ## First, trim the spaces out
+# GBIF.TRIM$searchTaxon  = trimws(GBIF.TRIM$searchTaxon)
+# 
+# 
+# ## Then combine the genus and species returned by TPL into
+# GBIF.TRIM$TPL_binomial  = with(GBIF.TRIM, paste(New.Genus, New.Species, sep = " "))
+# 
+# 
+# ## Now match the searchTaxon with the binomial returned by TPL :: this would be the best field to filter on
+# GBIF.TRIM$taxo_agree <- ifelse(
+#   GBIF.TRIM$searchTaxon == GBIF.TRIM$TPL_binomial, TRUE, FALSE)
+# 
+# 
+# ## Also keep the unresolved records:
+# GBIF.UNRESOLVED <- GBIF.TRIM %>% 
+#   
+#   ## Note that these filters are very forgiving...
+#   ## Unless we include the NAs, very few records are returned!
+#   filter(New.Taxonomic.status == 'Unresolved')
+# 
+# 
+# ## Also keep the managed records:
+# # unique(GBIF.UNRESOLVED$New.Taxonomic.status)
+# # dim(GBIF.UNRESOLVED)   ## 1.2 million unresolved records, quite a lot!
+# 
+# 
+# ## Unique(GBIF.UNRESOLVED$New.Taxonomic.status)
+# #saveRDS(GBIF.UNRESOLVED, file = paste("./data/base/HIA_LIST/GBIF/GBIF_UNRESOLVED.rds"))
+# 
+# 
+# ## Just keep these columns:
+# ## Taxonomic.status, Infraspecific.rank, New.Taxonomic.status, New.ID, New_binomial, taxo_agree
+# GBIF.TRIM.TAXO <- GBIF.TRIM %>% 
+#   select(one_of(TPL.keep))
+# 
+# 
+# ## Unique(GBIF.UNRESOLVED$New.Taxonomic.status)
+# #saveRDS(GBIF.TAXO,       file = paste("./data/base/HIA_LIST/GBIF/GBIF_TAXO.rds"))
+# #saveRDS(GBIF.TRIM.TAXO,  file = paste("./data/base/HIA_LIST/GBIF/GBIF_TRIM_TAXO.rds"))
+# 
+# 
+# 
+# 
+# 
+# #########################################################################################################################
+# ## 3). MARK CULTIVATED RECORDS
+# #########################################################################################################################
+# 
+# 
+# ## This only works on species lists with cultivated recrods..............................................................
+# 
+# 
+# ## To create search terms, we can look for keywords in differemt languages: e.g. garden cultivated, etc.
+# GBIF.COUNTRY = GBIF.TRIM.TAXO[, c("country")]
+# GBIF.COUNTRY = as.data.frame(table(GBIF.COUNTRY))
+# names(GBIF.COUNTRY) <-  c('country', 'count')
+# GBIF.COUNTRY = GBIF.COUNTRY[order(GBIF.COUNTRY$count, decreasing = TRUE), ]
+# 
+# 
+# ## Look for synonyms in the countries which have the most GBIF records
+# #GBIF.COUNTRY
+# #write.csv(GBIF.COUNTRY, "./data/base/HIA_LIST/GBIF/SPECIES/GBIF_COUNTRY.csv", row.names = FALSE)
+# 
+# 
+# ## This creates a list of synonyms:
+# #cultivated.synonyms
+# 
+# 
+# #########################################################################################################################
+# ## Now search for these words in particular columns
+# ## Can these terms be searched for across the whole data frame (i.e. any column)?
+# ## Also lot's of Australian species don't have these columns, which might make it tricky to run the clean 
+# ## unique(GBIF.TRIM.TAXO$country)
+# 
+# ## Try using the big list of synonyms across all the data
+# ## grepl("garden|cultiva",   GBIF.TRIM.TAXO$locality,           ignore.case = TRUE) | 
+# GBIF.TRIM.TAXO$CULTIVATED <- ifelse(grepl(cultivated.synonyms,   GBIF.TRIM.TAXO$locality,           ignore.case = TRUE) |
+#                                       grepl(cultivated.synonyms, GBIF.TRIM.TAXO$habitat,            ignore.case = TRUE) |
+#                                       grepl(cultivated.synonyms, GBIF.TRIM.TAXO$eventRemarks,       ignore.case = TRUE) |
+#                                       grepl(cultivated.synonyms, GBIF.TRIM.TAXO$cloc,               ignore.case = TRUE) |
+#                                       grepl("managed",           GBIF.TRIM.TAXO$establishmentMeans, ignore.case = TRUE),
+# 
+#                                     "CULTIVATED", "UNKNOWN")
+#  
+#  
+# # ## How many records are knocked out by using this definition?
+# # ## This is probably a bit strict, in that for some of the fields, garden doesn't = cultivated
+# GBIF.CULTIVATED = subset(GBIF.TRIM.TAXO, CULTIVATED == "CULTIVATED")
+# dim(GBIF.CULTIVATED)[1]
  
  
 ## Still very few records being returned as "cultivated"?
@@ -266,6 +266,7 @@ dim(GBIF.CULTIVATED)[1]
 #########################################################################################################################
 ## Create a table which counts the number of records meeting each criteria:
 ## Note that TRUE indicates there is a problem (e.g. if a record has no lat/long, it will = TRUE)
+GBIF.TRIM.TAXO = GBIF.TRIM
 GBIF.PROBLEMS <- with(GBIF.TRIM.TAXO,
                       
                       table(
@@ -279,10 +280,10 @@ GBIF.PROBLEMS <- with(GBIF.TRIM.TAXO,
                         #taxonRank == 'GENUS' & 'FORM',
                         
                         ## Taxonomic status: consider if this is the right filter, it seems too restrictive
-                        New.Taxonomic.status == 'Unresolved',
+                        #New.Taxonomic.status == 'Unresolved',
                         
                         ## Cultivated
-                        CULTIVATED == 'CULTIVATED',
+                        #CULTIVATED == 'CULTIVATED',
                         
                         ## Establishment means is "MANAGED" is included in the above
                         #establishmentMeans == 'MANAGED' & !is.na(establishmentMeans),
@@ -306,7 +307,9 @@ GBIF.PROBLEMS <- with(GBIF.TRIM.TAXO,
   ## Create a data frame and set the names
   as.data.frame %>%  
   
-  setNames(c('NO_COORD',     'TAXON_STATUS', 'CULTIVATED', 
+  setNames(c('NO_COORD',     
+             #'TAXON_STATUS', 
+             #'CULTIVATED', 
              'PRE_1950',     'NO_YEAR', 
              'COORD_UNCERT', 'COUNT'))
 

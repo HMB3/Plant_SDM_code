@@ -355,6 +355,7 @@ lapply(ff[n < 27], function(x) {
 
 ## 3). Try to thin records for ~100 spp with boundary bias: random sampling of those species records, by state and environment
 ##     Play around with the parameters, see how the maps change.
+##     Run the biased species separately, then replace them in the biased species main folders
 
 ## 4). Use more forgiving thresholds (10%) for all species, OR just those with bad maps:
 ##    "Maximum.training.sensitivity.plus.specificity.Logistic.threshold"
