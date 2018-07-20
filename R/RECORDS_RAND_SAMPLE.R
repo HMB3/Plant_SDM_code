@@ -25,7 +25,7 @@ source('./R/HIA_LIST_MATCHING.R')
 #########################################################################################################################
 ## Load GBIF data and rain shapefile
 BIAS.DATA.ALL        = readRDS("./data/base/HIA_LIST/COMBO/SDM_DATA_CLEAN_052018.rds")        
-SPP.BIAS             = intersect(SPP.BIAS, SUA.spp)    ## just re-run the models for species on the list
+#SPP.BIAS             = intersect(SPP.BIAS, SUA.spp)    ## just re-run the models for species on the list
 SPP_BIAS             = gsub(" ", "_", SPP.BIAS)
 
 
@@ -102,7 +102,7 @@ unique(BIAS.STATE.RAIN$AUS_STATE)
 unique(BIAS.STATE.RAIN$AUS_RN_ZN)
 
 
-BIAS.STATE.SP   = SpatialPointsDataFrame(coords       = BIAS.STATE[c("lon", "lat")], 
+BIAS.STATE.SP   = SpatialPointsDataFrame(coords      = BIAS.STATE[c("lon", "lat")], 
                                          data        = BIAS.STATE,
                                          proj4string = CRS.WGS.84)
 
@@ -141,6 +141,22 @@ saveRDS(BIAS.STATE.RAIN, file = paste("./data/base/HIA_LIST/COMBO/BIAS_STATE_RAI
 ## Then combine the stratified sample with those records outside NSW
 
 
+## Linda
+# a. thin to a, say, 10km grid (ie only a single record randomly selected from a grid). Problem with this, as Shawn pointed out, 
+# is that we are thinning in geographic space rather than environmental space. 
+
+ 
+# b. To thin in environmental space we could:
+
+#   i)  Overlay records within rainfall zones, and randomly select x% of records from each zone. Difficulty is that different 
+#       geographic regions have the sampling bias. So, for instance, there are greater records in NSW than Vic/Qld for SOME 
+#       species, whereas others have more records in another region. Therefore, it gets fiddly doing this on a species-by-species basis.
+
+       
+#   ii) Do a PCA on the climate envelope. Put a grid over the PCA and extract a single record from each grid cell. I think this sounds 
+#       most logical, but not sure what size the grid should be
+
+
 #########################################################################################################################
 ## Now create the variables needed to access current environmental conditions + their names in the functions
 sdm.predictors <- c("Annual_mean_temp",    "Mean_diurnal_range",  "Isothermality",      "Temp_seasonality",  
@@ -173,9 +189,40 @@ identical(names(env.grids.current),sdm.predictors)
 
 
 #########################################################################################################################
-## Check data subsets
-unique(BIAS.STATE.RAIN$AUS_RN_ZN)
-unique(BIAS.STATE.RAIN$AUS_STATE)
+## Check data subsets - subset the big dataframe to just the biased species
+BIAS.DF = BIAS.STATE.RAIN[BIAS.STATE.RAIN$searchTaxon %in% SPP.BIAS, ]
+length(unique(BIAS.DF$searchTaxon))
+dropList <- setdiff(sdm.predictors, sdm.select)
+BIAS.DF  <- BIAS.DF[, !colnames(BIAS.DF) %in% dropList]
+names(BIAS.DF)
+
+
+## Now rename columns for ArcMap
+BIAS.DF     = dplyr::rename(BIAS.DF,
+                            BIO1      = Annual_mean_temp,
+                            BIO4      = Temp_seasonality,
+                            BIO5      = Max_temp_warm_month,
+                            BIO6      = Min_temp_cold_month,
+                            BIO12     = Annual_precip,
+                            BIO16     = Precip_wet_month,
+                            BIO14     = Precip_dry_month,
+                            BIO15     = Precip_seasonality,
+                            LAT       = lat,
+                            LON       = lon)
+
+
+## Then create SPDF
+BIAS.DF   = SpatialPointsDataFrame(coords      = BIAS.DF[c("LON", "LAT")], 
+                                   data        = BIAS.DF,
+                                   proj4string = CRS.WGS.84)
+
+## Project the SDM data into WGS
+BIAS.DF <- spTransform(BIAS.DF, CRS("+init=epsg:4326 +proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+projection(BIAS.DF)
+
+
+## Save the shapefile, to be subsampled in ArcMap
+writeOGR(obj = BIAS.DF, dsn = "./data/base/HIA_LIST/COMBO", layer = "SPP_BIAS_DF", driver = "ESRI Shapefile")
 
 
 #########################################################################################################################
@@ -196,6 +243,7 @@ lapply(SPP.BIAS, function(spp){
     message('Doing ', spp) 
     
     ## Do the stratification by rainfall, etc, in here...................................................................
+    ## This can be 
     
     ## First, subset the records to only the taxa being processed
     occurrence <- subset(BIAS.STATE.RAIN, searchTaxon == spp)
@@ -207,6 +255,38 @@ lapply(SPP.BIAS, function(spp){
     
     unique(occurrence.nsw$AUS_STATE)
     unique(occurrence.out$AUS_STATE)
+    
+    ## Thinning the records using this method is really slow and removes too many records
+    # thinned_records <-
+    #   spThin::thin(loc.data = occurrence.nsw, 
+    #                lat.col  = "lat", 
+    #                long.col = "lon", 
+    #                spec.col = "searchTaxon", 
+    #                thin.par = 10, 
+    #                reps     = 1, 
+    #                locs.thinned.list.return = TRUE, 
+    #                write.files              = FALSE)
+    
+    ## Run a PCA 
+    occ.pca <- occurrence %>% 
+      select(one_of(sdm.select))
+    PCA = prcomp(occ.pca, scale. = TRUE)
+    head(PCA$rotation)
+    
+    #########################################################################################
+    ## Now split using the data using the species column, and get the unique occurrence cells
+    occ.unique = SpatialPointsDataFrame(coords      = occurrence[c("lon", "lat")], 
+                                        data        = occurrence,
+                                        proj4string = CRS.WGS.84)
+    
+    occ.split <- split(occ.unique, occ.unique$searchTaxon)
+    occ_cells_all    <- lapply(occ.split, function(x) cellFromXY(template.raster, x))
+    length(occ_cells_all)   ## A ist of dataframes, where the number of rows for each being the species table
+    
+    ## Now get just one record within each 10*10km cell.
+    occ.unique <- mapply(function(x, cells) {
+      x[!duplicated(cells), ]
+    }, occ.split, occ_cells_all, SIMPLIFY = FALSE) %>% do.call(rbind, .)
     
     ## Now take a 50% random sample from all rainfall groups, just for the points within NSW
     ## Set a large starting number R? How large is large?
@@ -228,14 +308,13 @@ lapply(SPP.BIAS, function(spp){
                                            data        = background,
                                            proj4string = CRS.WGS.84)
     
-    occ.strat    = SpatialPointsDataFrame(coords      = occ.strat[c("lon", "lat")], 
-                                          data        = occ.strat,
-                                          proj4string = CRS.WGS.84)
+    occ.strat     = SpatialPointsDataFrame(coords      = occ.strat[c("lon", "lat")], 
+                                           data        = occ.strat,
+                                           proj4string = CRS.WGS.84)
     
-    ## Re-project
+    ## Re-project the spdf's
     background <- spTransform(background,  CRS("+init=ESRI:54009 +proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0"))
     occ.strat  <- spTransform(occ.strat,   CRS("+init=ESRI:54009 +proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0"))
-    #writeOGR(obj = SPP.SAMPLE, dsn = "./data/base/HIA_LIST/BIAS", layer = "SPP_RAND_SAMPLE", driver = "ESRI Shapefile")
     
     ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
     tryCatch(

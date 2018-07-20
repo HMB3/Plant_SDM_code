@@ -64,12 +64,6 @@ spp.200          = dplyr::rename(spp.200, Binomial = Species)
 CLEAN.list$Binomial <- sub('(^\\S+ \\S+).*', '\\1', CLEAN.list$Species) # \\s = white space; \\S = not white space
 
 
-## Merge the 13,000 with the top 200
-CLEAN.list = merge(CLEAN.list, spp.200, by = "Binomial", all.x = TRUE) 
-CLEAN.list$Top_200[is.na(CLEAN.list$Top_200)] <- "FALSE"
-CLEAN.list$Origin <- gsub(" ",  "", CLEAN.list$Origin)
-
-
 
 
 
@@ -87,7 +81,7 @@ dim(DRAFT.HIA.TAXA)    ## 8836 species after we cut out the "spp."
 ## Remove weird characters...
 DRAFT.HIA.TAXA$Species = gsub(" x",     "",  DRAFT.HIA.TAXA$Species)
 DRAFT.HIA.TAXA$Species = gsub("NA",     "",  DRAFT.HIA.TAXA$Species)
-DRAFT.HIA.TAXA$Species = gsub("  ",     " ",  DRAFT.HIA.TAXA$Species)
+DRAFT.HIA.TAXA$Species = gsub("  ",     " ", DRAFT.HIA.TAXA$Species)
 DRAFT.HIA.TAXA$Species = gsub(" $",     "",  DRAFT.HIA.TAXA$Species, perl = TRUE)
 DRAFT.HIA.TAXA$Species = gsub("    $",  "",  DRAFT.HIA.TAXA$Species, perl = TRUE)
 
@@ -121,7 +115,7 @@ HIA.VARIETY <-
   as.data.frame %>% 
   setNames(c('Binomial', 'No.of.Varieties')) %>% 
   full_join(DRAFT.HIA.TAXA) %>% 
-  select(Species, Binomial, No.of.Varieties, Plant.type:WA, Number.of.growers, Number.of.States, Origin, Top_200)
+  select(Species, Binomial, No.of.Varieties, Plant.type:WA, Number.of.growers, Number.of.States, Origin)
 
 HIA.VARIETY %>% 
   filter(Binomial==Species)
@@ -144,9 +138,22 @@ CLEAN.SPP = HIA.VARIETY[!duplicated(HIA.VARIETY["Binomial"]),]
 CLEAN.SPP = dplyr::rename(CLEAN.SPP, HIA.Taxa = Species)
 
 
+#########################################################################################################################
+## Now sum the number of growers across multiple varieties
+## Just get the count for each unique binomial
+# n.clean <- tapply(CLEAN.SPP$Number.of.growers, CLEAN.SPP$HIA.Taxa, sum, na.rm = TRUE)
+# CLEAN.SPP$Number.of.growers.total <- n.clean[CLEAN.SPP$Binomial]
+# TOT.GROW = CLEAN.SPP[c("Binomial",
+#                         "Number.of.growers.total")]
+# names(TOT.GROW) = c("searchTaxon", "Total.growers")
+# TOT.GROW        = TOT.GROW[!duplicated(TOT.GROW[,c('searchTaxon')]),]
+# CLEAN.GROW      = join(CLEAN.SPP, TOT.GROW)
+
+
+
 ## Reorder by species
-CLEAN.SPP = CLEAN.SPP[with(CLEAN.SPP, order(Binomial)), ] 
-write.csv(CLEAN.SPP , "./data/base/HIA_LIST/HIA/CLEAN_HIA_BIONOMIAL.csv", row.names = FALSE) 
+CLEAN.SPP = CLEAN.SPP[with(CLEAN.SPP, order(HIA.Taxa)), ] 
+#write.csv(CLEAN.SPP , "./data/base/HIA_LIST/HIA/CLEAN_HIA_BIONOMIAL.csv", row.names = FALSE) 
 #View(CLEAN.SPP)
 
 

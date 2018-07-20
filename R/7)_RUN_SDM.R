@@ -72,7 +72,7 @@ length(occurrence_cells_all)   ## this is a list of dataframes, where the number
 
 
 #########################################################################################################################
-## Now get just one record within each 10*10km cell.
+## Now get just one record within each 1*1km cell.
 SDM.DATA.ALL <- mapply(function(x, cells) {
   x[!duplicated(cells), ]
 }, COMBO.RASTER.SPLIT.ALL, occurrence_cells_all, SIMPLIFY = FALSE) %>% do.call(rbind, .)
@@ -355,7 +355,7 @@ lapply(ff[n < 27], function(x) {
 
 ## 3). Try to thin records for ~100 spp with boundary bias: random sampling of those species records, by state and environment
 ##     Play around with the parameters, see how the maps change.
-##     Run the biased species separately, then replace them in the biased species main folders
+##     Run the biased species separately, then replace them in the main directory
 
 ## 4). Use more forgiving thresholds (10%) for all species, OR just those with bad maps:
 ##    "Maximum.training.sensitivity.plus.specificity.Logistic.threshold"

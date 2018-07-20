@@ -18,7 +18,7 @@ source('./R/HIA_LIST_MATCHING.R')
 
 ## Set global species list variables here...............................................................................
 ## Now running more tree species
-GBIF.spp     = new.trees
+GBIF.spp     = exotic.trees
 map_spp_list = new_trees
 
 

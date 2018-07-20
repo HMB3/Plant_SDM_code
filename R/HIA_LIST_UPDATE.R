@@ -103,7 +103,6 @@ source('./R/HIA_CLEAN_MATCHING.R')
 rasterOptions(tmpdir = file.path('H:/green_cities_sdm/RTEMP')) 
 
 
-
 #########################################################################################################################
 ## Read in spatial data once, rather than in each script
 aus           = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds")
@@ -219,7 +218,6 @@ NURSE.MATCH          = read.csv("./MANUEL/nurseries.csv",                       
 campbelltown         = read.csv("./data/base/HIA_LIST/HIA/campbelltown_species.csv",        stringsAsFactors = FALSE)
 
 
-
 ## The species for the SUA analysis
 SUA.spp = read.csv("./output/maxent/MAXENT_SUA_SPP.csv", stringsAsFactors = FALSE)
 SUA.spp = SUA.spp[order(SUA.spp$searchTaxon),] 
@@ -238,35 +236,6 @@ camp.spp = trimws(campbelltown$Species)
 summary(COMBO.NICHE.CONTEXT$AUS_RECORDS)
 SPP.AUS = subset(COMBO.NICHE.CONTEXT, AUS_RECORDS >= 20)
 summary(SPP.AUS$COMBO.count);summary(SPP.AUS$AUS_RECORDS)
-
-
-# ## Test these values, seems very convenient that all these species have > 200 Australian records?
-# RAND = COMBO.NICHE.CONTEXT[COMBO.NICHE.CONTEXT$searchTaxon %in% spp.rand, ]
-# TARG = COMBO.NICHE.CONTEXT[COMBO.NICHE.CONTEXT$searchTaxon %in% spp.target, ]
-# 
-# 
-# ## How do the distributions compare?
-# summary(COMBO.NICHE.CONTEXT$AUS_RECORDS)
-# summary(TARG$AUS_RECORDS)
-# summary(RAND$AUS_RECORDS)
-
-
-##
-head(renee.taxa)
-head(MQ.glasshouse)
-
-
-## have a look
-dim(HIA.list)
-dim(CLEAN.list)
-dim(renee.taxa)
-str(HIA.list)
-head(HIA.list)
-
-
-#########################################################################################################################
-## intersect(CLEAN.list$Species, GROWING$scientific_name)
-
 
 
 #########################################################################################################################
@@ -294,13 +263,13 @@ spp.200          = dplyr::rename(spp.200, Binomial = Species)
 renee.list       = renee.taxa[c("Species", "Growth_Form")]
 
 
-
 #########################################################################################################################
 ## Merge the ~1000 with the top 200
 ## This merge won't get the ones that match to binomial
 HIA.list$Binomial <- sub('(^\\S+ \\S+).*', '\\1', HIA.list$Species) # \\s = white space; \\S = not white space
 
 
+#########################################################################################################################
 ## Now sum the number of growers across multiple varieties
 ## Just get the count for each unique binomial
 n <- tapply(HIA.list$Number.of.growers, HIA.list$Binomial, sum, na.rm = TRUE)
@@ -309,6 +278,9 @@ TOT.GROW = HIA.list[c("Binomial",
                       "Number.of.growers.total")]
 names(TOT.GROW) = c("searchTaxon", "Total.growers")
 TOT.GROW        = TOT.GROW[!duplicated(TOT.GROW[,c('searchTaxon')]),] 
+
+
+
 
 
 ## Join the total growers to the NICHE data
@@ -321,9 +293,6 @@ CLEAN.NICHE.CONTEXT = join(CLEAN.NICHE.CONTEXT, TOT.GROW)
 CLEAN.NICHE.CONTEXT =  CLEAN.NICHE.CONTEXT[, c(1:14, 199, 16:198)] 
 names(CLEAN.NICHE.CONTEXT[1:15])
 
-
-## Important, join on the total growers here
-names(COMBO.NICHE.CONTEXT)
 
 
 #########################################################################################################################
@@ -566,7 +535,6 @@ names(NURSE.count) = c("Species", "Count")
 NURSE.count = NURSE.count[with(NURSE.count, rev(order(Count))), ]
 summary(NURSE.count)
 
-
 ## Then, check the distribution across Europe!
 
 
@@ -574,185 +542,16 @@ summary(NURSE.count)
 
 
 #########################################################################################################################
-## 4). MATCH EVERGREEN LIST WITH THE PLANT RISK LIST
+## 6). MILESTONE JUNE 2018 LIST
 #########################################################################################################################
 
 
-## Check if there is difference between the Evergreen Connect list and the Plant risk list. Michelle ::
-
-## Just a cross-check of two lists of most widely sold species, from different sources. There may be some interesting 
-## spp on the Nursery Industry list from Anthony Kachenko that aren't on the original list we got from Evergreen, and 
-## it's good to keep a look out for these things and make sure we have as good coverage as possible.
-
-
-# ## Check for the raw match 
-# length(intersect(RAW.HIA.SPP, RISK.LIST$Plant.Name))                       ## 232 binomials match
-# length(intersect(HIA.list$Binomial,  RISK.LIST$Plant.Name))                ## 244 binomials match
-# length(intersect(COMBO.NICHE.CONTEXT$searchTaxon, RISK.LIST$Plant.Name))   ## 250 binomials match
-# 
-# 
-# ## Check for the raw difference
-# length(setdiff(RISK.LIST$Plant.Name, RAW.HIA.SPP))                       ## 713 binomials differ
-# length(setdiff(RISK.LIST$Plant.Name, HIA.list$Binomial))                 ## 700 binomials differ
-# length(setdiff(RISK.LIST$Plant.Name, COMBO.NICHE.CONTEXT$searchTaxon))   ## 695 binomials differ
-# 
-# 
-# #########################################################################################################################
-# ## Now create a new species list to manipulate
-# RISK.CLEAN            = RISK.LIST
-# RISK.CLEAN$Plant.Name = trimws(RISK.CLEAN$Plant.Name, which = c("both"))   ## remove any trailing or leading white space
-# 
-# 
-# ## Use gsub to find and replace the weirdos :: could use multiple commands, but still messy
-# RISK.CLEAN$Plant.Name = gsub(" x ",   " ",  RISK.CLEAN$Plant.Name,  perl = TRUE)
-# RISK.CLEAN$Plant.Name = gsub(" spp ", "",   RISK.CLEAN$Plant.Name,  perl = TRUE)
-# RISK.CLEAN$Plant.Name = gsub(" spp. ", "",  RISK.CLEAN$Plant.Name,  perl = TRUE)
-# RISK.CLEAN$Plant.Name = gsub(" sp. ", "",   RISK.LIST$Plant.Name,   perl = TRUE)
-# RISK.CLEAN$Plant.Name = gsub(" var. ", "",  RISK.LIST$Plant.Name,   perl = TRUE)
-# RISK.CLEAN$Plant.Name = gsub(" var ", "",   RISK.LIST$Plant.Name,   perl = TRUE)
-# 
-# 
-# ## Too many weird things to remove
-# RISK.CLEAN$Plant.Name = gsub(" species and cultivars ", "",  RISK.LIST$Plant.Name,   perl = TRUE)
-# RISK.CLEAN$Plant.Name = gsub(" hybrids and cultivars ", "",  RISK.LIST$Plant.Name,   perl = TRUE)
-# RISK.CLEAN$Plant.Name = gsub(" and cultivars ", "",  RISK.LIST$Plant.Name,   perl = TRUE)
-# RISK.CLEAN$Plant.Name = gsub(" (cultivars) ", "",  RISK.LIST$Plant.Name,   perl = TRUE)
-# 
-# 
-# ## Again this could be done with some kind of regular expression
-# RISK.CLEAN$Plant.Name = gsub(" (hybrids) ", "",  RISK.LIST$Plant.Name,   perl = TRUE)
-# RISK.CLEAN$Plant.Name = gsub(" (Hybrids) ", "",  RISK.LIST$Plant.Name,   perl = TRUE)
-# RISK.CLEAN$Plant.Name = gsub(" hybrids ", "",  RISK.LIST$Plant.Name,   perl = TRUE)
-# RISK.CLEAN$Plant.Name = gsub(" Hybrids ", "",  RISK.LIST$Plant.Name,   perl = TRUE)
-# 
-# 
-# ## Remove words in parenthesis from string
-# RISK.CLEAN$Plant.Name = trimws(RISK.CLEAN$Plant.Name, which = c("both"))
-# RISK.CLEAN$Plant.Name = gsub(" x ",   " ", RISK.CLEAN$Plant.Name,  perl = TRUE)
-# RISK.CLEAN$Plant.Name = gsub("\\s*\\([^\\)]+\\)", "", as.character(RISK.CLEAN$Plant.Name))
-# 
-# 
-# ## Get the binomials :: causes problems with X, but these are common anyway?
-# RISK.CLEAN$Binomial <- sub('(^\\S+ \\S+).*', '\\1', RISK.CLEAN$Plant.Name)
-# 
-# 
-# ## Now get the unique binomials
-# RISK.BINOMIAL       = unique(RISK.CLEAN$Binomial)
-# RISK.BINOMIAL.DF    = as.data.frame(RISK.BINOMIAL) 
-# colnames(RISK.BINOMIAL.DF)[1] = "Plant_name"
-# names(RISK.BINOMIAL.DF)
-# #write.csv(RISK.BINOMIAL.DF, "./data/base/HIA_LIST/HIA/RISK_BINOMIAL_DF.csv", row.names = FALSE) 
-# #RISK.BINOMIAL.CLEAN = read.csv("./data/base/HIA_LIST/HIA/RISK_BINOMIAL_DF.csv", stringsAsFactors = FALSE)
-# 
-# 
-# #########################################################################################################################
-# ## Now check the intersection and difference with the cleaned data
-# ## Check for the cleaned match between evergreen and plant risk lists
-# length(intersect(RAW.HIA.SPP, RISK.BINOMIAL))                     ## 269 binomials match
-# length(intersect(HIA.list$Binomial,  RISK.BINOMIAL))              ## 311 binomials match
-# length(intersect(COMBO.NICHE.CONTEXT$searchTaxon, RISK.BINOMIAL)) ## 319 binomials match
-# 
-# 
-# ## 311/654 41% overlap between the risk list and the evergreen list
-# (length(intersect(unique(HIA.list$Binomial), RISK.BINOMIAL))/length(unique(HIA.list$Binomial)))*100 
-# 
-# 
-# ## Check for the cleaned difference  between evergreen and plant risk lists
-# setdiff(RISK.BINOMIAL, RAW.HIA.SPP)                       ## 605 plants are new
-# setdiff(RISK.BINOMIAL, unique(HIA.list$Binomial))         ## 564 plants are new
-# setdiff(RISK.BINOMIAL, COMBO.NICHE.CONTEXT$searchTaxon)   ## 554 plants are new
-# 
-# 
-# ## 860/1131 (76%) difference between the risk list and the evergreen list
-# (length(setdiff(RAW.HIA.SPP, RISK.BINOMIAL))/length(RAW.HIA.SPP))*100 
-# 
-# 
-# ## 555/610 (90%) difference between the risk list and the popular list
-# (length(setdiff(RISK.BINOMIAL, COMBO.NICHE.CONTEXT$searchTaxon))/length(COMBO.NICHE.CONTEXT$searchTaxon))*100
-# 
-# 
-# #########################################################################################################################
-# ## Return the grower info for the species that overlap
-# ## Instead of merge or join, just use %in%
-# RISK.LOW = RISK.LIST[, c("Plant.Name",
-#                          "Low.Risk")]
-# RISK.LOW =  dplyr::rename(RISK.LOW, 
-#                           searchTaxon = Plant.Name)
-# 
-# ## The %in% operator is useful
-# EVERGREEN.RISK = COMBO.NICHE.CONTEXT[COMBO.NICHE.CONTEXT$searchTaxon %in% RISK.BINOMIAL, ][, c("searchTaxon",
-#                                                                                                "Origin",
-#                                                                                                "Top_200",
-#                                                                                                "Plant.type",
-#                                                                                                "Total.growers", 
-#                                                                                                "Number.of.States",
-#                                                                                                "No.of.Varieties")]
-# 
-# EVERGREEN.RISK = merge(EVERGREEN.RISK, RISK.LOW, by = "searchTaxon", all = FALSE)
-# 
-# ## Check and save
-# dim(EVERGREEN.RISK)
-#View(EVERGREEN.RISK)
-#write.csv(EVERGREEN.RISK, "./data/base/HIA_LIST/HIA/EVERGREEN_RISK_MATCH.csv", row.names = FALSE)  
-
-
-
-
-
-#########################################################################################################################
-## 6). MATCH EVERGREEN LIST WITH THE PLANT RISK LIST
-#########################################################################################################################
-
-
-# ## Get the intersection of all grown spp (that's the CLEAN list), the risky spp and the innovative spp (not sure what this is)
-# length(intersect(CLEAN.SPP$Binomial, RISK.BINOMIAL)) ## About 500 species in the extra list
-# EXTRA.SPP = CLEAN.SPP[CLEAN.SPP$Binomial %in% intersect(CLEAN.SPP$Binomial, RISK.BINOMIAL), ]
-# EXTRA.SPP = EXTRA.SPP[!EXTRA.SPP$Binomial %in% spp.all, ]
-# #write.csv(EXTRA.SPP, "./data/base/HIA_LIST/COMBO/EXTRA_SPP.csv", row.names = FALSE)
-# 
-# ## Check and just get the most popular of these?
-# dim(EXTRA.SPP)
-# #View(EXTRA.SPP)
-# summary(EXTRA.SPP$Number.of.growers)
-# 
-# 
-# ##
-# spp.extra = unique(EXTRA.SPP$Binomial)
-# length(spp.extra)
-# 
-# 
-# 
-# 
-# #########################################################################################################################
-# ## 6). MILESTONE JUNE 2018 LIST
-# #########################################################################################################################
-# 
-# 
-# ## We want all the current experimental spp (so the 50 as of April 2018). 
-# ## The 16 species Manuel is monitoring
-# ## Plus another 70 of the right sort
-# MOD.2 = COMBO.NICHE.CONTEXT[COMBO.NICHE.CONTEXT$searchTaxon %in% MOD_2$Species, ][,  c("searchTaxon",
-#                                                                                        "COMBO.count",
-#                                                                                        "AUS_RECORDS",
-#                                                                                        "Total.growers",
-#                                                                                        "Top_200")]
-# 
-# 
-# ## So find 80 species which have the most growers, have the most Aus records and with at least 50 of them trees
-# dim(subset(COMBO.NICHE.CONTEXT, Total.growers > 25 & AUS_RECORDS > 20 & COMBO.count > 100 & Top_200 == "TRUE"))
-
-
-## This is the code which chooses the other species..........................................................................
-## would need to be updated to create
-
-
-
+## We want all the current experimental spp (so the 50 as of April 2018).
 MILE.1         = subset(COMBO.NICHE.CONTEXT, Total.growers > 25 & AUS_RECORDS > 20 & COMBO.count > 100 & Top_200 == "TRUE")
 MILE.CLEAN     = subset(CLEAN.NICHE.CONTEXT, Total.growers > 25 & AUS_RECORDS > 20 & COMBO.count > 100 & Top_200 == "TRUE")
 MILE.1.EXTRA   = subset(CLEAN.NICHE.CONTEXT, Total.growers > 25 & AUS_RECORDS > 20 & COMBO.count > 100)
 MILE.1.EXTRA   = MILE.1.EXTRA[with(MILE.1.EXTRA, order(-Total.growers)), ]
 MILE.1.EXTRA   = MILE.1.EXTRA [!MILE.1.EXTRA$searchTaxon %in% MILE.CLEAN$searchTaxon, ]
-
 
 summary(MILE.1.EXTRA$AUS_RECORDS)
 summary(MILE.1.EXTRA$COMBO.count)
@@ -764,7 +563,7 @@ length(spp.mile.1)
 
 #########################################################################################################################
 ## Now just get the species with good models and enough data
-MODEL.CHECK = merge(COMBO.NICHE.CONTEXT, MAXENT.CHECK)
+MODEL.CHECK = merge(CLEAN.NICHE.CONTEXT, MAXENT.CHECK)
 MODEL.CHECK = MODEL.CHECK[, c("searchTaxon",
                               "COMBO.count",
                               "AUS_RECORDS",
@@ -794,296 +593,29 @@ exotic_trees = gsub(" ", "_", exotic.trees)
 
 
 #########################################################################################################################
+## Get the match between ALE's tree data and HIA data
 extra.trees   = subset(MILE.1.EXTRA, Plant.type == "Tree")$searchTaxon
 MS.trees      = unique(c(checked.trees, extra.trees))
 new.trees     = setdiff(extra.trees, checked.trees)
 new_trees     = gsub(" ", "_", new.trees)
 
-merge(ALE.LIST, COMBO.NICHE.CONTEXT[c("searchTaxon", "Origin", )])
+ALE.TREE = merge(ALE.LIST, CLEAN.NICHE.CONTEXT[c("searchTaxon",  "Plant.type", "Origin", "Total.growers", "COMBO.count")])
+ALE.SPP  = subset(ALE.TREE, Total.growers >= 25 & Frequency > 300 & Plant.type == "Tree")$searchTaxon
+write.csv(ALE.TREE,  "./data/base/HIA_LIST/COMBO/ALE_TREE_MATCH.csv",    row.names = FALSE)
 
-#write.csv(MODEL.CHECK, "./data/base/HIA_LIST/COMBO/MODEL_SPECIES_CHECK_RANGE.csv", row.names = FALSE)
-
- 
-# ## Join on the column which shows the kind of data bias
-# MILE.1.SPP     =  COMBO.NICHE.CONTEXT[COMBO.NICHE.CONTEXT$searchTaxon %in% spp.mile.1, ]
-# MILE.1.SPP     =  join(MILE.1.SPP, SPP.BIAS, type = "left")
-# 
-# MILE.CLEAN.SPP =  CLEAN.NICHE.CONTEXT[CLEAN.NICHE.CONTEXT$searchTaxon %in% spp.mile.1, ]
-# MILE.CLEAN.SPP =  join(MILE.CLEAN.SPP, SPP.BIAS, type = "left")
-# 
-# MILE.1.SPP = MILE.1.SPP[,  c(1, 15, 16, 18, 7, 17, 3, 4, 5, 199, 19:198)]
-# MILE.1.SPP = MILE.1.SPP[with(MILE.1.SPP, order(-Total.growers)), ]
-# 
-# MILE.CLEAN.SPP = MILE.CLEAN.SPP[,  c(1, 15, 16, 18, 7, 17, 3, 4, 5, 199, 19:198)]
-# MILE.CLEAN.SPP = MILE.CLEAN.SPP[with(MILE.CLEAN.SPP, order(-Total.growers)), ]
-# 
-# #View(MILE.1.SPP)
-# #View(MILE.CLEAN.SPP)
-# 
-# 
-# ## What is the distribution?
-# dim(MILE.1.SPP)
-# summary(MILE.1.SPP$Total.growers)
-# summary(MILE.1.SPP$AUS_RECORDS)
-# summary(MILE.1.SPP$COMBO.count)
-# 
-# 
-# ## Also how should these be model
-# with(MILE.1.SPP, table(MILE.1.SPP$AUS_BOUND_BIAS))
-# spp.mile.targ = subset(MILE.1.SPP, AUS_BOUND_BIAS == "FALSE")$searchTaxon
-# spp.mile.rand = subset(MILE.1.SPP, AUS_BOUND_BIAS == "TRUE")$searchTaxon
-# spp.mile      = sort(unique(MILE.1.SPP$searchTaxon))
-# spp.mile.rev  = sort(spp.mile, decreasing = TRUE)
-#    
-# spp_mile      = gsub(" ", "_", spp.mile)
-# spp_mile_rev  = sort(spp_mile, decreasing = TRUE)
-# 
-# spp_new      = gsub(" ", "_", new.spp)
-# spp_new_rev  = sort(spp_new, decreasing = TRUE)
-# 
-# 
-# spp_camp     = gsub(" ", "_", camp.spp)
-# 
-# 
-# ## Add plant type data for the missing species not sure here
-# unique(MILE.CLEAN.SPP$Plant.type)
-# 
-# ## Rename the species with missing functional types
-# MILE.CLEAN.SPP[193, "Plant.type"] = "Tree"  ; MILE.CLEAN.SPP[193, "Origin"] = "Native"
-# MILE.CLEAN.SPP[194, "Plant.type"] = "Tree"  ; MILE.CLEAN.SPP[194, "Origin"] = "Native"
-# MILE.CLEAN.SPP[195, "Plant.type"] = "Shrub" ; MILE.CLEAN.SPP[195, "Origin"] = "Native"
-# MILE.CLEAN.SPP[196, "Plant.type"] = "Shrub" ; MILE.CLEAN.SPP[196, "Origin"] = "Native"
-# MILE.CLEAN.SPP[197, "Plant.type"] = "Tree"  ; MILE.CLEAN.SPP[197, "Origin"] = "Native"
-# MILE.CLEAN.SPP[198, "Plant.type"] = "Tree"  ; MILE.CLEAN.SPP[198, "Origin"] = "Native"
-# 
-# 
-# ## And create a table of the functional types
-# with(MILE.1, table(Plant.type,     useNA = "always"))
-# with(MILE.1.SPP, table(Plant.type, useNA = "always"))
-# 
-# 
-# ## Origin 
-# MILE.CLEAN.SPP[180, "Orign"] = "Native"
-# MILE.CLEAN.SPP[182, "Orign"] = "Native"
-# MILE.CLEAN.SPP[183, "Orign"] = "Native"
-# MILE.CLEAN.SPP[184, "Orign"] = "Native"
-# MILE.CLEAN.SPP[188, "Orign"] = "Exotic"
-# MILE.CLEAN.SPP[192, "Orign"] = "Native"
-# #View(MILE.CLEAN.SPP)
-# 
-# 
-# ## Check the join was ok
-# length(unique(MILE.CLEAN.SPP$searchTaxon))
-# 
-# 
-# ########################################################################################################################
-# ## Proportions
-# round(with(MILE.CLEAN.SPP, table(Plant.type)/sum(table(Plant.type))*100), 1)
-# 
-# 
-# ## 
-# spp.combo      = sort(unique(c(spp.all, spp.extra, spp.mile, MILE.CLEAN.SPP$searchTaxon)))
-# combo.rev      = sort(spp.combo, decreasing = TRUE)
-# combo_spp      = gsub(" ", "_", spp.combo)
-# combo_reverse  = sort(combo_spp, decreasing = TRUE)
-# length(spp.combo)
-# 
-# 
-# ## Add the module to the species output
-# renee.full$Module = 3
-# MOD_2$Module      = 2
-# spp.modules = join(renee.full, MOD_2, type = "full")
-# names(spp.modules) = c("searchTaxon", "Module")
-# 
-# 
-# ## Join modules to milestones
-# MILE.CLEAN.MODULE = join(MILE.CLEAN.SPP, spp.modules, type = "left")
-# MILE.CLEAN.MODULE$Module[is.na(MILE.CLEAN.MODULE$Module)] <- 1
-# MILE.CLEAN.MODULE = MILE.CLEAN.MODULE[MILE.CLEAN.MODULE$searchTaxon %in% MILE.CLEAN.SPP$searchTaxon, ]
-# MILE.CLEAN.MODULE = MILE.CLEAN.MODULE[!duplicated(MILE.CLEAN.MODULE$searchTaxon),]
-#  
-# 
-# # ## Bar plot 
-# # module.counts <- table(MILE.CLEAN.MODULE$Module)
-# # barplot(module.counts, main = "Species per module",
-# #         xlab = "Module", ylab = "number of species", col = c("lightblue", "pink", "orange"))
-# #         #legend = rownames(counts))
-# # 
-# # 
-# # ## Pie chart
-# # pie(module.counts, col = c("lightblue", "pink", "orange"))
-# 
-# 
-# ########################################################################################################################
-# # Check the overlap between the models that have been checked, and the most popular
-# setdiff(MILE.CLEAN.MODULE$searchTaxon, MAXENT.CHECK$searchTaxon)
-# top.losers = head(unique(OVERALL.LOSS$SPECIES), 20)
-# top.losers = gsub("_",  " ", top.losers)
-# 
-# 
-# ##
-# MILE.LOSE  = MILE.CLEAN.MODULE[MILE.CLEAN.MODULE$searchTaxon %in% top.losers, ]
-# MILE.LOSE  = MILE.LOSE[rev(order(MILE.LOSE$Total.growers)),]
-# #View(MILE.LOSE)
-# 
-# 
-# ## Intersect existing list with the number of growers
-# APP.GROW = COMBO.NICHE.CONTEXT[,  c("searchTaxon",
-#                                     "Total.growers")]
-# APPENDIX = join(APPENDIX, APP.GROW)
-# 
-# 
-# ## Proportions for this appendix
-# with(APPENDIX , table(Plant.type))
-# round(with(APPENDIX , table(Plant.type)/sum(table(Plant.type))*100), 1)
-# 
-# 
-# ## Save ::
-# ## setdiff(MOD.2.3$Species, MILE.1.SPP$searchTaxon)
-# # write.csv(MILE.1.SPP,          "./data/base/HIA_LIST/COMBO/MILESTONE_TAXA_APRIL_2018_STANDARD_CLEAN.csv",      row.names = FALSE)
-# # write.csv(MILE.CLEAN.MODULE,   "./data/base/HIA_LIST/COMBO/MILESTONE_TAXA_APRIL_2018_COORD_CLEAN_MODULES.csv", row.names = FALSE)
-# # write.csv(MOD.2,               "./data/base/HIA_LIST/COMBO/MOD_2_SPP_RECORDS.csv",                             row.names = FALSE)
-# # write.csv(COMBO.NICHE.CONTEXT, "./data/base/HIA_LIST/COMBO/COMBO_TOT_GROWERS.csv",                             row.names = FALSE)
-# # write.csv(APPENDIX,            "./data/base/HIA_LIST/COMBO/APPENDIX_TOT_GROWERS.csv",                          row.names = FALSE)
-# 
-# 
-# 
-# ########################################################################################################################
-# ## Final counts
-# dim(COMBO.NICHE.CONTEXT) 
-# HIA.COUNT   = COMBO.NICHE.CONTEXT[COMBO.NICHE.CONTEXT$searchTaxon %in% HIA.SPP$Binomial, ]
-# LOW.RECORDS = dim(subset (HIA.COUNT, COMBO.count < 20))[1] + (dim(HIA.SPP)[1] - dim(HIA.COUNT)[1]) 
-# LOW.NO      = dim(HIA.SPP)[1] - 455
-# 
-# 
-# 
-# 
-# 
-# #########################################################################################################################
-# ## CHECK POORLY RECORDED SPECIES
-# #########################################################################################################################
-# 
-# 
-# ## Which species are poorly records from the top 200?
-# COMBO.NICHE.200 = subset(COMBO.NICHE.CONTEXT, Top_200 == "TRUE")
-# HIA.200         = subset(HIA.SPP, Top_200 == "TRUE")
-# setdiff(HIA.200$Binomial, COMBO.NICHE.200$searchTaxon)
-# intersect(HIA.200$Binomial, COMBO.NICHE.200$searchTaxon)
-# 
-# 
-# ## Which species have the least records?
-# COMBO.NICHE.200 = COMBO.NICHE.200[order(COMBO.NICHE.200$COMBO.count),]
-# #View(COMBO.NICHE.200)
-# 
-# 
-# ## Add the maxent rating to the combo.niche file
-# COMBO.200.RATING = join(COMBO.NICHE.200, MAXENT.RATING[, c("searchTaxon", "CHECK_MAP")], type = "left")
-# 
-# 
-# ## Various errors here...
-# check.200 = c("Rhododendron simsii", "Bismarckia nobilis",      
-#               "Chamaedorea cataractarum",  "Cyathea cooperi",         
-#               "Doryanthes palmeri",  "Dracaena marginata",  
-#               "Melaleuca quinquenervia", "Metrosideros thomasii",     
-#               "Metrosideros vitiensis",  "Photinia fraseri",       
-#               "Photinia robusta",    "Poa labillardierei",      
-#               "Atractocarpus fitzalanii",  "Syzygium floribundum",    
-#               "Syzygium hemilamprum", "Pennisetum setaceum", "Agapanthus praecox",
-#               "Magnolia figo", "Gardenia jasminoides", 
-#               "Gardenia jasminoides", "Dracaena fragrans", "Camellia oleifera",
-#               "Sannantha virgata", "Ficinia nodosa")
-# 
-# 
-# run.200  = c("Cyathea cooperi", "Melaleuca quinquenervia", "Atractocarpus fitzalanii",  
-#              "Syzygium floribundum", "Syzygium hemilamprum", "Agapanthus praecox", 
-#              "Pennisetum setaceum", "Agapanthus praecox",
-#              "Magnolia figo", "Gardenia jasminoides", 
-#              "Gardenia jasminoides", "Dracaena fragrans", "Camellia oleifera",
-#              "Sannantha virgata", "Ficinia nodosa")
-# 
-# run_200  = gsub(" ", "_", run.200)
-# 
-# 
-# ## Read in the table of checked maps. Then subset to just the species with dodgy maps
-# #MAXENT.CHECK      = read.csv("./output/maxent/MAXENT_CHECK_RATING.csv", stringsAsFactors = FALSE)
-# # MAXENT.CHECK   = read.csv("./output/maxent/MAXENT_RATING_26_2018.csv", stringsAsFactors = FALSE)
-# # MAXENT.CHECK   = join(MAXENT.CHECK, TOT.GROW)
-# # MAXENT.CHECK   = MAXENT.CHECK [, c(1:7, 19, 8:18)]
-# # MAXT.CHECK.25  = subset(MAXENT.CHECK, Total.growers >= 25 & CHECK_MAP == 1 | CHECK_MAP == 2)
-# # MAXT.CHECK.25  = completeFun(MAXT.CHECK.25, "Total.growers")
-# # 
-# # #MAXT.CHECK.25  = head(MAXT.CHECK.25, 150)
-# # table(MAXT.CHECK.25$CHECK_MAP)
-# # MAXT.CHECK.25 = MAXT.CHECK.25[with(MAXT.CHECK.25 , rev(order(Total.growers))), ]
-# # View(MAXT.CHECK.25)
-# # dim(MAXT.CHECK.25)
-# # summary(MAXT.CHECK.25$Total.growers)
-# 
-# 
-# ## Now write out the species list to re-process
-# #write.csv(MAXT.CHECK.25, "./output/maxent/MAXENT_SUA_SPP.csv", row.names = FALSE)
-# 
-# 
-# ## Write to file
-# # write.csv(COMBO.NICHE.200,  "./data/base/HIA_LIST/COMBO/COMBO_NICHE_200.csv",    row.names = FALSE)
-# # write.csv(COMBO.NICHE.200,  "./data/base/HIA_LIST/COMBO/COMBO_NICHE_200.csv",    row.names = FALSE)
-# # write.csv(HIA.COUNT,        "./data/base/HIA_LIST/COMBO/COMBO_NICHE_HIA.csv",    row.names = FALSE)
-# # write.csv(COMBO.200.RATING, "./data/base/HIA_LIST/COMBO/COMBO_NICHE_RATING.csv", row.names = FALSE)
-# 
-# 
-# 
-# #########################################################################################################################
-# ## LIST EXCEPTIONS:
-# #########################################################################################################################
-# 
-# 
-# ## Record each list: Raw top 25 (1135), Varieties (948), Binomials (610) 
-# ## Check exceptions with Paul, Linda and Rach
-# length(unique(HIA.list$Species))     ## Raw top 25 (1135)
-# length(unique(HIA.VARIETY$Species))  ## Varieties  (948), excluding "spp.", eg Philodendron spp. Congo, Nandina domestica Moon Bay
-# length(unique(HIA.SPP$Binomial))     ## Binomials  (610), keep Michelia yunnanensis Scented Pearl, exclude Spathiphyllum spp. Assorted
-# 
-# 
-# ## record the "spp." weirdos
-# EXCLUDED.SPP         = setdiff(unique(RAW.HIA.SPP), unique(HIA.VARIETY$Species))
-# EXCLUDED.VARIETIES   = setdiff(unique(HIA.VARIETY$Species), unique(HIA.SPP$HIA.Taxa))   ## Here is the list that spots the exceptions!!!!!!!
-# 
-# 
-# ## Which species that can't be modelled are on the test list or the top 200 list?
-# test.glasshouse = unique(c(MQ.glasshouse$Species, renee.full$Species))
-# 
-# intersect(MISSING$searchTaxon, test.spp)
-# intersect(MISSING$searchTaxon, test.glasshouse)
-# intersect(MISSING$searchTaxon, top.200$Species)
-# 
-# 
-# ## What about the mod_2 species
-# setdiff(MOD_2$Species, HIA.RAW$Species)
-# setdiff(MOD_2$Species, HIA.list$Binomial)
-# setdiff(MOD_2$Species, COMBO.NICHE.CONTEXT$searchTaxon)
-# intersect(MOD_2$Species, test.spp)
-# 
-# 
-# ## Now restrict the niche dataset to just the MOD2 species
-# # View(head(COMBO.NICHE.CONTEXT[COMBO.NICHE.CONTEXT$searchTaxon %in% MOD_2$Species, ], 13)[, c("searchTaxon",
-# #                                                                          "Origin",
-# #                                                                          "Top_200",
-# #                                                                          "Plant.type",
-# #                                                                          "Total.growers", 
-# #                                                                          "Number.of.States")])
-# 
-# MOD2.SPP = COMBO.NICHE.CONTEXT[COMBO.NICHE.CONTEXT$searchTaxon %in% MOD_2$Species, ]
-# MOD2.SPP = MOD2.SPP[rev(order(MOD2.SPP$AUS_RECORDS)),]
-#View(MOD2.SPP)
+## Now create a table for the supplementary material
+## Spp, type, origin, growers, Count
+MS.spp = sort(unique(c(checked.trees, exotic.trees, ALE.SPP)))
+MS.COL = CLEAN.NICHE.CONTEXT[c("searchTaxon",  "Plant.type", "Origin", "Total.growers", "COMBO.count")]
+MS.SPP = MS.COL[MS.COL$searchTaxon %in% MS.spp, ]
+MS.SPP = MS.SPP[with(MS.SPP, rev(order(Total.growers))), ] 
+dim(MS.SPP)
 
 
-## Remaining anomalies:
-
-## EG: Rhaphiolepis indica has growers for the spp and each variety, should we add them together?
-## Magnolia grandiflora has 8 varieties which are being missed by the current code...
-
-## Also, a key point for the future is how to treat the extra varieties, etc.
-
+## Now create a table of the exotics v natives
+with(MS.SPP, table(Origin))
+round(with(MS.SPP, table(Origin)/sum(table(Origin))*100), 1)
+write.csv(MS.SPP,  "./data/base/HIA_LIST/COMBO/MS_SPP_TABLE.csv", row.names = FALSE)
 
 
 
