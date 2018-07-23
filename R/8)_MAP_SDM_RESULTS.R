@@ -133,12 +133,11 @@ grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',   
 ## First remove species without data from the modelling step 7
 no_data      <- c ("Baeckea_virgata",           "Kennedia_beckxiana",    "Grevillea_rivularis", "Arctostaphylos_densiflora", 
                    "Cupressocyparis_leylandii", "Eucalyptus_intermedia", "Ficus_hillii", "Pentaceras_australi", 
-                   "Pentaceras_australis",      "Pouteria_australis", "Pouteria_chartacea", "Pouteria_eerwah", 
-                   "Radermachera_gigantea", "Randia_benthamiana", "Raphiolepis_umbellata", "Tilia_mongolica", 
+                   "Pentaceras_australis",      "Pouteria_australis",    "Pouteria_chartacea", "Pouteria_eerwah", 
+                   "Radermachera_gigantea",     "Randia_benthamiana",    "Raphiolepis_umbellata", "Tilia_mongolica", 
                    "Trema_aspera", "Xanthostemon_verticillatus")
 map_spp_list     <- map_spp_list [! map_spp_list %in% no_data]
 no_data %in% map_spp_list
-
 
 
 #########################################################################################################################
@@ -265,13 +264,14 @@ MAXENT.RESULTS <- maxent.tables[c(1:length(maxent.tables))] %>%         ## curre
 TSS.tables = list.files(path.set.var, pattern = 'species_omission\\.csv$', full.names = TRUE, recursive = TRUE)
 
 
-## Get the maxium TSS value using the omission data
+## Get the maxium TSS value using the omission data : use _training_ ommision data only
 max_tss <- sapply(TSS.tables, function(f) {
   
+  ## For eachg species, read in the training data
   d <- read.csv(f)
-  i <- which.min(d$Test.omission + d$Fractional.area)
+  i <- which.min(d$Training.omission + d$Fractional.area)
   
-  c(max_tss = 1 - min(d$Test.omission + d$Fractional.area),
+  c(max_tss = 1 - min(d$Training.omission + d$Fractional.area),
     thr     = d$Corresponding.logistic.value[i])
   
 })
@@ -302,9 +302,9 @@ head(MAXENT.RESULTS, 20)[1:10]
 dim(subset(MAXENT.RESULTS, Training.AUC < 0.7))  ## all models should be above 0.7
 
 
-## Are the TSS values ok?
-hist(BIAS.RESULTS$max_tss)
-plot(BIAS.RESULTS$Training.AUC, BIAS.RESULTS$max_tss)
+## Are the TSS values ok - 
+hist(MAXENT.RESULTS$max_tss)
+plot(MAXENT.RESULTS$Training.AUC, MAXENT.RESULTS$max_tss)
 
 
 ## Now check the match between the species list, and the results list. These need to match, so we can access

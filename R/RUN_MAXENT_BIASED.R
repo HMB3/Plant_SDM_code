@@ -240,7 +240,7 @@ lapply(SPP.BIAS, function(spp){
   
   ## Skip the species if the directory already exists, before the loop
   ## Create a separate directory for these subsampled species. Then we can compare the folder output with the originals
-  outdir <- 'output/maxent/SPP_BIAS'
+  outdir <- 'output/maxent/SPP_RAREFY'
   if(dir.exists(file.path(outdir, gsub(' ', '_', spp)))) {
     message('Skipping ', spp, ' - already run.')
     invisible(return(NULL))
@@ -248,51 +248,19 @@ lapply(SPP.BIAS, function(spp){
   }
   
   ## Print the taxa being processed to screen
-  if(spp %in% BIAS.STATE.RAIN$searchTaxon) {
+  if(spp %in% BIAS.DF$searchTaxon) {
     message('Doing ', spp) 
     
-    ## Do the stratification by rainfall, etc, in here...................................................................
-    ## This can be 
-    
     ## First, subset the records to only the taxa being processed
-    occurrence <- subset(BIAS.STATE.RAIN, searchTaxon == spp)
-    
-    ## Now subset to the species data to those records inside and outside NSW
-    ## Could change this to a generic "state" argument
-    # occurrence.nsw <- subset(occurrence, AUS_STATE == "New South Wales")
-    # occurrence.out <- subset(occurrence, AUS_STATE != "New South Wales")
-    # 
-    # ## Now take a 50% random sample from all rainfall groups, just for the points within NSW
-    # ## Set a large starting number R? How large is large?
-    # set.seed(123458)
-    # strat.nsw = stratified(occurrence.nsw, "AUS_RN_ZN", .5)
-    # dim(strat.nsw)[1]/dim(occurrence.nsw)[1]*100
-    # 
-    # ## Now combine the two data frames :: about 50% of the original data remains
-    # occ.strat = as.data.frame(bind_rows(strat.nsw, occurrence.out))
-    # names(occ.strat)
-    # dim(occ.strat)[1]/dim(occurrence)[1]*100
-    
+    occurrence <- subset(BIAS.DF, searchTaxon == spp)
+
     ## Now get the background points. These can come from any spp, other than the modelled species.
     ## Also should the background points come from NSW too?
-    background <- subset(BIAS.STATE.RAIN, searchTaxon != spp)
-    
-    # ## Re-convert to a spatial points df
-    # background    = SpatialPointsDataFrame(coords      = background[c("lon", "lat")], 
-    #                                        data        = background,
-    #                                        proj4string = CRS.WGS.84)
-    # 
-    # occ.strat     = SpatialPointsDataFrame(coords      = occ.strat[c("lon", "lat")], 
-    #                                        data        = occ.strat,
-    #                                        proj4string = CRS.WGS.84)
-    # 
-    # ## Re-project the spdf's
-    # background <- spTransform(background,  CRS("+init=ESRI:54009 +proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0"))
-    # occ.strat  <- spTransform(occ.strat,   CRS("+init=ESRI:54009 +proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0"))
-    
-    ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
+    background <- subset(BIAS.DF, searchTaxon != spp)
+
+    ## Finally, fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
     tryCatch(
-      FIT_MAXENT_TARG_BG(occ                     = occ.strat, 
+      FIT_MAXENT_TARG_BG(occ                     = occurrence, 
                          bg                      = background, 
                          sdm.predictors          = sdm.select, 
                          name                    = spp, 
@@ -322,16 +290,6 @@ lapply(SPP.BIAS, function(spp){
   }  
   
 })
-
-
-
-
-
-#########################################################################################################################
-## Simple check of the stratification -
-
-
-## Compare the occurrence points that are output by the SDM code from the BIA folder with the previous folder
 
 
 
@@ -432,7 +390,7 @@ grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',   
 ## Create 2030 maps BIAS_REV = sort(SPP_BIAS, decreasing = TRUE)
 env.grids.2030 = tryCatch(project_maxent_grids(scen_list     = scen_2030,
                                                species_list  = SPP_BIAS,
-                                               maxent_path   = "./output/maxent/SPP_BIAS/",
+                                               maxent_path   = "./output/maxent/SPP_RAREFY/",
                                                climate_path  = "./data/base/worldclim/aus/1km/bio",
                                                grid_names    = grid.names,
                                                time_slice    = 30,

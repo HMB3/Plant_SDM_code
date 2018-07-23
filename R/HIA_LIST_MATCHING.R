@@ -115,6 +115,7 @@ Koppen_zones  = unique(readOGR('data/base/CONTEXTUAL/WC05_1975H_Koppen_Shapefile
 Koppen_1975   = raster('data/Koppen_1000m_Mollweide54009.tif')
 AUS_RAIN      = readRDS('data/base/CONTEXTUAL/BOM/BOM_RAIN_AGG.rds')
 
+
 SUA           = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/IN_SUA_AUS.rds")
 LGA           = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LGA.rds")
 AUS           = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds")
@@ -130,6 +131,11 @@ load("./data/base/CONTEXTUAL/urbanareas.rda")
 # AUS_RAIN = readOGR("H:/green_cities_sdm/data/base/CONTEXTUAL/BOM/BOM_RAIN_AGG.shp",
 #                    layer = "BOM_RAIN_AGG")
 # saveRDS(AUS_RAIN, file = paste("./data/base/CONTEXTUAL/BOM/BOM_RAIN_AGG.rds"))
+#
+
+# BIAS_SPP = readOGR("H:/green_cities_sdm/data/base/HIA_LIST/COMBO/RAREFY_SPP/SPAT_OUT/SPP_RAREFY_TEST_spatially_rarified_locs.shp",
+#                    layer = "SPP_RAREFY_TEST_spatially_rarified_locs")
+# saveRDS(BIAS_SPP, file = paste("./data/base/HIA_LIST/COMBO/BIAS_SPP.rds"))
 
 
 ## Set definitions :: best to minimise the number of projection used in this project

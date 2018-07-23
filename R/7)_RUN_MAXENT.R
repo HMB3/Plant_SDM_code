@@ -342,7 +342,7 @@ lapply(analysis.spp, function(spp){
   
 ## 5). Calculate the TSS for all species (and MESS maps for a few species)
 
-## 7). Decide on gamma diversity for this article - 200 spp - could it go to GEB? Plan figures and tables for MS
+## 7). Decide on gamma diversity for this article - 100/200 tree spp - could it go to GEB? Plan figures and tables for MS
 
 
 
