@@ -849,6 +849,39 @@ gbif.keep <- c(## TAXONOMY
                "eventID")
 
 
+ALA.keep <- c(## TAXONOMY
+  "scientificName",
+  "taxonRank",
+  "genus",
+  "family",
+  
+  ## CULTIVATION
+  "basisOfRecord",
+  "locality",
+  "establishmentMeans",
+  "institutionCode",
+  "datasetName",
+  "habitat",
+  "eventRemarks",
+  
+  ## RECORD ID
+  "recordedBy",
+  "occurrenceID",
+  "catalogNumber",
+  
+  ## PLACE/TIME
+  "lat",
+  "lon",
+  "coordinateUncertaintyInMeters",                                                       
+  "country",
+  "geodeticDatum",
+  "year",
+  "month",
+  "day",
+  "verbatimEventDate",
+  "eventID")
+
+
 TPL.keep <- c(## GBIF TAXONOMY
   "searchTaxon",
   "scientificName",

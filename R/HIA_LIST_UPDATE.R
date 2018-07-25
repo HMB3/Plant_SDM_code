@@ -172,7 +172,24 @@ KOP.TEST            = read.csv("./data/base/HIA_LIST/COMBO/KOPPEN_TEST_SPP.csv",
 RISK.LIST           = read.csv("./data/base/HIA_LIST/HIA/RISK_LIST.csv",                         stringsAsFactors = FALSE)
 RISK.BINOMIAL.CLEAN = read.csv("./data/base/HIA_LIST/HIA/RISK_BINOMIAL_DF.csv",                  stringsAsFactors = FALSE)
 MAXENT.RATING       = read.csv("./output/maxent/MAXENT_RATING_26_2018.csv",                      stringsAsFactors = FALSE)
-ALE.LIST            = read.csv("./data/base/HIA_LIST/COMBO/AleTreeInventory summary_20_7_18.csv",stringsAsFactors = FALSE)
+ALE.LIST            = read.csv("./data/base/HIA_LIST/COMBO/Ale_TreeInventory_summary_2007_2018.csv", stringsAsFactors = FALSE)
+ALE.DF              = read.csv("./data/base/HIA_LIST/COMBO/ALL_trees_WGS84_24.07.18.csv",         stringsAsFactors = FALSE)
+ALE.DF.SPP          = unique(ALE.DF$SPECIES)
+
+
+## What is the intersection betwen the evergreen list and the Tree inventories?
+TREE.HIA = intersect(head(ALE.LIST, 426)$searchTaxon, CLEAN.SPP$Binomial)
+TREE_HIA = gsub(" ", "_", TREE.HIA)
+
+EVERGREEN = CLEAN.SPP[c("Binomial", "Number.of.growers", "Number.of.States", "Origin")]
+names(EVERGREEN )[names(EVERGREEN) == 'Binomial'] <- 'searchTaxon'
+TREE.EVERGREEN = merge(EVERGREEN, ALE.LIST)
+TREE.EVERGREEN = TREE.EVERGREEN[TREE.EVERGREEN$searchTaxon %in% TREE.HIA, ]
+TREE.EVERGREEN = TREE.EVERGREEN [with(TREE.EVERGREEN, rev(order(Frequency))), ]
+
+
+## What does the dataset look like?
+round(with(TREE.EVERGREEN, table(Origin)/sum(table(Origin))*100), 1)
 
 
 ## The list of species with checked maxent maps
@@ -278,9 +295,6 @@ TOT.GROW = HIA.list[c("Binomial",
                       "Number.of.growers.total")]
 names(TOT.GROW) = c("searchTaxon", "Total.growers")
 TOT.GROW        = TOT.GROW[!duplicated(TOT.GROW[,c('searchTaxon')]),] 
-
-
-
 
 
 ## Join the total growers to the NICHE data

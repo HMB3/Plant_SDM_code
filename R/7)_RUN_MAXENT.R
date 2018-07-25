@@ -320,9 +320,10 @@ lapply(analysis.spp, function(spp){
 ## OUTSTANDING SDM TASKS:
 #########################################################################################################################
 
-## 1). Make list of exotic spp on the top 200 sellers, which have no data and/or produce bad maps
 
-## 2). Re-download ALA data. Add exotic urban inventory data that Ale is compiling (create diagram of data integration, to highlight knowlegde gaps)
+
+## 1). Re-download ALA data. 
+##     Clean and add exotic urban inventory data that Ale is compiling (create diagram of data integration, to highlight knowlegde gaps)
 ##     Four columns ::
 ##     Species
 ##     Common name
@@ -330,19 +331,25 @@ lapply(analysis.spp, function(spp){
 ##     SOURCE
 
 ##     Extra sources:
-##     iNaturalist  - Got the data for plants, 20k records from Oceania
-##     Flickr       - looks hard....
+##     Tree inventories ()
+##     Bush
+##     Inaturalist
 
-## 3). Try to thin records for ~100 spp with boundary bias: random sampling of those species records, by state and environment
+## 3). Thinned records for ~100 spp with boundary bias, using the SDM tool box:
+
+##     The 'Spatially rarefy occurrence data for SDMs' tool looks ok, but check settings. 5km, instead of 10?
+##     Need a loop for all species : ArcPy
+##     All species need lots of records to survive this process. And why doesn't the standard maxent approach do this?
 
 ## 4). Use more forgiving thresholds (10%) for all species, OR just those with bad maps:
 ##    "Maximum.training.sensitivity.plus.specificity.Logistic.threshold"
 ##    "X10.percentile.training.presence.Logistic.threshold"
 ##    "X10.percentile.training.presence.training.omission"
   
-## 5). Calculate the TSS for all species (and MESS maps for a few species)
+## 5). Calculated the TSS for all species
 
-## 7). Decide on gamma diversity for this article - 100/200 tree spp - could it go to GEB? Plan figures and tables for MS
+## 7). 100/200 tree spp that are commonly planted and traded, with sufficient spatial data to model robustly. 
+##     Plan figures and tables for MS
 
 
 

@@ -805,7 +805,7 @@ MS.trees      = unique(c(checked.trees, extra.trees))
 new.trees     = setdiff(extra.trees, checked.trees)
 new_trees     = gsub(" ", "_", new.trees)
 
-merge(ALE.LIST, COMBO.NICHE.CONTEXT[c("searchTaxon", "Origin", )])
+merge(ALE.LIST, COMBO.NICHE.CONTEXT[c("searchTaxon", "Origin")])
 
 #write.csv(MODEL.CHECK, "./data/base/HIA_LIST/COMBO/MODEL_SPECIES_CHECK_RANGE.csv", row.names = FALSE)
 
