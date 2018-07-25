@@ -417,6 +417,10 @@ dim(GBIF.LAND)
 length(unique(GBIF.LAND$searchTaxon))
 
 
+## Add a source column
+GBIF.LAND$SOURCE = 'GBIF'
+
+
 ## Free some memory
 gc()
 

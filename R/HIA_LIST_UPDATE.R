@@ -172,24 +172,56 @@ KOP.TEST            = read.csv("./data/base/HIA_LIST/COMBO/KOPPEN_TEST_SPP.csv",
 RISK.LIST           = read.csv("./data/base/HIA_LIST/HIA/RISK_LIST.csv",                         stringsAsFactors = FALSE)
 RISK.BINOMIAL.CLEAN = read.csv("./data/base/HIA_LIST/HIA/RISK_BINOMIAL_DF.csv",                  stringsAsFactors = FALSE)
 MAXENT.RATING       = read.csv("./output/maxent/MAXENT_RATING_26_2018.csv",                      stringsAsFactors = FALSE)
-ALE.LIST            = read.csv("./data/base/HIA_LIST/COMBO/Ale_TreeInventory_summary_2007_2018.csv", stringsAsFactors = FALSE)
-ALE.DF              = read.csv("./data/base/HIA_LIST/COMBO/ALL_trees_WGS84_24.07.18.csv",         stringsAsFactors = FALSE)
-ALE.DF.SPP          = unique(ALE.DF$SPECIES)
+TI.LIST             = read.csv("./data/base/HIA_LIST/COMBO/ALE_TREE_SPP_LIST.csv",               stringsAsFactors = FALSE)
+TI.XY               = read.csv("./data/base/HIA_LIST/COMBO/ALE_TREE_SPP_XY.csv",                 stringsAsFactors = FALSE)
+
+
+## Check Ale's data
+names(TI.LIST)
+names(TI.XY)
+
+
+## Rename tree inventory data
+TI.XY = TI.XY[c("searchTaxon", "POINT_X", "POINT_Y", "FILENAME")]
+names(TI.XY)[names(TI.XY) == 'FILENAME'] <- 'INVENTORY'
+names(TI.XY)[names(TI.XY) == 'POINT_X']  <- 'lon'
+names(TI.XY)[names(TI.XY) == 'POINT_Y']  <- 'lat'
+
+
+## Remove the gunk
+TI.XY$INVENTORY = gsub("_trees.shp",      "", TI.XY$INVENTORY)
+TI.XY$INVENTORY = gsub("_trees_.shp",     "", TI.XY$INVENTORY)
+TI.XY$INVENTORY = gsub("_trees_sign.shp", "", TI.XY$INVENTORY)
+unique(TI.XY$INVENTORY)
+TI.XY$SOURCE = 'INVENTORY'
+
+
+## Filter the XY tree inventory data to just the cleaned species
+TI.XY  = TI.XY[TI.XY$searchTaxon %in% unique(TI.LIST$searchTaxon), ]
+length(unique(TI.XY$searchTaxon))
+TI.XY = na.omit(TI.XY)
+head(TI.XY)
 
 
 ## What is the intersection betwen the evergreen list and the Tree inventories?
-TREE.HIA = intersect(head(ALE.LIST, 426)$searchTaxon, CLEAN.SPP$Binomial)
+TREE.HIA = intersect(head(TI.LIST, 426)$searchTaxon, CLEAN.SPP$Binomial)
 TREE_HIA = gsub(" ", "_", TREE.HIA)
+
 
 EVERGREEN = CLEAN.SPP[c("Binomial", "Number.of.growers", "Number.of.States", "Origin")]
 names(EVERGREEN )[names(EVERGREEN) == 'Binomial'] <- 'searchTaxon'
-TREE.EVERGREEN = merge(EVERGREEN, ALE.LIST)
+TREE.EVERGREEN = merge(EVERGREEN, TI.LIST)
 TREE.EVERGREEN = TREE.EVERGREEN[TREE.EVERGREEN$searchTaxon %in% TREE.HIA, ]
-TREE.EVERGREEN = TREE.EVERGREEN [with(TREE.EVERGREEN, rev(order(Frequency))), ]
+TREE.EVERGREEN = TREE.EVERGREEN [with(TREE.EVERGREEN, rev(order(Plantings))), ]
 
 
 ## What does the dataset look like?
 round(with(TREE.EVERGREEN, table(Origin)/sum(table(Origin))*100), 1)
+
+
+## Test the new urban data on a subset of species
+test.exotics = c("Platanus acerifolia", "Pyrus calleryana",  "Jacaranda mimosifolia")
+test_exotics = gsub(" ", "_", test.exotics)
 
 
 ## The list of species with checked maxent maps
@@ -613,23 +645,23 @@ MS.trees      = unique(c(checked.trees, extra.trees))
 new.trees     = setdiff(extra.trees, checked.trees)
 new_trees     = gsub(" ", "_", new.trees)
 
-ALE.TREE = merge(ALE.LIST, CLEAN.NICHE.CONTEXT[c("searchTaxon",  "Plant.type", "Origin", "Total.growers", "COMBO.count")])
-ALE.SPP  = subset(ALE.TREE, Total.growers >= 25 & Frequency > 300 & Plant.type == "Tree")$searchTaxon
-write.csv(ALE.TREE,  "./data/base/HIA_LIST/COMBO/ALE_TREE_MATCH.csv",    row.names = FALSE)
+# ALE.TREE = merge(TI.LIST, CLEAN.NICHE.CONTEXT[c("searchTaxon",  "Plant.type", "Origin", "Total.growers", "COMBO.count")])
+# ALE.SPP  = subset(ALE.TREE, Total.growers >= 25 & Frequency > 300 & Plant.type == "Tree")$searchTaxon
+# write.csv(ALE.TREE,  "./data/base/HIA_LIST/COMBO/ALE_TREE_MATCH.csv",    row.names = FALSE)
 
 ## Now create a table for the supplementary material
 ## Spp, type, origin, growers, Count
-MS.spp = sort(unique(c(checked.trees, exotic.trees, ALE.SPP)))
-MS.COL = CLEAN.NICHE.CONTEXT[c("searchTaxon",  "Plant.type", "Origin", "Total.growers", "COMBO.count")]
-MS.SPP = MS.COL[MS.COL$searchTaxon %in% MS.spp, ]
-MS.SPP = MS.SPP[with(MS.SPP, rev(order(Total.growers))), ] 
-dim(MS.SPP)
-
-
-## Now create a table of the exotics v natives
-with(MS.SPP, table(Origin))
-round(with(MS.SPP, table(Origin)/sum(table(Origin))*100), 1)
-write.csv(MS.SPP,  "./data/base/HIA_LIST/COMBO/MS_SPP_TABLE.csv", row.names = FALSE)
+# MS.spp = sort(unique(c(checked.trees, exotic.trees, ALE.SPP)))
+# MS.COL = CLEAN.NICHE.CONTEXT[c("searchTaxon",  "Plant.type", "Origin", "Total.growers", "COMBO.count")]
+# MS.SPP = MS.COL[MS.COL$searchTaxon %in% MS.spp, ]
+# MS.SPP = MS.SPP[with(MS.SPP, rev(order(Total.growers))), ] 
+# dim(MS.SPP)
+# 
+# 
+# ## Now create a table of the exotics v natives
+# with(MS.SPP, table(Origin))
+# round(with(MS.SPP, table(Origin)/sum(table(Origin))*100), 1)
+# write.csv(MS.SPP,  "./data/base/HIA_LIST/COMBO/MS_SPP_TABLE.csv", row.names = FALSE)
 
 
 

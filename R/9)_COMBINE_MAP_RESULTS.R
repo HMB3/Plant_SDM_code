@@ -77,9 +77,9 @@ summary(LOSS.OVERALL$COUNT)
 
 #########################################################################################################################
 ## Now write CSV 
-write.csv(GAIN.LOSS.TABLE, "./output/tables/OVERALL_GAIN_LOSS_TABLE.csv",   row.names = FALSE)
-write.csv(GAIN.OVERALL,     "./output/tables/OVERALL_GAIN.csv",             row.names = FALSE)
-write.csv(LOSS.OVERALL,     "./output/tables/OVERALL_LOSS.csv",             row.names = FALSE)
+write.csv(GAIN.LOSS.TABLE,  "./output/tables/OVERALL_GAIN_LOSS_TABLE.csv",   row.names = FALSE)
+write.csv(GAIN.OVERALL,     "./output/tables/OVERALL_GAIN.csv",              row.names = FALSE)
+write.csv(LOSS.OVERALL,     "./output/tables/OVERALL_LOSS.csv",              row.names = FALSE)
 
 
 

@@ -158,7 +158,7 @@ analysis.spp = unique(SDM.DATA.ALL$searchTaxon)   ## could use this in future
 lapply(analysis.spp, function(spp){ 
   
   ## Skip the species if the directory already exists, before the loop
-  outdir <- 'output/maxent/SET_VAR_KOPPEN'
+  outdir <- save_dir
   if(dir.exists(file.path(outdir, gsub(' ', '_', spp)))) {
     message('Skipping ', spp, ' - already run.')
     invisible(return(NULL))
@@ -320,9 +320,10 @@ lapply(analysis.spp, function(spp){
 ## OUTSTANDING SDM TASKS:
 #########################################################################################################################
 
+## 1). 100/200 tree spp that are commonly planted and traded, with sufficient spatial data to model robustly. 
+##     Plan figures and tables for MS
 
-
-## 1). Re-download ALA data. 
+## 2). Re-download ALA data. 
 ##     Clean and add exotic urban inventory data that Ale is compiling (create diagram of data integration, to highlight knowlegde gaps)
 ##     Four columns ::
 ##     Species
@@ -346,10 +347,14 @@ lapply(analysis.spp, function(spp){
 ##    "X10.percentile.training.presence.Logistic.threshold"
 ##    "X10.percentile.training.presence.training.omission"
   
-## 5). Calculated the TSS for all species
+## 5). Combine output: Table
+##     "searchTaxon" "No.plantings" "Number.of.growers" "Number.of.States" "Origin" "AUC" "TSS" 
 
-## 7). 100/200 tree spp that are commonly planted and traded, with sufficient spatial data to model robustly. 
-##     Plan figures and tables for MS
+##    Maps : unique raster values for
+##    current_suit_above
+##    2030_4GCMs_above
+##    2050_4GCMs_above
+##    2070_4GCMs_above
 
 
 

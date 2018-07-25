@@ -387,6 +387,18 @@ unique(CLEAN.TRUE$summary)
 
 
 
+#########################################################################################################################
+## Can bind the urban tree inventory data on
+CLEAN.TRUE = bind_rows(CLEAN.TRUE, TI.XY)
+names(CLEAN.TRUE)
+unique(CLEAN.TRUE$SOURCE) 
+unique(CLEAN.TRUE$INVENTORY) 
+
+
+## This unique ID column can be applied across the project  
+GBIF.ALA.COMBO.HIA$OBS <- 1:nrow(GBIF.ALA.COMBO.HIA)
+dim(GBIF.ALA.COMBO.HIA)[1];length(GBIF.ALA.COMBO.HIA$OBS)  
+identical(dim(GBIF.ALA.COMBO.HIA)[1], length(GBIF.ALA.COMBO.HIA$OBS))
 
 
 #########################################################################################################################
@@ -574,7 +586,7 @@ COMBO.NICHE = subset(COMBO.NICHE, select = -c(searchTaxon.1,  searchTaxon.2,  se
 ## Add counts for each species, and record the total number of taxa processed
 ## dim(COMBO.RASTER.CONVERT);dim(CLEAN.TRUE)
 COMBO.count = as.data.frame(table(COMBO.RASTER.CONVERT$searchTaxon))$Freq
-identical(length(COMBO.count), dim(COMBO.NICHE )[1])
+identical(length(COMBO.count), dim(COMBO.NICHE)[1])
 
 Total.taxa.processed = dim(COMBO.NICHE)[1]
 COMBO.NICHE  = cbind(COMBO.count, COMBO.NICHE)
