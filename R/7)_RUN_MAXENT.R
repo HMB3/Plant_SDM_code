@@ -74,6 +74,11 @@ class(Koppen_1975)
 xres(template.raster);yres(template.raster)
 
 
+## Save the SDM dataset here............................................................................................
+saveRDS(SDM.DATA.ALL, 'data/base/HIA_LIST/COMBO/SDM_DATA_ALL_UPDATE.rds')
+
+
+
 #########################################################################################################################
 ## Now create the variables needed to access current environmental conditions + their names in the functions
 sdm.predictors <- c("Annual_mean_temp",    "Mean_diurnal_range",  "Isothermality",      "Temp_seasonality",  
@@ -139,7 +144,7 @@ identical(names(env.grids.current),sdm.predictors)
 
 
 #########################################################################################################################
-## 2). RUN SDMs USING A-PRIORI VARIABLES
+## 2). RUN SDMs USING A-PRIORI VARIABLES FOR THE UNBIASED SPECIES
 #########################################################################################################################
 
 
@@ -148,6 +153,9 @@ identical(names(env.grids.current),sdm.predictors)
 ## synonyms = c("Waterhousea floribunda", "Sannantha virgata", "Callistemon citrinus")
 ## 'Angophora costata' %in% SDM.DATA.ALL$searchTaxon  
 projection(template.raster);projection(SDM.DATA.ALL);projection(Koppen_1975)
+
+
+## Change this to be just the species without bias.......................................................................
 
 
 ## Create new variable for analysis species - hence SDM.DATA.ALL needs to be update each time...........................
@@ -210,31 +218,33 @@ lapply(analysis.spp, function(spp){
 
 
 
-# #########################################################################################################################
-# ## Run analyses using parallel processing
-# 
-# ## To run the function in a cluster, we need to export all the objects which are not defined in the function call
-# cl <- makeCluster(4)
-# clusterExport(cl, c('template.raster', 'SDM.DATA.ALL', 'FIT_MAXENT', 'FIT_MAXENT_TARG_BG'))
-# clusterEvalQ(cl, {
-#   
-#   ## These packages are required :: check they are updated
-#   require(ff)
-#   require(rgeos)
-#   require(sp)
-#   require(raster)
-#   require(rJava)
-#   require(dismo)
-#   require(things)
-#   
-# })
+
+
+
+#########################################################################################################################
+## 3). RUN SDMs USING A-PRIORI VARIABLES FOR THE BIASED SPECIES
+#########################################################################################################################
+
+
+#########################################################################################################################
+## Run Maxent using a random selection of background points. 
+## synonyms = c("Waterhousea floribunda", "Sannantha virgata", "Callistemon citrinus")
+## 'Angophora costata' %in% SDM.DATA.ALL$searchTaxon  
+projection(template.raster);projection(SDM.DATA.BIASED);projection(Koppen_1975)
+
+
+## Change this to be just the species with bias.......................................................................
+
+
+## Create new variable for analysis species - hence SDM.DATA.ALL needs to be update each time...........................
+# analysis.spp = unique(SDM.DATA.BIAS$searchTaxon)   ## could use this in future
 # 
 # 
 # ## Loop over all the species spp = spp.combo[31]
-# parLapply(cl, spp.combo, function(spp) { # for serial, lapply(spp.combo, function(spp)
+# lapply(analysis.spp, function(spp){ 
 #   
 #   ## Skip the species if the directory already exists, before the loop
-#   outdir <- 'output/maxent/SET_VAR_KOPPEN'
+#   outdir <- save_dir
 #   if(dir.exists(file.path(outdir, gsub(' ', '_', spp)))) {
 #     message('Skipping ', spp, ' - already run.')
 #     invisible(return(NULL))
@@ -283,34 +293,6 @@ lapply(analysis.spp, function(spp){
 #   }  
 #   
 # })
-# 
-# 
-# stopCluster(cl)
-# 
-# 
-# #########################################################################################################################
-# ## Look through the output directory for species where the code didn't finish. This is usually species with < 27 files
-# ## in the top "species_name" directory
-# dd <- list.dirs('H:/green_cities_sdm/output/maxent/SET_VAR_KOPPEN', recursive = F)
-# 
-# 
-# ## Loop over all the directories in the maxent output folder
-# ff <- sapply(dd, function(d) {
-#   
-#   list.files(d, full.names = TRUE)
-#   
-# })
-# 
-# 
-# ## Now remove all the files in each directory, if that directory has < 27 files in the top level
-# n <- lengths(ff)
-# 
-# lapply(ff[n < 27], function(x) {
-#   
-#   file.remove(x)
-#   unlink(dirname(x[1]), recursive = TRUE)
-#   
-# })
 
 
 
@@ -339,7 +321,6 @@ lapply(analysis.spp, function(spp){
 ## 3). Thinned records for ~100 spp with boundary bias, using the SDM tool box:
 
 ##     The 'Spatially rarefy occurrence data for SDMs' tool looks ok, but check settings. 5km, instead of 10?
-##     Need a loop for all species : ArcPy
 ##     All species need lots of records to survive this process. And why doesn't the standard maxent approach do this?
 
 ## 4). Use more forgiving thresholds (10%) for all species, OR just those with bad maps:
@@ -348,13 +329,16 @@ lapply(analysis.spp, function(spp){
 ##    "X10.percentile.training.presence.training.omission"
   
 ## 5). Combine output: Table
-##     "searchTaxon" "No.plantings" "Number.of.growers" "Number.of.States" "Origin" "AUC" "TSS" 
+##     "searchTaxon" "No.plantings" "Number.of.growers" "Number.of.States/LGAs/Koppen zones" "Origin" "AUC" "TSS" 
 
-##    Maps : unique raster values for
-##    current_suit_above
-##    2030_4GCMs_above
-##    2050_4GCMs_above
-##    2070_4GCMs_above
+##     Maps : unique raster values for
+##     current_suit_above
+##     2030_4GCMs_above
+##     2050_4GCMs_above
+##     2070_4GCMs_above
+
+   
+## 6). Check combined maps for all species
 
 
 

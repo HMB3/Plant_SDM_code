@@ -14,7 +14,7 @@
 
 
 ## Create lists
-source('./R/HIA_LIST_MATCHING.R')
+source('./R/HIA_LIST_UPDATE.R')
 
 
 #########################################################################################################################
@@ -24,11 +24,11 @@ source('./R/HIA_LIST_MATCHING.R')
 
 # #########################################################################################################################
 # ## Load GBIF data and rain shapefile
-# BIAS.DATA.ALL        = readRDS("./data/base/HIA_LIST/COMBO/SDM_DATA_CLEAN_052018.rds")        
-# #SPP.BIAS             = intersect(SPP.BIAS, SUA.spp)    ## just re-run the models for species on the list
-# SPP_BIAS             = gsub(" ", "_", SPP.BIAS)
-# 
-# 
+BIAS.DATA.ALL        = readRDS("./data/base/HIA_LIST/COMBO/SDM_DATA_CLEAN_052018.rds")
+SPP.BIAS             = intersect(SPP.BIAS, SUA.spp)    ## just re-run the models for species on the list
+SPP_BIAS             = gsub(" ", "_", SPP.BIAS)
+ 
+ 
 # ## Project the SDM data into WGS
 # BIAS.DATA.ALL <- spTransform(BIAS.DATA.ALL, CRS("+init=epsg:4326 +proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
 # projection(BIAS.DATA.ALL)

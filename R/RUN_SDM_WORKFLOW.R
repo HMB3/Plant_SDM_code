@@ -18,9 +18,10 @@ source('./R/HIA_LIST_UPDATE.R')
 
 ## Set global species list variables here...............................................................................
 ## Now running more tree species
-GBIF.spp     = test.exotics 
-map_spp_list = test_exotics
-save_dir = 'output/maxent/SPP_EXOTIC'
+GBIF.spp      = TREE.HIA
+map_spp_list  = TREE_HIA
+save_dir      = 'output/maxent/SPP_EXOTIC'
+maxent_path   = 'output/maxent/SPP_EXOTIC'
 
 
 #########################################################################################################################
@@ -36,7 +37,7 @@ source('./R/4)_ALA_GBIF_URBAN_COMBINE.R', echo = TRUE)
 
 ## Step 5 :: clean the occurrence data using the 'CleanCoordinates' function in the CoordinateCleaner package to remove
 ## records near herbaria, duplicates, etc.
-source('./R/5)_GBIF_ALA_CLEAN.R', echo = TRUE)
+source('./R/5)_GBIF_ALA_CLEAN_NICHES.R', echo = TRUE)
 
 
 ## Step 7 :: Run maxent on a table of all species

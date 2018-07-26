@@ -297,6 +297,8 @@ COMBO.SUA.LGA = cbind.data.frame(COMBO.RASTER.SP, LGA.JOIN)
 ## str(unique(COMBO.SUA.LGA$searchTaxon))
 
 
+## Join on the
+
 #########################################################################################################################
 ## AGGREGATE THE NUMBER OF LGAs EACH SPECIES IS FOUND IN. NA LGAs ARE OUTSIDE AUS
 ## Could Also include the koppen zones here, within Australia :: "Koppen_aus"
@@ -533,7 +535,7 @@ names(COMBO.RASTER.CONTEXT)
 
 ## Now join hort context to all the niche
 COMBO.NICHE.CONTEXT = join(COMBO.LGA, HIA.SPP.JOIN)
-COMBO.NICHE.CONTEXT =  COMBO.NICHE.CONTEXT[, c(2, 185, 1, 183:184, 186:198, 3:182)] 
+COMBO.NICHE.CONTEXT =  COMBO.NICHE.CONTEXT[, c(2, 185, 1, 183:184, 186:197, 3:182)] 
 head(COMBO.NICHE.CONTEXT$AUS_RECORDS)
 head(COMBO.NICHE.CONTEXT$LGA_COUNT)
 

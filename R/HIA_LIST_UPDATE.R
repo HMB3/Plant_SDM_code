@@ -178,8 +178,9 @@ TI.XY               = read.csv("./data/base/HIA_LIST/COMBO/ALE_TREE_SPP_XY.csv",
 
 
 ## Check Ale's data
-names(TI.LIST)
-names(TI.XY)
+TI.LIST = na.omit(TI.LIST)
+TI.LIST = TI.LIST[with(TI.LIST, rev(order(Plantings))), ]
+head(TI.LIST$searchTaxon, 10)
 
 
 ## Rename tree inventory data
@@ -202,27 +203,6 @@ TI.XY  = TI.XY[TI.XY$searchTaxon %in% unique(TI.LIST$searchTaxon), ]
 length(unique(TI.XY$searchTaxon))
 TI.XY = na.omit(TI.XY)
 head(TI.XY)
-
-
-## What is the intersection betwen the evergreen list and the Tree inventories?
-TREE.HIA = intersect(head(TI.LIST, 426)$searchTaxon, CLEAN.SPP$Binomial)
-TREE_HIA = gsub(" ", "_", TREE.HIA)
-
-
-EVERGREEN = CLEAN.SPP[c("Binomial", "Number.of.growers", "Number.of.States", "Origin")]
-names(EVERGREEN )[names(EVERGREEN) == 'Binomial'] <- 'searchTaxon'
-TREE.EVERGREEN = merge(EVERGREEN, TI.LIST)
-TREE.EVERGREEN = TREE.EVERGREEN[TREE.EVERGREEN$searchTaxon %in% TREE.HIA, ]
-TREE.EVERGREEN = TREE.EVERGREEN [with(TREE.EVERGREEN, rev(order(Plantings))), ]
-
-
-## What does the dataset look like?
-round(with(TREE.EVERGREEN, table(Origin)/sum(table(Origin))*100), 1)
-
-
-## Test the new urban data on a subset of species
-test.exotics = c("Platanus acerifolia", "Pyrus calleryana",  "Jacaranda mimosifolia")
-test_exotics = gsub(" ", "_", test.exotics)
 
 
 ## The list of species with checked maxent maps
@@ -628,15 +608,45 @@ MODEL.CHECK = MODEL.CHECK[with(MODEL.CHECK, order(-Total.growers)), ]
 View(MODEL.CHECK)
 
 
+
+
+
+#########################################################################################################################
+## 7). MANUSCRIPT LIST
+#########################################################################################################################
+
+
 #########################################################################################################################
 ## Now how many trees do we have? 68 modelled, another 86 with ok data.
 ## This will increase with Alessandro's data. Re-create niche file, and re-run the criteria.
 ## Let's get another 40 exotic trees with good models
-MODEL.CHECK[1, "Plant.type"]
 checked.trees = subset(MODEL.CHECK, Total.growers >= 25 & CHECK_MAP <= 2 & Plant.type == "Tree")$searchTaxon ## 67
 subset(MODEL.CHECK, Total.growers >= 25 & CHECK_MAP <= 2 & Plant.type == "Tree" & Origin == "Exotic")$searchTaxon
-exotic.trees = subset(COMBO.NICHE.CONTEXT, Total.growers >= 25 & COMBO.count > 300 & Plant.type == "Tree" & Origin == "Exotic")$searchTaxon
-exotic_trees = gsub(" ", "_", exotic.trees)
+
+
+## What is the intersection betwen the evergreen list and the Tree inventories?
+TREE.HIA = intersect(head(TI.LIST, 250)$searchTaxon, CLEAN.SPP$Binomial)
+TREE_HIA = gsub(" ", "_", TREE.HIA)
+
+
+EVERGREEN = CLEAN.SPP[c("Binomial", "Number.of.growers", "Number.of.States", "Origin")]
+names(EVERGREEN )[names(EVERGREEN) == 'Binomial'] <- 'searchTaxon'
+TREE.EVERGREEN = merge(EVERGREEN, TI.LIST)
+TREE.EVERGREEN = TREE.EVERGREEN[TREE.EVERGREEN$searchTaxon %in% TREE.HIA, ]
+TREE.EVERGREEN = TREE.EVERGREEN [with(TREE.EVERGREEN, rev(order(Plantings))), ]
+TREE.EVERGREEN = TREE.EVERGREEN[c("searchTaxon", "Origin", "Plantings", "Number.of.growers", "Number.of.States")]
+
+
+## What does the dataset look like?
+dim(TREE.EVERGREEN)
+head(TREE.EVERGREEN)
+round(with(TREE.EVERGREEN, table(Origin)/sum(table(Origin))*100), 1)
+
+
+## Test the new urban data on a subset of species
+test.exotics = head(TI.LIST$searchTaxon, 10)
+test_exotics = gsub(" ", "_", test.exotics)
+
 
 
 #########################################################################################################################

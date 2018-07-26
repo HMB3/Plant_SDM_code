@@ -51,6 +51,19 @@ setdiff(names(ALA.TRIM), ALA.keep)
 ## Just get the species we need - this should be the intersection of Ale's list and the HIA list
 ALA.TRIM = ALA.TRIM[ALA.TRIM$scientificName %in% CLEAN.SPP$Binomial, ]
 dim(ALA.TRIM)
+length(unique(ALA.TRIM$scientificName))     ## not many records per species
+
+
+#########################################################################################################################
+## Test the difference between John's version and mine for a subset of species
+test.new.ALA = ALA.TRIM[ALA.TRIM$scientificName %in% test.exotics, ]
+test.old.ALA = ALA.LAND[ALA.LAND$scientificname %in% test.exotics, ]
+
+
+## Are the counts of records per species different?
+table(test.new.ALA$scientificName)
+table(test.old.ALA$scientificname)
+
 
 
 ## Rename columns to match GBIF code
@@ -215,7 +228,7 @@ gc()
 
 #########################################################################################################################
 ## save data
-saveRDS(ALA.UPDATE, file = paste("./data/base/HIA_LIST/ALA/ALA_LAND_POINTS.rds"))
+saveRDS(ALA.UPDATE, file = paste("./data/base/HIA_LIST/ALA/ALA_UPDATE_POINTS.rds"))
 save.image("STEP_4_NICHES.RData")
 
 

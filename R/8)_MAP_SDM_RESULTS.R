@@ -144,7 +144,7 @@ no_data %in% map_spp_list
 ## Create 2030 maps
 env.grids.2030 = tryCatch(project_maxent_grids(scen_list     = scen_2030,
                                                species_list  = map_spp_list,
-                                               maxent_path   = "./output/maxent/SET_VAR_KOPPEN",
+                                               maxent_path   = maxent_path, 
                                                climate_path  = "./data/base/worldclim/aus/1km/bio",
                                                grid_names    = grid.names,
                                                time_slice    = 30,
@@ -163,7 +163,7 @@ env.grids.2030 = tryCatch(project_maxent_grids(scen_list     = scen_2030,
 env.grids.2050 = tryCatch(project_maxent_grids(scen_list     = scen_2050,
                                                species_list  = map_spp_list,
                                                time_slice    = 50,
-                                               maxent_path   = "./output/maxent/SET_VAR_KOPPEN",
+                                               maxent_path   = maxent_path,
                                                climate_path  = "./data/base/worldclim/aus/1km/bio",
                                                grid_names    = grid.names,
                                                current_grids = env.grids.current),
@@ -180,7 +180,7 @@ env.grids.2050 = tryCatch(project_maxent_grids(scen_list     = scen_2050,
 env.grids.2070 = tryCatch(project_maxent_grids(scen_list     = scen_2070,
                                                species_list  = map_spp_list,
                                                time_slice    = 70,
-                                               maxent_path   = "./output/maxent/SET_VAR_KOPPEN",
+                                               maxent_path   = maxent_path,
                                                climate_path  = "./data/base/worldclim/aus/1km/bio",
                                                grid_names    = grid.names,
                                                current_grids = env.grids.current),
@@ -202,7 +202,7 @@ env.grids.2070 = tryCatch(project_maxent_grids(scen_list     = scen_2070,
 
 #########################################################################################################################
 ## First, read in the list of files for the current models, and specify the file path
-path.set.var             = "./output/maxent/SET_VAR_KOPPEN/"
+path.set.var  =  maxent_path
 
 
 ## Create an object for the maxent settings :: using the same variable for every model
