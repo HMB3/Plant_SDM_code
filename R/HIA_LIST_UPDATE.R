@@ -110,6 +110,7 @@ LAND          = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LAND_world.rds
 areal_unit    = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/SUA.rds")
 areal_unit    = areal_unit[order(areal_unit$SUA_NAME11),]
 Koppen        = readRDS('data/base/CONTEXTUAL/Koppen_1975.rds')
+Koppen_aus    = readRDS('data/base/CONTEXTUAL/KOPPEN_AUS.rds')
 Koppen_zones  = unique(readOGR('data/base/CONTEXTUAL/WC05_1975H_Koppen_Shapefile/WC05_1975H_Koppen_Kriticos_2012.shp')@data[, 1:2])
 Koppen_1975   = raster('data/Koppen_1000m_Mollweide54009.tif')
 AUS_RAIN      = readRDS('data/base/CONTEXTUAL/BOM/BOM_RAIN_AGG.rds')
@@ -126,9 +127,9 @@ template.cells  = readRDS("./data/hasData_cells.rds")
 load("./data/base/CONTEXTUAL/urbanareas.rda")
 
 
-# AUS_RAIN = readOGR("H:/green_cities_sdm/data/base/CONTEXTUAL/BOM/BOM_RAIN_AGG.shp",
-#                    layer = "BOM_RAIN_AGG")
-# saveRDS(AUS_RAIN, file = paste("./data/base/CONTEXTUAL/BOM/BOM_RAIN_AGG.rds"))
+# Koppen_aus = readOGR("H:/green_cities_sdm/data/base/CONTEXTUAL/KOPPEN_AUS.shp",
+#                    layer = "KOPPEN_AUS")
+# saveRDS(Koppen_aus, file = paste("./data/base/CONTEXTUAL/KOPPEN_AUS.rds"))
 
 
 ## Set definitions :: best to minimise the number of projection used in this project
