@@ -75,7 +75,8 @@ xres(template.raster);yres(template.raster)
 
 
 ## Save the SDM dataset here............................................................................................
-saveRDS(SDM.DATA.ALL, 'data/base/HIA_LIST/COMBO/SDM_DATA_ALL_UPDATE.rds')
+saveRDS(SDM.DATA.ALL, 'data/base/HIA_LIST/COMBO/SDM_DATA_INV_HIA.rds')
+SDM.DATA.BIAS = readRDS('./data/base/HIA_LIST/COMBO/RAREFY_SPP/SPAT_OUT/SDM_DATA_BIAS.rds')
 
 
 
@@ -152,12 +153,11 @@ identical(names(env.grids.current),sdm.predictors)
 ## Run Maxent using a random selection of background points. 
 ## synonyms = c("Waterhousea floribunda", "Sannantha virgata", "Callistemon citrinus")
 ## 'Angophora costata' %in% SDM.DATA.ALL$searchTaxon  
+length(unique(SDM.DATA.ALL$searchTaxon))
 projection(template.raster);projection(SDM.DATA.ALL);projection(Koppen_1975)
 
 
 ## Change this to be just the species without bias.......................................................................
-
-
 ## Create new variable for analysis species - hence SDM.DATA.ALL needs to be update each time...........................
 analysis.spp = unique(SDM.DATA.ALL$searchTaxon)   ## could use this in future
 
@@ -166,7 +166,8 @@ analysis.spp = unique(SDM.DATA.ALL$searchTaxon)   ## could use this in future
 lapply(analysis.spp, function(spp){ 
   
   ## Skip the species if the directory already exists, before the loop
-  outdir <- save_dir
+  outdir <- out_dir
+  
   if(dir.exists(file.path(outdir, gsub(' ', '_', spp)))) {
     message('Skipping ', spp, ' - already run.')
     invisible(return(NULL))
@@ -189,7 +190,7 @@ lapply(analysis.spp, function(spp){
                          bg                      = background, 
                          sdm.predictors          = sdm.select, 
                          name                    = spp, 
-                         outdir                  = outdir, 
+                         outdir, 
                          template.raster,
                          min_n                   = 20,     ## This should be higher...
                          max_bg_size             = 100000, 
@@ -230,69 +231,69 @@ lapply(analysis.spp, function(spp){
 ## Run Maxent using a random selection of background points. 
 ## synonyms = c("Waterhousea floribunda", "Sannantha virgata", "Callistemon citrinus")
 ## 'Angophora costata' %in% SDM.DATA.ALL$searchTaxon  
-projection(template.raster);projection(SDM.DATA.BIASED);projection(Koppen_1975)
+projection(template.raster);projection(SDM.DATA.BIAS);projection(Koppen_1975)
 
 
 ## Change this to be just the species with bias.......................................................................
 
 
 ## Create new variable for analysis species - hence SDM.DATA.ALL needs to be update each time...........................
-# analysis.spp = unique(SDM.DATA.BIAS$searchTaxon)   ## could use this in future
-# 
-# 
-# ## Loop over all the species spp = spp.combo[31]
-# lapply(analysis.spp, function(spp){ 
-#   
-#   ## Skip the species if the directory already exists, before the loop
-#   outdir <- save_dir
-#   if(dir.exists(file.path(outdir, gsub(' ', '_', spp)))) {
-#     message('Skipping ', spp, ' - already run.')
-#     invisible(return(NULL))
-#     
-#   }
-#   
-#   ## Print the taxa being processed to screen
-#   if(spp %in% SDM.DATA.ALL$searchTaxon) {
-#     message('Doing ', spp) 
-#     
-#     ## Subset the records to only the taxa being processed
-#     occurrence <- subset(SDM.DATA.ALL, searchTaxon == spp)
-#     
-#     ## Now get the background points. These can come from any spp, other than the modelled species.
-#     background <- subset(SDM.DATA.ALL, searchTaxon != spp)
-#     
-#     ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
-#     tryCatch(
-#       FIT_MAXENT_TARG_BG(occ                     = occurrence, 
-#                          bg                      = background, 
-#                          sdm.predictors          = sdm.select, 
-#                          name                    = spp, 
-#                          outdir                  = outdir, 
-#                          template.raster,
-#                          min_n                   = 20,     ## This should be higher...
-#                          max_bg_size             = 100000, 
-#                          Koppen                  = Koppen_1975,
-#                          background_buffer_width = 200000,
-#                          shapefiles              = TRUE,
-#                          features                = 'lpq',
-#                          replicates              = 5,
-#                          responsecurves          = TRUE),
-#       
-#       ## https://stackoverflow.com/questions/19394886/trycatch-in-r-not-working-properly
-#       #function(e) message('Species skipped ', spp)) ## skip any species for which the function fails
-#       error = function(cond) {
-#         
-#         message(paste('Species skipped ', spp))
-#         
-#       })
-#     
-#   } else {
-#     
-#     message(spp, ' skipped - no data.')         ## This condition ignores species which have no data...
-#     
-#   }  
-#   
-# })
+analysis.spp = unique(SDM.DATA.BIAS$searchTaxon)   ## could use this in future
+
+
+## Loop over all the species spp = spp.combo[31]
+lapply(analysis.spp, function(spp){
+
+  ## Skip the species if the directory already exists, before the loop
+  outdir <- save_dir
+  if(dir.exists(file.path(outdir, gsub(' ', '_', spp)))) {
+    message('Skipping ', spp, ' - already run.')
+    invisible(return(NULL))
+
+  }
+
+  ## Print the taxa being processed to screen
+  if(spp %in% SDM.DATA.ALL$searchTaxon) {
+    message('Doing ', spp)
+
+    ## Subset the records to only the taxa being processed
+    occurrence <- subset(SDM.DATA.ALL, searchTaxon == spp)
+
+    ## Now get the background points. These can come from any spp, other than the modelled species.
+    background <- subset(SDM.DATA.ALL, searchTaxon != spp)
+
+    ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
+    tryCatch(
+      FIT_MAXENT_TARG_BG(occ                     = occurrence,
+                         bg                      = background,
+                         sdm.predictors          = sdm.select,
+                         name                    = spp,
+                         outdir                  = outdir,
+                         template.raster,
+                         min_n                   = 20,     ## This should be higher...
+                         max_bg_size             = 100000,
+                         Koppen                  = Koppen_1975,
+                         background_buffer_width = 200000,
+                         shapefiles              = TRUE,
+                         features                = 'lpq',
+                         replicates              = 5,
+                         responsecurves          = TRUE),
+
+      ## https://stackoverflow.com/questions/19394886/trycatch-in-r-not-working-properly
+      #function(e) message('Species skipped ', spp)) ## skip any species for which the function fails
+      error = function(cond) {
+
+        message(paste('Species skipped ', spp))
+
+      })
+
+  } else {
+
+    message(spp, ' skipped - no data.')         ## This condition ignores species which have no data...
+
+  }
+
+})
 
 
 

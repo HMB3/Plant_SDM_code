@@ -283,9 +283,9 @@ setDT(max_tss, keep.rownames = TRUE)[]
 max_tss  = as.data.frame(max_tss)
 names(max_tss)[names(max_tss) == 'rn'] <- 'searchTaxon'
 
-max_tss$searchTaxon = gsub("./output/maxent/SET_VAR_KOPPEN//",   "", max_tss$searchTaxon)
+max_tss$searchTaxon = gsub("output/maxent/SPP_EXOTIC//",   "", max_tss$searchTaxon)
 max_tss$searchTaxon = gsub("/full/species_omission.csv.max_tss", "", max_tss$searchTaxon)
-head(max_tss$searchTaxon)
+head(max_tss)
 
 
 ## Add max TSS to the results table
@@ -330,6 +330,7 @@ SDM.RESULTS.DIR <- map_spp[c(1:length(map_spp))] %>%
   
   ## Bind the list together
   c()
+
 length(SDM.RESULTS.DIR)
 SDM.RESULTS.DIR
 
@@ -338,7 +339,9 @@ SDM.RESULTS.DIR
 ## Now combine the SDM output with the niche context data 
 ## Get the number of aus records too ....................................................................................
 NICHE.CONTEXT = COMBO.NICHE.CONTEXT[, c("searchTaxon",      "COMBO.count",       "AUS_RECORDS",       "Plant.type", "Origin", 
-                                        "Top_200",          "Total.growers",     "Number.of.States")]
+                                        #"Top_200",          
+                                        "Total.growers",     
+                                        "Number.of.States")]
 
 
 ## Check with John and Linda which columns will help with model selection
@@ -354,15 +357,19 @@ MAXENT.SUMMARY   = MAXENT.RESULTS[, c("searchTaxon",
 
 
 ## Remove the underscore, and join
+## 
+## 
 ## join does not support the sorting order..............................................................................
+## 
+## 
 MAXENT.RESULTS$searchTaxon = gsub("_", " ", MAXENT.RESULTS$searchTaxon)
-MAXENT.RESULTS.NICHE       = join(NICHE.CONTEXT, MAXENT.RESULTS,      type = "inner")  ## join does not support the sorting
-MAXENT.RESULTS.TABLE       = join(MAXENT.RESULTS.NICHE, MAXENT.CHECK, type = "inner") 
-MAXENT.RESULTS.TABLE       = MAXENT.RESULTS.TABLE[order(MAXENT.RESULTS.TABLE$searchTaxon),] 
-dim(MAXENT.RESULTS.TABLE)
-
-View(MAXENT.RESULTS.TABLE)
-identical(MAXENT.RESULTS.TABLE$searchTaxon, GBIF.spp)
+# MAXENT.RESULTS.NICHE       = join(NICHE.CONTEXT, MAXENT.RESULTS,      type = "inner")  ## join does not support the sorting
+# MAXENT.RESULTS.TABLE       = join(MAXENT.RESULTS.NICHE, MAXENT.CHECK, type = "inner") 
+# MAXENT.RESULTS.TABLE       = MAXENT.RESULTS.TABLE[order(MAXENT.RESULTS.TABLE$searchTaxon),] 
+# dim(MAXENT.RESULTS.TABLE)
+# 
+# View(MAXENT.RESULTS.TABLE)
+# identical(MAXENT.RESULTS.TABLE$searchTaxon, GBIF.spp)
 
 
 #########################################################################################################################
@@ -509,12 +516,12 @@ length(percent.10.log.low);length(percent.10.om.low);length(spp_lower_thresh)
 
 ## The order of the directories matches
 head(SDM.RESULTS.DIR, 20);head(map_spp, 20); head(MAXENT.RESULTS.TEST, 20)[, c("searchTaxon",
-                                                                            "Maximum.training.sensitivity.plus.specificity.Logistic.threshold", 
-                                                                            "X10.percentile.training.presence.Logistic.threshold")]
+                                                                               "Maximum.training.sensitivity.plus.specificity.Logistic.threshold", 
+                                                                               "X10.percentile.training.presence.Logistic.threshold")]
 
 tail(SDM.RESULTS.DIR, 20);tail(map_spp, 20); tail(MAXENT.RESULTS.TEST, 20)[, c("searchTaxon",
-                                                                            "Maximum.training.sensitivity.plus.specificity.Logistic.threshold", 
-                                                                            "X10.percentile.training.presence.Logistic.threshold")]
+                                                                               "Maximum.training.sensitivity.plus.specificity.Logistic.threshold", 
+                                                                               "X10.percentile.training.presence.Logistic.threshold")]
 
 
 
