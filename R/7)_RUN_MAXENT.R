@@ -143,7 +143,6 @@ identical(names(env.grids.current),sdm.predictors)
 
 
 
-
 #########################################################################################################################
 ## 2). RUN SDMs USING A-PRIORI VARIABLES FOR THE UNBIASED SPECIES
 #########################################################################################################################
@@ -253,14 +252,14 @@ lapply(analysis.spp, function(spp){
   }
 
   ## Print the taxa being processed to screen
-  if(spp %in% SDM.DATA.ALL$searchTaxon) {
+  if(spp %in% SDM.DATA.BIAS$searchTaxon) {
     message('Doing ', spp)
 
     ## Subset the records to only the taxa being processed
-    occurrence <- subset(SDM.DATA.ALL, searchTaxon == spp)
+    occurrence <- subset(SDM.DATA.BIAS, searchTaxon == spp)
 
     ## Now get the background points. These can come from any spp, other than the modelled species.
-    background <- subset(SDM.DATA.ALL, searchTaxon != spp)
+    background <- subset(SDM.DATA.BIAS, searchTaxon != spp)
 
     ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
     tryCatch(

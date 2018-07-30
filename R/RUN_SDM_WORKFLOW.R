@@ -13,7 +13,7 @@
 
 #########################################################################################################################
 ## Read in all data to run the SDM code :: species lists, shapefile, rasters & tables
-source('./R/HIA_LIST_UPDATE.R')
+source('./R/HIA_TREE_LIST.R')
 
 
 ## Set global species list variables here...............................................................................

@@ -437,17 +437,12 @@ time_slice = 30
 area_occ   = 10
 
 
-## Here we don't want to use the lower threshold .......................................................................
-## What we really want is to use the lower threshold for all the species. So what are the lower thresholds called again?
-## So actually, that would be looping over 
-## percent.10.log.best AND
-## percent.10.om.best
-
-## Also, consider if it's worth adding an argument for threshold. This can just be changed later......................... 
+## Check the length matches
+length(SDM.RESULTS.DIR);length(map_spp);length(percent.10.log);length(percent.10.om)
 
 
 #########################################################################################################################
-## Combine output and calculate gain and loss for 2030 
+## Combine output and calculate gain and loss for 2030
 suitability.2030 = tryCatch(mapply(combine_gcm_threshold,
                                    DIR_list     = SDM.RESULTS.DIR,
                                    species_list = map_spp,
@@ -467,8 +462,8 @@ suitability.2030 = tryCatch(mapply(combine_gcm_threshold,
 ## Combine GCM output for 2050 
 suitability.2050 = tryCatch(mapply(combine_gcm_threshold, 
                                    DIR_list     = SDM.RESULTS.DIR,
-                                   species_list = map_spp_list,
-                                   maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
+                                   species_list = map_spp,
+                                   maxent_path  = out_dir,
                                    thresholds   = percent.10.log,
                                    percentiles  = percent.10.om,
                                    time_slice   = 50,
@@ -484,8 +479,8 @@ suitability.2050 = tryCatch(mapply(combine_gcm_threshold,
 ## Combine GCM output for 2070 
 suitability.2070 = tryCatch(mapply(combine_gcm_threshold, 
                                    DIR_list     = SDM.RESULTS.DIR,
-                                   species_list = map_spp_list,
-                                   maxent_path  = "./output/maxent/SET_VAR_KOPPEN",
+                                   species_list = map_spp,
+                                   maxent_path  = out_dir,
                                    thresholds   = percent.10.log,
                                    percentiles  = percent.10.om,
                                    time_slice   = 70,
