@@ -18,7 +18,7 @@ source('./R/HIA_LIST_UPDATE.R')
 
 ## Set global species list variables here...............................................................................
 ## Now running more tree species
-GBIF.spp      = TREE.HIA
+GBIF.spp      = sort(TREE.HIA)
 map_spp_list  = TREE_HIA
 save_dir      = 'output/maxent/SPP_EXOTIC/'
 out_dir       = 'output/maxent/SPP_EXOTIC'

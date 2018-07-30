@@ -641,6 +641,7 @@ TREE.EVERGREEN = TREE.EVERGREEN[c("searchTaxon", "Origin", "Plantings", "Number.
 dim(TREE.EVERGREEN)
 head(TREE.EVERGREEN)
 round(with(TREE.EVERGREEN, table(Origin)/sum(table(Origin))*100), 1)
+length(intersect(TREE.EVERGREEN$searchTaxon, checked.trees))
 
 
 ## Test the new urban data on a subset of species
