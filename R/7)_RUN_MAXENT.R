@@ -76,8 +76,21 @@ xres(template.raster);yres(template.raster)
 
 ## Save the SDM dataset here............................................................................................
 saveRDS(SDM.DATA.ALL, 'data/base/HIA_LIST/COMBO/SDM_DATA_INV_HIA.rds')
-SDM.DATA.BIAS = readRDS('./data/base/HIA_LIST/COMBO/RAREFY_SPP/SPAT_OUT/SDM_DATA_BIAS.rds')
 
+
+#########################################################################################################################
+## The code is failing, and the maps are different, due to insufficient background records. Add in random records from
+## previously saved runs
+background = readRDS("./data/base/HIA_LIST/COMBO/SDM_DATA_CLEAN_052018.rds")
+background = background [!background$searchTaxon %in% GBIF.spp, ]               ## Don't add records for other species
+length(unique(background$searchTaxon));dim(background)
+
+
+## Now bind on the background points............................................................................................
+names(background)
+names(SDM.DATA.ALL)
+intersect(sort(unique(SDM.DATA.ALL$searchTaxon)), sort(unique(background$searchTaxon)))
+SDM.DATA.ALL = rbind(SDM.DATA.ALL, background)
 
 
 #########################################################################################################################
@@ -110,36 +123,6 @@ names(env.grids.current) <- sdm.predictors[i]
 identical(names(env.grids.current),sdm.predictors)
 
 
-#########################################################################################################################
-## Loop over the species list and plot the occurrence data for each to check the data bias
-# TAXA = as.list(sort(unique(intersect(SDM.DATA.ALL$searchTaxon, spp.mile))))
-# 
-# for (i in 1:length(TAXA)) {
-# 
-#   ## Create points for each species
-#   spp.points <- SDM.DATA.ALL[SDM.DATA.ALL$searchTaxon == TAXA[i], ] %>%
-#     spTransform(CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'))
-# 
-#   ## Print to file
-#   save_name = gsub(' ', '_', TAXA[i])
-#   save_dir  = "output/maxent/summary"
-#   png(sprintf('%s/%s_%s.png', save_dir,
-#               save_name, "Australian_points"),
-#       3236, 2000, units = 'px', res = 300)
-# 
-#   ## set margins
-#   par(mar   = c(3, 3, 5, 3),  ## b, l, t, r
-#       #mgp   = c(9.8, 2.5, 0),
-#       oma   = c(1.5, 1.5, 1.5, 1.5))
-# 
-#   ## Plot just the Australian points
-#   plot(aus, main = TAXA[i])
-#   points(spp.points, col = "red", cex = .3, pch = 19)
-# 
-#   ## Finish the device
-#   dev.off()
-# 
-# }
 
 
 
@@ -228,23 +211,39 @@ lapply(analysis.spp, function(spp){
 
 #########################################################################################################################
 ## Run Maxent using a random selection of background points. 
-## synonyms = c("Waterhousea floribunda", "Sannantha virgata", "Callistemon citrinus")
-## 'Angophora costata' %in% SDM.DATA.ALL$searchTaxon  
+SDM.DATA.BIAS = readRDS('./data/base/HIA_LIST/COMBO/RAREFY_SPP/SPAT_OUT/SDM_DATA_BIAS.rds')
+length(unique(SDM.DATA.BIAS$searchTaxon)) 
 projection(template.raster);projection(SDM.DATA.BIAS);projection(Koppen_1975)
 
 
-## Change this to be just the species with bias.......................................................................
+## Remove the dodgy columns
+dropList <- c(setdiff(sdm.predictors, sdm.select), "lon", "lat")
+background.bias <- background[, !names(background) %in% dropList]
+SDM.DATA.BIAS   <- SDM.DATA.BIAS[, !names(SDM.DATA.BIAS) %in% dropList]
+identical(names(background.bias), names(SDM.DATA.BIAS))
 
 
-## Create new variable for analysis species - hence SDM.DATA.ALL needs to be update each time...........................
-analysis.spp = unique(SDM.DATA.BIAS$searchTaxon)   ## could use this in future
+## Now bind on the background points............................................................................................
+intersect(sort(unique(SDM.DATA.BIAS$searchTaxon)), sort(unique(background$searchTaxon)))
+SDM.DATA.BIAS = rbind(SDM.DATA.BIAS, background.bias)
+dim(SDM.DATA.BIAS)
 
 
-## Loop over all the species spp = spp.combo[31]
-lapply(analysis.spp, function(spp){
+## List of biased species
+SPP.BIAS             = intersect(SPP.BIAS, GBIF.spp)    ## just re-run the models for species on the list
+SPP_BIAS             = gsub(" ", "_", SPP.BIAS)
+
+
+## Change the output directory
+out_dir       = 'output/maxent/SPP_RAREFY'
+
+
+#########################################################################################################################
+## Loop over all the species spp = test.bias[1]
+lapply(test.bias, function(spp){
 
   ## Skip the species if the directory already exists, before the loop
-  outdir <- save_dir
+  outdir <- out_dir
   if(dir.exists(file.path(outdir, gsub(' ', '_', spp)))) {
     message('Skipping ', spp, ' - already run.')
     invisible(return(NULL))
@@ -259,7 +258,7 @@ lapply(analysis.spp, function(spp){
     occurrence <- subset(SDM.DATA.BIAS, searchTaxon == spp)
 
     ## Now get the background points. These can come from any spp, other than the modelled species.
-    background <- subset(SDM.DATA.BIAS, searchTaxon != spp)
+    background <- subset(background.bias, searchTaxon != spp)
 
     ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
     tryCatch(
@@ -267,7 +266,7 @@ lapply(analysis.spp, function(spp){
                          bg                      = background,
                          sdm.predictors          = sdm.select,
                          name                    = spp,
-                         outdir                  = outdir,
+                         outdir,
                          template.raster,
                          min_n                   = 20,     ## This should be higher...
                          max_bg_size             = 100000,
@@ -321,7 +320,11 @@ lapply(analysis.spp, function(spp){
 ## 3). Thinned records for ~100 spp with boundary bias, using the SDM tool box:
 
 ##     The 'Spatially rarefy occurrence data for SDMs' tool looks ok, but check settings. 5km, instead of 10?
-##     All species need lots of records to survive this process. And why doesn't the standard maxent approach do this?
+##     All species need lots of records to survive this process. 
+##     Try for all 200 species, and see what happens
+
+##     Also, need to increase the number of species so there are more background records. That is why the code is failing
+##     These don't matter at all, so could be from an earlier file, just add in at step 7
 
 ## 4). Use more forgiving thresholds (10%) for all species, OR just those with bad maps:
 ##    "Maximum.training.sensitivity.plus.specificity.Logistic.threshold"
