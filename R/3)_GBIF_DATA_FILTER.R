@@ -97,20 +97,22 @@ intersect(names(GBIF.TRIM), gbif.keep)
 
 
 #########################################################################################################################
-## Load previous data
-#GBIF.TRIM = load("./data/base/HIA_LIST/COMBO/GBIF_TRIM_LATEST.RData")
-#rasterOptions(tmpdir = file.path("'H:/green_cities_sdm/RTEMP")) 
-# dim(GBIF.TRIM)
-# names(GBIF.TRIM)
-# length(unique(GBIF.TRIM$searchTaxon))  ## has the list updated with extra species? YES! unique(GBIF.TRIM$searchTaxon)
-# setdiff(RISK.BINOMIAL, GBIF.TRIM$searchTaxon) 
-
-
 ## Just get the newly downloaded species................................................................................
 GBIF.TRIM = GBIF.TRIM[GBIF.TRIM$searchTaxon %in% GBIF.spp, ]
 dim(GBIF.TRIM)
 
 
+## What are the unique species
+length(unique(GBIF.TRIM$scientificName))  
+length(unique(GBIF.TRIM$searchTaxon))  
+
+
+## How do the searched and returned items compare?
+head(GBIF.TRIM, 100)[, c("scientificName",
+                         "searchTaxon")]
+
+head(GBIF.TRIM, 100)[, c("scientificName",
+                         "searchTaxon")]
 
 
 
@@ -119,76 +121,77 @@ dim(GBIF.TRIM)
 ######################################################################################################################### 
 
 
-# ## Use "Taxonstand". This also assumes that the ALA data is clean
-# GBIF.TAXO <- TPL(unique(GBIF.TRIM$scientificName), infra = TRUE,
-#                  corr = TRUE, repeats = 100)  ## to stop it timing out...
-# sort(names(GBIF.TAXO))
-# 
-# 
-# ######################################################################################################################### 
-# # The procedure used for taxonomic standardization is based on function TPLck. A progress bar
-# # indicates the proportion of taxon names processed so far. In case the TPL website cannot be reached
-# # temporarily, the function returns an error but repeats trying to match the given taxon multiple times
-# # (see repeats). If standardization is still not successful, the input taxon is returned in field ’Taxon’
-# # with NA in all other fields
-# 
-# 
-# ## Then join the GBIF data to the taxonomic check, using "scientificName" as the join field... 
-# GBIF.TRIM <- GBIF.TRIM %>%
-#   left_join(., GBIF.TAXO, by = c("scientificName" = "Taxon"))
-# 
-# 
-# ## So we can filter by the agreement between "scientificName", and "New.Taxonomic.status"?
-# ## A better way could be to create a new filter for agreement between the search taxon genus and species,
-# ## and the new genus and species. Which of these columns to keep?
-# 
-# 
-# #########################################################################################################################
-# ## Now create a column for the agreement between the new genus and the old genus
-# ## First, trim the spaces out
-# GBIF.TRIM$searchTaxon  = trimws(GBIF.TRIM$searchTaxon)
-# 
-# 
-# ## Then combine the genus and species returned by TPL into
-# GBIF.TRIM$TPL_binomial  = with(GBIF.TRIM, paste(New.Genus, New.Species, sep = " "))
-# 
-# 
-# ## Now match the searchTaxon with the binomial returned by TPL :: this would be the best field to filter on
-# GBIF.TRIM$taxo_agree <- ifelse(
-#   GBIF.TRIM$searchTaxon == GBIF.TRIM$TPL_binomial, TRUE, FALSE)
-# 
-# 
-# ## Also keep the unresolved records:
-# GBIF.UNRESOLVED <- GBIF.TRIM %>% 
-#   
-#   ## Note that these filters are very forgiving...
-#   ## Unless we include the NAs, very few records are returned!
-#   filter(New.Taxonomic.status == 'Unresolved')
-# 
-# 
-# ## Also keep the managed records:
-# # unique(GBIF.UNRESOLVED$New.Taxonomic.status)
-# # dim(GBIF.UNRESOLVED)   ## 1.2 million unresolved records, quite a lot!
-# 
-# 
-# ## Unique(GBIF.UNRESOLVED$New.Taxonomic.status)
-# #saveRDS(GBIF.UNRESOLVED, file = paste("./data/base/HIA_LIST/GBIF/GBIF_UNRESOLVED.rds"))
-# 
-# 
-# ## Just keep these columns:
-# ## Taxonomic.status, Infraspecific.rank, New.Taxonomic.status, New.ID, New_binomial, taxo_agree
-# GBIF.TRIM.TAXO <- GBIF.TRIM %>% 
-#   select(one_of(TPL.keep))
-# 
-# 
-# ## Unique(GBIF.UNRESOLVED$New.Taxonomic.status)
-# #saveRDS(GBIF.TAXO,       file = paste("./data/base/HIA_LIST/GBIF/GBIF_TAXO.rds"))
-# #saveRDS(GBIF.TRIM.TAXO,  file = paste("./data/base/HIA_LIST/GBIF/GBIF_TRIM_TAXO.rds"))
-# 
-# 
-# 
-# 
-# 
+#########################################################################################################################
+## Use "Taxonstand" to check the taxonomy. However, this also assumes that the ALA data is clean
+GBIF.TAXO <- TPL(unique(GBIF.TRIM$scientificName), infra = TRUE,
+                 corr = TRUE, repeats = 100)  ## to stop it timing out...
+sort(names(GBIF.TAXO))
+
+
+#########################################################################################################################
+## The procedure used for taxonomic standardization is based on function TPLck. A progress bar
+## indicates the proportion of taxon names processed so far. In case the TPL website cannot be reached
+## temporarily, the function returns an error but repeats trying to match the given taxon multiple times
+## (see repeats). If standardization is still not successful, the input taxon is returned in field ’Taxon’
+## with NA in all other fields
+
+
+## Then join the GBIF data to the taxonomic check, using "scientificName" as the join field...
+GBIF.TRIM <- GBIF.TRIM %>%
+  left_join(., GBIF.TAXO, by = c("scientificName" = "Taxon"))
+
+
+## So we can filter by the agreement between "scientificName", and "New.Taxonomic.status"?
+## A better way could be to create a new filter for agreement between the search taxon genus and species,
+## and the new genus and species. Which of these columns to keep?
+
+
+#########################################################################################################################
+## Now create a column for the agreement between the new genus and the old genus
+## First, trim the spaces out
+GBIF.TRIM$searchTaxon  = trimws(GBIF.TRIM$searchTaxon)
+
+
+## Then combine the genus and species returned by TPL into
+GBIF.TRIM$TPL_binomial  = with(GBIF.TRIM, paste(New.Genus, New.Species, sep = " "))
+
+
+## Now match the searchTaxon with the binomial returned by TPL :: this would be the best field to filter on
+GBIF.TRIM$taxo_agree <- ifelse(
+  GBIF.TRIM$searchTaxon == GBIF.TRIM$TPL_binomial, TRUE, FALSE)
+
+
+## Also keep the unresolved records:
+GBIF.UNRESOLVED <- GBIF.TRIM %>%
+
+  ## Note that these filters are very forgiving...
+  ## Unless we include the NAs, very few records are returned!
+  filter(New.Taxonomic.status == 'Unresolved')
+
+
+## Also keep the managed records:
+# unique(GBIF.UNRESOLVED$New.Taxonomic.status)
+# dim(GBIF.UNRESOLVED)   ## 1.2 million unresolved records, quite a lot!
+
+
+## Unique(GBIF.UNRESOLVED$New.Taxonomic.status)
+#saveRDS(GBIF.UNRESOLVED, file = paste("./data/base/HIA_LIST/GBIF/GBIF_UNRESOLVED.rds"))
+
+
+## Just keep these columns:
+## Taxonomic.status, Infraspecific.rank, New.Taxonomic.status, New.ID, New_binomial, taxo_agree
+GBIF.TRIM.TAXO <- GBIF.TRIM %>%
+  select(one_of(TPL.keep))
+
+
+## Unique(GBIF.UNRESOLVED$New.Taxonomic.status)
+#saveRDS(GBIF.TAXO,       file = paste("./data/base/HIA_LIST/GBIF/GBIF_TAXO.rds"))
+#saveRDS(GBIF.TRIM.TAXO,  file = paste("./data/base/HIA_LIST/GBIF/GBIF_TRIM_TAXO.rds"))
+
+
+
+
+
 # #########################################################################################################################
 # ## 3). MARK CULTIVATED RECORDS
 # #########################################################################################################################
@@ -438,7 +441,7 @@ gc()
 
 
 ## Now save .rds file for the next session
-#save.image("STEP_3_GBIF_CLEAN.RData")
+save.image("STEP_3_GBIF_CLEAN.RData")
 #load("STEP_3_GBIF_CLEAN.RData")
 
 

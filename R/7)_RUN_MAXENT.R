@@ -164,12 +164,12 @@ lapply(analysis.spp, function(spp){
     occurrence <- subset(SDM.DATA.ALL, searchTaxon == spp)
     
     ## Now get the background points. These can come from any spp, other than the modelled species.
-    background <- subset(SDM.DATA.ALL, searchTaxon != spp)
+    background.all <- subset(background, searchTaxon != spp)
     
     ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
     tryCatch(
       FIT_MAXENT_TARG_BG(occ                     = occurrence, 
-                         bg                      = background, 
+                         bg                      = background.all, 
                          sdm.predictors          = sdm.select, 
                          name                    = spp, 
                          outdir, 
@@ -304,32 +304,25 @@ lapply(test.bias, function(spp){
 ## 1). 100/200 tree spp that are commonly planted and traded, with sufficient spatial data to model robustly. 
 ##     Plan figures and tables for MS
 
-## 2). Re-download ALA data. 
-##     Clean and add exotic urban inventory data that Ale is compiling (create diagram of data integration, to highlight knowlegde gaps)
-##     Four columns ::
-##     Species
-##     Common name
-##     LAT/LONG
-##     SOURCE
 
-##     Extra sources:
-##     Tree inventories ()
-##     Bush
-##     Inaturalist
+## 2). Re-download ALA data : 
+##     The species names are not clean. Can the ALA and GBIF data be filtered in the same way using John's code?
+##     Could create a lookup table the same way Alessandro did. But there are 2.5 million records
+##     The current approach produces mostly correct records. So easiest to stick to that, combining John's data.
 
-## 3). Thinned records for ~100 spp with boundary bias, using the SDM tool box:
 
-##     The 'Spatially rarefy occurrence data for SDMs' tool looks ok, but check settings. 5km, instead of 10?
-##     All species need lots of records to survive this process. 
-##     Try for all 200 species, and see what happens
+## 3). Thinned records for ~ 40 spp with boundary bias, using the SDM tool box:
 
-##     Also, need to increase the number of species so there are more background records. That is why the code is failing
+##     Classify some species as not biased
+
+##     Also, need to increase the number of species so there are more background records.
 ##     These don't matter at all, so could be from an earlier file, just add in at step 7
 
-## 4). Use more forgiving thresholds (10%) for all species, OR just those with bad maps:
-##    "Maximum.training.sensitivity.plus.specificity.Logistic.threshold"
-##    "X10.percentile.training.presence.Logistic.threshold"
-##    "X10.percentile.training.presence.training.omission"
+##     Spatially thin the background records as well - ArcMap fails at this
+
+## 4). Use more forgiving thresholds (10%) for all species
+##     "X10.percentile.training.presence.Logistic.threshold"
+##     "X10.percentile.training.presence.training.omission"
   
 ## 5). Combine output: Table
 ##     "searchTaxon" "No.plantings" "Number.of.growers" "Number.of.States/LGAs/Koppen zones" "Origin" "AUC" "TSS" 

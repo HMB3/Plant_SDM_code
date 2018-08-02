@@ -5,16 +5,23 @@
 
 #########################################################################################################################
 ## This code updates the ALA data
-
-
 ## John's ALA data :: 
 load("./data/base/HIA_LIST/ALA/ALA_LAND_POINTS.RData")
 
 
 ## Load ALA update :: the coordinates are coming in as characters
+AVH.TREES = read.csv("./data/base/HIA_LIST/ALA/AVH_tree_spp.csv", stringsAsFactors = FALSE)
 ALA.UPDATE = read.csv("./data/base/HIA_LIST/ALA/Plants.csv", stringsAsFactors = FALSE)
-length(unique(ALA.UPDATE$scientificName))  ## 30k species 
+saveRDS(ALA.UPDATE, file = paste("../data/base/HIA_LIST/ALA/ALA_PLANTS_UPDATE.rds"))
 
+dim(ALA.UPDATE)
+dim(AVH.UPDATE)
+dim(ALA.LAND)
+
+
+length(unique(ALA.UPDATE$scientificName))  
+length(unique(AVH.UPDATE$scientificName))  
+length(unique(ALA.LAND$scientificname)) 
 
 
 
@@ -49,9 +56,16 @@ setdiff(names(ALA.TRIM), ALA.keep)
 
 
 ## Just get the species we need - this should be the intersection of Ale's list and the HIA list
-ALA.TRIM = ALA.TRIM[ALA.TRIM$scientificName %in% CLEAN.SPP$Binomial, ]
-dim(ALA.TRIM)
-length(unique(ALA.TRIM$scientificName))     ## not many records per species
+ALA.TRIM   = ALA.TRIM[ALA.TRIM$scientificName %in% GBIF.spp, ]
+ALA.OLD    = ALA.LAND[ALA.LAND$scientificname %in% GBIF.spp, ]
+AVH.UPDATE = AVH.TREES[AVH.TREES$scientificName %in% GBIF.spp, ]
+
+
+## How big are the datasets?
+dim(ALA.TRIM);dim(ALA.OLD);dim(AVH.UPDATE)
+length(unique(ALA.TRIM$scientificName))    ## not many records per species
+length(unique(AVH.UPDATE$scientificName)) 
+length(unique(ALA.OLD$scientificname))     ## not many records per species
 
 
 #########################################################################################################################

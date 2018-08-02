@@ -18,14 +18,12 @@ source('./R/HIA_LIST_MATCHING.R')
 
 
 ## Create one big list of all the taxa
-#all.taxa     = read.csv("./MANUEL/nurseries_no_climate.csv", stringsAsFactors = FALSE)  ## RISK.BINOMIAL
-all.taxa     = check.200
-all.taxa     = all.taxa$species  ## all.taxa = c("Callistemon citrinus", "Cryptocarya laevigata", "Cupianopsis anacardiodes")
+all.taxa     =  GBIF.spp
 all.taxa.rev = all.taxa[rev(order(all.taxa))]
 
 
 ########################################################################################################################
-## Use taxonlookup to check the taxonomy: can use this code to check the planted and growing list, etc
+## Use Taxonstand to check the taxonomy
 # SPP.LOOKUP = lookup_table(all.taxa, by_species = TRUE, missing_action = "NA")    ## convert rows to column and merge
 # SPP.LOOKUP = setDT(SPP.LOOKUP , keep.rownames = TRUE)[]
 # SPP.LOOKUP = dplyr::rename(SPP.LOOKUP, Binomial = rn)
@@ -54,7 +52,8 @@ skipped.taxa    = download_GBIF_all_species(species_list = all.taxa,
                                             path         = "./data/base/HIA_LIST/GBIF/SPECIES/") ## insert path 
 
 
-
+ALA.taxa    = download_ALA_all_species(species_list = all.taxa, 
+                                       path         = "./data/base/HIA_LIST/ALA/TREE_SPECIES/") ## insert path
 
 
 #########################################################################################################################

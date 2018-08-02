@@ -23,6 +23,13 @@ source('./R/HIA_LIST_UPDATE.R')
 
 
 #########################################################################################################################
+## Read in background data
+background = readRDS("./data/base/HIA_LIST/COMBO/SDM_DATA_CLEAN_052018.rds")
+background = background [!background$searchTaxon %in% GBIF.spp, ]               ## Don't add records for other species
+length(unique(background$searchTaxon));dim(background)
+
+
+#########################################################################################################################
 ## Load GBIF data and rain shapefile
 BIAS.DATA.ALL        = readRDS("./data/base/HIA_LIST/COMBO/SDM_DATA_INV_HIA.rds")
 SPP.BIAS             = intersect(SPP.BIAS, GBIF.spp)    ## just re-run the models for species on the list
@@ -32,20 +39,29 @@ length(unique(BIAS.DATA.ALL$searchTaxon))
  
 ## Project the SDM data into WGS
 BIAS.DATA.ALL <- spTransform(BIAS.DATA.ALL, CRS("+init=epsg:4326 +proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
-projection(BIAS.DATA.ALL)
+BG.DATA.ALL   <- spTransform(background, CRS("+init=epsg:4326 +proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+projection(BIAS.DATA.ALL);projection(background)
 
 
 ## Get the coordinates
 BIAS.COORDS = coordinates(BIAS.DATA.ALL)
+BG.COORDS   = coordinates(background)
 class(BIAS.COORDS)
 tail(BIAS.COORDS)
 tail(BIAS.DATA.ALL)[, c(1:3)]   ## indices match
 
 
 ## Bind the coordinates to the SDM table
-BIAS.COORDS   = as.data.frame(BIAS.COORDS)
+BIAS.COORDS  = as.data.frame(BIAS.COORDS)
 BIAS.DATA.DF = cbind(as.data.frame(BIAS.DATA.ALL), BIAS.COORDS)
 BIAS.DATA.DF = BIAS.DATA.DF[, c(1:22)]
+
+BG.COORDS    = as.data.frame(BG.COORDS)
+BG.DATA.DF   = cbind(as.data.frame(BG.DATA.ALL), BG.COORDS)
+BG.DATA.DF   = BG.DATA.DF[, c(1:22)]
+
+
+names(BG.DATA.DF)
 names(BIAS.DATA.DF)
 dim(BIAS.DATA.DF)
 
@@ -55,6 +71,11 @@ dim(BIAS.DATA.DF)
 BIAS.DATA.SP   = SpatialPointsDataFrame(coords      = BIAS.DATA.DF[c("lon", "lat")],
                                         data        = BIAS.DATA.DF,
                                         proj4string = CRS.WGS.84)
+
+
+BG.DATA.SP   = SpatialPointsDataFrame(coords      = BG.DATA.DF[c("lon", "lat")],
+                                      data        = BG.DATA.DF,
+                                      proj4string = CRS.WGS.84)
 
 
 ## All predictors
@@ -110,8 +131,8 @@ projection(BIAS.DF)
 
 ## Save the shapefile, to be subsampled in ArcMap
 names(BIAS.DF);head(BIAS.DF)
-writeOGR(obj = BIAS.DF, dsn = "./data/base/HIA_LIST/COMBO", layer = "SPP_ALL_DF_TREE_INV", driver = "ESRI Shapefile")
-
+writeOGR(obj = BIAS.DF,    dsn = "./data/base/HIA_LIST/COMBO", layer = "SPP_ALL_DF_TREE_INV", driver = "ESRI Shapefile")
+writeOGR(obj = BG.DATA.SP, dsn = "./data/base/HIA_LIST/COMBO", layer = "BG_POINTS", driver = "ESRI Shapefile")
 
 
 
@@ -207,6 +228,40 @@ BIAS.RAREFY       = spTransform(BIAS.RAREFY , CRS('+init=ESRI:54009'))
 projection(BIAS.RAREFY)
 length(unique(BIAS.RAREFY$searchTaxon))
 names(BIAS.RAREFY)
+
+
+
+#########################################################################################################################
+## Loop over the species list and plot the occurrence data for each to check the data bias
+for (i in 1:length(SPP.BIAS)) {
+  
+  ## Create points for each species
+  spp.points <- BIAS.RAREFY[BIAS.RAREFY$searchTaxon == SPP.BIAS[i], ] %>%
+    spTransform(CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'))
+  
+  aus.mol <- aus %>%
+    spTransform(CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'))
+  
+  ## Print to file
+  save_name = gsub(' ', '_', SPP.BIAS[i])
+  save_dir  = "data/base/HIA_LIST/COMBO/RAREFY"
+  png(sprintf('%s/%s_%s.png', save_dir,
+              save_name, "Australian_points"),
+      3236, 2000, units = 'px', res = 300)
+  
+  ## set margins
+  par(mar   = c(3, 3, 5, 3),  ## b, l, t, r
+      #mgp   = c(9.8, 2.5, 0),
+      oma   = c(1.5, 1.5, 1.5, 1.5))
+  
+  ## Plot just the Australian points
+  plot(aus.mol, main = SPP.BIAS[i])
+  points(spp.points, col = "red", cex = .15, pch = 19)
+  
+  # Finish the device
+  dev.off()
+  
+}
 
 
 ## save as 

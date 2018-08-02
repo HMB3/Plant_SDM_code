@@ -16,7 +16,7 @@
 source('./R/HIA_TREE_LIST.R')
 
 
-## Set global species list variables here...............................................................................
+## Set global species list variables here................................................................................
 ## Now running more tree species
 GBIF.spp      = sort(TREE.HIA.SPP)
 map_spp_list  = TREE_HIA_SPP

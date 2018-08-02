@@ -142,7 +142,7 @@ project_maxent_grids = function(scen_list, species_list, maxent_path, climate_pa
                     ## Plot the Aus shapefile with the occurrence points for reference
                     ## Can the points be made more legible for both poorly and well recorded species?
                     layer(sp.polygons(aus)) +
-                    layer(sp.points(occ, pch = 20, cex = 0.4, 
+                    layer(sp.points(occ, pch = 19, cex = 0.15, 
                                     col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
             dev.off()
             
