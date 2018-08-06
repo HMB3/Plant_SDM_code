@@ -128,6 +128,13 @@ GBIF.TAXO <- TPL(unique(GBIF.TRIM$scientificName), infra = TRUE,
 sort(names(GBIF.TAXO))
 
 
+## Now create table for Alessandro.......................................................................................
+GBIF.LUT = as.data.frame(table(GBIF.TRIM$scientificName))
+names(GBIF.LUT) = c("scientificName", "FREQUENCY")
+GBIF.LUT = GBIF.LUT[with(GBIF.LUT, rev(order(FREQUENCY))), ] 
+head(GBIF.LUT);dim(GBIF.LUT)
+
+
 #########################################################################################################################
 ## The procedure used for taxonomic standardization is based on function TPLck. A progress bar
 ## indicates the proportion of taxon names processed so far. In case the TPL website cannot be reached
@@ -161,6 +168,11 @@ GBIF.TRIM$taxo_agree <- ifelse(
   GBIF.TRIM$searchTaxon == GBIF.TRIM$TPL_binomial, TRUE, FALSE)
 
 
+## How many species agree?
+round(with(GBIF.TRIM, table(taxo_agree)/sum(table(taxo_agree))*100), 1)
+round(with(GBIF.TRIM, table(New.Taxonomic.status)/sum(table(New.Taxonomic.status))*100), 1)
+
+
 ## Also keep the unresolved records:
 GBIF.UNRESOLVED <- GBIF.TRIM %>%
 
@@ -169,13 +181,35 @@ GBIF.UNRESOLVED <- GBIF.TRIM %>%
   filter(New.Taxonomic.status == 'Unresolved')
 
 
+## Also keep the unresolved records:
+GBIF.RESOLVED <- GBIF.TRIM %>%
+  
+  ## Just get the accepted taxa
+  filter(New.Taxonomic.status == 'Accepted')
+
+
+#########################################################################################################################
+## What do examples of resolved and unresolved records look like?
+head(GBIF.UNRESOLVED, 50)[, c("searchTaxon",
+                              "scientificName", 
+                              "TPL_binomial",
+                              "taxo_agree")]
+
+
+head(GBIF.RESOLVED, 50)[, c("searchTaxon",
+                            "scientificName", 
+                            "TPL_binomial",
+                            "taxo_agree")]
+
+
 ## Also keep the managed records:
-# unique(GBIF.UNRESOLVED$New.Taxonomic.status)
-# dim(GBIF.UNRESOLVED)   ## 1.2 million unresolved records, quite a lot!
+unique(GBIF.UNRESOLVED$New.Taxonomic.status)
+dim(GBIF.UNRESOLVED)   ## 1.2 million unresolved records, quite a lot!
+
 
 
 ## Unique(GBIF.UNRESOLVED$New.Taxonomic.status)
-#saveRDS(GBIF.UNRESOLVED, file = paste("./data/base/HIA_LIST/GBIF/GBIF_UNRESOLVED.rds"))
+saveRDS(GBIF.UNRESOLVED, file = paste("./data/base/HIA_LIST/GBIF/SUA_TREE_GBIF_UNRESOLVED.rds"))
 
 
 ## Just keep these columns:
@@ -185,9 +219,10 @@ GBIF.TRIM.TAXO <- GBIF.TRIM %>%
 
 
 ## Unique(GBIF.UNRESOLVED$New.Taxonomic.status)
-#saveRDS(GBIF.TAXO,       file = paste("./data/base/HIA_LIST/GBIF/GBIF_TAXO.rds"))
-#saveRDS(GBIF.TRIM.TAXO,  file = paste("./data/base/HIA_LIST/GBIF/GBIF_TRIM_TAXO.rds"))
-
+saveRDS(GBIF.TAXO,       file = paste("./data/base/HIA_LIST/GBIF/SUA_TREES_GBIF_TAXO.rds"))
+saveRDS(GBIF.TRIM.TAXO,  file = paste("./data/base/HIA_LIST/GBIF/SUA_TREES_GBIF_TRIM_TAXO.rds"))
+write.csv(GBIF.TRIM.TAXO,             "./data/base/HIA_LIST/GBIF/SUA_TREES_GBIF_TRIM_TAXO.csv", row.names = FALSE)
+write.csv(GBIF.LUT,                   "./data/base/HIA_LIST/GBIF/SUA_TREES_GBIF_LUT.csv",       row.names = FALSE)
 
 
 

@@ -218,7 +218,7 @@ length(maxent.tables)                                    ## Should match the num
 no_data %in% maxent.tables
 
 
-## 
+## Create a table of the results 
 MAXENT.RESULTS <- maxent.tables[c(1:length(maxent.tables))] %>%         
   
   ## pipe the list into lapply
@@ -275,21 +275,21 @@ names(max_tss)[names(max_tss) == 'rn'] <- 'searchTaxon'
 
 
 ## Remove extra text
-max_tss$searchTaxon = gsub("output/maxent/SPP_EXOTIC//",   "", max_tss$searchTaxon)
+max_tss$searchTaxon = gsub("//",         "/", max_tss$searchTaxon)
+max_tss$searchTaxon = gsub(maxent_path,   "", max_tss$searchTaxon)
 max_tss$searchTaxon = gsub("/full/species_omission.csv.max_tss", "", max_tss$searchTaxon)
 head(max_tss)
 
 
 ## Add max TSS to the results table
 MAXENT.RESULTS = merge(MAXENT.RESULTS, max_tss, by = "searchTaxon", ALL = FALSE)
-MAXENT.RESULTS = MAXENT.RESULTS[, c(1:9, 65, 10:64)]
-names(MAXENT.RESULTS)
+head(MAXENT.RESULTS$max_tss)
 
 
 ## This is a summary of maxent output for current conditions
 ## Also which species have AUC < 0.7?
 dim(MAXENT.RESULTS)
-head(MAXENT.RESULTS, 20)[1:10]
+head(MAXENT.RESULTS, 20)[1:5]
 dim(subset(MAXENT.RESULTS, Training.AUC < 0.7))  ## all models should be above 0.7
 
 
@@ -329,9 +329,12 @@ SDM.RESULTS.DIR
 #########################################################################################################################
 ## Now combine the SDM output with the niche context data 
 ## Get the number of aus records too ....................................................................................
-NICHE.CONTEXT = COMBO.NICHE.CONTEXT[, c("searchTaxon", "COMBO.count",  "AUS_RECORDS",  "Plant.type", "Origin", 
-                                        "Total.growers",     
-                                        "Number.of.States")]
+NICHE.CONTEXT   = COMBO.NICHE.CONTEXT[, c("searchTaxon", "COMBO.count",  "AUS_RECORDS",  "Plant.type", "Origin", 
+                                          "Total.growers",     
+                                          "Number.of.States")]
+
+TREE.PLANTINGS  = TREE.EVERGREEN[, c("searchTaxon",
+                                     "Plantings")]
 
 
 ## Check with John and Linda which columns will help with model selection
@@ -347,9 +350,28 @@ MAXENT.SUMMARY   = MAXENT.RESULTS[, c("searchTaxon",
 
 ## Now remove the underscore and join data 
 MAXENT.SUMMARY$searchTaxon = gsub("_", " ", MAXENT.SUMMARY$searchTaxon)
-MAXENT.SUMMARY.NICHE       = join(MAXENT.SUMMARY, NICHE.CONTEXT, type = "left")  ## join does not support the sorting
+MAXENT.SUMMARY.NICHE       = join(MAXENT.SUMMARY,       NICHE.CONTEXT,  type = "left")  ## join does not support the sorting
+MAXENT.SUMMARY.NICHE       = join(MAXENT.SUMMARY.NICHE, TREE.PLANTINGS, type = "left")  
 MAXENT.SUMMARY.NICHE       = MAXENT.SUMMARY.NICHE[order(MAXENT.SUMMARY.NICHE$searchTaxon),]
-dim(MAXENT.SUMMARY.NICHE)
+
+
+## Re-order table
+MAXENT.SUMMARY.NICHE   = MAXENT.SUMMARY.NICHE[, c("searchTaxon",
+                                                  "Origin",
+                                                  "Plant.type", 
+                                                  "Plantings",
+                                                  "COMBO.count",  
+                                                  "AUS_RECORDS",  
+                                                  "Total.growers",     
+                                                  "Number.of.States",
+                                                  "Number_var",
+                                                  "X.Training.samples",                                                                
+                                                  "Iterations",                                                                        
+                                                  "Training.AUC",
+                                                  "max_tss",
+                                                  "X.Background.points",  
+                                                  "X10.percentile.training.presence.Logistic.threshold")]
+head(MAXENT.SUMMARY.NICHE)
 
 
 #View(MAXENT.SUMMARY.TABLE)
@@ -358,7 +380,7 @@ identical(MAXENT.SUMMARY.NICHE$searchTaxon, GBIF.spp)
 
 #########################################################################################################################
 ## Save - could add date as a sprintf variable to save multiple versions?
-## write.csv(MAXENT.SUMMARY, "./output/maxent/MAXENT_SUMMARY_JULY_2016.csv", row.names = FALSE)
+## write.csv(MAXENT.SUMMARY.NICHE, "./output/maxent/MAXENT_SUMMARY_JULY_2016.csv", row.names = FALSE)
 
 
 

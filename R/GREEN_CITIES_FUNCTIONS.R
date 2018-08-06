@@ -829,10 +829,12 @@ gbif.keep <- c(## TAXONOMY
 ALA.keep <- c(## TAXONOMY
   "scientificName",
   "taxonRank",
+  "rank",
   "genus",
   "family",
   
   ## CULTIVATION
+  "occCultivatedEscapee",
   "basisOfRecord",
   "locality",
   "establishmentMeans",
@@ -844,15 +846,27 @@ ALA.keep <- c(## TAXONOMY
   ## RECORD ID
   "recordedBy",
   "id",
+  "identificationID",
+  "identifiedBy",
   "occurrenceID",
   "catalogNumber",
+  "basisOfRecord",
+  "institutionCode",
   
   ## PLACE/TIME
   "latitude",
   "longitude",
-  "coordinateUncertaintyInMetres",                                                       
+  "lat",
+  "lon",
+  "coordinateUncertaintyInMetres",
+  "coordinateUncertaintyInMeters",
+  "zeroCoordinates",
   "country",
+  "state",
   "IBRA7Regions",
+  "IBRA.7.Subregions",
+  "localGovernmentAreas",
+  "locality",
   "geodeticDatum",
   "year",
   "month",

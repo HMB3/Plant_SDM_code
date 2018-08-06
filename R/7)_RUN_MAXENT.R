@@ -75,7 +75,7 @@ xres(template.raster);yres(template.raster)
 
 
 ## Save the SDM dataset here............................................................................................
-saveRDS(SDM.DATA.ALL, 'data/base/HIA_LIST/COMBO/SDM_DATA_INV_HIA.rds')
+#saveRDS(SDM.DATA.ALL, 'data/base/HIA_LIST/COMBO/SDM_DATA_INV_HIA.rds')
 
 
 #########################################################################################################################
@@ -133,19 +133,12 @@ identical(names(env.grids.current),sdm.predictors)
 
 #########################################################################################################################
 ## Run Maxent using a random selection of background points. 
-## synonyms = c("Waterhousea floribunda", "Sannantha virgata", "Callistemon citrinus")
-## 'Angophora costata' %in% SDM.DATA.ALL$searchTaxon  
 length(unique(SDM.DATA.ALL$searchTaxon))
 projection(template.raster);projection(SDM.DATA.ALL);projection(Koppen_1975)
 
 
-## Change this to be just the species without bias.......................................................................
-## Create new variable for analysis species - hence SDM.DATA.ALL needs to be update each time...........................
-analysis.spp = unique(SDM.DATA.ALL$searchTaxon)   ## could use this in future
-
-
-## Loop over all the species spp = spp.combo[31]
-lapply(analysis.spp, function(spp){ 
+## Loop over all the species
+lapply(GBIF.spp, function(spp){ 
   
   ## Skip the species if the directory already exists, before the loop
   outdir <- out_dir
@@ -198,7 +191,6 @@ lapply(analysis.spp, function(spp){
   }  
   
 })
-
 
 
 
@@ -301,40 +293,40 @@ lapply(test.bias, function(spp){
 ## OUTSTANDING SDM TASKS:
 #########################################################################################################################
 
+
 ## 1). 100/200 tree spp that are commonly planted and traded, with sufficient spatial data to model robustly. 
-##     Plan figures and tables for MS
+##     Plan figures and tables for MS. Done
 
 
 ## 2). Re-download ALA data : 
-##     The species names are not clean. Can the ALA and GBIF data be filtered in the same way using John's code?
-##     Could create a lookup table the same way Alessandro did. But there are 2.5 million records
-##     The current approach produces mostly correct records. So easiest to stick to that, combining John's data.
+##     How did John create the data? My ALA download is not the same as his, even before filtering
+##     Create a lookup table for GBIF and ALA togehter, the same way Alessandro did. Clean this and use for the modelling
 
 
-## 3). Thinned records for ~ 40 spp with boundary bias, using the SDM tool box:
+## 3). Thin records for 28 spp with boundary bias, using the SDM tool box:
 
-##     Classify some species as not biased
+##     Settings: Max 3km, min 1km, 5 heterogeneity classes (from a classification of a PCA, using the worldclim layers)
 
 ##     Also, need to increase the number of species so there are more background records.
 ##     These don't matter at all, so could be from an earlier file, just add in at step 7
 
-##     Spatially thin the background records as well - ArcMap fails at this
+##     Spatially thin the background records as well? Try a geodatabse, same settings.
 
-## 4). Use more forgiving thresholds (10%) for all species
+## 4). Use more forgiving thresholds (10%) for all species: Done
 ##     "X10.percentile.training.presence.Logistic.threshold"
 ##     "X10.percentile.training.presence.training.omission"
   
 ## 5). Combine output: Table
 ##     "searchTaxon" "No.plantings" "Number.of.growers" "Number.of.States/LGAs/Koppen zones" "Origin" "AUC" "TSS" 
 
-##     Maps : unique raster values for
-##     current_suit_above
-##     2030_4GCMs_above
-##     2050_4GCMs_above
-##     2070_4GCMs_above
+##     Maps: unique raster values for (search in explorer)
+##     "current_suit_above"
+##     "2030_4GCMs_above"
+##     "2050_4GCMs_above"
+##     "2070_4GCMs_above"
 
    
-## 6). Check combined maps for all species
+## 6). Check combined maps for all species : make sure step 9 is working
 
 
 
