@@ -32,6 +32,11 @@ rasterTmpFile()
 
 #########################################################################################################################
 ## Create a table with all the variables
+dim(CLEAN.TRUE)
+length(unique(CLEAN.TRUE$searchTaxon))
+
+
+## Which columns
 COMBO.RASTER.ALL  <- dplyr::select(CLEAN.TRUE, searchTaxon, lon, lat,
                                    
                                    Annual_mean_temp,     Mean_diurnal_range,  Isothermality,     Temp_seasonality, 

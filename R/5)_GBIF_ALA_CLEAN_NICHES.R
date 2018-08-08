@@ -49,8 +49,8 @@ FLAGS  <- CleanCoordinates(TIB.GBIF,
 
 
 ## save/load the flags
-#saveRDS(FLAGS, 'data/base/HIA_LIST/COMBO/COMBO_GBIF_FLAGS.rds')
-# FLAGS = readRDS('data/base/HIA_LIST/COMBO/COMBO_GBIF_FLAGS.rds')
+saveRDS(FLAGS, 'data/base/HIA_LIST/COMBO/ALA_GBIF_FLAGS.rds')
+#FLAGS = readRDS('data/base/HIA_LIST/COMBO/ALA_GBIF_FLAGS.rds')
 
 
 ## Flagging ~ 1.64%, excluding the spatial outliers. Seems reasonable?
@@ -78,7 +78,7 @@ message(round(summary(FLAGS)[8]/dim(FLAGS)[1]*100, 2), " % records removed")
 ## Try adding a loop which combines species flags.................................................................
 
 ## Create a table of the results 
-SPAT.OUT <- GBIF.spp %>%         
+SPAT.OUT <- GBIF.spp[1:3] %>%         
   
   ## pipe the list into lapply
   lapply(function(x) {
@@ -96,13 +96,10 @@ SPAT.OUT <- GBIF.spp %>%
                        tdi     = 1000,
                        value   = "flags")
     
-    ## Now add a model column
-    d = cbind(sp.flag,
-      searchTaxon = x)  ## see step 7, make a variable for multiple runs
-    dim(d)
-    
-    ## Bind the data together
+    ## Now add a model column. Should we drop memory?
+    d = data.frame(searchTaxon = x, sp.flag)  ## see step 7, make a variable for multiple runs
     d
+    gc() ## Free some RAM
     
   }) %>%
   
@@ -111,66 +108,8 @@ SPAT.OUT <- GBIF.spp %>%
 
 
 ## Save data
-saveRDS(GBIF.SPAT.OUT, 'data/base/HIA_LIST/COMBO/SPAT_OUT/TREE_INV_SPAT_OUT.rds')
-
-
-#########################################################################################################################
-## Then split the data into n maneageable subsets to check the spatial outliers, but just for the 120 modelled species
-# TIB.MILE  = subset(TIB.GBIF, species = "Acacia baileyan")
-# 
-# 
-# ## 8 subsets of 15 species each
-# n = 8
-# dim(TIB.MILE)[1]/n
-# REP <- rep(1:n, each = round(dim(TIB.MILE)[1]/n, digits = 0))
-# REP <- head(REP, dim(TIB.MILE)[1])
-# 
-# identical(dim(TIB.MILE)[1], length(REP))
-# head(REP)
-# tail(REP)
-# 
-# 
-# ## If the vector is a non factoris-abubble length, make it the same
-# dim(TIB.MILE)[1] - length(REP)
-# REP <- c(REP, rep(n, dim(TIB.MILE)[1] - length(REP)))
-# dim(TIB.MILE)[1] - length(REP)
-# TIB.MILE$REP = REP
-# head(TIB.MILE$REP);tail(TIB.MILE$REP)
-# 
-# 
-# ## Could create a list of data frames :: save data to run multiple sessions
-# ## 100k points shouldn't be too bad to process
-# OUT <- split( TIB.MILE , f = TIB.MILE$REP )
-# dim(OUT[[1]]);dim(OUT[[4]]);dim(OUT[[8]])
-
-
-
-
-#########################################################################################################################
-## Now run the spatial clean on each list element :: one at a time because it is too big
-## For all elements
-# GBIF.SPAT.OUT = sapply( OUT , function(x) cc_outl( x,
-#                                                    lon     = "decimallongitude",
-#                                                    lat     = "decimallatitude",
-#                                                    species = "species",
-#                                                    method  = "quantile",
-#                                                    mltpl   = 5,
-#                                                    tdi     = 1000,
-#                                                    value   = "flags") )
-
-test = subset(TIB.GBIF, species == "Acacia baileyana")
-# GBIF.SPAT.OUT = cc_outl(TIB.GBIF,
-#                         lon     = "decimallongitude",
-#                         lat     = "decimallatitude",
-#                         species = "species",
-#                         method  = "quantile",
-#                         mltpl   = 5,
-#                         tdi     = 1000,
-#                         value   = "flags")
-
-
-# ## Save spatial outliers
-saveRDS(GBIF.SPAT.OUT, 'data/base/HIA_LIST/COMBO/SPAT_OUT/TREE_INV_SPAT_OUT.rds')
+head(SPAT.OUT)
+saveRDS(SPAT.OUT, 'data/base/HIA_LIST/COMBO/SPAT_OUT/TREE_INV_SPAT_OUT.rds')
 
 
 #########################################################################################################################
@@ -181,7 +120,10 @@ identical(COMBO.RASTER.CONVERT$searchTaxon, FLAGS$coord_spp)                    
 identical(dim(FLAGS)[1], dim(GBIF.TRIM.GEO)[1])
 
 
+#########################################################################################################################
+## This bind might introduce some NA's
 TEST.GEO = cbind(COMBO.RASTER.CONVERT, FLAGS)#, GBIF.SPAT.OUT)
+summary(TEST.GEO)
 identical(TEST.GEO$searchTaxon, TEST.GEO$coord_spp)                                                     ## order matches
 
 
@@ -245,8 +187,11 @@ message(round(dim(CLEAN.TRUE)[1]/dim(TEST.GEO)[1]*100, 2), " % records retained"
 
 #########################################################################################################################
 ## Now bind on the urban tree inventory data. We are assuming this data is clean, after we manually fix the taxonomy
-## First remove the extra species
+## First remove the extra species:
 TI.XY.SPP  = TI.XY[TI.XY$searchTaxon %in% GBIF.spp, ]
+
+
+## NA's come in here :: why are the urban data outside the worldclim layers?
 CLEAN.TRUE = bind_rows(CLEAN.TRUE, TI.XY.SPP)
 names(CLEAN.TRUE)
 unique(CLEAN.TRUE$SOURCE) 

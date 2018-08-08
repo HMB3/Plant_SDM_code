@@ -32,7 +32,10 @@ length(unique(background$searchTaxon));dim(background)
 #########################################################################################################################
 ## Load GBIF data and rain shapefile
 BIAS.DATA.ALL        = readRDS("./data/base/HIA_LIST/COMBO/SDM_DATA_INV_HIA.rds") 
-SPP.BIAS             = intersect(SPP.BIAS, GBIF.spp)    ## just re-run the models for species on the list
+summary(BIAS.DATA.ALL)
+
+
+SPP.BIAS             = intersect(SPP.BIAS, GBIF.spp)              ## just re-run the models for species on the list
 SPP_BIAS             = gsub(" ", "_", SPP.BIAS)
 length(unique(BIAS.DATA.ALL$searchTaxon))
  
@@ -155,7 +158,7 @@ for (i in 1:length(SPP.BIAS)) {
   
   ## Print to file
   save_name = gsub(' ', '_', SPP.BIAS[i])
-  save_dir  = "data/base/HIA_LIST/COMBO/BIASED"
+  save_dir  = "output/maxent/CHECK_MAPS_LATEST"
   png(sprintf('%s/%s_%s.png', save_dir,
               save_name, "Australian_points"),
       3236, 2000, units = 'px', res = 300)
