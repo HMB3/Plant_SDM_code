@@ -17,56 +17,19 @@
 rasterTmpFile()
 
 
-#########################################################################################################################
-## 1). CHECK DATA FOR AN EXAMPLE SPECIES...
-#########################################################################################################################
-
-
-## Load GBIF data
-# COMBO.RASTER.CONVERT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_APRIL_2018.rds")
-# COMBO.NICHE.CONTEXT  = readRDS("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_STANDARD_CLEAN.rds")
-names(COMBO.RASTER.CONVERT)
-length(unique(COMBO.RASTER.CONVERT$searchTaxon))
-
-
-## Restrict ALA data to just those species on the big list
-HIA.SPP.JOIN     = CLEAN.SPP
-HIA.SPP.JOIN     = dplyr::rename(HIA.SPP.JOIN, searchTaxon = Binomial)
-
-
-## Set NA to blank, then sort by no. of growers to get them to the top
-HIA.SPP.JOIN[is.na(HIA.SPP.JOIN)] <- 0
-HIA.SPP.JOIN = HIA.SPP.JOIN[with(HIA.SPP.JOIN, rev(order(Number.of.growers))), ]
-head(HIA.SPP.JOIN[, c("searchTaxon", "Number.of.growers")])
-#View(HIA.SPP.JOIN)
-
-
-
-
 
 #########################################################################################################################
-## 2). NOW, CLEAN WHOLE DATASET
+## 1). FLAG GBIF OUTLIERS
 #########################################################################################################################
 
 
 #########################################################################################################################
-## FLAG GBIF OUTLIERS
-#########################################################################################################################
-
-
-#########################################################################################################################
-## Rename the columns to fit the CleanCoordinates format
+## Rename the columns to fit the CleanCoordinates format and create a tibble
 str(unique(COMBO.RASTER.CONVERT$searchTaxon))
-GBIF.TRIM.GEO = dplyr::rename(COMBO.RASTER.CONVERT, 
-                              species = searchTaxon,
-                              decimallongitude = lon, 
-                              decimallatitude  = lat)
-
-
-## The ?CleanCoordinates function needs to work on a tibble, for some reason !
-TIB.GBIF <- timetk::tk_tbl(GBIF.TRIM.GEO)
-dim(TIB.GBIF)
-str(unique(TIB.GBIF$species))
+TIB.GBIF<- COMBO.RASTER.CONVERT %>% dplyr::rename(species          = searchTaxon,
+                                                  decimallongitude = lon, 
+                                                  decimallatitude  = lat) %>%
+  timetk::tk_tbl()
 
 
 ## I've already stripped out the records that fall outside
@@ -104,13 +67,56 @@ message(round(summary(FLAGS)[8]/dim(FLAGS)[1]*100, 2), " % records removed")
 
 
 #########################################################################################################################
-## 3). FLAG SPATIAL OUTLIERS
+## 2). FLAG SPATIAL OUTLIERS
 #########################################################################################################################
+
+
+## This is not working, chews up all the RAM. Contact Alex Zika for more info RE the memory leak........................
+## alexander.zizka@bioenv.gu.se 
+
+
+## Try adding a loop which combines species flags.................................................................
+
+## Create a table of the results 
+SPAT.OUT <- GBIF.spp %>%         
+  
+  ## pipe the list into lapply
+  lapply(function(x) {
+    
+    ## Create the character string
+    f <- subset(TIB.GBIF, species == x)
+    
+    ## Load each .RData file
+    sp.flag <- cc_outl(f,
+                       lon     = "decimallongitude",
+                       lat     = "decimallatitude",
+                       species = "species",
+                       method  = "quantile",
+                       mltpl   = 5,
+                       tdi     = 1000,
+                       value   = "flags")
+    
+    ## Now add a model column
+    d = cbind(sp.flag,
+      searchTaxon = x)  ## see step 7, make a variable for multiple runs
+    dim(d)
+    
+    ## Bind the data together
+    d
+    
+  }) %>%
+  
+  ## Finally, bind all the rows together
+  bind_rows
+
+
+## Save data
+saveRDS(GBIF.SPAT.OUT, 'data/base/HIA_LIST/COMBO/SPAT_OUT/TREE_INV_SPAT_OUT.rds')
 
 
 #########################################################################################################################
 ## Then split the data into n maneageable subsets to check the spatial outliers, but just for the 120 modelled species
-# TIB.MILE  = TIB.GBIF[TIB.GBIF$species %in% spp.mile, ] 
+# TIB.MILE  = subset(TIB.GBIF, species = "Acacia baileyan")
 # 
 # 
 # ## 8 subsets of 15 species each
@@ -138,8 +144,6 @@ message(round(summary(FLAGS)[8]/dim(FLAGS)[1]*100, 2), " % records removed")
 # dim(OUT[[1]]);dim(OUT[[4]]);dim(OUT[[8]])
 
 
-#save.image("STEP_5_COORD_CLEAN.RData")
-#load("STEP_COORD_CLEAN.RData")
 
 
 #########################################################################################################################
@@ -153,10 +157,20 @@ message(round(summary(FLAGS)[8]/dim(FLAGS)[1]*100, 2), " % records removed")
 #                                                    mltpl   = 5,
 #                                                    tdi     = 1000,
 #                                                    value   = "flags") )
-# 
-# 
+
+test = subset(TIB.GBIF, species == "Acacia baileyana")
+# GBIF.SPAT.OUT = cc_outl(TIB.GBIF,
+#                         lon     = "decimallongitude",
+#                         lat     = "decimallatitude",
+#                         species = "species",
+#                         method  = "quantile",
+#                         mltpl   = 5,
+#                         tdi     = 1000,
+#                         value   = "flags")
+
+
 # ## Save spatial outliers
-# saveRDS(GBIF.SPAT.OUT, 'data/base/HIA_LIST/COMBO/SPAT_OUT/SPAT_OUT.rds')
+saveRDS(GBIF.SPAT.OUT, 'data/base/HIA_LIST/COMBO/SPAT_OUT/TREE_INV_SPAT_OUT.rds')
 
 
 #########################################################################################################################
@@ -188,7 +202,7 @@ identical(TEST.GEO$searchTaxon, TEST.GEO$coord_spp)                             
 
 
 #########################################################################################################################
-## 4). SUBSET FOR THE NICHES : JUST USE COORDCLEAN SUMMARY
+## 3). SUBSET FOR THE NICHES : JUST USE COORDCLEAN SUMMARY
 #########################################################################################################################
 
 
@@ -229,29 +243,31 @@ length(unique(CLEAN.TRUE$searchTaxon))
 message(round(dim(CLEAN.TRUE)[1]/dim(TEST.GEO)[1]*100, 2), " % records retained")                                               
 
 
-
 #########################################################################################################################
-## Now bind on the urban tree inventory data
-#########################################################################################################################
-CLEAN.TRUE = bind_rows(CLEAN.TRUE, TI.XY)
+## Now bind on the urban tree inventory data. We are assuming this data is clean, after we manually fix the taxonomy
+## First remove the extra species
+TI.XY.SPP  = TI.XY[TI.XY$searchTaxon %in% GBIF.spp, ]
+CLEAN.TRUE = bind_rows(CLEAN.TRUE, TI.XY.SPP)
 names(CLEAN.TRUE)
 unique(CLEAN.TRUE$SOURCE) 
 unique(CLEAN.TRUE$INVENTORY) 
-
-
-## Now remove the extraneous species
-CLEAN.TRUE  = CLEAN.TRUE [CLEAN.TRUE$searchTaxon %in% unique(GBIF.LAND$searchTaxon), ]
 length(unique(CLEAN.TRUE$searchTaxon))
 
 
-## This unique ID column can be applied across the project  
+## Then create a unique ID column which can be used to identify outlier records 
 CLEAN.TRUE$OBS <- 1:nrow(CLEAN.TRUE)
 dim(CLEAN.TRUE)[1];length(CLEAN.TRUE$OBS)  
 identical(dim(CLEAN.TRUE)[1], length(CLEAN.TRUE$OBS))
 
 
 ## How many records are added by including the tree inventories?
-message("Records increased by ", round(dim(CLEAN.TRUE)[1]/dim(TEST.GEO)[1]*100, 2), " % ")     
+message("Tree inventory data increases records by ", round(dim(CLEAN.TRUE)[1]/dim(TEST.GEO)[1]*100, 2), " % ")     
+
+
+## Save the clean species
+## Plot new combined data to check for bias in "SAVE_BIASED_SPDF.R".....................................................
+saveRDS(TEST.GEO,    'data/base/HIA_LIST/COMBO/CLEAN_FLAGS_INV_SPP.rds')
+saveRDS(CLEAN.TRUE,  'data/base/HIA_LIST/COMBO/CLEAN_ONLY_INV_SPP.rds')
 
 
 
@@ -572,6 +588,24 @@ length(COMBO.NICHE.CONTEXT$searchTaxon)
 # saveRDS(CLEAN.TRUE,              'data/base/HIA_LIST/COMBO/CLEAN_ONLY_HIA_SPP.rds')
 # saveRDS(CLEAN.NICHE.CONTEXT,     'data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_COORD_CLEAN.rds')
 # write.csv(CLEAN.NICHE.CONTEXT,   "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_COORD_CLEAN.csv", row.names = FALSE)
+
+
+
+
+
+#########################################################################################################################
+## OUTSTANDING CLEANING TASKS:
+#########################################################################################################################
+
+
+## Check the spatial outlier function works. Try doing it one species at a time, then stich the table back together
+
+## Check distribution maps for each species for spatial outliers  - Keep a spreasheet of all species...
+
+## Estimate native/naturalised ranges as a separate colum         - Rachael's package
+
+## GBIF taxonomic errors                                          - Use TPL
+
 
 
 

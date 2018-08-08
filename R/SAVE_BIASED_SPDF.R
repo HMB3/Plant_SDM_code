@@ -31,7 +31,7 @@ length(unique(background$searchTaxon));dim(background)
 
 #########################################################################################################################
 ## Load GBIF data and rain shapefile
-BIAS.DATA.ALL        = readRDS("./data/base/HIA_LIST/COMBO/SDM_DATA_INV_HIA.rds")
+BIAS.DATA.ALL        = readRDS("./data/base/HIA_LIST/COMBO/SDM_DATA_INV_HIA.rds") 
 SPP.BIAS             = intersect(SPP.BIAS, GBIF.spp)    ## just re-run the models for species on the list
 SPP_BIAS             = gsub(" ", "_", SPP.BIAS)
 length(unique(BIAS.DATA.ALL$searchTaxon))
@@ -192,11 +192,11 @@ dim(TREES.BIAS);head(TREES.BIAS, 40)
 
 #########################################################################################################################
 ## Read the bias file back in :
-# BIAS.RAREFY = readOGR("H:/green_cities_sdm/data/base/HIA_LIST/COMBO/RAREFY_SPP/SPAT_OUT/ALL_TREE_INV_spatially_rarified_locs.shp",
-#                       layer = "ALL_TREE_INV_spatially_rarified_locs")
+## H:\green_cities_sdm\data\base\HIA_LIST\COMBO\RAREFY_SPP\SPAT_OUT\ALL_TREE_INV_2KM_spatially_rarified_locs.shp
+BIAS.RAREFY = readOGR("H:/green_cities_sdm/data/base/HIA_LIST/COMBO/RAREFY_SPP/SPAT_OUT/ALL_TREE_INV_2KM_spatially_rarified_locs.shp",
+                      layer = "ALL_TREE_INV_2KM_spatially_rarified_locs")
 # saveRDS(BIAS.RAREFY,    'data/base/HIA_LIST/COMBO/RAREFY_SPP/SPAT_OUT/BIAS_RAREFY.rds')
-
-BIAS.RAREFY       = readRDS('./data/base/HIA_LIST/COMBO/RAREFY_SPP/SPAT_OUT/BIAS_RAREFY.rds')
+# BIAS.RAREFY       = readRDS('./data/base/HIA_LIST/COMBO/RAREFY_SPP/SPAT_OUT/BIAS_RAREFY.rds')
 class(BIAS.RAREFY)
 names(BIAS.RAREFY)
 
@@ -265,7 +265,7 @@ for (i in 1:length(SPP.BIAS)) {
 
 
 ## save as 
-saveRDS(BIAS.RAREFY, 'data/base/HIA_LIST/COMBO/RAREFY_SPP/SPAT_OUT/SDM_DATA_BIAS.rds')
+saveRDS(BIAS.RAREFY, 'data/base/HIA_LIST/COMBO/RAREFY_SPP/SPAT_OUT/SDM_TREES_RAREFY.rds')
 
 
 

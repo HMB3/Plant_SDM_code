@@ -115,25 +115,24 @@ ALA.TREES.TRIM <- spp.download %>%   ## spp.download[c(1:length(spp.download))]
 
 
 ## Check the output :: how does this compare to John's 
-sort(names(ALA.TREES))
-dim(ALA.TREES)
-length(unique(ALA.TREES$scientificName))
-length(unique(ALA.TREES$searchTaxon))
-sort(unique(ALA.TREES$scientificName))
+sort(names(ALA.TREES.TRIM))
+dim(ALA.TREES.TRIM)
+length(unique(ALA.TREES.TRIM$scientificName))
+length(unique(ALA.TREES.TRIM$searchTaxon))
+sort(unique(ALA.TREES.TRIM$scientificName))
 
 
-## How can this be cleaned?
-## How do the searched and returned items compare?
-head(ALA.TREES, 100)[, c("scientificName",
-                         "searchTaxon")]
+## How can this be cleaned
+head(ALA.TREES.TRIM, 10)[, c("scientificName",
+                             "searchTaxon")]
 
-tail(ALA.TREES, 100)[, c("scientificName",
-                         "searchTaxon")]
+tail(ALA.TREES.TRIM, 10)[, c("scientificName",
+                             "searchTaxon")]
 
 ## Check the lat/lon
-class(ALA.TREES$lat)
-summary(ALA.TREES$lat)
-summary(ALA.TREES$lon)
+class(ALA.TREES.TRIM$lat)
+summary(ALA.TREES.TRIM$lat)
+summary(ALA.TREES.TRIM$lon)
 
 
 #########################################################################################################################
@@ -154,16 +153,16 @@ setdiff(ALA.keep, names(ALA.TREES.TRIM))
 
 #########################################################################################################################
 ## Use "Taxonstand" to check the taxonomy. However, this also assumes that the ALA data is clean
-ALA.TREES.TAXO <- TPL(unique(ALA.TREES$scientificName), infra = TRUE,
+ALA.TAXO <- TPL(unique(ALA.TREES.TRIM$scientificName), infra = TRUE,
                 corr = TRUE, repeats = 100)  ## to stop it timing out...
-sort(names(ALA.TREES.TAXO))
+sort(names(ALA.TAXO))
 
 
 # #########################################################################################################################
 # ## Use "Taxonstand" to check the taxonomy. However, this also assumes that the ALA data is clean
-# ALA.TREES.TAXO <- TPL(unique(ALA.TRIM$scientificName), infra = TRUE,
+# ALA.TREES.TRIM.TAXO <- TPL(unique(ALA.TRIM$scientificName), infra = TRUE,
 #                  corr = TRUE, repeats = 100)  ## to stop it timing out...
-# sort(names(ALA.TREES.TAXO))
+# sort(names(ALA.TREES.TRIM.TAXO))
 
 
 #########################################################################################################################
@@ -175,8 +174,8 @@ sort(names(ALA.TREES.TAXO))
 
 
 ## Then join the ALA data to the taxonomic check, using "scientificName" as the join field...
-ALA.TREES.TRIM <- ALA.TREES.TRIM %>%
-  left_join(., ALA.TREES.TAXO, by = c("scientificName" = "Taxon"))
+ALA.TREES.TAXO <- ALA.TREES.TRIM %>%
+  left_join(., ALA.TAXO, by = c("scientificName" = "Taxon"))
 
 
 ## So we can filter by the agreement between "scientificName", and "New.Taxonomic.status"?
@@ -187,25 +186,25 @@ ALA.TREES.TRIM <- ALA.TREES.TRIM %>%
 #########################################################################################################################
 ## Now create a column for the agreement between the new genus and the old genus
 ## First, trim the spaces out
-ALA.TREES.TRIM$scientificName  = trimws(ALA.TREES.TRIM$scientificName)
+ALA.TREES.TAXO$scientificName  = trimws(ALA.TREES.TAXO$scientificName)
 
 
 ## Then combine the genus and species returned by TPL into
-ALA.TREES.TRIM$TPL_binomial  = with(ALA.TREES.TRIM, paste(New.Genus, New.Species, sep = " "))
+ALA.TREES.TAXO$TPL_binomial  = with(ALA.TREES.TAXO, paste(New.Genus, New.Species, sep = " "))
 
 
 ## Now match the searchTaxon with the binomial returned by TPL :: this would be the best field to filter on
-ALA.TREES.TRIM$taxo_agree <- ifelse(
-  ALA.TREES.TRIM$scientificName == ALA.TREES.TRIM$TPL_binomial, TRUE, FALSE)
+ALA.TREES.TAXO$taxo_agree <- ifelse(
+  ALA.TREES.TAXO$scientificName == ALA.TREES.TAXO$TPL_binomial, TRUE, FALSE)
 
 
 ## How many species agree?
-round(with(ALA.TREES.TRIM, table(taxo_agree)/sum(table(taxo_agree))*100), 1)
-round(with(ALA.TREES.TRIM, table(New.Taxonomic.status)/sum(table(New.Taxonomic.status))*100), 1)
+round(with(ALA.TREES.TAXO, table(taxo_agree)/sum(table(taxo_agree))*100), 1)
+round(with(ALA.TREES.TAXO, table(New.Taxonomic.status)/sum(table(New.Taxonomic.status))*100), 1)
 
 
 ## Also keep the unresolved records:
-ALA.TREES.UNRESOLVED <- ALA.TREES.TRIM %>%
+ALA.TAXO.UNRESOLVED <- ALA.TREES.TAXO %>%
   
   ## Note that these filters are very forgiving...
   ## Unless we include the NAs, very few records are returned!
@@ -213,7 +212,7 @@ ALA.TREES.UNRESOLVED <- ALA.TREES.TRIM %>%
 
 
 ## Also keep the unresolved records:
-ALA.TREES.RESOLVED <- ALA.TREES.TRIM %>%
+ALA.TAXO.RESOLVED <- ALA.TREES.TAXO %>%
   
   ## Note that these filters are very forgiving...
   ## Unless we include the NAs, very few records are returned!
@@ -221,7 +220,7 @@ ALA.TREES.RESOLVED <- ALA.TREES.TRIM %>%
 
 
 ## Also keep the unresolved records:
-ALA.TREES.TAXO.DISAGREE <- ALA.TREES.TRIM %>%
+ALA.TAXO.DISAGREE <- ALA.TREES.TAXO %>%
   
   ## Note that these filters are very forgiving...
   ## Unless we include the NAs, very few records are returned!
@@ -231,27 +230,27 @@ ALA.TREES.TAXO.DISAGREE <- ALA.TREES.TRIM %>%
 
 #########################################################################################################################
 ## What do examples of resolved and unresolved records look like?
-head(ALA.TREES.UNRESOLVED, 50)[, c("scientificName", 
+head(ALA.TREES.TAXO, 10)[, c("scientificName", 
                              "TPL_binomial",
                              "taxo_agree",
                              "New.Taxonomic.status")]
 
 
-head(ALA.TREES.RESOLVED, 50)[, c("scientificName", 
-                           "TPL_binomial",
-                           "taxo_agree",
-                           "New.Taxonomic.status")]
+head(ALA.TAXO.RESOLVED, 10)[, c("scientificName", 
+                                "TPL_binomial",
+                                "taxo_agree",
+                                "New.Taxonomic.status")]
 
 
-head(ALA.TREES.TAXO.DISAGREE, 50)[, c("scientificName", 
+head(ALA.TAXO.DISAGREE, 10)[, c("scientificName", 
                                 "TPL_binomial",
                                 "taxo_agree",
                                 "New.Taxonomic.status")]
 
 
 ## Also keep the managed records:
-unique(ALA.TREES.UNRESOLVED$New.Taxonomic.status)
-dim(ALA.TREES.UNRESOLVED)   ## 1.2 million unresolved records, quite a lot!
+unique(ALA.TAXO.UNRESOLVED$New.Taxonomic.status)
+dim(ALA.TAXO.UNRESOLVED)   ##
 
 
 
@@ -265,8 +264,7 @@ dim(ALA.TREES.UNRESOLVED)   ## 1.2 million unresolved records, quite a lot!
 #########################################################################################################################
 ## Create a table which counts the number of records meeting each criteria:
 ## Note that TRUE indicates there is a problem (e.g. if a record has no lat/long, it will = TRUE)
-ALA.TREES.TRIM.TAXO = ALA.TREES.TRIM
-ALA.TREES.PROBLEMS <- with(ALA.TREES.TRIM.TAXO,
+ALA.TREES.PROBLEMS <- with(ALA.TREES.TAXO,
                       
                       table(
                         
@@ -315,7 +313,7 @@ ALA.TREES.PROBLEMS <- with(ALA.TREES.TRIM.TAXO,
 
 #########################################################################################################################
 ## Now filter the ALA records using conditions which are not too restrictive
-ALA.TREES.CLEAN <- ALA.TREES.TRIM.TAXO %>% 
+ALA.TREES.CLEAN <- ALA.TREES.TAXO %>% 
   
   ## Note that these filters are very forgiving...
   ## Unless we include the NAs, very few records are returned!
@@ -399,6 +397,10 @@ records.ocean = dim(ALA.TREES.CLEAN)[1] - dim(ALA.TREES.LAND)[1]  ## 91575 recor
 ## Print the dataframe dimensions to screen
 dim(ALA.TREES.LAND)
 length(unique(ALA.TREES.LAND$searchTaxon))
+
+
+## Add a source column
+ALA.TREES.LAND$SOURCE = 'ALA'
 
 
 ## Free some memory

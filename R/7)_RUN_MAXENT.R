@@ -203,8 +203,9 @@ lapply(GBIF.spp, function(spp){
 
 #########################################################################################################################
 ## Run Maxent using a random selection of background points. 
-SDM.DATA.BIAS = readRDS('./data/base/HIA_LIST/COMBO/RAREFY_SPP/SPAT_OUT/SDM_DATA_BIAS.rds')
+SDM.DATA.BIAS = readRDS('./data/base/HIA_LIST/COMBO/RAREFY_SPP/SPAT_OUT/SDM_TREES_RAREFY.rds')
 length(unique(SDM.DATA.BIAS$searchTaxon)) 
+dim(SDM.DATA.BIAS)
 projection(template.raster);projection(SDM.DATA.BIAS);projection(Koppen_1975)
 
 
@@ -218,21 +219,16 @@ identical(names(background.bias), names(SDM.DATA.BIAS))
 ## Now bind on the background points............................................................................................
 intersect(sort(unique(SDM.DATA.BIAS$searchTaxon)), sort(unique(background$searchTaxon)))
 SDM.DATA.BIAS = rbind(SDM.DATA.BIAS, background.bias)
-dim(SDM.DATA.BIAS)
-
-
-## List of biased species
-SPP.BIAS             = intersect(SPP.BIAS, GBIF.spp)    ## just re-run the models for species on the list
-SPP_BIAS             = gsub(" ", "_", SPP.BIAS)
+names(SDM.DATA.BIAS)
 
 
 ## Change the output directory
-out_dir       = 'output/maxent/SPP_RAREFY'
+out_dir       = 'output/maxent/SPP_RAREFY_3KM'
 
 
 #########################################################################################################################
 ## Loop over all the species spp = test.bias[1]
-lapply(test.bias, function(spp){
+lapply(GBIF.spp, function(spp){
 
   ## Skip the species if the directory already exists, before the loop
   outdir <- out_dir
@@ -250,7 +246,7 @@ lapply(test.bias, function(spp){
     occurrence <- subset(SDM.DATA.BIAS, searchTaxon == spp)
 
     ## Now get the background points. These can come from any spp, other than the modelled species.
-    background <- subset(background.bias, searchTaxon != spp)
+    background <- subset(SDM.DATA.BIAS, searchTaxon != spp)
 
     ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
     tryCatch(

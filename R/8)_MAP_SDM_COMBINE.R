@@ -295,7 +295,8 @@ dim(subset(MAXENT.RESULTS, Training.AUC < 0.7))  ## all models should be above 0
 
 ## Are the TSS values ok - 
 hist(MAXENT.RESULTS$max_tss)
-plot(MAXENT.RESULTS$Training.AUC, MAXENT.RESULTS$max_tss)
+plot(MAXENT.RESULTS$Training.AUC, MAXENT.RESULTS$max_tss, pch = 19, col  = "blue",
+    xlab = "AUC", ylab = "TSS")
 
 
 ## Now check the match between the species list, and the results list. These need to match, so we can access
@@ -380,7 +381,7 @@ identical(MAXENT.SUMMARY.NICHE$searchTaxon, GBIF.spp)
 
 #########################################################################################################################
 ## Save - could add date as a sprintf variable to save multiple versions?
-## write.csv(MAXENT.SUMMARY.NICHE, "./output/maxent/MAXENT_SUMMARY_JULY_2016.csv", row.names = FALSE)
+## write.csv(MAXENT.SUMMARY.NICHE, "./output/maxent/MAXENT_SUMMARY_CAMPBELLTOWN_SPP.csv", row.names = FALSE)
 
 
 

@@ -222,7 +222,7 @@ GBIF.TRIM.TAXO <- GBIF.TRIM %>%
 saveRDS(GBIF.TAXO,       file = paste("./data/base/HIA_LIST/GBIF/SUA_TREES_GBIF_TAXO.rds"))
 saveRDS(GBIF.TRIM.TAXO,  file = paste("./data/base/HIA_LIST/GBIF/SUA_TREES_GBIF_TRIM_TAXO.rds"))
 write.csv(GBIF.TRIM.TAXO,             "./data/base/HIA_LIST/GBIF/SUA_TREES_GBIF_TRIM_TAXO.csv", row.names = FALSE)
-write.csv(GBIF.LUT,                   "./data/base/HIA_LIST/GBIF/SUA_TREES_GBIF_LUT.csv",       row.names = FALSE)
+#write.csv(GBIF.LUT,                   "./data/base/HIA_LIST/GBIF/SUA_TREES_GBIF_LUT.csv",       row.names = FALSE)
 
 
 
@@ -472,7 +472,7 @@ gc()
 
 #########################################################################################################################
 ## save data
-#saveRDS(GBIF.LAND, file = paste("./data/base/HIA_LIST/GBIF/GBIF_LAND_POINTS.rds"))
+saveRDS(GBIF.LAND, file = paste("./data/base/HIA_LIST/GBIF/GBIF_TREES_LAND.rds"))
 
 
 ## Now save .rds file for the next session
@@ -486,18 +486,7 @@ save.image("STEP_3_GBIF_CLEAN.RData")
 #########################################################################################################################
 
 
-## Check distribution maps for each species for spatial outliers  - Keep a spreasheet of all species...
-
-## Estimate native/naturalised ranges as a separate colum         - APC data + Ubran polygons for AUS, USA, EU: only a subset
-
-## GBIF taxonomic errors                                          - Use TPL
-
-## Keep cultivated records as a separate column/file              - Get cultivated column from ALA data...
-
-## Duplicates between GBIF and ALA                                - See email from CSIRO - only a problem for niches...
-
-
-
+## 
 
 
 #########################################################################################################################
