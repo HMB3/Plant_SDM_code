@@ -13,7 +13,7 @@
 
 #########################################################################################################################
 ## Read in all data to run the SDM code :: species lists, shapefile, rasters & tables
-#source('./R/HIA_LIST_MATCHING.R')
+#COMBO.RASTER.CONVERT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONVERT_APRIL_2018.rds")
 rasterTmpFile()
 
 
@@ -78,38 +78,38 @@ message(round(summary(FLAGS)[8]/dim(FLAGS)[1]*100, 2), " % records removed")
 ## Try adding a loop which combines species flags.................................................................
 
 ## Create a table of the results 
-SPAT.OUT <- GBIF.spp[1:3] %>%         
-  
-  ## pipe the list into lapply
-  lapply(function(x) {
-    
-    ## Create the character string
-    f <- subset(TIB.GBIF, species == x)
-    
-    ## Load each .RData file
-    sp.flag <- cc_outl(f,
-                       lon     = "decimallongitude",
-                       lat     = "decimallatitude",
-                       species = "species",
-                       method  = "quantile",
-                       mltpl   = 5,
-                       tdi     = 1000,
-                       value   = "flags")
-    
-    ## Now add a model column. Should we drop memory?
-    d = data.frame(searchTaxon = x, sp.flag)  ## see step 7, make a variable for multiple runs
-    d
-    gc() ## Free some RAM
-    
-  }) %>%
-  
-  ## Finally, bind all the rows together
-  bind_rows
-
-
-## Save data
-head(SPAT.OUT)
-saveRDS(SPAT.OUT, 'data/base/HIA_LIST/COMBO/SPAT_OUT/TREE_INV_SPAT_OUT.rds')
+# SPAT.OUT <- GBIF.spp[1:3] %>%         
+#   
+#   ## pipe the list into lapply
+#   lapply(function(x) {
+#     
+#     ## Create the character string
+#     f <- subset(TIB.GBIF, species == x)
+#     
+#     ## Load each .RData file
+#     sp.flag <- cc_outl(f,
+#                        lon     = "decimallongitude",
+#                        lat     = "decimallatitude",
+#                        species = "species",
+#                        method  = "quantile",
+#                        mltpl   = 5,
+#                        tdi     = 1000,
+#                        value   = "flags")
+#     
+#     ## Now add a model column. Should we drop memory?
+#     d = data.frame(searchTaxon = x, sp.flag)  ## see step 7, make a variable for multiple runs
+#     d
+#     gc() ## Free some RAM
+#     
+#   }) %>%
+#   
+#   ## Finally, bind all the rows together
+#   bind_rows
+# 
+# 
+# ## Save data
+# head(SPAT.OUT)
+# saveRDS(SPAT.OUT, 'data/base/HIA_LIST/COMBO/SPAT_OUT/TREE_INV_SPAT_OUT.rds')
 
 
 #########################################################################################################################
@@ -117,13 +117,11 @@ saveRDS(SPAT.OUT, 'data/base/HIA_LIST/COMBO/SPAT_OUT/TREE_INV_SPAT_OUT.rds')
 dim(TIB.GBIF)[1];dim(FLAGS)[1]#;length(GBIF.SPAT.OUT)
 names(FLAGS)[1] = c("coord_spp")
 identical(COMBO.RASTER.CONVERT$searchTaxon, FLAGS$coord_spp)                                            ## order matches
-identical(dim(FLAGS)[1], dim(GBIF.TRIM.GEO)[1])
 
 
 #########################################################################################################################
 ## This bind might introduce some NA's
 TEST.GEO = cbind(COMBO.RASTER.CONVERT, FLAGS)#, GBIF.SPAT.OUT)
-summary(TEST.GEO)
 identical(TEST.GEO$searchTaxon, TEST.GEO$coord_spp)                                                     ## order matches
 
 
@@ -154,23 +152,6 @@ identical(TEST.GEO$searchTaxon, TEST.GEO$coord_spp)                             
 CLEAN.FALSE = subset(TEST.GEO, summary == "FALSE")# | GBIF.SPAT.OUT == "FALSE")
 
 
-## Check one species
-# coordyline = subset(TEST.GEO, searchTaxon == "Cordyline australis")
-# View(subset(coordyline, summary == "FALSE") #| GBIF.SPAT.OUT == "FALSE")
-#      [, c("searchTaxon", "OBS",
-#           "lon",
-#           "lat",
-#           "validity", 
-#           "equal",
-#           "zeros",
-#           "capitals",
-#           "centroids",
-#           "duplicates",
-#           "gbif",
-#           "institution",
-#           "summary")])
-
-
 ## Not sure why the inverse did not work :: get only the records which were not flagged as being dodgy.
 ## dim(subset(TEST.GEO, summary == "TRUE" | GBIF.SPAT.OUT == "TRUE"))
 #CLEAN.TRUE = TEST.GEO[!TEST.GEO$OBS %in% CLEAN.FALSE$OBS, ]
@@ -191,12 +172,14 @@ message(round(dim(CLEAN.TRUE)[1]/dim(TEST.GEO)[1]*100, 2), " % records retained"
 TI.XY.SPP  = TI.XY[TI.XY$searchTaxon %in% GBIF.spp, ]
 
 
-## NA's come in here :: why are the urban data outside the worldclim layers?
+## NA's come in here :: why are the urban data outside the worldclim layers?.............................................
+## check this tomorrow
 CLEAN.TRUE = bind_rows(CLEAN.TRUE, TI.XY.SPP)
 names(CLEAN.TRUE)
 unique(CLEAN.TRUE$SOURCE) 
 unique(CLEAN.TRUE$INVENTORY) 
 length(unique(CLEAN.TRUE$searchTaxon))
+summary(CLEAN.TRUE$Annual_mean_temp)
 
 
 ## Then create a unique ID column which can be used to identify outlier records 
@@ -213,6 +196,11 @@ message("Tree inventory data increases records by ", round(dim(CLEAN.TRUE)[1]/di
 ## Plot new combined data to check for bias in "SAVE_BIASED_SPDF.R".....................................................
 saveRDS(TEST.GEO,    'data/base/HIA_LIST/COMBO/CLEAN_FLAGS_INV_SPP.rds')
 saveRDS(CLEAN.TRUE,  'data/base/HIA_LIST/COMBO/CLEAN_ONLY_INV_SPP.rds')
+
+
+#########################################################################################################################
+## Then check the NA values for tree inventory data : they should have data
+
 
 
 
