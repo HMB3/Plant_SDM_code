@@ -134,7 +134,9 @@ projection(BIAS.DF)
 
 ## Save the shapefile, to be subsampled in ArcMap
 names(BIAS.DF);head(BIAS.DF)
-writeOGR(obj = BIAS.DF,    dsn = "./data/base/HIA_LIST/COMBO", layer = "SPP_ALL_DF_TREE_INV", driver = "ESRI Shapefile")
+BIAS.DF  = BIAS.DF [BIAS.DF$searchTaxon %in% SPP.BIAS, ]
+length(unique(BIAS.DF$searchTaxon))
+writeOGR(obj = BIAS.DF,    dsn = "./data/base/HIA_LIST/COMBO", layer = "TREE_INV_BIAS_SPP", driver = "ESRI Shapefile")
 writeOGR(obj = BG.DATA.SP, dsn = "./data/base/HIA_LIST/COMBO", layer = "BG_POINTS", driver = "ESRI Shapefile")
 
 

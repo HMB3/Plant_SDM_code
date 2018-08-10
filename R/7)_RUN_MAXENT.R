@@ -34,6 +34,7 @@ rasterTmpFile()
 ## Create a table with all the variables
 dim(CLEAN.TRUE)
 length(unique(CLEAN.TRUE$searchTaxon))
+unique(CLEAN.TRUE$SOURCE)
 
 
 ## Which columns
@@ -295,23 +296,25 @@ lapply(GBIF.spp, function(spp){
 #########################################################################################################################
 
 
-## 1). 100/200 tree spp that are commonly planted and traded, with sufficient spatial data to model robustly. 
-##     Plan figures and tables for MS. Done
+## 1). 100/200 tree spp that are commonly planted and traded, with sufficient spatial data to model robustly : done
 
 
-## 2). Re-download ALA data : 
-##     How did John create the data? My ALA download is not the same as his, even before filtering
-##     Create a lookup table for GBIF and ALA togehter, the same way Alessandro did. Clean this and use for the modelling
+## 2). Extract NA values for tree inventory data 
+##     Fix the taxonomy
 
 
-## 3). Thin records for 28 spp with boundary bias, using the SDM tool box:
+## 3). Thin records for 28 spp with boundary bias, using the SDM tool box. Send the data to Alessandro the latest file
 
-##     Settings: Max 3km, min 1km, 5 heterogeneity classes (from a classification of a PCA, using the worldclim layers)
+##     Settings: Max 5km, min 1km, 5 heterogeneity classes (from a classification of a PCA, using the worldclim layers)
 
 ##     Also, need to increase the number of species so there are more background records.
 ##     These don't matter at all, so could be from an earlier file, just add in at step 7
 
 ##     Spatially thin the background records as well? Try a geodatabse, same settings.
+
+##     Compare the models with and without thinning for a few biased species:
+##     Acacia_implexa, etc.
+     
 
 ## 4). Use more forgiving thresholds (10%) for all species: Done
 ##     "X10.percentile.training.presence.Logistic.threshold"
@@ -328,6 +331,12 @@ lapply(GBIF.spp, function(spp){
 
    
 ## 6). Check combined maps for all species : make sure step 9 is working
+
+
+## 7). Create tables in R to summarise gain and loss in each SUA
+
+
+## 8). Draft results and discussion.
 
 
 

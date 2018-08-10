@@ -14,6 +14,7 @@
 #########################################################################################################################
 ## Read in all data to run the SDM code :: species lists, shapefile, rasters & tables
 #COMBO.RASTER.CONVERT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONVERT_APRIL_2018.rds")
+#TI.RASTER            = readRDS("./data/base/HIA_LIST/COMBO/TI_RASTER_CONVERT.rds")
 rasterTmpFile()
 
 
@@ -26,6 +27,10 @@ rasterTmpFile()
 #########################################################################################################################
 ## Rename the columns to fit the CleanCoordinates format and create a tibble
 str(unique(COMBO.RASTER.CONVERT$searchTaxon))
+str(unique(COMBO.RASTER.CONVERT$SOURCE))
+
+
+##
 TIB.GBIF<- COMBO.RASTER.CONVERT %>% dplyr::rename(species          = searchTaxon,
                                                   decimallongitude = lon, 
                                                   decimallatitude  = lat) %>%
@@ -133,6 +138,7 @@ identical(TEST.GEO$searchTaxon, TEST.GEO$coord_spp)                             
 # summary(TEST.GEO$centroids)
 # summary(TEST.GEO$gbif)
 # summary(TEST.GEO$institution)
+# summary(TEST.GEO$duplicates)
 # summary(TEST.GEO$gbif)
 # summary(TEST.GEO$summary)
 #summary(TEST.GEO$GBIF.SPAT.OUT)
@@ -168,13 +174,13 @@ message(round(dim(CLEAN.TRUE)[1]/dim(TEST.GEO)[1]*100, 2), " % records retained"
 
 #########################################################################################################################
 ## Now bind on the urban tree inventory data. We are assuming this data is clean, after we manually fix the taxonomy
-## First remove the extra species:
-TI.XY.SPP  = TI.XY[TI.XY$searchTaxon %in% GBIF.spp, ]
-
-
-## NA's come in here :: why are the urban data outside the worldclim layers?.............................................
 ## check this tomorrow
-CLEAN.TRUE = bind_rows(CLEAN.TRUE, TI.XY.SPP)
+names(CLEAN.TRUE)
+names(TI.RASTER)
+#CLEAN.TRUE$SOURCE[is.na(CLEAN.TRUE$SOURCE)] <- "ALA"
+
+
+CLEAN.TRUE = bind_rows(CLEAN.TRUE, TI.RASTER)
 names(CLEAN.TRUE)
 unique(CLEAN.TRUE$SOURCE) 
 unique(CLEAN.TRUE$INVENTORY) 
