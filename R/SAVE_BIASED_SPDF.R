@@ -198,9 +198,10 @@ dim(TREES.BIAS);head(TREES.BIAS, 40)
 #########################################################################################################################
 ## Read the bias file back in :
 ## H:\green_cities_sdm\data\base\HIA_LIST\COMBO\RAREFY_SPP\SPAT_OUT\ALL_TREE_INV_2KM_spatially_rarified_locs.shp
-BIAS.RAREFY = readOGR("H:/green_cities_sdm/data/base/HIA_LIST/COMBO/RAREFY_SPP/SPAT_OUT/ALL_TREE_INV_2KM_spatially_rarified_locs.shp",
-                      layer = "ALL_TREE_INV_2KM_spatially_rarified_locs")
-# saveRDS(BIAS.RAREFY,    'data/base/HIA_LIST/COMBO/RAREFY_SPP/SPAT_OUT/BIAS_RAREFY.rds')
+BIAS.RAREFY = readOGR("H:/green_cities_sdm/data/base/HIA_LIST/COMBO/THIN_RECORDS/RAREFY_OUT/BIAS_TREES_5KM_spatially_rarified_locs.shp",
+                      layer = "BIAS_TREES_5KM_spatially_rarified_locs")
+
+# saveRDS(BIAS.RAREFY,    'data/base/HIA_LIST/COMBO/THIN_RECORDS/BIAS_RAREFY_5KM.rds')
 # BIAS.RAREFY       = readRDS('./data/base/HIA_LIST/COMBO/RAREFY_SPP/SPAT_OUT/BIAS_RAREFY.rds')
 class(BIAS.RAREFY)
 names(BIAS.RAREFY)
@@ -269,8 +270,8 @@ for (i in 1:length(SPP.BIAS)) {
 }
 
 
-## save as 
-saveRDS(BIAS.RAREFY, 'data/base/HIA_LIST/COMBO/RAREFY_SPP/SPAT_OUT/SDM_TREES_RAREFY.rds')
+## Save as the biased species
+saveRDS(BIAS.RAREFY, 'data/base/HIA_LIST/COMBO/BIASED_TREES_RAREFY.rds')
 
 
 

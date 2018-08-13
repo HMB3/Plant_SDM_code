@@ -22,6 +22,7 @@
 #########################################################################################################################
 ## Load packages, functions and data
 #source('./R/HIA_LIST_MATCHING.R')
+#CLEAN.TRUE = readRDS('data/base/HIA_LIST/COMBO/CLEAN_ONLY_HIA_SPP.rds')
 rasterTmpFile()
 
 
@@ -163,12 +164,12 @@ lapply(GBIF.spp, function(spp){
     occurrence <- subset(SDM.DATA.ALL, searchTaxon == spp)
     
     ## Now get the background points. These can come from any spp, other than the modelled species.
-    background.all <- subset(background, searchTaxon != spp)
+    background <- subset(SDM.DATA.ALL, searchTaxon != spp)
     
     ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
     tryCatch(
       FIT_MAXENT_TARG_BG(occ                     = occurrence, 
-                         bg                      = background.all, 
+                         bg                      = background, 
                          sdm.predictors          = sdm.select, 
                          name                    = spp, 
                          outdir, 
@@ -209,7 +210,7 @@ lapply(GBIF.spp, function(spp){
 
 #########################################################################################################################
 ## Run Maxent using a random selection of background points. 
-SDM.DATA.BIAS = readRDS('./data/base/HIA_LIST/COMBO/RAREFY_SPP/SPAT_OUT/SDM_TREES_RAREFY.rds')
+SDM.DATA.BIAS = readRDS('./data/base/HIA_LIST/COMBO/BIASED_TREES_RAREFY.rds')
 length(unique(SDM.DATA.BIAS$searchTaxon)) 
 dim(SDM.DATA.BIAS)
 projection(template.raster);projection(SDM.DATA.BIAS);projection(Koppen_1975)
@@ -223,7 +224,7 @@ identical(names(background.bias), names(SDM.DATA.BIAS))
 
 
 ## Now bind on the background points............................................................................................
-intersect(sort(unique(SDM.DATA.BIAS$searchTaxon)), sort(unique(background$searchTaxon)))
+intersect(sort(unique(SDM.DATA.BIAS$searchTaxon)), sort(unique(background$searchTaxon)))    ## check the species don't overlap
 SDM.DATA.BIAS = rbind(SDM.DATA.BIAS, background.bias)
 names(SDM.DATA.BIAS)
 
@@ -234,7 +235,7 @@ out_dir       = 'output/maxent/SPP_RAREFY_3KM'
 
 #########################################################################################################################
 ## Loop over all the species spp = test.bias[1]
-lapply(GBIF.spp, function(spp){
+lapply(SPP.BIAS, function(spp){
 
   ## Skip the species if the directory already exists, before the loop
   outdir <- out_dir
@@ -296,23 +297,27 @@ lapply(GBIF.spp, function(spp){
 #########################################################################################################################
 
 
-## 1). 100/200 tree spp that are commonly planted and traded, with sufficient spatial data to model robustly : done
+## Which of these components can be done now? the problem comes with different versions of the data, need to use the most
+## update version to make it work.
 
 
-## 2). Extract NA values for tree inventory data 
-##     Fix the taxonomy
+## 1). 100/200 tree spp that are commonly planted and traded, with sufficient spatial data to model robustly: done
 
 
-## 3). Thin records for 28 spp with boundary bias, using the SDM tool box. Send the data to Alessandro the latest file
+## 2). Fix the taxonomy, do this with Alessandro. Need to get this done before re-running the models
+
+##     Keep the 'source' column in the maxent table :: adjust step 7  
+
+##     Extract NA values for tree inventory data  
+     
+
+## 3). Thin records for 28 spp. with boundary bias, using the SDM tool box. Send Alessandro the latest file .shp
 
 ##     Settings: Max 5km, min 1km, 5 heterogeneity classes (from a classification of a PCA, using the worldclim layers)
 
-##     Also, need to increase the number of species so there are more background records.
-##     These don't matter at all, so could be from an earlier file, just add in at step 7
+##     Currently using all spp background records: random 100k for every species, sounds ok?
 
-##     Spatially thin the background records as well? Try a geodatabse, same settings.
-
-##     Compare the models with and without thinning for a few biased species:
+##     Compare the models with and without thinning for a 28 species:
 ##     Acacia_implexa, etc.
      
 

@@ -188,6 +188,75 @@ gbif_parse <- function(x) {
 
 #########################################################################################################################
 ## GBIF
+# download_GBIF_all_species = function (species_list, path) {
+#   
+#   ## create variables
+#   skip.spp.list       = list()
+#   GBIF.download.limit = 200000
+#   
+#   ## for every species in the list
+#   for(sp.n in species_list){
+#     
+#     ## 1). First, check if the f*&%$*# file exists
+#     ## data\base\HIA_LIST\GBIF\SPECIES
+#     file = paste0(path, sp.n, "_GBIF_records.RData")
+#     
+#     ## If it's already downloaded, skip
+#     if (file.exists (file)) {
+#       
+#       print (paste ("file exists for species", sp.n, "skipping"))
+#       next
+#       
+#     }
+#     
+#     ## 2). Then check the spelling...incorrect nomenclature will return NULL result
+#     if (is.null(occ_search(scientificName = sp.n, limit = 1)$meta$count) == TRUE) {
+#       
+#       ## now append the species which had incorrect nomenclature to the skipped list
+#       ## this is slow, but it works for now
+#       print (paste ("Possible incorrect nomenclature", sp.n, "skipping"))
+#       nomenclature = paste ("Possible incorrect nomenclature |", sp.n)
+#       skip.spp.list <- c(skip.spp.list, nomenclature)
+#       next
+#       
+#     }
+#     
+#     ## 3). Skip species with no records
+#     if (occ_search(scientificName = sp.n)$meta$count == 0) {
+#       
+#       ## now append the species which had no records to the skipped list
+#       print (paste ("No GBIF records for", sp.n, "skipping"))
+#       records = paste ("No GBIF records |", sp.n)
+#       skip.spp.list <- c(skip.spp.list, records)
+#       next
+#       
+#     }
+#     
+#     ## 4). Check how many records there are, and skip if there are over 200k
+#     if (occ_search(scientificName = sp.n, limit = 1)$meta$count > GBIF.download.limit) {
+#       
+#       ## now append the species which had > 200k records to the skipped list
+#       print (paste ("Number of records > max for GBIF download via R (200,000)", sp.n, "skipping"))
+#       max =  paste ("Number of records > 200,000 |", sp.n)
+#       skip.spp.list <- c(skip.spp.list, max)
+#       next
+#       
+#     }
+#     
+#     ## 5). Download ALL records from GBIF
+#     ## ala = occurrences(taxon = sp.n, download_reason_id = 7)
+#     print (paste (sp.n))
+#     GBIF = gbif(sp.n, download = TRUE)   ## could use more arguments here, download_reason_id = 7, etc.
+#     
+#     ## 6). save records to .Rdata file, note that using .csv files seemed to cause problems...
+#     save(GBIF, file = paste(path, sp.n, "_GBIF_records.RData", sep = ""))
+#     #return(skip.spp.list)
+#     
+#   }
+#   
+# }
+
+
 download_GBIF_all_species = function (species_list, path) {
   
   ## create variables
@@ -244,9 +313,11 @@ download_GBIF_all_species = function (species_list, path) {
     }
     
     ## 5). Download ALL records from GBIF
-    ## ala = occurrences(taxon = sp.n, download_reason_id = 7)
-    print (paste (sp.n))
-    GBIF = gbif(sp.n, download = TRUE)   ## could use more arguments here, download_reason_id = 7, etc.
+    message("Downloading GBIF records for ", sp.n, " using rgbif :: occ_data")
+    key  <- name_backbone(name = sp.n, rank = 'species')$usageKey
+    GBIF <- occ_data(taxonKey = key, limit = GBIF.download.limit)
+    GBIF <- GBIF$data
+    message("Synonyms returned ", unique(GBIF$scientificName))
     
     ## 6). save records to .Rdata file, note that using .csv files seemed to cause problems...
     save(GBIF, file = paste(path, sp.n, "_GBIF_records.RData", sep = ""))
@@ -255,8 +326,6 @@ download_GBIF_all_species = function (species_list, path) {
   }
   
 }
-
-
 
 
 
@@ -919,7 +988,7 @@ TPL.keep <- c(## GBIF TAXONOMY
   "eventID")
 
 
-cultivated.synonyms <- "garden|afgrøde|bebauen|bebouwen|beskärs|çiftçilik|crescătorie|cultiv|Ernte|frø|gefokt|gepropageerd|însămânțat|kırpılmış|kylvetään|odlad|oogsten|opdrættede|propagate|propagé|propagiert|récolt|seribaşı|viljellyn|viljelykasvi|yayılır|yönetilen|выращиваемых|размножают|allevat|ausgesät|avl|avlet|beskjæres|bewerkt|bred|coltiv|conduce|cortad|crescut|criad|crop|cultiva|cultivé|decupată|dirigid|dyrk|ekili|élevé|ensemencé|farm|fikk til|former|forplantet|fortplantas|förvaltade|frø|gestit|gezaaid|gezüchtet|gospodarować|hodowlany|kasvatetaan|kultiv|manag|manage|manejad|oppdretts|o'stiriladi|propaga|seed|sembrad|semead|seminat|siewny|uppfödda|upraw|uprawiać ziemię|viljel|wychowany|ympades|засевали|культура|культурный|разводятся|удалось|לִזרוֹעַ|מְתוּרבָּת|מופץ|מעובדים|תְבוּאָה|المزارع|م|حصول|مزروع|مزروع|نشر|ولدت|교양 있는|씨를 뿌린|양식장|자란|전파 된|伝播|传播|养殖|孕育|栽培された|種まき|繁殖した"
+# cultivated.synonyms <- "garden|afgrøde|bebauen|bebouwen|beskärs|çiftçilik|crescătorie|cultiv|Ernte|frø|gefokt|gepropageerd|însămânțat|kırpılmış|kylvetään|odlad|oogsten|opdrættede|propagate|propagé|propagiert|récolt|seribaşı|viljellyn|viljelykasvi|yayılır|yönetilen|выращиваемых|размножают|allevat|ausgesät|avl|avlet|beskjæres|bewerkt|bred|coltiv|conduce|cortad|crescut|criad|crop|cultiva|cultivé|decupată|dirigid|dyrk|ekili|élevé|ensemencé|farm|fikk til|former|forplantet|fortplantas|förvaltade|frø|gestit|gezaaid|gezüchtet|gospodarować|hodowlany|kasvatetaan|kultiv|manag|manage|manejad|oppdretts|o'stiriladi|propaga|seed|sembrad|semead|seminat|siewny|uppfödda|upraw|uprawiać ziemię|viljel|wychowany|ympades|засевали|культура|культурный|разводятся|удалось|לִזרוֹעַ|מְתוּרבָּת|מופץ|מעובדים|תְבוּאָה|المزارع|م|حصول|مزروع|مزروع|نشر|ولدت|교양 있는|씨를 뿌린|양식장|자란|전파 된|伝播|传播|养殖|孕育|栽培された|種まき|繁殖した"
 
 
 

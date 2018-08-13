@@ -20,9 +20,9 @@ source('./R/HIA_TREE_LIST.R')
 ## Now running more tree species
 GBIF.spp      = sort(TREE.HIA.SPP)
 map_spp_list  = TREE_HIA_SPP
-save_dir      = 'output/maxent/SPP_EXOTIC/'
-out_dir       = 'output/maxent/SPP_EXOTIC'
-maxent_path   = 'output/maxent/SPP_EXOTIC/'
+save_dir      = 'output/maxent/THIN_RECORDS/'
+out_dir       = 'output/maxent/THIN_RECORDS'
+maxent_path   = 'output/maxent/THIN_RECORDS/'
 
 
 #########################################################################################################################
