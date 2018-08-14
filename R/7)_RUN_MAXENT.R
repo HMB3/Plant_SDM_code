@@ -306,9 +306,18 @@ lapply(SPP.BIAS, function(spp){
 
 ## 2). Fix the taxonomy, do this with Alessandro. Need to get this done before re-running the models
 
+##     Check the pie chart for all the synonyms. How do we know which species to check?
+##     ALA automatically gets the synonyms, GBIF doesn't. 
+
+##     Download all the synonyms
+
+##     Bind the TPL table to all the records. Re-assign the species to the new name.
+
+##     
+
 ##     Keep the 'source' column in the maxent table :: adjust step 7  
 
-##     Extract NA values for tree inventory data  
+##     Extract NA values for tree inventory data.  
      
 
 ## 3). Thin records for 28 spp. with boundary bias, using the SDM tool box. Send Alessandro the latest file .shp

@@ -305,28 +305,37 @@ download_GBIF_all_species = function (species_list, path) {
     if (occ_search(scientificName = sp.n, limit = 1)$meta$count > GBIF.download.limit) {
       
       ## now append the species which had > 200k records to the skipped list
-      print (paste ("Number of records > max for GBIF download via R (200,000)", sp.n, "skipping"))
+      print (paste ("Number of records > max for GBIF download via R (200,000)", sp.n))
       max =  paste ("Number of records > 200,000 |", sp.n)
+      
+      ## and send a request to GBIF for download
+      message("Sending request to GBIF to download ", sp.n, " using rgbif :: occ_download")
+      key  <- name_backbone(name = sp.n, rank = 'species')$usageKey
+      GBIF = occ_download(paste('taxonKey = ', key),  user = "popple_1500", pwd = "Popple1500", email = "hugh.burley@mq.edu.au")
+      save(GBIF, file = paste(path, sp.n, "_GBIF_request.RData", sep = ""))
       skip.spp.list <- c(skip.spp.list, max)
-      next
+      
+    } else {
+      
+      ## 5). Download ALL records from GBIF
+      message("Downloading GBIF records for ", sp.n, " using rgbif :: occ_data")
+      key  <- name_backbone(name = sp.n, rank = 'species')$usageKey
+      
+      GBIF <- occ_data(taxonKey = key, limit = GBIF.download.limit)
+      GBIF <- as.data.frame(GBIF$data)
+      cat("Synonyms returned for :: ", sp.n, unique(GBIF$scientificName), sep="\n")
+      message(dim(GBIF[1]), " Records returned")
+      
+      
+      ## 6). save records to .Rdata file, note that using .csv files seemed to cause problems...
+      save(GBIF, file = paste(path, sp.n, "_GBIF_records.RData", sep = ""))
+      #return(skip.spp.list)
       
     }
-    
-    ## 5). Download ALL records from GBIF
-    message("Downloading GBIF records for ", sp.n, " using rgbif :: occ_data")
-    key  <- name_backbone(name = sp.n, rank = 'species')$usageKey
-    GBIF <- occ_data(taxonKey = key, limit = GBIF.download.limit)
-    GBIF <- GBIF$data
-    message("Synonyms returned ", unique(GBIF$scientificName))
-    
-    ## 6). save records to .Rdata file, note that using .csv files seemed to cause problems...
-    save(GBIF, file = paste(path, sp.n, "_GBIF_records.RData", sep = ""))
-    #return(skip.spp.list)
     
   }
   
 }
-
 
 
 #########################################################################################################################
@@ -363,10 +372,12 @@ download_ALA_all_species = function (species_list, path) {
       
     }
     
-    ## 3). Download ALL records from ALA
-    message(paste ("downloading records for ", sp.n))
+    ## 3). Download ALL records from ALA :: 
+    message("Downloading GBIF records for ", sp.n, " using ALA4R :: occurrences")
     ALA = occurrences(taxon = sp.n, download_reason_id = 7)   ## could use more arguments here, download_reason_id = 7, etc.
     ALA = ALA[[1]]
+    cat("Synonyms returned for :: ", sp.n, unique(ALA$scientificName), sep="\n")
+    message(dim(ALA[1]), " Records returned")
     
     ## 4). save records to .Rdata file, note that using .csv files seemed to cause problems...
     save(ALA, file = paste(path, sp.n, "_ALA_records.RData", sep = ""))

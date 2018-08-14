@@ -54,7 +54,6 @@ View(SPP.TAXO)
 
 ## Write each table out to file:
 write.csv(SPP.LOOKUP,       "./data/base/HIA_LIST/COMBO/SPP_TPL_LOOKUP.csv",       row.names = FALSE)
-write.csv(SPP.TAXO.ERRORS,  "./data/base/HIA_LIST/COMBO/SPP_TAXO.ERRORS.csv",      row.names = FALSE)
 
 
 ########################################################################################################################
@@ -73,13 +72,6 @@ unique(palustris$data$scientificName)
 
 
 ##
-keys <- sapply(spp.taxo.check, function(x) name_suggest(x)$key[1], USE.NAMES = FALSE)
-
-
-## separate requests: use a vector of strings
-test = occ_data(taxonKey = keys)
-
-
 palustris.key <- name_backbone(name = 'Quercus palustris', rank = 'species')$usageKey
 coccinea.key  <- name_backbone(name = 'Quercus coccinea',  rank = 'species')$usageKey
 
@@ -106,7 +98,7 @@ skipped.taxa    = download_GBIF_all_species(species_list = all.taxa,
 
 
 ALA.taxa    = download_ALA_all_species(species_list = all.taxa, 
-                                       path         = "./data/base/HIA_LIST/ALA/TREE_SPECIES/") ## insert path
+                                       path         = "./data/base/HIA_LIST/ALA/TREE_SPECIES/")
 
 
 #########################################################################################################################

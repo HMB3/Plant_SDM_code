@@ -9,7 +9,7 @@ spp.download = list.files("./data/base/HIA_LIST/ALA/TREE_SPECIES/", pattern = ".
 
 
 ## Load ALA update :: the coordinates are coming in as characters
-AVH.TREES = read.csv("./data/base/HIA_LIST/ALA/AVH_tree_spp.csv", stringsAsFactors = FALSE)
+#AVH.TREES = read.csv("./data/base/HIA_LIST/ALA/AVH_tree_spp.csv", stringsAsFactors = FALSE)
 # ALA.UPDATE = read.csv("./data/base/HIA_LIST/ALA/Plants.csv", stringsAsFactors = FALSE)
 # saveRDS(ALA.UPDATE, file = paste("./data/base/HIA_LIST/ALA/ALA_PLANTS_UPDATE.rds"))
 #ALA.UPDATE = readRDS("./data/base/HIA_LIST/GBIF/ALA_PLANTS_UPDATE.rds")

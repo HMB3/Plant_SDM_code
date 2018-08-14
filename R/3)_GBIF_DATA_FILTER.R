@@ -25,7 +25,7 @@ rasterTmpFile()
 
 #########################################################################################################################
 ## Create a list of species from the downloaded files
-spp.download = list.files("./data/base/HIA_LIST/GBIF/SPECIES/", pattern = ".RData")
+spp.download = list.files("./data/base/HIA_LIST/GBIF/OCC_SEARCH/", pattern = ".RData")
 spp.download = gsub("_GBIF_records.RData", "", spp.download)
 spp.download = trimws(spp.download)
 bind.spp     = trimws(GBIF.spp)
@@ -51,7 +51,7 @@ GBIF.ALL <- spp.download[c(1:length(spp.download))] %>%   ## spp.download[c(1:le
   lapply(function(x) {
     
     ## Create a character string of each .RData file
-    f <- sprintf("./data/base/HIA_LIST/GBIF/SPECIES/%s_GBIF_records.RData", x)
+    f <- sprintf("./data/base/HIA_LIST/GBIF/OCC_SEARCH/%s_GBIF_records.RData", x)
     
     ## Load each file
     d <- get(load(f))
@@ -67,6 +67,8 @@ GBIF.ALL <- spp.download[c(1:length(spp.download))] %>%   ## spp.download[c(1:le
     }
     
     ## Need to print the object within the loop
+    names(dat)[names(dat) == 'decimalLatitude']  <- 'lat'
+    names(dat)[names(dat) == 'decimalLongitude'] <- 'lon'
     dat
     
   }) %>%
@@ -77,7 +79,8 @@ GBIF.ALL <- spp.download[c(1:length(spp.download))] %>%   ## spp.download[c(1:le
 
 #########################################################################################################################
 ## CHECK SEARCHED AND RETURNED TAXONOMIC NAMES FROM GBIF
-## What are the names? Can't get date for GBIF across 
+length(unique(GBIF.ALL$searchTaxon))
+
 sort(names(GBIF.ALL))
 str(GBIF.ALL$recordedBy)
 str(GBIF.ALL$dateIdentified)
@@ -122,17 +125,10 @@ head(GBIF.TRIM, 100)[, c("scientificName",
 
 
 #########################################################################################################################
-## Use "Taxonstand" to check the taxonomy. However, this also assumes that the ALA data is clean
+## Use "Taxonstand" to check the taxonomy.
 GBIF.TAXO <- TPL(unique(GBIF.TRIM$scientificName), infra = TRUE,
                  corr = TRUE, repeats = 100)  ## to stop it timing out...
 sort(names(GBIF.TAXO))
-
-
-## Now create table for Alessandro.......................................................................................
-GBIF.LUT = as.data.frame(table(GBIF.TRIM$scientificName))
-names(GBIF.LUT) = c("scientificName", "FREQUENCY")
-GBIF.LUT = GBIF.LUT[with(GBIF.LUT, rev(order(FREQUENCY))), ] 
-head(GBIF.LUT);dim(GBIF.LUT)
 
 
 #########################################################################################################################
@@ -171,6 +167,9 @@ GBIF.TRIM$taxo_agree <- ifelse(
 ## How many species agree?
 round(with(GBIF.TRIM, table(taxo_agree)/sum(table(taxo_agree))*100), 1)
 round(with(GBIF.TRIM, table(New.Taxonomic.status)/sum(table(New.Taxonomic.status))*100), 1)
+
+length(unique(GBIF.TRIM$scientificName))
+length(unique(GBIF.TRIM$searchTaxon))
 
 
 ## Also keep the unresolved records:
@@ -217,12 +216,11 @@ saveRDS(GBIF.UNRESOLVED, file = paste("./data/base/HIA_LIST/GBIF/SUA_TREE_GBIF_U
 GBIF.TRIM.TAXO <- GBIF.TRIM %>%
   select(one_of(TPL.keep))
 
-
+length(unique(GBIF.TRIM.TAXO$searchTaxon))
 ## Unique(GBIF.UNRESOLVED$New.Taxonomic.status)
-saveRDS(GBIF.TAXO,       file = paste("./data/base/HIA_LIST/GBIF/SUA_TREES_GBIF_TAXO.rds"))
-saveRDS(GBIF.TRIM.TAXO,  file = paste("./data/base/HIA_LIST/GBIF/SUA_TREES_GBIF_TRIM_TAXO.rds"))
-write.csv(GBIF.TRIM.TAXO,             "./data/base/HIA_LIST/GBIF/SUA_TREES_GBIF_TRIM_TAXO.csv", row.names = FALSE)
-#write.csv(GBIF.LUT,                   "./data/base/HIA_LIST/GBIF/SUA_TREES_GBIF_LUT.csv",       row.names = FALSE)
+# saveRDS(GBIF.TAXO,       file = paste("./data/base/HIA_LIST/GBIF/SUA_TREES_GBIF_TAXO.rds"))
+# saveRDS(GBIF.TRIM.TAXO,  file = paste("./data/base/HIA_LIST/GBIF/SUA_TREES_GBIF_TRIM_TAXO.rds"))
+# write.csv(GBIF.TRIM.TAXO,             "./data/base/HIA_LIST/GBIF/SUA_TREES_GBIF_TRIM_TAXO.csv", row.names = FALSE)
 
 
 
@@ -304,7 +302,7 @@ write.csv(GBIF.TRIM.TAXO,             "./data/base/HIA_LIST/GBIF/SUA_TREES_GBIF_
 #########################################################################################################################
 ## Create a table which counts the number of records meeting each criteria:
 ## Note that TRUE indicates there is a problem (e.g. if a record has no lat/long, it will = TRUE)
-GBIF.TRIM.TAXO = GBIF.TRIM
+#GBIF.TRIM.TAXO = GBIF.TRIM
 GBIF.PROBLEMS <- with(GBIF.TRIM.TAXO,
                       
                       table(
@@ -381,7 +379,8 @@ GBIF.CLEAN <- GBIF.TRIM.TAXO %>%
 ## The table above gives the details, but worth documenting how many records are knocked out by each filter
 ## What does this dataframe look like?
 names(GBIF.CLEAN)
-
+length(unique(GBIF.TRIM.TAXO$searchTaxon))
+length(unique(GBIF.CLEAN$searchTaxon))
 
 
 
