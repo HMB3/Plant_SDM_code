@@ -313,7 +313,7 @@ lapply(SPP.BIAS, function(spp){
 
 ##     Bind the TPL table to all the records. Re-assign the species to the new name.
 
-##     
+##     How to change this?
 
 ##     Keep the 'source' column in the maxent table :: adjust step 7  
 

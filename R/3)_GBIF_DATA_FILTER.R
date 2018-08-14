@@ -140,7 +140,7 @@ sort(names(GBIF.TAXO))
 
 
 ## Then join the GBIF data to the taxonomic check, using "scientificName" as the join field...
-GBIF.TRIM <- GBIF.TRIM %>%
+GBIF.TRIM.TAXO <- GBIF.TRIM %>%
   left_join(., GBIF.TAXO, by = c("scientificName" = "Taxon"))
 
 
@@ -152,28 +152,28 @@ GBIF.TRIM <- GBIF.TRIM %>%
 #########################################################################################################################
 ## Now create a column for the agreement between the new genus and the old genus
 ## First, trim the spaces out
-GBIF.TRIM$searchTaxon  = trimws(GBIF.TRIM$searchTaxon)
+GBIF.TRIM.TAXO$searchTaxon  = trimws(GBIF.TRIM.TAXO$searchTaxon)
 
 
 ## Then combine the genus and species returned by TPL into
-GBIF.TRIM$TPL_binomial  = with(GBIF.TRIM, paste(New.Genus, New.Species, sep = " "))
+GBIF.TRIM.TAXO$TPL_binomial  = with(GBIF.TRIM.TAXO, paste(New.Genus, New.Species, sep = " "))
 
 
 ## Now match the searchTaxon with the binomial returned by TPL :: this would be the best field to filter on
-GBIF.TRIM$taxo_agree <- ifelse(
-  GBIF.TRIM$searchTaxon == GBIF.TRIM$TPL_binomial, TRUE, FALSE)
+GBIF.TRIM.TAXO$taxo_agree <- ifelse(
+  GBIF.TRIM.TAXO$searchTaxon == GBIF.TRIM.TAXO$TPL_binomial, TRUE, FALSE)
 
 
 ## How many species agree?
-round(with(GBIF.TRIM, table(taxo_agree)/sum(table(taxo_agree))*100), 1)
-round(with(GBIF.TRIM, table(New.Taxonomic.status)/sum(table(New.Taxonomic.status))*100), 1)
+round(with(GBIF.TRIM.TAXO, table(taxo_agree)/sum(table(taxo_agree))*100), 1)
+round(with(GBIF.TRIM.TAXO, table(New.Taxonomic.status)/sum(table(New.Taxonomic.status))*100), 1)
 
-length(unique(GBIF.TRIM$scientificName))
-length(unique(GBIF.TRIM$searchTaxon))
+length(unique(GBIF.TRIM.TAXO$scientificName))
+length(unique(GBIF.TRIM.TAXO$searchTaxon))
 
 
 ## Also keep the unresolved records:
-GBIF.UNRESOLVED <- GBIF.TRIM %>%
+GBIF.UNRESOLVED <- GBIF.TRIM.TAXO %>%
 
   ## Note that these filters are very forgiving...
   ## Unless we include the NAs, very few records are returned!
@@ -181,7 +181,7 @@ GBIF.UNRESOLVED <- GBIF.TRIM %>%
 
 
 ## Also keep the unresolved records:
-GBIF.RESOLVED <- GBIF.TRIM %>%
+GBIF.RESOLVED <- GBIF.TRIM.TAXO %>%
   
   ## Just get the accepted taxa
   filter(New.Taxonomic.status == 'Accepted')
@@ -213,8 +213,8 @@ saveRDS(GBIF.UNRESOLVED, file = paste("./data/base/HIA_LIST/GBIF/SUA_TREE_GBIF_U
 
 ## Just keep these columns:
 ## Taxonomic.status, Infraspecific.rank, New.Taxonomic.status, New.ID, New_binomial, taxo_agree
-GBIF.TRIM.TAXO <- GBIF.TRIM %>%
-  select(one_of(TPL.keep))
+# GBIF.TRIM.TAXO <- GBIF.TRIM.TAXO %>%
+#   select(one_of(TPL.keep))
 
 length(unique(GBIF.TRIM.TAXO$searchTaxon))
 ## Unique(GBIF.UNRESOLVED$New.Taxonomic.status)
@@ -302,7 +302,7 @@ length(unique(GBIF.TRIM.TAXO$searchTaxon))
 #########################################################################################################################
 ## Create a table which counts the number of records meeting each criteria:
 ## Note that TRUE indicates there is a problem (e.g. if a record has no lat/long, it will = TRUE)
-#GBIF.TRIM.TAXO = GBIF.TRIM
+#GBIF.TRIM.TAXO = GBIF.TRIM.TAXO
 GBIF.PROBLEMS <- with(GBIF.TRIM.TAXO,
                       
                       table(
@@ -456,7 +456,7 @@ length(unique(GBIF.LAND$searchTaxon))
 
 ## Add a source column
 GBIF.LAND$SOURCE = 'GBIF'
-
+names(GBIF.LAND)
 
 ## Free some memory
 gc()
@@ -485,7 +485,7 @@ save.image("STEP_3_GBIF_CLEAN.RData")
 #########################################################################################################################
 
 
-## 
+## Check taxonomy 
 
 
 #########################################################################################################################

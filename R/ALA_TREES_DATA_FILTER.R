@@ -158,13 +158,6 @@ ALA.TAXO <- TPL(unique(ALA.TREES.TRIM$scientificName), infra = TRUE,
 sort(names(ALA.TAXO))
 
 
-# #########################################################################################################################
-# ## Use "Taxonstand" to check the taxonomy. However, this also assumes that the ALA data is clean
-# ALA.TREES.TRIM.TAXO <- TPL(unique(ALA.TRIM$scientificName), infra = TRUE,
-#                  corr = TRUE, repeats = 100)  ## to stop it timing out...
-# sort(names(ALA.TREES.TRIM.TAXO))
-
-
 #########################################################################################################################
 ## The procedure used for taxonomic standardization is based on function TPLck. A progress bar
 ## indicates the proportion of taxon names processed so far. In case the TPL website cannot be reached
