@@ -106,6 +106,40 @@ write.csv(COMBO.LUT, "./data/base/HIA_LIST/COMBO/SUA_TREES_GBIF_ALA_LUT.csv", ro
 ## Read the lookup table back in, remap the species...................................................................
 ## How is the lookup table different to what we already have? Alessandro's species names were not as clean as mine, so searchTaxon 
 ## might be the same as before.
+SUA.SPP.LUT = read.csv("./data/base/HIA_LIST/COMBO/SUA_SPP_LUT.csv", stringsAsFactors = FALSE)
+COMBO.LUT   = join(GBIF.ALA.COMBO[, c("scientificName",
+                                      "searchTaxon", 
+                                      "Taxonomic.status")], SUA.SPP.LUT, type = "inner", by = "searchTaxon")
+dim(COMBO.LUT)
+
+
+## Create a TPL table for just new lookup
+ST.LUT <- TPL(unique(COMBO.LUT$ST_LUT), infra = TRUE,
+              corr = TRUE, repeats = 100)
+
+
+## Compare the two searchTaxon columns
+Match.ST = COMBO.LUT %>%
+  mutate(Match = 
+           str_detect(searchTaxon, ST_LUT))
+round(with(Match.ST, table(Match)/sum(table(Match))*100), 2)
+Match.false = subset(Match.ST, Match == "FALSE")
+
+
+## Only 200 unique searchTaxon, but ST_LUT is the real field that GBIF returned
+length(unique(Match.ST$scientificName))
+length(unique(Match.ST$ST_LUT))
+length(unique(Match.ST$searchTaxon))
+Match.unique.ST = Match.ST[!duplicated(Match.ST[,c("searchTaxon")]),]
+
+length(Match.unique.ST$scientificName)
+length(Match.unique.ST$searchTaxon)
+length(Match.unique.ST$ST_LUT)
+
+
+View(Match.unique.ST)
+View(Match.ST)
+View(Match.false)
 
 
 ## How to check the taxonomy?
