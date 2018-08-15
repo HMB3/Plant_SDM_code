@@ -109,21 +109,39 @@ write.csv(COMBO.LUT, "./data/base/HIA_LIST/COMBO/SUA_TREES_GBIF_ALA_LUT.csv", ro
 SUA.SPP.LUT = read.csv("./data/base/HIA_LIST/COMBO/SUA_SPP_LUT.csv", stringsAsFactors = FALSE)
 COMBO.LUT   = join(GBIF.ALA.COMBO[, c("scientificName",
                                       "searchTaxon", 
-                                      "Taxonomic.status")], SUA.SPP.LUT, type = "inner", by = "searchTaxon")
+                                      "Taxonomic.status")], SUA.SPP.LUT)
 dim(COMBO.LUT)
+head(COMBO.LUT)
 
 
 ## Create a TPL table for just new lookup
-ST.LUT <- TPL(unique(COMBO.LUT$ST_LUT), infra = TRUE,
-              corr = TRUE, repeats = 100)
+# ST.LUT <- TPL(unique(COMBO.LUT$ST_LUT), infra = TRUE,
+#               corr = TRUE, repeats = 100)
 
 
 ## Compare the two searchTaxon columns
 Match.ST = COMBO.LUT %>%
-  mutate(Match = 
-           str_detect(searchTaxon, ST_LUT))
-round(with(Match.ST, table(Match)/sum(table(Match))*100), 2)
-Match.false = subset(Match.ST, Match == "FALSE")
+  mutate(Match.SN.ST = 
+           str_detect(scientificName, ST_LUT))    ## str_detect(searchTaxon, ST_LUT))
+
+
+## This is handy
+round(with(Match.ST, table(Match.SN.ST)/sum(table(Match.SN.ST))*100), 2)
+with(Match.ST, table(Taxonomic.status))
+
+
+Match.false = subset(Match.ST, Match.SN.ST == "FALSE")
+dim(Match.false)
+View(Match.false)
+
+
+#########################################################################################################################
+## Just get the GBIF spp................................................................................
+Match.GBIF  = Match.ST[Match.ST$ST_LUT %in% GBIF.spp, ]
+dim(Match.GBIF)
+View(Match.GBIF)
+
+
 
 
 ## Only 200 unique searchTaxon, but ST_LUT is the real field that GBIF returned
@@ -132,9 +150,9 @@ length(unique(Match.ST$ST_LUT))
 length(unique(Match.ST$searchTaxon))
 Match.unique.ST = Match.ST[!duplicated(Match.ST[,c("searchTaxon")]),]
 
-length(Match.unique.ST$scientificName)
-length(Match.unique.ST$searchTaxon)
-length(Match.unique.ST$ST_LUT)
+length(unique(Match.unique.ST$scientificName))
+length(unique(Match.unique.ST$searchTaxon))
+length(unique(Match.unique.ST$ST_LUT))
 
 
 View(Match.unique.ST)
