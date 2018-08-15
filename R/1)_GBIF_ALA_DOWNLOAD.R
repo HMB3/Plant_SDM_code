@@ -97,8 +97,8 @@ skipped.taxa    = download_GBIF_all_species(species_list = all.taxa,
                                             path         = "./data/base/HIA_LIST/GBIF/OCC_SEARCH/") ## insert path 
 
 
-ALA.taxa    = download_ALA_all_species(species_list = all.taxa, 
-                                       path         = "./data/base/HIA_LIST/ALA/TREE_SPECIES/")
+ALA.taxa        = download_ALA_all_species(species_list = all.taxa, 
+                                           path         = "./data/base/HIA_LIST/ALA/TREE_SPECIES/")
 
 
 #########################################################################################################################

@@ -304,26 +304,23 @@ lapply(SPP.BIAS, function(spp){
 ## 1). 100/200 tree spp that are commonly planted and traded, with sufficient spatial data to model robustly: done
 
 
-## 2). Fix the taxonomy, do this with Alessandro. Need to get this done before re-running the models
+## 2). Fix the taxonomy
 
 ##     Check the pie chart for all the synonyms. How do we know which species to check?
 ##     ALA automatically gets the synonyms, GBIF doesn't. 
 
-##     Download all the synonyms
+##     Download all the synonyms using occ_data. This inlcudes 13% more records
 
 ##     Bind the TPL table to all the records. Re-assign the species to the new name.
-
 ##     How to change this?
 
 ##     Keep the 'source' column in the maxent table :: adjust step 7  
-
 ##     Extract NA values for tree inventory data.  
      
 
 ## 3). Thin records for 28 spp. with boundary bias, using the SDM tool box. Send Alessandro the latest file .shp
 
 ##     Settings: Max 5km, min 1km, 5 heterogeneity classes (from a classification of a PCA, using the worldclim layers)
-
 ##     Currently using all spp background records: random 100k for every species, sounds ok?
 
 ##     Compare the models with and without thinning for a 28 species:

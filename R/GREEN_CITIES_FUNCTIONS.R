@@ -320,6 +320,23 @@ download_GBIF_all_species = function (species_list, path) {
       ## 5). Download ALL records from GBIF
       message("Downloading GBIF records for ", sp.n, " using rgbif :: occ_data")
       key  <- name_backbone(name = sp.n, rank = 'species')$usageKey
+      # x = name_lookup(sp.n)
+      # keys = x$data$key
+      # 
+      # GBIF <- keys %>%         
+      #   
+      #   ## pipe the list into lapply
+      #   lapply(function(x) {
+      #     
+      #     ## Create the character string
+      #     f <- occ_data(taxonKey = x, limit = GBIF.download.limit)
+      #     f =  as.data.frame(f$data)
+      #     ## Load each .RData file
+      #     
+      #   }) %>%
+      #   
+      #   ## Finally, bind all the rows together
+      #   bind_rows
       
       GBIF <- occ_data(taxonKey = key, limit = GBIF.download.limit)
       GBIF <- as.data.frame(GBIF$data)
