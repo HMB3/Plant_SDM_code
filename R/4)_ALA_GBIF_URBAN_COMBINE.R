@@ -23,7 +23,7 @@
 rasterTmpFile()
 
 
-## GBIF and ALA data
+## Load GBIF and ALA data
 #GBIF.LAND = readRDS("./data/base/HIA_LIST/GBIF/GBIF_TREES_LAND.rds")
 #ALA.TREES.LAND = readRDS("./data/base/HIA_LIST/GBIF/ALA_TREES_LAND.rds")
 #load("./data/base/HIA_LIST/ALA/ALA_LAND_POINTS.RData")                      ## save the update in the same place
@@ -70,16 +70,10 @@ length(unique(GBIF.ALA.COMBO$scientificName))
 
 
 #########################################################################################################################
-## Check these GBIF/ALA data
+## Check these GBIF/ALA data :: No na year or lat/long, all years > 1950
 summary(GBIF.ALA.COMBO$year)
 summary(GBIF.ALA.COMBO$lat)
 summary(GBIF.ALA.COMBO$lon)
-
-
-## Check the dimensions for some example species
-dim(subset(GBIF.ALA.COMBO, searchTaxon == "Platanus acerifolia"))
-dim(subset(GBIF.ALA.COMBO, searchTaxon == "Eucalyptus cephalocarpa"))
-
 
 
 #########################################################################################################################
@@ -98,20 +92,54 @@ write.csv(COMBO.LUT, "./data/base/HIA_LIST/COMBO/SUA_TREES_GBIF_ALA_LUT.csv", ro
 
 
 #########################################################################################################################
-## 2). CHECK TAXONOMY
+## 2). CHECK TAXONOMY FOR GBIF, ALA and TREE INVENTORY
 #########################################################################################################################
+
+## We Manually create a lookup table of unique species names returned (scientificName) and searchecd (ST_LUT) in GBIF/ALA. 
+## We are after the union of the original scientific name, and the lookup table search name ST_LUT. We are taking the
+## ST_LUT as the truth for comparisson, and this should inclue valid synonyms.
+
+
+#########################################################################################################################
+## Check taxonomy for the tree inventory data 
+head(TI.XY.SPP)
+TI.TAXO <- TPL(unique(TI.XY.SPP$searchTaxon), infra = TRUE,
+               corr = TRUE, repeats = 100)
+
+
+## Create a table of unique species names from the TI table
+TI.JOIN <- TI.XY.SPP %>%
+  left_join(., TI.TAXO, by = c("searchTaxon" = "Taxon"))
+TI.LUT = TI.JOIN[, c("searchTaxon",
+                     "SOURCE",
+                     "Taxonomic.status",
+                     "New.Genus",
+                     "New.Species")]
+Match.TI = TI.LUT[!duplicated(TI.LUT[,c("searchTaxon")]),]
+dim(Match.TI)
+head(Match.TI)
 
 
 #########################################################################################################################
 ## Read the lookup table back in, remap the species...................................................................
-## How is the lookup table different to what we already have? Alessandro's species names were not as clean as mine, so searchTaxon 
-## might be the same as before.
 SUA.SPP.LUT = read.csv("./data/base/HIA_LIST/COMBO/SUA_SPP_LUT.csv", stringsAsFactors = FALSE)
 COMBO.LUT   = join(GBIF.ALA.COMBO[, c("scientificName",
-                                      "searchTaxon", 
-                                      "Taxonomic.status")], SUA.SPP.LUT)
+                                      "searchTaxon",
+                                      "SOURCE",
+                                      "Taxonomic.status",
+                                      "New.Genus",
+                                      "New.Species")], SUA.SPP.LUT)
+
+# TI.LUT   = join(TI.LUT[, c("searchTaxon",
+#                            "SOURCE",
+#                            "Taxonomic.status",
+#                            "New.Genus",
+#                            "New.Species")], SUA.SPP.LUT)
+
 dim(COMBO.LUT)
+dim(TI.LUT)
 head(COMBO.LUT)
+head(TI.LUT)
 
 
 ## Create a TPL table for just new lookup
@@ -119,108 +147,91 @@ head(COMBO.LUT)
 #               corr = TRUE, repeats = 100)
 
 
-## Compare the two searchTaxon columns
+## See if the Scientific name and searchTaxon match
 Match.ST = COMBO.LUT %>%
   mutate(Match.SN.ST = 
            str_detect(scientificName, ST_LUT))    ## str_detect(searchTaxon, ST_LUT))
 
 
-## This is handy
+## How many records don't match?
 round(with(Match.ST, table(Match.SN.ST)/sum(table(Match.SN.ST))*100), 2)
 with(Match.ST, table(Taxonomic.status))
 
 
+#########################################################################################################################
+## IF the searchTaxon and scientific name match, that is as good as we can do to know they are not misidentified
+## Then we need to reassign synonyms to the correct name. 
+
+
+## So what do the false records mean? If searchTaxon and scientific name do not match, we have searched for one species,
+## and GBIF/ALA has either returned a synonym, or the wrong species altogether. To get all possible records, we need to 
+## search both GBIF and ALA for all synonyms, which causes mismatches when the data are combined.
+## There is no consistent relationship between taxo status and the mismatch.
+
+## 1). We need to check if the SN is the right one
+## 2). If it is, update and keep, if not, remove
+
+
+## Look at the records where the SN and ST don't match
 Match.false = subset(Match.ST, Match.SN.ST == "FALSE")
+unique(Match.false$Taxonomic.status)
+unique(Match.false$SOURCE)
 dim(Match.false)
 View(Match.false)
 
 
 #########################################################################################################################
-## Just get the GBIF spp................................................................................
-Match.GBIF  = Match.ST[Match.ST$ST_LUT %in% GBIF.spp, ]
-dim(Match.GBIF)
-View(Match.GBIF)
+## If we accept ST_LUT as the taxonomic truth, we can exclude records that are not on this list
+# Match.GBIF  = Match.ST[Match.ST$ST_LUT %in% GBIF.spp, ]
+# dim(Match.GBIF)
+# View(Match.GBIF)
 
 
-
-
-## Only 200 unique searchTaxon, but ST_LUT is the real field that GBIF returned
+## Take a unique of the updated searchTaxon column (ST_LUT)
 length(unique(Match.ST$scientificName))
 length(unique(Match.ST$ST_LUT))
 length(unique(Match.ST$searchTaxon))
-Match.unique.ST = Match.ST[!duplicated(Match.ST[,c("searchTaxon")]),]
+Match.unique.ST = Match.ST[!duplicated(Match.ST[,c("ST_LUT")]),]
 
 length(unique(Match.unique.ST$scientificName))
 length(unique(Match.unique.ST$searchTaxon))
 length(unique(Match.unique.ST$ST_LUT))
 
 
-View(Match.unique.ST)
+#########################################################################################################################
+## We need to create one master table of all the species names used in the analysis
+## Use this to re-assign synonyms. Not sure how we want to combine the three sources
+length(intersect(TREE.HIA.SPP, Match.unique.ST$searchTaxon))
+length(intersect(TREE.HIA.SPP, Match.TI$searchTaxon))
+length(intersect(Match.unique.ST$searchTaxon, Match.TI$searchTaxon))
+
+
+## Not sure what kind of a join we want here
+GBIF.ALA.TI.LUT = merge(Match.unique.ST, Match.TI, all = TRUE)
+#GBIF.ALA.TI.LUT = merge(Match.unique.ST, Match.TI[,c("searchTaxon", "SOURCE")], by = "searchTaxon")
+GBIF.ALA.TI.LUT = GBIF.ALA.TI.LUT[, c("ST_LUT",
+                                      "scientificName",
+                                      "searchTaxon",
+                                      "SOURCE",
+                                      "Taxonomic.status",
+                                      "New.Genus",
+                                      "New.Species",
+                                      "FREQUENCY_GBIF",
+                                      "Match.SN.ST")]
+
+## Column for SOURCE
+#GBIF.ALA.TI.LUT.SPP  = GBIF.ALA.TI.LUT[GBIF.ALA.TI.LUT$ST_LUT %in% TREE.HIA.SPP, ]
+#write.csv(GBIF.ALA.TI.LUT, "./data/base/HIA_LIST/COMBO/GBIF_ALA_TI_LUT.csv", row.names = FALSE) 
+  
+length(intersect(TREE.HIA.SPP, GBIF.ALA.TI.LUT$ST_LUT))
+length(unique(GBIF.ALA.TI.LUT$searchTaxon))
+length(unique(GBIF.ALA.TI.LUT$ST_LUT))
+table(GBIF.ALA.TI.LUT$SOURCE)
+
+
+View(GBIF.ALA.TI.LUT)
 View(Match.ST)
 View(Match.false)
-
-
-## How to check the taxonomy?
-unique(GBIF.ALA.COMBO$Taxonomic.status)
-unique(GBIF.ALA.COMBO$New.Taxonomic.status)
-
-
-## Is this the correct join?
-# GBIF.TRIM.TAXO <- GBIF.TRIM %>%
-#   left_join(., GBIF.TAXO, by = c("scientificName" = "Taxon"))
-
-## Create a table
-round(with(GBIF.ALA.COMBO, table(Taxonomic.status)/sum(table(Taxonomic.status))*100), 2)
-
-
-#########################################################################################################################
-## Accepted species
-Accepted = subset(GBIF.ALA.COMBO, Taxonomic.status == "Accepted")
-Accepted = head(Accepted, dim(Accepted)[1])[, c("scientificName",
-                                                "searchTaxon", 
-                                                "Taxonomic.status")]
-
-
-## Check the accepted taxa really do match? This doesn't mean some species were not misidentified... 
-Match.names = Accepted %>%
-  mutate(Match = 
-           str_detect(scientificName, searchTaxon))
-
-dim(Match.names)
-dim(subset(Match.names, Match == "TRUE"))
-mismatch = subset(Match.names, Match == "FALSE")
-length(unique(mismatch$scientificName))
-
-
-## Synonyms
-Synonyms = subset(GBIF.ALA.COMBO, Taxonomic.status == "Synonym")
-head(Synonyms)[, c("scientificName",
-                   "searchTaxon", 
-                   "Taxonomic.status")]
-length(unique(Synonyms$scientificName))
-
-
-## Unresolved
-Unresolved = subset(GBIF.ALA.COMBO, Taxonomic.status == "Unresolved")
-head(Unresolved)[, c("scientificName",
-                   "searchTaxon", 
-                   "Taxonomic.status")]
-length(unique(Unresolved$scientificName))
-
-
-## Unresolved
-Misapplied = subset(GBIF.ALA.COMBO, Taxonomic.status == "Misapplied")
-head(Misapplied)[, c("scientificName",
-                     "searchTaxon", 
-                     "Taxonomic.status"), 10]
-
-## No status
-No.status = subset(GBIF.ALA.COMBO, Taxonomic.status == "")
-head(No.status, 50)[, c("scientificName",
-                    "searchTaxon", 
-                    "Taxonomic.status")]
-length(unique(No.status$scientificName))
-
 
 
 #########################################################################################################################
