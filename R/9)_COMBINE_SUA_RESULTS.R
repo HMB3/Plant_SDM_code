@@ -103,22 +103,35 @@ head(SUA.PRESENCE, 50);tail(SUA.PRESENCE, 50)
 
 
 #########################################################################################################################
-## Now join on the population
-TOP.SUA.POP      = ALL.SUA.POP[, c("SUA", "POP_2017")]
+## Now join on the population. Note that the area shapefile does not have the same SUAs as the ABS table
+SUA.DENS = areal_unit@data
+SUA.DENS = SUA.DENS[, c("SUA_NAME11", "AREA_SQKM")]
+names(SUA.DENS) = c("SUA", "AREA_SQKM")
+head(SUA.DENS)
+
+
+##
+TOP.SUA.POP             = ALL.SUA.POP[, c("SUA", "POP_2017")]
+SUA.DEN                 = merge(TOP.SUA.POP, SUA.DENS)
+SUA.DEN$POP_DESNITY     = TOP.SUA.DEN$POP_2017/TOP.SUA.DEN$AREA_SQKM
+View(SUA.DEN)
+
+
+## 
 SUA.PRESENCE$SUA = as.character(SUA.PRESENCE$SUA)
 class(SUA.PRESENCE$SUA)
-class(TOP.SUA.POP$SUA)
+class(SUA.DEN$SUA)
 
 
 ## 87 SUAs overlap between the ABS shapefile and the table
-unique(sort(TOP.SUA.POP$SUA))
+unique(sort(SUA.DEN$SUA))
 unique(sort(SUA.PRESENCE$SUA))
-intersect(unique(sort(TOP.SUA.POP$SUA)), unique(sort(SUA.PRESENCE$SUA)))
-SUA.PRESENCE = join(SUA.PRESENCE, TOP.SUA.POP)
+intersect(unique(sort(SUA.DEN$SUA)), unique(sort(SUA.PRESENCE$SUA)))
+SUA.PRESENCE = join(SUA.PRESENCE, SUA.DEN)
 
 
 ## Check this combined table
-SUA.PRESENCE = SUA.PRESENCE[, c("SUA",         "POP_2017",     "AREA_SQKM", 
+SUA.PRESENCE = SUA.PRESENCE[, c("SUA",         "POP_2017",     "AREA_SQKM", "POP_DESNITY",
                                 "SPECIES",     "PERIOD",       "AREA_THRESH", 
                                 "MAX_TRAIN",   "CURRENT_AREA", "FUTURE_AREA", 
                                 "AREA_CHANGE", "PRESENT",      "GAIN_LOSS")]
@@ -184,7 +197,18 @@ write.csv(SUA.TOP.PRESENCE, "./output/maxent/MAXNET_SUA_TOP.csv",         row.na
 
 
 #########################################################################################################################
-## 3). CREATE A RICHNESS MAP FOR EACH TIME PERIOD
+## 3). CREATE PLOTS OF SPECIES LOSS AND GAIN
+#########################################################################################################################
+
+
+## How do you convert this table into a format where you can create a bar graph?
+length(unique(SUA.COMPLETE$SPECIES))
+
+
+
+
+#########################################################################################################################
+## 4). CREATE A RICHNESS MAP FOR EACH TIME PERIOD
 #########################################################################################################################
 
 

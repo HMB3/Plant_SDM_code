@@ -222,7 +222,6 @@ GBIF.ALA.TI.LUT = GBIF.ALA.TI.LUT[, c("ST_LUT",
 ## Column for SOURCE
 #GBIF.ALA.TI.LUT.SPP  = GBIF.ALA.TI.LUT[GBIF.ALA.TI.LUT$ST_LUT %in% TREE.HIA.SPP, ]
 #write.csv(GBIF.ALA.TI.LUT, "./data/base/HIA_LIST/COMBO/GBIF_ALA_TI_LUT.csv", row.names = FALSE) 
-  
 length(intersect(TREE.HIA.SPP, GBIF.ALA.TI.LUT$ST_LUT))
 length(unique(GBIF.ALA.TI.LUT$searchTaxon))
 length(unique(GBIF.ALA.TI.LUT$ST_LUT))
