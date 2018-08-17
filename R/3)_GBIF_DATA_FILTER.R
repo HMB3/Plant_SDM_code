@@ -61,7 +61,7 @@ GBIF.ALL <- spp.download[c(1:length(spp.download))] %>%   ## spp.download[c(1:le
     ## Need to print the object within the loop
     names(dat)[names(dat) == 'decimalLatitude']  <- 'lat'
     names(dat)[names(dat) == 'decimalLongitude'] <- 'lon'
-    dat$searchTaxon = gsub("_ALA_records.RData", "", dat$searchTaxon)
+    dat$searchTaxon = gsub("_GBIF_records.RData", "", dat$searchTaxon)
     dat
     
   }) %>%
@@ -78,7 +78,7 @@ length(unique(GBIF.ALL$searchTaxon))
 sort(names(GBIF.ALL))
 str(GBIF.ALL$recordedBy)
 str(GBIF.ALL$dateIdentified)
-identical(unique(GBIF.ALL$searchTaxon), GBIF.spp)
+length(intersect(unique(GBIF.ALL$searchTaxon), GBIF.spp))
 
 
 ## Now get just the columns we want to keep. Note gc() frees up RAM
@@ -104,11 +104,9 @@ length(unique(GBIF.TRIM$searchTaxon))
 
 
 ## How do the searched and returned items compare?
-head(GBIF.TRIM, 100)[, c("scientificName",
+head(GBIF.TRIM, 10)[, c("scientificName",
                          "searchTaxon")]
 
-head(GBIF.TRIM, 100)[, c("scientificName",
-                         "searchTaxon")]
 
 
 
@@ -118,8 +116,8 @@ head(GBIF.TRIM, 100)[, c("scientificName",
 
 
 ## The problems is the mismatch between what we searched, and what GBIF returned. We can check this by taking the 
-## scientificName, and run that through TPL. Then, of the names in this list which are accepted, but which don't match our list
-## Get rid of them.
+## scientificName, and run that through TPL. Then, of the names in this list which are accepted, but which don't match 
+## our list, get rid of them.
 
 
 
@@ -130,26 +128,62 @@ GBIF.TAXO <- TPL(unique(GBIF.TRIM$scientificName), infra = TRUE,
 sort(names(GBIF.TAXO))
 
 
+
 #########################################################################################################################
 ## The procedure used for taxonomic standardization is based on function TPLck. A progress bar
-## indicates the proportion of taxon names processed so far. In case the TPL website cannot be reached
-## temporarily, the function returns an error but repeats trying to match the given taxon multiple times
-## (see repeats). If standardization is still not successful, the input taxon is returned in field ’Taxon’
-## with NA in all other fields
+## indicates the proportion of taxon names processed so far. 
+
+
+## Check the taxonomy by taking scientificName, and run that through TPL. Then, of the names in this list which are 
+## accepted, but which don't match our list Get rid of them.
 
 
 ## Then join the GBIF data to the taxonomic check, using "scientificName" as the join field...
 GBIF.TRIM.TAXO <- GBIF.TRIM %>%
   left_join(., GBIF.TAXO, by = c("scientificName" = "Taxon"))
+names(GBIF.TRIM.TAXO)
 
 
-## So we can filter by the agreement between "scientificName", and "New.Taxonomic.status"?
-## A better way could be to create a new filter for agreement between the search taxon genus and species,
-## and the new genus and species. Which of these columns to keep?
+## However, the scientificName string and the searchTaxon string are not the same. So to test which SN are accepted but
+## not on the ST list, we need string matching using regular expressions, or the like.
+## currently using str_detect
+Match.SN = GBIF.TRIM.TAXO  %>%
+  mutate(Match.SN.ST = 
+           str_detect(scientificName, searchTaxon)) %>%
+  
+  select(one_of(c("scientificName",
+                  "searchTaxon",
+                  "Taxonomic.status",
+                  "New.Taxonomic.status",
+                  "New.Genus",
+                  "New.Species",
+                  "country",
+                  "Match.SN.ST")))
+
+
+## How many records don't match? 44k or 1.5%
+unique(Match.SN$Taxonomic.status)
+with(Match.SN, table(Match.SN.ST))
+with(Match.SN, table(Taxonomic.status))
+
+
+## What are the proportions
+round(with(Match.SN, table(Match.SN.ST)/sum(table(Match.SN.ST))*100), 2)
+round(with(Match.SN, table(Taxonomic.status)/sum(table(Taxonomic.status))*100), 2)
+View(Match.SN)
 
 
 #########################################################################################################################
-## Now create a column for the agreement between the new genus and the old genus
+## Get the subset of species which are accpeted, but not on our list
+acc.no.match = subset(Match.SN, Taxonomic.status == "Accepted" & Match.SN.ST == "FALSE")
+acc.mis.sn  = unique(acc.no.match$scientificName)    ## the unique scientific names we didn't ask for
+acc.mis.st  = unique(acc.no.match$searchTaxon)       ## The unique species returning dodgy scientific names
+View(acc.no.match)
+
+
+
+#########################################################################################################################
+## Now, create a column for the agreement between the new genus and the old genus
 ## First, trim the spaces out
 GBIF.TRIM.TAXO$searchTaxon  = trimws(GBIF.TRIM.TAXO$searchTaxon)
 
@@ -184,20 +218,6 @@ GBIF.RESOLVED <- GBIF.TRIM.TAXO %>%
   
   ## Just get the accepted taxa
   filter(New.Taxonomic.status == 'Accepted')
-
-
-#########################################################################################################################
-## What do examples of resolved and unresolved records look like?
-head(GBIF.UNRESOLVED, 50)[, c("searchTaxon",
-                              "scientificName", 
-                              "TPL_binomial",
-                              "taxo_agree")]
-
-
-head(GBIF.RESOLVED, 50)[, c("searchTaxon",
-                            "scientificName", 
-                            "TPL_binomial",
-                            "taxo_agree")]
 
 
 ## Also keep the managed records:
