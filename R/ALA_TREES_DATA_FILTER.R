@@ -5,7 +5,7 @@
 
 #########################################################################################################################
 ## This code updates the ALA data
-spp.download = list.files("./data/base/HIA_LIST/ALA/TREE_SPECIES/", pattern = ".RData")
+spp.download = list.files(ALA_path, pattern = ".RData")
 
 
 ## Load ALA update :: the coordinates are coming in as characters
@@ -83,7 +83,8 @@ ALA.TREES.TRIM <- spp.download %>%   ## spp.download[c(1:length(spp.download))]
   lapply(function(x) {
     
     ## Create a character string of each .RData file
-    f <- sprintf("./data/base/HIA_LIST/ALA/TREE_SPECIES/%s", x)
+    #f <- sprintf("./data/base/HIA_LIST/ALA/TREE_SPECIES/%s", x)
+    f <- sprintf(paste0(ALA_path, "%s"), x)
     
     ## Load each file
     d <- get(load(f))

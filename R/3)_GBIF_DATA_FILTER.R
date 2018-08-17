@@ -25,16 +25,7 @@ rasterTmpFile()
 
 #########################################################################################################################
 ## Create a list of species from the downloaded files
-spp.download = list.files("./data/base/HIA_LIST/GBIF/OCC_SEARCH/", pattern = ".RData")
-spp.download = gsub("_GBIF_records.RData", "", spp.download)
-spp.download = trimws(spp.download)
-bind.spp     = trimws(GBIF.spp)
-spp.download = intersect(bind.spp, spp.download)
-
-
-## memory is a problem. Can these sorts of operations be run in parallel?
-memory.limit()
-gc()
+spp.download = list.files(GBIF_path, pattern = ".RData")
 
 
 ## Check GBIF column names:
@@ -51,7 +42,8 @@ GBIF.ALL <- spp.download[c(1:length(spp.download))] %>%   ## spp.download[c(1:le
   lapply(function(x) {
     
     ## Create a character string of each .RData file
-    f <- sprintf("./data/base/HIA_LIST/GBIF/OCC_SEARCH/%s_GBIF_records.RData", x)
+    #f <- sprintf(paste0(GBIF_path, "%s_GBIF_records.RData"), x)
+    f <- sprintf(paste0(GBIF_path, "%s"), x)
     
     ## Load each file
     d <- get(load(f))
@@ -69,6 +61,7 @@ GBIF.ALL <- spp.download[c(1:length(spp.download))] %>%   ## spp.download[c(1:le
     ## Need to print the object within the loop
     names(dat)[names(dat) == 'decimalLatitude']  <- 'lat'
     names(dat)[names(dat) == 'decimalLongitude'] <- 'lon'
+    dat$searchTaxon = gsub("_ALA_records.RData", "", dat$searchTaxon)
     dat
     
   }) %>%
@@ -79,6 +72,7 @@ GBIF.ALL <- spp.download[c(1:length(spp.download))] %>%   ## spp.download[c(1:le
 
 #########################################################################################################################
 ## CHECK SEARCHED AND RETURNED TAXONOMIC NAMES FROM GBIF
+dim(GBIF.ALL)
 length(unique(GBIF.ALL$searchTaxon))
 
 sort(names(GBIF.ALL))
@@ -95,7 +89,6 @@ GBIF.TRIM <- GBIF.ALL %>%
 ## Check names
 dim(GBIF.TRIM)
 names(GBIF.TRIM)
-setdiff(names(GBIF.TRIM), gbif.keep)
 intersect(names(GBIF.TRIM), gbif.keep)
 
 
@@ -122,6 +115,12 @@ head(GBIF.TRIM, 100)[, c("scientificName",
 #########################################################################################################################
 ## 2). CHECK TAXONOMY RETURNED BY GBIF USING TAXONSTAND
 ######################################################################################################################### 
+
+
+## The problems is the mismatch between what we searched, and what GBIF returned. We can check this by taking the 
+## scientificName, and run that through TPL. Then, of the names in this list which are accepted, but which don't match our list
+## Get rid of them.
+
 
 
 #########################################################################################################################
@@ -469,13 +468,16 @@ gc()
 # plot(LAND)
 
 
+
+
 #########################################################################################################################
 ## save data
 saveRDS(GBIF.LAND, file = paste("./data/base/HIA_LIST/GBIF/GBIF_TREES_LAND.rds"))
 
 
 ## Now save .rds file for the next session
-save.image("STEP_3_GBIF_CLEAN.RData")
+#save.image("STEP_3_GBIF_CLEAN.RData")
+gc()
 #load("STEP_3_GBIF_CLEAN.RData")
 
 

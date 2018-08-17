@@ -113,6 +113,7 @@ TI.JOIN <- TI.XY.SPP %>%
 TI.LUT = TI.JOIN[, c("searchTaxon",
                      "SOURCE",
                      "Taxonomic.status",
+                     "New.Taxonomic.status",
                      "New.Genus",
                      "New.Species")]
 Match.TI = TI.LUT[!duplicated(TI.LUT[,c("searchTaxon")]),]
@@ -127,6 +128,7 @@ COMBO.LUT   = join(GBIF.ALA.COMBO[, c("scientificName",
                                       "searchTaxon",
                                       "SOURCE",
                                       "Taxonomic.status",
+                                      "New.Taxonomic.status",
                                       "New.Genus",
                                       "New.Species")], SUA.SPP.LUT)
 
@@ -148,14 +150,26 @@ head(TI.LUT)
 
 
 ## See if the Scientific name and searchTaxon match
-Match.ST = COMBO.LUT %>%
+Match.SN = COMBO.LUT %>%
   mutate(Match.SN.ST = 
            str_detect(scientificName, ST_LUT))    ## str_detect(searchTaxon, ST_LUT))
+
+Match.ST = Match.SN %>%
+  mutate(Match.ST.ST = 
+           str_detect(ST_LUT, searchTaxon))    ## str_detect(searchTaxon, ST_LUT))
+
 
 
 ## How many records don't match?
 round(with(Match.ST, table(Match.SN.ST)/sum(table(Match.SN.ST))*100), 2)
+round(with(Match.ST, table(Match.ST.ST)/sum(table(Match.ST.ST))*100), 2)
 with(Match.ST, table(Taxonomic.status))
+
+
+#########################################################################################################################
+## Create a unique of all the cases
+#blank.spp = unique$
+
 
 
 #########################################################################################################################
@@ -176,6 +190,17 @@ with(Match.ST, table(Taxonomic.status))
 Match.false = subset(Match.ST, Match.SN.ST == "FALSE")
 unique(Match.false$Taxonomic.status)
 unique(Match.false$SOURCE)
+Match.false = Match.false[, c("ST_LUT",
+                              "scientificName",
+                              "searchTaxon",
+                              "SOURCE",
+                              "Taxonomic.status",
+                              "New.Taxonomic.status",
+                              "New.Genus",
+                              "New.Species",
+                              "FREQUENCY_GBIF",
+                              "Match.SN.ST",
+                              "Match.SN.ST")]
 dim(Match.false)
 View(Match.false)
 
@@ -214,9 +239,11 @@ GBIF.ALA.TI.LUT = GBIF.ALA.TI.LUT[, c("ST_LUT",
                                       "searchTaxon",
                                       "SOURCE",
                                       "Taxonomic.status",
+                                      "New.Taxonomic.status",
                                       "New.Genus",
                                       "New.Species",
                                       "FREQUENCY_GBIF",
+                                      "Match.SN.ST",
                                       "Match.SN.ST")]
 
 ## Column for SOURCE

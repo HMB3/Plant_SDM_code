@@ -21,7 +21,8 @@ source('./R/HIA_TREE_LIST.R')
 GBIF.spp      = sort(TREE.HIA.SPP)
 map_spp_list  = TREE_HIA_SPP
 
-GBIF.path     = 
+GBIF_path     = "./data/base/HIA_LIST/GBIF/OCC_SEARCH/"
+ALA_path      = "./data/base/HIA_LIST/ALA/TREE_SPECIES/"
 
 save_dir      = 'output/maxent/THIN_RECORDS/'
 out_dir       = 'output/maxent/THIN_RECORDS'
