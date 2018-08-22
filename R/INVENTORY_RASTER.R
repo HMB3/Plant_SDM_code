@@ -92,6 +92,8 @@ aus.grids.current = stack(
 
 ## Also get the PET raster
 PET               = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
+PET <- PET %>%
+  projectRaster(crs = CRS.WGS.84)
 
 
 #########################################################################################################################
@@ -99,9 +101,9 @@ PET               = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
 aus.grids.current <- aus.grids.current %>%
   projectRaster(crs = CRS.WGS.84)
 projection(TI.POINTS);projection(aus.grids.current)
+saveRDS("./data/base/worldclim/aus/1km/bio/current/aus_grids_current.rds")
 
-
-TI.RASTER <- extract(env.grids.current, TI.POINTS) %>% 
+TI.RASTER <- extract(aus.grids.current, TI.POINTS) %>% 
   cbind(TI.XY.SPP, .)
 summary(TI.RASTER)
 class(TI.RASTER)
@@ -109,39 +111,45 @@ class(TI.RASTER)
 
 
 #########################################################################################################################
-## Now try to extract the nearest values for the NA rasters
+## Now try to extract the nearest values for the NA rasters. This is just too slow to bother for only 112 points
 # TI.NA  = TI.RASTER[is.na(TI.RASTER$bio_01),]
 # NA.XY  = TI.NA[c("lon", "lat")]
 # 
 # 
 # ##
 # TI.NA <- names(aus.grids.current) %>%
-#   
+# 
 #   ## pipe the list of raster names into lapply
 #   lapply(function(x) {
-#     
+# 
 #     ## Create the raster values
 #     r = aus.grids.current[[x]]
 #     r@data@values = values(r)
 #     str(r@data@values)
 #     xy = NA.XY
 #     dim(xy)
-#     
+# 
 #     ## The sample the nearest non-NA raster values
+#     message("sampling ", dim(xy)[1], "points from raster") 
 #     sampled = apply(X = xy, MARGIN = 1, FUN = function(xy) r@data@values[which.min(replace(distanceFromPoints(r, xy), is.na(r), NA))])
-#     
+# 
 #     ## Check the data
 #     head(sampled)
-#     
+# 
 #   }) %>%
-#   
+# 
 #   ## Finally, bind all the rows together
 #   cbind
 # 
 # 
 # ## Save data
-# TI.NA = cbind(TI.XY.SPP, TI.RASTER)
-# saveRDS(TI.RASTER, 'data/base/HIA_LIST/COMBO/SPAT_OUT/TREE_INV_SPAT_OUT.rds')
+# saveRDS(TI.NA, 'data/base/HIA_LIST/COMBO/SPAT_OUT/TREE_INV_NA_RASTER.rds')
+# TI.ALL = cbind(TI.XY.SPP, TI.RASTER, TI.NA)
+# indentical(dim(TI.ALL)[1], dim(TI.RASTER)[1])
+# 
+# 
+# saveRDS(TI.ALL, 'data/base/HIA_LIST/COMBO/SPAT_OUT/TREE_INV_ALL_POINTS.rds')
+
 
 
 #########################################################################################################################

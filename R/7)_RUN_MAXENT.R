@@ -39,7 +39,7 @@ unique(CLEAN.TRUE$SOURCE)
 
 
 ## Which columns
-COMBO.RASTER.ALL  <- dplyr::select(CLEAN.TRUE, searchTaxon, lon, lat,
+COMBO.RASTER.ALL  <- dplyr::select(CLEAN.TRUE, searchTaxon, lon, lat, SOURCE,
                                    
                                    Annual_mean_temp,     Mean_diurnal_range,  Isothermality,     Temp_seasonality, 
                                    Max_temp_warm_month,  Min_temp_cold_month, Temp_annual_range, Mean_temp_wet_qu,
@@ -306,16 +306,17 @@ lapply(SPP.BIAS, function(spp){
 
 ## 2). Fix the taxonomy
 
-##     Check the pie chart for all the synonyms. How do we know which species to check?
-##     ALA automatically gets the synonyms, GBIF doesn't. 
+##     Use the accepted name from GBIF - could exclude the synonyms later to avoid confusion
 
-##     Download all the synonyms using occ_data. This inlcudes 13% more records
+##     Download all the synonyms using occ_data. This inlcudes 13% more records. Check Jan's advice and update the download code
 
-##     Bind the TPL table to all the records. Re-assign the species to the new name.
-##     How to change this?
+##     Bind the TPL table to all the records. Use this to cross check 
+##     Discard species where search terms don't match returned terms : with the updated names, this should be ok?
+
 
 ##     Keep the 'source' column in the maxent table :: adjust step 7  
-##     Extract NA values for tree inventory data.  
+
+##     Can we Extract NA values for tree inventory data - it's very slow! 
      
 
 ## 3). Thin records for 28 spp. with boundary bias, using the SDM tool box. Send Alessandro the latest file .shp

@@ -340,8 +340,16 @@ download_GBIF_all_species = function (species_list, path) {
       
       GBIF <- occ_data(taxonKey = key, limit = GBIF.download.limit)
       GBIF <- as.data.frame(GBIF$data)
-      cat("Synonyms returned for :: ", sp.n, unique(GBIF$scientificName), sep="\n")
-      message(dim(GBIF[1]), " Records returned")
+       
+      cat("Synonyms returned for :: ",  sp.n, unique(GBIF$scientificName), sep="\n")
+      cat("Names returned for :: ", sp.n, unique(GBIF$name),               sep="\n")
+      cat("Takonkeys returned for :: ", sp.n, unique(GBIF$taxonKey),       sep="\n")
+      
+      ## Could also only use the key searched, but that could knock out a lot of species
+      #GBIF = GBIF[GBIF$taxonKey %in% key, ]
+      #View(GBIF[c("name", "scientificName", "taxonKey")])
+      
+      message(dim(GBIF[1]), " Records returned for ", sp.n)
       
       
       ## 6). save records to .Rdata file, note that using .csv files seemed to cause problems...
@@ -889,8 +897,10 @@ gbifColsToDrop <- c(
 ## 
 gbif.keep <- c(## TAXONOMY
                "searchTaxon",
+               "name",
                "scientificName",
                "taxonRank",
+               "taxonKey",
                "genus",
                "family",
                

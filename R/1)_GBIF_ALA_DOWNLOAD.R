@@ -94,7 +94,7 @@ unique(coccinea.occ$data$scientificName)
 ## Run the download function on the species lists. This function needs to download at least one file, or they 
 ## will return NULL. Saves each spp as .Rdata file, returning list of skipped spp
 skipped.taxa    = download_GBIF_all_species(species_list = all.taxa, 
-                                            path         = "./data/base/HIA_LIST/GBIF/OCC_SEARCH/") ## insert path 
+                                            path         = GBIF_path) ## insert path 
 
 
 ALA.taxa        = download_ALA_all_species(species_list = all.taxa, 

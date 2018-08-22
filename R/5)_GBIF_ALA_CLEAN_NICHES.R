@@ -14,6 +14,9 @@
 #########################################################################################################################
 ## Read in all data to run the SDM code :: species lists, shapefile, rasters & tables
 #source('./R/HIA_LIST_MATCHING.R')
+#TI.RASTER.CONVERT = readRDS("./data/base/HIA_LIST/COMBO/TI_RASTER_CONVERT.rds")
+#"H:\green_cities_sdm\data\base\HIA_LIST\COMBO\COMBO_RASTER_CONVERT_APRIL_2018.rds"
+#COMBO.RASTER.CONVERT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONVERT_APRIL_2018.rds")
 rasterTmpFile()
 
 
@@ -24,7 +27,7 @@ rasterTmpFile()
 
 
 #########################################################################################################################
-## Rename the columns to fit the CleanCoordinates format and create a tibble
+## Rename the columns to fit the CleanCoordinates format and create a tibble. A Tibble is needed for coordinate cleaner
 str(unique(COMBO.RASTER.CONVERT$searchTaxon))
 TIB.GBIF<- COMBO.RASTER.CONVERT %>% dplyr::rename(species          = searchTaxon,
                                                   decimallongitude = lon, 
@@ -33,7 +36,7 @@ TIB.GBIF<- COMBO.RASTER.CONVERT %>% dplyr::rename(species          = searchTaxon
 
 
 ## I've already stripped out the records that fall outside
-## the worldclim raster boundaries, so the sea test is probably not the most important for me
+## the worldclim raster boundaries, so the sea test is probably not the most important
 ## Study area is the globe, but we are only projecting models onto Australia
 
 
@@ -75,7 +78,12 @@ message(round(summary(FLAGS)[8]/dim(FLAGS)[1]*100, 2), " % records removed")
 ## alexander.zizka@bioenv.gu.se 
 
 
-## Try adding a loop which combines species flags.................................................................
+## Alex Zizka ::
+## The outlier function is limited in the amount of records it can process. It uses a distance matrix of all records per species, 
+## which means that for instance for a species with 200,000k records will result in a 200,000x200,000 cells matrix, which will 
+## probably choke your computer. The latest version of cc_outl includes a subsampling heuristic to address this problem. 
+## I think this will work for you case, but it might run for a while
+
 
 ## Create a table of the results 
 SPAT.OUT <- GBIF.spp[1:3] %>%         
@@ -109,7 +117,7 @@ SPAT.OUT <- GBIF.spp[1:3] %>%
 
 ## Save data
 head(SPAT.OUT)
-saveRDS(SPAT.OUT, 'data/base/HIA_LIST/COMBO/SPAT_OUT/TREE_INV_SPAT_OUT.rds')
+saveRDS(SPAT.OUT, 'data/base/HIA_LIST/COMBO/SPAT_OUT/GBIF_SPAT_OUT.rds')
 
 
 #########################################################################################################################
@@ -191,9 +199,12 @@ message(round(dim(CLEAN.TRUE)[1]/dim(TEST.GEO)[1]*100, 2), " % records retained"
 TI.XY.SPP  = TI.XY[TI.XY$searchTaxon %in% GBIF.spp, ]
 
 
-## NA's come in here :: why are the urban data outside the worldclim layers?.............................................
+## NA's from Tree Inventories come in here :: Bind on the raster data
 ## check this tomorrow
-CLEAN.TRUE = bind_rows(CLEAN.TRUE, TI.XY.SPP)
+names(TI.RASTER.CONVERT)
+names(CLEAN.TRUE)
+
+CLEAN.TRUE = bind_rows(CLEAN.TRUE, TI.RASTER.CONVERT)
 names(CLEAN.TRUE)
 unique(CLEAN.TRUE$SOURCE) 
 unique(CLEAN.TRUE$INVENTORY) 
