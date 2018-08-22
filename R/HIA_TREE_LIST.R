@@ -541,7 +541,6 @@ setdiff(TREE.HIA.SPP, SUA.SPP)
 # View(TPL.SUA[c("Taxon", "Taxonomic.status", "New.Taxonomic.status", "New.Genus", "New.Species")])
 # saveRDS(TPL.SUA, file = paste("./data/base/HIA_LIST/GBIF/TPL_SUA.rds"))
 TPL.SUA = readRDS("./data/base/HIA_LIST/GBIF/TPL_SUA.rds")
-
 TPL.SPP = paste(TPL.SUA$New.Genus, TPL.SUA$New.Species, sep = " ")
 TPL_SPP = gsub(" ", "_", TPL.SPP)
 setdiff(TREE.HIA.SPP, SUA.SPP)

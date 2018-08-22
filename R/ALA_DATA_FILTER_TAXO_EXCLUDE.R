@@ -8,51 +8,6 @@
 spp.download = list.files(ALA_path, pattern = ".RData")
 
 
-
-
-#########################################################################################################################
-## 1). LOAD TAXA, ADD SEARCH TAXA, DROP COLUMNS AND COMBINE SPECIES DATAFRAMES INTO ONE
-#########################################################################################################################
-
-
-## What are the names?
-# sort(names(ALA.UPDATE))
-# intersect(names(ALA.UPDATE), names(ALA.LAND))
-# intersect(names(ALA.UPDATE), ALA.keep)
-# 
-# 
-# ## Assuming decimal lat and lon are the right columns 
-# ALA.UPDATE$lat = as.numeric(ALA.UPDATE$decimalLatitude)
-# ALA.UPDATE$lon = as.numeric(ALA.UPDATE$decimalLongitude)
-# summary(ALA.UPDATE$lat)
-# summary(ALA.UPDATE$lon)
-# 
-# 
-# #########################################################################################################################
-# ## Now, get just the columns we want to keep. Note gc() frees up RAM
-# ALA.TRIM <- ALA.UPDATE %>% 
-#   select(one_of(ALA.keep))
-# 
-# 
-# ## Check names
-# dim(ALA.TRIM)
-# names(ALA.TRIM)
-# setdiff(ALA.keep, names(ALA.TRIM))
-# 
-# 
-# ## Just get the species we need - this should be the intersection of Ale's list and the HIA list
-# ALA.OLD    = ALA.LAND[ALA.LAND$scientificname %in% GBIF.spp, ]
-# 
-# 
-# ## How big are the datasets?
-# dim(ALA.TRIM);dim(ALA.OLD);dim(AVH.UPDATE)
-# length(unique(ALA.TRIM$scientificName))    ## not many records per species
-# length(unique(AVH.UPDATE$scientificName)) 
-# length(unique(ALA.OLD$scientificname))   
-
-
-
-
 #########################################################################################################################
 ## 2). COMBINE ALA SPECIES INTO ONE DATASET
 #########################################################################################################################
@@ -60,7 +15,7 @@ spp.download = list.files(ALA_path, pattern = ".RData")
 
 #########################################################################################################################
 ## Combine all the taxa into a single dataframe at once
-ALA.TREES.TRIM <- spp.download %>%   ## spp.download[c(1:length(spp.download))] 
+ALA.ALL <- spp.download %>%   ## spp.download[c(1:length(spp.download))] 
   
   ## Pipe the list into lapply
   lapply(function(x) {
@@ -98,26 +53,27 @@ ALA.TREES.TRIM <- spp.download %>%   ## spp.download[c(1:length(spp.download))]
   bind_rows
 
 
-## Check the output :: how does this compare to John's 
-sort(names(ALA.TREES.TRIM))
-dim(ALA.TREES.TRIM)
-length(unique(ALA.TREES.TRIM$scientificName))
-length(unique(ALA.TREES.TRIM$searchTaxon))
-sort(unique(ALA.TREES.TRIM$scientificName))
+#########################################################################################################################
+## Now get just the columns we want to keep. Note gc() frees up RAM
+ALA.TRIM <- ALA.ALL %>% 
+  select(one_of(ALA.keep))
 
 
-## Check the lat/lon
-class(ALA.TREES.TRIM$lat)
-summary(ALA.TREES.TRIM$lat)
-summary(ALA.TREES.TRIM$lon)
+## Check names
+dim(ALA.TRIM)
+names(ALA.TRIM)
 
 
 #########################################################################################################################
-## Now, get just the columns we want to keep. Note gc() frees up RAM
-## Check names
-dim(ALA.TREES.TRIM)
-names(ALA.TREES.TRIM)
-setdiff(ALA.keep, names(ALA.TREES.TRIM))
+## Just get the newly downloaded species................................................................................
+ALA.TRIM = ALA.TRIM[ALA.TRIM$searchTaxon %in% GBIF.spp, ]
+dim(ALA.TRIM)
+
+
+## What are the unique species?
+length(unique(ALA.TRIM$name))
+length(unique(ALA.TRIM$searchTaxon)) 
+length(unique(ALA.TRIM$scientificName)) 
 
 
 
@@ -127,107 +83,49 @@ setdiff(ALA.keep, names(ALA.TREES.TRIM))
 ## 2). CHECK TAXONOMY RETURNED BY ALA USING TAXONSTAND
 ######################################################################################################################### 
 
+## The problems is the mismatch between what we searched, and what GBIF returned. 
 
-#########################################################################################################################
-## Use "Taxonstand" to check the taxonomy. However, this also assumes that the ALA data is clean
-ALA.TAXO <- TPL(unique(ALA.TREES.TRIM$scientificName), infra = TRUE,
-                corr = TRUE, repeats = 100)  ## to stop it timing out...
-sort(names(ALA.TAXO))
+## 1). Create the inital list by combing the planted trees with evergreen list
+##     TREE.HIA.SPP = intersect(subset(TI.LIST, Plantings > 50)$searchTaxon, CLEAN.SPP$Binomial)
 
+## 2). Clean this list using the GBIF backbone taxonomy :: use the "species" column
 
-#########################################################################################################################
-## The procedure used for taxonomic standardization is based on function TPLck. A progress bar
-## indicates the proportion of taxon names processed so far. In case the TPL website cannot be reached
-## temporarily, the function returns an error but repeats trying to match the given taxon multiple times
-## (see repeats). If standardization is still not successful, the input taxon is returned in field ’Taxon’
-## with NA in all other fields
+## 3). Run the GBIF "species" list through the TPL taxonomy. Take "New" Species and Genus as the "searchTaxon"
 
+## 4). Use rgbif and ALA4R to download occurence data. ALA is ok, because the taxonomy is resolved.
+##     For GBIF, we use
+##     key  <- name_backbone(name = sp.n, rank = 'species')$usageKey
+##     GBIF <- occ_data(taxonKey = key, limit = GBIF.download.limit)
 
-## Then join the ALA data to the taxonomic check, using "scientificName" as the join field...
-ALA.TREES.TAXO <- ALA.TREES.TRIM %>%
-  left_join(., ALA.TAXO, by = c("scientificName" = "Taxon"))
+##     This returns multiple keys and synonyms, but there is no simple way to skip these
 
 
-## So we can filter by the agreement between "scientificName", and "New.Taxonomic.status"?
-## A better way could be to create a new filter for agreement between the search taxon genus and species,
-## and the new genus and species. Which of these columns to keep?
+## 5). Join the TPL taxonomy to the "scientificName" field. We can't use "name" (the equivalent of "species", it seems),
+##     because name is always the same as the searchTaxon and not reliable (i.e. they will always match, and we know that
+##     no one has gone through and checked each one).
 
+##     Exclude records where the "scientificName" both doesn't match the "searchTaxon", and, also is not a synonym according to TPL
+##     This is the Same as taking the SNs which are accepted, but which don't match ST.
 
-#########################################################################################################################
-## Now create a column for the agreement between the new genus and the old genus
-## First, trim the spaces out
-ALA.TREES.TAXO$scientificName  = trimws(ALA.TREES.TAXO$scientificName)
-
-
-## Then combine the genus and species returned by TPL into
-ALA.TREES.TAXO$TPL_binomial  = with(ALA.TREES.TAXO, paste(New.Genus, New.Species, sep = " "))
-
-
-## Now match the searchTaxon with the binomial returned by TPL :: this would be the best field to filter on
-ALA.TREES.TAXO$taxo_agree <- ifelse(
-  ALA.TREES.TAXO$scientificName == ALA.TREES.TAXO$TPL_binomial, TRUE, FALSE)
-
-
-## How many species agree?
-round(with(ALA.TREES.TAXO, table(taxo_agree)/sum(table(taxo_agree))*100), 1)
-round(with(ALA.TREES.TAXO, table(New.Taxonomic.status)/sum(table(New.Taxonomic.status))*100), 1)
-
-
-## Also keep the unresolved records:
-ALA.TAXO.UNRESOLVED <- ALA.TREES.TAXO %>%
-  
-  ## Note that these filters are very forgiving...
-  ## Unless we include the NAs, very few records are returned!
-  filter(New.Taxonomic.status == 'Unresolved')
-
-
-## Also keep the unresolved records:
-ALA.TAXO.RESOLVED <- ALA.TREES.TAXO %>%
-  
-  ## Note that these filters are very forgiving...
-  ## Unless we include the NAs, very few records are returned!
-  filter(New.Taxonomic.status == 'Accepted')
-
-
-## Also keep the unresolved records:
-ALA.TAXO.DISAGREE <- ALA.TREES.TAXO %>%
-  
-  ## Note that these filters are very forgiving...
-  ## Unless we include the NAs, very few records are returned!
-  filter(taxo_agree == 'FALSE')
+##     Then we model these records as before. Of 390 species we downloaded, we will pick the 200 with acceptable maps.
+##     One line in the MS : we matched the GBIF backbone taxo against the TPL taxo, and searched the currently accepted names
+##     in GBIF and ALA, excluding incorreclty matching records (probably don't say this).
 
 
 
 #########################################################################################################################
-## What do examples of resolved and unresolved records look like?
-head(ALA.TREES.TAXO, 10)[, c("scientificName", 
-                             "TPL_binomial",
-                             "taxo_agree",
-                             "New.Taxonomic.status")]
+## Use "Taxonstand" to check the taxonomy :: which field to use?
+ALA.TREES.TAXO <- TPL(unique(ALA.TRIM$scientificName), infra = TRUE,
+                 corr = TRUE, repeats = 100)  ## to stop it timing out...
+sort(names(GBIF.TAXO))
 
-
-head(ALA.TAXO.RESOLVED, 10)[, c("scientificName", 
-                                "TPL_binomial",
-                                "taxo_agree",
-                                "New.Taxonomic.status")]
-
-
-head(ALA.TAXO.DISAGREE, 10)[, c("scientificName", 
-                                "TPL_binomial",
-                                "taxo_agree",
-                                "New.Taxonomic.status")]
-
-
-## Also keep the managed records:
-unique(ALA.TAXO.UNRESOLVED$New.Taxonomic.status)
-dim(ALA.TAXO.UNRESOLVED)   ##
 
 
 
 
 
 #########################################################################################################################
-## 2). CREATE TABLE OF PRE-CLEAN FLAGS AND FILTER RECORDS
+## 3). CREATE TABLE OF PRE-CLEAN FLAGS AND FILTER RECORDS
 #########################################################################################################################
 
 
@@ -304,7 +202,7 @@ names(ALA.TREES.CLEAN)
 
 
 #########################################################################################################################
-## 6). REMOVE POINTS OUTSIDE WORLDCLIM LAYERS...
+## 4). REMOVE POINTS OUTSIDE WORLDCLIM LAYERS...
 #########################################################################################################################
 
 
@@ -386,8 +284,11 @@ saveRDS(ALA.TREES.LAND, file = paste("./data/base/HIA_LIST/GBIF/ALA_TREES_LAND.r
 
 
 #########################################################################################################################
-## OUTSTANDING NICHE TASKS:
+## OUTSTANDING OCCURRENCE TASKS:
 #########################################################################################################################
+
+
+##
 
 
 #########################################################################################################################

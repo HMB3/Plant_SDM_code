@@ -19,19 +19,13 @@ rasterTmpFile()
 
 
 #########################################################################################################################
-## 1). LOAD TAXA, ADD SEARCH TAXA, DROP COLUMNS AND COMBINE SPECIES DATAFRAMES INTO ONE
+## 1). COMBINE GBIF DATAFRAMES INTO ONE
 #########################################################################################################################
 
 
 #########################################################################################################################
 ## Create a list of species from the downloaded files
 spp.download = list.files(GBIF_path, pattern = ".RData")
-
-
-## Check GBIF column names:
-sort(unique(gbifColsToDrop))
-sort(unique(gbif.keep))
-intersect(unique(gbifColsToDrop), unique(gbif.keep))     ## Check we don't get rid of any of the columns we want to keep
 
 
 #########################################################################################################################
@@ -49,7 +43,7 @@ GBIF.ALL <- spp.download[c(1:length(spp.download))] %>%   ## spp.download[c(1:le
     d <- get(load(f))
     
     ## Now drop the columns which we don't need
-    dat <- data.frame(searchTaxon = x, d[, !colnames(d) %in% gbifColsToDrop],
+    dat <- data.frame(searchTaxon = x, d[, colnames(d) %in% gbif.keep],
                       stringsAsFactors = FALSE)
     
     if(!is.character(dat$gbifID)) {
@@ -71,16 +65,6 @@ GBIF.ALL <- spp.download[c(1:length(spp.download))] %>%   ## spp.download[c(1:le
 
 
 #########################################################################################################################
-## CHECK SEARCHED AND RETURNED TAXONOMIC NAMES FROM GBIF
-dim(GBIF.ALL)
-length(unique(GBIF.ALL$searchTaxon))
-
-sort(names(GBIF.ALL))
-str(GBIF.ALL$recordedBy)
-str(GBIF.ALL$dateIdentified)
-length(intersect(unique(GBIF.ALL$searchTaxon), GBIF.spp))
-
-
 ## Now get just the columns we want to keep. Note gc() frees up RAM
 GBIF.TRIM <- GBIF.ALL %>% 
   select(one_of(gbif.keep))
@@ -98,14 +82,11 @@ GBIF.TRIM = GBIF.TRIM[GBIF.TRIM$searchTaxon %in% GBIF.spp, ]
 dim(GBIF.TRIM)
 
 
-## What are the unique species
+## What are the unique species?
+length(unique(GBIF.TRIM$name))
+length(unique(GBIF.TRIM$searchTaxon)) 
 length(unique(GBIF.TRIM$scientificName))  
-length(unique(GBIF.TRIM$searchTaxon))  
-
-
-## How do the searched and returned items compare?
-head(GBIF.TRIM, 10)[, c("scientificName",
-                         "searchTaxon")]
+ 
 
 
 
@@ -115,14 +96,38 @@ head(GBIF.TRIM, 10)[, c("scientificName",
 ######################################################################################################################### 
 
 
-## The problems is the mismatch between what we searched, and what GBIF returned. We can check this by taking the 
-## scientificName, and run that through TPL. Then, of the names in this list which are accepted, but which don't match 
-## our list, get rid of them.
+## The problems is the mismatch between what we searched, and what GBIF returned. 
+
+## 1). Create the inital list by combing the planted trees with evergreen list
+##     TREE.HIA.SPP = intersect(subset(TI.LIST, Plantings > 50)$searchTaxon, CLEAN.SPP$Binomial)
+
+## 2). Clean this list using the GBIF backbone taxonomy :: use the "species" column
+
+## 3). Run the GBIF "species" list through the TPL taxonomy. Take "New" Species and Genus as the "searchTaxon"
+
+## 4). Use rgbif and ALA4R to download occurence data. ALA is ok, because the taxonomy is resolved.
+##     For GBIF, we use
+##     key  <- name_backbone(name = sp.n, rank = 'species')$usageKey
+##     GBIF <- occ_data(taxonKey = key, limit = GBIF.download.limit)
+
+##     This returns multiple keys and synonyms, but there is no simple way to skip these
+
+
+## 5). Join the TPL taxonomy to the "scientificName" field. We can't use "name" (the equivalent of "species", it seems),
+##     because name is always the same as the searchTaxon and not reliable (i.e. they will always match, and we know that
+##     no one has gone through and checked each one).
+     
+##     Exclude records where the "scientificName" both doesn't match the "searchTaxon", and, also is not a synonym according to TPL
+##     This is the Same as taking the SNs which are accepted, but which don't match ST.
+     
+##     Then we model these records as before. Of 390 species we downloaded, we will pick the 200 with acceptable maps.
+##     One line in the MS : we matched the GBIF backbone taxo against the TPL taxo, and searched the currently accepted names
+##     in GBIF and ALA, excluding incorreclty matching records (probably don't say this).
 
 
 
 #########################################################################################################################
-## Use "Taxonstand" to check the taxonomy.
+## Use "Taxonstand" to check the taxonomy :: which field to use?
 GBIF.TAXO <- TPL(unique(GBIF.TRIM$scientificName), infra = TRUE,
                  corr = TRUE, repeats = 100)  ## to stop it timing out...
 sort(names(GBIF.TAXO))
@@ -144,9 +149,10 @@ GBIF.TRIM.TAXO <- GBIF.TRIM %>%
 names(GBIF.TRIM.TAXO)
 
 
-## However, the scientificName string and the searchTaxon string are not the same. So to test which SN are accepted but
+#########################################################################################################################
+## However, the scientificName string and the searchTaxon string are not the same. So to test which SNs are accepted, but
 ## not on the ST list, we need string matching using regular expressions, or the like.
-## currently using str_detect
+## currently using 'str_detect'
 Match.SN = GBIF.TRIM.TAXO  %>%
   mutate(Match.SN.ST = 
            str_detect(scientificName, searchTaxon)) %>%
@@ -161,160 +167,80 @@ Match.SN = GBIF.TRIM.TAXO  %>%
                   "Match.SN.ST")))
 
 
-## How many records don't match? 44k or 1.5%
+## How many records don't match? 44k or 1.5%?
+dim(Match.SN)
 unique(Match.SN$Taxonomic.status)
+unique(Match.SN$New.Taxonomic.status)
+
 with(Match.SN, table(Match.SN.ST))
 with(Match.SN, table(Taxonomic.status))
 
 
-## What are the proportions
+#########################################################################################################################
+## Make a list of the species names which didn't match. What do we want to do with these? 
+accepted.SN   = unique(subset(Match.SN, Taxonomic.status == "Accepted")$scientificName)                ## 460 taxa
+synonym.SN    = unique(subset(Match.SN, Taxonomic.status == "Synonym")$scientificName)                 ## 1185
+unresolved.SN = unique(subset(Match.SN, Taxonomic.status == "Unresolved")$scientificName)              ## 107
+misapp.SN     = unique(subset(Match.SN, Taxonomic.status == "Misapplied")$scientificName)              ## 2
+blank.SN      = unique(subset(Match.SN, Taxonomic.status == "")$scientificName)                        ## 17
+
+
+## What are the proportions?
 round(with(Match.SN, table(Match.SN.ST)/sum(table(Match.SN.ST))*100), 2)
 round(with(Match.SN, table(Taxonomic.status)/sum(table(Taxonomic.status))*100), 2)
 View(Match.SN)
 
 
 #########################################################################################################################
+## What is the taxonomic status of the records which match and don't match
+Match.SN.TRUE  = subset(Match.SN, Match.SN.ST == "TRUE")
+Match.SN.FALSE = subset(Match.SN, Match.SN.ST == "FALSE")
+
+unique(Match.SN.TRUE$New.Taxonomic.status)
+unique(Match.SN.FALSE$New.Taxonomic.status)
+
+with(Match.SN.TRUE, table(New.Taxonomic.status))
+with(Match.SN.FALSE, table(New.Taxonomic.status))
+
+round(with(Match.SN.TRUE, table(New.Taxonomic.status)/sum(table(New.Taxonomic.status))*100), 2)
+round(with(Match.SN.FALSE, table(New.Taxonomic.status)/sum(table(New.Taxonomic.status))*100), 2)
+View(Match.SN.TRUE)
+View(Match.SN.FALSE)
+
+
+#########################################################################################################################
+## What to do with each exception - misapplied, synonym, unresolved, blank? What does each mean for our data?
+
+
+#########################################################################################################################
 ## Get the subset of species which are accpeted, but not on our list
-acc.no.match = subset(Match.SN, Taxonomic.status == "Accepted" & Match.SN.ST == "FALSE")
-acc.mis.sn  = unique(acc.no.match$scientificName)    ## the unique scientific names we didn't ask for
-acc.mis.st  = unique(acc.no.match$searchTaxon)       ## The unique species returning dodgy scientific names
+#acc.no.match = subset(Match.SN, Taxonomic.status == "Accepted" & Match.SN.ST == "FALSE")    ## New or old taxonomic status?
+synonym.false = subset(Match.SN, Taxonomic.status == "Synonym" & Match.SN.ST == "FALSE")  
+
+acc.mis.sn   = unique(acc.no.match$scientificName)    ## the unique scientific names we didn't ask for
+acc.mis.st   = unique(acc.no.match$searchTaxon)       ## The unique species returning dodgy scientific names
 View(acc.no.match)
 
 
 
+## Now check the scientificNames which don't match, against GBIF and ALA, can we keep some of these?
+check.status        = acc.no.match[!duplicated(acc.no.match[,c("scientificName")]),]
+check.status$remove = ""
+View(check.status)
+
+
 #########################################################################################################################
-## Now, create a column for the agreement between the new genus and the old genus
-## First, trim the spaces out
-GBIF.TRIM.TAXO$searchTaxon  = trimws(GBIF.TRIM.TAXO$searchTaxon)
-
-
-## Then combine the genus and species returned by TPL into
-GBIF.TRIM.TAXO$TPL_binomial  = with(GBIF.TRIM.TAXO, paste(New.Genus, New.Species, sep = " "))
-
-
-## Now match the searchTaxon with the binomial returned by TPL :: this would be the best field to filter on
-GBIF.TRIM.TAXO$taxo_agree <- ifelse(
-  GBIF.TRIM.TAXO$searchTaxon == GBIF.TRIM.TAXO$TPL_binomial, TRUE, FALSE)
-
-
-## How many species agree?
-round(with(GBIF.TRIM.TAXO, table(taxo_agree)/sum(table(taxo_agree))*100), 1)
-round(with(GBIF.TRIM.TAXO, table(New.Taxonomic.status)/sum(table(New.Taxonomic.status))*100), 1)
-
-length(unique(GBIF.TRIM.TAXO$scientificName))
-length(unique(GBIF.TRIM.TAXO$searchTaxon))
-
-
-## Also keep the unresolved records:
-GBIF.UNRESOLVED <- GBIF.TRIM.TAXO %>%
-
-  ## Note that these filters are very forgiving...
-  ## Unless we include the NAs, very few records are returned!
-  filter(New.Taxonomic.status == 'Unresolved')
-
-
-## Also keep the unresolved records:
-GBIF.RESOLVED <- GBIF.TRIM.TAXO %>%
-  
-  ## Just get the accepted taxa
-  filter(New.Taxonomic.status == 'Accepted')
-
-
-## Also keep the managed records:
-unique(GBIF.UNRESOLVED$New.Taxonomic.status)
-dim(GBIF.UNRESOLVED)   ## 1.2 million unresolved records, quite a lot!
-
-
-
-## Unique(GBIF.UNRESOLVED$New.Taxonomic.status)
-saveRDS(GBIF.UNRESOLVED, file = paste("./data/base/HIA_LIST/GBIF/SUA_TREE_GBIF_UNRESOLVED.rds"))
-
-
-## Just keep these columns:
-## Taxonomic.status, Infraspecific.rank, New.Taxonomic.status, New.ID, New_binomial, taxo_agree
-# GBIF.TRIM.TAXO <- GBIF.TRIM.TAXO %>%
-#   select(one_of(TPL.keep))
-
-length(unique(GBIF.TRIM.TAXO$searchTaxon))
-## Unique(GBIF.UNRESOLVED$New.Taxonomic.status)
-# saveRDS(GBIF.TAXO,       file = paste("./data/base/HIA_LIST/GBIF/SUA_TREES_GBIF_TAXO.rds"))
-# saveRDS(GBIF.TRIM.TAXO,  file = paste("./data/base/HIA_LIST/GBIF/SUA_TREES_GBIF_TRIM_TAXO.rds"))
-# write.csv(GBIF.TRIM.TAXO,             "./data/base/HIA_LIST/GBIF/SUA_TREES_GBIF_TRIM_TAXO.csv", row.names = FALSE)
-
-
-
-
-# #########################################################################################################################
-# ## 3). MARK CULTIVATED RECORDS
-# #########################################################################################################################
-# 
-# 
-# ## This only works on species lists with cultivated recrods..............................................................
-# 
-# 
-# ## To create search terms, we can look for keywords in differemt languages: e.g. garden cultivated, etc.
-# GBIF.COUNTRY = GBIF.TRIM.TAXO[, c("country")]
-# GBIF.COUNTRY = as.data.frame(table(GBIF.COUNTRY))
-# names(GBIF.COUNTRY) <-  c('country', 'count')
-# GBIF.COUNTRY = GBIF.COUNTRY[order(GBIF.COUNTRY$count, decreasing = TRUE), ]
-# 
-# 
-# ## Look for synonyms in the countries which have the most GBIF records
-# #GBIF.COUNTRY
-# #write.csv(GBIF.COUNTRY, "./data/base/HIA_LIST/GBIF/SPECIES/GBIF_COUNTRY.csv", row.names = FALSE)
-# 
-# 
-# ## This creates a list of synonyms:
-# #cultivated.synonyms
-# 
-# 
-# #########################################################################################################################
-# ## Now search for these words in particular columns
-# ## Can these terms be searched for across the whole data frame (i.e. any column)?
-# ## Also lot's of Australian species don't have these columns, which might make it tricky to run the clean 
-# ## unique(GBIF.TRIM.TAXO$country)
-# 
-# ## Try using the big list of synonyms across all the data
-# ## grepl("garden|cultiva",   GBIF.TRIM.TAXO$locality,           ignore.case = TRUE) | 
-# GBIF.TRIM.TAXO$CULTIVATED <- ifelse(grepl(cultivated.synonyms,   GBIF.TRIM.TAXO$locality,           ignore.case = TRUE) |
-#                                       grepl(cultivated.synonyms, GBIF.TRIM.TAXO$habitat,            ignore.case = TRUE) |
-#                                       grepl(cultivated.synonyms, GBIF.TRIM.TAXO$eventRemarks,       ignore.case = TRUE) |
-#                                       grepl(cultivated.synonyms, GBIF.TRIM.TAXO$cloc,               ignore.case = TRUE) |
-#                                       grepl("managed",           GBIF.TRIM.TAXO$establishmentMeans, ignore.case = TRUE),
-# 
-#                                     "CULTIVATED", "UNKNOWN")
-#  
-#  
-# # ## How many records are knocked out by using this definition?
-# # ## This is probably a bit strict, in that for some of the fields, garden doesn't = cultivated
-# GBIF.CULTIVATED = subset(GBIF.TRIM.TAXO, CULTIVATED == "CULTIVATED")
-# dim(GBIF.CULTIVATED)[1]
- 
- 
-## Still very few records being returned as "cultivated"?
-# dim(GBIF.CULTIVATED)[1]/dim(GBIF.TRIM.TAXO)[1]
-#View(GBIF.CULTIVATED)
-
-
-## Also keep the cultivated records:
-# GBIF.CULTIVATED <- GBIF.TRIM.TAXO %>% 
-#   
-#   ## Note that these filters are very forgiving...
-#   filter(CULTIVATED == "CULTIVATED")
-
-
-## Unique(GBIF.UNRESOLVED$New.Taxonomic.status)
-# dim(GBIF.CULTIVATED)
-# names(GBIF.CULTIVATED)
-# unique(GBIF.CULTIVATED$CULTIVATED)
-#saveRDS(GBIF.CULTIVATED, file = paste("./data/base/HIA_LIST/GBIF/GBIF_CULTIVATED.rds"))
+## Now remove these from the GBIF dataset?
+GBIF.TRIM.MATCH = GBIF.TRIM.TAXO[!GBIF.TRIM.TAXO$scientificName %in% acc.mis.sn, ]  
+message(round((dim(GBIF.TRIM.TAXO)[1] - dim(GBIF.TRIM.MATCH)[1])/dim(GBIF.TRIM.TAXO)[1]*100, 2), 
+        " % records removed using TPL mismatch")
 
 
 
 
 
 #########################################################################################################################
-## 4). CREATE TABLE OF PRE-CLEAN FLAGS AND FILTER RECORDS
+## 5). CREATE TABLE OF PRE-CLEAN FLAGS AND FILTER RECORDS
 #########################################################################################################################
 
 
@@ -322,7 +248,7 @@ length(unique(GBIF.TRIM.TAXO$searchTaxon))
 ## Create a table which counts the number of records meeting each criteria:
 ## Note that TRUE indicates there is a problem (e.g. if a record has no lat/long, it will = TRUE)
 #GBIF.TRIM.TAXO = GBIF.TRIM.TAXO
-GBIF.PROBLEMS <- with(GBIF.TRIM.TAXO,
+GBIF.PROBLEMS <- with(GBIF.TRIM.MATCH,
                       
                       table(
                         
@@ -382,7 +308,7 @@ GBIF.PROBLEMS <- with(GBIF.TRIM.TAXO,
 
 #########################################################################################################################
 ## Now filter the GBIF records using conditions which are not too restrictive
-GBIF.CLEAN <- GBIF.TRIM.TAXO %>% 
+GBIF.CLEAN <- GBIF.TRIM.MATCH %>% 
   
   ## Note that these filters are very forgiving...
   ## Unless we include the NAs, very few records are returned!
@@ -496,9 +422,8 @@ saveRDS(GBIF.LAND, file = paste("./data/base/HIA_LIST/GBIF/GBIF_TREES_LAND.rds")
 
 
 ## Now save .rds file for the next session
-#save.image("STEP_3_GBIF_CLEAN.RData")
 gc()
-#load("STEP_3_GBIF_CLEAN.RData")
+
 
 
 
