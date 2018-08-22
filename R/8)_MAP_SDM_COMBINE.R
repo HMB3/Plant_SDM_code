@@ -241,7 +241,7 @@ MAXENT.RESULTS <- maxent.tables[c(1:length(maxent.tables))] %>%
     
     ## Remove path gunk, and species
     d$Species    = NULL
-    d
+    return(d)
     
   }) %>%
   

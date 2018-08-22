@@ -309,11 +309,11 @@ download_GBIF_all_species = function (species_list, path) {
       max =  paste ("Number of records > 200,000 |", sp.n)
       
       ## and send a request to GBIF for download
-      message("Sending request to GBIF to download ", sp.n, " using rgbif :: occ_download")
-      key  <- name_backbone(name = sp.n, rank = 'species')$usageKey
-      GBIF = occ_download(paste('taxonKey = ', key),  user = "popple_1500", pwd = "Popple1500", email = "hugh.burley@mq.edu.au")
-      save(GBIF, file = paste(path, sp.n, "_GBIF_request.RData", sep = ""))
-      skip.spp.list <- c(skip.spp.list, max)
+      # message("Sending request to GBIF to download ", sp.n, " using rgbif :: occ_download")
+      # key  <- name_backbone(name = sp.n, rank = 'species')$usageKey
+      # GBIF = occ_download(paste('taxonKey = ', key),  user = "popple_1500", pwd = "Popple1500", email = "hugh.burley@mq.edu.au")
+      # save(GBIF, file = paste(path, sp.n, "_GBIF_request.RData", sep = ""))
+      # skip.spp.list <- c(skip.spp.list, max)
       
     } else {
       

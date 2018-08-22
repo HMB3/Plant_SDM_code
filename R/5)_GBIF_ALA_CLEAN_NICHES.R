@@ -29,12 +29,18 @@ rasterTmpFile()
 #########################################################################################################################
 ## Rename the columns to fit the CleanCoordinates format and create a tibble. A Tibble is needed for coordinate cleaner
 str(unique(COMBO.RASTER.CONVERT$searchTaxon))
-TIB.GBIF<- COMBO.RASTER.CONVERT %>% dplyr::rename(species          = searchTaxon,
+TIB.GBIF <- COMBO.RASTER.CONVERT %>% dplyr::rename(species          = searchTaxon,
                                                   decimallongitude = lon, 
                                                   decimallatitude  = lat) %>%
   timetk::tk_tbl()
 
+DF.GBIF <- COMBO.RASTER.CONVERT %>% dplyr::rename(species          = searchTaxon,
+                                                   decimallongitude = lon, 
+                                                   decimallatitude  = lat) 
 
+## saveRDS(TIB.GBIF, file = paste("./data/base/HIA_LIST/GBIF/TIB_GBIF.rds"))
+## DF.TEST = DF.GBIF[DF.GBIF$species %in% unique(DF.GBIF$species)[31:33], ] 
+## saveRDS(DF.TEST, file = paste("./data/base/HIA_LIST/GBIF/DF_GBIF_TEST.rds"))
 ## I've already stripped out the records that fall outside
 ## the worldclim raster boundaries, so the sea test is probably not the most important
 ## Study area is the globe, but we are only projecting models onto Australia
@@ -86,15 +92,15 @@ message(round(summary(FLAGS)[8]/dim(FLAGS)[1]*100, 2), " % records removed")
 
 
 ## Create a table of the results 
-SPAT.OUT <- GBIF.spp[1:3] %>%         
+SPAT.OUT <- unique(DF.TEST$species) %>%         
   
   ## pipe the list into lapply
   lapply(function(x) {
     
-    ## Create the character string
-    f <- subset(TIB.GBIF, species == x)
+    ## Create the df
+    f <- subset(TIB.GBIF, species == x) 
     
-    ## Load each .RData file
+    ## Run the spatial outlier detection
     sp.flag <- cc_outl(f,
                        lon     = "decimallongitude",
                        lat     = "decimallatitude",
@@ -105,9 +111,14 @@ SPAT.OUT <- GBIF.spp[1:3] %>%
                        value   = "flags")
     
     ## Now add a model column. Should we drop memory?
-    d = data.frame(searchTaxon = x, sp.flag)  ## see step 7, make a variable for multiple runs
-    d
-    gc() ## Free some RAM
+    d = data.frame(searchTaxon = x, SPAT_OUT = sp.flag)  ## see step 7, make a variable for multiple runs
+    d = cbind(searchTaxon = x, 
+              SPAT_OUT = sp.flag, f)[c("searchTaxon", "SPAT_OUT")] 
+    
+    ## Remeber to explicitly return the df at the end of loop, so we can bind
+    head(d)
+    message("Is the spatial vector the same length as the DF? ", identical(dim(d)[1], dim(f)[1]))
+    return(d)
     
   }) %>%
   
@@ -115,8 +126,10 @@ SPAT.OUT <- GBIF.spp[1:3] %>%
   bind_rows
 
 
+
 ## Save data
 head(SPAT.OUT)
+dim(SPAT.OUT)
 saveRDS(SPAT.OUT, 'data/base/HIA_LIST/COMBO/SPAT_OUT/GBIF_SPAT_OUT.rds')
 
 
