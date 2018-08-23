@@ -898,6 +898,7 @@ gbifColsToDrop <- c(
 gbif.keep <- c(## TAXONOMY
                "searchTaxon",
                "name",
+               "species",
                "scientificName",
                "taxonRank",
                "taxonKey",
@@ -934,7 +935,10 @@ gbif.keep <- c(## TAXONOMY
 
 
 ALA.keep <- c(## TAXONOMY
+  "searchTaxon",
   "scientificName",
+  "scientificNameOriginal",
+  "species",
   "taxonRank",
   "rank",
   "genus",
@@ -949,6 +953,7 @@ ALA.keep <- c(## TAXONOMY
   "datasetName",
   "habitat",
   "eventRemarks",
+  "taxonomicQuality",
   
   ## RECORD ID
   "recordedBy",

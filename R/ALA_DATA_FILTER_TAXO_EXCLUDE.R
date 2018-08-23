@@ -5,7 +5,7 @@
 
 #########################################################################################################################
 ## This code updates the ALA data
-spp.download = list.files(ALA_path, pattern = ".RData")
+ala.download = list.files(ALA_path, pattern = ".RData")
 
 
 #########################################################################################################################
@@ -15,7 +15,7 @@ spp.download = list.files(ALA_path, pattern = ".RData")
 
 #########################################################################################################################
 ## Combine all the taxa into a single dataframe at once
-ALA.ALL <- spp.download %>%   ## spp.download[c(1:length(spp.download))] 
+ALA.ALL <- ala.download %>%   ## spp.download[c(1:length(spp.download))] 
   
   ## Pipe the list into lapply
   lapply(function(x) {
@@ -38,14 +38,17 @@ ALA.ALL <- spp.download %>%   ## spp.download[c(1:length(spp.download))]
       
     }
     
-    ## Need to print the object within the loop
+    ## This is a list of columns in different files which have weird characters
     dat$coordinateUncertaintyInMetres = as.numeric(dat$coordinateUncertaintyInMetres)
-    dat$year        = as.numeric(dat$year)
-    dat$month       = as.numeric(dat$month)
+    dat$year             = as.numeric(dat$year)
+    dat$month            = as.numeric(dat$month)
+    #dat$latitudeOriginal = as.numeric(dat$latitudeOriginal)
+    #dat$individualCount  = as.numeric(dat$individualCount)
+    
     dat$searchTaxon = gsub("_ALA_records.RData", "", dat$searchTaxon)
     names(dat)[names(dat) == 'latitude']  <- 'lat'
     names(dat)[names(dat) == 'longitude'] <- 'lon'
-    dat
+    return(dat)
     
   }) %>%
   
@@ -54,12 +57,54 @@ ALA.ALL <- spp.download %>%   ## spp.download[c(1:length(spp.download))]
 
 
 #########################################################################################################################
-## Now get just the columns we want to keep. Note gc() frees up RAM
-ALA.TRIM <- ALA.ALL %>% 
+## Now check the ALA species names : which has the least holes?
+(sum(is.na(ALA.ALL$scientificName))          + dim(subset(ALA.ALL, scientificName == ""))[1])/dim(ALA.ALL)[1]*100
+(sum(is.na(ALA.ALL$scientificNameOriginal))  + dim(subset(ALA.ALL, scientificNameOriginal == ""))[1])/dim(ALA.ALL)[1]*100
+(sum(is.na(ALA.ALL$species))                 + dim(subset(ALA.ALL, species == ""))[1]/dim(ALA.ALL))[1]*100
+
+
+## What is the match between 'species' and 'scientificNameOriginal'?
+## What is the match between scientificNameOriginal, and the searchTaxon?
+Match.ALA = ALA.ALL  %>%
+  mutate(Match.SN.ST = 
+           str_detect(scientificNameOriginal, searchTaxon)) %>%
+  
+  mutate(Match.SP.ST = 
+           str_detect(species, searchTaxon)) %>%
+  
+  mutate(Match.SN.SP = 
+           str_detect(scientificNameOriginal, species)) %>%
+  
+  select(one_of(c("scientificName",
+                  "scientificNameOriginal",
+                  "species",
+                  "searchTaxon",
+                  "Match.SN.ST",
+                  "Match.SP.ST",
+                  "Match.SN.SP")))
+
+View(Match.ALA)
+
+## So for 15-12% of the records, neither the scientificNameOriginal or the species match the search taxon.
+dim(subset(Match.ALA,  Match.SN.ST == "FALSE"))[1]/dim(Match.ALA)[1]*100
+dim(subset(Match.ALA,  Match.SP.ST == "FALSE"))[1]/dim(Match.ALA)[1]*100
+
+
+
+## So rename 'scientificNameOriginal' to 'scientificName', to match GBIF
+ALA.RENAME = ALA.ALL
+ALA.RENAME$scientificName = NULL 
+ALA.RENAME$scientificName = ALA.RENAME$scientificNameOriginal 
+(sum(is.na(ALA.RENAME$scientificName)) + dim(subset(ALA.RENAME, scientificName == ""))[1])/dim(ALA.ALL)[1]*100
+
+
+########################################################################################################################
+## Check names
+## What names get returned?
+sort(names(ALA.RENAME))
+ALA.TRIM <- ALA.RENAME %>% 
   select(one_of(ALA.keep))
 
-
-## Check names
 dim(ALA.TRIM)
 names(ALA.TRIM)
 
@@ -71,9 +116,10 @@ dim(ALA.TRIM)
 
 
 ## What are the unique species?
-length(unique(ALA.TRIM$name))
-length(unique(ALA.TRIM$searchTaxon)) 
+length(unique(ALA.TRIM$searchTaxon))
 length(unique(ALA.TRIM$scientificName)) 
+length(unique(ALA.TRIM$scientificNameOriginal))
+length(unique(ALA.TRIM$species))
 
 
 

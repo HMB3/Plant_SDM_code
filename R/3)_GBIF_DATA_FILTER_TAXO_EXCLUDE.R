@@ -25,12 +25,12 @@ rasterTmpFile()
 
 #########################################################################################################################
 ## Create a list of species from the downloaded files
-spp.download = list.files(GBIF_path, pattern = ".RData")
+gbif.download = list.files(GBIF_path, pattern = ".RData")
 
 
 #########################################################################################################################
 ## Combine all the taxa into a single dataframe at once
-GBIF.ALL <- spp.download[c(1:length(spp.download))] %>%   ## spp.download[c(1:length(spp.download))] 
+GBIF.ALL <- gbif.download %>%   ## spp.download[c(1:length(spp.download))] 
   
   ## Pipe the list into lapply
   lapply(function(x) {
@@ -56,7 +56,7 @@ GBIF.ALL <- spp.download[c(1:length(spp.download))] %>%   ## spp.download[c(1:le
     names(dat)[names(dat) == 'decimalLatitude']  <- 'lat'
     names(dat)[names(dat) == 'decimalLongitude'] <- 'lon'
     dat$searchTaxon = gsub("_GBIF_records.RData", "", dat$searchTaxon)
-    dat
+    return(dat)
     
   }) %>%
   
@@ -65,9 +65,16 @@ GBIF.ALL <- spp.download[c(1:length(spp.download))] %>%   ## spp.download[c(1:le
 
 
 #########################################################################################################################
+## Almost none of the GBIF data has no scientificName. This is the right field.
+(sum(is.na(GBIF.ALL$species))        + dim(subset(GBIF.ALL, species == ""))       [1])/dim(GBIF.ALL)[1]*100
+(sum(is.na(GBIF.ALL$scientificName)) + dim(subset(GBIF.ALL, scientificName == ""))[1])/dim(GBIF.ALL)[1]*100
+(sum(is.na(GBIF.ALL$name))           + dim(subset(GBIF.ALL, name == ""))          [1])/dim(GBIF.ALL)[1]*100
+
+
 ## Now get just the columns we want to keep. Note gc() frees up RAM
 GBIF.TRIM <- GBIF.ALL %>% 
   select(one_of(gbif.keep))
+gc()
 
 
 ## Check names
@@ -96,7 +103,7 @@ length(unique(GBIF.TRIM$scientificName))
 ######################################################################################################################### 
 
 
-## The problems is the mismatch between what we searched, and what GBIF returned. 
+## The problems is the mis-match between what we searched, and what GBIF returned. 
 
 ## 1). Create the inital list by combing the planted trees with evergreen list
 ##     TREE.HIA.SPP = intersect(subset(TI.LIST, Plantings > 50)$searchTaxon, CLEAN.SPP$Binomial)
@@ -105,7 +112,7 @@ length(unique(GBIF.TRIM$scientificName))
 
 ## 3). Run the GBIF "species" list through the TPL taxonomy. Take "New" Species and Genus as the "searchTaxon"
 
-## 4). Use rgbif and ALA4R to download occurence data. ALA is ok, because the taxonomy is resolved.
+## 4). Use rgbif and ALA4R to download occurence data, using "searchTaxon". ALA is ok, because the taxonomy is resolved.
 ##     For GBIF, we use
 ##     key  <- name_backbone(name = sp.n, rank = 'species')$usageKey
 ##     GBIF <- occ_data(taxonKey = key, limit = GBIF.download.limit)
