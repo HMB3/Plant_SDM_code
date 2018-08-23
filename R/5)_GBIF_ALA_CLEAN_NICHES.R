@@ -15,7 +15,6 @@
 ## Read in all data to run the SDM code :: species lists, shapefile, rasters & tables
 #source('./R/HIA_LIST_MATCHING.R')
 #TI.RASTER.CONVERT = readRDS("./data/base/HIA_LIST/COMBO/TI_RASTER_CONVERT.rds")
-#"H:\green_cities_sdm\data\base\HIA_LIST\COMBO\COMBO_RASTER_CONVERT_APRIL_2018.rds"
 #COMBO.RASTER.CONVERT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONVERT_APRIL_2018.rds")
 rasterTmpFile()
 
@@ -30,13 +29,20 @@ rasterTmpFile()
 ## Rename the columns to fit the CleanCoordinates format and create a tibble. A Tibble is needed for coordinate cleaner
 str(unique(COMBO.RASTER.CONVERT$searchTaxon))
 TIB.GBIF <- COMBO.RASTER.CONVERT %>% dplyr::rename(species          = searchTaxon,
-                                                  decimallongitude = lon, 
-                                                  decimallatitude  = lat) %>%
+                                                   decimallongitude = lon, 
+                                                   decimallatitude  = lat) %>%
   timetk::tk_tbl()
 
+
+## Add a column for unique observation so we can check the records match up
+TIB.GBIF$CC.OBS <- 1:nrow(TIB.GBIF)
+
+
 DF.GBIF <- COMBO.RASTER.CONVERT %>% dplyr::rename(species          = searchTaxon,
-                                                   decimallongitude = lon, 
-                                                   decimallatitude  = lat) 
+                                                  decimallongitude = lon, 
+                                                  decimallatitude  = lat) 
+DF.GBIF$CC.OBS <- 1:nrow(DF.GBIF)
+
 
 ## saveRDS(TIB.GBIF, file = paste("./data/base/HIA_LIST/GBIF/TIB_GBIF.rds"))
 ## DF.TEST = DF.GBIF[DF.GBIF$species %in% unique(DF.GBIF$species)[31:33], ] 
@@ -91,13 +97,13 @@ message(round(summary(FLAGS)[8]/dim(FLAGS)[1]*100, 2), " % records removed")
 ## I think this will work for you case, but it might run for a while
 
 
-## Create a table of the results 
-SPAT.OUT <- unique(DF.TEST$species) %>%         
+## Create a data frame of species name and spatial outlier
+SPAT.OUT <- unique(TIB.GBIF$species)[1:2] %>%         
   
-  ## pipe the list into lapply
+  ## pipe the list of species into lapply
   lapply(function(x) {
     
-    ## Create the df
+    ## Create the species df by subsetting by species
     f <- subset(TIB.GBIF, species == x) 
     
     ## Run the spatial outlier detection
@@ -110,13 +116,12 @@ SPAT.OUT <- unique(DF.TEST$species) %>%
                        tdi     = 1000,
                        value   = "flags")
     
-    ## Now add a model column. Should we drop memory?
-    d = data.frame(searchTaxon = x, SPAT_OUT = sp.flag)  ## see step 7, make a variable for multiple runs
+    ## Now add attache column for species, and the flag for each record
+    d = data.frame(searchTaxon = x, SPAT_OUT = sp.flag)
     d = cbind(searchTaxon = x, 
-              SPAT_OUT = sp.flag, f)[c("searchTaxon", "SPAT_OUT")] 
+              SPAT_OUT = sp.flag, f)[c("searchTaxon", "SPAT_OUT", "CC.OBS")] 
     
     ## Remeber to explicitly return the df at the end of loop, so we can bind
-    head(d)
     message("Is the spatial vector the same length as the DF? ", identical(dim(d)[1], dim(f)[1]))
     return(d)
     
@@ -129,6 +134,7 @@ SPAT.OUT <- unique(DF.TEST$species) %>%
 
 ## Save data
 head(SPAT.OUT)
+unique(SPAT.OUT$searchTaxon)
 dim(SPAT.OUT)
 saveRDS(SPAT.OUT, 'data/base/HIA_LIST/COMBO/SPAT_OUT/GBIF_SPAT_OUT.rds')
 

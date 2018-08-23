@@ -95,6 +95,7 @@ dim(subset(Match.ALA,  Match.SP.ST == "FALSE"))[1]/dim(Match.ALA)[1]*100
 ALA.RENAME = ALA.ALL
 ALA.RENAME$scientificName = NULL 
 ALA.RENAME$scientificName = ALA.RENAME$scientificNameOriginal 
+ALA.RENAME$scientificNameOriginal = NULL 
 (sum(is.na(ALA.RENAME$scientificName)) + dim(subset(ALA.RENAME, scientificName == ""))[1])/dim(ALA.ALL)[1]*100
 
 
@@ -118,9 +119,8 @@ dim(ALA.TRIM)
 ## What are the unique species?
 length(unique(ALA.TRIM$searchTaxon))
 length(unique(ALA.TRIM$scientificName)) 
-length(unique(ALA.TRIM$scientificNameOriginal))
 length(unique(ALA.TRIM$species))
-
+(sum(is.na(ALA.TRIM$scientificName)) + dim(subset(ALA.TRIM, scientificName == ""))[1])/dim(ALA.TRIM)[1]*100
 
 
 
@@ -163,8 +163,8 @@ length(unique(ALA.TRIM$species))
 ## Use "Taxonstand" to check the taxonomy :: which field to use?
 ALA.TREES.TAXO <- TPL(unique(ALA.TRIM$scientificName), infra = TRUE,
                  corr = TRUE, repeats = 100)  ## to stop it timing out...
-sort(names(GBIF.TAXO))
-
+sort(names(ALA.TREES.TAXO))
+saveRDS(ALA.TREES.TAXO, 'data/base/HIA_LIST/COMBO/ALA_TAXO_400.rds')
 
 
 

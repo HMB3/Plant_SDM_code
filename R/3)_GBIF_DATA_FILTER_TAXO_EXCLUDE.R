@@ -91,6 +91,7 @@ dim(GBIF.TRIM)
 
 ## What are the unique species?
 length(unique(GBIF.TRIM$name))
+length(unique(GBIF.TRIM$species))
 length(unique(GBIF.TRIM$searchTaxon)) 
 length(unique(GBIF.TRIM$scientificName))  
  
@@ -138,6 +139,7 @@ length(unique(GBIF.TRIM$scientificName))
 GBIF.TAXO <- TPL(unique(GBIF.TRIM$scientificName), infra = TRUE,
                  corr = TRUE, repeats = 100)  ## to stop it timing out...
 sort(names(GBIF.TAXO))
+saveRDS(GBIF.TAXO, 'data/base/HIA_LIST/COMBO/GBIF_TAXO_400.rds')
 
 
 
@@ -220,9 +222,12 @@ View(Match.SN.FALSE)
 
 
 #########################################################################################################################
-## Get the subset of species which are accpeted, but not on our list
+## Exclude records where the "scientificName" both doesn't match the "searchTaxon", and, also is not a synonym according to TPL
+## Same as the subset of species which are accpeted, but not on our list
 #acc.no.match = subset(Match.SN, Taxonomic.status == "Accepted" & Match.SN.ST == "FALSE")    ## New or old taxonomic status?
-synonym.false = subset(Match.SN, Taxonomic.status == "Synonym" & Match.SN.ST == "FALSE")  
+synonym.false = unique(subset(Match.SN,
+                       Match.SN.ST == "FALSE" &
+                         Taxonomic.status == "")$scientificName)  
 
 acc.mis.sn   = unique(acc.no.match$scientificName)    ## the unique scientific names we didn't ask for
 acc.mis.st   = unique(acc.no.match$searchTaxon)       ## The unique species returning dodgy scientific names
