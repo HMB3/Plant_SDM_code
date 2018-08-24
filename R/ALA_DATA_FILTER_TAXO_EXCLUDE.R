@@ -5,7 +5,7 @@
 
 #########################################################################################################################
 ## This code updates the ALA data
-ala.download = list.files(ALA_path, pattern = ".rds")
+ala.download = list.files(ALA_path, pattern = ".RData")
 
 
 #########################################################################################################################
@@ -88,7 +88,6 @@ View(Match.ALA)
 ## So for 15-12% of the records, neither the scientificNameOriginal or the species match the search taxon.
 dim(subset(Match.ALA,  Match.SN.ST == "FALSE"))[1]/dim(Match.ALA)[1]*100
 dim(subset(Match.ALA,  Match.SP.ST == "FALSE"))[1]/dim(Match.ALA)[1]*100
-
 
 
 ## So rename 'scientificNameOriginal' to 'scientificName', to match GBIF

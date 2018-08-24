@@ -541,6 +541,10 @@ setdiff(TREE.HIA.SPP, SUA.SPP)
 # TPL.SUA <- TPL(unique(SUA.SPP), infra = TRUE, corr = TRUE, repeats = 100)
 # View(TPL.SUA[c("Taxon", "Taxonomic.status", "New.Taxonomic.status", "New.Genus", "New.Species")])
 # saveRDS(TPL.SUA, file = paste("./data/base/HIA_LIST/GBIF/TPL_SUA.rds"))
+
+
+## Note that TPL is not always right for Australian species :: Eucalyptus largiflorens is the accepted Australian name
+## bicolor is not recognised by the ALA
 TPL.SUA = readRDS("./data/base/HIA_LIST/GBIF/TPL_SUA.rds")
 TPL.SPP = paste(TPL.SUA$New.Genus, TPL.SUA$New.Species, sep = " ")
 TPL_SPP = gsub(" ", "_", TPL.SPP)

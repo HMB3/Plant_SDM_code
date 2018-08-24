@@ -306,13 +306,7 @@ lapply(SPP.BIAS, function(spp){
 
 ## 2). Fix the taxonomy
 
-##     Use the accepted name from GBIF - could exclude the synonyms later to avoid confusion
-
-##     Download all the synonyms using occ_data. This inlcudes 13% more records. Check Jan's advice and update the download code
-
-##     Bind the TPL table to all the records. Use this to cross check 
-##     Discard species where search terms don't match returned terms : with the updated names, this should be ok?
-
+##     Follow steps in file 3). 
 
 ##     Keep the 'source' column in the maxent table :: adjust step 7  
 

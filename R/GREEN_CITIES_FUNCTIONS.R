@@ -353,7 +353,7 @@ download_GBIF_all_species = function (species_list, path) {
       
       
       ## 6). save records to .Rdata file, note that using .csv files seemed to cause problems...
-      saveRDS(GBIF, file = paste(path, sp.n, "_GBIF_records.rds", sep = ""))
+      save(GBIF, file = paste(path, sp.n, "_GBIF_records.RData", sep = ""))
       #return(skip.spp.list)
       
     }
@@ -400,12 +400,12 @@ download_ALA_all_species = function (species_list, path) {
     ## 3). Download ALL records from ALA :: 
     message("Downloading GBIF records for ", sp.n, " using ALA4R :: occurrences")
     ALA = occurrences(taxon = sp.n, download_reason_id = 7)   ## could use more arguments here, download_reason_id = 7, etc.
-    ALA = ALA[[1]]
+    ALA = ALA[["data"]]
     cat("Synonyms returned for :: ", sp.n, unique(ALA$scientificName), sep="\n")
     message(dim(ALA[1]), " Records returned for ", sp.n)
     
     ## 4). save records to .Rdata file, note that using .csv files seemed to cause problems...
-    saveRDS(sp.n, file = paste(path, sp.n, "_ALA_records.rds", sep = ""))
+    save(ALA, file = paste(path, sp.n, "_ALA_records.RData", sep = ""))
     #return(skip.spp.list)
     
   }
