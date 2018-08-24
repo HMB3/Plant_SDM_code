@@ -319,7 +319,7 @@ download_GBIF_all_species = function (species_list, path) {
       
       ## 5). Download ALL records from GBIF
       message("Downloading GBIF records for ", sp.n, " using rgbif :: occ_data")
-      key  <- name_backbone(name = sp.n, rank = 'species')$usageKey
+      key <- name_backbone(name = sp.n, rank = 'species')$usageKey
       # x = name_lookup(sp.n)
       # keys = x$data$key
       # 
@@ -350,7 +350,6 @@ download_GBIF_all_species = function (species_list, path) {
       #View(GBIF[c("name", "scientificName", "taxonKey")])
       
       message(dim(GBIF[1]), " Records returned for ", sp.n)
-      
       
       ## 6). save records to .Rdata file, note that using .csv files seemed to cause problems...
       save(GBIF, file = paste(path, sp.n, "_GBIF_records.RData", sep = ""))
