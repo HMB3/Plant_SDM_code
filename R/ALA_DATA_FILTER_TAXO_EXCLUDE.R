@@ -143,34 +143,22 @@ length(unique(ALA.TRIM$species))
 ## 2). CHECK TAXONOMY RETURNED BY ALA USING TAXONSTAND
 ######################################################################################################################### 
 
+
 ## The problems is the mismatch between what we searched, and what GBIF returned. 
-
-## 1). Create the inital list by combing the planted trees with evergreen list
-##     TREE.HIA.SPP = intersect(subset(TI.LIST, Plantings > 50)$searchTaxon, CLEAN.SPP$Binomial)
-
-## 2). Clean this list using the GBIF backbone taxonomy :: use the "species" column
-
-## 3). Run the GBIF "species" list through the TPL taxonomy. Take "New" Species and Genus as the "searchTaxon"
-
-## 4). Use rgbif and ALA4R to download occurence data. ALA is ok, because the taxonomy is resolved.
-##     For GBIF, we use
-##     key  <- name_backbone(name = sp.n, rank = 'species')$usageKey
-##     GBIF <- occ_data(taxonKey = key, limit = GBIF.download.limit)
-
-##     This returns multiple keys and synonyms, but there is no simple way to skip these
 
 
 ## 5). Join the TPL taxonomy to the "scientificName" field. We can't use "name" (the equivalent of "species", it seems),
 ##     because name is always the same as the searchTaxon and not reliable (i.e. they will always match, and we know that
 ##     no one has gone through and checked each one).
 
+
 ##     Exclude records where the "scientificName" both doesn't match the "searchTaxon", and, also is not a synonym according to TPL
 ##     This is the Same as taking the SNs which are accepted, but which don't match ST.
+
 
 ##     Then we model these records as before. Of 390 species we downloaded, we will pick the 200 with acceptable maps.
 ##     One line in the MS : we matched the GBIF backbone taxo against the TPL taxo, and searched the currently accepted names
 ##     in GBIF and ALA, excluding incorreclty matching records (probably don't say this).
-
 
 
 #########################################################################################################################
@@ -179,6 +167,69 @@ ALA.TREES.TAXO <- TPL(unique(ALA.TRIM$scientificName), infra = TRUE,
                  corr = TRUE, repeats = 100)  ## to stop it timing out...
 sort(names(ALA.TREES.TAXO))
 saveRDS(ALA.TREES.TAXO, 'data/base/HIA_LIST/COMBO/ALA_TAXO_400.rds')
+
+
+#########################################################################################################################
+## However, the scientificName string and the searchTaxon string are not the same. 
+## currently using 'str_detect'
+Match.SN = ALA.TREES.TAXO  %>%
+  mutate(Match.SN.ST = 
+           str_detect(scientificName, searchTaxon)) %>%
+  
+  select(one_of(c("scientificName",
+                  "searchTaxon",
+                  "Taxonomic.status",
+                  "New.Taxonomic.status",
+                  "New.Genus",
+                  "New.Species",
+                  "country",
+                  "Match.SN.ST")))
+
+
+## How many records don't match?
+dim(Match.SN)
+unique(Match.SN$Taxonomic.status)
+unique(Match.SN$New.Taxonomic.status)
+
+
+#########################################################################################################################
+## Incude records where the "scientificName" and the "searchTaxon" match, and where the taxonomic status is 
+## accepted, synonym or unresolved
+
+
+## Also include records where the "scientificName" and the "searchTaxon" don't match, but status is synonym
+## This is the aame as the subset of species which are accpeted, but not on our list
+match.true  = unique(subset(Match.SN, Match.SN.ST == "TRUE")$scientificName)
+match.false = unique(subset(Match.SN, Match.SN.ST == "FALSE" &
+                              Taxonomic.status == "Synonym")$scientificName)  
+keep.SN     = unique(c(match.true, match.false))
+length(keep.SN)
+
+
+## Now create the match column in the main table of records
+# ALA.TRIM.TAXO$Match.SN = ALA.TRIM.TAXO  %>%
+#   mutate(Match.SN.ST = 
+#            str_detect(scientificName, searchTaxon))
+# unique(ALA.TRIM.TAXO$Match.SN)
+
+
+#########################################################################################################################
+## Now remove these from the ALA dataset?
+ALA.TRIM.MATCH = ALA.TRIM.TAXO[ALA.TRIM.TAXO$scientificName %in% keep.SN, ]
+
+
+## How many records were removed?
+message(dim(ALA.TRIM.TAXO)[1] - dim(ALA.TRIM.MATCH)[1], " records removed")
+message(round((dim(ALA.TRIM.MATCH)[1])/dim(ALA.TRIM.TAXO)[1]*100, 2), 
+        " % records retained using TPL mismatch")
+
+
+## Check the taxonomic status of the updated table
+unique(ALA.TRIM.MATCH$Taxonomic.status)
+unique(ALA.TRIM.MATCH$New.Taxonomic.status)
+
+round(with(ALA.TRIM.MATCH, table(Taxonomic.status)/sum(table(Taxonomic.status))*100), 2)
+round(with(ALA.TRIM.MATCH, table(New.Taxonomic.status)/sum(table(New.Taxonomic.status))*100), 2)
 
 
 
@@ -192,7 +243,7 @@ saveRDS(ALA.TREES.TAXO, 'data/base/HIA_LIST/COMBO/ALA_TAXO_400.rds')
 #########################################################################################################################
 ## Create a table which counts the number of records meeting each criteria:
 ## Note that TRUE indicates there is a problem (e.g. if a record has no lat/long, it will = TRUE)
-ALA.TREES.PROBLEMS <- with(ALA.TREES.TAXO,
+ALA.TREES.PROBLEMS <- with(ALA.TRIM.MATCH,
                       
                       table(
                         
@@ -241,7 +292,7 @@ ALA.TREES.PROBLEMS <- with(ALA.TREES.TAXO,
 
 #########################################################################################################################
 ## Now filter the ALA records using conditions which are not too restrictive
-ALA.TREES.CLEAN <- ALA.TREES.TAXO %>% 
+ALA.TREES.CLEAN <- ALA.TRIM.MATCH %>% 
   
   ## Note that these filters are very forgiving...
   ## Unless we include the NAs, very few records are returned!
