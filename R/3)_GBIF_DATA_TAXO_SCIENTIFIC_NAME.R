@@ -69,9 +69,10 @@ GBIF.ALL <- gbif.download %>%   ## spp.download[c(1:length(spp.download))]
 
 
 #########################################################################################################################
-## what proportion of the dataset has no lat/lon?
+## what proportion of the dataset has no lat/lon? Need to check this so we know the latest download is working
 dim(GBIF.ALL)
 (sum(is.na(GBIF.ALL$lat))            + dim(subset(GBIF.ALL, lat == ""))[1])/dim(GBIF.ALL)[1]*100
+(sum(is.na(GBIF.ALL$lon))            + dim(subset(GBIF.ALL, lon == ""))[1])/dim(GBIF.ALL)[1]*100
 
 
 ## Almost none of the GBIF data has no scientificName. This is the right field to use for matching taxonomy
@@ -83,13 +84,8 @@ dim(GBIF.ALL)
 ## Now get just the columns we want to keep.
 GBIF.TRIM <- GBIF.ALL %>% 
   select(one_of(gbif.keep))
-gc()
-
-
-## Check names
-dim(GBIF.TRIM)
 names(GBIF.TRIM)
-intersect(names(GBIF.TRIM), gbif.keep)
+gc()
 
 
 #########################################################################################################################
@@ -222,16 +218,16 @@ message(round((dim(GBIF.TRIM.MATCH)[1])/dim(GBIF.TRIM.TAXO)[1]*100, 2),
 ## Check the taxonomic status of the updated table
 unique(GBIF.TRIM.MATCH$Taxonomic.status)
 unique(GBIF.TRIM.MATCH$New.Taxonomic.status)
+
 round(with(GBIF.TRIM.MATCH, table(Taxonomic.status)/sum(table(Taxonomic.status))*100), 2)
 round(with(GBIF.TRIM.MATCH, table(New.Taxonomic.status)/sum(table(New.Taxonomic.status))*100), 2)
-#View(GBIF.TRIM.MATCH[c("searchTaxon", "scientificName", "Taxonomic.status", "New.Taxonomic.status")])
 
 
 
 
 
 #########################################################################################################################
-## 5). CREATE TABLE OF PRE-CLEAN FLAGS AND FILTER RECORDS
+## 3). CREATE TABLE OF PRE-CLEAN FLAGS AND FILTER RECORDS
 #########################################################################################################################
 
 
@@ -311,7 +307,7 @@ length(unique(GBIF.CLEAN$searchTaxon))
 
 
 #########################################################################################################################
-## 6). REMOVE POINTS OUTSIDE WORLDCLIM LAYERS...
+## 4). REMOVE POINTS OUTSIDE WORLDCLIM LAYERS...
 #########################################################################################################################
 
 

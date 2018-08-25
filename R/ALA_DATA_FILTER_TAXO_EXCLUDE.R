@@ -13,6 +13,10 @@ ala.download = list.files(ALA_path, pattern = ".RData")
 #########################################################################################################################
 
 
+## Some species fail because ALA does not recognise their taxonomy. E.G.:
+## Tabebuia rosea, Roystonea regia
+
+
 #########################################################################################################################
 ## Combine all the taxa into a single dataframe at once
 ALA.ALL <- ala.download %>%   ## spp.download[c(1:length(spp.download))] 
@@ -48,7 +52,7 @@ ALA.ALL <- ala.download %>%   ## spp.download[c(1:length(spp.download))]
     dat$searchTaxon = gsub("_ALA_records.RData", "", dat$searchTaxon)
     names(dat)[names(dat) == 'latitude']  <- 'lat'
     names(dat)[names(dat) == 'longitude'] <- 'lon'
-    data
+    dat
     
   }) %>%
   
@@ -57,10 +61,16 @@ ALA.ALL <- ala.download %>%   ## spp.download[c(1:length(spp.download))]
 
 
 #########################################################################################################################
+## what proportion of the ALA dataset has no lat/lon? Need to check this so we know the latest download is working
+sort(names(ALA.ALL))
+dim(ALA.ALL)
+(sum(is.na(ALA.ALL$lat))            + dim(subset(ALA.ALL, lat == ""))[1])/dim(ALA.ALL)[1]*100
+
+
 ## Now check the ALA species names : which has the least holes?
-(sum(is.na(ALA.ALL$scientificName))          + dim(subset(ALA.ALL, scientificName == ""))[1])/dim(ALA.ALL)[1]*100
 (sum(is.na(ALA.ALL$scientificNameOriginal))  + dim(subset(ALA.ALL, scientificNameOriginal == ""))[1])/dim(ALA.ALL)[1]*100
-(sum(is.na(ALA.ALL$species))                 + dim(subset(ALA.ALL, species == ""))[1]/dim(ALA.ALL))[1]*100
+(sum(is.na(ALA.ALL$scientificName))          + dim(subset(ALA.ALL, scientificName == ""))[1])/dim(ALA.ALL)[1]*100
+(sum(is.na(ALA.ALL$species))                 + dim(subset(ALA.ALL, species == ""))[1])/dim(ALA.ALL)[1]*100
 
 
 ## What is the match between 'species' and 'scientificNameOriginal'?
