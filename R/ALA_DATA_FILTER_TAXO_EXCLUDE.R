@@ -17,6 +17,10 @@ ala.download = list.files(ALA_path, pattern = ".RData")
 ## Tabebuia rosea, Roystonea regia
 
 
+## Email Peggy on Monday to check on scientificName vs scientificNameOriginal............................................
+## 
+
+
 #########################################################################################################################
 ## Combine all the taxa into a single dataframe at once
 ALA.ALL <- ala.download %>%   ## spp.download[c(1:length(spp.download))] 
@@ -65,6 +69,7 @@ ALA.ALL <- ala.download %>%   ## spp.download[c(1:length(spp.download))]
 sort(names(ALA.ALL))
 dim(ALA.ALL)
 (sum(is.na(ALA.ALL$lat))            + dim(subset(ALA.ALL, lat == ""))[1])/dim(ALA.ALL)[1]*100
+(sum(is.na(ALA.ALL$lon))            + dim(subset(ALA.ALL, lon == ""))[1])/dim(ALA.ALL)[1]*100
 
 
 ## Now check the ALA species names : which has the least holes?
