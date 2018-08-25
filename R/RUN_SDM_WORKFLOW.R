@@ -20,7 +20,7 @@ source('./R/HIA_TREE_LIST.R')
 GBIF.spp      = TPL.SPP ## use TPL checked species
 map_spp_list  = TPL_SPP
 
-GBIF_path     = "./data/base/HIA_LIST/GBIF/OCC_SEARCH/"
+GBIF_path     = "./data/base/HIA_LIST/GBIF/OCC_DOWNLOAD/"
 ALA_path      = "./data/base/HIA_LIST/ALA/TREES_LATEST/"
 
 save_dir      = 'output/maxent/SUA_TREES/'
@@ -35,7 +35,7 @@ source('./R/3)_GBIF_DATA_FILTER.R',    echo = TRUE)
 source('./R/ALA_TREEES_DATA_FILTER.R', echo = TRUE)
 
 
-## Step 4 :: combine GBIF, ALA and urban occurrence data into a single table, extracts environmental condtions 
+## Step 4 :: combine GBIF, ALA and urban occurrence data into a single table, extract environmental condtions 
 ## & add contextual info for each record (taxonomic and horticultural) 
 source('./R/4)_ALA_GBIF_URBAN_COMBINE.R', echo = TRUE)
 

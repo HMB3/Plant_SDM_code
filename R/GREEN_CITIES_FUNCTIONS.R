@@ -273,7 +273,7 @@ download_GBIF_all_species = function (species_list, path) {
     ## If it's already downloaded, skip
     if (file.exists (file)) {
       
-      print (paste ("file exists for species", sp.n, "skipping"))
+      print(paste ("file exists for species", sp.n, "skipping"))
       next
       
     }
@@ -923,6 +923,8 @@ gbif.keep <- c(## TAXONOMY
                ## PLACE/TIME
                "lat",
                "lon",
+               "decimalLatitude",
+               "decimalLongitude",
                "country",
                "coordinateUncertaintyInMeters",
                "geodeticDatum",

@@ -1,54 +1,66 @@
 #########################################################################################################################
-############################################# UPDATE ALA  ############################################################### 
+####################################################  FILTER GBIF DATA ################################################## 
 #########################################################################################################################
 
 
 #########################################################################################################################
-## This code updates the ALA data
-ala.download = list.files(ALA_path, pattern = ".RData")
+## This code combines the GBIF data into one file, and filters to the most reliable recrods. 
+## Two main sources of uncertainty:
+
+
+## Taxonomic
+## Spatial 
 
 
 #########################################################################################################################
-## 2). COMBINE ALA SPECIES INTO ONE DATASET
+## Read in all data to run the SDM code :: species lists, shapefile, rasters & tables
+#source('./R/HIA_LIST_MATCHING.R')
+rasterTmpFile()
+
+
 #########################################################################################################################
+## 1). COMBINE GBIF DATAFRAMES INTO ONE
+#########################################################################################################################
+
+
+#########################################################################################################################
+## Create a list of species from the downloaded files
+gbif.download = list.files(GBIF_path, pattern = ".RData")
+
+
+## what is causing the NA lat problem?
+## Some of the species have lat/lon, and some have decimal lat/lon. Need to re-download the latest species
 
 
 #########################################################################################################################
 ## Combine all the taxa into a single dataframe at once
-ALA.ALL <- ala.download %>%   ## spp.download[c(1:length(spp.download))] 
+GBIF.ALL <- gbif.download %>%   ## spp.download[c(1:length(spp.download))] 
   
   ## Pipe the list into lapply
   lapply(function(x) {
     
     ## Create a character string of each .RData file
-    #f <- sprintf("./data/base/HIA_LIST/ALA/TREE_SPECIES/%s", x)
-    f <- sprintf(paste0(ALA_path, "%s"), x)
+    #f <- sprintf(paste0(GBIF_path, "%s_GBIF_records.RData"), x)
+    f <- sprintf(paste0(GBIF_path, "%s"), x)
     
     ## Load each file
     d <- get(load(f))
     
     ## Now drop the columns which we don't need
-    dat <- data.frame(searchTaxon = x,
-                      d[, colnames(d) %in% ALA.keep],
+    dat <- data.frame(searchTaxon = x, d[, colnames(d) %in% gbif.keep],
                       stringsAsFactors = FALSE)
     
-    if(!is.character(dat$id)) {
+    if(!is.character(dat$gbifID)) {
       
-      dat$id <- as.character(dat$id)
+      dat$gbifID <- as.character(dat$gbifID)
       
     }
     
-    ## This is a list of columns in different files which have weird characters
-    dat$coordinateUncertaintyInMetres = as.numeric(dat$coordinateUncertaintyInMetres)
-    dat$year             = as.numeric(dat$year)
-    dat$month            = as.numeric(dat$month)
-    #dat$latitudeOriginal = as.numeric(dat$latitudeOriginal)
-    #dat$individualCount  = as.numeric(dat$individualCount)
-    
-    dat$searchTaxon = gsub("_ALA_records.RData", "", dat$searchTaxon)
-    names(dat)[names(dat) == 'latitude']  <- 'lat'
-    names(dat)[names(dat) == 'longitude'] <- 'lon'
-    data
+    ## Need to print the object within the loop
+    names(dat)[names(dat) == 'decimalLatitude']  <- 'lat'
+    names(dat)[names(dat) == 'decimalLongitude'] <- 'lon'
+    dat$searchTaxon = gsub("_GBIF_records.RData", "", dat$searchTaxon)
+    dat
     
   }) %>%
   
@@ -57,78 +69,51 @@ ALA.ALL <- ala.download %>%   ## spp.download[c(1:length(spp.download))]
 
 
 #########################################################################################################################
-## Now check the ALA species names : which has the least holes?
-(sum(is.na(ALA.ALL$scientificName))          + dim(subset(ALA.ALL, scientificName == ""))[1])/dim(ALA.ALL)[1]*100
-(sum(is.na(ALA.ALL$scientificNameOriginal))  + dim(subset(ALA.ALL, scientificNameOriginal == ""))[1])/dim(ALA.ALL)[1]*100
-(sum(is.na(ALA.ALL$species))                 + dim(subset(ALA.ALL, species == ""))[1]/dim(ALA.ALL))[1]*100
+## what proportion of the dataset has no lat/lon?
+dim(GBIF.ALL)
+(sum(is.na(GBIF.ALL$lat))            + dim(subset(GBIF.ALL, lat == ""))[1])/dim(GBIF.ALL)[1]*100
 
 
-## What is the match between 'species' and 'scientificNameOriginal'?
-## What is the match between scientificNameOriginal, and the searchTaxon?
-Match.ALA = ALA.ALL  %>%
-  mutate(Match.SN.ST = 
-           str_detect(scientificNameOriginal, searchTaxon)) %>%
-  
-  mutate(Match.SP.ST = 
-           str_detect(species, searchTaxon)) %>%
-  
-  mutate(Match.SN.SP = 
-           str_detect(scientificNameOriginal, species)) %>%
-  
-  select(one_of(c("scientificName",
-                  "scientificNameOriginal",
-                  "species",
-                  "searchTaxon",
-                  "Match.SN.ST",
-                  "Match.SP.ST",
-                  "Match.SN.SP")))
-
-View(Match.ALA)
-
-## So for 15-12% of the records, neither the scientificNameOriginal or the species match the search taxon.
-dim(subset(Match.ALA,  Match.SN.ST == "FALSE"))[1]/dim(Match.ALA)[1]*100
-dim(subset(Match.ALA,  Match.SP.ST == "FALSE"))[1]/dim(Match.ALA)[1]*100
+## Almost none of the GBIF data has no scientificName. This is the right field to use for matching taxonomy
+(sum(is.na(GBIF.ALL$species))        + dim(subset(GBIF.ALL, species == ""))       [1])/dim(GBIF.ALL)[1]*100
+(sum(is.na(GBIF.ALL$name))           + dim(subset(GBIF.ALL, name == ""))          [1])/dim(GBIF.ALL)[1]*100
+(sum(is.na(GBIF.ALL$scientificName)) + dim(subset(GBIF.ALL, scientificName == ""))[1])/dim(GBIF.ALL)[1]*100
 
 
-## So rename 'scientificNameOriginal' to 'scientificName', to match GBIF
-ALA.RENAME = ALA.ALL
-ALA.RENAME$scientificName = NULL 
-ALA.RENAME$scientificName = ALA.RENAME$scientificNameOriginal 
-ALA.RENAME$scientificNameOriginal = NULL 
-(sum(is.na(ALA.RENAME$scientificName)) + dim(subset(ALA.RENAME, scientificName == ""))[1])/dim(ALA.ALL)[1]*100
+## Now get just the columns we want to keep.
+GBIF.TRIM <- GBIF.ALL %>% 
+  select(one_of(gbif.keep))
+gc()
 
 
-########################################################################################################################
 ## Check names
-## What names get returned?
-sort(names(ALA.RENAME))
-ALA.TRIM <- ALA.RENAME %>% 
-  select(one_of(ALA.keep))
-
-dim(ALA.TRIM)
-names(ALA.TRIM)
+dim(GBIF.TRIM)
+names(GBIF.TRIM)
+intersect(names(GBIF.TRIM), gbif.keep)
 
 
 #########################################################################################################################
-## Just get the newly downloaded species................................................................................
-ALA.TRIM = ALA.TRIM[ALA.TRIM$searchTaxon %in% GBIF.spp, ]
-dim(ALA.TRIM)
+## Just get the newly downloaded species
+GBIF.TRIM = GBIF.TRIM[GBIF.TRIM$searchTaxon %in% GBIF.spp, ]
+dim(GBIF.TRIM)
 
 
 ## What are the unique species?
-length(unique(ALA.TRIM$searchTaxon))
-length(unique(ALA.TRIM$scientificName)) 
-length(unique(ALA.TRIM$species))
-(sum(is.na(ALA.TRIM$scientificName)) + dim(subset(ALA.TRIM, scientificName == ""))[1])/dim(ALA.TRIM)[1]*100
+length(unique(GBIF.TRIM$name))
+length(unique(GBIF.TRIM$species))
+length(unique(GBIF.TRIM$searchTaxon)) 
+length(unique(GBIF.TRIM$scientificName))  
+ 
 
 
 
 
 #########################################################################################################################
-## 2). CHECK TAXONOMY RETURNED BY ALA USING TAXONSTAND
+## 2). CHECK TAXONOMY RETURNED BY GBIF USING TAXONSTAND
 ######################################################################################################################### 
 
-## The problems is the mismatch between what we searched, and what GBIF returned. 
+
+## The problems is the mis-match between what we searched, and what GBIF returned. 
 
 ## 1). Create the inital list by combing the planted trees with evergreen list
 ##     TREE.HIA.SPP = intersect(subset(TI.LIST, Plantings > 50)$searchTaxon, CLEAN.SPP$Binomial)
@@ -137,7 +122,7 @@ length(unique(ALA.TRIM$species))
 
 ## 3). Run the GBIF "species" list through the TPL taxonomy. Take "New" Species and Genus as the "searchTaxon"
 
-## 4). Use rgbif and ALA4R to download occurence data. ALA is ok, because the taxonomy is resolved.
+## 4). Use rgbif and ALA4R to download occurence data, using "searchTaxon". ALA is ok, because the taxonomy is resolved.
 ##     For GBIF, we use
 ##     key  <- name_backbone(name = sp.n, rank = 'species')$usageKey
 ##     GBIF <- occ_data(taxonKey = key, limit = GBIF.download.limit)
@@ -148,10 +133,10 @@ length(unique(ALA.TRIM$species))
 ## 5). Join the TPL taxonomy to the "scientificName" field. We can't use "name" (the equivalent of "species", it seems),
 ##     because name is always the same as the searchTaxon and not reliable (i.e. they will always match, and we know that
 ##     no one has gone through and checked each one).
-
+     
 ##     Exclude records where the "scientificName" both doesn't match the "searchTaxon", and, also is not a synonym according to TPL
 ##     This is the Same as taking the SNs which are accepted, but which don't match ST.
-
+     
 ##     Then we model these records as before. Of 390 species we downloaded, we will pick the 200 with acceptable maps.
 ##     One line in the MS : we matched the GBIF backbone taxo against the TPL taxo, and searched the currently accepted names
 ##     in GBIF and ALA, excluding incorreclty matching records (probably don't say this).
@@ -160,24 +145,101 @@ length(unique(ALA.TRIM$species))
 
 #########################################################################################################################
 ## Use "Taxonstand" to check the taxonomy :: which field to use?
-ALA.TREES.TAXO <- TPL(unique(ALA.TRIM$scientificName), infra = TRUE,
+GBIF.TAXO <- TPL(unique(GBIF.TRIM$scientificName), infra = TRUE,
                  corr = TRUE, repeats = 100)  ## to stop it timing out...
-sort(names(ALA.TREES.TAXO))
-saveRDS(ALA.TREES.TAXO, 'data/base/HIA_LIST/COMBO/ALA_TAXO_400.rds')
+sort(names(GBIF.TAXO))
+saveRDS(GBIF.TAXO, 'data/base/HIA_LIST/COMBO/GBIF_TAXO_400.rds')
+GBIF.TAXO = readRDS('data/base/HIA_LIST/COMBO/GBIF_TAXO_400.rds')
+
+
+#########################################################################################################################
+## The procedure used for taxonomic standardization is based on function TPLck. A progress bar
+## indicates the proportion of taxon names processed so far. 
+
+
+## Check the taxonomy by running scientificName through TPL. Then join the GBIF data to the taxonomic check, using 
+## "scientificName" as the join field
+GBIF.TRIM.TAXO <- GBIF.TRIM %>%
+  left_join(., GBIF.TAXO, by = c("scientificName" = "Taxon"))
+names(GBIF.TRIM.TAXO)
+
+
+#########################################################################################################################
+## However, the scientificName string and the searchTaxon string are not the same. 
+## currently using 'str_detect'
+Match.SN = GBIF.TRIM.TAXO  %>%
+  mutate(Match.SN.ST = 
+           str_detect(scientificName, searchTaxon)) %>%
+  
+  select(one_of(c("scientificName",
+                  "searchTaxon",
+                  "Taxonomic.status",
+                  "New.Taxonomic.status",
+                  "New.Genus",
+                  "New.Species",
+                  "country",
+                  "Match.SN.ST")))
+
+
+## How many records don't match?
+dim(Match.SN)
+unique(Match.SN$Taxonomic.status)
+unique(Match.SN$New.Taxonomic.status)
+
+
+#########################################################################################################################
+## Incude records where the "scientificName" and the "searchTaxon" match, and where the taxonomic status is 
+## accepted, synonym or unresolved
+
+
+## Also include records where the "scientificName" and the "searchTaxon" don't match, but status is synonym
+## This is the aame as the subset of species which are accpeted, but not on our list
+match.true  = unique(subset(Match.SN, Match.SN.ST == "TRUE")$scientificName)
+match.false = unique(subset(Match.SN, Match.SN.ST == "FALSE" &
+                         Taxonomic.status == "Synonym")$scientificName)  
+keep.SN     = unique(c(match.true, match.false))
+length(keep.SN)
+
+
+## Now create the match column in the main table of records
+# GBIF.TRIM.TAXO$Match.SN = GBIF.TRIM.TAXO  %>%
+#   mutate(Match.SN.ST = 
+#            str_detect(scientificName, searchTaxon))
+# unique(GBIF.TRIM.TAXO$Match.SN)
+
+
+#########################################################################################################################
+## Now remove these from the GBIF dataset?
+GBIF.TRIM.MATCH = GBIF.TRIM.TAXO[GBIF.TRIM.TAXO$scientificName %in% keep.SN, ]
+
+
+## How many records were removed?
+message(dim(GBIF.TRIM.TAXO)[1] - dim(GBIF.TRIM.MATCH)[1], " records removed")
+message(round((dim(GBIF.TRIM.MATCH)[1])/dim(GBIF.TRIM.TAXO)[1]*100, 2), 
+        " % records retained using TPL mismatch")
+
+
+## Check the taxonomic status of the updated table
+unique(GBIF.TRIM.MATCH$Taxonomic.status)
+unique(GBIF.TRIM.MATCH$New.Taxonomic.status)
+round(with(GBIF.TRIM.MATCH, table(Taxonomic.status)/sum(table(Taxonomic.status))*100), 2)
+round(with(GBIF.TRIM.MATCH, table(New.Taxonomic.status)/sum(table(New.Taxonomic.status))*100), 2)
+#View(GBIF.TRIM.MATCH[c("searchTaxon", "scientificName", "Taxonomic.status", "New.Taxonomic.status")])
 
 
 
 
 
 #########################################################################################################################
-## 3). CREATE TABLE OF PRE-CLEAN FLAGS AND FILTER RECORDS
+## 5). CREATE TABLE OF PRE-CLEAN FLAGS AND FILTER RECORDS
 #########################################################################################################################
 
 
 #########################################################################################################################
 ## Create a table which counts the number of records meeting each criteria:
 ## Note that TRUE indicates there is a problem (e.g. if a record has no lat/long, it will = TRUE)
-ALA.TREES.PROBLEMS <- with(ALA.TREES.TAXO,
+#GBIF.TRIM.TAXO = GBIF.TRIM.TAXO
+GBIF.PROBLEMS <- with(GBIF.TRIM.MATCH,
                       
                       table(
                         
@@ -205,8 +267,8 @@ ALA.TREES.PROBLEMS <- with(ALA.TREES.TAXO,
                         is.na(year),
                         
                         ## Coordinate uncertainty is > 100 or is not NA
-                        coordinateUncertaintyInMetres > 1000 & 
-                          !is.na(coordinateUncertaintyInMetres)
+                        coordinateUncertaintyInMeters > 1000 & 
+                          !is.na(coordinateUncertaintyInMeters)
                         
                         ## Other checks using coordinateCleaner
                         
@@ -225,8 +287,8 @@ ALA.TREES.PROBLEMS <- with(ALA.TREES.TAXO,
 
 
 #########################################################################################################################
-## Now filter the ALA records using conditions which are not too restrictive
-ALA.TREES.CLEAN <- ALA.TREES.TAXO %>% 
+## Now filter the GBIF records using conditions which are not too restrictive
+GBIF.CLEAN <- GBIF.TRIM.MATCH %>% 
   
   ## Note that these filters are very forgiving...
   ## Unless we include the NAs, very few records are returned!
@@ -239,28 +301,33 @@ ALA.TREES.CLEAN <- ALA.TREES.TAXO %>%
          year >= 1950 & !is.na(year))
 
 
-## Check
-names(ALA.TREES.CLEAN)
+## How many species are there?
+names(GBIF.CLEAN)
+length(unique(GBIF.TRIM.TAXO$searchTaxon))
+length(unique(GBIF.CLEAN$searchTaxon))
 
 
 
 
 
 #########################################################################################################################
-## 4). REMOVE POINTS OUTSIDE WORLDCLIM LAYERS...
+## 6). REMOVE POINTS OUTSIDE WORLDCLIM LAYERS...
 #########################################################################################################################
 
 
 ## Can use WORLDCIM rasters to get only records where wordlclim data is. 
+## At the global scale, there probably is no alterntive to using WORLDCLIM...
+
+
 ## First, get one of the BIOCLIM variables
 world.temp = raster("./data/base/worldclim/world/0.5/bio/current/bio_01")
 #plot(world.temp)
 
 
-## Now get the XY centroids of the unique 1km * 1km WORLDCLIM blocks where ALA records are found
+## Now get the XY centroids of the unique 1km * 1km WORLDCLIM blocks where GBIF records are found
 ## Get cell number(s) of WORLDCLIM raster from row and/or column numbers. Cell numbers start at 1 in the upper left corner, 
 ## and increase from left to right, and then from top to bottom. The last cell number equals the number of raster cells 
-xy <- cellFromXY(world.temp, ALA.TREES.CLEAN[c("lon", "lat")]) %>% 
+xy <- cellFromXY(world.temp, GBIF.CLEAN[c("lon", "lat")]) %>% 
   
   ## get the unique raster cells
   unique %>% 
@@ -281,7 +348,7 @@ xy <- SpatialPointsDataFrame(coords = xy, data = as.data.frame(xy),
                              proj4string = CRS("+proj=longlat +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +no_defs"))
 
 
-## Now extract the temperature values for the unique 1km centroids which contain ALA data
+## Now extract the temperature values for the unique 1km centroids which contain GBIF data
 class(xy)
 z   = extract(world.temp, xy)
 
@@ -297,45 +364,57 @@ onland = z %>% is.na %>%  `!` # %>% xy[.,]  cells on land or not
 #summary(onland)
 
 
-## Finally, filter the cleaned ALA data to only those points on land. 
+## Finally, filter the cleaned GBIF data to only those points on land. 
 ## This is achieved with the final [onland]
-ALA.TREES.LAND = filter(ALA.TREES.CLEAN, cellFromXY(world.temp, ALA.TREES.CLEAN[c("lon", "lat")]) %in% 
-                     unique(cellFromXY(world.temp, ALA.TREES.CLEAN[c("lon", "lat")]))[onland])
+GBIF.LAND = filter(GBIF.CLEAN, cellFromXY(world.temp, GBIF.CLEAN[c("lon", "lat")]) %in% 
+                     unique(cellFromXY(world.temp, GBIF.CLEAN[c("lon", "lat")]))[onland])
 
 
 ## how many records were on land?
-records.ocean = dim(ALA.TREES.CLEAN)[1] - dim(ALA.TREES.LAND)[1]  ## 91575 records are in the ocean   
+records.ocean = dim(GBIF.CLEAN)[1] - dim(GBIF.LAND)[1]  ## 91575 records are in the ocean   
 
 
 ## Print the dataframe dimensions to screen
-dim(ALA.TREES.LAND)
-length(unique(ALA.TREES.LAND$searchTaxon))
+dim(GBIF.LAND)
+length(unique(GBIF.LAND$searchTaxon))
 
 
 ## Add a source column
-ALA.TREES.LAND$SOURCE = 'ALA'
-
+GBIF.LAND$SOURCE = 'GBIF'
+names(GBIF.LAND)
 
 ## Free some memory
 gc()
 
 
+## note that this still leaves lots of points in the Islands. So we need to decide if those are legitimate.
+# WORLD <- readOGR("./data/base/CONEXTUAL/TM_WORLD_BORDERS-0.3.shp", layer = "TM_WORLD_BORDERS-0.3")
+# LAND  <- readOGR("./data/base/CONTEXTUAL/ne_10m_land.shp", layer = "ne_10m_land")
+# plot(WORLD)
+# plot(LAND)
+
+
+
 
 #########################################################################################################################
 ## save data
-saveRDS(ALA.TREES.LAND, file = paste("./data/base/HIA_LIST/GBIF/ALA_TREES_LAND.rds"))
+saveRDS(GBIF.LAND, file = paste("./data/base/HIA_LIST/GBIF/GBIF_TREES_LAND.rds"))
+
+
+## Now save .rds file for the next session
+gc()
 
 
 
 
 #########################################################################################################################
-## OUTSTANDING OCCURRENCE TASKS:
+## OUTSTANDING CLEANING TASKS:
 #########################################################################################################################
 
 
-##
+## Check taxonomy 
 
 
 #########################################################################################################################
-#####################################################  TBC ############################################################## 
+###################################################### TBC ############################################################## 
 #########################################################################################################################
