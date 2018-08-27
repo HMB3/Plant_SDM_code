@@ -86,28 +86,38 @@ names(TI.POINTS)
 ## Create a stack of rasters to sample: get all the Worldclim variables just for good measure
 ## Use the Mollweide projection for the points and rasters 
 aus.grids.current = stack(
-  file.path('./data/base/worldclim/aus/1km/bio/current', 
+  file.path('./data/base/worldclim/aus/1km/bio/current/WGS/', 
             sprintf('bio_%02d.tif', 1:19))) 
 
 
 ## Also get the PET raster
 PET               = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
-PET <- PET %>%
-  projectRaster(crs = CRS.WGS.84)
+projection(PET);projection(aus.grids.current)
+# PET <- PET %>%
+#   projectRaster(crs = CRS.WGS.84)
+# saveRDS(PET, "./data/base/worldclim/world/1km/PET_WGS84.rds")
 
 
 #########################################################################################################################
 ## Check the projection and raster extents for worldclim vs aus data
-aus.grids.current <- aus.grids.current %>%
-  projectRaster(crs = CRS.WGS.84)
-projection(TI.POINTS);projection(aus.grids.current)
-saveRDS("./data/base/worldclim/aus/1km/bio/current/aus_grids_current.rds")
+# aus.grids.current <- aus.grids.current %>%
+#   projectRaster(crs = CRS.WGS.84)
+# saveRDS(aus.grids.current, "./data/base/worldclim/aus/1km/bio/current/aus_grids_current.rds")
+# projection(TI.POINTS);projection(aus.grids.current)
+# 
+# 
+# ## Save projected files
+# saveRDS(aus.grids.current, "./data/base/worldclim/aus/1km/bio/current/aus_grids_current.rds")
+# aus.grids.current = readRDS("./data/base/worldclim/aus/1km/bio/current/aus_grids_current.rds")
 
+
+#########################################################################################################################
+## Now extract data
+projection(TI.POINTS);projection(aus.grids.current);projection(PET)
 TI.RASTER <- extract(aus.grids.current, TI.POINTS) %>% 
   cbind(TI.XY.SPP, .)
 summary(TI.RASTER)
 class(TI.RASTER)
-
 
 
 #########################################################################################################################
@@ -151,7 +161,6 @@ class(TI.RASTER)
 # saveRDS(TI.ALL, 'data/base/HIA_LIST/COMBO/SPAT_OUT/TREE_INV_ALL_POINTS.rds')
 
 
-
 #########################################################################################################################
 ## Multiple rename using dplyr
 TI.RASTER = dplyr::rename(TI.RASTER,
@@ -188,11 +197,6 @@ gc();gc()
 
 #########################################################################################################################
 ## Extract the raster data for PET
-TI.POINTS   = SpatialPointsDataFrame(coords         = TI.RASTER[c("lon", "lat")], 
-                                     data           = TI.RASTER[c("lon", "lat")],
-                                     proj4string    = CRS.WGS.84)
-
-
 projection(TI.POINTS);projection(PET)
 POINTS.PET <- extract(PET, TI.POINTS) %>% 
   cbind(TI.RASTER, .)

@@ -543,7 +543,7 @@ setdiff(TREE.HIA.SPP, SUA.SPP)
 # TPL.SUA <- TPL(unique(SUA.SPP), infra = TRUE, corr = TRUE, repeats = 100)
 # View(TPL.SUA[c("Taxon", "Taxonomic.status", "New.Taxonomic.status", "New.Genus", "New.Species")])
 # saveRDS(TPL.SUA, file = paste("./data/base/HIA_LIST/GBIF/TPL_SUA.rds"))
-write.csv(TPL.SUA, "./data/base/HIA_LIST/GBIF/TPL_SUA.csv", row.names = FALSE)
+#write.csv(TPL.SUA, "./data/base/HIA_LIST/GBIF/TPL_SUA.csv", row.names = FALSE)
 
 
 ## Note that TPL is not always right for Australian species :: Eucalyptus largiflorens is the accepted Australian name

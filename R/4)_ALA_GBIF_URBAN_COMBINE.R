@@ -50,8 +50,7 @@ names(ALA.TREES.LAND)
 setdiff(names(GBIF.LAND), names(ALA.TREES.LAND))
 
 
-#########################################################################################################################
-## Rename a few fields and and a field for source........................................................................
+## Rename a few fields
 GBIF.LAND     = dplyr::rename(GBIF.LAND, 
                               coordinateUncertaintyInMetres = coordinateUncertaintyInMeters,
                               rank = taxonRank)
@@ -61,9 +60,11 @@ GBIF.LAND     = dplyr::rename(GBIF.LAND,
 ## Bind the rows together
 intersect(names(GBIF.LAND), names(ALA.TREES.LAND))
 GBIF.ALA.COMBO = bind_rows(GBIF.LAND, ALA.TREES.LAND)
+
 names(GBIF.ALA.COMBO)
 unique(GBIF.ALA.COMBO$SOURCE)
 identical((dim(GBIF.LAND)[1]+dim(ALA.TREES.LAND)[1]),dim(GBIF.ALA.COMBO)[1])      ## Only adding the ovelap...
+
 head(GBIF.ALA.COMBO)
 length(unique(GBIF.ALA.COMBO$searchTaxon))
 length(unique(GBIF.ALA.COMBO$scientificName)) 
@@ -77,7 +78,7 @@ summary(GBIF.ALA.COMBO$lon)
 
 
 #########################################################################################################################
-## Now create table for Alessandro.......................................................................................
+## Now create table of species counts
 COMBO.LUT = as.data.frame(table(GBIF.ALA.COMBO$scientificName))
 names(COMBO.LUT) = c("scientificName", "FREQUENCY")
 COMBO.LUT = COMBO.LUT[with(COMBO.LUT, rev(order(FREQUENCY))), ] 
@@ -89,7 +90,7 @@ write.csv(COMBO.LUT, "./data/base/HIA_LIST/COMBO/SUA_TREES_GBIF_ALA_LUT.csv", ro
 
 
 #########################################################################################################################
-## Create points: the over function seems to need geographic coordinates for this data...
+## Create points: the 'over' function seems to need geographic coordinates for this data...
 COMBO.POINTS   = SpatialPointsDataFrame(coords      = GBIF.ALA.COMBO[c("lon", "lat")], 
                                         data        = GBIF.ALA.COMBO[c("lon", "lat")],
                                         proj4string = CRS.WGS.84)
@@ -139,15 +140,31 @@ names(COMBO.POINTS)
 ## Use the Mollweide projection for the points and rasters 
 env.grids.current = stack(
   file.path('./data/base/worldclim/world/0.5/bio/current',
-            sprintf('bio_%02d', 1:19))) 
+            sprintf('bio_%02d', 1:19)))
+class(env.grids.current)
+projection(env.grids.current)
+
+# writeRaster(env.grids.current, 
+#             filename = "./data/base/worldclim/aus/1km/bio/current/env_grids_currentmulti.grd", 
+#             bandorder = 'BIL', overwrite = TRUE)
+
 
 ## Also get the PET raster
 PET               = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
+PET <- PET %>%
+#   projectRaster(crs = CRS.WGS.84)
+# saveRDS(PET, "./data/base/worldclim/world/1km/PET_WGS84.rds")
+
+
+## Project current grids into WGS84
+# env.grids.current <- env.grids.current %>%
+#   projectRaster(crs = CRS.WGS.84)
+# saveRDS(env.grids.current, "./data/base/worldclim/aus/1km/bio/current/env_grids_current.rds")
+# projection(TI.POINTS);projection(aus.grids.current)
 
 
 #########################################################################################################################
-## Is there a way to speed this up?
-projection(COMBO.POINTS);projection(env.grids.current)
+## Extract raster data
 COMBO.RASTER <- extract(env.grids.current, COMBO.POINTS) %>% 
   cbind(GBIF.ALA.COMBO, .)
 

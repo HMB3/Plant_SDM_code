@@ -71,8 +71,7 @@ GBIF.ALL <- gbif.download %>%   ## spp.download[c(1:length(spp.download))]
 #########################################################################################################################
 ## what proportion of the dataset has no lat/lon? Need to check this so we know the latest download is working
 dim(GBIF.ALL)
-(sum(is.na(GBIF.ALL$lat))            + dim(subset(GBIF.ALL, lat == ""))[1])/dim(GBIF.ALL)[1]*100
-(sum(is.na(GBIF.ALL$lon))            + dim(subset(GBIF.ALL, lon == ""))[1])/dim(GBIF.ALL)[1]*100
+(sum(is.na(GBIF.ALL$lat))            + dim(subset(GBIF.ALL, year < 1950))[1])/dim(GBIF.ALL)[1]*100
 
 
 ## Almost none of the GBIF data has no scientificName. This is the right field to use for matching taxonomy
