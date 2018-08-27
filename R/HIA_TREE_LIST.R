@@ -496,9 +496,11 @@ TREE.EVERGREEN = merge(EVERGREEN, TI.LIST)
 TREE.EVERGREEN = TREE.EVERGREEN[TREE.EVERGREEN$searchTaxon %in% TREE.HIA.SPP, ]
 TREE.EVERGREEN = TREE.EVERGREEN [with(TREE.EVERGREEN, rev(order(Plantings))), ]
 TREE.EVERGREEN = TREE.EVERGREEN[c("searchTaxon", "Origin", "Plantings", "Number.of.States", "Number.of.growers")]
-TREE.EVERGREEN = TREE.EVERGREEN[!duplicated(TREE.EVERGREEN[,c('searchTaxon')]),] 
+TREE.EVERGREEN = TREE.EVERGREEN[!duplicated(TREE.EVERGREEN[,c('searchTaxon')]),]
+
 
 ## What does the dataset look like?
+TREE.EVERGREEN$Origin = trimws(TREE.EVERGREEN$Origin)
 dim(TREE.EVERGREEN)
 head(TREE.EVERGREEN)
 round(with(TREE.EVERGREEN, table(Origin)/sum(table(Origin))*100), 1)
@@ -541,6 +543,7 @@ setdiff(TREE.HIA.SPP, SUA.SPP)
 # TPL.SUA <- TPL(unique(SUA.SPP), infra = TRUE, corr = TRUE, repeats = 100)
 # View(TPL.SUA[c("Taxon", "Taxonomic.status", "New.Taxonomic.status", "New.Genus", "New.Species")])
 # saveRDS(TPL.SUA, file = paste("./data/base/HIA_LIST/GBIF/TPL_SUA.rds"))
+write.csv(TPL.SUA, "./data/base/HIA_LIST/GBIF/TPL_SUA.csv", row.names = FALSE)
 
 
 ## Note that TPL is not always right for Australian species :: Eucalyptus largiflorens is the accepted Australian name

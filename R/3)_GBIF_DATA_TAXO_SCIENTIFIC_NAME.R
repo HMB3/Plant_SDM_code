@@ -112,30 +112,36 @@ length(unique(GBIF.TRIM$scientificName))
 ## The problems is the mis-match between what we searched, and what GBIF returned. 
 
 ## 1). Create the inital list by combing the planted trees with evergreen list
-##     TREE.HIA.SPP = intersect(subset(TI.LIST, Plantings > 50)$searchTaxon, CLEAN.SPP$Binomial)
+##     TREE.HIA.SPP = intersect(subset(TI.LIST, Plantings > 50)$searchTaxon, CLEAN.SPP$Binomial) 
+##     This is about 400 species
+##     Origin
+##     NA     Exotic Native 
+##     20.5   25.8   53.8 
 
 ## 2). Clean this list using the GBIF backbone taxonomy :: use the "species" column
 
 ## 3). Run the GBIF "species" list through the TPL taxonomy. Take "New" Species and Genus as the "searchTaxon"
 
-## 4). Use rgbif and ALA4R to download occurence data, using "searchTaxon". ALA is ok, because the taxonomy is resolved.
+## 4). Use rgbif and ALA4R to download occurence data, using "searchTaxon".
 ##     For GBIF, we use
 ##     key  <- name_backbone(name = sp.n, rank = 'species')$usageKey
 ##     GBIF <- occ_data(taxonKey = key, limit = GBIF.download.limit)
+##     ALA  <- occurrences(taxon = sp.n, download_reason_id = 7)
+    
 
 ##     This returns multiple keys and synonyms, but there is no simple way to skip these
 
 
 ## 5). Join the TPL taxonomy to the "scientificName" field. We can't use "name" (the equivalent of "species", it seems),
 ##     because name is always the same as the searchTaxon and not reliable (i.e. they will always match, and we know that
-##     no one has gone through and checked each one).
+##     no one has gone through and checked each one.
      
 ##     Exclude records where the "scientificName" both doesn't match the "searchTaxon", and, also is not a synonym according to TPL
-##     This is the Same as taking the SNs which are accepted, but which don't match ST.
+##     The remaining records are either "accepted" "synonym" or "uresolved", with 97% of searched records matching returned records.
      
-##     Then we model these records as before. Of 390 species we downloaded, we will pick the 200 with acceptable maps.
-##     One line in the MS : we matched the GBIF backbone taxo against the TPL taxo, and searched the currently accepted names
-##     in GBIF and ALA, excluding incorreclty matching records (probably don't say this).
+##     Then we model these records as before. Of ~400 species we downloaded, we will pick the 200 with the best maps.
+##     One line in the MS : we matched the GBIF backbone taxo against the TPL taxo, and searched the ALA and GBIF for the currently 
+##     accepted names, etc.
 
 
 
@@ -197,16 +203,15 @@ keep.SN     = unique(c(match.true, match.false))
 length(keep.SN)
 
 
-## Now create the match column in the main table of records
-# GBIF.TRIM.TAXO$Match.SN = GBIF.TRIM.TAXO  %>%
-#   mutate(Match.SN.ST = 
-#            str_detect(scientificName, searchTaxon))
-# unique(GBIF.TRIM.TAXO$Match.SN)
-
-
 #########################################################################################################################
 ## Now remove these from the GBIF dataset?
 GBIF.TRIM.MATCH = GBIF.TRIM.TAXO[GBIF.TRIM.TAXO$scientificName %in% keep.SN, ]
+Match.record    = Match.SN[Match.SN$scientificName %in% keep.SN, ]
+
+
+round(with(Match.records, table(Match.SN.ST)/sum(table(Match.SN.ST))*100), 2)
+round(with(Match.records, table(Taxonomic.status)/sum(table(Taxonomic.status))*100), 2)
+round(with(Match.records, table(New.Taxonomic.status)/sum(table(New.Taxonomic.status))*100), 2)
 
 
 ## How many records were removed?
@@ -243,18 +248,6 @@ GBIF.PROBLEMS <- with(GBIF.TRIM.MATCH,
                         
                         ## No coordinates
                         is.na(lon)|is.na(lat),
-                        
-                        ## Taxon rank is genus/form?
-                        #taxonRank == 'GENUS' & 'FORM',
-                        
-                        ## Taxonomic status: consider if this is the right filter, it seems too restrictive
-                        #New.Taxonomic.status == 'Unresolved',
-                        
-                        ## Cultivated
-                        #CULTIVATED == 'CULTIVATED',
-                        
-                        ## Establishment means is "MANAGED" is included in the above
-                        #establishmentMeans == 'MANAGED' & !is.na(establishmentMeans),
                         
                         ## Collected before 1950 or na.year
                         year < 1950 & !is.na(year),
