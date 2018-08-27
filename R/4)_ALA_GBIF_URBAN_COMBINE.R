@@ -141,26 +141,25 @@ names(COMBO.POINTS)
 env.grids.current = stack(
   file.path('./data/base/worldclim/world/0.5/bio/current',
             sprintf('bio_%02d', 1:19)))
-class(env.grids.current)
-projection(env.grids.current)
-
-# writeRaster(env.grids.current, 
-#             filename = "./data/base/worldclim/aus/1km/bio/current/env_grids_currentmulti.grd", 
-#             bandorder = 'BIL', overwrite = TRUE)
+writeRaster(env.grids.current, 
+            filename = "./data/base/worldclim/aus/1km/bio/current/env_grids_currentmulti.grd", 
+            bandorder = 'BIL', overwrite = TRUE)
 
 
 ## Also get the PET raster
 PET               = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
+
+
 PET <- PET %>%
-#   projectRaster(crs = CRS.WGS.84)
-# saveRDS(PET, "./data/base/worldclim/world/1km/PET_WGS84.rds")
+  projectRaster(crs = CRS.WGS.84)
+saveRDS(PET, "./data/base/worldclim/world/1km/PET_WGS84.rds")
 
 
 ## Project current grids into WGS84
-# env.grids.current <- env.grids.current %>%
-#   projectRaster(crs = CRS.WGS.84)
-# saveRDS(env.grids.current, "./data/base/worldclim/aus/1km/bio/current/env_grids_current.rds")
-# projection(TI.POINTS);projection(aus.grids.current)
+env.grids.current <- env.grids.current %>%
+  projectRaster(crs = CRS.WGS.84)
+saveRDS(env.grids.current, "./data/base/worldclim/aus/1km/bio/current/env_grids_current.rds")
+projection(TI.POINTS);projection(aus.grids.current)
 
 
 #########################################################################################################################

@@ -1562,6 +1562,82 @@ calculate.anomaly = function(scen_list, time_slice, climate_path) {
 
 
 #########################################################################################################################
+## For each scenario, calcualte the mean annual temperature and annual rainfall anomaly
+gcm.value = function(scen_list, time_slice, climate_path) {
+  
+  #########################################################################################################################
+  ## Create current rasters :: can the raster creation happen just once?
+  ## And read in the current data. Can the specific "current" be removed withouth makin a seconf path argument?
+  message('current rasters divided by 10')
+  
+  env.grids.current       = stack(file.path(sprintf('%s/current/bio_%02d.tif', climate_path, 1:19)))
+  env.grids.current[[1]]  = env.grids.current[[1]]/10
+  current.bio1            = env.grids.current[[1]]
+  current.bio12           = env.grids.current[[12]]
+  
+  ## First, run a loop over each scenario :: 
+  lapply(scen_list, function(x) {
+    
+    ## Assign the scenario name (to use later in the plot)
+    scen_name = eval(parse(text = sprintf('gcms.%s$GCM[gcms.%s$id == x]', time_slice, time_slice)))
+    
+    #########################################################################################################################
+    ## Create a raster stack for each 2050 GCM - also an empty raster for the final plot
+    s <- stack(sprintf('%s/20%s/%s/%s%s.tif', climate_path, time_slice, x, x, 1:19))
+    
+    ########################################################################################################################
+    ## Create future rasters
+    message('20', time_slice, ' rasters divided by 10')
+    
+    s[[1]]       = s[[1]]/10
+    future.bio1  = s[[1]]
+    future.bio12 = s[[12]]
+    
+    ## Now subtract the current from the future...
+    temp.anomaly = future.bio1  - current.bio1
+    rain.anomaly = future.bio12 - current.bio12
+    
+    ## Also can we simply indicate the range or rainfall and temperautre values for each ?
+    #temp.current = 
+    
+    plot(temp.anomaly, main = paste0("BIO1  anomaly ", x))
+    plot(rain.anomaly, main = paste0("BIO12 anomaly ", x))
+    
+    ########################################################################################################################
+    ## Write the rasters for each species/threshold
+    message('Writing BIO1/12 anomaly rasters for 20', time_slice, ' ', x)
+    
+    if(!file.exists(sprintf('%s/anomalies/%s_%s.tif', climate_path, "BIO1_anomaly",  x))) {
+      
+      ## Temp anomalies
+      writeRaster(temp.anomaly, sprintf('%s/anomalies/%s_%s.tif', climate_path, "BIO1_anomaly",  x), overwrite = TRUE)
+      
+    } else {
+      
+      message('Skipped ', "BIO1 anomaly for ", x, ', already exists')
+      
+    }
+    
+    if(!file.exists(sprintf('%s/anomalies/%s_%s.tif', climate_path, "BIO12_anomaly",  x))) {
+      
+      ## Rain anomalies
+      writeRaster(rain.anomaly, sprintf('%s/anomalies/%s_%s.tif', climate_path, "BIO12_anomaly", x), overwrite = TRUE)
+      
+    } else {
+      
+      message('Skipped ', "BIO12 anomaly for ", x, ', already exists')
+      
+    }
+    
+  })
+  
+} 
+
+
+
+
+
+#########################################################################################################################
 ## STACK FUNCTIONS
 #########################################################################################################################
 

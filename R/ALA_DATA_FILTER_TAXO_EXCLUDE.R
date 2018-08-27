@@ -97,8 +97,8 @@ Match.ALA = ALA.ALL  %>%
                   "Match.SN.ST",
                   "Match.SP.ST",
                   "Match.SN.SP")))
-
 View(Match.ALA)
+
 
 ## So for 15-12% of the records, neither the scientificNameOriginal or the species match the search taxon.
 dim(subset(Match.ALA,  Match.SN.ST == "FALSE"))[1]/dim(Match.ALA)[1]*100

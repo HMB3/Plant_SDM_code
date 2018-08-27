@@ -118,47 +118,7 @@ TI.RASTER <- extract(aus.grids.current, TI.POINTS) %>%
   cbind(TI.XY.SPP, .)
 summary(TI.RASTER)
 class(TI.RASTER)
-
-
-#########################################################################################################################
-## Now try to extract the nearest values for the NA rasters. This is just too slow to bother for only 112 points
-# TI.NA  = TI.RASTER[is.na(TI.RASTER$bio_01),]
-# NA.XY  = TI.NA[c("lon", "lat")]
-# 
-# 
-# ##
-# TI.NA <- names(aus.grids.current) %>%
-# 
-#   ## pipe the list of raster names into lapply
-#   lapply(function(x) {
-# 
-#     ## Create the raster values
-#     r = aus.grids.current[[x]]
-#     r@data@values = values(r)
-#     str(r@data@values)
-#     xy = NA.XY
-#     dim(xy)
-# 
-#     ## The sample the nearest non-NA raster values
-#     message("sampling ", dim(xy)[1], "points from raster") 
-#     sampled = apply(X = xy, MARGIN = 1, FUN = function(xy) r@data@values[which.min(replace(distanceFromPoints(r, xy), is.na(r), NA))])
-# 
-#     ## Check the data
-#     head(sampled)
-# 
-#   }) %>%
-# 
-#   ## Finally, bind all the rows together
-#   cbind
-# 
-# 
-# ## Save data
-# saveRDS(TI.NA, 'data/base/HIA_LIST/COMBO/SPAT_OUT/TREE_INV_NA_RASTER.rds')
-# TI.ALL = cbind(TI.XY.SPP, TI.RASTER, TI.NA)
-# indentical(dim(TI.ALL)[1], dim(TI.RASTER)[1])
-# 
-# 
-# saveRDS(TI.ALL, 'data/base/HIA_LIST/COMBO/SPAT_OUT/TREE_INV_ALL_POINTS.rds')
+names(TI.RASTER)
 
 
 #########################################################################################################################
@@ -192,7 +152,7 @@ TI.RASTER = dplyr::rename(TI.RASTER,
 ## Save/load
 #summary(TI.RASTER)
 #saveRDS(TI.RASTER, file = paste("./data/base/HIA_LIST/GBIF/TI_GBIF_ALA_RASTER.rds"))
-gc();gc()
+gc()
 
 
 #########################################################################################################################
@@ -207,7 +167,6 @@ names(TI.RASTER)[names(TI.RASTER) == "."] <- 'PET'
 ## Check 
 dim(TI.RASTER)
 names(TI.RASTER)
-projection(TI.RASTER)
 
 
 ## Check the raster values here..........................................................................................
@@ -267,27 +226,83 @@ summary(TI.RASTER$Isothermality)
 #########################################################################################################################
 ## Which records are NA?
 TI.NA      = TI.RASTER.CONVERT[is.na(TI.RASTER.CONVERT$Annual_mean_temp),]
-TI.NA.DF   = SpatialPointsDataFrame(coords      = TI.NA[c("lon", "lat")],
-                                    data        = TI.NA,
+NA.POINTS  = SpatialPointsDataFrame(coords      = TI.NA[c("lon", "lat")], 
+                                    data        = TI.NA[c("lon", "lat")],
                                     proj4string = CRS.WGS.84)
+dim(NA.POINTS)
 
-aus.mol <- aus %>%
-  spTransform(CRS.WGS.84)
 
-plot(aus.mol, main = "NA Tree inventory records")
-points(TI.NA.DF, col = "red", cex = .15, pch = 19)
+#########################################################################################################################
+## Now extract raster data, but only for the NA points
+projection(NA.POINTS);projection(aus.grids.current);projection(PET)
+NA.RASTER <- raster::extract(aus.grids.current, NA.POINTS, buffer=1000) %>% 
+  cbind(TI.NA[c("lon", "lat", "SOURCE", "INVENTORY")], .)
+saveRDS(NA.RASTER, 'data/base/HIA_LIST/COMBO/TI_NA_RASTER.rds')
+
+NA.PET <- raster::extract(PET, NA.POINTS, buffer=1000)
+NA.RASTER = cbind(NA.RASTER, NA.PET)
+summary(NA.RASTER)
+class(NA.RASTER)
+names(NA.RASTER)
+
+ 
+# #########################################################################################################################
+# ## Now try to extract the nearest values for the NA rasters. This is just too slow to bother for only 112 points
+# # TI.NA  = TI.RASTER[is.na(TI.RASTER$bio_01),]
+# NA.XY  = TI.NA[c("lon", "lat")]
+# TI.NA  <- names(aus.grids.current) %>%
+# 
+#   ## pipe the list of raster names into lapply
+#   lapply(function(x) {
+# 
+#     ## Create the raster values
+#     r = aus.grids.current[[x]]
+#     r@data@values = values(r)
+#     str(r@data@values)
+#     xy = NA.XY
+#     dim(xy)
+# 
+#     ## The sample the nearest non-NA raster values
+#     message("sampling ", dim(xy)[1], " points from raster")
+#     sampled = apply(X = xy, MARGIN = 1, FUN = function(xy) r@data@values[which.min(replace(distanceFromPoints(r, xy), is.na(r), NA))])
+# 
+#     ## Check the data
+#     sampled
+# 
+#   }) %>%
+# 
+#   ## Finally, bind all the rows together
+#   cbind
+# 
+# 
+# ## Save data
+# saveRDS(TI.NA, 'data/base/HIA_LIST/COMBO/SPAT_OUT/TREE_INV_NA_RASTER.rds')
+# TI.ALL = cbind(TI.XY.SPP, TI.RASTER, TI.NA)
+# indentical(dim(TI.ALL)[1], dim(TI.RASTER)[1])
+ 
+ 
+# saveRDS(TI.ALL, 'data/base/HIA_LIST/COMBO/SPAT_OUT/TREE_INV_ALL_POINTS.rds')
+# TI.NA.DF   = SpatialPointsDataFrame(coords      = TI.NA[c("lon", "lat")],
+#                                     data        = TI.NA,
+#                                     proj4string = CRS.WGS.84)
+# 
+# aus.mol <- aus %>%
+#   spTransform(CRS.WGS.84)
+# 
+# plot(aus.mol, main = "NA Tree inventory records")
+# points(TI.NA.DF, col = "red", cex = .15, pch = 19)
 
 
 ## Save the shapefile, to be subsampled in ArcMap
 # names(TI.NA.DF)
-# writeOGR(obj = TI.NA.DF, dsn = "./data/base/HIA_LIST/COMBO", layer = "TI_NA", driver = "ESRI Shapefile")
+# writeOGR(obj = TI.NA.DF, dsn = "./data/base/HIA_LIST/COMBO", layer = "TI_NA", driver = "ESRI Shapefile", overwrite_layer = TRUE)
 
 
 ########################################################################################################################
 ## How big is the dataset?
-message(round(dim(TI.NA)[1]/dim(TI.RASTER.CONVERT)[1]*100, 2), "% of points are outside worldclim extent")
-dim(TI.RASTER.CONVERT)
-identical(length(unique(TI.RASTER.CONVERT$searchTaxon)), length(GBIF.spp))
+# message(round(dim(TI.NA)[1]/dim(TI.RASTER.CONVERT)[1]*100, 2), "% of points are outside worldclim extent")
+# dim(TI.RASTER.CONVERT)
+# identical(length(unique(TI.RASTER.CONVERT$searchTaxon)), length(GBIF.spp))
 
 
 ## Plot a few points to see :: do those look reasonable?
@@ -299,6 +314,7 @@ identical(length(unique(TI.RASTER.CONVERT$searchTaxon)), length(GBIF.spp))
 #########################################################################################################################
 ## Save the raster datasets
 TI.RASTER.CONVERT = na.omit(TI.RASTER.CONVERT)
+TI.RASTER.CONVERT$SOURCE = 
 saveRDS(TI.RASTER.CONVERT, file = paste("./data/base/HIA_LIST/COMBO/TI_RASTER_CONVERT.rds", sep = ""))
 
 

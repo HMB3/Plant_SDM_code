@@ -214,12 +214,7 @@ message(round(dim(CLEAN.TRUE)[1]/dim(TEST.GEO)[1]*100, 2), " % records retained"
 
 #########################################################################################################################
 ## Now bind on the urban tree inventory data. We are assuming this data is clean, after we manually fix the taxonomy
-## First remove the extra species:
-TI.XY.SPP  = TI.XY[TI.XY$searchTaxon %in% GBIF.spp, ]
-
-
-## NA's from Tree Inventories come in here :: Bind on the raster data
-## check this tomorrow
+## Check the NAs
 names(TI.RASTER.CONVERT)
 names(CLEAN.TRUE)
 

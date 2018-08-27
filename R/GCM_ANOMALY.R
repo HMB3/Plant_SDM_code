@@ -3,11 +3,11 @@
 #########################################################################################################################
 
 
-## flag issues with ..........................................................................
+## Flag issues with ..........................................................................
 
 
 #########################################################################################################################
-## For the main analyses, calcualte the temp and rain anomalies for 2050 and 2070, and map them. Can these be looped too?
+## For the main analyses, calcualte the temp and rain anomalies for 2030, 2050 and 2070, and map them
 calculate.anomaly.2030 = calculate.anomaly(scen_list    = scen_2030,
                                            time_slice   = 30,
                                            climate_path = "./data/base/worldclim/aus/0.5/bio")
@@ -20,19 +20,17 @@ calculate.anomaly.2070 = calculate.anomaly(scen_list    = scen_2070,
                                            time_slice   = 70,
                                            climate_path = "./data/base/worldclim/aus/0.5/bio")
 
-
 ## Now combine the anomalies across the GCMs
-## BIO1.2050.anomaly  = list.files("./data/base/worldclim/aus/0.5/bio/anomalies/BIO1",  pattern = 'bi50.tif')
 anomaly.list = list.files("./data/base/worldclim/aus/0.5/bio/anomalies/", pattern = '.tif')
 
 
-## Create anomaly rasters in the global environment
+## Create anomaly rasters in the global environment. Clunky but it works
 setwd("F:/green_cities_sdm/data/base/worldclim/aus/0.5/bio/anomalies/")
 for(i in anomaly.list ) { assign(unlist(strsplit(i, "[.]"))[1], raster(i)) } 
-setwd("F:/green_cities_sdm")
+setwd("H:/green_cities_sdm")
 
 
-## Due to extent differences between Dina's layers and mine, we need to crop the extent
+## Check the extent is the same :: the level plot function doesn't like different extents
 extent(BIO1_anomaly_cc85bi30)
 extent(BIO12_anomaly_ac85bi30)
 
@@ -42,14 +40,26 @@ extent(BIO12_anomaly_ac85bi50)
 extent(BIO1_anomaly_cc85bi70)
 extent(BIO12_anomaly_ac85bi70)
 
-# ex                       = extent(BIO1_anomaly_cc85bi30)
-# BIO1_anomaly_cn85bi50_cr = crop(BIO1_anomaly_cn85bi50, ex)
-# BIO1_anomaly_cn85bi50_cr = crop(BIO1_anomaly_cn85bi50, ex)
-
 
 ## create an Australia shapefile
 aus <- ne_states(country = 'Australia') %>% 
   subset(!grepl('Island', name))
+
+
+
+
+
+#########################################################################################################################
+#########################################################################################################################
+## Also just calcualte the standard deviation across all gcms for a few variables
+Bio.30 = stack(list.files("./data/base/worldclim/aus/0.5/bio/", 
+                          pattern    = '301.tif$', 
+                          recursive  = TRUE,
+                          full.names = TRUE))
+
+bio.30.mean = cellStats(Bio.30, sd)
+
+
 
 
 

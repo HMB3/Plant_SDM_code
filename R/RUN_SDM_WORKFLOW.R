@@ -21,7 +21,7 @@ GBIF.spp      = TPL.SPP ## use TPL checked species
 map_spp_list  = TPL_SPP
 
 GBIF_path     = "./data/base/HIA_LIST/GBIF/OCC_SEARCH/"
-ALA_path      = "./data/base/HIA_LIST/ALA/TREES_LATEST/"
+ALA_path      = "./data/base/HIA_LIST/ALA/TREE_SPECIES/"
 
 save_dir      = 'output/maxent/SUA_TREES/'
 out_dir       = 'output/maxent/SUA_TREES'
