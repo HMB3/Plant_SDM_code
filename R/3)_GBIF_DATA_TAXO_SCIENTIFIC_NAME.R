@@ -208,9 +208,9 @@ GBIF.TRIM.MATCH = GBIF.TRIM.TAXO[GBIF.TRIM.TAXO$scientificName %in% keep.SN, ]
 Match.record    = Match.SN[Match.SN$scientificName %in% keep.SN, ]
 
 
-round(with(Match.records, table(Match.SN.ST)/sum(table(Match.SN.ST))*100), 2)
-round(with(Match.records, table(Taxonomic.status)/sum(table(Taxonomic.status))*100), 2)
-round(with(Match.records, table(New.Taxonomic.status)/sum(table(New.Taxonomic.status))*100), 2)
+round(with(Match.record, table(Match.SN.ST)/sum(table(Match.SN.ST))*100), 2)
+round(with(Match.record, table(Taxonomic.status)/sum(table(Taxonomic.status))*100), 2)
+round(with(Match.record, table(New.Taxonomic.status)/sum(table(New.Taxonomic.status))*100), 2)
 
 
 ## How many records were removed?

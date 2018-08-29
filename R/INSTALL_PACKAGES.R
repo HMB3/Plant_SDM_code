@@ -5,6 +5,28 @@
 
 ## This code install lots of packages. On this computer, they currently sit here ::
 ## C:\Users\user\Documents\R\win-library
+onLoad(libname = "C:/Users/user/Documents/R/win-library/3.5/", "ALA4R")#, chname = packageName())
+
+.onLoad <- function(libname, pkgname) {
+  
+  op <- options()
+  op.devtools <- list(
+    devtools.path = "~/R-dev",
+    devtools.install.args = "",
+    devtools.name = "Your name goes here",
+    devtools.desc.author = "First Last <first.last@example.com> [aut, cre]",
+    devtools.desc.license = "What license is it under?",
+    devtools.desc.suggests = NULL,
+    devtools.desc = list()
+    
+  )
+  
+  toset <- !(names(op.devtools) %in% names(op))
+  if(any(toset)) options(op.devtools[toset])
+  
+  invisible()
+  
+}
 
 
 #########################################################################################################################
@@ -29,7 +51,7 @@ packages <- c('ggplot2',    'plyr',      'reshape2',  'RColorBrewer',  'scales',
               'readr',      'readr',     'parallel',  'dismo',         'tidyr',       'envirem',
               'Taxonstand', 'biomod2',   'vegan',     'session',       'rapportools', 'BiodiversityR',
               'spThin',     'digest',    'CoordinateCleaner',          'PerformanceAnalytics', 'timetk',
-              'dat') # class(packages)
+              'dat', 'rcreds', 'pkgmaker') # class(packages)
 
 
 #########################################################################################################################

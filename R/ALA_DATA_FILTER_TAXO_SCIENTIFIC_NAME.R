@@ -85,36 +85,36 @@ dim(ALA.ALL)
 
 ## What is the match between 'species' and 'scientificNameOriginal'?
 ## What is the match between scientificNameOriginal, and the searchTaxon?
-Match.ALA = ALA.ALL  %>%
-  mutate(Match.SNO.ST = 
-           str_detect(scientificNameOriginal, searchTaxon)) %>%
-  
-  mutate(Match.SN.ST = 
-           str_detect(scientificName, searchTaxon)) %>%
-  
-  mutate(Match.SN.SP = 
-           str_detect(scientificName, species)) %>%
-  
-  select(one_of(c("scientificName",
-                  "scientificNameOriginal",
-                  "species",
-                  "searchTaxon",
-                  "Match.SNO.ST",
-                  "Match.SP.ST",
-                  "Match.SN.SP")))
-View(Match.ALA)
-
-
-## So for 15-12% of the records, neither the scientificNameOriginal or the species match the search taxon.
-dim(subset(Match.ALA,  Match.SNO.ST == "FALSE"))[1]/dim(Match.ALA)[1]*100
-dim(subset(Match.ALA,  Match.SN.ST  == "FALSE"))[1]/dim(Match.ALA)[1]*100
-dim(subset(Match.ALA,  Match.SN.SP  == "FALSE"))[1]/dim(Match.ALA)[1]*100
+# Match.ALA = ALA.ALL  %>%
+#   mutate(Match.SNO.ST = 
+#            str_detect(scientificNameOriginal, searchTaxon)) %>%
+#   
+#   mutate(Match.SN.ST = 
+#            str_detect(scientificName, searchTaxon)) %>%
+#   
+#   mutate(Match.SN.SP = 
+#            str_detect(scientificName, species)) %>%
+#   
+#   select(one_of(c("scientificName",
+#                   "scientificNameOriginal",
+#                   "species",
+#                   "searchTaxon",
+#                   "Match.SNO.ST",
+#                   "Match.SP.ST",
+#                   "Match.SN.SP")))
+# View(Match.ALA)
+# 
+# 
+# ## So for 15-12% of the records, neither the scientificNameOriginal or the species match the search taxon.
+# dim(subset(Match.ALA,  Match.SNO.ST == "FALSE"))[1]/dim(Match.ALA)[1]*100
+# dim(subset(Match.ALA,  Match.SN.ST  == "FALSE"))[1]/dim(Match.ALA)[1]*100
+# dim(subset(Match.ALA,  Match.SN.SP  == "FALSE"))[1]/dim(Match.ALA)[1]*100
 
 
 ## So rename 'scientificNameOriginal' to 'scientificName', to match GBIF
 ALA.RENAME = ALA.ALL
 ALA.RENAME$scientificName = NULL 
-ALA.RENAME$scientificName = ALA.RENAME$species
+ALA.RENAME$scientificName = ALA.RENAME$scientificNameOriginal
 ALA.RENAME$species = NULL 
 (sum(is.na(ALA.RENAME$scientificName)) + dim(subset(ALA.RENAME, scientificName == ""))[1])/dim(ALA.ALL)[1]*100
 
