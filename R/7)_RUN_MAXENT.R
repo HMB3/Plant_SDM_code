@@ -297,8 +297,8 @@ lapply(SPP.BIAS, function(spp){
 #########################################################################################################################
 
 
-## Which of these components can be done now? the problem comes with different versions of the data, need to use the most
-## update version to make it work.
+## Which of these components can be done now?
+## The last steps combining the models would be handy to have finished
 
 
 ## 1). 100/200 tree spp that are commonly planted and traded, with sufficient spatial data to model robustly: done
@@ -318,6 +318,8 @@ lapply(SPP.BIAS, function(spp){
 ##     Settings: Max 5km, min 1km, 5 heterogeneity classes (from a classification of a PCA, using the worldclim layers)
 ##     Currently using all spp background records: random 100k for every species, sounds ok?
 
+##     Try to thin the background records in the same way - run the BG points through SDM toolbox too. 
+
 ##     Compare the models with and without thinning for a 28 species:
 ##     Acacia_implexa, etc.
      
@@ -326,6 +328,7 @@ lapply(SPP.BIAS, function(spp){
 ##     "X10.percentile.training.presence.Logistic.threshold"
 ##     "X10.percentile.training.presence.training.omission"
   
+
 ## 5). Combine output: Table
 ##     "searchTaxon" "No.plantings" "Number.of.growers" "Number.of.States/LGAs/Koppen zones" "Origin" "AUC" "TSS" 
 
@@ -336,13 +339,19 @@ lapply(SPP.BIAS, function(spp){
 ##     "2070_4GCMs_above"
 
    
-## 6). Check combined maps for all species : make sure step 9 is working
+## 6). Check combined maps for all species : make sure step 9 is working. 
+##     Create a spreadsheet of all species results. Check as before - 
+
+##     summary statistics, 
+##     input points, 
+##     current raster,
+##     Future suitability
 
 
-## 7). Create tables in R to summarise gain and loss in each SUA
+## 7). make sure step 9 is working. Create tables in R to summarise gain and loss in each SUA
 
 
-## 8). Draft results and discussion.
+## 8). What is the story? Draft results and discussion.
 
 
 

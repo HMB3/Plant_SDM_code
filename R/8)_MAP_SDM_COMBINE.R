@@ -293,10 +293,13 @@ head(MAXENT.RESULTS, 20)[1:5]
 dim(subset(MAXENT.RESULTS, Training.AUC < 0.7))  ## all models should be above 0.7
 
 
-## Are the TSS values ok - 
+## Are the TSS values ok?
+lm.auc = lm(MAXENT.RESULTS$max_tss ~ MAXENT.RESULTS$Training.AUC)
 hist(MAXENT.RESULTS$max_tss)
 plot(MAXENT.RESULTS$Training.AUC, MAXENT.RESULTS$max_tss, pch = 19, col  = "blue",
-    xlab = "AUC", ylab = "TSS")
+    xlab = "AUC", ylab = "TSS", 
+    abline(lm(MAXENT.RESULTS$max_tss ~ MAXENT.RESULTS$Training.AUC)))
+legend("topleft", bty="n", legend=paste("R2 is", format(summary(lm.auc)$adj.r.squared, digits=4)))
 
 
 ## Now check the match between the species list, and the results list. These need to match, so we can access
@@ -309,7 +312,7 @@ length(map_spp);identical(sort(map_spp), sort(map_spp_list))
 
 #########################################################################################################################
 ## Then, make a list of all the directories containing the individual GCM rasters
-SDM.RESULTS.DIR <- map_spp[c(1:length(map_spp))] %>%
+SDM.RESULTS.DIR <- map_spp %>%
   
   ## Pipe the list into lapply
   lapply(function(species) {
@@ -372,7 +375,7 @@ MAXENT.SUMMARY.NICHE   = MAXENT.SUMMARY.NICHE[, c("searchTaxon",
                                                   "max_tss",
                                                   "X.Background.points",  
                                                   "X10.percentile.training.presence.Logistic.threshold")]
-head(MAXENT.SUMMARY.NICHE)
+View(MAXENT.SUMMARY.NICHE)
 
 
 #View(MAXENT.SUMMARY.TABLE)

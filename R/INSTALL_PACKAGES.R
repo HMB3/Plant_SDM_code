@@ -3,6 +3,10 @@
 #########################################################################################################################
 
 
+## This code install lots of packages. On this computer, they currently sit here ::
+## C:\Users\user\Documents\R\win-library
+
+
 #########################################################################################################################
 ## create a big list of all the packages needed for a project
 ## can't do the special github ones like this though...
@@ -24,7 +28,8 @@ packages <- c('ggplot2',    'plyr',      'reshape2',  'RColorBrewer',  'scales',
               'sp',         'rgeos',     'gdalUtils', 'rmaxent',       'dplyr',       'rasterVis',
               'readr',      'readr',     'parallel',  'dismo',         'tidyr',       'envirem',
               'Taxonstand', 'biomod2',   'vegan',     'session',       'rapportools', 'BiodiversityR',
-              'spThin') # class(packages)
+              'spThin',     'digest',    'CoordinateCleaner',          'PerformanceAnalytics', 'timetk',
+              'dat') # class(packages)
 
 
 #########################################################################################################################
@@ -71,17 +76,17 @@ ipak(packages)
 
 
 #########################################################################################################################
-## github packages...
-#devtools::install_github("ropensci/rgbif")
-#library(devtools)
-#install_github('johnbaums/rmaxent')
-#install_github('johnbaums/jagstools')
-#install_github('johnbaums/hues')
-#install_github('johnbaums/trees')
-#install_github('johnbaums/things')
-#install_github("ropenscilabs/datastorr")
-#install_github("wcornwell/taxonlookup")
-#install_github('KarelMokany/AdaptR')
+## Install github packages that can't be downloaded from CRAN............................................................
+devtools::install_github("ropensci/rgbif")
+library(devtools)
+install_github('johnbaums/rmaxent')
+install_github('johnbaums/jagstools')
+install_github('johnbaums/hues')
+install_github('johnbaums/trees')
+install_github('johnbaums/things')
+install_github("ropenscilabs/datastorr")
+install_github("wcornwell/taxonlookup")
+install_github('KarelMokany/AdaptR')
 
 
 #install_github("danlwarren/ENMTools")

@@ -8,6 +8,11 @@
 ala.download = list.files(ALA_path, pattern = ".RData")
 
 
+## For now, use the old version of the ALA
+## the base url for biocache downloads (used by offline occurrence downloads
+
+
+
 #########################################################################################################################
 ## 2). COMBINE ALA SPECIES INTO ONE DATASET
 #########################################################################################################################
@@ -15,10 +20,6 @@ ala.download = list.files(ALA_path, pattern = ".RData")
 
 ## Some species fail because ALA does not recognise their taxonomy. E.G.:
 ## Tabebuia rosea, Roystonea regia
-
-
-## Email Peggy on Monday to check on scientificName vs scientificNameOriginal............................................
-## 
 
 
 #########################################################################################################################
@@ -65,11 +66,15 @@ ALA.ALL <- ala.download %>%   ## spp.download[c(1:length(spp.download))]
 
 
 #########################################################################################################################
-## what proportion of the ALA dataset has no lat/lon? Need to check this so we know the latest download is working
+## Just get the newly downloaded species................................................................................
+ALA.ALL = ALA.ALL[ALA.ALL$searchTaxon %in% GBIF.spp, ]
+
+
+#########################################################################################################################
+## What proportion of the ALA dataset has no lat/lon? Need to check this so we know the latest download is working
 sort(names(ALA.ALL))
 dim(ALA.ALL)
-(sum(is.na(ALA.ALL$lat))            + dim(subset(ALA.ALL, lat == ""))[1])/dim(ALA.ALL)[1]*100
-(sum(is.na(ALA.ALL$lon))            + dim(subset(ALA.ALL, lon == ""))[1])/dim(ALA.ALL)[1]*100
+(sum(is.na(ALA.ALL$lat))            + dim(subset(ALA.ALL, year < 1950))[1])/dim(ALA.ALL)[1]*100
 
 
 ## Now check the ALA species names : which has the least holes?
@@ -81,35 +86,36 @@ dim(ALA.ALL)
 ## What is the match between 'species' and 'scientificNameOriginal'?
 ## What is the match between scientificNameOriginal, and the searchTaxon?
 Match.ALA = ALA.ALL  %>%
-  mutate(Match.SN.ST = 
+  mutate(Match.SNO.ST = 
            str_detect(scientificNameOriginal, searchTaxon)) %>%
   
-  mutate(Match.SP.ST = 
-           str_detect(species, searchTaxon)) %>%
+  mutate(Match.SN.ST = 
+           str_detect(scientificName, searchTaxon)) %>%
   
   mutate(Match.SN.SP = 
-           str_detect(scientificNameOriginal, species)) %>%
+           str_detect(scientificName, species)) %>%
   
   select(one_of(c("scientificName",
                   "scientificNameOriginal",
                   "species",
                   "searchTaxon",
-                  "Match.SN.ST",
+                  "Match.SNO.ST",
                   "Match.SP.ST",
                   "Match.SN.SP")))
 View(Match.ALA)
 
 
 ## So for 15-12% of the records, neither the scientificNameOriginal or the species match the search taxon.
-dim(subset(Match.ALA,  Match.SN.ST == "FALSE"))[1]/dim(Match.ALA)[1]*100
-dim(subset(Match.ALA,  Match.SP.ST == "FALSE"))[1]/dim(Match.ALA)[1]*100
+dim(subset(Match.ALA,  Match.SNO.ST == "FALSE"))[1]/dim(Match.ALA)[1]*100
+dim(subset(Match.ALA,  Match.SN.ST  == "FALSE"))[1]/dim(Match.ALA)[1]*100
+dim(subset(Match.ALA,  Match.SN.SP  == "FALSE"))[1]/dim(Match.ALA)[1]*100
 
 
 ## So rename 'scientificNameOriginal' to 'scientificName', to match GBIF
 ALA.RENAME = ALA.ALL
 ALA.RENAME$scientificName = NULL 
-ALA.RENAME$scientificName = ALA.RENAME$scientificNameOriginal 
-ALA.RENAME$scientificNameOriginal = NULL 
+ALA.RENAME$scientificName = ALA.RENAME$species
+ALA.RENAME$species = NULL 
 (sum(is.na(ALA.RENAME$scientificName)) + dim(subset(ALA.RENAME, scientificName == ""))[1])/dim(ALA.ALL)[1]*100
 
 
@@ -122,12 +128,6 @@ ALA.TRIM <- ALA.RENAME %>%
 
 dim(ALA.TRIM)
 names(ALA.TRIM)
-
-
-#########################################################################################################################
-## Just get the newly downloaded species................................................................................
-ALA.TRIM = ALA.TRIM[ALA.TRIM$searchTaxon %in% GBIF.spp, ]
-dim(ALA.TRIM)
 
 
 ## What are the unique species?

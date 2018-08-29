@@ -397,7 +397,7 @@ download_ALA_all_species = function (species_list, path) {
     }
     
     ## 3). Download ALL records from ALA :: 
-    message("Downloading GBIF records for ", sp.n, " using ALA4R :: occurrences")
+    message("Downloading ALA records for ", sp.n, " using ALA4R :: occurrences")
     ALA = occurrences(taxon = sp.n, download_reason_id = 7)   ## could use more arguments here, download_reason_id = 7, etc.
     ALA = ALA[["data"]]
     cat("Synonyms returned for :: ", sp.n, unique(ALA$scientificName), sep="\n")

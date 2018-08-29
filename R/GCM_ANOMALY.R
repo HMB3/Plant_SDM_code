@@ -3,11 +3,17 @@
 #########################################################################################################################
 
 
-## Flag issues with ..........................................................................
+## This code calculate the anomalies between the current environment and the GCMs for mean annual temp and precipitation
+## 
 
 
 #########################################################################################################################
-## For the main analyses, calcualte the temp and rain anomalies for 2030, 2050 and 2070, and map them
+## 1). CALCULATE ANOMALIES
+#########################################################################################################################
+
+
+#########################################################################################################################
+## Calcualte the temp and rain anomalies for 2030, 2050 and 2070, and map them
 calculate.anomaly.2030 = calculate.anomaly(scen_list    = scen_2030,
                                            time_slice   = 30,
                                            climate_path = "./data/base/worldclim/aus/0.5/bio")
@@ -19,6 +25,7 @@ calculate.anomaly.2050 = calculate.anomaly(scen_list    = scen_2050,
 calculate.anomaly.2070 = calculate.anomaly(scen_list    = scen_2070,
                                            time_slice   = 70,
                                            climate_path = "./data/base/worldclim/aus/0.5/bio")
+
 
 ## Now combine the anomalies across the GCMs
 anomaly.list = list.files("./data/base/worldclim/aus/0.5/bio/anomalies/", pattern = '.tif')
@@ -50,14 +57,49 @@ aus <- ne_states(country = 'Australia') %>%
 
 
 #########################################################################################################################
+## 2). CALCULATE STANDARD DEVIATION IN VALUES ACROSS ALL GCMS
 #########################################################################################################################
-## Also just calcualte the standard deviation across all gcms for a few variables
-Bio.30 = stack(list.files("./data/base/worldclim/aus/0.5/bio/", 
+
+
+#########################################################################################################################
+## Create lists of rasters
+Bio1.30 = stack(list.files("./data/base/worldclim/aus/0.5/bio/", 
                           pattern    = '301.tif$', 
                           recursive  = TRUE,
                           full.names = TRUE))
 
-bio.30.mean = cellStats(Bio.30, sd)
+Bio1.50 = stack(list.files("./data/base/worldclim/aus/0.5/bio/", 
+                          pattern    = '501.tif$', 
+                          recursive  = TRUE,
+                          full.names = TRUE))
+
+Bio1.70 = stack(list.files("./data/base/worldclim/aus/0.5/bio/", 
+                           pattern    = '501.tif$', 
+                           recursive  = TRUE,
+                           full.names = TRUE))
+
+
+## Also just calcualte the standard deviation across all gcms for a few variables
+Bio1.30 = stack(list.files("./data/base/worldclim/aus/0.5/bio/", 
+                           pattern    = '301.tif$', 
+                           recursive  = TRUE,
+                           full.names = TRUE))
+
+Bio1.50 = stack(list.files("./data/base/worldclim/aus/0.5/bio/", 
+                           pattern    = '501.tif$', 
+                           recursive  = TRUE,
+                           full.names = TRUE))
+
+Bio1.70 = stack(list.files("./data/base/worldclim/aus/0.5/bio/", 
+                           pattern    = '501.tif$', 
+                           recursive  = TRUE,
+                           full.names = TRUE))
+
+
+## Calcualte the standard deviation of a raster stack
+bio1.30.sd = calc(Bio1.30, sd)
+bio1.50.sd = calc(Bio1.50, sd)
+bio1.70.sd = calc(Bio1.70, sd)
 
 
 

@@ -23,11 +23,8 @@
 rasterTmpFile()
 
 
-
-
-
 #########################################################################################################################
-## 1). CREATE SPDF FOR INVENTORY DATA
+## 1). PROJECT RASTERS AND EXTRACT ALL WORLDCLIM DATA FOR SPECIES RECORDS
 #########################################################################################################################
 
 
@@ -49,16 +46,8 @@ projection(TI.POINTS)
 names(TI.POINTS)
 
 
-
-
-
 #########################################################################################################################
-## 2). PROJECT RASTERS AND EXTRACT ALL WORLDCLIM DATA FOR SPECIES RECORDS
-#########################################################################################################################
-
-
-#########################################################################################################################
-## Ignore edaphic variables
+## Worldclim variables
 
 
 # BIO1  = Annual Mean Temperature                                     ## 
@@ -177,7 +166,7 @@ summary(TI.RASTER$Annual_mean_temp)
 
 
 #########################################################################################################################
-## 4). CONVERT RASTER VALUES
+## 2). CONVERT RASTER VALUES
 #########################################################################################################################
 
 
@@ -234,16 +223,16 @@ dim(NA.POINTS)
 
 #########################################################################################################################
 ## Now extract raster data, but only for the NA points
-projection(NA.POINTS);projection(aus.grids.current);projection(PET)
-NA.RASTER <- raster::extract(aus.grids.current, NA.POINTS, buffer=1000) %>% 
-  cbind(TI.NA[c("lon", "lat", "SOURCE", "INVENTORY")], .)
-saveRDS(NA.RASTER, 'data/base/HIA_LIST/COMBO/TI_NA_RASTER.rds')
-
-NA.PET <- raster::extract(PET, NA.POINTS, buffer=1000)
-NA.RASTER = cbind(NA.RASTER, NA.PET)
-summary(NA.RASTER)
-class(NA.RASTER)
-names(NA.RASTER)
+# projection(NA.POINTS);projection(aus.grids.current);projection(PET)
+# NA.RASTER <- raster::extract(aus.grids.current, NA.POINTS, buffer=1000) %>% 
+#   cbind(TI.NA[c("lon", "lat", "SOURCE", "INVENTORY")], .)
+# saveRDS(NA.RASTER, 'data/base/HIA_LIST/COMBO/TI_NA_RASTER.rds')
+# 
+# NA.PET <- raster::extract(PET, NA.POINTS, buffer=1000)
+# NA.RASTER = cbind(NA.RASTER, NA.PET)
+# summary(NA.RASTER)
+# class(NA.RASTER)
+# names(NA.RASTER)
 
  
 # #########################################################################################################################
@@ -314,7 +303,8 @@ names(NA.RASTER)
 #########################################################################################################################
 ## Save the raster datasets
 TI.RASTER.CONVERT = na.omit(TI.RASTER.CONVERT)
-TI.RASTER.CONVERT$SOURCE = 
+names(TI.RASTER.CONVERT)
+unique(TI.RASTER.CONVERT$INVENTORY)
 saveRDS(TI.RASTER.CONVERT, file = paste("./data/base/HIA_LIST/COMBO/TI_RASTER_CONVERT.rds", sep = ""))
 
 
@@ -326,7 +316,7 @@ saveRDS(TI.RASTER.CONVERT, file = paste("./data/base/HIA_LIST/COMBO/TI_RASTER_CO
 #########################################################################################################################
 
 
-## Clean species data with Alessandro's method 
+## Figure out how to extract points which are NA with a buffer, in either R or ArcMap
 
 
 

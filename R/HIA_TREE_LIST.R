@@ -42,6 +42,7 @@ library(sp)
 library(raster)
 library(rJava)
 library(things)
+library(digest)
 
 library(ALA4R)
 library(rgbif)
@@ -267,7 +268,7 @@ intersect(campbelltown$Species, CLEAN.NICHE.CONTEXT$searchTaxon)
 intersect(NURSE.MATCH$species, CLEAN.NICHE.CONTEXT$searchTaxon)
 new.spp  = trimws(unique((sort(c(NURSE.MATCH$species, campbelltown$Species)))))
 camp.spp = trimws(campbelltown$Species)
-
+camp_spp = gsub(" ", "_", camp.spp) 
 
 
 
@@ -456,7 +457,9 @@ subset(MODEL.CHECK, Total.growers >= 25 & CHECK_MAP <= 2 & Plant.type == "Tree" 
 
 #########################################################################################################################
 ## What is the intersection betwen the evergreen list and the Tree inventories?
-TREE.HIA.SPP = intersect(subset(TI.LIST, Plantings > 50)$searchTaxon, CLEAN.SPP$Binomial)  ##intersect(head(TI.LIST, 600)$searchTaxon, CLEAN.SPP$Binomial)
+TREE.HIA.SPP = intersect(subset(TI.LIST, Plantings > 50)$searchTaxon, CLEAN.SPP$Binomial) 
+TREE.200.SPP = intersect(subset(TI.LIST, Plantings > 500)$searchTaxon, CLEAN.SPP$Binomial) 
+##intersect(head(TI.LIST, 600)$searchTaxon, CLEAN.SPP$Binomial)
 summary(TI.LIST[TI.LIST$searchTaxon %in% TREE.HIA.SPP, ])
 
 
@@ -471,8 +474,13 @@ synonyms     = c("Fraxinus angustifolia", "Ficus microcarpa", "Callistemon vimin
 ## Get the intersection of the synonyms
 TREE.HIA.SPP = sort(unique(c(TREE.HIA.SPP, synonyms)))
 TREE_HIA_SPP = gsub(" ", "_", TREE.HIA.SPP)
-TI.XY.SPP    = TI.XY[TI.XY$searchTaxon %in% TREE.HIA.SPP, ]
-head(TI.XY.SPP)
+TREE_HIA_SPP = gsub("_trees_sign_.shp", "", TREE.HIA.SPP)
+
+
+## Replace the weird shapefile name for hobart
+TI.XY$INVENTORY = gsub("_trees_sign_.shp", "", TI.XY$INVENTORY)
+head(TI.XY)
+unique(TI.XY$INVENTORY)
 
 
 ## Only process biased species from the target list, and remove those which are not really biased...........

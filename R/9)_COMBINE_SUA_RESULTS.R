@@ -12,7 +12,7 @@
 #########################################################################################################################
 
 
-## We only want to add the species used for the analysis, not all species folders. The list can be restricted after 
+## Changed workflow so only species analysed are included in the save directory 
 ## raster.list[raster.list %like% "Euc"]
 
 

@@ -14,6 +14,9 @@
 
 ## Create one big list of all the taxa
 ala_config(caching = "off")
+server_config$base_url_biocache
+server_config$base_url_biocache_download
+
 all.taxa     =  GBIF.spp
 all.taxa.rev =  all.taxa[rev(order(all.taxa))]
 
@@ -27,6 +30,9 @@ skipped.taxa    = download_GBIF_all_species(species_list = all.taxa,
 
 ALA.taxa        = download_ALA_all_species(species_list = all.taxa.rev, 
                                            path         = ALA_path)
+
+
+
 
 
 #########################################################################################################################
