@@ -238,8 +238,8 @@ message("Tree inventory data increases records by ", round(dim(CLEAN.TRUE)[1]/di
 
 ## Save the clean species
 ## Plot new combined data to check for bias in "SAVE_BIASED_SPDF.R".....................................................
-saveRDS(TEST.GEO,    'data/base/HIA_LIST/COMBO/CLEAN_FLAGS_INV_SPP.rds')
-saveRDS(CLEAN.TRUE,  'data/base/HIA_LIST/COMBO/CLEAN_ONLY_INV_SPP.rds')
+#saveRDS(TEST.GEO,    'data/base/HIA_LIST/COMBO/CLEAN_FLAGS_INV_SPP.rds')
+#saveRDS(CLEAN.TRUE,  'data/base/HIA_LIST/COMBO/CLEAN_ONLY_INV_SPP.rds')
 
 
 #########################################################################################################################
@@ -256,7 +256,7 @@ projection(CLEAN.SPDF)
 
 ## Save the shapefile, to be subsampled in ArcMap
 names(CLEAN.SPDF);head(CLEAN.SPDF)
-writeOGR(obj = CLEAN.SPDF, dsn = "./data/base/HIA_LIST/COMBO", layer = "CLEAN_SPDF", driver = "ESRI Shapefile")
+#writeOGR(obj = CLEAN.SPDF, dsn = "./data/base/HIA_LIST/COMBO", layer = "CLEAN_SPDF", driver = "ESRI Shapefile")
 
 
 

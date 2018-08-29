@@ -169,10 +169,16 @@ sort(names(ALA.TREES.TAXO))
 saveRDS(ALA.TREES.TAXO, 'data/base/HIA_LIST/COMBO/ALA_TAXO_400.rds')
 
 
+## Check the taxonomy by running scientificName through TPL. Then join the GBIF data to the taxonomic check, using 
+## "scientificName" as the join field
+ALA.TRIM.TAXO <- ALA.TRIM %>%
+  left_join(., ALA.TREES.TAXO, by = c("scientificName" = "Taxon"))
+names(GBIF.TRIM.TAXO)
+
 #########################################################################################################################
 ## However, the scientificName string and the searchTaxon string are not the same. 
 ## currently using 'str_detect'
-Match.SN = ALA.TREES.TAXO  %>%
+Match.SN = ALA.TRIM.TAXO  %>%
   mutate(Match.SN.ST = 
            str_detect(scientificName, searchTaxon)) %>%
   
@@ -389,7 +395,7 @@ gc()
 
 #########################################################################################################################
 ## save data
-saveRDS(ALA.TREES.LAND, file = paste("./data/base/HIA_LIST/GBIF/ALA_TREES_LAND.rds"))
+#saveRDS(ALA.TREES.LAND, file = paste("./data/base/HIA_LIST/GBIF/ALA_TREES_LAND.rds"))
 
 
 

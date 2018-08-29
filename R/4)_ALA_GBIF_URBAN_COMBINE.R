@@ -86,7 +86,7 @@ head(COMBO.LUT);dim(COMBO.LUT)
 
 
 ## Write out the table
-write.csv(COMBO.LUT, "./data/base/HIA_LIST/COMBO/SUA_TREES_GBIF_ALA_LUT.csv", row.names = FALSE)
+#write.csv(COMBO.LUT, "./data/base/HIA_LIST/COMBO/SUA_TREES_GBIF_ALA_LUT.csv", row.names = FALSE)
 
 
 #########################################################################################################################
@@ -141,24 +141,24 @@ names(COMBO.POINTS)
 env.grids.current = stack(
   file.path('./data/base/worldclim/world/0.5/bio/current',
             sprintf('bio_%02d', 1:19)))
-writeRaster(env.grids.current, 
-            filename = "./data/base/worldclim/aus/1km/bio/current/env_grids_currentmulti.grd", 
-            bandorder = 'BIL', overwrite = TRUE)
+# writeRaster(env.grids.current, 
+#             filename = "./data/base/worldclim/aus/1km/bio/current/env_grids_currentmulti.grd", 
+#             bandorder = 'BIL', overwrite = TRUE)
 
 
 ## Also get the PET raster
 PET               = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
 
 
-PET <- PET %>%
-  projectRaster(crs = CRS.WGS.84)
-saveRDS(PET, "./data/base/worldclim/world/1km/PET_WGS84.rds")
+# PET <- PET %>%
+#   projectRaster(crs = CRS.WGS.84)
+# saveRDS(PET, "./data/base/worldclim/world/1km/PET_WGS84.rds")
 
 
 ## Project current grids into WGS84
-env.grids.current <- env.grids.current %>%
-  projectRaster(crs = CRS.WGS.84)
-saveRDS(env.grids.current, "./data/base/worldclim/aus/1km/bio/current/env_grids_current.rds")
+# env.grids.current <- env.grids.current %>%
+#   projectRaster(crs = CRS.WGS.84)
+# saveRDS(env.grids.current, "./data/base/worldclim/aus/1km/bio/current/env_grids_current.rds")
 projection(TI.POINTS);projection(aus.grids.current)
 
 
@@ -301,7 +301,7 @@ identical(length(unique(COMBO.RASTER.CONVERT$searchTaxon)), length(GBIF.spp))
        
 
 ## Save the summary datasets
-saveRDS(COMBO.RASTER.CONVERT, file = paste("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONVERT_AUGUST_2018.rds", sep = ""))
+#saveRDS(COMBO.RASTER.CONVERT, file = paste("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONVERT_AUGUST_2018.rds", sep = ""))
 
 
 

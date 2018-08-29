@@ -34,7 +34,7 @@ maxent_path   = 'output/maxent/CAMPBELLTOWN/'
 
 #########################################################################################################################
 ## Now source each step in the workflow. 
-## Step 3 :: combine GBIF occurrence data with ALA data (and hopefully urban data) and filter to records > 1950
+## Step 3 :: combine GBIF occurrence data with ALA data and filter to records > 1950
 source('./R/3)_GBIF_DATA_TAXO_SCIENTIFIC_NAME.R',    echo = TRUE)
 source('./R/ALA_DATA_FILTER_TAXO_SCIENTIFIC_NAME.R', echo = TRUE)
 
