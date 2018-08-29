@@ -21,11 +21,11 @@ source('./R/HIA_TREE_LIST.R')
 
 
 ## Set global species list variables here
-GBIF.spp      = camp.spp[1:3] #intersect(TPL.SPP, TREE.200.SPP) # workaround for ALA problem use TPL checked species
-map_spp_list  = camp_spp[1:3]
+GBIF.spp      = TPL.SPP #intersect(TPL.SPP, TREE.200.SPP) # workaround for ALA problem use TPL checked species
+map_spp_list  = TPL_SPP
 
 GBIF_path     = "./data/base/HIA_LIST/GBIF/OCC_SEARCH/"
-ALA_path      = "./data/base/HIA_LIST/ALA/TREE_SPECIES/"
+ALA_path      = "./data/base/HIA_LIST/ALA/TREES_LATEST/"
 
 save_dir      = 'output/maxent/CAMPBELLTOWN/'
 out_dir       = 'output/maxent/CAMPBELLTOWN'

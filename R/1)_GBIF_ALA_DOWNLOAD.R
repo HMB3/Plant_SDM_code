@@ -12,11 +12,17 @@
 #########################################################################################################################
 
 
-## Create one big list of all the taxa
+## Change the ALA biocache to the old one
 ala_config(caching = "off")
-server_config$base_url_biocache
-server_config$base_url_biocache_download
+server_config <- getOption("ALA4R_server_config")
 
+
+server_config$base_url_biocache <- "http://biocache-lb.ala.org.au"
+server_config$base_url_biocache_download <- "https://biocache-lb.ala.org.au/biocache-download/"
+server_config
+
+
+## Create a list of all the taxa to download
 all.taxa     =  GBIF.spp
 all.taxa.rev =  all.taxa[rev(order(all.taxa))]
 
