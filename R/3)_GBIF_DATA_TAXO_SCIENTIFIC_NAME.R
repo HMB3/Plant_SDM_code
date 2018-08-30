@@ -149,8 +149,8 @@ length(unique(GBIF.TRIM$scientificName))
 GBIF.TAXO <- TPL(unique(GBIF.TRIM$scientificName), infra = TRUE,
                  corr = TRUE, repeats = 100)  ## to stop it timing out...
 sort(names(GBIF.TAXO))
-saveRDS(GBIF.TAXO, 'data/base/HIA_LIST/COMBO/GBIF_TAXO_400.rds')
-GBIF.TAXO = readRDS('data/base/HIA_LIST/COMBO/GBIF_TAXO_400.rds')
+saveRDS(GBIF.TAXO, 'data/base/HIA_LIST/COMBO/GBIF_TAXO_200.rds')
+GBIF.TAXO = readRDS('data/base/HIA_LIST/COMBO/GBIF_TAXO_200.rds')
 
 
 #########################################################################################################################
@@ -163,6 +163,11 @@ GBIF.TAXO = readRDS('data/base/HIA_LIST/COMBO/GBIF_TAXO_400.rds')
 GBIF.TRIM.TAXO <- GBIF.TRIM %>%
   left_join(., GBIF.TAXO, by = c("scientificName" = "Taxon"))
 names(GBIF.TRIM.TAXO)
+
+
+## Check NAs again
+(sum(is.na(ALA.TRIM.TAXO$scientificName)) + dim(subset(ALA.TRIM.TAXO, scientificName == ""))[1])/dim(ALA.TRIM)[1]*100
+View(ALA.TRIM.TAXO[is.na(ALA.TRIM.TAXO$scientificName),])
 
 
 #########################################################################################################################
@@ -225,6 +230,11 @@ unique(GBIF.TRIM.MATCH$New.Taxonomic.status)
 
 round(with(GBIF.TRIM.MATCH, table(Taxonomic.status)/sum(table(Taxonomic.status))*100), 2)
 round(with(GBIF.TRIM.MATCH, table(New.Taxonomic.status)/sum(table(New.Taxonomic.status))*100), 2)
+
+
+## Check NAs again
+(sum(is.na(ALA.TRIM.MATCH$scientificName)) + dim(subset(ALA.TRIM.MATCH, scientificName == ""))[1])/dim(ALA.TRIM.MATCH)[1]*100
+View(ALA.TRIM.MATCH[is.na(ALA.TRIM.MATCH$scientificName),])
 
 
 
@@ -386,7 +396,7 @@ gc()
 
 #########################################################################################################################
 ## save data
-#saveRDS(GBIF.LAND, file = paste("./data/base/HIA_LIST/GBIF/GBIF_TREES_LAND.rds"))
+#saveRDS(GBIF.LAND, file = paste("./data/base/HIA_LIST/GBIF/GBIF_TREES_LAND_200.rds"))
 
 
 ## Now save .rds file for the next session

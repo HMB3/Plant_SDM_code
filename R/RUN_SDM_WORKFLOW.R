@@ -21,8 +21,8 @@ source('./R/HIA_TREE_LIST.R')
 
 
 ## Set global species list variables here
-GBIF.spp      = TPL.SPP #intersect(TPL.SPP, TREE.200.SPP) # workaround for ALA problem use TPL checked species
-map_spp_list  = TPL_SPP
+GBIF.spp      = intersect(TPL.SPP, TREE.200.SPP) # workaround for ALA problem use TPL checked species
+map_spp_list  = gsub(" ", "_", GBIF.spp) #TPL_SPP
 
 GBIF_path     = "./data/base/HIA_LIST/GBIF/OCC_SEARCH/"
 ALA_path      = "./data/base/HIA_LIST/ALA/TREE_SPECIES/"
