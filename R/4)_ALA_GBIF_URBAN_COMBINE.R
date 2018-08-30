@@ -26,7 +26,6 @@ rasterTmpFile()
 ## Load GBIF and ALA data
 #GBIF.LAND = readRDS("./data/base/HIA_LIST/GBIF/GBIF_TREES_LAND.rds")
 #ALA.TREES.LAND = readRDS("./data/base/HIA_LIST/GBIF/ALA_TREES_LAND.rds")
-#load("./data/base/HIA_LIST/ALA/ALA_LAND_POINTS.RData")                      ## save the update in the same place
 
 
 
@@ -141,30 +140,16 @@ names(COMBO.POINTS)
 env.grids.current = stack(
   file.path('./data/base/worldclim/world/0.5/bio/current',
             sprintf('bio_%02d', 1:19)))
-# writeRaster(env.grids.current, 
-#             filename = "./data/base/worldclim/aus/1km/bio/current/env_grids_currentmulti.grd", 
-#             bandorder = 'BIL', overwrite = TRUE)
 
 
 ## Also get the PET raster
 PET               = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
 
 
-# PET <- PET %>%
-#   projectRaster(crs = CRS.WGS.84)
-# saveRDS(PET, "./data/base/worldclim/world/1km/PET_WGS84.rds")
-
-
-## Project current grids into WGS84
-# env.grids.current <- env.grids.current %>%
-#   projectRaster(crs = CRS.WGS.84)
-# saveRDS(env.grids.current, "./data/base/worldclim/aus/1km/bio/current/env_grids_current.rds")
-projection(TI.POINTS);projection(aus.grids.current)
-
-
 #########################################################################################################################
 ## Extract raster data
-COMBO.RASTER <- extract(env.grids.current, COMBO.POINTS) %>% 
+projection(COMBO.POINTS);projection(env.grids.current)
+COMBO.RASTER <- raster::extract(env.grids.current, COMBO.POINTS) %>% 
   cbind(GBIF.ALA.COMBO, .)
 
 
@@ -203,15 +188,9 @@ gc();gc()
 
 #########################################################################################################################
 ## Extract the raster data for PET
-COMBO.POINTS   = SpatialPointsDataFrame(coords      = COMBO.RASTER[c("lon", "lat")], 
-                                        data        = COMBO.RASTER[c("lon", "lat")],
-                                        proj4string = CRS.WGS.84)
-
-
 projection(COMBO.POINTS);projection(PET)
 POINTS.PET <- extract(PET, COMBO.POINTS) %>% 
   cbind(COMBO.RASTER, .)
-#saveRDS(POINTS.PET, file = paste("./data/base/HIA_LIST/GBIF/COMBO_GBIF_ALA_RASTER_PET.rds"))
 COMBO.RASTER = POINTS.PET
 names(COMBO.RASTER)[names(COMBO.RASTER) == "."] <- 'PET'
 
@@ -261,7 +240,7 @@ env.variables = c("Annual_mean_temp",
 
 #########################################################################################################################
 ## Change the raster values here: See http://worldclim.org/formats1 for description of the interger conversion. 
-## All temperature variables wer multiplied by 10, so divide by 10 to reverse it.
+## All temperature variables were multiplied by 10, so divide by 10 to reverse it.
 COMBO.RASTER.CONVERT = as.data.table(COMBO.RASTER)                           ## Check this works, also inefficient
 COMBO.RASTER.CONVERT[, (env.variables [c(1:11)]) := lapply(.SD, function(x) 
   x / 10 ), .SDcols = env.variables [c(1:11)]]
@@ -291,18 +270,8 @@ identical(length(unique(COMBO.RASTER.CONVERT$searchTaxon)), length(GBIF.spp))
 
 
 #########################################################################################################################
-## Combine the existing data with the new species :: use this approach to just process a subset 
-## COMBO.RASTER.CONTEXT.UPDATE = COMBO.RASTER.CONTEXT
-## saveRDS(COMBO.RASTER.CONTEXT.UPDATE, file = paste("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_UPDATE.rds", sep = ""))
-## load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT.rds")
-## load("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_UPDATE.rds")
-# names(COMBO.RASTER.CONTEXT);names(COMBO.RASTER.CONTEXT.UPDATE)
-# COMBO.RASTER.CONTEXT.UPDTATE = bind_rows(COMBO.RASTER.CONTEXT, COMBO.RASTER.CONTEXT.UPDATE)
-       
-
 ## Save the summary datasets
-#saveRDS(COMBO.RASTER.CONVERT, file = paste("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONVERT_AUGUST_2018.rds", sep = ""))
-
+#saveRDS(COMBO.RASTER.CONVERT, file = paste("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONVERT_AUGUST_2018_200spp.rds", sep = ""))
 
 
 ## Now save .RData file for the next session...
@@ -317,7 +286,7 @@ identical(length(unique(COMBO.RASTER.CONVERT$searchTaxon)), length(GBIF.spp))
 #########################################################################################################################
 
 
-## Clean species data with Alessandro's method 
+## Use better ALA data 
 
 
 

@@ -103,7 +103,7 @@ projection(PET);projection(aus.grids.current)
 #########################################################################################################################
 ## Now extract data
 projection(TI.POINTS);projection(aus.grids.current);projection(PET)
-TI.RASTER <- extract(aus.grids.current, TI.POINTS) %>% 
+TI.RASTER <- raster::extract(aus.grids.current, TI.POINTS) %>% 
   cbind(TI.XY.SPP, .)
 summary(TI.RASTER)
 class(TI.RASTER)
@@ -147,7 +147,7 @@ gc()
 #########################################################################################################################
 ## Extract the raster data for PET
 projection(TI.POINTS);projection(PET)
-POINTS.PET <- extract(PET, TI.POINTS) %>% 
+POINTS.PET <- raster::extract(PET, TI.POINTS) %>% 
   cbind(TI.RASTER, .)
 TI.RASTER = POINTS.PET
 names(TI.RASTER)[names(TI.RASTER) == "."] <- 'PET'
@@ -305,20 +305,18 @@ dim(NA.POINTS)
 TI.RASTER.CONVERT = na.omit(TI.RASTER.CONVERT)
 names(TI.RASTER.CONVERT)
 unique(TI.RASTER.CONVERT$INVENTORY)
-saveRDS(TI.RASTER.CONVERT, file = paste("./data/base/HIA_LIST/COMBO/TI_RASTER_CONVERT.rds", sep = ""))
+saveRDS(TI.RASTER.CONVERT, file = paste("./data/base/HIA_LIST/COMBO/TI_RASTER_CONVERT_200.rds", sep = ""))
 
 
 
 
 
 #########################################################################################################################
-## OUTSTANDING NICHE TASKS:
+## OUTSTANDING RASTER TASKS:
 #########################################################################################################################
 
 
 ## Figure out how to extract points which are NA with a buffer, in either R or ArcMap
-
-
 
 
 

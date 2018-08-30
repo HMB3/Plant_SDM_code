@@ -348,7 +348,7 @@ xy <- SpatialPointsDataFrame(coords = xy, data = as.data.frame(xy),
 
 ## Now extract the temperature values for the unique 1km centroids which contain GBIF data
 class(xy)
-z   = extract(world.temp, xy)
+z   = raster::extract(world.temp, xy)
 
 # Warning message:
 #   In .doExtract(x, i, ..., drop = drop) :
@@ -410,7 +410,7 @@ gc()
 #########################################################################################################################
 
 
-## Check taxonomy 
+## Check taxonomy is ok with the final dataset   
 
 
 #########################################################################################################################

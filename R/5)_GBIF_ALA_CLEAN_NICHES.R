@@ -3,9 +3,8 @@
 #########################################################################################################################
 
 
-## This code uses the  to Automatcially screen out the dodgy spatial records. See ::
-#https://www.rdocumentation.org/packages/speciesgeocodeR/versions/1.0-4/topics/GeoClean
-#https://github.com/cran/speciesgeocodeR/blob/master/inst/doc/data_cleaning_and_exploration.Rmd
+## This code uses the CoordinateCleaner package to Automatcially screen out the dodgy spatial records. See ::
+## https://github.com/azizka/CoordinateCleaner
 
 
 ## Can we flag herbarium records, plus the spatial outliers?
