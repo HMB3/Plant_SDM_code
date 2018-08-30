@@ -88,9 +88,10 @@
 
 
 ##
-p <- c('ff',    'things',         'raster',    'dismo',        'sp',           'latticeExtra', 'data.table', 
-       'rgdal', 'rgeos',          'gdalUtils', 'rmaxent',      'readr',        'dplyr',        'tidyr',
-       'readr', 'rnaturalearth',  'rasterVis', 'RColorBrewer', 'latticeExtra', 'parallel')
+p <- c('ff',    'things', 'raster',        'dismo',        'sp',           'latticeExtra', 'data.table', 
+       'rgdal', 'rgeos',  'gdalUtils',     'rmaxent',      'readr',        'plyr',         'dplyr',        
+       'tidyr', 'readr',  'rnaturalearth', 'rasterVis',    'RColorBrewer', 'latticeExtra', 'parallel',     
+       'taxonlookup',     'ALA4R',         'stringr',      'Taxonstand')
 
 
 ## Require packages

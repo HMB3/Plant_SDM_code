@@ -83,55 +83,55 @@ dim(ALA.ALL)
 (sum(is.na(ALA.ALL$species))                 + dim(subset(ALA.ALL, species == ""))[1])/dim(ALA.ALL)[1]*100
 
 
-## What is the match between 'species' and 'scientificNameOriginal'?
 ## What is the match between scientificNameOriginal, and the searchTaxon?
-# Match.ALA = ALA.ALL  %>%
-#   mutate(Match.SNO.ST = 
-#            str_detect(scientificNameOriginal, searchTaxon)) %>%
-#   
-#   mutate(Match.SN.ST = 
-#            str_detect(scientificName, searchTaxon)) %>%
-#   
-#   mutate(Match.SN.SP = 
-#            str_detect(scientificName, species)) %>%
-#   
-#   select(one_of(c("scientificName",
-#                   "scientificNameOriginal",
-#                   "species",
-#                   "searchTaxon",
-#                   "Match.SNO.ST",
-#                   "Match.SP.ST",
-#                   "Match.SN.SP")))
-# View(Match.ALA)
-# 
-# 
-# ## So for 15-12% of the records, neither the scientificNameOriginal or the species match the search taxon.
-# dim(subset(Match.ALA,  Match.SNO.ST == "FALSE"))[1]/dim(Match.ALA)[1]*100
-# dim(subset(Match.ALA,  Match.SN.ST  == "FALSE"))[1]/dim(Match.ALA)[1]*100
-# dim(subset(Match.ALA,  Match.SN.SP  == "FALSE"))[1]/dim(Match.ALA)[1]*100
+Match.ALA = ALA.ALL  %>%
+  mutate(Match.SNO.ST =
+           str_detect(scientificNameOriginal, searchTaxon)) %>%
+
+  mutate(Match.SN.ST =
+           str_detect(scientificName, searchTaxon)) %>%
+
+  mutate(Match.SP.ST =
+           str_detect(species, searchTaxon)) %>%
+  
+  select(one_of(c("searchTaxon",
+                  "scientificName",
+                  "scientificNameOriginal",
+                  "species",
+                  "Match.SNO.ST",
+                  "Match.SN.ST",
+                  "Match.SP.ST")))
+View(Match.ALA)
+
+
+## So for 15-12% of the records, neither the scientificNameOriginal or the species match the search taxon.
+dim(subset(Match.ALA,  Match.SNO.ST == "FALSE"))[1]/dim(Match.ALA)[1]*100
+dim(subset(Match.ALA,  Match.SN.ST  == "FALSE"))[1]/dim(Match.ALA)[1]*100
+dim(subset(Match.ALA,  Match.SN.ST  == "FALSE"))[1]/dim(Match.ALA)[1]*100
 
 
 ## So rename 'scientificNameOriginal' to 'scientificName', to match GBIF
-ALA.RENAME = ALA.ALL
-ALA.RENAME$scientificName = NULL 
-ALA.RENAME$scientificName = ALA.RENAME$scientificNameOriginal
-ALA.RENAME$species = NULL 
-(sum(is.na(ALA.RENAME$scientificName)) + dim(subset(ALA.RENAME, scientificName == ""))[1])/dim(ALA.ALL)[1]*100
+# ALA.RENAME = ALA.ALL
+# ALA.RENAME$scientificName = NULL 
+# ALA.RENAME$scientificName = ALA.RENAME$scientificNameOriginal
+# ALA.RENAME$species = NULL 
+# (sum(is.na(ALA.RENAME$scientificName)) + dim(subset(ALA.RENAME, scientificName == ""))[1])/dim(ALA.ALL)[1]*100
 
 
 ########################################################################################################################
 ## Check names
 ## What names get returned?
-sort(names(ALA.RENAME))
-ALA.TRIM <- ALA.RENAME %>% 
+sort(names(ALA.ALL))
+ALA.TRIM <- ALA.ALL%>% 
   select(one_of(ALA.keep))
 
 dim(ALA.TRIM)
-names(ALA.TRIM)
+sort(names(ALA.TRIM))
 
 
 ## What are the unique species?
 length(unique(ALA.TRIM$searchTaxon))
+length(unique(ALA.TRIM$scientificNameOriginal)) 
 length(unique(ALA.TRIM$scientificName)) 
 length(unique(ALA.TRIM$species))
 (sum(is.na(ALA.TRIM$scientificName)) + dim(subset(ALA.TRIM, scientificName == ""))[1])/dim(ALA.TRIM)[1]*100
@@ -166,14 +166,20 @@ length(unique(ALA.TRIM$species))
 ALA.TREES.TAXO <- TPL(unique(ALA.TRIM$scientificName), infra = TRUE,
                  corr = TRUE, repeats = 100)  ## to stop it timing out...
 sort(names(ALA.TREES.TAXO))
-saveRDS(ALA.TREES.TAXO, 'data/base/HIA_LIST/COMBO/ALA_TAXO_400.rds')
+saveRDS(ALA.TREES.TAXO, 'data/base/HIA_LIST/COMBO/ALA_TAXO_200.rds')
 
 
 ## Check the taxonomy by running scientificName through TPL. Then join the GBIF data to the taxonomic check, using 
 ## "scientificName" as the join field
 ALA.TRIM.TAXO <- ALA.TRIM %>%
   left_join(., ALA.TREES.TAXO, by = c("scientificName" = "Taxon"))
-names(GBIF.TRIM.TAXO)
+names(ALA.TRIM.TAXO)
+
+
+## Check NAs again
+(sum(is.na(ALA.TRIM.TAXO$scientificName)) + dim(subset(ALA.TRIM.TAXO, scientificName == ""))[1])/dim(ALA.TRIM)[1]*100
+View(ALA.TRIM.TAXO[is.na(ALA.TRIM.TAXO$scientificName),])
+
 
 #########################################################################################################################
 ## However, the scientificName string and the searchTaxon string are not the same. 
@@ -236,6 +242,11 @@ unique(ALA.TRIM.MATCH$New.Taxonomic.status)
 
 round(with(ALA.TRIM.MATCH, table(Taxonomic.status)/sum(table(Taxonomic.status))*100), 2)
 round(with(ALA.TRIM.MATCH, table(New.Taxonomic.status)/sum(table(New.Taxonomic.status))*100), 2)
+
+
+## Check NAs again
+(sum(is.na(ALA.TRIM.MATCH$scientificName)) + dim(subset(ALA.TRIM.MATCH, scientificName == ""))[1])/dim(ALA.TRIM.MATCH)[1]*100
+View(ALA.TRIM.MATCH[is.na(ALA.TRIM.MATCH$scientificName),])
 
 
 

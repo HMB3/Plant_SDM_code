@@ -14,11 +14,13 @@
 
 ## Change the ALA biocache to the old one
 ala_config(caching = "off")
-server_config <- getOption("ALA4R_server_config")
+ala_config(verbose = TRUE)
 
 
-server_config$base_url_biocache <- "http://biocache-lb.ala.org.au"
-server_config$base_url_biocache_download <- "https://biocache-lb.ala.org.au/biocache-download/"
+server_config = getOption("ALA4R_server_config")
+
+server_config$base_url_biocache = "https://biocache-lb.ala.org.au/ws"
+server_config$base_url_biocache_download = "https://biocache-lb.ala.org.au/biocache-download/"
 server_config
 
 

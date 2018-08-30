@@ -25,11 +25,11 @@ GBIF.spp      = TPL.SPP #intersect(TPL.SPP, TREE.200.SPP) # workaround for ALA p
 map_spp_list  = TPL_SPP
 
 GBIF_path     = "./data/base/HIA_LIST/GBIF/OCC_SEARCH/"
-ALA_path      = "./data/base/HIA_LIST/ALA/TREES_LATEST/"
+ALA_path      = "./data/base/HIA_LIST/ALA/TREE_SPECIES/"
 
-save_dir      = 'output/maxent/CAMPBELLTOWN/'
-out_dir       = 'output/maxent/CAMPBELLTOWN'
-maxent_path   = 'output/maxent/CAMPBELLTOWN/'
+save_dir      = 'output/maxent/SUA_TREES_DRAFT/'
+out_dir       = 'output/maxent/SUA_TREES_DRAFT'
+maxent_path   = 'output/maxent/SUA_TREES_DRAFT/'
 
 
 #########################################################################################################################
