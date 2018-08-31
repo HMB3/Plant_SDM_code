@@ -14,7 +14,7 @@ ala.download = list.files(ALA_path, pattern = ".RData")
 
 
 #########################################################################################################################
-## 2). COMBINE ALA SPECIES INTO ONE DATASET
+## 1). COMBINE ALA SPECIES INTO ONE DATASET
 #########################################################################################################################
 
 
@@ -24,46 +24,45 @@ ala.download = list.files(ALA_path, pattern = ".RData")
 
 #########################################################################################################################
 ## Combine all the taxa into a single dataframe at once
-ALA.ALL <- ala.download[1:50] %>%   ## spp.download[c(1:length(spp.download))] 
+ALA.ALL <- ala.download %>% 
   
   ## Pipe the list into lapply
   lapply(function(x) {
     
     ## Create a character string of each .RData file
-    #f <- sprintf("./data/base/HIA_LIST/ALA/TREE_SPECIES/%s", x)
     f <- sprintf(paste0(ALA_path, "%s"), x)
     
-    ## Load each file ## remove the second line for the latest version of ALA download
+    ## Load each file - check if some are already dataframes 
     d <- get(load(f))
-    d <- d[["data"]]
-    
-    ## Now drop the columns which we don't need
-    # dat <- data.frame(searchTaxon = x,
-    #                   d[, colnames(d) %in% ALA.keep],
-    #                   stringsAsFactors = FALSE)
-    #dat = cbind(searchTaxon = x, d)
-    dat["searchTaxon"] = x
-    dat["searchTaxon"] = gsub("_ALA_records.RData", "", dat["searchTaxon"])
-    # dat = data.frame(searchTaxon = x, d)
-    # dat = dat %>% 
-    #   select(one_of(ALA.keep))
-    
-    if(!is.character(dat["id"])) {
-
-      dat["id"] <- as.character(dat["id"])
-
+    if (length(class(d)) > 1) {
+      
+      d <- d[["data"]]
+      
     }
     
-    ## This is a list of columns in different files which have weird characters
-    dat["coordinateUncertaintyInMetres"] = as.numeric(unlist(dat["coordinateUncertaintyInMetres"]))
-    dat["year"]  = as.numeric(unlist(dat["year"]))
-    dat["month"] = as.numeric(unlist(dat["month"]))
-    dat["id"]    = as.character(unlist(dat["id"]))
-
-    dat["searchTaxon"] = gsub("_ALA_records.RData", "", dat["searchTaxon"])
-    names(dat)[names(dat) == 'latitude']  <- 'lat'
-    names(dat)[names(dat) == 'longitude'] <- 'lon'
-    return(dat)
+    ## Create the searchTaxon column
+    d[,"searchTaxon"] = x
+    d[,"searchTaxon"] = gsub("_ALA_records.RData", "", d[,"searchTaxon"])
+    
+    ## Choose onl 
+    d = d %>%
+      select(one_of(ALA.keep))
+    
+    if(!is.character(d["id"])) {
+      
+      d["id"] <- as.character(d["id"])
+      
+    }
+    
+    ## This is a list of columns in different ALA files which have weird characters
+    d[,"coordinateUncertaintyInMetres"] = as.numeric(unlist(d["coordinateUncertaintyInMetres"]))
+    d["year"]  = as.numeric(unlist(d["year"]))
+    d["month"] = as.numeric(unlist(d["month"]))
+    d["id"]    = as.character(unlist(d["id"]))
+    
+    names(d)[names(d) == 'latitude']  <- 'lat'
+    names(d)[names(d) == 'longitude'] <- 'lon'
+    return(d)
     
   }) %>%
   
@@ -74,9 +73,6 @@ ALA.ALL <- ala.download[1:50] %>%   ## spp.download[c(1:length(spp.download))]
 #########################################################################################################################
 ## Just get the newly downloaded species
 ALA.ALL = ALA.ALL[ALA.ALL$searchTaxon %in% GBIF.spp, ]
-ALA.ALL = ALA.ALL %>% 
-  select(one_of(ALA.keep))
-gc()
 
 
 #########################################################################################################################
@@ -93,30 +89,30 @@ dim(ALA.ALL)
 
 
 ## What is the match between scientificNameOriginal, and the searchTaxon?
-Match.ALA = ALA.ALL  %>%
-  mutate(Match.SNO.ST =
-           str_detect(scientificNameOriginal, searchTaxon)) %>%
-
-  mutate(Match.SN.ST =
-           str_detect(scientificName, searchTaxon)) %>%
-
-  mutate(Match.SP.ST =
-           str_detect(species, searchTaxon)) %>%
-  
-  select(one_of(c("searchTaxon",
-                  "scientificName",
-                  "scientificNameOriginal",
-                  "species",
-                  "Match.SNO.ST",
-                  "Match.SN.ST",
-                  "Match.SP.ST")))
-View(Match.ALA)
-
-
-## So for 15-12% of the records, neither the scientificNameOriginal or the species match the search taxon.
-dim(subset(Match.ALA,  Match.SNO.ST == "FALSE"))[1]/dim(Match.ALA)[1]*100
-dim(subset(Match.ALA,  Match.SN.ST  == "FALSE"))[1]/dim(Match.ALA)[1]*100
-dim(subset(Match.ALA,  Match.SN.ST  == "FALSE"))[1]/dim(Match.ALA)[1]*100
+# Match.ALA = ALA.ALL  %>%
+#   mutate(Match.SNO.ST =
+#            str_detect(scientificNameOriginal, searchTaxon)) %>%
+# 
+#   mutate(Match.SN.ST =
+#            str_detect(scientificName, searchTaxon)) %>%
+# 
+#   mutate(Match.SP.ST =
+#            str_detect(species, searchTaxon)) %>%
+#   
+#   select(one_of(c("searchTaxon",
+#                   "scientificName",
+#                   "scientificNameOriginal",
+#                   "species",
+#                   "Match.SNO.ST",
+#                   "Match.SN.ST",
+#                   "Match.SP.ST")))
+# View(Match.ALA)
+# 
+# 
+# ## So for 15-12% of the records, neither the scientificNameOriginal or the species match the search taxon.
+# dim(subset(Match.ALA,  Match.SNO.ST == "FALSE"))[1]/dim(Match.ALA)[1]*100
+# dim(subset(Match.ALA,  Match.SN.ST  == "FALSE"))[1]/dim(Match.ALA)[1]*100
+# dim(subset(Match.ALA,  Match.SN.ST  == "FALSE"))[1]/dim(Match.ALA)[1]*100
 
 
 ## So rename 'scientificNameOriginal' to 'scientificName', to match GBIF
@@ -148,6 +144,7 @@ length(unique(ALA.TRIM$species))
 
 
 
+
 #########################################################################################################################
 ## 2). CHECK TAXONOMY RETURNED BY ALA USING TAXONSTAND
 ######################################################################################################################### 
@@ -175,7 +172,7 @@ length(unique(ALA.TRIM$species))
 ALA.TREES.TAXO <- TPL(unique(ALA.TRIM$scientificName), infra = TRUE,
                  corr = TRUE, repeats = 100)  ## to stop it timing out...
 sort(names(ALA.TREES.TAXO))
-saveRDS(ALA.TREES.TAXO, 'data/base/HIA_LIST/COMBO/ALA_TAXO_200.rds')
+saveRDS(ALA.TREES.TAXO, paste0('data/base/HIA_LIST/COMBO/ALA_TAXO_', save_run, '.rds'))
 
 
 ## Check the taxonomy by running scientificName through TPL. Then join the GBIF data to the taxonomic check, using 
@@ -187,7 +184,6 @@ names(ALA.TRIM.TAXO)
 
 ## Check NAs again
 (sum(is.na(ALA.TRIM.TAXO$scientificName)) + dim(subset(ALA.TRIM.TAXO, scientificName == ""))[1])/dim(ALA.TRIM)[1]*100
-View(ALA.TRIM.TAXO[is.na(ALA.TRIM.TAXO$scientificName),])
 
 
 #########################################################################################################################
@@ -227,19 +223,19 @@ keep.SN     = unique(c(match.true, match.false))
 length(keep.SN)
 
 
-## Now create the match column in the main table of records
-# ALA.TRIM.TAXO$Match.SN = ALA.TRIM.TAXO  %>%
-#   mutate(Match.SN.ST = 
-#            str_detect(scientificName, searchTaxon))
-# unique(ALA.TRIM.TAXO$Match.SN)
-
-
 #########################################################################################################################
-## Now remove these from the ALA dataset?
-ALA.TRIM.MATCH = ALA.TRIM.TAXO[ALA.TRIM.TAXO$scientificName %in% keep.SN, ]
+## Now remove these from the ALA dataset
+ALA.TRIM.MATCH  = ALA.TRIM.TAXO[ALA.TRIM.TAXO$scientificName %in% keep.SN, ]
+Match.record    = Match.SN[Match.SN$scientificName %in% keep.SN, ]
 
 
-## How many records were removed?
+## Check the taxonomic status
+round(with(Match.record, table(Match.SN.ST)/sum(table(Match.SN.ST))*100), 2)
+round(with(Match.record, table(Taxonomic.status)/sum(table(Taxonomic.status))*100), 2)
+round(with(Match.record, table(New.Taxonomic.status)/sum(table(New.Taxonomic.status))*100), 2)
+
+
+## How many records were removed by taxonomic filtering?
 message(dim(ALA.TRIM.TAXO)[1] - dim(ALA.TRIM.MATCH)[1], " records removed")
 message(round((dim(ALA.TRIM.MATCH)[1])/dim(ALA.TRIM.TAXO)[1]*100, 2), 
         " % records retained using TPL mismatch")
@@ -255,65 +251,14 @@ round(with(ALA.TRIM.MATCH, table(New.Taxonomic.status)/sum(table(New.Taxonomic.s
 
 ## Check NAs again
 (sum(is.na(ALA.TRIM.MATCH$scientificName)) + dim(subset(ALA.TRIM.MATCH, scientificName == ""))[1])/dim(ALA.TRIM.MATCH)[1]*100
-View(ALA.TRIM.MATCH[is.na(ALA.TRIM.MATCH$scientificName),])
 
 
 
 
 
 #########################################################################################################################
-## 3). CREATE TABLE OF PRE-CLEAN FLAGS AND FILTER RECORDS
+## 3). FILTER RECORDS TO THOSE WITH COORDINATES, AND AFTER 1950
 #########################################################################################################################
-
-
-#########################################################################################################################
-## Create a table which counts the number of records meeting each criteria:
-## Note that TRUE indicates there is a problem (e.g. if a record has no lat/long, it will = TRUE)
-ALA.TREES.PROBLEMS <- with(ALA.TRIM.MATCH,
-                      
-                      table(
-                        
-                        ## Note this list is incomplete
-                        
-                        ## No coordinates
-                        is.na(lon)|is.na(lat),
-                        
-                        ## Taxon rank is genus/form?
-                        #taxonRank == 'GENUS' & 'FORM',
-                        
-                        ## Taxonomic status: consider if this is the right filter, it seems too restrictive
-                        #New.Taxonomic.status == 'Unresolved',
-                        
-                        ## Cultivated
-                        #CULTIVATED == 'CULTIVATED',
-                        
-                        ## Establishment means is "MANAGED" is included in the above
-                        #establishmentMeans == 'MANAGED' & !is.na(establishmentMeans),
-                        
-                        ## Collected before 1950 or na.year
-                        year < 1950 & !is.na(year),
-                        
-                        ## No year
-                        is.na(year),
-                        
-                        ## Coordinate uncertainty is > 100 or is not NA
-                        coordinateUncertaintyInMetres > 1000 & 
-                          !is.na(coordinateUncertaintyInMetres)
-                        
-                        ## Other checks using coordinateCleaner
-                        
-                      )
-                      
-) %>% 
-  
-  ## Create a data frame and set the names
-  as.data.frame %>%  
-  
-  setNames(c('NO_COORD',     
-             #'TAXON_STATUS', 
-             #'CULTIVATED', 
-             'PRE_1950',     'NO_YEAR', 
-             'COORD_UNCERT', 'COUNT'))
 
 
 #########################################################################################################################
@@ -335,6 +280,13 @@ ALA.TREES.CLEAN <- ALA.TRIM.MATCH %>%
 names(ALA.TREES.CLEAN)
 
 
+## How many records were removed by filtering?
+message(dim(ALA.TRIM.MATCH)[1] - dim(ALA.TREES.CLEAN)[1], " records removed")
+message(round((dim(ALA.TREES.CLEAN)[1])/dim(ALA.TRIM.MATCH)[1]*100, 2), 
+        " % records retained using spatially valid records")
+
+
+
 
 
 
@@ -343,6 +295,7 @@ names(ALA.TREES.CLEAN)
 #########################################################################################################################
 
 
+#########################################################################################################################
 ## Can use WORLDCIM rasters to get only records where wordlclim data is. 
 ## First, get one of the BIOCLIM variables
 world.temp = raster("./data/base/worldclim/world/0.5/bio/current/bio_01")
@@ -361,12 +314,6 @@ xy <- cellFromXY(world.temp, ALA.TREES.CLEAN[c("lon", "lat")]) %>%
   xyFromCell(world.temp, .)
 
 
-## Take a look at xy: NA's should be removed...
-# summary(xy)
-# str(xy)
-# points(xy, pch = ".", col = "red")
-
-
 ## For some reason, we need to convert the xy coords to a spatial points data frame, in order to avoid this error:
 ## 'NAs introduced by coercion to integer range'
 xy <- SpatialPointsDataFrame(coords = xy, data = as.data.frame(xy),
@@ -376,17 +323,11 @@ xy <- SpatialPointsDataFrame(coords = xy, data = as.data.frame(xy),
 ## Now extract the temperature values for the unique 1km centroids which contain ALA data
 class(xy)
 z   = raster::extract(world.temp, xy)
-
-# Warning message:
-#   In .doExtract(x, i, ..., drop = drop) :
-#   some indices are invalid (NA returned)
-
 hist(z, border = NA, col = "orange", breaks = 50, main = "", xlab = "Worldclim Annual temp")
 
 
 ## Then track which values of Z are on land or not
 onland = z %>% is.na %>%  `!` # %>% xy[.,]  cells on land or not
-#summary(onland)
 
 
 ## Finally, filter the cleaned ALA data to only those points on land. 
@@ -406,11 +347,12 @@ length(unique(ALA.TREES.LAND$searchTaxon))
 
 ## Add a source column
 ALA.TREES.LAND$SOURCE = 'ALA'
+message(round((dim(ALA.TREES.LAND)[1])/dim(ALA.TREES.CLEAN)[1]*100, 2), 
+        " % records retained using spatially valid records")
 
 
 ## Free some memory
 gc()
-
 
 
 #########################################################################################################################
@@ -420,11 +362,11 @@ saveRDS(ALA.TREES.LAND, paste0('data/base/HIA_LIST/ALA/ALA_TREES_LAND_', save_ru
 
 
 #########################################################################################################################
-## OUTSTANDING OCCURRENCE TASKS:
+## OUTSTANDING ALA TASKS:
 #########################################################################################################################
 
 
-##
+## Re-run with updated ALA data
 
 
 #########################################################################################################################

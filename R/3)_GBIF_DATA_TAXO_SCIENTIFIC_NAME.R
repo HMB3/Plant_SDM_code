@@ -69,8 +69,8 @@ GBIF.ALL <- gbif.download %>%   ## spp.download[c(1:length(spp.download))]
 
 
 #########################################################################################################################
-## what proportion of the dataset has no lat/lon? Need to check this so we know the latest download is working
-dim(GBIF.ALL)
+## What proportion of the dataset has no lat/lon? Need to check this so we know the latest download is working
+formatC(dim(GBIF.ALL)[1], format = "e", digits = 2)
 (sum(is.na(GBIF.ALL$lat))            + dim(subset(GBIF.ALL, year < 1950))[1])/dim(GBIF.ALL)[1]*100
 
 
@@ -90,7 +90,7 @@ gc()
 #########################################################################################################################
 ## Just get the newly downloaded species
 GBIF.TRIM = GBIF.TRIM[GBIF.TRIM$searchTaxon %in% GBIF.spp, ]
-dim(GBIF.TRIM)
+formatC(dim(GBIF.TRIM)[1], format = "e", digits = 2)
 
 
 ## What are the unique species?
@@ -150,7 +150,7 @@ GBIF.TAXO <- TPL(unique(GBIF.TRIM$scientificName), infra = TRUE,
                  corr = TRUE, repeats = 100)  ## to stop it timing out...
 sort(names(GBIF.TAXO))
 saveRDS(GBIF.TAXO, paste0('data/base/HIA_LIST/COMBO/GBIF_TAXO_', save_run, '.rds'))
-GBIF.TAXO = readRDS('data/base/HIA_LIST/COMBO/GBIF_TAXO_200.rds')
+#GBIF.TAXO = readRDS('data/base/HIA_LIST/COMBO/GBIF_TAXO_200.rds')
 
 
 #########################################################################################################################
@@ -241,47 +241,8 @@ View(ALA.TRIM.MATCH[is.na(ALA.TRIM.MATCH$scientificName),])
 
 
 #########################################################################################################################
-## 3). CREATE TABLE OF PRE-CLEAN FLAGS AND FILTER RECORDS
+## 3). FILTER RECORDS TO THOSE WITH COORDINATES, AND AFTER 1950
 #########################################################################################################################
-
-
-#########################################################################################################################
-## Create a table which counts the number of records meeting each criteria:
-## Note that TRUE indicates there is a problem (e.g. if a record has no lat/long, it will = TRUE)
-#GBIF.TRIM.TAXO = GBIF.TRIM.TAXO
-GBIF.PROBLEMS <- with(GBIF.TRIM.MATCH,
-                      
-                      table(
-                        
-                        ## Note this list is incomplete
-                        
-                        ## No coordinates
-                        is.na(lon)|is.na(lat),
-                        
-                        ## Collected before 1950 or na.year
-                        year < 1950 & !is.na(year),
-                        
-                        ## No year
-                        is.na(year),
-                        
-                        ## Coordinate uncertainty is > 100 or is not NA
-                        coordinateUncertaintyInMeters > 1000 & 
-                          !is.na(coordinateUncertaintyInMeters)
-                        
-                        ## Other checks using coordinateCleaner
-                        
-                      )
-                      
-) %>% 
-  
-  ## Create a data frame and set the names
-  as.data.frame %>%  
-  
-  setNames(c('NO_COORD',     
-             #'TAXON_STATUS', 
-             #'CULTIVATED', 
-             'PRE_1950',     'NO_YEAR', 
-             'COORD_UNCERT', 'COUNT'))
 
 
 #########################################################################################################################
@@ -319,7 +280,6 @@ length(unique(GBIF.CLEAN$searchTaxon))
 
 ## First, get one of the BIOCLIM variables
 world.temp = raster("./data/base/worldclim/world/0.5/bio/current/bio_01")
-#plot(world.temp)
 
 
 ## Now get the XY centroids of the unique 1km * 1km WORLDCLIM blocks where GBIF records are found
@@ -334,12 +294,6 @@ xy <- cellFromXY(world.temp, GBIF.CLEAN[c("lon", "lat")]) %>%
   xyFromCell(world.temp, .)
 
 
-## Take a look at xy: NA's should be removed...
-# summary(xy)
-# str(xy)
-# points(xy, pch = ".", col = "red")
-
-
 ## For some reason, we need to convert the xy coords to a spatial points data frame, in order to avoid this error:
 ## 'NAs introduced by coercion to integer range'
 xy <- SpatialPointsDataFrame(coords = xy, data = as.data.frame(xy),
@@ -349,23 +303,17 @@ xy <- SpatialPointsDataFrame(coords = xy, data = as.data.frame(xy),
 ## Now extract the temperature values for the unique 1km centroids which contain GBIF data
 class(xy)
 z   = raster::extract(world.temp, xy)
-
-# Warning message:
-#   In .doExtract(x, i, ..., drop = drop) :
-#   some indices are invalid (NA returned)
-
 hist(z, border = NA, col = "orange", breaks = 50, main = "", xlab = "Worldclim Annual temp")
 
 
 ## Then track which values of Z are on land or not
 onland = z %>% is.na %>%  `!` # %>% xy[.,]  cells on land or not
-#summary(onland)
 
 
 ## Finally, filter the cleaned GBIF data to only those points on land. 
 ## This is achieved with the final [onland]
 GBIF.LAND = filter(GBIF.CLEAN, cellFromXY(world.temp, GBIF.CLEAN[c("lon", "lat")]) %in% 
-                     unique(cellFromXY(world.temp, GBIF.CLEAN[c("lon", "lat")]))[onland])
+                     unique(cellFromXY(world.temp,    GBIF.CLEAN[c("lon", "lat")]))[onland])
 
 
 ## how many records were on land?

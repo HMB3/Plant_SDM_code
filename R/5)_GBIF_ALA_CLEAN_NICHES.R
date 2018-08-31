@@ -162,7 +162,6 @@ SPAT.OUT <- unique(TIB.GBIF$species)[1:2] %>%
   bind_rows
 
 
-
 ## Save data
 head(SPAT.OUT)
 unique(SPAT.OUT$searchTaxon)
