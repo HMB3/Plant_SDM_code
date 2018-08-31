@@ -198,11 +198,7 @@ names(COMBO.RASTER)[names(COMBO.RASTER) == "."] <- 'PET'
 ## Check 
 dim(COMBO.RASTER)
 names(COMBO.RASTER)
-projection(COMBO.RASTER)
-
-
-## Check the raster values here..........................................................................................
-summary(Annual_mean_temp)
+summary(COMBO.RASTER$Annual_mean_temp)
 
 
 
@@ -255,9 +251,12 @@ summary(COMBO.RASTER.CONVERT$Isothermality)
 summary(COMBO.RASTER$Isothermality)
 
 
-## Print the dataframe dimensions to screen
-dim(COMBO.RASTER.CONVERT)
+## Print the dataframe dimensions to screen :: format to recognise millions, hundreds of thousands, etc.
+formatC(dim(COMBO.RASTER.CONVERT)[1], format = "e", digits = 2)
 identical(length(unique(COMBO.RASTER.CONVERT$searchTaxon)), length(GBIF.spp))
+(sum(is.na(COMBO.RASTER.CONVERT$species)) + dim(subset(COMBO.RASTER.CONVERT, species == ""))[1])/dim(GBIF.ALL)[1]*100
+COMBO.RASTER.CONVERT$GBIF_species = COMBO.RASTER.CONVERT$species
+COMBO.RASTER.CONVERT$species = NULL
 
 
 ## Plot a few points to see :: do those look reasonable?
@@ -266,12 +265,9 @@ identical(length(unique(COMBO.RASTER.CONVERT$searchTaxon)), length(GBIF.spp))
 #        pch = ".", col = "red", cex = 3, asp = 1, main = "temp records < -5")
 
 
-
-
-
 #########################################################################################################################
 ## Save the summary datasets
-#saveRDS(COMBO.RASTER.CONVERT, file = paste("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONVERT_AUGUST_2018_200spp.rds", sep = ""))
+saveRDS(COMBO.RASTER.CONVERT, paste0('data/base/HIA_LIST/ALA/COMBO_RASTER_CONVERT', save_run, '.rds'))
 
 
 ## Now save .RData file for the next session...
@@ -286,8 +282,7 @@ identical(length(unique(COMBO.RASTER.CONVERT$searchTaxon)), length(GBIF.spp))
 #########################################################################################################################
 
 
-## Use better ALA data 
-
+## Use better ALA data when available
 
 
 

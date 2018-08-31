@@ -87,11 +87,11 @@
 # library(spThin)
 
 
-##
+## Load only the packages needed for the analysis
 p <- c('ff',    'things', 'raster',        'dismo',        'sp',           'latticeExtra', 'data.table', 
        'rgdal', 'rgeos',  'gdalUtils',     'rmaxent',      'readr',        'plyr',         'dplyr',        
        'tidyr', 'readr',  'rnaturalearth', 'rasterVis',    'RColorBrewer', 'latticeExtra', 'parallel',     
-       'taxonlookup',     'ALA4R',         'stringr',      'Taxonstand')
+       'taxonlookup',     'ALA4R',         'stringr',      'Taxonstand',   'CoordinateCleaner')
 
 
 ## Require packages

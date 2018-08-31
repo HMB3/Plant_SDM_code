@@ -7,15 +7,19 @@
 ## https://github.com/azizka/CoordinateCleaner
 
 
-## Can we flag herbarium records, plus the spatial outliers?
-
-
 #########################################################################################################################
 ## Read in all data to run the SDM code :: species lists, shapefile, rasters & tables
 #source('./R/HIA_LIST_MATCHING.R')
 #TI.RASTER.CONVERT = readRDS("./data/base/HIA_LIST/COMBO/TI_RASTER_CONVERT.rds")
 #COMBO.RASTER.CONVERT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONVERT_APRIL_2018.rds")
 rasterTmpFile()
+
+
+## Check dimensions of the data table
+str(unique(COMBO.RASTER.CONVERT$searchTaxon))
+formatC(dim(COMBO.RASTER.CONVERT)[1], format = "e", digits = 2)
+
+
 
 
 
@@ -25,31 +29,23 @@ rasterTmpFile()
 
 
 #########################################################################################################################
-## Rename the columns to fit the CleanCoordinates format and create a tibble. A Tibble is needed for coordinate cleaner
-str(unique(COMBO.RASTER.CONVERT$searchTaxon))
+## Rename the columns to fit the CleanCoordinates format and create a tibble. A Tibble is needed for running the spatial
+## outlier cleaning
 TIB.GBIF <- COMBO.RASTER.CONVERT %>% dplyr::rename(species          = searchTaxon,
                                                    decimallongitude = lon, 
                                                    decimallatitude  = lat) %>%
   timetk::tk_tbl()
 
 
-## Add a column for unique observation so we can check the records match up
+## Add a column for unique observation so we can check the records match up after joining
 TIB.GBIF$CC.OBS <- 1:nrow(TIB.GBIF)
+identical(length(TIB.GBIF$CC.OBS), dim(TIB.GBIF)[1])
 
 
-DF.GBIF <- COMBO.RASTER.CONVERT %>% dplyr::rename(species          = searchTaxon,
-                                                  decimallongitude = lon, 
-                                                  decimallatitude  = lat) 
-DF.GBIF$CC.OBS <- 1:nrow(DF.GBIF)
-
-
-## saveRDS(TIB.GBIF, file = paste("./data/base/HIA_LIST/GBIF/TIB_GBIF.rds"))
-## DF.TEST = DF.GBIF[DF.GBIF$species %in% unique(DF.GBIF$species)[31:33], ] 
-## saveRDS(DF.TEST, file = paste("./data/base/HIA_LIST/GBIF/DF_GBIF_TEST.rds"))
-## I've already stripped out the records that fall outside
+## We've already stripped out the records that fall outside
 ## the worldclim raster boundaries, so the sea test is probably not the most important
 ## Study area is the globe, but we are only projecting models onto Australia
-
+ 
 
 #########################################################################################################################
 ## Don't run the outliers test here, it is slower. Also, can't run cleaning on the urban tree inventory data, because this
@@ -63,7 +59,7 @@ FLAGS  <- CleanCoordinates(TIB.GBIF,
 
 
 ## save/load the flags
-saveRDS(FLAGS, 'data/base/HIA_LIST/COMBO/ALA_GBIF_FLAGS.rds')
+saveRDS(FLAGS, paste0('data/base/HIA_LIST/COMBO/ALA_GBIF_FLAGS_', save_run, '.rds'))
 #FLAGS = readRDS('data/base/HIA_LIST/COMBO/ALA_GBIF_FLAGS.rds')
 
 
@@ -73,10 +69,41 @@ FLAGS = FLAGS[ ,!(colnames(FLAGS) == "decimallongitude" | colnames(FLAGS) == "de
 message(round(summary(FLAGS)[8]/dim(FLAGS)[1]*100, 2), " % records removed")
 
 
-## A plot like this for each species would be awesome
+## A plot like this for each species would be awesome. Rony could plot each species
+## Find the plot code from previous script and plot all the outliers.....................................................
 #plot(FLAGS)
 
 
+########################################################################################################################
+## Loop over the species list and plot the occurrence data for each to check the data bias
+FLAG.TAXA  = as.list(sort(unique(FLAGS$species)))
+
+for (i in 1:length(FLAG.TAXA)) {
+
+  ## Create points for each species
+  spp.points <- FLAGS[FLAGS$species == FLAG.TAXA[i], ] %>%
+    spTransform(CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'))
+
+  ## Print to file
+  save_name = gsub(' ', '_', TAXA[i])
+  save_dir  = "output/maxent/summary"
+  png(sprintf('%s/%s_%s.png', save_dir,
+              save_name, "Australian_points"),
+      3236, 2000, units = 'px', res = 300)
+
+  ## set margins
+  par(mar   = c(3, 3, 5, 3),  ## b, l, t, r
+      #mgp   = c(9.8, 2.5, 0),
+      oma   = c(1.5, 1.5, 1.5, 1.5))
+
+  ## Plot just the Australian points
+  plot(aus, main = FLAG.TAXA[i])
+  points(spp.points, col = "red", cex = .3, pch = 19)
+
+  ## Finish the device
+  dev.off()
+
+}
 
 
 
@@ -85,15 +112,18 @@ message(round(summary(FLAGS)[8]/dim(FLAGS)[1]*100, 2), " % records removed")
 #########################################################################################################################
 
 
-## This is not working, chews up all the RAM. Contact Alex Zika for more info RE the memory leak........................
-## alexander.zizka@bioenv.gu.se 
-
-
 ## Alex Zizka ::
 ## The outlier function is limited in the amount of records it can process. It uses a distance matrix of all records per species, 
-## which means that for instance for a species with 200,000k records will result in a 200,000x200,000 cells matrix, which will 
+## which means that a species with 200k records will result in a 200,000x200,000 cells matrix, which will 
 ## probably choke your computer. The latest version of cc_outl includes a subsampling heuristic to address this problem. 
 ## I think this will work for you case, but it might run for a while
+
+
+## Check the frequency table first, to see if any species are likely to hit this threshold ::
+COMBO.LUT = as.data.frame(table(TIB.GBIF$species))
+names(COMBO.LUT) = c("species", "FREQUENCY")
+COMBO.LUT = COMBO.LUT[with(COMBO.LUT, rev(order(FREQUENCY))), ] 
+head(COMBO.LUT);summary(COMBO.LUT$FREQUENCY)
 
 
 ## Create a data frame of species name and spatial outlier
@@ -138,6 +168,14 @@ dim(SPAT.OUT)
 saveRDS(SPAT.OUT, 'data/base/HIA_LIST/COMBO/SPAT_OUT/GBIF_SPAT_OUT.rds')
 
 
+
+
+
+#########################################################################################################################
+## 3). SUBSET FOR THE NICHES : JUST USE COORDCLEAN SUMMARY
+#########################################################################################################################
+
+
 #########################################################################################################################
 ## Join data :: exclude the decimal lat/long, check the length 
 dim(TIB.GBIF)[1];dim(FLAGS)[1]#;length(GBIF.SPAT.OUT)
@@ -164,14 +202,6 @@ identical(TEST.GEO$searchTaxon, TEST.GEO$coord_spp)                             
 # summary(TEST.GEO$gbif)
 # summary(TEST.GEO$summary)
 #summary(TEST.GEO$GBIF.SPAT.OUT)
-
-
-
-
-
-#########################################################################################################################
-## 3). SUBSET FOR THE NICHES : JUST USE COORDCLEAN SUMMARY
-#########################################################################################################################
 
 
 ## So ~2.6% of the data is dodgy according to the GBIF fields or spatial outliers

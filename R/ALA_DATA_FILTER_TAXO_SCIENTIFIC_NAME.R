@@ -406,8 +406,7 @@ gc()
 
 #########################################################################################################################
 ## save data
-#saveRDS(ALA.TREES.LAND, file = paste("./data/base/HIA_LIST/GBIF/ALA_TREES_LAND_200.rds"))
-
+saveRDS(ALA.TREES.LAND, paste0('data/base/HIA_LIST/ALA/ALA_TREES_LAND', save_run, '.rds'))
 
 
 

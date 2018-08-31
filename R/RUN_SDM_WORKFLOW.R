@@ -22,6 +22,7 @@ source('./R/HIA_TREE_LIST.R')
 
 ## Set global species list variables here
 GBIF.spp      = intersect(TPL.SPP, TREE.200.SPP) # workaround for ALA problem use TPL checked species
+save_run      = "200_spp"
 map_spp_list  = gsub(" ", "_", GBIF.spp) #TPL_SPP
 
 GBIF_path     = "./data/base/HIA_LIST/GBIF/OCC_SEARCH/"
@@ -63,6 +64,15 @@ source('./R/7)_RUN_MAXENT.R', echo = TRUE)
 source('./R/8)_PREDICT_SDM_SCENARIOS.R', echo = TRUE)
 
 
+
+
+
+#########################################################################################################################
+## OUTSTANDING WORKFLOW TASKS:
+#########################################################################################################################
+
+
+## Create a variable for file names to be save (i.e. pasted in) for each run
 
 
 
