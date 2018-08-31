@@ -166,8 +166,7 @@ names(GBIF.TRIM.TAXO)
 
 
 ## Check NAs again
-(sum(is.na(ALA.TRIM.TAXO$scientificName)) + dim(subset(ALA.TRIM.TAXO, scientificName == ""))[1])/dim(ALA.TRIM)[1]*100
-View(ALA.TRIM.TAXO[is.na(ALA.TRIM.TAXO$scientificName),])
+(sum(is.na(GBIF.TRIM.TAXO$scientificName)) + dim(subset(GBIF.TRIM.TAXO, scientificName == ""))[1])/dim(GBIF.TRIM)[1]*100
 
 
 #########################################################################################################################
@@ -233,8 +232,8 @@ round(with(GBIF.TRIM.MATCH, table(New.Taxonomic.status)/sum(table(New.Taxonomic.
 
 
 ## Check NAs again
-(sum(is.na(ALA.TRIM.MATCH$scientificName)) + dim(subset(ALA.TRIM.MATCH, scientificName == ""))[1])/dim(ALA.TRIM.MATCH)[1]*100
-View(ALA.TRIM.MATCH[is.na(ALA.TRIM.MATCH$scientificName),])
+(sum(is.na(GBIF.TRIM.MATCH$scientificName)) + dim(subset(GBIF.TRIM.MATCH, scientificName == ""))[1])/dim(GBIF.TRIM.MATCH)[1]*100
+View(GBIF.TRIM.MATCH[is.na(GBIF.TRIM.MATCH$scientificName),])
 
 
 
