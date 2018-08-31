@@ -267,7 +267,7 @@ COMBO.RASTER.CONVERT$species = NULL
 
 #########################################################################################################################
 ## Save the summary datasets
-saveRDS(COMBO.RASTER.CONVERT, paste0('data/base/HIA_LIST/ALA/COMBO_RASTER_CONVERT', save_run, '.rds'))
+saveRDS(COMBO.RASTER.CONVERT, paste0('data/base/HIA_LIST/ALA/COMBO_RASTER_CONVERT_', save_run, '.rds'))
 
 
 ## Now save .RData file for the next session...

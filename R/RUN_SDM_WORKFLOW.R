@@ -20,21 +20,23 @@
 source('./R/HIA_TREE_LIST.R')
 
 
-## Set global species list variables here
-GBIF.spp      = intersect(TPL.SPP, TREE.200.SPP) # workaround for ALA problem use TPL checked species
-save_run      = "200_spp"
+## Set global species variables here : species lists, and saving directories
+GBIF.spp      = intersect(TPL.SPP, ala.download) # workaround for ALA problem use TPL checked species
+save_run      = "OLD_ALA"
 map_spp_list  = gsub(" ", "_", GBIF.spp) #TPL_SPP
 
 GBIF_path     = "./data/base/HIA_LIST/GBIF/OCC_SEARCH/"
-ALA_path      = "./data/base/HIA_LIST/ALA/TREE_SPECIES/"
+ALA_path      = "./data/base/HIA_LIST/ALA/SPECIES/"
 
-save_dir      = 'output/maxent/SUA_TREES_DRAFT/'
-out_dir       = 'output/maxent/SUA_TREES_DRAFT'
-maxent_path   = 'output/maxent/SUA_TREES_DRAFT/'
+save_dir      = 'output/maxent/SUA_TREES/'
+out_dir       = 'output/maxent/SUA_TREES/'
+maxent_path   = 'output/maxent/SUA_TREES/'
 
 
 #########################################################################################################################
 ## Now source each step in the workflow. 
+
+
 ## Step 3 :: combine GBIF occurrence data with ALA data and filter to records > 1950
 source('./R/3)_GBIF_DATA_TAXO_SCIENTIFIC_NAME.R',    echo = TRUE)
 source('./R/ALA_DATA_FILTER_TAXO_SCIENTIFIC_NAME.R', echo = TRUE)
@@ -73,7 +75,7 @@ source('./R/8)_PREDICT_SDM_SCENARIOS.R', echo = TRUE)
 
 
 ## Create a variable for file names to be save (i.e. pasted in) for each run
-
+## Increase the taxonomic check to include all species on HIA list
 
 
 #########################################################################################################################

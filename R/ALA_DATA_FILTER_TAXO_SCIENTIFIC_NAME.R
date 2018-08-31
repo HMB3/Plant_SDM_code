@@ -24,7 +24,7 @@ ala.download = list.files(ALA_path, pattern = ".RData")
 
 #########################################################################################################################
 ## Combine all the taxa into a single dataframe at once
-ALA.ALL <- ala.download %>%   ## spp.download[c(1:length(spp.download))] 
+ALA.ALL <- ala.download[1:50] %>%   ## spp.download[c(1:length(spp.download))] 
   
   ## Pipe the list into lapply
   lapply(function(x) {
@@ -33,31 +33,37 @@ ALA.ALL <- ala.download %>%   ## spp.download[c(1:length(spp.download))]
     #f <- sprintf("./data/base/HIA_LIST/ALA/TREE_SPECIES/%s", x)
     f <- sprintf(paste0(ALA_path, "%s"), x)
     
-    ## Load each file
+    ## Load each file ## remove the second line for the latest version of ALA download
     d <- get(load(f))
+    d <- d[["data"]]
     
     ## Now drop the columns which we don't need
-    dat <- data.frame(searchTaxon = x,
-                      d[, colnames(d) %in% ALA.keep],
-                      stringsAsFactors = FALSE)
+    # dat <- data.frame(searchTaxon = x,
+    #                   d[, colnames(d) %in% ALA.keep],
+    #                   stringsAsFactors = FALSE)
+    #dat = cbind(searchTaxon = x, d)
+    dat["searchTaxon"] = x
+    dat["searchTaxon"] = gsub("_ALA_records.RData", "", dat["searchTaxon"])
+    # dat = data.frame(searchTaxon = x, d)
+    # dat = dat %>% 
+    #   select(one_of(ALA.keep))
     
-    if(!is.character(dat$id)) {
-      
-      dat$id <- as.character(dat$id)
-      
+    if(!is.character(dat["id"])) {
+
+      dat["id"] <- as.character(dat["id"])
+
     }
     
     ## This is a list of columns in different files which have weird characters
-    dat$coordinateUncertaintyInMetres = as.numeric(dat$coordinateUncertaintyInMetres)
-    dat$year             = as.numeric(dat$year)
-    dat$month            = as.numeric(dat$month)
-    #dat$latitudeOriginal = as.numeric(dat$latitudeOriginal)
-    #dat$individualCount  = as.numeric(dat$individualCount)
-    
-    dat$searchTaxon = gsub("_ALA_records.RData", "", dat$searchTaxon)
+    dat["coordinateUncertaintyInMetres"] = as.numeric(unlist(dat["coordinateUncertaintyInMetres"]))
+    dat["year"]  = as.numeric(unlist(dat["year"]))
+    dat["month"] = as.numeric(unlist(dat["month"]))
+    dat["id"]    = as.character(unlist(dat["id"]))
+
+    dat["searchTaxon"] = gsub("_ALA_records.RData", "", dat["searchTaxon"])
     names(dat)[names(dat) == 'latitude']  <- 'lat'
     names(dat)[names(dat) == 'longitude'] <- 'lon'
-    dat
+    return(dat)
     
   }) %>%
   
@@ -66,8 +72,11 @@ ALA.ALL <- ala.download %>%   ## spp.download[c(1:length(spp.download))]
 
 
 #########################################################################################################################
-## Just get the newly downloaded species................................................................................
+## Just get the newly downloaded species
 ALA.ALL = ALA.ALL[ALA.ALL$searchTaxon %in% GBIF.spp, ]
+ALA.ALL = ALA.ALL %>% 
+  select(one_of(ALA.keep))
+gc()
 
 
 #########################################################################################################################
@@ -406,7 +415,7 @@ gc()
 
 #########################################################################################################################
 ## save data
-saveRDS(ALA.TREES.LAND, paste0('data/base/HIA_LIST/ALA/ALA_TREES_LAND', save_run, '.rds'))
+saveRDS(ALA.TREES.LAND, paste0('data/base/HIA_LIST/ALA/ALA_TREES_LAND_', save_run, '.rds'))
 
 
 

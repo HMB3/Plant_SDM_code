@@ -563,13 +563,17 @@ TPL_SPP = gsub(" ", "_", TPL.SPP)
 setdiff(TREE.HIA.SPP, SUA.SPP)
 
 
-# test.gbif = c("Elaeocarpus grandis", "Melaleuca viminalis",       "Melaleuca pallida", 
-#               "Platanus hybrida",    "Triadica sebifera",         "Eugenia biflora", 
-#               "Cupressus leylandii", "Elaeocarpus angustifolius", "Eucalyptus globulus", 
-#               "Corymbia ficifolia",  "Fraxinus angustifolia",     "Callistemon viminalis", 
-#               "Prunus blireiana",    "Talipariti tiliaceum",      "Quercus coccinea", 
-#               "Quercus palustris")
+ala.download = list.files("./data/base/HIA_LIST/ALA/SPECIES/", pattern = ".RData")
+ala.download = gsub("_ALA_records.RData", "", ala.download)
+ala.download = trimws(ala.download)
 
+
+#########################################################################################################################
+## OUTSTANDING LIST TASKS:
+#########################################################################################################################
+
+
+## Increase the taxonomic check to include all species on HIA list
 
 
 #########################################################################################################################

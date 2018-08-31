@@ -396,7 +396,7 @@ gc()
 
 #########################################################################################################################
 ## save data
-saveRDS(GBIF.LAND, paste0('data/base/HIA_LIST/GBIF/GBIF_TREES_LAND', save_run, '.rds'))
+saveRDS(GBIF.LAND, paste0('data/base/HIA_LIST/GBIF/GBIF_TREES_LAND_', save_run, '.rds'))
 
 ## Now save .rds file for the next session
 gc()
@@ -409,7 +409,7 @@ gc()
 #########################################################################################################################
 
 
-## Check taxonomy is ok with the final dataset   
+## Increase the taxonomic check to include all species on HIA list
 
 
 #########################################################################################################################

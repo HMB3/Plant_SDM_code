@@ -305,7 +305,7 @@ dim(NA.POINTS)
 TI.RASTER.CONVERT = na.omit(TI.RASTER.CONVERT)
 names(TI.RASTER.CONVERT)
 unique(TI.RASTER.CONVERT$INVENTORY)
-saveRDS(TI.RASTER.CONVERT, file = paste("./data/base/HIA_LIST/COMBO/TI_RASTER_CONVERT_200.rds", sep = ""))
+saveRDS(TI.RASTER.CONVERT, paste0('data/base/HIA_LIST/COMBO/TI_RASTER_CONVERT_', save_run, '.rds'))
 
 
 

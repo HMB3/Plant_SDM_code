@@ -11,7 +11,7 @@
 ## Read in all data to run the SDM code :: species lists, shapefile, rasters & tables
 #source('./R/HIA_LIST_MATCHING.R')
 #TI.RASTER.CONVERT = readRDS("./data/base/HIA_LIST/COMBO/TI_RASTER_CONVERT.rds")
-#COMBO.RASTER.CONVERT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONVERT_APRIL_2018.rds")
+#COMBO.RASTER.CONVERT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONVERT_AUGUST_2018_200spp.rds")
 rasterTmpFile()
 
 
@@ -19,6 +19,8 @@ rasterTmpFile()
 str(unique(COMBO.RASTER.CONVERT$searchTaxon))
 formatC(dim(COMBO.RASTER.CONVERT)[1], format = "e", digits = 2)
 
+str(unique(TI.RASTER.CONVERT $searchTaxon))
+formatC(dim(TI.RASTER.CONVERT)[1], format = "e", digits = 2)
 
 
 
@@ -29,8 +31,8 @@ formatC(dim(COMBO.RASTER.CONVERT)[1], format = "e", digits = 2)
 
 
 #########################################################################################################################
-## Rename the columns to fit the CleanCoordinates format and create a tibble. A Tibble is needed for running the spatial
-## outlier cleaning
+## Rename the columns to fit the CleanCoordinates format and create a tibble. 
+## A Tibble is needed for running the spatial outlier cleaning
 TIB.GBIF <- COMBO.RASTER.CONVERT %>% dplyr::rename(species          = searchTaxon,
                                                    decimallongitude = lon, 
                                                    decimallatitude  = lat) %>%
@@ -76,34 +78,34 @@ message(round(summary(FLAGS)[8]/dim(FLAGS)[1]*100, 2), " % records removed")
 
 ########################################################################################################################
 ## Loop over the species list and plot the occurrence data for each to check the data bias
-FLAG.TAXA  = as.list(sort(unique(FLAGS$species)))
-
-for (i in 1:length(FLAG.TAXA)) {
-
-  ## Create points for each species
-  spp.points <- FLAGS[FLAGS$species == FLAG.TAXA[i], ] %>%
-    spTransform(CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'))
-
-  ## Print to file
-  save_name = gsub(' ', '_', TAXA[i])
-  save_dir  = "output/maxent/summary"
-  png(sprintf('%s/%s_%s.png', save_dir,
-              save_name, "Australian_points"),
-      3236, 2000, units = 'px', res = 300)
-
-  ## set margins
-  par(mar   = c(3, 3, 5, 3),  ## b, l, t, r
-      #mgp   = c(9.8, 2.5, 0),
-      oma   = c(1.5, 1.5, 1.5, 1.5))
-
-  ## Plot just the Australian points
-  plot(aus, main = FLAG.TAXA[i])
-  points(spp.points, col = "red", cex = .3, pch = 19)
-
-  ## Finish the device
-  dev.off()
-
-}
+# FLAG.TAXA  = as.list(sort(unique(FLAGS$species)))
+# 
+# for (i in 1:length(FLAG.TAXA)) {
+# 
+#   ## Create points for each species
+#   spp.points <- FLAGS[FLAGS$species == FLAG.TAXA[i], ] %>%
+#     spTransform(CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'))
+# 
+#   ## Print to file
+#   save_name = gsub(' ', '_', TAXA[i])
+#   save_dir  = "output/maxent/summary"
+#   png(sprintf('%s/%s_%s.png', save_dir,
+#               save_name, "Australian_points"),
+#       3236, 2000, units = 'px', res = 300)
+# 
+#   ## set margins
+#   par(mar   = c(3, 3, 5, 3),  ## b, l, t, r
+#       #mgp   = c(9.8, 2.5, 0),
+#       oma   = c(1.5, 1.5, 1.5, 1.5))
+# 
+#   ## Plot just the Australian points
+#   plot(aus, main = FLAG.TAXA[i])
+#   points(spp.points, col = "red", cex = .3, pch = 19)
+# 
+#   ## Finish the device
+#   dev.off()
+# 
+# }
 
 
 
@@ -602,10 +604,8 @@ length(COMBO.NICHE.CONTEXT$searchTaxon)
 
 #########################################################################################################################
 ## Save
-# saveRDS(TEST.GEO,                'data/base/HIA_LIST/COMBO/CLEAN_FLAGS_HIA_SPP.rds')
-# saveRDS(CLEAN.TRUE,              'data/base/HIA_LIST/COMBO/CLEAN_ONLY_HIA_SPP.rds')
-# saveRDS(CLEAN.NICHE.CONTEXT,     'data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_COORD_CLEAN.rds')
-# write.csv(CLEAN.NICHE.CONTEXT,   "./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_COORD_CLEAN.csv", row.names = FALSE)
+saveRDS(TEST.GEO, paste0('data/base/HIA_LIST/GBIF/CLEAN_FLAGS_', save_run, '.rds'))
+saveRDS(CLEAN.NICHE.CONTEXT, paste0('data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_', save_run, '.rds'))
 
 
 
@@ -616,13 +616,8 @@ length(COMBO.NICHE.CONTEXT$searchTaxon)
 #########################################################################################################################
 
 
-## Check the spatial outlier function works. Try doing it one species at a time, then stich the table back together
+## Estimate native/naturalised ranges as a separate colum         - Keep a spreasheet of all species...
 
-## Check distribution maps for each species for spatial outliers  - Keep a spreasheet of all species...
-
-## Estimate native/naturalised ranges as a separate colum         - Rachael's package
-
-## GBIF taxonomic errors                                          - Use TPL
 
 
 
