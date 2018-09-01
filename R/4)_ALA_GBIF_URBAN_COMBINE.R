@@ -22,9 +22,9 @@
 #source('./R/HIA_LIST_MATCHING.R')
 rasterTmpFile()
 
-
+GBIF.LAND = readRDS("./data/base/HIA_LIST/GBIF/GBIF_TREES_OLD_ALA.rds")
 ## Load GBIF and ALA data
-#GBIF.LAND = readRDS("./data/base/HIA_LIST/GBIF/GBIF_TREES_LAND.rds")
+#
 #ALA.TREES.LAND = readRDS("./data/base/HIA_LIST/GBIF/ALA_TREES_LAND.rds")
 
 
@@ -74,6 +74,10 @@ length(unique(GBIF.ALA.COMBO$scientificName))
 summary(GBIF.ALA.COMBO$year)
 summary(GBIF.ALA.COMBO$lat)
 summary(GBIF.ALA.COMBO$lon)
+
+
+## Check NAs again
+(sum(is.na(GBIF.ALA.COMBO$scientificName)) + dim(subset(GBIF.ALA.COMBO, scientificName == ""))[1])/dim(GBIF.ALA.COMBO)[1]*100
 
 
 #########################################################################################################################
@@ -255,8 +259,6 @@ summary(COMBO.RASTER$Isothermality)
 formatC(dim(COMBO.RASTER.CONVERT)[1], format = "e", digits = 2)
 identical(length(unique(COMBO.RASTER.CONVERT$searchTaxon)), length(GBIF.spp))
 (sum(is.na(COMBO.RASTER.CONVERT$species)) + dim(subset(COMBO.RASTER.CONVERT, species == ""))[1])/dim(GBIF.ALL)[1]*100
-COMBO.RASTER.CONVERT$GBIF_species = COMBO.RASTER.CONVERT$species
-COMBO.RASTER.CONVERT$species = NULL
 
 
 ## Plot a few points to see :: do those look reasonable?

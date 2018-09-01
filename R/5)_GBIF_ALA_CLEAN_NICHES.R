@@ -23,6 +23,12 @@ str(unique(TI.RASTER.CONVERT $searchTaxon))
 formatC(dim(TI.RASTER.CONVERT)[1], format = "e", digits = 2)
 
 
+## Can't use the GBIF species column with coordinated cleaner
+COMBO.RASTER.CONVERT$GBIF_species = COMBO.RASTER.CONVERT$species
+COMBO.RASTER.CONVERT$species      = NULL
+
+
+
 
 
 #########################################################################################################################
