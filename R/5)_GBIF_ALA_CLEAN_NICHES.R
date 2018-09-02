@@ -172,7 +172,7 @@ SPAT.OUT <- unique(TIB.GBIF$species)[1:2] %>%
 head(SPAT.OUT)
 unique(SPAT.OUT$searchTaxon)
 dim(SPAT.OUT)
-saveRDS(SPAT.OUT, 'data/base/HIA_LIST/COMBO/SPAT_OUT/GBIF_SPAT_OUT.rds')
+saveRDS(SPAT.OUT, paste0('data/base/HIA_LIST/COMBO/SPAT_OUT/GBIF_SPAT_OUT.rds', save_run, '.rds'))
 
 
 
@@ -272,11 +272,6 @@ identical(dim(CLEAN.TRUE)[1], length(CLEAN.TRUE$OBS))
 message("Tree inventory data increases records by ", round(dim(CLEAN.TRUE)[1]/dim(TEST.GEO)[1]*100, 2), " % ")     
 
 
-## Save the clean species
-## Plot new combined data to check for bias in "SAVE_BIASED_SPDF.R".....................................................
-#saveRDS(TEST.GEO,    'data/base/HIA_LIST/COMBO/CLEAN_FLAGS_INV_SPP.rds')
-#saveRDS(CLEAN.TRUE,  'data/base/HIA_LIST/COMBO/CLEAN_ONLY_INV_SPP.rds')
-
 
 #########################################################################################################################
 ## Then create SPDF
@@ -337,8 +332,6 @@ COMBO.SUA.LGA = cbind.data.frame(COMBO.RASTER.SP, LGA.JOIN)
 ## COMBO.SUA.LGA = readRDS("./data/base/HIA_LIST/GBIF/COMBO_SUA_LGA.rds")
 ## str(unique(COMBO.SUA.LGA$searchTaxon))
 
-
-## Join on the
 
 #########################################################################################################################
 ## AGGREGATE THE NUMBER OF LGAs EACH SPECIES IS FOUND IN. NA LGAs ARE OUTSIDE AUS
@@ -609,7 +602,7 @@ length(COMBO.NICHE.CONTEXT$searchTaxon)
 
 #########################################################################################################################
 ## Save
-saveRDS(TEST.GEO, paste0('data/base/HIA_LIST/GBIF/CLEAN_FLAGS_', save_run, '.rds'))
+saveRDS(TEST.GEO, paste0('data/base/HIA_LIST/COMBO/CLEAN_FLAGS_', save_run, '.rds'))
 saveRDS(CLEAN.NICHE.CONTEXT, paste0('data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_', save_run, '.rds'))
 
 

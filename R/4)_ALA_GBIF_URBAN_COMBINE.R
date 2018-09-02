@@ -193,7 +193,7 @@ gc();gc()
 #########################################################################################################################
 ## Extract the raster data for PET
 projection(COMBO.POINTS);projection(PET)
-POINTS.PET <- extract(PET, COMBO.POINTS) %>% 
+POINTS.PET <- raster::extract(PET, COMBO.POINTS) %>% 
   cbind(COMBO.RASTER, .)
 COMBO.RASTER = POINTS.PET
 names(COMBO.RASTER)[names(COMBO.RASTER) == "."] <- 'PET'
