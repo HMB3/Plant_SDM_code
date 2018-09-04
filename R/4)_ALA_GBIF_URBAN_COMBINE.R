@@ -4,17 +4,16 @@
 
 
 #########################################################################################################################
-## This code combines the GBIF records for all species with the ALA data into a single table, extracts environmental 
-## values and final adds contextual info for each record (taxonomic and horticultural) 
+## This code combines the GBIF records with the ALA records, then extracts environmental values. 
 
 
-## It creates two tables:
+## It creates :
 
 ## 1). A large table with one row for each species record
-## 2). A smaller table with one row for each species, including contextual data and species attributes (niches, traits, etc.)
- 
-## These tables are subsequently used to estimate the current global realised niche/climatic tolerance using the best 
-## available data, and susequently model the niches using the maxent algorithm.  
+
+
+## This tables are subsequently used to estimate the current global realised niche/climatic tolerance 
+## and susequently model the niches using the maxent algorithm.  
 
 
 #########################################################################################################################
@@ -22,10 +21,10 @@
 #source('./R/HIA_LIST_MATCHING.R')
 rasterTmpFile()
 
-GBIF.LAND = readRDS("./data/base/HIA_LIST/GBIF/GBIF_TREES_OLD_ALA.rds")
+# GBIF.LAND = readRDS("./data/base/HIA_LIST/GBIF/GBIF_TREES_LAND_OLD_ALA.rds")
 ## Load GBIF and ALA data
 #
-#ALA.TREES.LAND = readRDS("./data/base/HIA_LIST/GBIF/ALA_TREES_LAND.rds")
+#ALA.TREES.LAND = readRDS("./data/base/HIA_LIST/GBIF/ALA_TREES_LAND_OLD_ALA.rds")
 
 
 
@@ -41,11 +40,10 @@ length(unique(GBIF.LAND$searchTaxon))
 length(unique(ALA.TREES.LAND$searchTaxon)) 
 unique(GBIF.LAND$SOURCE)
 unique(ALA.TREES.LAND$SOURCE)
+sort(intersect(sort(names(GBIF.LAND)), sort(names(ALA.TREES.LAND))))
 
 
 dim(GBIF.LAND);dim(ALA.TREES.LAND)
-names(GBIF.LAND)
-names(ALA.TREES.LAND)
 setdiff(names(GBIF.LAND), names(ALA.TREES.LAND))
 
 
@@ -57,8 +55,11 @@ GBIF.LAND     = dplyr::rename(GBIF.LAND,
 
 #########################################################################################################################
 ## Bind the rows together
-intersect(names(GBIF.LAND), names(ALA.TREES.LAND))
+common.cols = intersect(names(GBIF.LAND), names(ALA.TREES.LAND))
 GBIF.ALA.COMBO = bind_rows(GBIF.LAND, ALA.TREES.LAND)
+GBIF.ALA.COMBO = GBIF.ALA.COMBO %>% 
+  select(one_of(common.cols))
+
 
 names(GBIF.ALA.COMBO)
 unique(GBIF.ALA.COMBO$SOURCE)
@@ -109,7 +110,7 @@ names(COMBO.POINTS)
 
 
 #########################################################################################################################
-## 3). PROJECT RASTERS AND EXTRACT ALL WORLDCLIM DATA FOR SPECIES RECORDS
+## 2). PROJECT RASTERS AND EXTRACT ALL WORLDCLIM DATA FOR SPECIES RECORDS
 #########################################################################################################################
 
 
@@ -153,35 +154,35 @@ PET               = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
 #########################################################################################################################
 ## Extract raster data
 projection(COMBO.POINTS);projection(env.grids.current)
+dim(COMBO.POINTS);dim(GBIF.ALA.COMBO)
+
 COMBO.RASTER <- raster::extract(env.grids.current, COMBO.POINTS) %>% 
-  cbind(GBIF.ALA.COMBO, .)
-
-
-## Multiple rename using dplyr
-COMBO.RASTER = dplyr::rename(COMBO.RASTER,
-                             
-                             ## Temperature
-                             Annual_mean_temp     = bio_01,
-                             Mean_diurnal_range   = bio_02,
-                             Isothermality        = bio_03,
-                             Temp_seasonality     = bio_04,
-                             Max_temp_warm_month  = bio_05,
-                             Min_temp_cold_month  = bio_06,
-                             Temp_annual_range    = bio_07,
-                             Mean_temp_wet_qu     = bio_08,
-                             Mean_temp_dry_qu     = bio_09,
-                             Mean_temp_warm_qu    = bio_10,
-                             Mean_temp_cold_qu    = bio_11,
-                             
-                             ## Rainfall
-                             Annual_precip        = bio_12,
-                             Precip_wet_month     = bio_13,
-                             Precip_dry_month     = bio_14,
-                             Precip_seasonality   = bio_15,
-                             Precip_wet_qu        = bio_16,
-                             Precip_dry_qu        = bio_17,
-                             Precip_warm_qu       = bio_18,
-                             Precip_col_qu        = bio_19)
+  
+  cbind(GBIF.ALA.COMBO, .) %>% 
+  
+  dplyr::rename(
+    ## Temperature
+    Annual_mean_temp     = bio_01,
+    Mean_diurnal_range   = bio_02,
+    Isothermality        = bio_03,
+    Temp_seasonality     = bio_04,
+    Max_temp_warm_month  = bio_05,
+    Min_temp_cold_month  = bio_06,
+    Temp_annual_range    = bio_07,
+    Mean_temp_wet_qu     = bio_08,
+    Mean_temp_dry_qu     = bio_09,
+    Mean_temp_warm_qu    = bio_10,
+    Mean_temp_cold_qu    = bio_11,
+    
+    ## Rainfall
+    Annual_precip        = bio_12,
+    Precip_wet_month     = bio_13,
+    Precip_dry_month     = bio_14,
+    Precip_seasonality   = bio_15,
+    Precip_wet_qu        = bio_16,
+    Precip_dry_qu        = bio_17,
+    Precip_warm_qu       = bio_18,
+    Precip_col_qu        = bio_19)
 
 
 ## Save/load
@@ -193,6 +194,8 @@ gc();gc()
 #########################################################################################################################
 ## Extract the raster data for PET
 projection(COMBO.POINTS);projection(PET)
+dim(COMBO.POINTS)
+
 POINTS.PET <- raster::extract(PET, COMBO.POINTS) %>% 
   cbind(COMBO.RASTER, .)
 COMBO.RASTER = POINTS.PET
@@ -203,13 +206,14 @@ names(COMBO.RASTER)[names(COMBO.RASTER) == "."] <- 'PET'
 dim(COMBO.RASTER)
 names(COMBO.RASTER)
 summary(COMBO.RASTER$Annual_mean_temp)
+summary(COMBO.RASTER$PET)
 
 
 
 
 
 #########################################################################################################################
-## 4). CONVERT RASTER VALUES
+## 3). CONVERT RASTER VALUES
 #########################################################################################################################
 
 
@@ -226,7 +230,7 @@ env.variables = c("Annual_mean_temp",
                   "Mean_temp_dry_qu",
                   "Mean_temp_warm_qu",
                   "Mean_temp_cold_qu",
-
+                  
                   "Annual_precip",
                   "Precip_wet_month",
                   "Precip_dry_month",
@@ -254,11 +258,14 @@ summary(COMBO.RASTER$Annual_mean_temp)
 summary(COMBO.RASTER.CONVERT$Isothermality)
 summary(COMBO.RASTER$Isothermality)
 
+summary(COMBO.RASTER.CONVERT$PET)
+
 
 ## Print the dataframe dimensions to screen :: format to recognise millions, hundreds of thousands, etc.
+names(COMBO.RASTER.CONVERT)
+dim(COMBO.RASTER.CONVERT)
 formatC(dim(COMBO.RASTER.CONVERT)[1], format = "e", digits = 2)
 identical(length(unique(COMBO.RASTER.CONVERT$searchTaxon)), length(GBIF.spp))
-(sum(is.na(COMBO.RASTER.CONVERT$species)) + dim(subset(COMBO.RASTER.CONVERT, species == ""))[1])/dim(GBIF.ALL)[1]*100
 
 
 ## Plot a few points to see :: do those look reasonable?
@@ -269,7 +276,7 @@ identical(length(unique(COMBO.RASTER.CONVERT$searchTaxon)), length(GBIF.spp))
 
 #########################################################################################################################
 ## Save the summary datasets
-saveRDS(COMBO.RASTER.CONVERT, paste0('data/base/HIA_LIST/ALA/COMBO_RASTER_CONVERT_', save_run, '.rds'))
+saveRDS(COMBO.RASTER.CONVERT, paste0('data/base/HIA_LIST/COMBO/COMBO_RASTER_CONVERT_', save_run, '.rds'))
 
 
 ## Now save .RData file for the next session...

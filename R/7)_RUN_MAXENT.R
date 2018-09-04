@@ -22,7 +22,7 @@
 #########################################################################################################################
 ## Load packages, functions and data
 #source('./R/HIA_LIST_MATCHING.R')
-#CLEAN.TRUE = readRDS('data/base/HIA_LIST/COMBO/CLEAN_ONLY_HIA_SPP.rds')
+#CLEAN.TRUE = readRDS('data/base/HIA_LIST/COMBO/CLEAN_TRUE_OLD_ALA.rds')
 rasterTmpFile()
 
 
@@ -32,13 +32,13 @@ rasterTmpFile()
 
 
 #########################################################################################################################
-## Create a table with all the variables
+## Create a table with all the variables needed for SDM analysis
 dim(CLEAN.TRUE)
 length(unique(CLEAN.TRUE$searchTaxon))
 unique(CLEAN.TRUE$SOURCE)
 
 
-## Which columns
+## Select only the columns needed
 COMBO.RASTER.ALL  <- dplyr::select(CLEAN.TRUE, searchTaxon, lon, lat, SOURCE,
                                    
                                    Annual_mean_temp,     Mean_diurnal_range,  Isothermality,     Temp_seasonality, 
@@ -73,6 +73,7 @@ SDM.DATA.ALL <- mapply(function(x, cells) {
 ## Check data :: template, data table and species 
 dim(template.raster)
 dim(SDM.DATA.ALL)
+names(SDM.DATA.ALL)
 length(unique(SDM.DATA.ALL$searchTaxon))
 class(Koppen_1975)
 
@@ -85,9 +86,24 @@ xres(template.raster);yres(template.raster)
 #saveRDS(SDM.DATA.ALL, 'data/base/HIA_LIST/COMBO/SDM_DATA_INV_HIA.rds')
 
 
+
+
+
 #########################################################################################################################
-## The code is failing, and the maps are different, due to insufficient background records. Add in random records from
-## previously saved runs
+## 2). TRY CLEANING FILTERED DATA FOR SPATIAL OUTLIERS
+#########################################################################################################################
+
+
+
+
+
+#########################################################################################################################
+## 3). CREATE BACKGROUND POINTS AND VARIBALE NAMES
+#########################################################################################################################
+
+
+#########################################################################################################################
+## Add in random records from previously saved runs
 background = readRDS("./data/base/HIA_LIST/COMBO/SDM_DATA_CLEAN_052018.rds")
 background = background [!background$searchTaxon %in% GBIF.spp, ]               ## Don't add records for other species
 length(unique(background$searchTaxon));dim(background)
@@ -134,7 +150,7 @@ identical(names(env.grids.current),sdm.predictors)
 
 
 #########################################################################################################################
-## 2). RUN SDMs USING A-PRIORI VARIABLES FOR THE UNBIASED SPECIES
+## 2). RUN SDMs USING A-PRIORI VARIABLES FOR ALL SPECIES
 #########################################################################################################################
 
 
@@ -210,83 +226,83 @@ lapply(GBIF.spp, function(spp){
 
 #########################################################################################################################
 ## Run Maxent using a random selection of background points. 
-SDM.DATA.BIAS = readRDS('./data/base/HIA_LIST/COMBO/BIASED_TREES_RAREFY.rds')
-length(unique(SDM.DATA.BIAS$searchTaxon)) 
-dim(SDM.DATA.BIAS)
-projection(template.raster);projection(SDM.DATA.BIAS);projection(Koppen_1975)
-
-
-## Remove the dodgy columns
-dropList <- c(setdiff(sdm.predictors, sdm.select), "lon", "lat")
-background.bias <- background[, !names(background) %in% dropList]
-SDM.DATA.BIAS   <- SDM.DATA.BIAS[, !names(SDM.DATA.BIAS) %in% dropList]
-identical(names(background.bias), names(SDM.DATA.BIAS))
-
-
-## Now bind on the background points............................................................................................
-intersect(sort(unique(SDM.DATA.BIAS$searchTaxon)), sort(unique(background$searchTaxon)))    ## check the species don't overlap
-SDM.DATA.BIAS = rbind(SDM.DATA.BIAS, background.bias)
-names(SDM.DATA.BIAS)
-
-
-## Change the output directory
-out_dir       = 'output/maxent/SPP_RAREFY_3KM'
-
-
-#########################################################################################################################
-## Loop over all the species spp = test.bias[1]
-lapply(SPP.BIAS, function(spp){
-
-  ## Skip the species if the directory already exists, before the loop
-  outdir <- out_dir
-  if(dir.exists(file.path(outdir, gsub(' ', '_', spp)))) {
-    message('Skipping ', spp, ' - already run.')
-    invisible(return(NULL))
-
-  }
-
-  ## Print the taxa being processed to screen
-  if(spp %in% SDM.DATA.BIAS$searchTaxon) {
-    message('Doing ', spp)
-
-    ## Subset the records to only the taxa being processed
-    occurrence <- subset(SDM.DATA.BIAS, searchTaxon == spp)
-
-    ## Now get the background points. These can come from any spp, other than the modelled species.
-    background <- subset(SDM.DATA.BIAS, searchTaxon != spp)
-
-    ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
-    tryCatch(
-      FIT_MAXENT_TARG_BG(occ                     = occurrence,
-                         bg                      = background,
-                         sdm.predictors          = sdm.select,
-                         name                    = spp,
-                         outdir,
-                         template.raster,
-                         min_n                   = 20,     ## This should be higher...
-                         max_bg_size             = 100000,
-                         Koppen                  = Koppen_1975,
-                         background_buffer_width = 200000,
-                         shapefiles              = TRUE,
-                         features                = 'lpq',
-                         replicates              = 5,
-                         responsecurves          = TRUE),
-
-      ## https://stackoverflow.com/questions/19394886/trycatch-in-r-not-working-properly
-      #function(e) message('Species skipped ', spp)) ## skip any species for which the function fails
-      error = function(cond) {
-
-        message(paste('Species skipped ', spp))
-
-      })
-
-  } else {
-
-    message(spp, ' skipped - no data.')         ## This condition ignores species which have no data...
-
-  }
-
-})
+# SDM.DATA.BIAS = readRDS('./data/base/HIA_LIST/COMBO/BIASED_TREES_RAREFY.rds')
+# length(unique(SDM.DATA.BIAS$searchTaxon)) 
+# dim(SDM.DATA.BIAS)
+# projection(template.raster);projection(SDM.DATA.BIAS);projection(Koppen_1975)
+# 
+# 
+# ## Remove the dodgy columns
+# dropList <- c(setdiff(sdm.predictors, sdm.select), "lon", "lat")
+# background.bias <- background[, !names(background) %in% dropList]
+# SDM.DATA.BIAS   <- SDM.DATA.BIAS[, !names(SDM.DATA.BIAS) %in% dropList]
+# identical(names(background.bias), names(SDM.DATA.BIAS))
+# 
+# 
+# ## Now bind on the background points............................................................................................
+# intersect(sort(unique(SDM.DATA.BIAS$searchTaxon)), sort(unique(background$searchTaxon)))    ## check the species don't overlap
+# SDM.DATA.BIAS = rbind(SDM.DATA.BIAS, background.bias)
+# names(SDM.DATA.BIAS)
+# 
+# 
+# ## Change the output directory
+# out_dir       = 'output/maxent/SPP_RAREFY_3KM'
+# 
+# 
+# #########################################################################################################################
+# ## Loop over all the species spp = test.bias[1]
+# lapply(SPP.BIAS, function(spp){
+# 
+#   ## Skip the species if the directory already exists, before the loop
+#   outdir <- out_dir
+#   if(dir.exists(file.path(outdir, gsub(' ', '_', spp)))) {
+#     message('Skipping ', spp, ' - already run.')
+#     invisible(return(NULL))
+# 
+#   }
+# 
+#   ## Print the taxa being processed to screen
+#   if(spp %in% SDM.DATA.BIAS$searchTaxon) {
+#     message('Doing ', spp)
+# 
+#     ## Subset the records to only the taxa being processed
+#     occurrence <- subset(SDM.DATA.BIAS, searchTaxon == spp)
+# 
+#     ## Now get the background points. These can come from any spp, other than the modelled species.
+#     background <- subset(SDM.DATA.BIAS, searchTaxon != spp)
+# 
+#     ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
+#     tryCatch(
+#       FIT_MAXENT_TARG_BG(occ                     = occurrence,
+#                          bg                      = background,
+#                          sdm.predictors          = sdm.select,
+#                          name                    = spp,
+#                          outdir,
+#                          template.raster,
+#                          min_n                   = 20,     ## This should be higher...
+#                          max_bg_size             = 100000,
+#                          Koppen                  = Koppen_1975,
+#                          background_buffer_width = 200000,
+#                          shapefiles              = TRUE,
+#                          features                = 'lpq',
+#                          replicates              = 5,
+#                          responsecurves          = TRUE),
+# 
+#       ## https://stackoverflow.com/questions/19394886/trycatch-in-r-not-working-properly
+#       #function(e) message('Species skipped ', spp)) ## skip any species for which the function fails
+#       error = function(cond) {
+# 
+#         message(paste('Species skipped ', spp))
+# 
+#       })
+# 
+#   } else {
+# 
+#     message(spp, ' skipped - no data.')         ## This condition ignores species which have no data...
+# 
+#   }
+# 
+# })
 
 
 
@@ -310,18 +326,10 @@ lapply(SPP.BIAS, function(spp){
 
 ##     Keep the 'source' column in the maxent table :: adjust step 7  
 
-##     Can we Extract NA values for tree inventory data - it's very slow! 
      
 
-## 3). Thin records for 28 spp. with boundary bias, using the SDM tool box. Send Alessandro the latest file .shp
-
-##     Settings: Max 5km, min 1km, 5 heterogeneity classes (from a classification of a PCA, using the worldclim layers)
-##     Currently using all spp background records: random 100k for every species, sounds ok?
-
-##     Try to thin the background records in the same way - run the BG points through SDM toolbox too. 
-
-##     Compare the models with and without thinning for a 28 species:
-##     Acacia_implexa, etc.
+## 4). Run modelling and mapping steps through Katana. To do this, we need a loop that processes one species at a time
+##      
      
 
 ## 4). Use more forgiving thresholds (10%) for all species: Done
@@ -352,6 +360,17 @@ lapply(SPP.BIAS, function(spp){
 
 
 ## 8). What is the story? Draft results and discussion.
+
+
+##     If needed, thin records for 28 spp. with boundary bias, using the SDM tool box. Send Alessandro the latest file .shp
+
+##     Settings: Max 5km, min 1km, 5 heterogeneity classes (from a classification of a PCA, using the worldclim layers)
+##     Currently using all spp background records: random 100k for every species, sounds ok?
+
+##     Try to thin the background records in the same way - run the BG points through SDM toolbox too. 
+
+##     Compare the models with and without thinning for a 28 species:
+##     Acacia_implexa, etc.
 
 
 

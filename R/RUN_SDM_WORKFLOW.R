@@ -28,9 +28,9 @@ map_spp_list  = gsub(" ", "_", GBIF.spp) #TPL_SPP
 GBIF_path     = "./data/base/HIA_LIST/GBIF/OCC_SEARCH/"
 ALA_path      = "./data/base/HIA_LIST/ALA/SPECIES/"
 
-save_dir      = 'output/maxent/SUA_TREES/'
-out_dir       = 'output/maxent/SUA_TREES/'
-maxent_path   = 'output/maxent/SUA_TREES/'
+save_dir      = 'output/maxent/SUA_TREES_OLD_ALA/'
+out_dir       = 'output/maxent/SUA_TREES_OLD_ALA/'
+maxent_path   = 'output/maxent/SUA_TREES_OLD_ALA/'
 
 
 #########################################################################################################################

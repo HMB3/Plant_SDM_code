@@ -73,16 +73,17 @@ ALA.ALL <- ala.download %>%
 #########################################################################################################################
 ## Just get the newly downloaded species
 ALA.ALL = ALA.ALL[ALA.ALL$searchTaxon %in% GBIF.spp, ]
+length(unique(ALA.ALL$searchTaxon))
 
 
 #########################################################################################################################
-## What proportion of the ALA dataset has no lat/lon? Need to check this so we know the latest download is working
+## What proportion of the ALA dataset has no lat/lon? 
 sort(names(ALA.ALL))
 dim(ALA.ALL)
 (sum(is.na(ALA.ALL$lat))            + dim(subset(ALA.ALL, year < 1950))[1])/dim(ALA.ALL)[1]*100
 
 
-## Now check the ALA species names : which has the least holes?
+## How many records have no species label? Need to check this so we know the latest download is working
 (sum(is.na(ALA.ALL$scientificNameOriginal))  + dim(subset(ALA.ALL, scientificNameOriginal == ""))[1])/dim(ALA.ALL)[1]*100
 (sum(is.na(ALA.ALL$scientificName))          + dim(subset(ALA.ALL, scientificName == ""))[1])/dim(ALA.ALL)[1]*100
 (sum(is.na(ALA.ALL$species))                 + dim(subset(ALA.ALL, species == ""))[1])/dim(ALA.ALL)[1]*100
@@ -173,6 +174,7 @@ ALA.TREES.TAXO <- TPL(unique(ALA.TRIM$scientificName), infra = TRUE,
                  corr = TRUE, repeats = 100)  ## to stop it timing out...
 sort(names(ALA.TREES.TAXO))
 saveRDS(ALA.TREES.TAXO, paste0('data/base/HIA_LIST/COMBO/ALA_TAXO_', save_run, '.rds'))
+ALA.TREES.TAXO = readRDS('data/base/HIA_LIST/COMBO/ALA_TAXO_OLD_ALA.rds')
 
 
 ## Check the taxonomy by running scientificName through TPL. Then join the GBIF data to the taxonomic check, using 
@@ -357,7 +359,19 @@ gc()
 
 #########################################################################################################################
 ## save data
+dim(ALA.TREES.LAND)
+length(unique(ALA.TREES.LAND$searchTaxon))
+
+
+## One of the ALA columns is causing trouble. Reduce the ALA dataset to a minimum set
+intersect(sort(names(GBIF.LAND)), sort(names(ALA.TREES.LAND)))
+ALA.TREES.LAND = ALA.TREES.LAND[c("searchTaxon",      "scientificName", "SOURCE", 
+                                  "lon", "lat",       "coordinateUncertaintyInMetres", "geodeticDatum", "year", "locality", "country", 
+                                  "basisOfRecord",    "institutionCode", "rank",
+                                  "Taxonomic.status", "New.Taxonomic.status", "New.Genus", "New.Species")]
 saveRDS(ALA.TREES.LAND, paste0('data/base/HIA_LIST/ALA/ALA_TREES_LAND_', save_run, '.rds'))
+
+
 
 
 
