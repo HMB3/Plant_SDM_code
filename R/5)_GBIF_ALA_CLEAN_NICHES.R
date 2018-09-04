@@ -218,7 +218,7 @@ identical(dim(CLEAN.TRUE)[1], length(CLEAN.TRUE$OBS))
 message("Tree inventory data increases records by ", round(dim(CLEAN.TRUE)[1]/dim(TEST.GEO)[1]*100, 2), " % ")   
 
 
-## save niches
+## Save niches
 saveRDS(CLEAN.TRUE, paste0('data/base/HIA_LIST/COMBO/CLEAN_TRUE_', save_run, '.rds'))
 
 
