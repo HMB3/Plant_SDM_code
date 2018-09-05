@@ -12,6 +12,16 @@
 #########################################################################################################################
 
 
+## Check dimensions
+dim(SDM.DATA.ALL)
+length(unique(SDM.DATA.ALL$searchTaxon))
+length(unique(SDM.DATA.ALL$OBS))
+
+identical(head(SDM.DATA.ALL$OBS, 100), head(CLEAN.TRUE$OBS))
+identical(tail(SDM.DATA.ALL$OBS, 100), tail(CLEAN.TRUE$OBS))
+unique(SDM.DATA.ALL$SOURCE)
+
+
 #########################################################################################################################
 ## Create a tibble to supply to coordinate cleaner
 SDM.COORDS  <- SDM.DATA.ALL %>% 
@@ -30,6 +40,7 @@ SDM.COORDS  <- SDM.DATA.ALL %>%
 
 
 ## Check
+dim(SDM.COORDS)
 head(SDM.COORDS)
 class(SDM.COORDS)
 summary(SDM.COORDS$decimallongitude)
@@ -37,7 +48,7 @@ identical(SDM.COORDS$index, SDM.COORDS$OBS)
 
 
 #########################################################################################################################
-## Check how big the table is
+## Check how many records each species has
 COMBO.LUT <- SDM.COORDS %>% 
   as.data.frame() %>%
   select(species) %>%
@@ -46,9 +57,10 @@ COMBO.LUT <- SDM.COORDS %>%
 COMBO.LUT <- setDT(COMBO.LUT, keep.rownames = TRUE)[]
 names(COMBO.LUT) = c("species", "FREQUENCY")
 COMBO.LUT = COMBO.LUT[with(COMBO.LUT, rev(order(FREQUENCY))), ] 
-View(COMBO.LUT)
 
 
+## Watch out here - this sorting could cause problems for the order of the data frame once it's stitched back together
+## If we we use species to join the data back together, will it preserve the order? 
 LUT.100K = as.character(subset(COMBO.LUT, FREQUENCY < 65000)$species)
 LUT.100K = LUT.100K [order(LUT.100K)]
 length(LUT.100K)
@@ -82,7 +94,7 @@ SPAT.OUT <- LUT.100K %>%  ## unique(TIB.GBIF$species)
     ## Now add attache column for species, and the flag for each record
     #d = data.frame(searchTaxon = x, SPAT_OUT = sp.flag)
     d = cbind(searchTaxon = x,
-              SPAT_OUT = sp.flag, f)[c("searchTaxon", "SPAT_OUT")]
+              SPAT_OUT = sp.flag, f)[c("searchTaxon", "SPAT_OUT", "index", "OBS")]
     
     ## Remeber to explicitly return the df at the end of loop, so we can bind
     return(d)
@@ -94,10 +106,11 @@ SPAT.OUT <- LUT.100K %>%  ## unique(TIB.GBIF$species)
 
 
 ## These settings produce too many outliers. Try changing the settings..................................................
-identical(dim(SPAT.OUT)[1], dim(SDM.COORDS)[1])
-unique(SPAT.OUT$searchTaxon)
+identical(SPAT.OUT$index, SPAT.OUT$OBS)
+length(unique(SPAT.OUT$searchTaxon))
 head(SPAT.OUT)
 saveRDS(SPAT.OUT, paste0('data/base/HIA_LIST/COMBO/ALA_GBIF_SPAT_OUT_', save_run, '.rds'))
+SPAT.OUT = readRDS('data/base/HIA_LIST/COMBO/ALA_GBIF_SPAT_OUT_OLD_ALA.rds')
 
 
 
@@ -109,29 +122,21 @@ saveRDS(SPAT.OUT, paste0('data/base/HIA_LIST/COMBO/ALA_GBIF_SPAT_OUT_', save_run
 
 
 #########################################################################################################################
-## Join data :: exclude the decimal lat/long, check the length 
+## Join data :: Best to use the 'OBS' column here
 identical(dim(SDM.COORDS)[1],dim(SPAT.OUT)[1])#;length(GBIF.SPAT.OUT)
-names(SPAT.OUT)[1] = c("coord_spp")
-identical(SDM.COORDS$searchTaxon, SPAT.OUT$coord_spp)                                                  ## order matches
-
-
-#########################################################################################################################
-## Is the species column the same as the searchTaxon column?
-SPAT.FLAG = merge(SDM.COORDS, SPAT.OUT, by = "searchTaxon")
+SPAT.FLAG = merge(as.data.frame(SDM.DATA.ALL), SPAT.OUT)
 dim(SPAT.FLAG)
-summary(SPAT.FLAG)
-identical(SPAT.FLAG$searchTaxon, SPAT.FLAG$coord_spp)                                                    ## order matches
+length(unique(SPAT.OUT$searchTaxon))
 
 
-## Not sure why the inverse did not work :: get only the records which were not flagged as being dodgy.
-dim(subset(SPAT.FLAG, summary == "TRUE"))         #  | GBIF.SPAT.OUT == "TRUE"))
-SPAT.TRUE = subset(SPAT.FLAG, summary == "TRUE")  # & GBIF.SPAT.OUT == "TRUE")
-unique(SPAT.FLAG$SPAT_OUT)   
+## Just get the records that were not spatial outliers
+SDM.SPAT.ALL = subset(SPAT.FLAG, SPAT_OUT == "TRUE")  # & GBIF.SPAT.OUT == "TRUE")
+unique(SDM.SPAT.TRUE$SPAT_OUT)   
   
 
 ## What percentage of records are retained?
-length(unique(SPAT.TRUE$searchTaxon))
-message(round(dim(SPAT.TRUE)[1]/dim(SDM.COORDS)[1]*100, 2), " % records retained")                                               
+length(unique(SDM.SPAT.ALL$searchTaxon))
+message(round(dim(SDM.SPAT.ALL)[1]/dim(SPAT.FLAG)[1]*100, 2), " % records retained")                                               
 
 
 ## Save the spatial flags
@@ -147,11 +152,12 @@ saveRDS(SPAT.FLAG, paste0('data/base/HIA_LIST/COMBO/SPAT_FLAG_', save_run, '.rds
 
 
 ## Rename the fields so that ArcMap can handle them
-SPAT.OUT.CHECK     = dplyr::rename(SPAT.FLAG, 
-                                   TAXON     = searchTaxon,
-                                   LAT       = lat,
-                                   LON       = lon)
-names(SPAT.OUT.CHECK)
+SPAT.OUT.CHECK     = SPAT.FLAG %>% 
+  select(OBS, searchTaxon, lat, lon, SOURCE, SPAT_OUT, index) %>%
+  dplyr::rename(TAXON     = searchTaxon,
+                LAT       = lat,
+                LON       = lon)
+  names(SPAT.OUT.CHECK)
 
 
 #########################################################################################################################
@@ -165,7 +171,18 @@ SPAT.OUT.SPDF    = SpatialPointsDataFrame(coords      = SPAT.OUT.CHECK[c("LON", 
 writeOGR(obj    = SPAT.OUT.SPDF, 
          dsn    = "./data/base/HIA_LIST/COMBO", 
          layer  = paste0('SPAT_OUT_CHECK_', save_run),
-         driver = "ESRI Shapefile")
+         driver = "ESRI Shapefile", overwrite_layer = TRUE)
+
+
+## Convert back to format for SDMs
+SDM.SPAT.ALL    = SpatialPointsDataFrame(coords       = SDM.SPAT.ALL[c("lon", "lat")],
+                                          data        = SDM.SPAT.ALL,
+                                          proj4string = CRS('+init=ESRI:54009'))
+
+
+coordinates(SDM.SPAT.TRUE)    <- ~lon+lat
+proj4string(COMBO.RASTER.ALL)    <- '+init=epsg:4326'
+COMBO.RASTER.ALL                 <- spTransform(COMBO.RASTER.ALL, CRS('+init=ESRI:54009'))
 
 
 

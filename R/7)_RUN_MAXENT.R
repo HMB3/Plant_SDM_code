@@ -35,6 +35,7 @@ rasterTmpFile()
 ## Create a table with all the variables needed for SDM analysis
 dim(CLEAN.TRUE)
 length(unique(CLEAN.TRUE$searchTaxon))
+length(unique(CLEAN.TRUE$OBS))
 unique(CLEAN.TRUE$SOURCE)
 
 
@@ -82,16 +83,21 @@ class(Koppen_1975)
 xres(template.raster);yres(template.raster)
 
 
-## Save the SDM dataset here............................................................................................
-#saveRDS(SDM.DATA.ALL, 'data/base/HIA_LIST/COMBO/SDM_DATA_INV_HIA.rds')
-
-
 
 
 
 #########################################################################################################################
 ## 2). TRY CLEANING FILTERED DATA FOR SPATIAL OUTLIERS
 #########################################################################################################################
+
+
+##
+#source('./R/CLEAN_SPATIAL_OUTLIER.R')
+
+
+## Add data with clean column attached
+class(SDM.SPAT.ALL)
+projection(SDM.SPAT.ALL)
 
 
 
@@ -113,7 +119,7 @@ length(unique(background$searchTaxon));dim(background)
 names(background)
 names(SDM.DATA.ALL)
 intersect(sort(unique(SDM.DATA.ALL$searchTaxon)), sort(unique(background$searchTaxon)))
-SDM.DATA.ALL = rbind(SDM.DATA.ALL, background)
+SDM.SPAT.ALL = bind_rows(SDM.SPAT.ALL, background)
 
 
 #########################################################################################################################
@@ -156,8 +162,8 @@ identical(names(env.grids.current),sdm.predictors)
 
 #########################################################################################################################
 ## Run Maxent using a random selection of background points. 
-length(unique(SDM.DATA.ALL$searchTaxon))
-projection(template.raster);projection(SDM.DATA.ALL);projection(Koppen_1975)
+length(unique(SDM.SPAT.ALL$searchTaxon))
+projection(template.raster);projection(SDM.SPAT.ALL);projection(Koppen_1975)
 
 
 ## Loop over all the species
@@ -173,14 +179,14 @@ lapply(GBIF.spp, function(spp){
   }
   
   ## Print the taxa being processed to screen
-  if(spp %in% SDM.DATA.ALL$searchTaxon) {
+  if(spp %in% SDM.SPAT.ALL$searchTaxon) {
     message('Doing ', spp) 
     
     ## Subset the records to only the taxa being processed
-    occurrence <- subset(SDM.DATA.ALL, searchTaxon == spp)
+    occurrence <- subset(SDM.SPAT.ALL, searchTaxon == spp)
     
     ## Now get the background points. These can come from any spp, other than the modelled species.
-    background <- subset(SDM.DATA.ALL, searchTaxon != spp)
+    background <- subset(SDM.SPAT.ALL, searchTaxon != spp)
     
     ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
     tryCatch(
