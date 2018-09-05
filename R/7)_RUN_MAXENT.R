@@ -22,104 +22,37 @@
 #########################################################################################################################
 ## Load packages, functions and data
 #source('./R/HIA_LIST_MATCHING.R')
-#CLEAN.TRUE = readRDS('data/base/HIA_LIST/COMBO/CLEAN_TRUE_OLD_ALA.rds')
+#SDM.SPAT.ALL = readRDS('data/base/HIA_LIST/COMBO/SDM_SPAT_ALL_OLD_ALA.rds')
+
+
+## Set global species variables here : species lists, and saving directories
+GBIF.spp      = intersect(TPL.SPP, ala.download) # workaround for ALA problem use TPL checked species
+save_run      = "OLD_ALA"
+map_spp_list  = gsub(" ", "_", GBIF.spp) #TPL_SPP
+
+GBIF_path     = "./data/base/HIA_LIST/GBIF/OCC_SEARCH/"
+ALA_path      = "./data/base/HIA_LIST/ALA/SPECIES/"
+
+save_dir      = 'output/maxent/SUA_TREES_OLD_ALA/'
+out_dir       = 'output/maxent/SUA_TREES_OLD_ALA/'
+maxent_path   = 'output/maxent/SUA_TREES_OLD_ALA/'
 rasterTmpFile()
 
 
+
+
+
 #########################################################################################################################
-## 1). PREPARE DATA TABLE FOR SDM ANALYSIS
+## 1). PREPARE VARIABLES FOR SDM ANALYSES
 #########################################################################################################################
 
 
 #########################################################################################################################
 ## Create a table with all the variables needed for SDM analysis
-dim(CLEAN.TRUE)
-length(unique(CLEAN.TRUE$searchTaxon))
-length(unique(CLEAN.TRUE$OBS))
-unique(CLEAN.TRUE$SOURCE)
-
-
-## Select only the columns needed
-COMBO.RASTER.ALL  <- dplyr::select(CLEAN.TRUE, searchTaxon, lon, lat, SOURCE, OBS,
-                                   
-                                   Annual_mean_temp,     Mean_diurnal_range,  Isothermality,     Temp_seasonality, 
-                                   Max_temp_warm_month,  Min_temp_cold_month, Temp_annual_range, Mean_temp_wet_qu,
-                                   Mean_temp_dry_qu,     Mean_temp_warm_qu,   Mean_temp_cold_qu, 
-                                   
-                                   Annual_precip,        Precip_wet_month,    Precip_dry_month,  Precip_seasonality,   
-                                   Precip_wet_qu,        Precip_dry_qu,       Precip_warm_qu,    Precip_col_qu)
-
-
-#########################################################################################################################
-## Create a spatial points object, and change to a projected system to calculate distance more accurately 
-coordinates(COMBO.RASTER.ALL)    <- ~lon+lat
-proj4string(COMBO.RASTER.ALL)    <- '+init=epsg:4326'
-COMBO.RASTER.ALL                 <- spTransform(COMBO.RASTER.ALL, CRS('+init=ESRI:54009'))
-
-
-## Now split using the data using the species column, and get the unique occurrence cells
-COMBO.RASTER.SPLIT.ALL <- split(COMBO.RASTER.ALL, COMBO.RASTER.ALL$searchTaxon)
-occurrence_cells_all   <- lapply(COMBO.RASTER.SPLIT.ALL, function(x) cellFromXY(template.raster, x))
-length(occurrence_cells_all)   ## this is a list of dataframes, where the number of rows for each being the species table
-
-
-#########################################################################################################################
-## Now get just one record within each 10*10km cell.
-SDM.DATA.ALL <- mapply(function(x, cells) {
-  x[!duplicated(cells), ]
-}, COMBO.RASTER.SPLIT.ALL, occurrence_cells_all, SIMPLIFY = FALSE) %>% do.call(rbind, .)
-
-
-## Check to see we have 19 variables + the species for the standard predictors, and 19 for all predictors
-## Check data :: template, data table and species 
-dim(template.raster)
-dim(SDM.DATA.ALL)
-names(SDM.DATA.ALL)
-length(unique(SDM.DATA.ALL$searchTaxon))
-class(Koppen_1975)
-
-
-## What resolution is the template raster at?
-xres(template.raster);yres(template.raster)
-
-
-
-
-
-#########################################################################################################################
-## 2). TRY CLEANING FILTERED DATA FOR SPATIAL OUTLIERS
-#########################################################################################################################
-
-
-##
-#source('./R/CLEAN_SPATIAL_OUTLIER.R')
-
-
-## Add data with clean column attached
-class(SDM.SPAT.ALL)
-projection(SDM.SPAT.ALL)
-
-
-
-
-
-#########################################################################################################################
-## 3). CREATE BACKGROUND POINTS AND VARIBALE NAMES
-#########################################################################################################################
-
-
-#########################################################################################################################
-## Add in random records from previously saved runs
-background = readRDS("./data/base/HIA_LIST/COMBO/SDM_DATA_CLEAN_052018.rds")
-background = background [!background$searchTaxon %in% GBIF.spp, ]               ## Don't add records for other species
-length(unique(background$searchTaxon));dim(background)
-
-
-## Now bind on the background points............................................................................................
-names(background)
-names(SDM.DATA.ALL)
-intersect(sort(unique(SDM.DATA.ALL$searchTaxon)), sort(unique(background$searchTaxon)))
-SDM.SPAT.ALL = bind_rows(SDM.SPAT.ALL, background)
+dim(SDM.SPAT.ALL)
+length(unique(SDM.SPAT.ALL$searchTaxon))
+length(unique(SDM.SPAT.ALL$OBS))
+unique(SDM.SPAT.ALL$SOURCE)
 
 
 #########################################################################################################################
@@ -323,7 +256,7 @@ lapply(GBIF.spp, function(spp){
 ## The last steps combining the models would be handy to have finished
 
 
-## 1). 100/200 tree spp that are commonly planted and traded, with sufficient spatial data to model robustly: done
+## 1). 400 tree spp that are commonly planted and traded, with sufficient spatial data to model robustly: done
 
 
 ## 2). Fix the taxonomy
@@ -335,7 +268,7 @@ lapply(GBIF.spp, function(spp){
      
 
 ## 4). Run modelling and mapping steps through Katana. To do this, we need a loop that processes one species at a time
-##      
+##     This means processing the data up to step 7, then running steps 7 and 8 through Katana 
      
 
 ## 4). Use more forgiving thresholds (10%) for all species: Done
