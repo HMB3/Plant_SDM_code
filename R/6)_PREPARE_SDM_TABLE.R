@@ -176,7 +176,7 @@ identical(SPAT.OUT$index, SPAT.OUT$OBS)
 length(unique(SPAT.OUT$searchTaxon))
 head(SPAT.OUT)
 saveRDS(SPAT.OUT, paste0('data/base/HIA_LIST/COMBO/ALA_GBIF_SPAT_OUT_', save_run, '.rds'))
-SPAT.OUT = readRDS('data/base/HIA_LIST/COMBO/ALA_GBIF_SPAT_OUT_OLD_ALA.rds')
+#SPAT.OUT = readRDS('data/base/HIA_LIST/COMBO/ALA_GBIF_SPAT_OUT_OLD_ALA.rds')
 
 
 
@@ -189,15 +189,23 @@ SPAT.OUT = readRDS('data/base/HIA_LIST/COMBO/ALA_GBIF_SPAT_OUT_OLD_ALA.rds')
 
 #########################################################################################################################
 ## Join data :: Best to use the 'OBS' column here
-identical(dim(SDM.COORDS)[1],dim(SPAT.OUT)[1])
-SPAT.FLAG = merge(as.data.frame(SDM.DATA.ALL), SPAT.OUT)
+intersect(names(SDM.DATA.ALL), names(SPAT.OUT))
+SPAT.FLAG = merge(as.data.frame(SDM.DATA.ALL), SPAT.OUT, all = TRUE)
+
+
+identical(dim(SDM.COORDS)[1],dim(SPAT.FLAG)[1])
 dim(SPAT.FLAG)
 length(unique(SPAT.OUT$searchTaxon))
+unique(SPAT.OUT$SPAT_OUT)
+
+
+## Save the flags before subsetting
+saveRDS(SPAT.FLAG, paste0('data/base/HIA_LIST/COMBO/SPAT_FLAG_', save_run, '.rds'))
 
 
 ## Just get the records that were not spatial outliers
 SDM.SPAT.ALL = subset(SPAT.FLAG, SPAT_OUT == "TRUE")  # & GBIF.SPAT.OUT == "TRUE")
-unique(SDM.SPAT.TRUE$SPAT_OUT)   
+unique(SDM.SPAT.ALL$SPAT_OUT)   
 
 
 ## What percentage of records are retained?
@@ -238,8 +246,9 @@ writeOGR(obj    = SPAT.OUT.SPDF,
 
 ## Convert back to format for SDMs
 SDM.SPAT.ALL    = SpatialPointsDataFrame(coords       = SDM.SPAT.ALL[c("lon", "lat")],
-                                         data        = SDM.SPAT.ALL,
-                                         proj4string = CRS('+init=ESRI:54009'))
+                                         data         = SDM.SPAT.ALL,
+                                         proj4string  = CRS('+init=ESRI:54009'))
+projection(SDM.SPAT.ALL)
 
 
 
@@ -260,14 +269,22 @@ length(unique(background$searchTaxon));dim(background)
 ## Make the columns match......................................................
 names(background)
 names(SDM.SPAT.ALL)
-intersect(sort(unique(SDM.SPAT.ALL$searchTaxon)), sort(unique(background$searchTaxon)))
+setdiff(names(SDM.SPAT.ALL), names(background))
 
-background$SOURCE = "BG"
-background$SOURCE = "BG"
+background$OBS      = "BG"
+background$SOURCE   = "BG"
+background$SPAT_OUT = "BG"
+background$index    = "BG"
+
+
+drops <- c("lon", "lat") # list of col names
+SDM.SPAT.ALL <- SDM.SPAT.ALL[,!(names(SDM.SPAT.ALL) %in% drops)]
+setdiff(names(SDM.SPAT.ALL), names(background))
 
 
 ## Now bind on the background points............................................................................................
-SDM.SPAT.ALL = bind_rows(SDM.SPAT.ALL, background)
+projection(SDM.SPAT.ALL);projection(background)
+SDM.SPAT.ALL = rbind(SDM.SPAT.ALL, background)
 
 
 
