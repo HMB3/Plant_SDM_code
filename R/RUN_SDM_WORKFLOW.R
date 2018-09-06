@@ -22,15 +22,15 @@ source('./R/HIA_TREE_LIST.R')
 
 ## Set global species variables here : species lists, and saving directories
 GBIF.spp      = intersect(TPL.SPP, ala.download) # workaround for ALA problem use TPL checked species
-save_run      = "OLD_ALA"
+save_run      = "OLD_ALA_800_SPAT"
 map_spp_list  = gsub(" ", "_", GBIF.spp) #TPL_SPP
 
 GBIF_path     = "./data/base/HIA_LIST/GBIF/OCC_SEARCH/"
 ALA_path      = "./data/base/HIA_LIST/ALA/SPECIES/"
 
-save_dir      = 'output/maxent/SUA_TREES_OLD_ALA/'
-out_dir       = 'output/maxent/SUA_TREES_OLD_ALA/'
-maxent_path   = 'output/maxent/SUA_TREES_OLD_ALA/'
+save_dir      = 'output/maxent/SUA_TREES_OLD_ALA'
+out_dir       = 'output/maxent/SUA_TREES_OLD_ALA'
+maxent_path   = 'output/maxent/SUA_TREES_OLD_ALA'
 
 
 #########################################################################################################################

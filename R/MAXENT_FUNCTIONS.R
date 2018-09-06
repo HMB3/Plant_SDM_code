@@ -545,7 +545,7 @@ FIT_MAXENT_TARG_BG <- function(occ,
         Koppen_crop <- crop(Koppen, occ, snap = 'out')
         
         ## Only extract and match those cells that overlap between koppen_cropp, occ and bg 
-        zones               <- extract(Koppen_crop, occ)
+        zones               <- raster::extract(Koppen_crop, occ)
         cells_in_zones_crop <- Which(Koppen_crop %in% zones, cells = TRUE)
         cells_in_zones      <- cellFromXY(Koppen, xyFromCell(Koppen_crop, cells_in_zones_crop))
         bg_cells            <- intersect(bg_cells, cells_in_zones)

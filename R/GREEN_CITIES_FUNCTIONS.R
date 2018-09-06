@@ -147,6 +147,15 @@ panel.hist <- function(x, ...)
 }
 
 
+Mode <- function(x) {
+  
+  ux <- unique(x)
+  ux[which.max(tabulate(match(x, ux)))]
+  
+}
+
+
+
 
 
 #########################################################################################################################
@@ -1088,11 +1097,10 @@ niche_estimate = function (DF,
   
   ## Also, need to figure out how to make the aggregating column generic (species, genus, etc.)
   summary = ddply(DF, 
-                  .(searchTaxon),               ## currently grouping column only works hard-wired
+                  .(searchTaxon),           ## currently grouping column only works hard-wired
                   .fun = function (xx, col) {
                     
-                    ## Get the same summaries that Stu and Rachael use for 'niche finder'
-                    #n        = length(xx[[col]])
+                    ## All the different columns
                     min      = min(xx[[col]])
                     max      = max(xx[[col]])
                     
@@ -1103,12 +1111,13 @@ niche_estimate = function (DF,
                     
                     median   = median(xx[[col]])
                     mean     = mean(xx[[col]])
+                    mode     = Mode(xx[[col]])
                     range    = max - min
                     q95_q05  = (q95 - q05)
                     q98_q02  = (q98 - q02)
                     
                     ## Then crunch them together
-                    c(min, max, median, mean, range, q05, q95,  q95_q05, q98_q02)
+                    c(min, max, median, mode, mean, range, q05, q95,  q95_q05, q98_q02)
                     
                   },
                   
@@ -1123,6 +1132,7 @@ niche_estimate = function (DF,
                         paste0(colname,  "_min"),
                         paste0(colname,  "_max"),
                         paste0(colname,  "_median"),
+                        paste0(colname,  "_mode"),
                         paste0(colname,  "_mean"),
                         paste0(colname,  "_range"),
                         paste0(colname,  "_q05"),
@@ -1578,8 +1588,8 @@ Print_global_histogram = function (taxa.list, DF, env.var.1, env.col.1, env.unit
     
     ## Create vector for the environmental dimenson, and set min and max for plotting
     env.1 = DF[ which(DF$searchTaxon == taxa.n), ][[env.var.1]]
-    min.1 = min(env.1)
-    max.1 = max(env.1)
+    min.1 = min(env.1, na.rm = TRUE)
+    max.1 = max(env.1, na.rm = TRUE)
     
     ## now create the boxplot
     boxplot(env.1, horizontal = TRUE,  outline = TRUE, 
@@ -1597,20 +1607,22 @@ Print_global_histogram = function (taxa.list, DF, env.var.1, env.col.1, env.unit
     par(mar = c(5, 1.6, 1.6, 1.6),
         oma = c(0.5, 0.5, 0.5, 0.5)) 
     
-    ## set min and max
+    ## Set min and max
     env.2 = DF[ which(DF$searchTaxon == taxa.n), ][[env.var.2]]
-    min.2  = min(env.2)
-    max.2  = max(env.2)
+    min.2  = min(env.2, na.rm = TRUE)
+    max.2  = max(env.2, na.rm = TRUE)
     
-    ## now create the boxplot
+    ## Now create the boxplot
     boxplot(env.2, horizontal = TRUE,  outline = TRUE, 
-            ylim  = c(min.2, max.2), frame = FALSE, 
+            #ylim  = c(min.2, max.2), 
+            frame = FALSE, 
             col = env.col.2, axes = FALSE)
     
-    ## and the histogram
-    hist(env.2, xlim = c(min.2, max.2),
+    ## And the histogram
+    hist(env.2, 
+         #xlim = c(min.2, max.2),
          breaks = 50, border = NA, col = env.col.2, main = taxa.n,
-         xlab = paste0("Worldclim ", env.var.2, " ", env.units.2, sep = " "))
+         xlab = paste0("AWAP ", env.var.2, " ", env.units.2, sep = " "))
     
   }
   
@@ -1627,7 +1639,8 @@ histogram_GBIF_records = function (DF, taxa.list, env.var.1, env.col.1, env.unit
   for (taxa.n in taxa.list) {
     
     ## First, check if the file exists
-    file  = paste("./output/figures/niche_summary/histograms/", taxa.n, "_", env.var.1, "_world_GBIF_histo.png", sep = "")
+    file  = paste("./output/figures/Traits_v_glasshouse/", 
+                  taxa.n, "_", env.var.1, "_world_GBIF_histo.png", sep = "")
     
     ## If it's already downloaded, skip
     if (file.exists (file)) {
@@ -1648,11 +1661,13 @@ histogram_GBIF_records = function (DF, taxa.list, env.var.1, env.col.1, env.unit
     
     ## create vector for the environmental dimenson, and set min and max for plotting
     env.1 = DF[ which(DF$searchTaxon == taxa.n), ][[env.var.1]]
-    min.1 = min(env.1)
-    max.1 = max(env.1)
+    min.1 = min(env.1, na.rm = TRUE)
+    max.1 = max(env.1, na.rm = TRUE)
     
     ## now create the boxplot
-    boxplot(env.1, horizontal = TRUE,  outline = TRUE, ylim  = c(min.1, max.1), frame = FALSE, col = env.col.1, axes = FALSE)
+    boxplot(env.1, horizontal = TRUE,  outline = TRUE, 
+            ylim  = c(min.1, max.1), 
+            frame = FALSE, col = env.col.1, axes = FALSE)
     
     ## and the histogram
     hist(env.1, xlim = c(min.1, max.1),
@@ -1667,21 +1682,26 @@ histogram_GBIF_records = function (DF, taxa.list, env.var.1, env.col.1, env.unit
     
     ## set min and max
     env.2 = DF[ which(DF$searchTaxon == taxa.n), ][[env.var.2]]
-    min.2  = min(env.2)
-    max.2  = max(env.2)
+    min.2  = min(env.2, na.rm = TRUE)
+    max.2  = max(env.2, na.rm = TRUE)
     
     ## now create the boxplot
-    boxplot(env.2, horizontal = TRUE,  outline = TRUE, ylim  = c(min.2, max.2), frame = FALSE, col = env.col.2, axes = FALSE)
+    boxplot(env.2, horizontal = TRUE,  outline = TRUE, 
+            #ylim  = c(min.2, max.2), 
+            frame = FALSE, col = env.col.2, axes = FALSE)
     
     ## and the histogram
-    hist(env.2, xlim = c(min.2, max.2),
+    hist(env.2, 
+         #xlim = c(min.2, max.2),
          breaks = 50, border = NA, col = env.col.2, main = taxa.n,
          xlab = paste0("Worldclim ", env.var.2, " ", env.units.2, sep = " "))
     
     #################################
     ## 2). Save env.1 histogram to file
+    message("Saving histogram for ", taxa.n)
     CairoPNG(width  = 16180, height = 12000,
-             file   = paste("./output/Figures/niche_summary/histograms/", taxa.n, "_", env.var.1, "_world_GBIF_histo.png", sep = ""),
+             file   = paste("./output/figures/Traits_v_glasshouse/", 
+                            taxa.n, "_", env.var.1, "_world_GBIF_histo.png", sep = ""),
              canvas = "white", bg = "white", units = "px", dpi = 600)
     
     ## create layout
@@ -1692,7 +1712,9 @@ histogram_GBIF_records = function (DF, taxa.list, env.var.1, env.col.1, env.unit
         font.lab = 2, lwd = 2)
     
     ## print the boxplot
-    boxplot(env.1, horizontal = TRUE,  outline = TRUE, ylim  = c(min.1, max.1), frame = FALSE, col = env.col.1, axes = FALSE)
+    boxplot(env.1, horizontal = TRUE,  outline = TRUE, 
+            ylim  = c(min.1, max.1), 
+            frame = FALSE, col = env.col.1, axes = FALSE)
     
     ## and print the
     hist(env.1, xlim = c(min.1, max.1),
@@ -1706,7 +1728,8 @@ histogram_GBIF_records = function (DF, taxa.list, env.var.1, env.col.1, env.unit
     #################################
     ## 3). Save env.2 histogram to file
     CairoPNG(width  = 16180, height = 12000,
-             file   = paste("./output/Figures/niche_summary/histograms/", taxa.n, "_", env.var.2, "_world_GBIF_histo.png", sep = ""),
+             file   = paste("./output/figures/Traits_v_glasshouse/", 
+                            taxa.n, "_", env.var.2, "_world_GBIF_histo.png", sep = ""),
              canvas = "white", bg = "white", units = "px", dpi = 600)
     
     ## create layout
@@ -1717,13 +1740,17 @@ histogram_GBIF_records = function (DF, taxa.list, env.var.1, env.col.1, env.unit
         font.lab = 2, lwd = 2)
     
     ## print the boxplot
-    boxplot(env.2, horizontal = TRUE,  outline = TRUE, ylim  = c(min.2, max.2), frame = FALSE, col = env.col.2, axes = FALSE)
+    boxplot(env.2, horizontal = TRUE,  outline = TRUE, 
+            #ylim  = c(min.2, max.2), 
+            frame = FALSE, col = env.col.2, axes = FALSE)
     
     ## and print the
-    hist(env.2, xlim = c(min.2, max.2),
-         breaks = 50, border = NA, col = env.col.2, main = "",
-         xlab = paste0(taxa.n, " ", env.var.2, " ", "(", env.units.2, ")", sep = ""), ylab = "",
-         cex.lab = 5, cex.axis = 4)
+    hist(env.2, 
+         #xlim = c(min.2, max.2),
+         breaks = 50, border = NA, 
+         col = env.col.2, main = "",
+         xlab = paste0(taxa.n, " ", env.var.2, " ", "(", env.units.2, ")", sep = ""), 
+         ylab = "", cex.lab = 5, cex.axis = 4)
     
     ## finsh the device
     dev.off()

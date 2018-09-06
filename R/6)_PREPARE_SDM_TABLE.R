@@ -154,7 +154,7 @@ SPAT.OUT <- LUT.100K %>%  ## unique(TIB.GBIF$species)
                        species = "species",
                        method  = "distance",
                        #mltpl   = 5,
-                       tdi     = 300,
+                       tdi     = 800,
                        value   = "flags")
     
     ## Now add attache column for species, and the flag for each record
@@ -175,6 +175,7 @@ SPAT.OUT <- LUT.100K %>%  ## unique(TIB.GBIF$species)
 identical(SPAT.OUT$index, SPAT.OUT$OBS)
 length(unique(SPAT.OUT$searchTaxon))
 head(SPAT.OUT)
+table(SPAT.OUT$SPAT_OUT)
 saveRDS(SPAT.OUT, paste0('data/base/HIA_LIST/COMBO/ALA_GBIF_SPAT_OUT_', save_run, '.rds'))
 #SPAT.OUT = readRDS('data/base/HIA_LIST/COMBO/ALA_GBIF_SPAT_OUT_OLD_ALA.rds')
 
@@ -187,16 +188,26 @@ saveRDS(SPAT.OUT, paste0('data/base/HIA_LIST/COMBO/ALA_GBIF_SPAT_OUT_', save_run
 #########################################################################################################################
 
 
+## Check the species which were not flagged as having spatial outliers are not missing by OUT = TRUE
+
+
 #########################################################################################################################
 ## Join data :: Best to use the 'OBS' column here
+## Not all species can be processed
 intersect(names(SDM.DATA.ALL), names(SPAT.OUT))
 SPAT.FLAG = merge(as.data.frame(SDM.DATA.ALL), SPAT.OUT, all = TRUE)
+SPAT.FLAG$SPAT_OUT <- ifelse(is.na(SPAT.FLAG$SPAT_OUT), 'NOT_RUN', SPAT.FLAG$SPAT_OUT)
+
+
+table(SPAT.FLAG$SPAT_OUT)
+round(with(SPAT.FLAG, table(SPAT_OUT)/sum(table(SPAT_OUT))*100), 2)
 
 
 identical(dim(SDM.COORDS)[1],dim(SPAT.FLAG)[1])
 dim(SPAT.FLAG)
 length(unique(SPAT.OUT$searchTaxon))
 unique(SPAT.OUT$SPAT_OUT)
+unique(SPAT.FLAG$SOURCE)
 
 
 ## Save the flags before subsetting
@@ -204,7 +215,7 @@ saveRDS(SPAT.FLAG, paste0('data/base/HIA_LIST/COMBO/SPAT_FLAG_', save_run, '.rds
 
 
 ## Just get the records that were not spatial outliers
-SDM.SPAT.ALL = subset(SPAT.FLAG, SPAT_OUT == "TRUE")  # & GBIF.SPAT.OUT == "TRUE")
+SDM.SPAT.ALL = subset(SPAT.FLAG, SPAT_OUT == "TRUE" | SPAT_OUT == "NOT_RUN")  # & GBIF.SPAT.OUT == "TRUE")
 unique(SDM.SPAT.ALL$SPAT_OUT)   
 
 
@@ -264,6 +275,7 @@ projection(SDM.SPAT.ALL)
 background = readRDS("./data/base/HIA_LIST/COMBO/SDM_DATA_CLEAN_052018.rds")
 background = background [!background$searchTaxon %in% GBIF.spp, ]               ## Don't add records for other species
 length(unique(background$searchTaxon));dim(background)
+intersect(unique(background$searchTaxon), GBIF.spp)
 
 
 ## Make the columns match......................................................
@@ -287,10 +299,12 @@ projection(SDM.SPAT.ALL);projection(background)
 SDM.SPAT.ALL = rbind(SDM.SPAT.ALL, background)
 
 
-
 #########################################################################################################################
 ## Save the final SDM dataset
 saveRDS(SDM.SPAT.ALL, paste0('data/base/HIA_LIST/COMBO/SDM_SPAT_ALL_', save_run, '.rds'))
+
+
+
 
 
 

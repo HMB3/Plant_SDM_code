@@ -21,25 +21,8 @@
 
 #########################################################################################################################
 ## Load packages, functions and data
-#source('./R/HIA_LIST_MATCHING.R')
-#SDM.SPAT.ALL = readRDS('data/base/HIA_LIST/COMBO/SDM_SPAT_ALL_OLD_ALA.rds')
-
-
-## Set global species variables here : species lists, and saving directories
-GBIF.spp      = intersect(TPL.SPP, ala.download) # workaround for ALA problem use TPL checked species
-save_run      = "OLD_ALA"
-map_spp_list  = gsub(" ", "_", GBIF.spp) #TPL_SPP
-
-GBIF_path     = "./data/base/HIA_LIST/GBIF/OCC_SEARCH/"
-ALA_path      = "./data/base/HIA_LIST/ALA/SPECIES/"
-
-save_dir      = 'output/maxent/SUA_TREES_OLD_ALA/'
-out_dir       = 'output/maxent/SUA_TREES_OLD_ALA/'
-maxent_path   = 'output/maxent/SUA_TREES_OLD_ALA/'
+SDM.SPAT.ALL = readRDS('data/base/HIA_LIST/COMBO/SDM_SPAT_ALL_OLD_ALA.rds')
 rasterTmpFile()
-
-
-
 
 
 #########################################################################################################################
@@ -48,7 +31,7 @@ rasterTmpFile()
 
 
 #########################################################################################################################
-## Create a table with all the variables needed for SDM analysis
+## Check the SDM table
 dim(SDM.SPAT.ALL)
 length(unique(SDM.SPAT.ALL$searchTaxon))
 length(unique(SDM.SPAT.ALL$OBS))
@@ -73,6 +56,7 @@ sdm.select     <- c("Annual_mean_temp", "Temp_seasonality",    "Max_temp_warm_mo
                     "Precip_wet_month", "Precip_dry_month")      
 
 
+#########################################################################################################################
 ## Create a raster stack of current environmental conditions if needed
 i  <- match(sdm.predictors, sdm.predictors)
 ff <- file.path('./data/base/worldclim/world/0.5/bio/current',
@@ -99,6 +83,7 @@ length(unique(SDM.SPAT.ALL$searchTaxon))
 projection(template.raster);projection(SDM.SPAT.ALL);projection(Koppen_1975)
 
 
+#########################################################################################################################
 ## Loop over all the species
 lapply(GBIF.spp, function(spp){ 
   
