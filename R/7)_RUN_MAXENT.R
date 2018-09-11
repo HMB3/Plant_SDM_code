@@ -87,6 +87,7 @@ identical(names(env.grids.current),sdm.predictors)
 ## Run Maxent using a random selection of background points. 
 length(unique(SDM.SPAT.ALL$searchTaxon))
 projection(template.raster);projection(SDM.SPAT.ALL);projection(Koppen_1975)
+GBIF.spp[28]
 
 
 #########################################################################################################################

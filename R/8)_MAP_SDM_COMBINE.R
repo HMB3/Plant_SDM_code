@@ -215,7 +215,7 @@ maxent.tables = list.files(path.set.var)
 maxent.tables = intersect(maxent.tables, map_spp_list)   
 maxent_path   = path.set.var                             
 length(maxent.tables)                                    ## Should match the number of taxa tested
-no_data %in% maxent.tables
+#no_data %in% maxent.tables
 
 
 ## Create a table of the results 
@@ -436,6 +436,11 @@ tail(SDM.RESULTS.DIR, 20);tail(map_spp, 20); tail(MAXENT.RESULTS, 20)[, c("searc
 
 
 
+## Save this as an object
+#save.image("MAPPING_DATA.RData")
+
+
+
 
 
 #########################################################################################################################
@@ -455,10 +460,10 @@ tail(SDM.RESULTS.DIR, 20);tail(map_spp, 20); tail(MAXENT.RESULTS, 20)[, c("searc
 
 
 ## To test it first species works 
-DIR        = SDM.RESULTS.DIR[1]
-species    = map_spp_list[1]
-thresh     = percent.10.log[1]
-percent    = percent.10.om[1]
+DIR        = SDM.RESULTS.DIR[28]
+species    = map_spp_list[28]
+thresh     = percent.10.log[28]
+percent    = percent.10.om[28]
 time_slice = 30
 area_occ   = 10
 
