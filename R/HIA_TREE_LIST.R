@@ -91,7 +91,8 @@
 p <- c('ff',    'things', 'raster',        'dismo',        'sp',           'latticeExtra', 'data.table', 
        'rgdal', 'rgeos',  'gdalUtils',     'rmaxent',      'readr',        'plyr',         'dplyr',        
        'tidyr', 'readr',  'rnaturalearth', 'rasterVis',    'RColorBrewer', 'latticeExtra', 'parallel',     
-       'taxonlookup',     'ALA4R',         'stringr',      'Taxonstand',   'CoordinateCleaner', 'gsubfn', 'PerformanceAnalytics')
+       'taxonlookup',     'ALA4R',         'stringr',      'Taxonstand',   'CoordinateCleaner', 'gsubfn', 'PerformanceAnalytics',
+       'rvest')
 
 
 ## Require packages
@@ -103,7 +104,7 @@ source('./R/GREEN_CITIES_FUNCTIONS.R')
 source('./R/MAXENT_FUNCTIONS.R')
 source('./R/MAPPING_FUNCTIONS.R')
 source('./R/HIA_CLEAN_MATCHING.R')
-rasterOptions(tmpdir = file.path('H:/green_cities_sdm/RTEMP')) 
+rasterOptions(tmpdir = file.path('/green_cities_sdm/RTEMP')) 
 
 
 
@@ -493,7 +494,7 @@ SPP.BIAS    = setdiff(SPP.BIAS, c("Banksia integrifolia", "Brachychiton acerifol
 SPP_BIAS      = gsub(" ", "_", SPP.BIAS)
 
 
-## Reverse the model list
+sessionInfo()## Reverse the model list
 TREE.HIA.REV = sort(TREE.HIA.SPP, decreasing = TRUE) 
 TREE.HIA.REV = sort(TREE.HIA.SPP, decreasing = TRUE) 
 

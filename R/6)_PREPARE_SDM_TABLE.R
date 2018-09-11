@@ -278,6 +278,7 @@ length(unique(background$searchTaxon));dim(background)
 intersect(unique(background$searchTaxon), GBIF.spp)
 
 
+#########################################################################################################################
 ## Make the columns match......................................................
 names(background)
 names(SDM.SPAT.ALL)

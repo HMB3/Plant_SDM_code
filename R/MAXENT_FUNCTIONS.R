@@ -431,333 +431,206 @@ FIT_MAXENT_TARG_BG <- function(occ,
   if(!file.exists(outdir)) stop('outdir does not exist :(', call. = FALSE)
   outdir_sp <- file.path(outdir, gsub(' ', '_', name))
   
-  # if(!exists('background_method') || (!background_method %in% c('random', 'targetgroup'))) 
-  #   stop('background_method must be "random" or "targetgroup"', call. = FALSE)
-  
-  # if(exists('Koppen')) {
-  #   if(extension(Koppen)=='.shp') {
-  #     readOGR(Koppen) 
-  #   } else raster(Koppen)
-  # }
-
   if(!missing('Koppen')) {
     if(!is(Koppen, 'RasterLayer'))
       stop('Koppen must be a RasterLayer, and should be in the same coordinate system as template.raster')  
   }
   
-  # if(!is(Koppen, 'SpatialPolygons') & !is(Koppen, 'RasterLayer'))
-  #   stop('Koppen must be either a RasterLayer or a SpatialPolygons* object')
+  ## If the file doesn't exist, split out the features
+  if(!file.exists(outdir_sp)) dir.create(outdir_sp)
+  features <- unlist(strsplit(features, ''))
   
-  # if(is(Koppen, 'SpatialPolygons')) {
-  #   f_msk <- tempfile()
-  #   writeOGR(Koppen, dirname(f_msk), basename(f_msk), 'ESRI Shapefile')
-  #   Koppen_raster <- 
-  #     gdal_rasterize(extension(f_msk, 'shp'), 
-  #                    msk_rast <- tempfile(fileext = '.tif'),ot='Int32',
-  #                    tr=c(0.01, 0.01), a='GRIDCODE', 
-  #                    output_Raster=TRUE)
-  #   
-  #   if(proj4string(Koppen) != proj4string(template.raster)) {
-  #     gdalwarp(f_msk, f_msk2 <- tempfile(fileext = '.tif'))
-  #   }
-  # }
+  ## Make sure user features are allowed: don't run the model if the
+  ## features have been incorrectly specified in the main argument
+  ## l: linear
+  ## p: product
+  ## q: quadratic
+  ## h: hinge
+  ## t:
+  if(length(setdiff(features, c('l', 'p', 'q', 'h', 't'))) > 1)
+    stop("features must be a vector of one or more of ',
+         'l', 'p', 'q', 'h', and 't'.")
   
-  ## Also Skip species which have already been modelled: again, can this be made into an argument?
-  if(file.exists(outdir_sp)) {
+  ## Aggregate
+  b <- aggregate(gBuffer(occ, width = background_buffer_width, byid = TRUE))
+  
+  #####################################################################
+  ## Get unique cell numbers for species occurrences
+  ## Can we make the template raster 10km?
+  cells <- cellFromXY(template.raster, occ)
+  
+  ## Clean out duplicate cells and NAs (including points outside extent of predictor data)
+  ## Note this will get rid of a lot of duplicate records not filtered out by GBIF columns, etc.
+  not_dupes <- which(!duplicated(cells) & !is.na(cells))
+  occ       <- occ[not_dupes, ]
+  cells     <- cells[not_dupes]
+  message(nrow(occ), ' occurrence records (unique cells).')
+  
+  
+  #####################################################################
+  ## Skip species that have less than a minimum number of records: eg 20 species
+  if(nrow(occ) < min_n) {
     
-    print (paste ('Skip', name, ', Model results exist for this species'))
+    print (paste ('Fewer occurrence records than the number of cross-validation ',
+                  'replicates for species ', name,
+                  ' Model not fit for this species'))
     
   } else {
     
-    ## If the file doesn't exist, split out the features
-    if(!file.exists(outdir_sp)) dir.create(outdir_sp)
-    features <- unlist(strsplit(features, ''))
+    ## Subset the background records to the 200km buffered polygon
+    message(name, ' creating background cells')
+    system.time(o <- over(bg, b))
+    bg <- bg[which(!is.na(o)), ]
+    bg_cells <- cellFromXY(template.raster, bg)
     
-    ## Make sure user features are allowed: don't run the model if the
-    ## features have been incorrectly specified in the main argument
-    ## l: linear
-    ## p: product
-    ## q: quadratic
-    ## h: hinge
-    ## t:
-    if(length(setdiff(features, c('l', 'p', 'q', 'h', 't'))) > 1)
-      stop("features must be a vector of one or more of ',
-         'l', 'p', 'q', 'h', and 't'.")
+    ## Clean out duplicates and NAs (including points outside extent of predictor data)
+    bg_not_dupes <- which(!duplicated(bg_cells) & !is.na(bg_cells))
+    bg <- bg[bg_not_dupes, ]
+    bg_cells <- bg_cells[bg_not_dupes]
     
-    ## Aggregate
-    b <- aggregate(gBuffer(occ, width = background_buffer_width, byid = TRUE))
-    
-    #####################################################################
-    ## Get unique cell numbers for species occurrences
-    ## Can we make the template raster 10km?
-    cells <- cellFromXY(template.raster, occ)
-    
-    ## Clean out duplicate cells and NAs (including points outside extent of predictor data)
-    ## Note this will get rid of a lot of duplicate records not filtered out by GBIF columns, etc.
-    not_dupes <- which(!duplicated(cells) & !is.na(cells))
-    occ       <- occ[not_dupes, ]
-    cells     <- cells[not_dupes]
-    message(nrow(occ), ' occurrence records (unique cells).')
-    
-    
-    #####################################################################
-    ## Skip species that have less than a minimum number of records: eg 20 species
-    if(nrow(occ) < min_n) {
+    ## Find which of these cells fall within the Koppen-Geiger zones that the species occupies
+    if(!missing('Koppen')) {
       
-      print (paste ('Fewer occurrence records than the number of cross-validation ',
-                    'replicates for species ', name,
-                    ' Model not fit for this species'))
+      ## Crop the Kopppen raster to the extent of the occurrences, and snap it
+      message(name, ' intersecting background cells with Koppen zones')
+      Koppen_crop <- crop(Koppen, occ, snap = 'out')
+      
+      ## Only extract and match those cells that overlap between koppen_cropp, occ and bg 
+      zones               <- raster::extract(Koppen_crop, occ)
+      cells_in_zones_crop <- Which(Koppen_crop %in% zones, cells = TRUE)
+      cells_in_zones      <- cellFromXY(Koppen, xyFromCell(Koppen_crop, cells_in_zones_crop))
+      bg_cells            <- intersect(bg_cells, cells_in_zones)
+      i                   <- cellFromXY(template.raster, bg)
+      bg                  <- bg[which(i %in% bg_cells), ]
+      
+    }
+    
+    ## Reduce background sample if it's larger than max_bg_size
+    if (nrow(bg) > max_bg_size) {
+      
+      message(nrow(bg), ' target species background records, reduced to random ',
+              max_bg_size, '.')
+      
+      bg <- bg[sample(nrow(bg), max_bg_size), ]  ## Change this to use 
       
     } else {
       
-      #####################################################################
-      # If random background, then initial candidate bg cells are all cells
-      # within the buffer (Koppen applied subsequently if specified)
-      # if(background_method=='random') {
-      #   f_b <- tempfile()
-      #   b <- SpatialPolygonsDataFrame(b, data.frame(ID=seq_along(b)))
-      #   writeOGR(b, dirname(f_b), basename(f_b), 'ESRI Shapefile')
-      #   b_rast <- gdal_rasterize(
-      #     extension(f_b, 'shp'), tempfile(fileext = '.tif'),
-      #     te=c(bbox(template.raster)), tr=res(template.raster),
-      #     burn=1, ot='Byte', init=0, output_Raster = TRUE)
-      #   bg_cells <- Which(b_rast==1 & template.raster==1, cells=TRUE)
-      # } else {
-
-      ## Subset the background records to the 200km buffered polygon
-      message(name, ' creating background cells')
-      system.time(o <- over(bg, b))
-      bg <- bg[which(!is.na(o)), ]
-      bg_cells <- cellFromXY(template.raster, bg)
-      
-      ## Clean out duplicates and NAs (including points outside extent of predictor data)
-      bg_not_dupes <- which(!duplicated(bg_cells) & !is.na(bg_cells))
-      bg <- bg[bg_not_dupes, ]
-      bg_cells <- bg_cells[bg_not_dupes]
-      
-      # }
-
-      ## Find which of these cells fall within the Koppen-Geiger zones that the species occupies
-      if(!missing('Koppen')) {
-        
-        ## Crop the Kopppen raster to the extent of the occurrences, and snap it
-        message(name, ' intersecting background cells with Koppen zones')
-        Koppen_crop <- crop(Koppen, occ, snap = 'out')
-        
-        ## Only extract and match those cells that overlap between koppen_cropp, occ and bg 
-        zones               <- raster::extract(Koppen_crop, occ)
-        cells_in_zones_crop <- Which(Koppen_crop %in% zones, cells = TRUE)
-        cells_in_zones      <- cellFromXY(Koppen, xyFromCell(Koppen_crop, cells_in_zones_crop))
-        bg_cells            <- intersect(bg_cells, cells_in_zones)
-        i                   <- cellFromXY(template.raster, bg)
-        bg                  <- bg[which(i %in% bg_cells), ]
-        
-      }
-      
-      ## Reduce background sample if it's larger than max_bg_size
-      if (nrow(bg) > max_bg_size) {
-        
-        message(nrow(bg), ' target species background records, reduced to random ',
-                max_bg_size, '.')
-        
-        bg <- bg[sample(nrow(bg), max_bg_size), ]  ## Change this to use 
-        
-      } else {
-        
-        message(nrow(bg), ' target species background records.')
-        
-      }
-      
-      #####################################################################
-      ## Save occ and bg shapefiles objects for future reference
-      save_name = gsub(' ', '_', name)
-      if(shapefiles) {
-        
-        suppressWarnings({
-          
-          message(name, ' writing occ and bg shapefiles')
-          writeOGR(SpatialPolygonsDataFrame(b, data.frame(ID = seq_len(length(b)))),
-                   outdir_sp, paste0(save_name, '_bg_buffer'), 'ESRI Shapefile', overwrite_layer = TRUE)
-          writeOGR(bg,  outdir_sp, paste0(save_name, '_bg'),   'ESRI Shapefile', overwrite_layer = TRUE)
-          writeOGR(occ, outdir_sp, paste0(save_name, '_occ'),  'ESRI Shapefile', overwrite_layer = TRUE)
-          
-        })
-        
-      }
-      
-      ## Save the background and occurrence points as objects
-      saveRDS(bg,  file.path(outdir_sp, paste0(save_name, '_bg.rds')))
-      saveRDS(occ, file.path(outdir_sp, paste0(save_name, '_occ.rds')))
-      
-      #####################################################################
-      ## sdm.predictors: the s_ff object containing sdm.predictors to use in the model
-      ## Sample sdm.predictors at occurrence and background points
-      #####################################################################
-      swd_occ <- occ[, sdm.predictors]
-      saveRDS(swd_occ, file.path(outdir_sp, paste0(save_name,'_occ_swd.rds')))
-      
-      swd_bg <- bg[, sdm.predictors]
-      saveRDS(swd_bg, file.path(outdir_sp, paste0(save_name, '_bg_swd.rds')))
-      
-      ## Save shapefiles of the occurrence and background points
-      if(shapefiles) {
-        
-        writeOGR(swd_occ, outdir_sp,  paste0(save_name, '_occ_swd'), 'ESRI Shapefile', overwrite_layer = TRUE)
-        writeOGR(swd_bg,  outdir_sp,  paste0(save_name, '_bg_swd'),  'ESRI Shapefile', overwrite_layer = TRUE)
-        
-      }
-      
-      #####################################################################
-      ## Combine occurrence and background data
-      swd <- as.data.frame(rbind(swd_occ@data, swd_bg@data))
-      saveRDS(swd, file.path(outdir_sp, 'swd.rds'))
-      pa <- rep(1:0, c(nrow(swd_occ), nrow(swd_bg)))
-      
-      ## Now check the features arguments are correct
-      off <- setdiff(c('l', 'p', 'q', 't', 'h'), features)
-      
-      ## 
-      if(length(off) > 0) {
-        
-        off <- c(l = 'linear=false',    p = 'product=false', q = 'quadratic=false',
-                 t = 'threshold=false', h = 'hinge=false')[off]
-        
-      }
-      
-      off <- unname(off)
-      
-      if(replicates > 1) {
-        
-        if(missing(rep_args)) rep_args <- NULL
-        
-        ## Run MAXENT for x cross validation data splits of swd : so 5 replicaes, 0-4
-        ## EG xval = cross validation : "OUT_DIR\Acacia_boormanii\xval\maxent_0.html"
-        message(name, ' running xval maxent')
-        me_xval <- maxent(swd, pa, path = file.path(outdir_sp, 'xval'),
-                          args = c(paste0('replicates=', replicates),
-                                   'responsecurves=true',
-                                   'outputformat=logistic',
-                                   off, paste(names(rep_args), rep_args, sep = '=')))
-        
-      }
-      
-      ## Runs the full maxent model - presumably using all the data in swd
-      ## This uses DISMO to output standard files, but the names can't be altered
-      ## IE we really want to add the species name to the .csv file   
-      if(missing(full_args)) full_args <- NULL
-      message(name, ' running full maxent')
-      me_full <- maxent(swd, pa, path = file.path(outdir_sp, 'full'),
-                        args = c(off, paste(names(full_args), full_args, sep = '='),
-                                 'responsecurves=true',
-                                 'outputformat=logistic'))
-      
-      ## Save the full model?
-      saveRDS(list(me_xval = me_xval, me_full = me_full, swd = swd, pa = pa, 
-                   koppen_gridcode=as.character(Koppen_zones$Koppen[match(unique(zones), Koppen_zones$GRIDCODE)])), 
-              file.path(outdir_sp, 'full', 'maxent_fitted.rds'))
-      
-      #####################################################################
-      ## Save the chart corrleation file too for the variable set
-      png(sprintf('%s/%s/full/%s_%s.png', outdir,
-                  save_name, save_name, "predictor_correlation"),
-          3236, 2000, units = 'px', res = 300)
-      
-      ## set margins
-      par(mar   = c(3, 3, 5, 3),  ## b, l, t, r
-          #mgp   = c(9.8, 2.5, 0),
-          oma   = c(1.5, 1.5, 1.5, 1.5))
-      
-      ## Add detail to the response plot
-      chart.Correlation(swd_occ@data,
-                        histogram = TRUE, pch = 19) 
-      #cex.lab = 2, cex.axis = 1.5,
-      #main = paste0("Predictor corrleation matrix for ", spp))
-      
-      ## Finish the device
-      dev.off()
-      
-      ########################################################################################################################
-      ## Another .png for the global records: str(LAND$long)
-      # LAND       = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LAND_world.rds")
-      # occ_land   = occ %>% 
-      #   spTransform(CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
-      # bg_land   = bg %>% 
-      #   spTransform(CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
-      # 
-      # png(sprintf('%s/%s/full/%s_%s.png', outdir,
-      #             save_name, save_name, "global_records"),
-      #     16180, 10000, units = 'px', res = 600)
-      # 
-      # ## How do we locate bad records in the dataset after spotting them?
-      # plot(LAND, 
-      #      lwd = 0.5, asp = 1, axes = TRUE, cex.axis = 3.5,
-      #      col = 'darkolivegreen3', bg = 'lightblue', cex.lab = 3)
-      # 
-      # points(occ_land, pch = ".", cex = 3.5, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2, 
-      #        main = paste0("Global occurrences for ", name), 
-      #        xlab = "", ylab = "", asp = 1)
-      # 
-      # ## Title 
-      # title(paste0("Global points for ", name),
-      #       cex.main = 4,   font.main = 4, col.main = "blue")
-      # 
-      # ## Finsh the device
-      # dev.off()
-      # 
-      # ########################################################################################################################
-      # ## Another PNG for the background points....
-      # #if(!file.exists(sprintf('%s/%s/full/%s_%s.png', maxent_path, name, name, "background_records"))) {
-      # png(sprintf('%s/%s/full/%s_%s.png', outdir,
-      #             save_name, save_name, "background_records"),
-      #     16180, 10000, units = 'px', res = 600)
-      # 
-      # ## How do we locate bad records in the dataset after spotting them?
-      # plot(LAND,  
-      #      lwd = 0.5, asp = 1, axes = TRUE, cex.axis = 3.5,
-      #      col = 'darkolivegreen3', bg = 'lightblue', cex.lab = 3)
-      # 
-      # points(bg_land , pch = ".", cex = 1.6, col = "blue", cex.lab = 3, cex.main = 4, cex.axis = 2, 
-      #        main = paste0("Bacground points for ", name), 
-      #        xlab = "", ylab = "", asp = 1)
-      # 
-      # ## Title 
-      # title(paste0("Bacground points for ", name),
-      #       cex.main = 4,   font.main = 4, col.main = "blue")
-      
-      ## Finish the device
-      dev.off() 
-      
-      # } else {
-      #   
-      #   message("Background records maps exists for ", name)
-      #   
-      # }
-      
-      ##
-      # We need to be able to flick through maps. So we want a three panelled page with 
-      # a) occ points overlaid on Koppen zones, 
-      # b) current continuous suitability, 
-      # c) thresholded suitability.
-      
-      #####################################################################
-      ## Save fitted model object, and the model-fitting data.
-      #       if(replicates > 1) {
-      # 
-      #         saveRDS(list(me_xval = me_xval, me_full = me_full, swd = swd, pa = pa),
-      #                 file.path(outdir_sp, 'maxent_fitted.rds'))
-      # 
-      #       } else {
-      # 
-      #         saveRDS(list(me_xval = NA, me_full = me_full, swd = swd, pa = pa),
-      #                 file.path(outdir_sp, 'maxent_fitted.rds'))
-      # 
-      # }
+      message(nrow(bg), ' target species background records.')
       
     }
+    
+    #####################################################################
+    ## Save occ and bg shapefiles objects for future reference
+    save_name = gsub(' ', '_', name)
+    if(shapefiles) {
+      
+      suppressWarnings({
+        
+        message(name, ' writing occ and bg shapefiles')
+        writeOGR(SpatialPolygonsDataFrame(b, data.frame(ID = seq_len(length(b)))),
+                 outdir_sp, paste0(save_name, '_bg_buffer'), 'ESRI Shapefile', overwrite_layer = TRUE)
+        writeOGR(bg,  outdir_sp, paste0(save_name, '_bg'),   'ESRI Shapefile', overwrite_layer = TRUE)
+        writeOGR(occ, outdir_sp, paste0(save_name, '_occ'),  'ESRI Shapefile', overwrite_layer = TRUE)
+        
+      })
+      
+    }
+    
+    ## Save the background and occurrence points as objects
+    saveRDS(bg,  file.path(outdir_sp, paste0(save_name, '_bg.rds')))
+    saveRDS(occ, file.path(outdir_sp, paste0(save_name, '_occ.rds')))
+    
+    #####################################################################
+    ## sdm.predictors: the s_ff object containing sdm.predictors to use in the model
+    ## Sample sdm.predictors at occurrence and background points
+    #####################################################################
+    swd_occ <- occ[, sdm.predictors]
+    saveRDS(swd_occ, file.path(outdir_sp, paste0(save_name,'_occ_swd.rds')))
+    
+    swd_bg <- bg[, sdm.predictors]
+    saveRDS(swd_bg, file.path(outdir_sp, paste0(save_name, '_bg_swd.rds')))
+    
+    ## Save shapefiles of the occurrence and background points
+    if(shapefiles) {
+      
+      writeOGR(swd_occ, outdir_sp,  paste0(save_name, '_occ_swd'), 'ESRI Shapefile', overwrite_layer = TRUE)
+      writeOGR(swd_bg,  outdir_sp,  paste0(save_name, '_bg_swd'),  'ESRI Shapefile', overwrite_layer = TRUE)
+      
+    }
+    
+    #####################################################################
+    ## Combine occurrence and background data
+    swd <- as.data.frame(rbind(swd_occ@data, swd_bg@data))
+    saveRDS(swd, file.path(outdir_sp, 'swd.rds'))
+    pa <- rep(1:0, c(nrow(swd_occ), nrow(swd_bg)))
+    
+    ## Now check the features arguments are correct
+    off <- setdiff(c('l', 'p', 'q', 't', 'h'), features)
+    
+    ## 
+    if(length(off) > 0) {
+      
+      off <- c(l = 'linear=false',    p = 'product=false', q = 'quadratic=false',
+               t = 'threshold=false', h = 'hinge=false')[off]
+      
+    }
+    
+    off <- unname(off)
+    
+    if(replicates > 1) {
+      
+      if(missing(rep_args)) rep_args <- NULL
+      
+      ## Run MAXENT for x cross validation data splits of swd : so 5 replicaes, 0-4
+      ## EG xval = cross validation : "OUT_DIR\Acacia_boormanii\xval\maxent_0.html"
+      message(name, ' running xval maxent')
+      me_xval <- maxent(swd, pa, path = file.path(outdir_sp, 'xval'),
+                        args = c(paste0('replicates=', replicates),
+                                 'responsecurves=true',
+                                 'outputformat=logistic',
+                                 off, paste(names(rep_args), rep_args, sep = '=')))
+      
+    }
+    
+    ## Runs the full maxent model - using all the data in swd
+    ## This uses DISMO to output standard files, but the names can't be altered
+    if(missing(full_args)) full_args <- NULL
+    message(name, ' running full maxent')
+    me_full <- maxent(swd, pa, path = file.path(outdir_sp, 'full'),
+                      args = c(off, paste(names(full_args), full_args, sep = '='),
+                               'responsecurves=true',
+                               'outputformat=logistic'))
+    
+    ## Save the full model
+    saveRDS(list(me_xval = me_xval, me_full = me_full, swd = swd, pa = pa, 
+                 koppen_gridcode=as.character(Koppen_zones$Koppen[match(unique(zones), Koppen_zones$GRIDCODE)])), 
+            file.path(outdir_sp, 'full', 'maxent_fitted.rds'))
+    
+    #####################################################################
+    ## Save the chart corrleation file too for the variable set
+    png(sprintf('%s/%s/full/%s_%s.png', outdir,
+                save_name, save_name, "predictor_correlation"),
+        3236, 2000, units = 'px', res = 300)
+    
+    ## set margins
+    par(mar   = c(3, 3, 5, 3),  ## b, l, t, r
+        #mgp   = c(9.8, 2.5, 0),
+        oma   = c(1.5, 1.5, 1.5, 1.5))
+    
+    ## Add detail to the response plot
+    chart.Correlation(swd_occ@data,
+                      histogram = TRUE, pch = 19) 
+    #cex.lab = 2, cex.axis = 1.5,
+    #main = paste0("Predictor corrleation matrix for ", spp))
+    
+    ## Finish the device
+    dev.off()
     
   }
   
 }
+
+
 
 
 

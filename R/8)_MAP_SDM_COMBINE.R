@@ -98,7 +98,7 @@ scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cc85bi70", "gf85bi70", "hg85b
 # shapefile = aus
 
 ## Now divide the current environmental grids by 10
-env.grids.current <- stack(
+aus.grids.current <- stack(
   file.path('./data/base/worldclim/aus/1km/bio/current',   ## ./data/base/worldclim/aus/1km/bio
             sprintf('bio_%02d.tif', 1:19)))
 
@@ -106,7 +106,7 @@ for(i in 1:11) {
   
   ## simple loop
   message(i)
-  env.grids.current[[i]] <- env.grids.current[[i]]/10
+  aus.grids.current[[i]] <- aus.grids.current[[i]]/10
   
 }
 
@@ -118,7 +118,7 @@ grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',   
                'Mean_temp_dry_qu',    'Mean_temp_warm_qu',   'Mean_temp_cold_qu',  'Annual_precip',
                'Precip_wet_month',    'Precip_dry_month',    'Precip_seasonality', 'Precip_wet_qu',
                'Precip_dry_qu',       'Precip_warm_qu',      'Precip_col_qu')
-
+#save.image("SDM_MAPPING.RData")
 
 
 
@@ -131,13 +131,13 @@ grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',   
 #########################################################################################################################
 ## For each species, use a function to create raster files and maps under all six GCMs at each time step
 ## First remove species without data from the modelling step 7
-no_data      <- c ("Baeckea_virgata",           "Kennedia_beckxiana",    "Grevillea_rivularis", "Arctostaphylos_densiflora", 
-                   "Cupressocyparis_leylandii", "Eucalyptus_intermedia", "Ficus_hillii", "Pentaceras_australi", 
-                   "Pentaceras_australis",      "Pouteria_australis",    "Pouteria_chartacea", "Pouteria_eerwah", 
-                   "Radermachera_gigantea",     "Randia_benthamiana",    "Raphiolepis_umbellata", "Tilia_mongolica", 
-                   "Trema_aspera", "Xanthostemon_verticillatus")
-map_spp_list     <- map_spp_list [! map_spp_list %in% no_data]
-no_data %in% map_spp_list
+# no_data      <- c ("Baeckea_virgata",           "Kennedia_beckxiana",    "Grevillea_rivularis", "Arctostaphylos_densiflora", 
+#                    "Cupressocyparis_leylandii", "Eucalyptus_intermedia", "Ficus_hillii", "Pentaceras_australi", 
+#                    "Pentaceras_australis",      "Pouteria_australis",    "Pouteria_chartacea", "Pouteria_eerwah", 
+#                    "Radermachera_gigantea",     "Randia_benthamiana",    "Raphiolepis_umbellata", "Tilia_mongolica", 
+#                    "Trema_aspera", "Xanthostemon_verticillatus")
+# map_spp_list     <- map_spp_list [! map_spp_list %in% no_data]
+# no_data %in% map_spp_list
 
 
 #########################################################################################################################
@@ -148,7 +148,7 @@ env.grids.2030 = tryCatch(project_maxent_grids(scen_list     = scen_2030,
                                                climate_path  = "./data/base/worldclim/aus/1km/bio",
                                                grid_names    = grid.names,
                                                time_slice    = 30,
-                                               current_grids = env.grids.current),
+                                               current_grids = aus.grids.current),
                           
                           ## Will this work outside a loop?
                           error = function(cond) {
@@ -166,7 +166,7 @@ env.grids.2050 = tryCatch(project_maxent_grids(scen_list     = scen_2050,
                                                maxent_path   = maxent_path,
                                                climate_path  = "./data/base/worldclim/aus/1km/bio",
                                                grid_names    = grid.names,
-                                               current_grids = env.grids.current),
+                                               current_grids = aus.grids.current),
                           
                           error = function(cond) {
                             
@@ -183,7 +183,7 @@ env.grids.2070 = tryCatch(project_maxent_grids(scen_list     = scen_2070,
                                                maxent_path   = maxent_path,
                                                climate_path  = "./data/base/worldclim/aus/1km/bio",
                                                grid_names    = grid.names,
-                                               current_grids = env.grids.current),
+                                               current_grids = aus.grids.current),
                           
                           error = function(cond) {
                             
@@ -379,12 +379,12 @@ View(MAXENT.SUMMARY.NICHE)
 
 
 #View(MAXENT.SUMMARY.TABLE)
-identical(MAXENT.SUMMARY.NICHE$searchTaxon, GBIF.spp)
+length(intersect(MAXENT.SUMMARY.NICHE$searchTaxon, GBIF.spp))
 
 
 #########################################################################################################################
 ## Save - could add date as a sprintf variable to save multiple versions?
-## write.csv(MAXENT.SUMMARY.NICHE, "./output/maxent/MAXENT_SUMMARY_CAMPBELLTOWN_SPP.csv", row.names = FALSE)
+## write.csv(MAXENT.SUMMARY.NICHE, paste0('output/maxent/MAXENT_SUMMARY_', save_run, '.csv'), row.names = FALSE)
 
 
 
@@ -463,7 +463,7 @@ time_slice = 30
 area_occ   = 10
 
 
-## Check the length matches
+## Check the length matches - order should be correct, as well as the length
 length(SDM.RESULTS.DIR);length(map_spp);length(percent.10.log);length(percent.10.om)
 
 

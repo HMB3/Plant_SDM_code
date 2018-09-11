@@ -22,6 +22,12 @@
 #########################################################################################################################
 ## Load packages, functions and data
 SDM.SPAT.ALL = readRDS('data/base/HIA_LIST/COMBO/SDM_SPAT_ALL_OLD_ALA.rds')
+SDM.SPAT.TEST = subset(SDM.SPAT.ALL, searchTaxon == "Acacia baileyana" | 
+                         searchTaxon == "Acacia boormanii" |
+                         searchTaxon == "Acacia cognata" )
+unique(SDM.SPAT.TEST$searchTaxon)
+unique(SDM.SPAT.TEST$SOURCE)
+saveRDS(SDM.SPAT.TEST, 'data/base/HIA_LIST/COMBO/SDM_SPAT_ALL_OLD_ALA_TEST.rds')
 rasterTmpFile()
 
 
@@ -67,7 +73,7 @@ ff <- file.path('./data/base/worldclim/world/0.5/bio/current',
 env.grids.current = stack(sub('0.5', '1km', ff))
 names(env.grids.current) <- sdm.predictors[i]
 identical(names(env.grids.current),sdm.predictors)
-
+## save.image('SDM_ANALYSES.RData')
 
 
 

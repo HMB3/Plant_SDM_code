@@ -184,12 +184,12 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
   
   ###################################################################################################################
   ## Read in shapefiles :: this should be done outside the loop
-  aus        = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/aus_states.rds") %>%
+  aus        = readRDS('data/base/CONTEXTUAL/aus_states.rds') %>%
     spTransform(ALB.CONICAL)
   
-  LAND       = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LAND_world.rds")
+  LAND       = readRDS('data/base/CONTEXTUAL/LAND_world.rds')
   
-  areal_unit = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/SUA.rds") %>%
+  areal_unit = readRDS('data/base/CONTEXTUAL/SUA.rds') %>%
     spTransform(ALB.CONICAL)
   
   areal_unit = areal_unit[order(areal_unit$SUA_NAME11),]
@@ -398,8 +398,8 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             
             #########################################################################################################################
             ## Then, extract the values of the presence raster for each areal unit: generates a list
-            ext.current  <- extract(current_suit_thresh, areal_unit, method = 'simple')
-            ext.future   <- extract(combo_suit_4GCM,     areal_unit, method = 'simple')
+            ext.current  <- raster::extract(current_suit_thresh, areal_unit, method = 'simple')
+            ext.future   <- raster::extract(combo_suit_4GCM,     areal_unit, method = 'simple')
             
             ## A function to tabulate the raster values by aerial unit, returning a data frame
             tabFunc <- function(indx, extracted, region, regname) {
@@ -964,8 +964,8 @@ SUA_table = function(DIR_list, species_list, maxent_path, thresholds, percentile
           
           #########################################################################################################################
           ## Then, extract the values of the presence raster for each areal unit: generates a list
-          ext.current  <- extract(current_suit_thresh, areal_unit, method = 'simple')
-          ext.future   <- extract(combo_suit_4GCM,     areal_unit, method = 'simple')
+          ext.current  <- raster::extract(current_suit_thresh, areal_unit, method = 'simple')
+          ext.future   <- raster::extract(combo_suit_4GCM,     areal_unit, method = 'simple')
           
           ## A function to tabulate the raster values by aerial unit, returning a data frame
           tabFunc <- function(indx, extracted, region, regname) {
