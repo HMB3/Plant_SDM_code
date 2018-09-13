@@ -307,7 +307,7 @@ legend("topleft", bty="n", legend=paste("R2 is", format(summary(lm.auc)$adj.r.sq
 length(intersect(map_spp_list, MAXENT.RESULTS$searchTaxon)) ## Accesssing the files from these directories... 
 MAXENT.RESULTS  =  MAXENT.RESULTS[MAXENT.RESULTS$searchTaxon %in% map_spp_list , ] 
 map_spp = unique(MAXENT.RESULTS$searchTaxon)
-length(map_spp);identical(sort(map_spp), sort(map_spp_list))
+length(map_spp);setdiff(sort(map_spp_list), sort(map_spp))
 
 
 #########################################################################################################################
@@ -327,7 +327,7 @@ SDM.RESULTS.DIR <- map_spp %>%
   c()
 
 length(SDM.RESULTS.DIR)
-SDM.RESULTS.DIR
+SDM.RESULTS.DIR = unlist(SDM.RESULTS.DIR)
 
 
 #########################################################################################################################
@@ -459,17 +459,29 @@ tail(SDM.RESULTS.DIR, 20);tail(map_spp, 20); tail(MAXENT.RESULTS, 20)[, c("searc
 #########################################################################################################################
 
 
-## To test it first species works 
-DIR        = SDM.RESULTS.DIR[28]
-species    = map_spp_list[28]
-thresh     = percent.10.log[28]
-percent    = percent.10.om[28]
-time_slice = 30
+## Test problematic species by entering the values and running the function manually
+## Common errors are due to corrupt rasters in the previous step
+DIR        = SDM.RESULTS.DIR[59]
+species    = map_spp_list[59]
+thresh     = percent.10.log[59]
+percent    = percent.10.om[59]
+time_slice = 50
 area_occ   = 10
 
 
 ## Check the length matches - order should be correct, as well as the length
 length(SDM.RESULTS.DIR);length(map_spp);length(percent.10.log);length(percent.10.om)
+
+
+## Can the numeric lists be reversed?
+SDM.DIR.REV     = sort(SDM.RESULTS.DIR, decreasing = TRUE)
+map_spp_rev     = sort(map_spp,         decreasing = TRUE) 
+percent.log.rev = percent.10.log[sort(order(percent.10.log), decreasing = TRUE)]
+percent.om.rev  = percent.10.om[sort(order(percent.10.om),   decreasing = TRUE)]
+
+
+#load("SDM_COMBINE.RData")
+  
 
 
 #########################################################################################################################
@@ -524,23 +536,42 @@ suitability.2070 = tryCatch(mapply(combine_gcm_threshold,
                             })
 
 
+#########################################################################################################################
+## Reverse the order of the lists to speed up the output
+mapply(combine_gcm_threshold,
+       DIR_list     = SDM.DIR.REV,
+       species_list = map_spp_rev,
+       maxent_path  = out_dir,
+       thresholds   = percent.log.rev,
+       percentiles  = percent.om.rev,
+       time_slice   = 30,  ## 50, 70
+       area_occ     = 10)
+
 
 
 #########################################################################################################################
 ## OUTSTANDING PREDICTION TASKS:
 #########################################################################################################################
 
+## intersect(list.files(path.set.var), map_spp_list) 
 
-## 3). Try to thin records for ~100 spp with boundary bias: random sampling of those species records, by state and environment
 
-## 4). Use more forgiving thresholds (10%) for all species, OR just those with bad maps:
-##    "Maximum.training.sensitivity.plus.specificity.Logistic.threshold"
-##    "X10.percentile.training.presence.Logistic.threshold"
-##    "X10.percentile.training.presence.training.omission"
+## 1). Fix species that didn't work on the last run, and run the remaining species
 
-## 5). Calculate the TSS for all species (and MESS maps for a few species)
+## 2). Then combine species into one big table - should be 238 * 3 time periods - a list of 714 tables
 
-## 7). Decide on gamma diversity for this article - 200 spp - could it go to GEB? Plan figures and tables for MS
+## 3). Create threshold maps for species rated 2 and 3 - could use john's code to summarise the outputted data
+
+## 4). Create mess maps for species rated 2 and 3 - this takes a long time
+
+## 5). Follow up with ALA RE field names 
+
+## 6). Create protcol for species cleaning - initial clean using just the png files, then threshold and mess maps for the 1s
+##     and 2s.
+
+
+
+
 
 
 

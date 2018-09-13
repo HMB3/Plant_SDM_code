@@ -131,6 +131,7 @@ SUA           = readRDS("./data/base/CONTEXTUAL/IN_SUA_AUS.rds")
 LGA           = readRDS("./data/base/CONTEXTUAL/LGA.rds")
 AUS           = readRDS("./data/base/CONTEXTUAL/aus_states.rds")
 ALL.SUA.POP   = read.csv("./data/base/CONTEXTUAL/ABS_SUA_POP.csv", stringsAsFactors = FALSE)
+URB.POP       = read.csv("./data/base/CONTEXTUAL/ABS_URBAN_CENTRE_POP.csv", stringsAsFactors = FALSE)
 
 
 ##
@@ -184,6 +185,7 @@ MOD.2.3             = read.csv("./data/base/HIA_LIST/HIA/MODULE_2_3.csv",       
 RISK.LIST           = read.csv("./data/base/HIA_LIST/HIA/RISK_LIST.csv",                         stringsAsFactors = FALSE)
 RISK.BINOMIAL.CLEAN = read.csv("./data/base/HIA_LIST/HIA/RISK_BINOMIAL_DF.csv",                  stringsAsFactors = FALSE)
 MAXENT.RATING       = read.csv("./output/maxent/MAXENT_RATING_26_2018.csv",                      stringsAsFactors = FALSE)
+MXT.CHECK           = read.csv("./output/maxent/MAXENT_SUA_CHECK_OLD_ALA_300_SPAT_1209_2016.csv",stringsAsFactors = FALSE)
 TI.LIST             = read.csv("./data/base/HIA_LIST/COMBO/ALE_TREE_SPP_LIST.csv",               stringsAsFactors = FALSE)
 TI.XY               = read.csv("./data/base/HIA_LIST/COMBO/ALE_TREE_SPP_XY.csv",                 stringsAsFactors = FALSE)
 SPP.BIAS            = read.csv("./output/maxent/SPP_BOUNDARY_BIAS.csv", stringsAsFactors = FALSE)

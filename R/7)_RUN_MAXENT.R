@@ -28,6 +28,7 @@ SDM.SPAT.TEST = subset(SDM.SPAT.ALL, searchTaxon == "Acacia baileyana" |
 unique(SDM.SPAT.TEST$searchTaxon)
 unique(SDM.SPAT.TEST$SOURCE)
 saveRDS(SDM.SPAT.TEST, 'data/base/HIA_LIST/COMBO/SDM_SPAT_ALL_OLD_ALA_TEST.rds')
+dim(subset(SDM.SPAT.ALL, searchTaxon == "Quercus robur")) 
 rasterTmpFile()
 
 

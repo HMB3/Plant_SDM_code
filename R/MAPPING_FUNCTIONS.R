@@ -378,6 +378,10 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             writeRaster(gain_loss, sprintf('%s/%s/full/%s_20%s%s%s.tif', maxent_path,
                                            species, species, time_slice, "_gain_loss_", thresh), datatype = 'INT2U', overwrite = TRUE)
             
+            
+            #########################################################################################################################
+            ##  Write PNG files too
+            
             # } else {
             #   
             #   message(species, ' 20', time_slice, ' combined suitability > ', thresh, ' skipped - already exists')   ## 
