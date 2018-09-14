@@ -92,12 +92,23 @@ p <- c('ff',    'things', 'raster',        'dismo',        'sp',           'latt
        'rgdal', 'rgeos',  'gdalUtils',     'rmaxent',      'readr',        'plyr',         'dplyr',        
        'tidyr', 'readr',  'rnaturalearth', 'rasterVis',    'RColorBrewer', 'latticeExtra', 'parallel',     
        'taxonlookup',     'ALA4R',         'stringr',      'Taxonstand',   'CoordinateCleaner', 'gsubfn', 'PerformanceAnalytics',
-       'rvest')
+       'rvest', 'magrittr', 'devtools')
+
+# library(raster)
+# library(dismo)
+# library(gdalUtils)
+# library(RColorBrewer)
+# library(rasterVis)
+# library(latticeExtra)
+# library(rnaturalearth)
+# library(magrittr)
+# library(devtools)
 
 
 ## Require packages
 sapply(p, require, character.only = TRUE)
-
+source_gist('26e8091f082f2b3dd279', filename = 'polygonizer.R')
+source_gist('c6a1cb61b8b6616143538950e6ec34aa', filename = 'hatch.R')
 
 ## Source functions
 source('./R/GREEN_CITIES_FUNCTIONS.R')

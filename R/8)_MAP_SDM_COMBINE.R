@@ -481,9 +481,8 @@ percent.om.rev  = percent.10.om[sort(order(percent.10.om),   decreasing = TRUE)]
 
 
 #load("SDM_COMBINE.RData")
+
   
-
-
 #########################################################################################################################
 ## Combine output and calculate gain and loss for 2030
 suitability.2030 = tryCatch(mapply(combine_gcm_threshold,
