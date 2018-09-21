@@ -218,6 +218,9 @@ lapply(GBIF.spp, function(spp){
 ## 1). 400 tree spp that are commonly planted and traded, with sufficient spatial data to model robustly: done
 
 
+##     Update Species table with new ALA data........................................................................  
+
+
 ## 2). Fix the taxonomy
 
 ##     Follow steps in file 3). 
@@ -235,7 +238,10 @@ lapply(GBIF.spp, function(spp){
 ##     "X10.percentile.training.presence.training.omission"
   
 
-## 5). Combine output: Table
+## 5). Combine output: 
+##     Use 2016 shapefile.................................................................................................
+
+## Table
 ##     "searchTaxon" "No.plantings" "Number.of.growers" "Number.of.States/LGAs/Koppen zones" "Origin" "AUC" "TSS" 
 
 ##     Maps: unique raster values for (search in explorer)
@@ -254,7 +260,8 @@ lapply(GBIF.spp, function(spp){
 ##     Future suitability
 
 
-## 7). make sure step 9 is working. Create tables in R to summarise gain and loss in each SUA
+## 7). 
+##     Create tables in R to summarise gain and loss in each SUA
 
 
 ## 8). What is the story? Draft results and discussion.
