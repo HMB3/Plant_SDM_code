@@ -12,8 +12,9 @@
 #########################################################################################################################
 
 
-## Changed workflow so only species analysed are included in the save directory 
-## raster.list[raster.list %like% "Euc"]
+## Read in the table of species in SUAs
+SUA.SPP = readRDS(paste0('data/base/HIA_LIST/COMBO/SUA_SPP_', save_run, '.rds'))
+
 
 
 #########################################################################################################################
@@ -113,14 +114,15 @@ summary(SUA.PRESENCE)
 
 ## Update this table to incorporate central coast, etc...................................................................
 SUA.DENS = areal_unit@data
-SUA.DENS = SUA.DENS[, c("SUA_NAME11", "AREA_SQKM")]
+SUA.DENS = SUA.DENS[, c("SUA_NAME16", "AREASQKM16")]
 names(SUA.DENS) = c("SUA", "AREA_SQKM")
 head(SUA.DENS)
 
 
 ## Check the "urban centres" file
-intersect(ALL.SUA.POP$SUA, URB.POP$SUA)
-setdiff(URB.POP$SUA, ALL.SUA.POP$SUA)
+sort(intersect(ALL.SUA.POP$SUA, SUA.PRESENCE$SUA))
+setdiff(ALL.SUA.POP$SUA, SUA.PRESENCE$SUA)
+
 
 ## Check the "urban centres" file
 intersect(SUA.DENS$SUA, URB.POP$SUA)
@@ -132,6 +134,7 @@ setdiff(URB.POP$SUA, SUA.DENS$SUA)
 TOP.SUA.POP             = ALL.SUA.POP[, c("SUA", "POP_2017")]
 SUA.DEN                 = merge(TOP.SUA.POP, SUA.DENS)
 SUA.DEN$POP_DESNITY     = SUA.DEN$POP_2017/SUA.DEN$AREA_SQKM
+SUA.DEN                 = SUA.DEN[, c("SUA", "POP_2017", "POP_DESNITY")]
 View(SUA.DEN)
 
 
@@ -177,7 +180,7 @@ intersect(unique(SUA.PRESENCE[is.na(SUA.PRESENCE$POP_2017),]$SUA),
 
 length(unique(SUA.COMPLETE$SPECIES))
 summary(SUA.COMPLETE$POP_2017)
-
+View(SUA.COMPLETE)
 
 
 #########################################################################################################################
@@ -230,11 +233,18 @@ table(MAXENT.RATING$MAXENT_RATING)
 SUA.COMPLETE$SPECIES = gsub("_", " ", SUA.COMPLETE$SPECIES)
 length(intersect(unique(MAXENT.RATING$SPECIES), unique(SUA.COMPLETE$SPECIES)))
 
+
+#########################################################################################################################
+## Join on a column for if the species has records in the SUA
 SUA.COMPLETE = merge(SUA.COMPLETE, MAXENT.RATING)
+SUA.COMPLETE = join(SUA.COMPLETE, SUA.SPP)
 unique(SUA.COMPLETE$MAXENT_RATING)
 summary(SUA.COMPLETE)
 View(SUA.COMPLETE)
 
+
+#########################################################################################################################
+## Save table
 write.csv(SUA.COMPLETE, paste0('output/tables/MAXENT_SUA_PRESENCE_', save_run, '.csv'), row.names = FALSE)
 write.csv(SUA.TOP.PRESENCE, paste0('output/tables/MAXNET_SUA_TOP_',  save_run, '.csv'), row.names = FALSE)
 

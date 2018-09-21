@@ -141,8 +141,9 @@ project_maxent_grids = function(scen_list, species_list, maxent_path, climate_pa
                     
                     ## Plot the Aus shapefile with the occurrence points for reference
                     ## Can the points be made more legible for both poorly and well recorded species?
-                    layer(sp.polygons(aus)) +
-                    layer(sp.points(occ, pch = 19, cex = 0.15, 
+                    ## layer(sp.polygons(aus_albers), data = list(aus_albers = aus_albers))
+                    latticeExtra::layer(sp.polygons(aus), data = list(aus_albers = aus_albers)) +
+                    latticeExtra::layer(sp.points(occ, pch = 19, cex = 0.15, 
                                     col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
             dev.off()
             
@@ -1501,20 +1502,19 @@ gain_loss_table = function(DIR_list, species_list, maxent_path, thresholds, perc
 
 
 ## One function for all time periods
-create_maxent_mess = function(species_list, threshold_list, maxent_path, grid_names, current_grids) {
+create_maxent_mess = function(species_list, threshold_list, maxent_path, current_grids) {
   
   ## Read in Australia
   aus = AUS %>%
     spTransform(ALB.CONICAL)
   
+  # import gist that plots maps with diverging colour ramps
+  devtools::source_gist('306e4b7e69c87b1826db', filename='diverge0.R') # function that plots a map with a diverging colour ramp
+  
   ## First, run a loop over each species  
-  lapply(species_list, function(species) {
+  mapply(function(species, threshold) {
     
     ## Create a raster stack for each of the 6 GCMs, not for each species
-    projection(current_grids)
-    
-    ## Rename both the current and future environmental stack...
-    names(current_grids) <- grid_names 
     
     #####################################################################
     ## Now read in the model, swd file, occ data and extract the varaible names 
@@ -1523,138 +1523,81 @@ create_maxent_mess = function(species_list, threshold_list, maxent_path, grid_na
     occ  <- readRDS(sprintf('%s%s/swd.rds', maxent_path, species, species))
     occ  <- readRDS(sprintf('%s%s/%s_occ.rds', maxent_path, species, species)) %>%
       spTransform(ALB.CONICAL) 
-    ras_names <- names(m@presence)
+    #ras_names <- names(m@presence)
     
     ## Select only the eight bioclim variables used in the maxent models
     #current_vars <- dropLayer(s_current, setdiff(names(s_current), vars))
-    current_grids <- subset(current_grids, intersect(names(current_grids), ras_names))
+    # names(current_grids) <- grid_names  ## Error in `names<-`(`*tmp*`, value = grid_names) : incorrect number of layer names
+    # current_grids        <- subset(current_grids, intersect(names(current_grids), ras_names))
     
-    ## Then loop over each threshold
-    lapply(threshold_list, function(threshold) {
-      
       ## First, check if the mess map has already been run
-      if(!file.exists(sprintf('%s%s/full/%s_%s.tif', maxent_path, species, species, "current_mess_map"))) {
+      if(!file.exists(sprintf('%s%s/full/%s_%s%s%s.tif', maxent_path, species, species, 
+                              "current_suit_above_", thresh, "_notNovel"))) {
         
         ## Read in current continuous raster, and the binary raster thresholded raster (0-1)
         f_current  <- raster(sprintf('%s%s/full/%s_current.tif', maxent_path, species, species))
         hs_current <- raster(sprintf('%s%s/full/%s_%s%s.tif',    maxent_path,
                                      species, species, "current_suit_above_", threshold))
         
-        ## Check the plot
-        ## plot(current_rasters)
-        ## plot(hs_current) 
-        ## points(occ, pch = 19, col = "red", cex = 0.4)
-        
         #####################################################################
         ## Report current mess map in progress
         message('Running current mess map for ', species) 
         
         ## Create the current mess map :: check the variable names are the same
-        intersect(names(current_grids), names(swd))
-        mess_current  <- dismo::mess(current_grids, swd)   ##  Time this
-        novel_current <- mess_current   < 0                ##  "0"-not clear
-        novel_current[novel_current==0] <- NA              ##  "NA"- not clear
-        novel_current <- mask(novel_current, hs_current)   ##   Mask the current raster to the current suitability
+        #length(intersect(names(current_grids), names(swd)))
+        mess_current <- similarity(current_grids, swd[, names(current_grids)], full = TRUE)
+        novel_current <- mess_current$similarity_min   < 0  ##   All novel environments are < 0
+        novel_current[novel_current==0] <- NA               ##  0 values are NA
         
         ##################################################################
         ## Write out the current mess maps 
-        writeRaster(mess_current, sprintf('%s%s/full/%s_%s.tif', 
+        writeRaster(mess_current$similarity_min, sprintf('%s%s/full/%s_%s.tif', 
                                           maxent_path, species, species, "current_mess_map"), 
                     overwrite = TRUE, datatype = 'INT2S')
+        
+        ##################################################################
+        ## Create a PNG file of all the MESS output
+        mapply(function(r, name) {
+          
+          p <- levelplot(r, margin = FALSE, scales = list(draw = FALSE), 
+                         at = seq(minValue(r), maxValue(r), len = 100), 
+                         colokey = list(height = 0.6), main = gsub('_', ' ', sprintf('%s (%s)', name, species))) + 
+            
+            layer(sp.polygons(aus_albers), data = list(aus_albers = aus_albers))  ## Use this in previous functions
+          
+          p <- diverge0(p, 'RdBu')
+          f <- sprintf('%s%s/full/%s_messCurrent__%s.png', maxent_path, species, species, name)
+          
+          png(f, 8, 8, units = 'in', res = 300, type = 'cairo')
+          print(p)
+          dev.off()
+          
+        }, unstack(mess_current$similarity), names(mess_current$similarity))
         
         writeRaster(novel_current, sprintf('%s%s/full/%s_%s.tif', 
                                            maxent_path, species, species, "current_novel_map"), 
                     overwrite = TRUE, datatype = 'INT2S')
         
-        ## Now create the empty panel just before plotting
-        empty_ras <- init(mess_current, function(x) NA) 
-        
-        ## Check projections ..................................................................................................
-        projection(aus);projection(occ);projection(empty_ras);projection(mess_current);projection(novel_current)
+        hs_current_notNovel <- hs_current * is.na(novel_current) 
         
         ##################################################################
-        ## Convert to polygon ...this may not work on your computer... 
-        ## it requires GDAL and Python to be set up in a specific way
-        # poly       <- polygonizer(novel_current)
-        # poly_hatch <- hatch(poly, 60)
-        # 
-        # levelplot(hs_current, at = seq(0, 1, len = 101), 
-        #           
-        #           col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral')))(100),
-        #           margin      = FALSE, scales = list(draw = FALSE), 
-        #           colorkey    = list(height = 0.5)) +
-        #   
-        #   layer(sp.polygons(aus)) +
-        #   layer(sp.polygons(poly_hatch))
-        
-        ##################################################################
-        ## Print to screen
-        print(levelplot(stack(empty_ras, 
-                              mess_current, 
-                              novel_current,
-                              hs_current, 
-                              quick = TRUE), margin = FALSE,
-                        
-                        ## Create a colour scheme using colbrewer: 100 is to make it continuos
-                        ## Also, make it a one-directional colour scheme
-                        scales      = list(draw = FALSE), 
-                        at = seq(0, cellStats(mess_current, stat = 'min'), length = 100),
-                        col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
-                        
-                        ## Give each plot a name: the third panel is the GCM
-                        names.attr = c('Australian records', 'Current Mess', 'Novel env', 'Current threshold'),
-                        colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
-                        main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
-                
-                ## Plot the Aus shapefile with the occurrence points for reference
-                ## Can the points be made more legible for both poorly and well recorded species?
-                layer(sp.polygons(aus)) +
-                layer(sp.points(occ, pch = 19, cex = 0.15, 
-                                col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
-        
-        ##################################################################
-        ## Use the levelplot function to make a multipanel output: 
-        ## occurrence points, current raster and future raster
-        png(sprintf('%s%s/full/%s_%s.png', maxent_path, species, species, "current_mess_map"),      
-            11, 4, units = 'in', res = 300)
-        
-        ## Need an empty frame
-        print(levelplot(stack(empty_ras, 
-                              mess_current, 
-                              novel_current,
-                              hs_current, 
-                              quick = TRUE), margin = FALSE,
-                        
-                        ## Create a colour scheme using colbrewer: 100 is to make it continuos
-                        ## Also, make it a one-directional colour scheme
-                        scales      = list(draw = FALSE), 
-                        at = seq(0, cellStats(mess_current, stat = 'min'), length = 100),
-                        col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
-                        
-                        ## Give each plot a name: the third panel is the GCM
-                        names.attr = c('Australian records', 'Current Mess', 'Novel env', 'Current threshold'),
-                        colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
-                        main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
-                
-                ## Plot the Aus shapefile with the occurrence points for reference
-                ## Can the points be made more legible for both poorly and well recorded species?
-                layer(sp.polygons(aus)) +
-                layer(sp.points(occ, pch = 19, cex = 0.15, 
-                                col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
-        dev.off()
+        # mask out novel environments 
+        # is.na(novel_current) is a binary layer showing 
+        # not novel [=1] vs novel [=0], 
+        # so multiplying with hs_current will mask out novel
+        writeRaster(hs_current_notNovel, sub('\\.tif', '_notNovel.tif', hs_current@file@name), 
+                    overwrite = TRUE, datatype = 'INT2S')
         
       } else {
         
         message(species, ' skipped - MESS map already run') 
         
       }
-      
-      
-    })
     
-  })
+  }, species_list, threshold_list, SIMPLIFY = FALSE)
   
 }
+
 
 
 

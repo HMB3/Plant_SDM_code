@@ -32,56 +32,22 @@ dim(subset(SDM.SPAT.ALL, searchTaxon == "Quercus robur"))
 rasterTmpFile()
 
 
+
+
+
 #########################################################################################################################
-## 1). PREPARE VARIABLES FOR SDM ANALYSES
+## 1). RUN SDMs USING A-PRIORI VARIABLES FOR ALL SPECIES
 #########################################################################################################################
 
 
 #########################################################################################################################
 ## Check the SDM table
+identical(names(env.grids.current),sdm.predictors)
 dim(SDM.SPAT.ALL)
 length(unique(SDM.SPAT.ALL$searchTaxon))
 length(unique(SDM.SPAT.ALL$OBS))
 unique(SDM.SPAT.ALL$SOURCE)
-
-
-#########################################################################################################################
-## Now create the variables needed to access current environmental conditions + their names in the functions
-sdm.predictors <- c("Annual_mean_temp",    "Mean_diurnal_range",  "Isothermality",      "Temp_seasonality",  
-                    "Max_temp_warm_month", "Min_temp_cold_month", "Temp_annual_range",  
-                    "Mean_temp_wet_qu",    "Mean_temp_dry_qu",    
-                    "Mean_temp_warm_qu",   "Mean_temp_cold_qu",   
-                    
-                    "Annual_precip",       "Precip_wet_month",   "Precip_dry_month",    "Precip_seasonality",  
-                    "Precip_wet_qu",       "Precip_dry_qu",      
-                    "Precip_warm_qu",      "Precip_col_qu")
-
-
-## A-priori worldclim predictors
-sdm.select     <- c("Annual_mean_temp", "Temp_seasonality",    "Max_temp_warm_month", "Min_temp_cold_month",
-                    "Annual_precip",    "Precip_seasonality",  
-                    "Precip_wet_month", "Precip_dry_month")      
-
-
-#########################################################################################################################
-## Create a raster stack of current environmental conditions if needed
-i  <- match(sdm.predictors, sdm.predictors)
-ff <- file.path('./data/base/worldclim/world/0.5/bio/current',
-                sprintf('bio_%02d.tif', i))
-
-
-## Name the grids :: these should be indentical
-env.grids.current = stack(sub('0.5', '1km', ff))
-names(env.grids.current) <- sdm.predictors[i]
-identical(names(env.grids.current),sdm.predictors)
 ## save.image('SDM_ANALYSES.RData')
-
-
-
-
-#########################################################################################################################
-## 2). RUN SDMs USING A-PRIORI VARIABLES FOR ALL SPECIES
-#########################################################################################################################
 
 
 #########################################################################################################################
@@ -92,7 +58,7 @@ GBIF.spp[28]
 
 
 #########################################################################################################################
-## Loop over all the species
+## Loop over all the species spp = GBIF.spp[1]
 lapply(GBIF.spp, function(spp){ 
   
   ## Skip the species if the directory already exists, before the loop
@@ -152,7 +118,7 @@ lapply(GBIF.spp, function(spp){
 
 
 #########################################################################################################################
-## 3). RUN SDMs USING A-PRIORI VARIABLES FOR THE BIASED SPECIES
+## 2). RUN SDMs USING A-PRIORI VARIABLES FOR THE BIASED SPECIES
 #########################################################################################################################
 
 

@@ -130,15 +130,16 @@ rasterOptions(tmpdir = file.path('/green_cities_sdm/RTEMP'))
 ## Read in spatial data once, rather than in each script
 aus           = readRDS("./data/base/CONTEXTUAL/aus_states.rds")
 LAND          = readRDS("./data/base/CONTEXTUAL/LAND_world.rds")
-areal_unit    = readRDS("./data/base/CONTEXTUAL/SUA.rds")
-areal_unit    = areal_unit[order(areal_unit$SUA_NAME11),]
+areal_unit    = readRDS("./data/base/CONTEXTUAL/SUA/SUA_2016_AUST.rds")
+areal_unit    = areal_unit[order(areal_unit$SUA_NAME16),]
 Koppen        = readRDS('data/base/CONTEXTUAL/Koppen_1975.rds')
 Koppen_aus    = readRDS('data/base/CONTEXTUAL/KOPPEN_AUS.rds')
 Koppen_zones  = unique(readOGR('data/base/CONTEXTUAL/WC05_1975H_Koppen_Shapefile/WC05_1975H_Koppen_Kriticos_2012.shp')@data[, 1:2])
 Koppen_1975   = raster('data/Koppen_1000m_Mollweide54009.tif')
 AUS_RAIN      = readRDS('data/base/CONTEXTUAL/BOM/BOM_RAIN_AGG.rds')
 
-SUA           = readRDS("./data/base/CONTEXTUAL/IN_SUA_AUS.rds")
+IN.SUA        = readRDS("./data/base/CONTEXTUAL/IN_SUA_AUS.rds")
+SUA.16        = readRDS("./data/base/CONTEXTUAL/SUA/SUA_2016_AUST.rds")
 LGA           = readRDS("./data/base/CONTEXTUAL/LGA.rds")
 AUS           = readRDS("./data/base/CONTEXTUAL/aus_states.rds")
 ALL.SUA.POP   = read.csv("./data/base/CONTEXTUAL/ABS_SUA_POP.csv", stringsAsFactors = FALSE)
@@ -163,6 +164,43 @@ CRS.WGS.84   <- CRS("+init=epsg:4326")
 CRS.AUS.ALB  <- CRS("+init=EPSG:3577")
 ALB.CONICAL  <- CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs')
 
+
+#########################################################################################################################
+## Now create the variables needed to access current environmental conditions + their names in the functions
+sdm.predictors <- c("Annual_mean_temp",    "Mean_diurnal_range",  "Isothermality",      "Temp_seasonality",  
+                    "Max_temp_warm_month", "Min_temp_cold_month", "Temp_annual_range",  
+                    "Mean_temp_wet_qu",    "Mean_temp_dry_qu",    
+                    "Mean_temp_warm_qu",   "Mean_temp_cold_qu",   
+                    
+                    "Annual_precip",       "Precip_wet_month",   "Precip_dry_month",    "Precip_seasonality",  
+                    "Precip_wet_qu",       "Precip_dry_qu",      
+                    "Precip_warm_qu",      "Precip_col_qu")
+
+
+## A-priori worldclim predictors
+sdm.select     <- c("Annual_mean_temp", "Temp_seasonality",    "Max_temp_warm_month", "Min_temp_cold_month",
+                    "Annual_precip",    "Precip_seasonality",  
+                    "Precip_wet_month", "Precip_dry_month")
+
+
+grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',      'Temp_seasonality', 
+               'Max_temp_warm_month', 'Min_temp_cold_month', 'Temp_annual_range',  'Mean_temp_wet_qu',
+               'Mean_temp_dry_qu',    'Mean_temp_warm_qu',   'Mean_temp_cold_qu',  'Annual_precip',
+               'Precip_wet_month',    'Precip_dry_month',    'Precip_seasonality', 'Precip_wet_qu',
+               'Precip_dry_qu',       'Precip_warm_qu',      'Precip_col_qu')
+
+
+#########################################################################################################################
+## Create a raster stack of current environmental conditions if needed
+i  <- match(sdm.predictors, sdm.predictors)
+ff <- file.path('./data/base/worldclim/world/0.5/bio/current',
+                sprintf('bio_%02d.tif', i))
+
+
+## Name the grids :: these should be indentical
+env.grids.current = stack(sub('0.5', '1km', ff))
+names(env.grids.current) <- sdm.predictors[i]
+identical(names(env.grids.current),sdm.predictors)
 
 
 
@@ -565,6 +603,7 @@ setdiff(TREE.HIA.SPP, SUA.SPP)
 
 # TPL.SUA <- TPL(unique(SUA.SPP), infra = TRUE, corr = TRUE, repeats = 100)
 # View(TPL.SUA[c("Taxon", "Taxonomic.status", "New.Taxonomic.status", "New.Genus", "New.Species")])
+# saveRDS(TPL.SUA, file = paste("./data/base/HIA_LIST/GBIF/TPL_SUA.rds"))
 # saveRDS(TPL.SUA, file = paste("./data/base/HIA_LIST/GBIF/TPL_SUA.rds"))
 #write.csv(TPL.SUA, "./data/base/HIA_LIST/GBIF/TPL_SUA.csv", row.names = FALSE)
 

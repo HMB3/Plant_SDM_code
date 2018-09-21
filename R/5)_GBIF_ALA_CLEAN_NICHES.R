@@ -293,7 +293,8 @@ writeOGR(obj = GBIF.ALA.SPDF, dsn = "./data/base/HIA_LIST/COMBO", layer = "CLEAN
 
 
 ## We want to know the count of species that occur in 'n' LGAs, across a range of climates. Read in LGA and SUA
-projection(LGA);projection(SUA);projection(AUS)
+length(unique(CLEAN.TRUE$searchTaxon))
+projection(LGA);projection(AUS);projection(SUA.16)
 
 
 ## Convert the raster data back into a spdf
@@ -303,20 +304,21 @@ COMBO.RASTER.SP   = SpatialPointsDataFrame(coords      = CLEAN.TRUE[c("lon", "la
 
 
 ## Project using a projected rather than geographic coordinate system
-LGA.WGS  = spTransform(LGA, CRS.WGS.84)
-SUA.WGS  = spTransform(SUA, CRS.WGS.84)
-AUS.WGS  = spTransform(AUS, CRS.WGS.84)
+LGA.WGS  = spTransform(LGA,    CRS.WGS.84)
+SUA.WGS  = spTransform(SUA.16, CRS.WGS.84)
+AUS.WGS  = spTransform(AUS,    CRS.WGS.84)
 
 
 ## Remove the columns we don't need
 LGA.WGS = LGA.WGS[, c("LGA_CODE16", "LGA_NAME16")] 
+head(SUA.WGS)
 
 
 #########################################################################################################################
 ## Run join between species records and LGAs/SUAs :: Double check they are the same
 projection(COMBO.RASTER.SP);projection(LGA.WGS);projection(SUA.WGS);projection(AUS.WGS)
-LGA.JOIN      = over(COMBO.RASTER.SP, LGA.WGS)              
-COMBO.SUA.LGA = cbind.data.frame(COMBO.RASTER.SP, LGA.JOIN) 
+SUA.JOIN      = over(COMBO.RASTER.SP, SUA.WGS)              
+COMBO.SUA.LGA = cbind.data.frame(COMBO.RASTER.SP, SUA.JOIN) 
 #saveRDS(COMBO.SUA.LGA, file = paste("./data/base/HIA_LIST/GBIF/COMBO_SUA_LGA.rds"))
 ## COMBO.SUA.LGA = readRDS("./data/base/HIA_LIST/GBIF/COMBO_SUA_LGA.rds")
 ## str(unique(COMBO.SUA.LGA$searchTaxon))
@@ -324,17 +326,23 @@ COMBO.SUA.LGA = cbind.data.frame(COMBO.RASTER.SP, LGA.JOIN)
 
 #########################################################################################################################
 ## AGGREGATE THE NUMBER OF LGAs EACH SPECIES IS FOUND IN. NA LGAs ARE OUTSIDE AUS
-## Could Also include the koppen zones here, within Australia :: "Koppen_aus"
-LGA.AGG   = tapply(COMBO.SUA.LGA$LGA_NAME16, COMBO.SUA.LGA$searchTaxon, function(x) length(unique(x))) ## group LGA by species name
-AUS.AGG   = aggregate(LGA_CODE16 ~ searchTaxon, data = COMBO.SUA.LGA, function(x) {sum(!is.na(x))}, na.action = NULL)
-LGA.AGG   = as.data.frame(LGA.AGG)
-LGA.AGG   = cbind.data.frame(AUS.AGG, LGA.AGG)
-names(LGA.AGG) = c("searchTaxon", "AUS_RECORDS", "LGA_COUNT")
+SUA.AGG   = tapply(COMBO.SUA.LGA$SUA_NAME16, COMBO.SUA.LGA$searchTaxon, function(x) length(unique(x))) ## group SUA by species name
+SUA.AGG   = as.data.frame(SUA.AGG)
+AUS.AGG   = aggregate(SUA_NAME16 ~ searchTaxon, data = COMBO.SUA.LGA, function(x) {sum(!is.na(x))}, na.action = NULL)
+
+SUA.AGG   = cbind.data.frame(AUS.AGG, SUA.AGG)
+names(SUA.AGG) = c("searchTaxon", "AUS_RECORDS", "SUA_COUNT")
 
 
-## Check
-dim(LGA.AGG)
-head(LGA.AGG)
+## Now create a table of all the SUA's that each species occurrs
+SUA.SPP = as.data.frame(table(COMBO.SUA.LGA[["SUA_NAME16"]], COMBO.SUA.LGA[["searchTaxon"]]))
+names(SUA.SPP) = c("SUA", "SPECIES", "SUA_COUNT")
+saveRDS(SUA.SPP, paste0('data/base/HIA_LIST/COMBO/SUA_SPP_', save_run, '.rds'))
+
+
+## Check : That's ok, but we want a table of which SUA each species is actually in.
+dim(SUA.AGG)
+head(SUA.AGG)
 
 
 ## 
@@ -432,12 +440,12 @@ dim(COMBO.NICHE)
 #########################################################################################################################
 ## Add the counts of Australian records for each species to the niche database
 names(COMBO.NICHE)
-names(LGA.AGG)
+names(SUA.AGG)
 dim(COMBO.NICHE)
-dim(LGA.AGG)
+dim(SUA.AGG)
 
 
-COMBO.LGA = join(COMBO.NICHE, LGA.AGG)                            ## The tapply needs to go where the niche summaries are
+COMBO.LGA = join(COMBO.NICHE, SUA.AGG)                            ## The tapply needs to go where the niche summaries are
 names(COMBO.LGA)
 
 dim(COMBO.LGA)
@@ -526,12 +534,12 @@ head(COMBO.LGA$LGA_COUNT)
 #########################################################################################################################
 ## Add the counts of Australian records for each species to the niche database
 # names(COMBO.NICHE)
-# names(LGA.AGG)
+# names(SUA.AGG)
 # dim(COMBO.NICHE)
-# dim(LGA.AGG)
+# dim(SUA.AGG)
 # 
 # 
-# COMBO.LGA = join(COMBO.NICHE, LGA.AGG)                            ## The tapply needs to go where the niche summaries are
+# COMBO.LGA = join(COMBO.NICHE, SUA.AGG)                            ## The tapply needs to go where the niche summaries are
 # names(COMBO.LGA)
 # 
 # dim(COMBO.LGA)

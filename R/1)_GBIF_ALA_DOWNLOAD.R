@@ -13,15 +13,15 @@
 
 
 ## Change the ALA biocache to the old one
-ala_config(caching = "off")
-ala_config(verbose = TRUE)
-
-
-server_config = getOption("ALA4R_server_config")
-
-server_config$base_url_biocache = "https://biocache-lb.ala.org.au/ws"
-server_config$base_url_biocache_download = "https://biocache-lb.ala.org.au/biocache-download/"
-server_config
+# ala_config(caching = "off")
+# ala_config(verbose = TRUE)
+# 
+# 
+# server_config = getOption("ALA4R_server_config")
+# 
+# server_config$base_url_biocache = "https://biocache-lb.ala.org.au/ws"
+# server_config$base_url_biocache_download = "https://biocache-lb.ala.org.au/biocache-download/"
+# server_config
 
 
 ## Create a list of all the taxa to download
