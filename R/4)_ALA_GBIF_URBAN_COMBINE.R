@@ -21,10 +21,10 @@
 #source('./R/HIA_LIST_MATCHING.R')
 rasterTmpFile()
 
-# GBIF.LAND = readRDS("./data/base/HIA_LIST/GBIF/GBIF_TREES_LAND_OLD_ALA.rds")
+# GBIF.LAND = readRDS("./data/base/HIA_LIST/GBIF/GBIF_TREES_LAND_NEW_ALA_300_SPAT.rds")
 ## Load GBIF and ALA data
 #
-#ALA.TREES.LAND = readRDS("./data/base/HIA_LIST/GBIF/ALA_TREES_LAND_OLD_ALA.rds")
+#ALA.TREES.LAND = readRDS("./data/base/HIA_LIST/ALA/ALA_TREES_LAND_NEW_ALA_300_SPAT.rds")
 
 
 
@@ -265,7 +265,7 @@ summary(COMBO.RASTER.CONVERT$PET)
 names(COMBO.RASTER.CONVERT)
 dim(COMBO.RASTER.CONVERT)
 formatC(dim(COMBO.RASTER.CONVERT)[1], format = "e", digits = 2)
-identical(length(unique(COMBO.RASTER.CONVERT$searchTaxon)), length(GBIF.spp))
+length(unique(COMBO.RASTER.CONVERT$searchTaxon));length(GBIF.spp)
 
 
 ## Plot a few points to see :: do those look reasonable?

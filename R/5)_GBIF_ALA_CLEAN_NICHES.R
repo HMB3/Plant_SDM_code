@@ -17,8 +17,8 @@
 
 #########################################################################################################################
 ## Read in the three data tables
-#TI.RASTER.CONVERT = readRDS("./data/base/HIA_LIST/COMBO/TI_RASTER_CONVERT_OLD_ALA.rds")
-#COMBO.RASTER.CONVERT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONVERT_OLD_ALA.rds")
+#TI.RASTER.CONVERT = readRDS("./data/base/HIA_LIST/COMBO/TI_RASTER_CONVERT_NEW_ALA_300_SPAT.rds")
+#COMBO.RASTER.CONVERT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONVERT_NEW_ALA_300_SPAT.rds")
 rasterTmpFile()
 
 

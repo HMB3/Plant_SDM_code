@@ -89,7 +89,7 @@ lapply(GBIF.spp, function(spp){
                          outdir, 
                          template.raster,
                          min_n                   = 20,     ## This should be higher...
-                         max_bg_size             = 100000, 
+                         max_bg_size             = 70000, 
                          Koppen                  = Koppen_1975,
                          background_buffer_width = 200000,
                          shapefiles              = TRUE,

@@ -364,9 +364,10 @@ length(unique(ALA.TREES.LAND$searchTaxon))
 
 
 ## One of the ALA columns is causing trouble. Reduce the ALA dataset to a minimum set
-names(ALA.TREES.LAND)
+sort(names(ALA.TREES.LAND))
 ALA.TREES.LAND = ALA.TREES.LAND[c("searchTaxon",      "scientificName", "SOURCE", 
-                                  "lon", "lat",       "coordinateUncertaintyInMetres", "geodeticDatum", "year", "locality", "country", 
+                                  "lon", "lat",       "coordinateUncertaintyInMetres", #"geodeticDatum", 
+                                  "year", "locality", "country", 
                                   "basisOfRecord",    "institutionCode", "rank",
                                   "Taxonomic.status", "New.Taxonomic.status", "New.Genus", "New.Species")]
 saveRDS(ALA.TREES.LAND, paste0('data/base/HIA_LIST/ALA/ALA_TREES_LAND_', save_run, '.rds'))

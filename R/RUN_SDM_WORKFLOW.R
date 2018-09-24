@@ -3,7 +3,7 @@
 #########################################################################################################################
 
 
-## This code runs the whole SDM workflow for the HIA project, for a subset of species (e.g. those checked by Linda)
+## This code runs the whole SDM workflow for the HIA project, for a subset of species (e.g. whichever you supply)
 
 
 #########################################################################################################################
@@ -21,20 +21,20 @@ source('./R/HIA_TREE_LIST.R')
 
 
 ## Set global species variables here : species lists, and saving directories
-GBIF.spp      = setdiff(TPL.SPP, intersect(TPL.SPP, ala.download))  # workaround for ALA problem use TPL checked species
-GBIF.spp.rev  = sort(TREE.HIA.SPP, decreasing = TRUE) 
+GBIF.spp      = setdiff(TPL.SPP, intersect(TPL.SPP, ala.download))  # your list of species
+GBIF.spp.rev  = sort(TREE.HIA.SPP, decreasing = TRUE)               # the list reversed - only needed for a big list
 
 
-save_run      = "NEW_ALA_300_SPAT"
-map_spp_list  = gsub(" ", "_", GBIF.spp) #TPL_SPP
-map_spp_rev   = sort(map_spp_list, decreasing = TRUE) 
+save_run      = "NEW_ALA_300_SPAT"                                  # a variable to append the run to the output files
+map_spp_list  = gsub(" ", "_", GBIF.spp)                            # species list with "_" for mapping
+map_spp_rev   = sort(map_spp_list, decreasing = TRUE)               # reversed
 
-GBIF_path     = "./data/base/HIA_LIST/GBIF/OCC_SEARCH/"
-ALA_path      = "./data/base/HIA_LIST/ALA/TREES_TEST/"
+GBIF_path     = "./data/base/HIA_LIST/GBIF/OCC_SEARCH/"             # The path where GBIF data is stored
+ALA_path      = "./data/base/HIA_LIST/ALA/TREES_TEST/"              # The path where ALA data is stored
 
-save_dir      = 'output/maxent/SUA_TREES_OLD_ALA'
-out_dir       = 'output/maxent/SUA_TREES_OLD_ALA'
-maxent_path   = 'output/maxent/SUA_TREES_OLD_ALA/'
+save_dir      = 'output/maxent/SUA_TREES_OLD_ALA'                   # The save directory
+out_dir       = 'output/maxent/SUA_TREES_OLD_ALA'                   # same, probably duplicated
+maxent_path   = 'output/maxent/SUA_TREES_OLD_ALA/'                  # same, probably duplicated
 
 
 #########################################################################################################################
@@ -47,17 +47,16 @@ source('./R/ALA_DATA_FILTER_TAXO_SCIENTIFIC_NAME.R', echo = TRUE)
 
 
 ## Step 4 :: combine GBIF, ALA and urban occurrence data into a single table, extract environmental condtions 
-## & add contextual info for each record (taxonomic and horticultural) 
 source('./R/4)_ALA_GBIF_URBAN_COMBINE.R', echo = TRUE)
 
 
 ## Step 5 :: clean the occurrence data using the 'CleanCoordinates' function in the CoordinateCleaner package to remove
-## records near herbaria, duplicates, etc.
-source('./R/5)_GBIF_ALA_CLEAN_NICHES.R', echo = TRUE)
-
-
-## Save .RData file at this point, then load in another file to run steps 7 and 8
-## This would need all n species processed, then a script that splits
+## records near herbaria, duplicates, etc. & add contextual info for each record (taxonomic and horticultural) 
+## Then prepare the SDM table
+## Then clean the spatial outliers
+source('./R/5)_GBIF_ALA_CLEAN_NICHES.R',  echo = TRUE)
+source('./R/6)_PREPARE_SDM_TABLE.R',      echo = TRUE)
+source('./R/6)_CLEAN_SPATIAL_OUTLIERS.R', echo = TRUE)
 
 
 ## Step 7 :: Run maxent on a table of all species
@@ -65,8 +64,8 @@ source('./R/7)_RUN_MAXENT.R', echo = TRUE)
 
 
 ## Step 8 :: Create habitat suitability maps for each species using six GCMs and three time slices (2030/50/70). 
-## Then summary maxent results and estimate species presences in significant urban areas under climate change
-## Takes awhile, so probably run different time slices in separate R sessions
+## Then summarise maxent results and estimate species presences in significant urban areas under climate change
+## Takes awhile, so probably run different time slices (2030, 2050, 2070) in separate R sessions
 source('./R/8)_PREDICT_SDM_SCENARIOS.R', echo = TRUE)
 
 
@@ -78,8 +77,8 @@ source('./R/8)_PREDICT_SDM_SCENARIOS.R', echo = TRUE)
 #########################################################################################################################
 
 
-## Create a variable for file names to be save (i.e. pasted in) for each run
-## Increase the taxonomic check to include all species on HIA list
+## Find points that make the code not reproducible
+## Figure out how to make step 8 parallel
 
 
 #########################################################################################################################
