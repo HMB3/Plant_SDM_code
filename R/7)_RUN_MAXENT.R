@@ -221,7 +221,7 @@ lapply(GBIF.spp, function(spp){
 ##     Update Species table with new ALA data........................................................................  
 
 
-## 2). Fix the taxonomy
+## 2). Fixed the taxonomy
 
 ##     Follow steps in file 3). 
 
@@ -231,6 +231,8 @@ lapply(GBIF.spp, function(spp){
 
 ## 4). Run modelling and mapping steps through Katana. To do this, we need a loop that processes one species at a time
 ##     This means processing the data up to step 7, then running steps 7 and 8 through Katana 
+
+##     Download Shawn's species and send him the new ones............................................................
      
 
 ## 4). Use more forgiving thresholds (10%) for all species: Done
@@ -239,9 +241,9 @@ lapply(GBIF.spp, function(spp){
   
 
 ## 5). Combine output: 
-##     Use 2016 shapefile.................................................................................................
+##     Use 2016 SUA shapefile........................................................................................
 
-## Table
+##      Table
 ##     "searchTaxon" "No.plantings" "Number.of.growers" "Number.of.States/LGAs/Koppen zones" "Origin" "AUC" "TSS" 
 
 ##     Maps: unique raster values for (search in explorer)
@@ -254,17 +256,24 @@ lapply(GBIF.spp, function(spp){
 ## 6). Check combined maps for all species : make sure step 9 is working. 
 ##     Create a spreadsheet of all species results. Check as before - 
 
-##     summary statistics, 
+##     Summary statistics, 
 ##     input points, 
 ##     current raster,
 ##     Future suitability
 
 
 ## 7). 
-##     Create tables in R to summarise gain and loss in each SUA
+##     Create tables in R to summarise gain and loss in each SUA - Linda to create this code, then add another step to 9).
+
+##     Update figures and tables - only doing species gain and stable, not loss.......................................
 
 
-## 8). What is the story? Draft results and discussion.
+## 8). What is the story? Draft results and discussion. Linda to create story - don't do turnover
+
+
+
+
+## 
 
 
 ##     If needed, thin records for 28 spp. with boundary bias, using the SDM tool box. Send Alessandro the latest file .shp
