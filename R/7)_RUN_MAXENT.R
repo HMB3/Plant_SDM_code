@@ -21,16 +21,7 @@
 
 #########################################################################################################################
 ## Load packages, functions and data
-SDM.SPAT.ALL = readRDS('data/base/HIA_LIST/COMBO/SDM_SPAT_ALL_OLD_ALA.rds')
-SDM.SPAT.TEST = subset(SDM.SPAT.ALL, searchTaxon == "Acacia baileyana" | 
-                         searchTaxon == "Acacia boormanii" |
-                         searchTaxon == "Acacia cognata" )
-unique(SDM.SPAT.TEST$searchTaxon)
-unique(SDM.SPAT.TEST$SOURCE)
-saveRDS(SDM.SPAT.TEST, 'data/base/HIA_LIST/COMBO/SDM_SPAT_ALL_OLD_ALA_TEST.rds')
-dim(subset(SDM.SPAT.ALL, searchTaxon == "Quercus robur")) 
-rasterTmpFile()
-
+SDM.SPAT.ALL = readRDS(paste0('data/base/HIA_LIST/COMBO/SDM_SPAT_ALL_', save_run, '.rds'))
 
 
 
@@ -54,7 +45,6 @@ unique(SDM.SPAT.ALL$SOURCE)
 ## Run Maxent using a random selection of background points. 
 length(unique(SDM.SPAT.ALL$searchTaxon))
 projection(template.raster);projection(SDM.SPAT.ALL);projection(Koppen_1975)
-GBIF.spp[28]
 
 
 #########################################################################################################################
@@ -212,7 +202,6 @@ lapply(GBIF.spp, function(spp){
 
 
 ## Which of these components can be done now?
-## The last steps combining the models would be handy to have finished
 
 
 ## 1). 400 tree spp that are commonly planted and traded, with sufficient spatial data to model robustly: done
@@ -232,7 +221,11 @@ lapply(GBIF.spp, function(spp){
 ## 4). Run modelling and mapping steps through Katana. To do this, we need a loop that processes one species at a time
 ##     This means processing the data up to step 7, then running steps 7 and 8 through Katana 
 
-##     Download Shawn's species and send him the new ones............................................................
+
+##     Download Shawn's species and send him the new ones................................................................
+
+
+##     Check if making the BG points smaller improves the time............................................................
      
 
 ## 4). Use more forgiving thresholds (10%) for all species: Done
@@ -262,8 +255,10 @@ lapply(GBIF.spp, function(spp){
 ##     Future suitability
 
 
-## 7). 
-##     Create tables in R to summarise gain and loss in each SUA - Linda to create this code, then add another step to 9).
+##     Check maps for New ALA species.................................................................................
+
+
+## 7). Create tables in R to summarise gain and loss in each SUA - Linda to create this code, then add another step to 9).
 
 ##     Update figures and tables - only doing species gain and stable, not loss.......................................
 
@@ -271,9 +266,16 @@ lapply(GBIF.spp, function(spp){
 ## 8). What is the story? Draft results and discussion. Linda to create story - don't do turnover
 
 
+##     Fix mapping function to use mapply in function.................................................................
+
+   
+##     Use mess masks to see if the 35 species work ....................................................................
+##     Where does the mess mask layer get used, in the combine function?
+##     If so, we need a separate folder for the MESS species to process these
+##     My combine function does everything in one step, so it's not the same process as what John uses
 
 
-## 
+##     Just compare output for MESS species - 
 
 
 ##     If needed, thin records for 28 spp. with boundary bias, using the SDM tool box. Send Alessandro the latest file .shp

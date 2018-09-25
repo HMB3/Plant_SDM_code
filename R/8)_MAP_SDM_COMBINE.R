@@ -35,84 +35,7 @@ rasterTmpFile()
 ## Eight of the 40 CMIP5 models assessed in this project have been selected for use in provision of application-ready data. 
 ## This facilitates efficient exploration of climate projections for Australia.
 ## https://www.climatechangeinaustralia.gov.au/en/support-and-guidance/faqs/eight-climate-models-data/
-
-## The full list is:
-# scen = c("ip85bi50", "mc85bi50", "mg85bi50", "mi85bi50", "mp85bi50", 
-#          "mr85bi50", "no85bi50", "ac85bi50", "bc85bi50", "cc85bi50", 
-#          "cn85bi50", "gf85bi50", "gs85bi50", "hd85bi50", "he85bi50",
-#          "hg85bi50", "in85bi50")
-
-
-## We can only get the bioclim variables for 6 of these projections......................................................
-## Create a lookup table of GCMs using the WORLDCLIM website
-h <- read_html('http://www.worldclim.org/cmip5_30s') 
-gcms <- h %>% 
-  html_node('table') %>% 
-  html_table(header = TRUE) %>% 
-  filter(rcp85 != '')
-
-id.50 <- h %>% 
-  html_nodes(xpath = "//a[text()='bi']/@href") %>% 
-  as.character %>% 
-  grep('85bi50', ., value = TRUE) %>% 
-  basename %>% 
-  sub('\\.zip.', '', .)
-
-id.70 <- h %>% 
-  html_nodes(xpath = "//a[text()='bi']/@href") %>% 
-  as.character %>% 
-  grep('85bi70', ., value = TRUE) %>% 
-  basename %>% 
-  sub('\\.zip.', '', .)
-
-
-## Work around because the 2030 data comes from CC in Aus, not worldclim
-id.30 = gsub("50", "30", id.50)
-
-
-## Create the IDs
-gcms.30 <- cbind(gcms, id.30)
-gcms.30$GCM = sub(" \\(#\\)", "", gcms$GCM)
-
-gcms.50 <- cbind(gcms, id.50)
-gcms.50$GCM = sub(" \\(#\\)", "", gcms$GCM)  ## sub replaces first instance in a string, gsub = global
-
-gcms.70 <- cbind(gcms, id.70)
-gcms.70$GCM = sub(" \\(#\\)", "", gcms$GCM) 
-
-
-## Now create the scenario lists across which to loop
-gcms.50 ; gcms.70 ; gcms.30
-
-
-## Just get the 6 models picked by CSIRO for Australia, for 2030, 2050 and 2070
-scen_2030 = c("mc85bi30", "no85bi30", "ac85bi30", "cc85bi30", "gf85bi30", "hg85bi30")
-scen_2050 = c("mc85bi50", "no85bi50", "ac85bi50", "cc85bi50", "gf85bi50", "hg85bi50")
-scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cc85bi70", "gf85bi70", "hg85bi70")
-
-
-## Then create a stack of current environmental conditions outside the function, and an Australia shapefile for the mapping later...
-# aus <- ne_states(country = 'Australia') %>% 
-#   subset(!grepl('Island', name))
-# 
-# shapefile = aus
-
-## Now divide the current environmental grids by 10
-aus.grids.current <- stack(
-  file.path('./data/base/worldclim/aus/1km/bio/current',   ## ./data/base/worldclim/aus/1km/bio
-            sprintf('bio_%02d.tif', 1:19)))
-
-for(i in 1:11) {
-  
-  ## simple loop
-  message(i)
-  aus.grids.current[[i]] <- aus.grids.current[[i]]/10
-  
-}
-
-
-#save.image("SDM_MAPPING.RData")
-
+head(gcms.50) ; head(gcms.70) ; head(gcms.30)
 
 
 
@@ -199,8 +122,8 @@ path.set.var  =  maxent_path
 
 
 ## Create an object for the maxent settings :: using the same variable for every model
-model.selection.settings = "Set_variables"  
-records_setting          = "COORD_CLEAN"
+# model.selection.settings = "Set_variables"  
+# records_setting          = "COORD_CLEAN"
 
 
 ## Create a file list for each model run

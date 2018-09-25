@@ -165,6 +165,14 @@ CRS.AUS.ALB  <- CRS("+init=EPSG:3577")
 ALB.CONICAL  <- CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs')
 
 
+
+
+
+#########################################################################################################################
+## 2). READ IN RASTER COMPONENTS
+#########################################################################################################################
+
+
 #########################################################################################################################
 ## Now create the variables needed to access current environmental conditions + their names in the functions
 sdm.predictors <- c("Annual_mean_temp",    "Mean_diurnal_range",  "Isothermality",      "Temp_seasonality",  
@@ -203,10 +211,77 @@ names(env.grids.current) <- sdm.predictors[i]
 identical(names(env.grids.current),sdm.predictors)
 
 
+h <- read_html('http://www.worldclim.org/cmip5_30s') 
+gcms <- h %>% 
+  html_node('table') %>% 
+  html_table(header = TRUE) %>% 
+  filter(rcp85 != '')
+
+id.50 <- h %>% 
+  html_nodes(xpath = "//a[text()='bi']/@href") %>% 
+  as.character %>% 
+  grep('85bi50', ., value = TRUE) %>% 
+  basename %>% 
+  sub('\\.zip.', '', .)
+
+id.70 <- h %>% 
+  html_nodes(xpath = "//a[text()='bi']/@href") %>% 
+  as.character %>% 
+  grep('85bi70', ., value = TRUE) %>% 
+  basename %>% 
+  sub('\\.zip.', '', .)
+
+
+## Work around because the 2030 data comes from CC in Aus, not worldclim
+id.30 = gsub("50", "30", id.50)
+
+
+## Create the IDs
+gcms.30 <- cbind(gcms, id.30)
+gcms.30$GCM = sub(" \\(#\\)", "", gcms$GCM)
+
+gcms.50 <- cbind(gcms, id.50)
+gcms.50$GCM = sub(" \\(#\\)", "", gcms$GCM)  ## sub replaces first instance in a string, gsub = global
+
+gcms.70 <- cbind(gcms, id.70)
+gcms.70$GCM = sub(" \\(#\\)", "", gcms$GCM) 
+
+
+## Now create the scenario lists across which to loop
+gcms.50 ; gcms.70 ; gcms.30
+
+
+## Just get the 6 models picked by CSIRO for Australia, for 2030, 2050 and 2070
+scen_2030 = c("mc85bi30", "no85bi30", "ac85bi30", "cc85bi30", "gf85bi30", "hg85bi30")
+scen_2050 = c("mc85bi50", "no85bi50", "ac85bi50", "cc85bi50", "gf85bi50", "hg85bi50")
+scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cc85bi70", "gf85bi70", "hg85bi70")
+
+
+## Then create a stack of current environmental conditions outside the function, and an Australia shapefile for the mapping later...
+# aus <- ne_states(country = 'Australia') %>% 
+#   subset(!grepl('Island', name))
+# 
+# shapefile = aus
+
+## Now divide the current environmental grids by 10
+aus.grids.current <- stack(
+  file.path('./data/base/worldclim/aus/1km/bio/current',   ## ./data/base/worldclim/aus/1km/bio
+            sprintf('bio_%02d.tif', 1:19)))
+
+for(i in 1:11) {
+  
+  ## simple loop
+  message(i)
+  aus.grids.current[[i]] <- aus.grids.current[[i]]/10
+  
+}
+
+
+
 
 
 #########################################################################################################################
-## 2). READ IN SPECIES LISTS
+## 3). READ IN SPECIES LISTS
 #########################################################################################################################
 
 
@@ -327,7 +402,7 @@ camp_spp = gsub(" ", "_", camp.spp)
 
 
 #########################################################################################################################
-## 3). CLEAN THE HIA LIST
+## 4). CLEAN THE HIA LIST
 #########################################################################################################################
 
 
@@ -403,7 +478,7 @@ names(HIA.list)
 
 
 #########################################################################################################################
-## 4). CREATE LIST OF BINOMIALS : might not need this now
+## 5). CREATE LIST OF BINOMIALS : might not need this now
 #########################################################################################################################
 
 
@@ -484,7 +559,7 @@ head(HIA.SPP.LOOKUP) ## Can merge on the bilogical data here...
 
 
 #########################################################################################################################
-## 7). MANUSCRIPT LIST
+## 6). MANUSCRIPT LIST
 #########################################################################################################################
 
 
@@ -578,7 +653,7 @@ write.csv(TREE.EVERGREEN, "./data/base/HIA_LIST/COMBO/TREE_EVERGREEN.csv", row.n
 
 
 #########################################################################################################################
-## 8). CHECK TAXONOMY AND ORIGIN OF THE CHOSEN SPECIES
+## 7). CHECK TAXONOMY AND ORIGIN OF THE MANUSCRIPT SPECIES
 #########################################################################################################################
 
 
@@ -625,6 +700,8 @@ ala.download = trimws(ala.download)
 ## OUTSTANDING LIST TASKS:
 #########################################################################################################################
 
+
+## Remove gunk from this file............................................................................................
 
 ## Increase the taxonomic check to include all species on HIA list
 
