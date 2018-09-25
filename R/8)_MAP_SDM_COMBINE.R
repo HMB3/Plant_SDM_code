@@ -29,9 +29,7 @@ rasterTmpFile()
 
 
 #########################################################################################################################
-## Create a list of GCM scenarios, which are used to create maps of habitat suitability 
-
-
+## Use a list of GCM scenarios to create maps of habitat suitability 
 ## Eight of the 40 CMIP5 models assessed in this project have been selected for use in provision of application-ready data. 
 ## This facilitates efficient exploration of climate projections for Australia.
 ## https://www.climatechangeinaustralia.gov.au/en/support-and-guidance/faqs/eight-climate-models-data/
@@ -46,12 +44,9 @@ head(gcms.50) ; head(gcms.70) ; head(gcms.30)
 
 #########################################################################################################################
 ## For each species, use a function to create raster files and maps under all six GCMs at each time step
+
 ## First remove species without data from the modelling step 7
-# no_data      <- c ("Baeckea_virgata",           "Kennedia_beckxiana",    "Grevillea_rivularis", "Arctostaphylos_densiflora", 
-#                    "Cupressocyparis_leylandii", "Eucalyptus_intermedia", "Ficus_hillii", "Pentaceras_australi", 
-#                    "Pentaceras_australis",      "Pouteria_australis",    "Pouteria_chartacea", "Pouteria_eerwah", 
-#                    "Radermachera_gigantea",     "Randia_benthamiana",    "Raphiolepis_umbellata", "Tilia_mongolica", 
-#                    "Trema_aspera", "Xanthostemon_verticillatus")
+# no_data      <- c ("Baeckea_virgata",           "Kennedia_beckxiana")
 # map_spp_list     <- map_spp_list [! map_spp_list %in% no_data]
 # no_data %in% map_spp_list
 

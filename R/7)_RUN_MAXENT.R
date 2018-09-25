@@ -35,15 +35,13 @@ SDM.SPAT.ALL = readRDS(paste0('data/base/HIA_LIST/COMBO/SDM_SPAT_ALL_', save_run
 ## Check the SDM table
 identical(names(env.grids.current),sdm.predictors)
 dim(SDM.SPAT.ALL)
-length(unique(SDM.SPAT.ALL$searchTaxon))
+length(intersect(unique(SDM.SPAT.ALL$searchTaxon), GBIF.spp))  ## should be same as the number of species
 length(unique(SDM.SPAT.ALL$OBS))
 unique(SDM.SPAT.ALL$SOURCE)
-## save.image('SDM_ANALYSES.RData')
 
 
 #########################################################################################################################
 ## Run Maxent using a random selection of background points. 
-length(unique(SDM.SPAT.ALL$searchTaxon))
 projection(template.raster);projection(SDM.SPAT.ALL);projection(Koppen_1975)
 
 
@@ -52,7 +50,7 @@ projection(template.raster);projection(SDM.SPAT.ALL);projection(Koppen_1975)
 lapply(GBIF.spp, function(spp){ 
   
   ## Skip the species if the directory already exists, before the loop
-  outdir <- out_dir
+  outdir <- maxent_path
   
   if(dir.exists(file.path(outdir, gsub(' ', '_', spp)))) {
     message('Skipping ', spp, ' - already run.')
