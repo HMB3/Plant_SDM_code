@@ -348,7 +348,7 @@ tail(SDM.RESULTS.DIR, 20);tail(map_spp, 20); tail(MAXENT.RESULTS, 20)[, c("searc
 
 
 ## Save this as an object
-#save.image("MAPPING_DATA.RData")
+#save.image("MAPPING_DATA_NEW_ALA.RData")
 
 
 
@@ -399,7 +399,7 @@ percent.om.rev  = percent.10.om[sort(order(percent.10.om),   decreasing = TRUE)]
 suitability.2030 = tryCatch(mapply(combine_gcm_threshold,
                                    DIR_list     = SDM.RESULTS.DIR,
                                    species_list = map_spp,
-                                   maxent_path  = out_dir,
+                                   maxent_path  = maxent_path,
                                    thresholds   = percent.10.log,
                                    percentiles  = percent.10.om,
                                    time_slice   = 30,
@@ -416,7 +416,7 @@ suitability.2030 = tryCatch(mapply(combine_gcm_threshold,
 suitability.2050 = tryCatch(mapply(combine_gcm_threshold, 
                                    DIR_list     = SDM.RESULTS.DIR,
                                    species_list = map_spp,
-                                   maxent_path  = out_dir,
+                                   maxent_path  = maxent_path,
                                    thresholds   = percent.10.log,
                                    percentiles  = percent.10.om,
                                    time_slice   = 50,
@@ -433,7 +433,7 @@ suitability.2050 = tryCatch(mapply(combine_gcm_threshold,
 suitability.2070 = tryCatch(mapply(combine_gcm_threshold, 
                                    DIR_list     = SDM.RESULTS.DIR,
                                    species_list = map_spp,
-                                   maxent_path  = out_dir,
+                                   maxent_path  = maxent_path,
                                    thresholds   = percent.10.log,
                                    percentiles  = percent.10.om,
                                    time_slice   = 70,
@@ -451,7 +451,7 @@ suitability.2070 = tryCatch(mapply(combine_gcm_threshold,
 mapply(combine_gcm_threshold,
        DIR_list     = SDM.DIR.REV,
        species_list = map_spp_rev,
-       maxent_path  = out_dir,
+       maxent_path  = maxent_path,
        thresholds   = percent.log.rev,
        percentiles  = percent.om.rev,
        time_slice   = 30,  ## 50, 70
