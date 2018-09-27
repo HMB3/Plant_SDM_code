@@ -12,6 +12,13 @@
 #########################################################################################################################
 
 
+## Drag the NEW_ALA folder into the old one..............................................................................
+## Reset maxent_path to new species
+## Re-caclculate SUA.SPP for all 380 species
+## Check maps for the next lot of species
+## Then calculate table for all 380 species
+
+
 ## Read in the table of species in SUAs
 SUA.SPP = readRDS(paste0('data/base/HIA_LIST/COMBO/SUA_SPP_', save_run, '.rds'))
 
@@ -19,7 +26,7 @@ SUA.SPP = readRDS(paste0('data/base/HIA_LIST/COMBO/SUA_SPP_', save_run, '.rds'))
 
 #########################################################################################################################
 ## Create a list of the gain/loss tables. Just run this on the final SUA table 
-GAIN.LOSS.list = list.files(save_dir, pattern = 'gain_loss_table_', full.names = TRUE, recursive = TRUE) 
+GAIN.LOSS.list = list.files(maxent_path, pattern = 'gain_loss_table_', full.names = TRUE, recursive = TRUE) 
 length(GAIN.LOSS.list)/3;length(map_spp)  ## if all spp models have completed successfully, should be number of species * 3 time periods
 
 
@@ -73,7 +80,7 @@ write.csv(GAIN.LOSS.TABLE, paste0('output/tables/OVERALL_GAIN_LOSS_TABLE_', save
 
 #########################################################################################################################
 ## The multiple thresholds could present a problem
-SUA.tables = list.files(save_dir, pattern = 'area_SUA_summary_', full.names = TRUE, recursive = TRUE) 
+SUA.tables = list.files(maxent_path, pattern = 'area_SUA_summary_', full.names = TRUE, recursive = TRUE) 
 length(SUA.tables)/3;length(map_spp) 
 
 
@@ -276,14 +283,14 @@ length(unique(SUA.COMPLETE$SPECIES))
 #########################################################################################################################
 ## Look through the output directory for species where the code didn't finish. This is usually species with < 27 files
 ## Summing 200 rasters will take ages 
-raster.dirs <- list.dirs(path = save_dir, full.names = FALSE, recursive = FALSE)
+raster.dirs <- list.dirs(path = maxent_path, full.names = FALSE, recursive = FALSE)
 
 
 ## Loop over the directories for the best species: current maps
 raster.current <- sapply(raster.dirs, function(x) {
   
   ## List the files for that time slice
-  list.files(paste0(save_dir, x), pattern = 'current_suit_above', full.names = TRUE, recursive = TRUE)
+  list.files(paste0(maxent_path, x), pattern = 'current_suit_above', full.names = TRUE, recursive = TRUE)
   
 })
 
@@ -293,7 +300,7 @@ raster.current <- sapply(raster.dirs, function(x) {
 raster.2030 <- sapply(raster.dirs, function(x) {
   
   ## List the files for that time slice
-  list.files(paste0(save_dir, x), pattern = '2030_4GCMs_above', full.names = TRUE, recursive = TRUE)
+  list.files(paste0(maxent_path, x), pattern = '2030_4GCMs_above', full.names = TRUE, recursive = TRUE)
   
 })
 
@@ -302,7 +309,7 @@ raster.2030 <- sapply(raster.dirs, function(x) {
 raster.2050 <- sapply(raster.dirs, function(x) {
   
   ## List the files for that time slice
-  list.files(paste0(save_dir, x), pattern = '2050_4GCMs_above', full.names = TRUE, recursive = TRUE)
+  list.files(paste0(maxent_path, x), pattern = '2050_4GCMs_above', full.names = TRUE, recursive = TRUE)
   
 })
 

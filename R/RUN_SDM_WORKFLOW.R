@@ -21,20 +21,18 @@ source('./R/HIA_TREE_LIST.R')
 
 
 ## Set global species variables here : species lists, and saving directories
-GBIF.spp      = setdiff(TPL.SPP, intersect(TPL.SPP, ala.download))  # your list of species
-GBIF.spp.rev  = sort(TREE.HIA.SPP, decreasing = TRUE)               # the list reversed - only needed for a big list
+GBIF.spp      = setdiff(TPL.SPP, intersect(TPL.SPP, ala.download))  ## your list of species
+GBIF.spp.rev  = sort(TREE.HIA.SPP, decreasing = TRUE)               ## the list reversed - only needed for a big list
 
 
-save_run      = "NEW_ALA_300_SPAT"                                  # a variable to append the run name to the output files
-map_spp_list  = gsub(" ", "_", GBIF.spp)                            # species list with "_" for mapping
-map_spp_rev   = sort(map_spp_list, decreasing = TRUE)               # reversed
+save_run      = "NEW_ALA_300_SPAT"                                  ## a variable to append the run name to the output files
+map_spp_list  = gsub(" ", "_", GBIF.spp)                            ## species list with "_" for mapping
+map_spp_rev   = sort(map_spp_list, decreasing = TRUE)               ## reversed
 
-GBIF_path     = "./data/base/HIA_LIST/GBIF/OCC_SEARCH/"             # The path where GBIF data is stored
-ALA_path      = "./data/base/HIA_LIST/ALA/TREES_TEST/"              # The path where ALA data is stored
+GBIF_path     = "./data/base/HIA_LIST/GBIF/OCC_SEARCH/"             ## The path where GBIF data is stored
+ALA_path      = "./data/base/HIA_LIST/ALA/TREES_TEST/"              ## The path where ALA data is stored
 
-#save_dir      = 'output/maxent/NEW_ALA'                   # The save directory
-#out_dir       = 'output/maxent/NEW_ALA'                   # same, probably duplicated
-maxent_path   = 'output/maxent/NEW_ALA/'                  # duplicated
+maxent_path   = 'output/maxent/NEW_ALA/'                            ## The directory where files are saved               
 
 
 #########################################################################################################################
