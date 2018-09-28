@@ -92,7 +92,7 @@ p <- c('ff',    'things', 'raster',        'dismo',        'sp',           'latt
        'rgdal', 'rgeos',  'gdalUtils',     'rmaxent',      'readr',        'plyr',         'dplyr',        
        'tidyr', 'readr',  'rnaturalearth', 'rasterVis',    'RColorBrewer', 'latticeExtra', 'parallel',     
        'taxonlookup',     'ALA4R',         'stringr',      'Taxonstand',   'CoordinateCleaner', 'gsubfn', 'PerformanceAnalytics',
-       'rvest', 'magrittr', 'devtools')
+       'rvest', 'magrittr', 'devtools',    'ggplot2',      'reshape2')
 
 # library(raster)
 # library(dismo)

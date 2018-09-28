@@ -319,7 +319,7 @@ head(SUA.WGS)
 projection(COMBO.RASTER.SP);projection(LGA.WGS);projection(SUA.WGS);projection(AUS.WGS)
 SUA.JOIN      = over(COMBO.RASTER.SP, SUA.WGS)              
 COMBO.SUA.LGA = cbind.data.frame(COMBO.RASTER.SP, SUA.JOIN) 
-#saveRDS(COMBO.SUA.LGA, file = paste("./data/base/HIA_LIST/GBIF/COMBO_SUA_LGA.rds"))
+saveRDS(COMBO.SUA.LGA, file = paste0('data/base/HIA_LIST/COMBO/COMBO_SUA_OVER_', save_run, '.rds'))
 ## COMBO.SUA.LGA = readRDS("./data/base/HIA_LIST/GBIF/COMBO_SUA_LGA.rds")
 ## str(unique(COMBO.SUA.LGA$searchTaxon))
 
@@ -335,9 +335,9 @@ names(SUA.AGG) = c("searchTaxon", "AUS_RECORDS", "SUA_COUNT")
 
 
 ## Now create a table of all the SUA's that each species occurrs
-SUA.SPP = as.data.frame(table(COMBO.SUA.LGA[["SUA_NAME16"]], COMBO.SUA.LGA[["searchTaxon"]]))
-names(SUA.SPP) = c("SUA", "SPECIES", "SUA_COUNT")
-saveRDS(SUA.SPP, paste0('data/base/HIA_LIST/COMBO/SUA_SPP_', save_run, '.rds'))
+SUA.SPP.COUNT = as.data.frame(table(COMBO.SUA.LGA[["SUA_NAME16"]], COMBO.SUA.LGA[["searchTaxon"]]))
+names(SUA.SPP.COUNT) = c("SUA", "SPECIES", "SUA_COUNT")
+saveRDS(SUA.SPP.COUNT, paste0('data/base/HIA_LIST/COMBO/SUA_SPP_COUNT', save_run, '.rds'))
 
 
 ## Check : That's ok, but we want a table of which SUA each species is actually in.

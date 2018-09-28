@@ -20,14 +20,17 @@
 
 
 ## Read in the table of species in SUAs
-SUA.SPP = readRDS(paste0('data/base/HIA_LIST/COMBO/SUA_SPP_', save_run, '.rds'))
-
+SUA.SPP.COUNT = readRDS(paste0('data/base/HIA_LIST/COMBO/SUA_SPP_COUNT', save_run, '.rds'))
+length(unique(SUA.SPP.COUNT$SPECIES))
 
 
 #########################################################################################################################
 ## Create a list of the gain/loss tables. Just run this on the final SUA table 
 GAIN.LOSS.list = list.files(maxent_path, pattern = 'gain_loss_table_', full.names = TRUE, recursive = TRUE) 
-length(GAIN.LOSS.list)/3;length(map_spp)  ## if all spp models have completed successfully, should be number of species * 3 time periods
+
+
+## Chrck the exceptios - if all spp models have completed successfully, should be number of species * 3 time periods
+length(GAIN.LOSS.list)/3;length(map_spp)
 
 
 ## Now combine the SUA tables for each species into one table 
@@ -214,9 +217,10 @@ unique(DECREASE.50$SPECIES)
 
 ## Use a numerical definition of the most populated areas, OR, just take the capital cities
 ## MAIN_SUA = c("Sydney", "Melbourne", "Canberra - Queanbeyan", "Brisbane", "Perth", "Adelaide", "Hobart", "Darwin")
-top_n   = 15
+top_n   = 8
 BIG.SUA = head(TOP.SUA.POP[with(TOP.SUA.POP, rev(order(POP_2017))), ], top_n)
 BIG_SUA = BIG.SUA$SUA
+MAP_SUA = c("Adelaide", "Brisbane", "Darwin", "Perth", "Sydney", "Hobart", "Melbourne", "Canberra")
 
 
 ## Restrict the big table to just the largest SUAs
@@ -243,9 +247,11 @@ length(intersect(unique(MAXENT.RATING$SPECIES), unique(SUA.COMPLETE$SPECIES)))
 
 #########################################################################################################################
 ## Join on a column for if the species has records in the SUA
-SUA.COMPLETE = merge(SUA.COMPLETE, MAXENT.RATING)
-SUA.COMPLETE = join(SUA.COMPLETE, SUA.SPP)
-unique(SUA.COMPLETE$MAXENT_RATING)
+
+## Add this in when we have rated the species
+#SUA.COMPLETE = merge(SUA.COMPLETE, MAXENT.RATING)......................................................................
+SUA.COMPLETE = join(SUA.COMPLETE, SUA.SPP.COUNT)
+#unique(SUA.COMPLETE$MAXENT_RATING)....................................................................................
 summary(SUA.COMPLETE)
 View(SUA.COMPLETE)
 
@@ -264,9 +270,76 @@ write.csv(SUA.TOP.PRESENCE, paste0('output/tables/MAXNET_SUA_TOP_',  save_run, '
 #########################################################################################################################
 
 
-## How do you convert this table into a format where you can create a bar graph?
-length(unique(SUA.COMPLETE$SPECIES))
+## This plot is producing blank for the full list of species............................................................
 
+
+## We simply need a count of all the species that are being lost, gained or remaining stable in each SUA
+length(unique(SUA.COMPLETE$SPECIES))
+SUA.PLOT   = table(SUA.COMPLETE$SUA, SUA.COMPLETE$GAIN_LOSS)
+SUA.PLOT.M = melt(SUA.PLOT) 
+names(SUA.PLOT.M) = c("SUA", "AREA_CHANGE", "SPECIES_COUNT")
+head(SUA.PLOT.M)
+
+
+#########################################################################################################################
+## This will plot all the SUAs.
+## Could add a column to SUA for what the mean annual temperature is, to see if there is a pattern
+ggplot(SUA.PLOT.M, aes(x = SUA, fill = AREA_CHANGE)) + 
+  
+  geom_bar(data = subset(SUA.PLOT.M, AREA_CHANGE %in% c("LOSS")),
+           aes(y = -SPECIES_COUNT), position = "stack", stat = "identity") +
+  
+  geom_bar(data = subset(SUA.PLOT.M, !AREA_CHANGE %in% c("LOSS")), 
+           aes(y = SPECIES_COUNT), position = "stack", stat = "identity")
+
+
+#########################################################################################################################
+## Try plotting a subset of just the mapped SUAs
+unique(SUA.PLOT.M$SUA)
+SUA.PLOT.M$SUA = gsub("Canberra - Queanbeyan", "Canberra", SUA.PLOT.M$SUA)
+SUA.PLOT.MAJOR = SUA.PLOT.M[SUA.PLOT.M$SUA %in% MAP_SUA, ] 
+unique(SUA.PLOT.MAJOR$SUA)
+
+
+## Change PNG output
+png(sprintf('output/figures/SUA_BAR_PLOT/SUA_BAR_PLOT_%s.png', save_run),      
+    15, 8, units = 'in', res = 500)
+
+ggplot(SUA.PLOT.MAJOR, aes(x = SUA, fill = AREA_CHANGE)) + 
+  
+  ## The species being lost
+  geom_bar(data = subset(SUA.PLOT.MAJOR, AREA_CHANGE %in% c("LOSS")),
+           aes(y = -SPECIES_COUNT), 
+           position = "stack", stat = "identity", colour="black") +
+  
+  ## The species being gained or remaining stable
+  geom_bar(data = subset(SUA.PLOT.MAJOR, !AREA_CHANGE %in% c("LOSS")), 
+           aes(y = SPECIES_COUNT), 
+           position = "stack", stat = "identity", colour="black") +
+  
+  ## The colour scheme
+  scale_fill_manual(values=rev(colorRampPalette(c('skyblue3', 'brown1', 'seagreen3'))(3))) +
+  
+  ## The axes labels
+  labs(title = "Predicted gains and losses within Significant Urban Areas (SUAs)", 
+       x = "SUA", y = "Species Count") +
+
+## Format axes
+theme(axis.title.x     = element_text(face = "bold", colour = "black", size = 15),
+      axis.text.x      = element_text(angle = 45, vjust = 0.5, size = 12),
+      axis.title.y     = element_text(face = "bold", colour = "black", size = 15),
+      axis.text.y      = element_text(vjust = 0.5, size = 12),
+      title            = element_text(face = "bold", colour = "black", size = 20),
+      legend.title     = element_blank(),
+      legend.text      = element_text(face = "bold", size = 12),
+      panel.background = element_blank(), axis.line = element_line(colour = "black"),
+      panel.border     = element_rect(colour = "black", fill = NA, size = 2))
+  
+  #guides(colour = guide_legend(title.hjust = 1.5))
+
+  #theme_classic() 
+
+dev.off()
 
 
 

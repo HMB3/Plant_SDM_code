@@ -63,7 +63,7 @@ for (i in 1:length(map.spp)) {
       png(sprintf('%s/%s/full/%s_%s.png', maxent_path, save.spp, save.spp, "current_suit"),      
           11, 4, units = 'in', res = 300)
       
-      message('writing map for ', 'map.spp[i]')
+      message('writing thresholded map for ', 'map.spp[i]')
       ## Need an empty frame
       print(levelplot(stack(empty_ras,
                             spp.current, 
