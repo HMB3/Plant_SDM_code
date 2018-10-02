@@ -112,19 +112,10 @@ env.grids.2070 = tryCatch(project_maxent_grids(scen_list     = scen_2070,
 
 
 #########################################################################################################################
-## First, read in the list of files for the current models, and specify the file path
-path.set.var  =  maxent_path
-
-
-## Create an object for the maxent settings :: using the same variable for every model
-# model.selection.settings = "Set_variables"  
-# records_setting          = "COORD_CLEAN"
-
-
 ## Create a file list for each model run
-maxent.tables = list.files(path.set.var)                 
+maxent.tables = list.files(maxent_path)                 
 maxent.tables = intersect(maxent.tables, map_spp_list)   
-maxent_path   = path.set.var                             
+maxent_path   = maxent_path                             
 length(maxent.tables)                                    ## Should match the number of taxa tested
 #no_data %in% maxent.tables
 
@@ -162,7 +153,7 @@ MAXENT.RESULTS <- maxent.tables[c(1:length(maxent.tables))] %>%
 
 #########################################################################################################################
 ## Create True Skill Statistic values (TSS) for each species
-TSS.tables = list.files(path.set.var, pattern = 'species_omission\\.csv$', full.names = TRUE, recursive = TRUE)
+TSS.tables = list.files(maxent_path, pattern = 'species_omission\\.csv$', full.names = TRUE, recursive = TRUE)
 
 
 ## Get the maxium TSS value using the omission data : use _training_ ommision data only
@@ -229,7 +220,7 @@ SDM.RESULTS.DIR <- map_spp %>%
   lapply(function(species) {
     
     ## Create the character string...
-    m <-   sprintf('%s%s/full/', path.set.var, species)                ## path.backwards.sel
+    m <-   sprintf('%s%s/full/', maxent_path, species)                ## path.backwards.sel
     m 
     
   }) %>%
@@ -463,7 +454,7 @@ mapply(combine_gcm_threshold,
 ## OUTSTANDING PREDICTION TASKS:
 #########################################################################################################################
 
-## intersect(list.files(path.set.var), map_spp_list) 
+## intersect(list.files(maxent_path), map_spp_list) 
 
 
 ## 1). Fix species that didn't work on the last run, and run the remaining species
