@@ -76,6 +76,7 @@ write.csv(GAIN.LOSS.TABLE, paste0('output/tables/OVERALL_GAIN_LOSS_TABLE_', save
 
 
 
+
 #########################################################################################################################
 ## 2). COMBINE TABLES OF SPECIES PRESENCES IN SUAs
 #########################################################################################################################
@@ -249,7 +250,7 @@ length(intersect(unique(MAXENT.RATING$SPECIES), unique(SUA.COMPLETE$SPECIES)))
 ## Join on a column for if the species has records in the SUA
 
 ## Add this in when we have rated the species
-#SUA.COMPLETE = merge(SUA.COMPLETE, MAXENT.RATING)......................................................................
+SUA.COMPLETE = merge(SUA.COMPLETE, MAXENT.RATING)
 SUA.COMPLETE = join(SUA.COMPLETE, SUA.SPP.COUNT)
 #unique(SUA.COMPLETE$MAXENT_RATING)....................................................................................
 summary(SUA.COMPLETE)

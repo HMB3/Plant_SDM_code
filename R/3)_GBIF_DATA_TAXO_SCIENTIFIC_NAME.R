@@ -26,6 +26,7 @@ rasterTmpFile()
 #########################################################################################################################
 ## Create a list of species from the downloaded files
 gbif.download = list.files(GBIF_path, pattern = ".RData")
+length(gbif.download)
 
 
 ## what is causing the NA lat problem?

@@ -24,7 +24,7 @@ source('./R/HIA_TREE_LIST.R')
 GBIF.spp      = TPL.SPP # setdiff(TPL.SPP, intersect(TPL.SPP, ala.download))  ## your list of species
 GBIF.spp.rev  = sort(GBIF.spp, decreasing = TRUE)                   ## the list reversed - only needed for a big list
 
-save_run      = "COMBINED_SUA_400_SPP_300km_SPAT"                   ## a variable to append the run name to the output files
+save_run      = "COMBINED_SUA_400_SPP_300km_SPAT"     ## a variable to append the run name to the output files
 map_spp_list  = gsub(" ", "_", GBIF.spp)                            ## species list with "_" for mapping
 map_spp_rev   = sort(map_spp_list, decreasing = TRUE)               ## reversed
 
@@ -45,6 +45,7 @@ source('./R/3)_GBIF_DATA_TAXO_SCIENTIFIC_NAME.R',    echo = TRUE)
 
 ## Step 4 :: combine GBIF, ALA and urban occurrence data into a single table, extract environmental condtions 
 source('./R/4)_ALA_GBIF_URBAN_COMBINE.R', echo = TRUE)
+source('./R/INVENTORY_RASTER.R',          echo = TRUE)
 
 
 ## Step 5 :: clean the occurrence data using the 'CleanCoordinates' function in the CoordinateCleaner package to remove

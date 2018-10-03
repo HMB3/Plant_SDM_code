@@ -28,9 +28,9 @@ formatC(dim(COMBO.RASTER.CONVERT)[1], format = "e", digits = 2)
 names(COMBO.RASTER.CONVERT)
 
 
-length(unique(TI.RASTER.CONVERT $searchTaxon))
+length(unique(TI.RASTER.CONVERT$searchTaxon))
 formatC(dim(TI.RASTER.CONVERT)[1], format = "e", digits = 2)
-
+names(TI.RASTER.CONVERT)
 
 
 
@@ -117,43 +117,41 @@ LUT.100K = LUT.100K [order(LUT.100K)]
 
 
 ## Create a data frame of species name and spatial outlier
-# SPAT.OUT <- LUT.100K %>%  ## unique(TIB.GBIF$species)         
-#   
-#   ## pipe the list of species into lapply
-#   lapply(function(x) {
-#     
-#     ## Create the species df by subsetting by species
-#     f <- subset(TIB.GBIF, species == x) 
-#     
-#     ## Run the spatial outlier detection
-#     message("Running spatial outlier detection for ", x)
-#     sp.flag <- cc_outl(f,
-#                        lon     = "decimallongitude",
-#                        lat     = "decimallatitude",
-#                        species = "species",
-#                        method  = "quantile",
-#                        mltpl   = 5,
-#                        tdi     = 1000,
-#                        value   = "flags")
-#     
-#     ## Now add attache column for species, and the flag for each record
-#     #d = data.frame(searchTaxon = x, SPAT_OUT = sp.flag)
-#     d = cbind(searchTaxon = x, 
-#               SPAT_OUT = sp.flag, f)[c("searchTaxon", "SPAT_OUT", "CC.OBS")] 
-#     
-#     ## Remeber to explicitly return the df at the end of loop, so we can bind
-#     message("Is the spatial vector the same length as the DF? ", identical(dim(d)[1], dim(f)[1]))
-#     return(d)
-#     
-#   }) %>%
-#   
-#   ## Finally, bind all the rows together
-#   bind_rows
+SPAT.OUT <- unique(TIB.GBIF$species) %>%  ## LUT.100K
+  
+  ## pipe the list of species into lapply
+  lapply(function(x) {
+    
+    ## Create the species df by subsetting by species
+    f <- subset(TIB.GBIF, species == x)
+    
+    ## Run the spatial outlier detection
+    message("Running spatial outlier detection for ", x)
+    message(dim(f)[1], " records for ", x)
+    sp.flag <- cc_outl(f,
+                       lon     = "decimallongitude",
+                       lat     = "decimallatitude",
+                       species = "species",
+                       method  = "distance",
+                       #mltpl   = 5,
+                       tdi     = 300,
+                       value   = "flags")
+    
+    ## Now add attache column for species, and the flag for each record
+    #d = data.frame(searchTaxon = x, SPAT_OUT = sp.flag)
+    d = cbind(species = x,
+              SPAT_OUT = sp.flag, f)[c("species", "SPAT_OUT")]
+    
+  }) %>%
+  
+  ## Finally, bind all the rows together
+  bind_rows
 
 
 ## Save data
 # identical(dim(SPAT.OUT)[1], dim(TIB.GBIF)[1])
-# unique(SPAT.OUT$searchTaxon)
+# unique(SPAT.OUT$species)
+# summary(SPAT.OUT$SPAT_OUT)
 # head(SPAT.OUT)
 # saveRDS(SPAT.OUT, paste0('data/base/HIA_LIST/COMBO/ALA_GBIF_SPAT_OUT_', save_run, '.rds'))
 
@@ -169,16 +167,30 @@ LUT.100K = LUT.100K [order(LUT.100K)]
 #########################################################################################################################
 ## Join data :: exclude the decimal lat/long, check the length 
 identical(dim(TIB.GBIF)[1],dim(FLAGS)[1])#;length(GBIF.SPAT.OUT)
-names(FLAGS)[1] = c("coord_spp")
+names(FLAGS)[1]    = c("coord_spp")
+names(SPAT.OUT)[1] = c("spatial_spp")
 identical(COMBO.RASTER.CONVERT$searchTaxon, FLAGS$coord_spp)                                            ## order matches
+identical(COMBO.RASTER.CONVERT$searchTaxon, SPAT.OUT$spatial_spp)                                       ## order matches
 identical(dim(FLAGS)[1], dim(GBIF.TRIM.GEO)[1])
 
 
 #########################################################################################################################
 ## Is the species column the same as the searchTaxon column?
-TEST.GEO = cbind(COMBO.RASTER.CONVERT, FLAGS)#, SPAT.OUT)
+TEST.GEO = cbind(COMBO.RASTER.CONVERT, FLAGS, SPAT.OUT[c("spatial_spp", "SPAT_OUT")])
 summary(TEST.GEO)
 identical(TEST.GEO$searchTaxon, TEST.GEO$coord_spp)                                                     ## order matches
+
+
+## Check the species match between
+Match.CC = TEST.GEO  %>%
+  mutate(Match.order = 
+           str_detect(searchTaxon, spatial_spp)) %>%
+           
+           select(one_of(c("searchTaxon",
+                           "spatial_spp",
+                           "Match.order",
+                           "SPAT_OUT")))
+table(Match.CC$Match.order)
 
 
 ## Not sure why the inverse did not work :: get only the records which were not flagged as being dodgy.

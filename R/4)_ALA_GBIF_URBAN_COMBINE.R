@@ -21,10 +21,10 @@
 #source('./R/HIA_LIST_MATCHING.R')
 rasterTmpFile()
 
-# GBIF.LAND = readRDS("./data/base/HIA_LIST/GBIF/GBIF_TREES_LAND_NEW_ALA_300_SPAT.rds")
+# GBIF.LAND = readRDS(paste0('data/base/HIA_LIST/GBIF/GBIF_TREES_LAND_', save_run, '.rds'))
 ## Load GBIF and ALA data
 #
-#ALA.TREES.LAND = readRDS("./data/base/HIA_LIST/ALA/ALA_TREES_LAND_NEW_ALA_300_SPAT.rds")
+#ALA.TREES.LAND = readRDS(paste0('data/base/HIA_LIST/ALA/ALA_TREES_LAND_', save_run, '.rds'))
 
 
 

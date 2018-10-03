@@ -92,7 +92,7 @@ p <- c('ff',    'things', 'raster',        'dismo',        'sp',           'latt
        'rgdal', 'rgeos',  'gdalUtils',     'rmaxent',      'readr',        'plyr',         'dplyr',        
        'tidyr', 'readr',  'rnaturalearth', 'rasterVis',    'RColorBrewer', 'latticeExtra', 'parallel',     
        'taxonlookup',     'ALA4R',         'stringr',      'Taxonstand',   'CoordinateCleaner', 'gsubfn', 'PerformanceAnalytics',
-       'rvest', 'magrittr', 'devtools',    'ggplot2',      'reshape2', 'rmarkdown', 'flexdashboard', 'shiny')
+       'rvest', 'magrittr', 'devtools',    'ggplot2',      'reshape2', 'rmarkdown', 'flexdashboard', 'shiny', 'rgbif')
 
 # library(raster)
 # library(dismo)
@@ -289,7 +289,7 @@ for(i in 1:11) {
 ## Read in the niche data
 COMBO.NICHE.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_STANDARD_CLEAN.rds")
 CLEAN.NICHE.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_COORD_CLEAN.rds")
-MAXENT.CHECK        = read.csv("./output/maxent/MAXENT_CHECK_1707_2018.csv",    stringsAsFactors = FALSE)
+MAXENT.CHECK        = read.csv("./output/maxent/CHECK_SPP_MAPS_BIAS_0310_2018.csv", stringsAsFactors = FALSE)
 OVERALL.LOSS        = read.csv("./output/tables/OVERALL_LOSS.csv",              stringsAsFactors = FALSE)
 APPENDIX            = read.csv("./data/base/HIA_LIST/COMBO/Appendix_table.csv", stringsAsFactors = FALSE)
 str(unique(COMBO.NICHE.CONTEXT$searchTaxon))  ## long enough

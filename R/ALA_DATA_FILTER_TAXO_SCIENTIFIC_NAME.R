@@ -6,6 +6,7 @@
 #########################################################################################################################
 ## This code updates the ALA data
 ala.download = list.files(ALA_path, pattern = ".RData")
+length(ala.download)
 
 
 ## For now, use the old version of the ALA

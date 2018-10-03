@@ -199,13 +199,11 @@ lapply(GBIF.spp, function(spp){
 #########################################################################################################################
 
 
-## Which of these components can be done now?
-
 
 ## 1). 400 tree spp that are commonly planted and traded, with sufficient spatial data to model robustly: done
 
 
-##     Update Species table with new ALA data........................................................................  
+##     Update Species table with new ALA data: done 
 
 
 ## 2). Fixed the taxonomy
@@ -215,15 +213,7 @@ lapply(GBIF.spp, function(spp){
 ##     Keep the 'source' column in the maxent table :: adjust step 7  
 
      
-
-## 4). Run modelling and mapping steps through Katana. To do this, we need a loop that processes one species at a time
-##     This means processing the data up to step 7, then running steps 7 and 8 through Katana 
-
-
-##     Download Shawn's species and send him the new ones................................................................
-
-
-##     Check if making the BG points smaller improves the time............................................................
+##     Recuced BG points to 70k
      
 
 ## 4). Use more forgiving thresholds (10%) for all species: Done
@@ -232,6 +222,10 @@ lapply(GBIF.spp, function(spp){
   
 
 ## 5). Combine output: 
+
+
+##     Create table for appendix.....................................................................................
+
 ##     Use 2016 SUA shapefile........................................................................................
 
 ##      Table
@@ -253,30 +247,39 @@ lapply(GBIF.spp, function(spp){
 ##     Future suitability
 
 
-##     Check maps for New ALA species.................................................................................
+##     Check maps for New ALA species.......................................................................................
 
 
-## 7). Create tables in R to summarise gain and loss in each SUA - Linda to create this code, then add another step to 9).
-
-##     Update figures and tables - only doing species gain and stable, not loss.......................................
+## 7). Create tables in R to summarise gain and loss in each SUA
+##     Update figures and tables - only doing species gain and stable, not loss.............................................
 
 
 ## 8). What is the story? Draft results and discussion. Linda to create story - don't do turnover
 
 
-##     Fix mapping function to use mapply in function.................................................................
+##     Fix mapping function to use mapply in function........................................................................
 
    
-##     Use mess masks to see if the 35 species work ....................................................................
+##     Compare output for MESS species - which outputs?......................................................................
+
+
+##     Run modelling and mapping steps through Katana. To do this, we need a loop that processes one species at a time
+##     This means processing the data up to step 7, then running steps 7 and 8 through Katana 
+
+
+##     Check Shawn's link for flattening the data...................................................................
+
+
+    
 ##     Where does the mess mask layer get used, in the combine function?
 ##     If so, we need a separate folder for the MESS species to process these
 ##     My combine function does everything in one step, so it's not the same process as what John uses
 
 
-##     Just compare output for MESS species - 
 
 
-##     If needed, thin records for 28 spp. with boundary bias, using the SDM tool box. Send Alessandro the latest file .shp
+
+##     If needed, thin records for 28 spp. with boundary bias, using the SDM tool box.
 
 ##     Settings: Max 5km, min 1km, 5 heterogeneity classes (from a classification of a PCA, using the worldclim layers)
 ##     Currently using all spp background records: random 100k for every species, sounds ok?
