@@ -17,25 +17,19 @@
 
 #########################################################################################################################
 ## Read in the three data tables
-#TI.RASTER.CONVERT = readRDS("./data/base/HIA_LIST/COMBO/TI_RASTER_CONVERT_NEW_ALA_300_SPAT.rds")
-#COMBO.RASTER.CONVERT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONVERT_NEW_ALA_300_SPAT.rds")
+#COMBO.AWAP.CONVERT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONVERT_NEW_ALA_300_SPAT.rds")
 rasterTmpFile()
 
 
 ## Check dimensions of the occurrence and inventory data tables.
-length(unique(COMBO.RASTER.CONVERT$searchTaxon))
-formatC(dim(COMBO.RASTER.CONVERT)[1], format = "e", digits = 2)
-names(COMBO.RASTER.CONVERT)
-
-
-length(unique(TI.RASTER.CONVERT$searchTaxon))
-formatC(dim(TI.RASTER.CONVERT)[1], format = "e", digits = 2)
-names(TI.RASTER.CONVERT)
+length(unique(COMBO.AWAP.CONVERT$searchTaxon))
+formatC(dim(COMBO.AWAP.CONVERT)[1], format = "e", digits = 2)
+names(COMBO.AWAP.CONVERT)
 
 
 #########################################################################################################################
 ## Create a unique identifier
-COMBO.RASTER.CONVERT$CC.OBS <- 1:nrow(TIB.GBIF)
+COMBO.AWAP.CONVERT$CC.OBS <- 1:nrow(TIB.GBIF)
 
 
 
@@ -49,15 +43,10 @@ COMBO.RASTER.CONVERT$CC.OBS <- 1:nrow(TIB.GBIF)
 #########################################################################################################################
 ## Rename the columns to fit the CleanCoordinates format and create a tibble. 
 ## A Tibble is needed for running the spatial outlier cleaning
-TIB.GBIF <- COMBO.RASTER.CONVERT %>% dplyr::rename(species          = searchTaxon,
+TIB.GBIF <- COMBO.AWAP.CONVERT %>% dplyr::rename(species          = searchTaxon,
                                                    decimallongitude = lon, 
                                                    decimallatitude  = lat) %>%
   timetk::tk_tbl()
-
-
-## Add a column for unique observation so we can check the records match up after joining
-TIB.GBIF$CC.OBS <- 1:nrow(TIB.GBIF)
-identical(length(TIB.GBIF$CC.OBS), dim(TIB.GBIF)[1])
 
 
 ## We've already stripped out the records that fall outside
@@ -78,7 +67,7 @@ FLAGS  <- CleanCoordinates(TIB.GBIF,
 
 ## save/load the flags
 identical(dim(FLAGS)[1], dim(TIB.GBIF)[1])
-saveRDS(FLAGS, paste0('data/base/HIA_LIST/COMBO/ALA_GBIF_FLAGS_', save_run, '.rds'))
+#saveRDS(FLAGS, paste0('data/base/HIA_LIST/COMBO/ALA_GBIF_FLAGS_', save_run, '.rds'))
 #FLAGS = readRDS('data/base/HIA_LIST/COMBO/ALA_GBIF_FLAGS_OLD_ALA.rds')
 
 
@@ -86,9 +75,6 @@ saveRDS(FLAGS, paste0('data/base/HIA_LIST/COMBO/ALA_GBIF_FLAGS_', save_run, '.rd
 summary(FLAGS)
 FLAGS = FLAGS[ ,!(colnames(FLAGS) == "decimallongitude" | colnames(FLAGS) == "decimallatitude")]
 message(round(summary(FLAGS)[8]/dim(FLAGS)[1]*100, 2), " % records removed")
-
-
-## A plot of the flags for each species would be good. Rony knows how to do this
 
 
 
@@ -154,13 +140,11 @@ SPAT.OUT <- unique(TIB.GBIF$species) %>%  ## LUT.100K
   bind_rows
 
 
-## Save data
-# identical(dim(SPAT.OUT)[1], dim(TIB.GBIF)[1])
-# unique(SPAT.OUT$species)
-# summary(SPAT.OUT$SPAT_OUT)
-# head(SPAT.OUT)
-# saveRDS(SPAT.OUT, paste0('data/base/HIA_LIST/COMBO/ALA_GBIF_SPAT_OUT_', save_run, '.rds'))
-
+## Check spatial data
+identical(dim(SPAT.OUT)[1], dim(TIB.GBIF)[1])
+unique(SPAT.OUT$species)
+summary(SPAT.OUT$SPAT_OUT)
+head(SPAT.OUT)
 
 
 
@@ -175,55 +159,31 @@ SPAT.OUT <- unique(TIB.GBIF$species) %>%  ## LUT.100K
 identical(dim(TIB.GBIF)[1],dim(FLAGS)[1])#;length(GBIF.SPAT.OUT)
 names(FLAGS)[1]    = c("coord_spp")
 names(SPAT.OUT)[1] = c("spatial_spp")
-identical(COMBO.RASTER.CONVERT$searchTaxon, FLAGS$coord_spp)                                            ## order matches
+identical(COMBO.AWAP.CONVERT$searchTaxon, FLAGS$coord_spp)                                            ## order matches
 
 
 #########################################################################################################################
 ## Is the species column the same as the searchTaxon column?
-TEST.GEO   = cbind(COMBO.RASTER.CONVERT, FLAGS)
+TEST.GEO   = cbind(COMBO.AWAP.CONVERT, FLAGS)
 TEST.GEO   = join(TEST.GEO, SPAT.OUT)
 identical(TEST.GEO$searchTaxon, TEST.GEO$coord_spp)                                                     ## order matches
 identical(TEST.GEO$searchTaxon, TEST.GEO$spatial_spp) 
-identical(COMBO.RASTER.CONVERT$searchTaxon, TEST.GEO$spatial_spp)  
+identical(COMBO.AWAP.CONVERT$searchTaxon, TEST.GEO$spatial_spp)  
 
 
-## Not sure why the inverse did not work :: get only the records which were not flagged as being dodgy.
+## Keep records which passed the GBIF and spatial test
 dim(subset(TEST.GEO, summary == "TRUE" | SPAT_OUT == "TRUE"))
 CLEAN.TRUE = subset(TEST.GEO, summary == "TRUE" & SPAT_OUT == "TRUE")
-unique(CLEAN.TRUE$summary)   
-#unique(CLEAN.TRUE$SPAT_OUT)   
+unique(CLEAN.TRUE$summary);unique(CLEAN.TRUE$SPAT_OUT)   
 
                                     
 ## What percentage of records are retained?
-identical(dim(CLEAN.TRUE)[1], (dim(COMBO.RASTER.CONVERT)[1] - dim(subset(TEST.GEO, summary == "FALSE" | SPAT_OUT == "FALSE"))[1]))
+identical(dim(CLEAN.TRUE)[1], (dim(COMBO.AWAP.CONVERT)[1] - dim(subset(TEST.GEO, summary == "FALSE" | SPAT_OUT == "FALSE"))[1]))
 length(unique(CLEAN.TRUE$searchTaxon))
 message(round(dim(CLEAN.TRUE)[1]/dim(TEST.GEO)[1]*100, 2), " % records retained")                                               
 
 
 #########################################################################################################################
-## Now bind on the urban tree inventory data. We are assuming this data is clean, after we manually fix the taxonomy
-## Check the NAs
-intersect(names(TI.RASTER.CONVERT), names(CLEAN.TRUE))
-CLEAN.TRUE = bind_rows(CLEAN.TRUE, TI.RASTER.CONVERT)
-
-
-names(CLEAN.TRUE)
-unique(CLEAN.TRUE$SOURCE) 
-unique(CLEAN.TRUE$INVENTORY) 
-length(unique(CLEAN.TRUE$searchTaxon))
-summary(CLEAN.TRUE$Annual_mean_temp)
-
-
-## Then create a unique ID column which can be used to identify outlier records 
-CLEAN.TRUE$OBS <- 1:nrow(CLEAN.TRUE)
-dim(CLEAN.TRUE)[1];length(CLEAN.TRUE$OBS)  
-identical(dim(CLEAN.TRUE)[1], length(CLEAN.TRUE$OBS))
-
-
-## How many records are added by including the tree inventories?
-message("Tree inventory data increases records by ", round(dim(CLEAN.TRUE)[1]/dim(TEST.GEO)[1]*100, 2), " % ")   
-
-
 ## Save niches
 saveRDS(CLEAN.TRUE, paste0('data/base/HIA_LIST/COMBO/CLEAN_TRUE_', save_run, '.rds'))
 
@@ -237,54 +197,38 @@ saveRDS(CLEAN.TRUE, paste0('data/base/HIA_LIST/COMBO/CLEAN_TRUE_', save_run, '.r
 
 
 ## Select columns
-GBIF.ALA.CHECK  = select(CLEAN.TRUE,     OBS, searchTaxon, scientificName, lat, lon, SOURCE, INVENTORY, year, 
-                         coordinateUncertaintyInMetres, #geodeticDatum,  
-                         country, locality, basisOfRecord, institutionCode, 
-                         rank, Taxonomic.status, New.Taxonomic.status)
+GBIF.ALA.AWAP  = select(CLEAN.TRUE,     CC.OBS, searchTaxon, scientificName, lat, lon, SOURCE, year, 
+                        coordinateUncertaintyInMetres, 
+                        country, locality, basisOfRecord, institutionCode, 
+                        rank, Taxonomic.status, New.Taxonomic.status)
 
 
 ## Rename the fields so that ArcMap can handle them
-GBIF.ALA.CHECK     = dplyr::rename(GBIF.ALA.CHECK, 
-                                   TAXON     = searchTaxon,
-                                   LAT       = lat,
-                                   LON       = lon,
-                                   SC_NAME   = scientificName,
-                                   RANK      = rank,
-                                   BASIS     = basisOfRecord,                
-                                   LOCAL     = locality,                      
-                                   INSTIT    = institutionCode,                
-                                   COUNTRY   = country,                
-                                   COORD_UN  = coordinateUncertaintyInMetres,
-                                   #DATUM     = geodeticDatum,                 
-                                   YEAR      = year)
-names(GBIF.ALA.CHECK)
+GBIF.ALA.AWAP     = dplyr::rename(GBIF.ALA.AWAP, 
+                                  TAXON     = searchTaxon,
+                                  LAT       = lat,
+                                  LON       = lon,
+                                  SC_NAME   = scientificName,
+                                  RANK      = rank,
+                                  BASIS     = basisOfRecord,                
+                                  LOCAL     = locality,                      
+                                  INSTIT    = institutionCode,                
+                                  COUNTRY   = country,                
+                                  COORD_UN  = coordinateUncertaintyInMetres,
+                                  YEAR      = year,
+                                  TAX_STAT  = Taxonomic.status,
+                                  NEW_STAT  = New.Taxonomic.status)
+names(GBIF.ALA.AWAP)
 
 
 #########################################################################################################################
 ## Then create SPDF
-GBIF.ALA.SPDF    = SpatialPointsDataFrame(coords      = GBIF.ALA.CHECK[c("LON", "LAT")],
-                                          data        = GBIF.ALA.CHECK,
-                                          proj4string = CRS.WGS.84)
-
-
-## Create list of species 
-TAXA <- unique(GBIF.ALA.SPDF$TAXON)
-
-
-#########################################################################################################################
-## Then, loop over the species list and create a shapefile for each 
-for (i in 1:length(TAXA)) {
-  
-  ## Need to check the OBS column matches up - or do we not need this again?
-  message("Writing shapefile for ", TAXA[i])
-  tmp <- GBIF.ALA.SPDF[GBIF.ALA.SPDF$TAXON == TAXA[i], ] 
-  writeOGR(tmp, dsn = "./data/base/HIA_LIST/COMBO/CLEAN_GBIF", TAXA[i], driver = "ESRI Shapefile", overwrite_layer = TRUE)
-  
-}
-
+GBIF.ALA.AWAP.SPDF    = SpatialPointsDataFrame(coords      = GBIF.ALA.AWAP[c("LON", "LAT")],
+                                               data        = GBIF.ALA.AWAP,
+                                               proj4string = CRS.WGS.84)
 
 ## Write the shapefile out just in case
-writeOGR(obj = GBIF.ALA.SPDF, dsn = "./data/base/HIA_LIST/COMBO", layer = "CLEAN_SPDF", driver = "ESRI Shapefile")
+writeOGR(obj = GBIF.ALA.AWAP.SPDF, dsn = "./data/base/HIA_LIST/COMBO", layer = "CLEAN_AWAP_SPDF", driver = "ESRI Shapefile")
 
 
 
@@ -306,7 +250,7 @@ projection(LGA);projection(AUS);projection(SUA.16)
 
 
 ## Convert the raster data back into a spdf
-COMBO.RASTER.SP   = SpatialPointsDataFrame(coords      = CLEAN.TRUE[c("lon", "lat")], 
+COMBO.AWAP.SP   = SpatialPointsDataFrame(coords      = CLEAN.TRUE[c("lon", "lat")], 
                                            data        = CLEAN.TRUE,
                                            proj4string = CRS.WGS.84)
 
@@ -324,9 +268,9 @@ head(SUA.WGS)
 
 #########################################################################################################################
 ## Run join between species records and LGAs/SUAs :: Double check they are the same
-projection(COMBO.RASTER.SP);projection(LGA.WGS);projection(SUA.WGS);projection(AUS.WGS)
-SUA.JOIN      = over(COMBO.RASTER.SP, SUA.WGS)              
-COMBO.SUA.LGA = cbind.data.frame(COMBO.RASTER.SP, SUA.JOIN) 
+projection(COMBO.AWAP.SP);projection(LGA.WGS);projection(SUA.WGS);projection(AUS.WGS)
+SUA.JOIN      = over(COMBO.AWAP.SP, SUA.WGS)              
+COMBO.SUA.LGA = cbind.data.frame(COMBO.AWAP.SP, SUA.JOIN) 
 saveRDS(COMBO.SUA.LGA, file = paste0('data/base/HIA_LIST/COMBO/COMBO_SUA_OVER_', save_run, '.rds'))
 ## COMBO.SUA.LGA = readRDS("./data/base/HIA_LIST/GBIF/COMBO_SUA_LGA.rds")
 ## str(unique(COMBO.SUA.LGA$searchTaxon))
@@ -392,7 +336,15 @@ env.variables = c("Annual_mean_temp",
                   "Precip_dry_qu",
                   "Precip_warm_qu",
                   "Precip_col_qu",
-                  "PET")
+                  "PET", 
+                  
+                  "Drought_freq_extr", 
+                  "Drought_max_dur_extr", 
+                  "Drought_max_int_extr", 
+                  "Drought_max_rel_int_extr",
+                  "Drought_mean_dur_extr", 
+                  "Drought_mean_int_extr", 
+                  "Drought_mean_rel_int_extr")
 
 
 #########################################################################################################################
@@ -434,7 +386,7 @@ COMBO.NICHE = subset(COMBO.NICHE, select = -c(searchTaxon.1,  searchTaxon.2,  se
 
 #########################################################################################################################
 ## Add counts for each species, and record the total number of taxa processed
-## dim(COMBO.RASTER.CONVERT);dim(CLEAN.TRUE)
+## dim(COMBO.AWAP.CONVERT);dim(CLEAN.TRUE)
 COMBO.count = as.data.frame(table(COMBO.SUA.LGA$searchTaxon))$Freq
 identical(length(COMBO.count), dim(COMBO.NICHE)[1])
 
@@ -565,11 +517,11 @@ head(COMBO.LGA$SUA_COUNT)
 
 #########################################################################################################################
 ## Now join the horticultural contextual data onto one or both tables ()
-# names(COMBO.RASTER.CONVERT)
+# names(COMBO.AWAP.CONVERT)
 # names(CLEAN.SPP)
-# COMBO.RASTER.CONTEXT = join(CLEAN.TRUE, HIA.SPP.JOIN)
-# #COMBO.RASTER.CONTEXT  = COMBO.RASTER.CONTEXT[,  c(42, 1, 65, 2:41, 43:61, 62:64, 66:78)]                         ## REDO
-# names(COMBO.RASTER.CONTEXT)
+# COMBO.AWAP.CONTEXT = join(CLEAN.TRUE, HIA.SPP.JOIN)
+# #COMBO.AWAP.CONTEXT  = COMBO.AWAP.CONTEXT[,  c(42, 1, 65, 2:41, 43:61, 62:64, 66:78)]                         ## REDO
+# names(COMBO.AWAP.CONTEXT)
 # 
 # 
 # ## Now join hort context to all the niche
@@ -592,9 +544,9 @@ head(COMBO.LGA$SUA_COUNT)
 # 
 # 
 # ## View the data
-# names(COMBO.RASTER.CONTEXT)
+# names(COMBO.AWAP.CONTEXT)
 # names(COMBO.NICHE.CONTEXT)
-# dim(COMBO.RASTER.CONTEXT)
+# dim(COMBO.AWAP.CONTEXT)
 # dim(COMBO.NICHE.CONTEXT)
 # 
 # 
@@ -608,7 +560,7 @@ head(COMBO.LGA$SUA_COUNT)
 #########################################################################################################################
 ## Save
 saveRDS(COMBO.LGA,             paste0('data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_',  save_run, '.rds'))
-#saveRDS(COMBO.RASTER.CONTEXT,  paste0('data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_', save_run, '.rds'))
+#saveRDS(COMBO.AWAP.CONTEXT,  paste0('data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_', save_run, '.rds'))
 
 
 

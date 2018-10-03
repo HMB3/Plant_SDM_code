@@ -225,17 +225,17 @@ COMBO.AWAP <- raster::extract(awap.extreme, COMBO.POINTS) %>%
 
 
 ## Check 
-dim(COMBO.RASTER)
-names(COMBO.RASTER)
-summary(COMBO.RASTER$Annual_mean_temp)
-summary(COMBO.RASTER$PET)
+dim(COMBO.AWAP)
+names(COMBO.AWAP)
+summary(COMBO.AWAP$Annual_mean_temp)
+summary(COMBO.AWAP$PET)
 
 
 
 
 
 #########################################################################################################################
-## 3). CONVERT RASTER VALUES
+## 3). CONVERT AWAP VALUES
 #########################################################################################################################
 
 
@@ -267,38 +267,38 @@ env.variables = c("Annual_mean_temp",
 #########################################################################################################################
 ## Change the raster values here: See http://worldclim.org/formats1 for description of the interger conversion. 
 ## All temperature variables were multiplied by 10, so divide by 10 to reverse it.
-COMBO.RASTER.CONVERT = as.data.table(COMBO.RASTER)                           ## Check this works, also inefficient
-COMBO.RASTER.CONVERT[, (env.variables [c(1:11)]) := lapply(.SD, function(x) 
+COMBO.AWAP.CONVERT = as.data.table(COMBO.AWAP)                           ## Check this works, also inefficient
+COMBO.AWAP.CONVERT[, (env.variables [c(1:11)]) := lapply(.SD, function(x) 
   x / 10 ), .SDcols = env.variables [c(1:11)]]
-COMBO.RASTER.CONVERT = as.data.frame(COMBO.RASTER.CONVERT)                   ## Find another method without using data.table
+COMBO.AWAP.CONVERT = as.data.frame(COMBO.AWAP.CONVERT)                   ## Find another method without using data.table
 
 
 ## Check Looks ok?
-summary(COMBO.RASTER.CONVERT$Annual_mean_temp)  ## -23 looks too low/. Check where these are ok
-summary(COMBO.RASTER$Annual_mean_temp)
+summary(COMBO.AWAP.CONVERT$Annual_mean_temp)  ## -23 looks too low/. Check where these are ok
+summary(COMBO.AWAP$Annual_mean_temp)
 
-summary(COMBO.RASTER.CONVERT$Isothermality)
-summary(COMBO.RASTER$Isothermality)
+summary(COMBO.AWAP.CONVERT$Isothermality)
+summary(COMBO.AWAP$Isothermality)
 
-summary(COMBO.RASTER.CONVERT$PET)
+summary(COMBO.AWAP.CONVERT$PET)
 
 
 ## Print the dataframe dimensions to screen :: format to recognise millions, hundreds of thousands, etc.
-names(COMBO.RASTER.CONVERT)
-dim(COMBO.RASTER.CONVERT)
-formatC(dim(COMBO.RASTER.CONVERT)[1], format = "e", digits = 2)
-length(unique(COMBO.RASTER.CONVERT$searchTaxon));length(GBIF.spp)
+names(COMBO.AWAP.CONVERT)
+dim(COMBO.AWAP.CONVERT)
+formatC(dim(COMBO.AWAP.CONVERT)[1], format = "e", digits = 2)
+length(unique(COMBO.AWAP.CONVERT$searchTaxon));length(GBIF.spp)
 
 
 ## Plot a few points to see :: do those look reasonable?
 # plot(LAND, col = 'grey', bg = 'sky blue')
-# points(COMBO.RASTER.CONVERT[ which(COMBO.RASTER.CONVERT$Annual_mean_temp < -5), ][, c("lon", "lat")], 
+# points(COMBO.AWAP.CONVERT[ which(COMBO.AWAP.CONVERT$Annual_mean_temp < -5), ][, c("lon", "lat")], 
 #        pch = ".", col = "red", cex = 3, asp = 1, main = "temp records < -5")
 
 
 #########################################################################################################################
 ## Save the summary datasets
-saveRDS(COMBO.RASTER.CONVERT, paste0('data/base/HIA_LIST/COMBO/COMBO_RASTER_CONVERT_', save_run, '.rds'))
+saveRDS(COMBO.AWAP.CONVERT, paste0('data/base/HIA_LIST/COMBO/COMBO_AWAP_CONVERT_', save_run, '.rds'))
 
 
 ## Now save .RData file for the next session...
