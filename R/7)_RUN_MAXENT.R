@@ -227,6 +227,7 @@ lapply(GBIF.spp, function(spp){
 ##     Create table for appendix.....................................................................................
 
 ##     Use 2016 SUA shapefile........................................................................................
+##     This causes mistmatches in the SUAs - e.g. Central coast is gone..............................................
 
 ##      Table
 ##     "searchTaxon" "No.plantings" "Number.of.growers" "Number.of.States/LGAs/Koppen zones" "Origin" "AUC" "TSS" 
@@ -245,9 +246,6 @@ lapply(GBIF.spp, function(spp){
 ##     input points, 
 ##     current raster,
 ##     Future suitability
-
-
-##     Check maps for New ALA species.......................................................................................
 
 
 ## 7). Create tables in R to summarise gain and loss in each SUA

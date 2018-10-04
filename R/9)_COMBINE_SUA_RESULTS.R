@@ -237,9 +237,9 @@ message(length(unique(SUA.COMPLETE$SPECIES)), " Species analysed in ", length(un
 
 
 ## Include the maxent rating?
-MAXENT.RATING = MXT.CHECK[, c("searchTaxon", "check.map")]
-names(MAXENT.RATING) = c("SPECIES", "MAXENT_RATING")
-table(MAXENT.RATING$MAXENT_RATING)
+SDM.CHECK = MXT.CHECK[, c("searchTaxon", "check.map")]
+names(SDM.CHECK) = c("SPECIES", "MAXENT_RATING")
+table(SDM.CHECK$MAXENT_RATING)
 
 
 SUA.COMPLETE$SPECIES = gsub("_", " ", SUA.COMPLETE$SPECIES)
@@ -250,7 +250,7 @@ length(intersect(unique(MAXENT.RATING$SPECIES), unique(SUA.COMPLETE$SPECIES)))
 ## Join on a column for if the species has records in the SUA
 
 ## Add this in when we have rated the species
-SUA.COMPLETE = merge(SUA.COMPLETE, MAXENT.RATING)
+SUA.COMPLETE = merge(SUA.COMPLETE, SDM.CHECK)
 SUA.COMPLETE = join(SUA.COMPLETE, SUA.SPP.COUNT)
 #unique(SUA.COMPLETE$MAXENT_RATING)....................................................................................
 summary(SUA.COMPLETE)

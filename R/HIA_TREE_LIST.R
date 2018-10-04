@@ -309,7 +309,7 @@ MOD.2.3             = read.csv("./data/base/HIA_LIST/HIA/MODULE_2_3.csv",       
 RISK.LIST           = read.csv("./data/base/HIA_LIST/HIA/RISK_LIST.csv",                         stringsAsFactors = FALSE)
 RISK.BINOMIAL.CLEAN = read.csv("./data/base/HIA_LIST/HIA/RISK_BINOMIAL_DF.csv",                  stringsAsFactors = FALSE)
 MAXENT.RATING       = read.csv("./output/maxent/MAXENT_RATING_26_2018.csv",                      stringsAsFactors = FALSE)
-MXT.CHECK           = read.csv("./output/maxent/MAXENT_SUA_CHECK_OLD_ALA_300_SPAT_1209_2016.csv",stringsAsFactors = FALSE)
+MXT.CHECK           = read.csv("./output/maxent/CHECK_SPP_MAPS_BIAS_0310_2018.csv",              stringsAsFactors = FALSE)
 TI.LIST             = read.csv("./data/base/HIA_LIST/COMBO/ALE_TREE_SPP_LIST.csv",               stringsAsFactors = FALSE)
 TI.XY               = read.csv("./data/base/HIA_LIST/COMBO/ALE_TREE_SPP_XY.csv",                 stringsAsFactors = FALSE)
 SPP.BIAS            = read.csv("./output/maxent/SPP_BOUNDARY_BIAS.csv", stringsAsFactors = FALSE)
@@ -358,14 +358,14 @@ EURO.NURSE.LOC      = read.csv("./data/base/HIA_LIST/URBAN/Euro_garden_flora_nur
 
 #########################################################################################################################
 ## Experimental trait lists ::
-HEAT.RISK  = read.csv("./data/base/HIA_LIST/RENEE/MOD3_HEAT_RANKS_072018.csv",                   stringsAsFactors = FALSE)
-TRAIT.SPP  = read.csv("./data/base/HIA_LIST/RENEE/MOD3_TRAIT_SPP.csv",                           stringsAsFactors = FALSE)
+#HEAT.RISK  = read.csv("./data/base/HIA_LIST/RENEE/MOD3_HEAT_RANKS_072018.csv",                   stringsAsFactors = FALSE)
+TRAIT.SPP  = read.csv("./data/base/HIA_LIST/RENEE/RankingTraits_Control_latest.csv",             stringsAsFactors = FALSE)
 
 
 ## Now find the match between the trait species and the trait species... 
-colnames(HEAT.RISK)[colnames(HEAT.RISK)=="Species"] <- "searchTaxon"
+#colnames(HEAT.RISK)[colnames(HEAT.RISK)=="Species"] <- "searchTaxon"
 colnames(TRAIT.SPP)[colnames(TRAIT.SPP)=="Species"] <- "searchTaxon"
-TRAIT.SPP = merge(TRAIT.SPP, HEAT.RISK, by = "searchTaxon")
+#TRAIT.SPP = merge(TRAIT.SPP, HEAT.RISK, by = "searchTaxon")
 trait.spp = unique(TRAIT.SPP$searchTaxon)
 trait_spp = gsub(" ", "_", trait.spp)
 
@@ -450,12 +450,11 @@ TOT.GROW        = TOT.GROW[!duplicated(TOT.GROW[,c('searchTaxon')]),]
 
 ## Join the total growers to the NICHE data
 COMBO.NICHE.CONTEXT = join(COMBO.NICHE.CONTEXT, TOT.GROW)
-COMBO.NICHE.CONTEXT =  COMBO.NICHE.CONTEXT[, c(1:14, 199, 16:198)] 
+COMBO.NICHE.CONTEXT =  COMBO.NICHE.CONTEXT[, c(1:14, 199, 15:198)] 
 names(COMBO.NICHE.CONTEXT[1:15])
 
 
 CLEAN.NICHE.CONTEXT = join(CLEAN.NICHE.CONTEXT, TOT.GROW)
-CLEAN.NICHE.CONTEXT =  CLEAN.NICHE.CONTEXT[, c(1:14, 199, 16:198)] 
 names(CLEAN.NICHE.CONTEXT[1:15])
 
 
@@ -573,14 +572,14 @@ MODEL.CHECK = MODEL.CHECK[, c("searchTaxon",
                               "Origin",
                               "Plant.type",
                               "Top_200",                                                                        
-                              "CHECK_MAP")]
+                              "check.map")]
 
 
 ## Now how many trees do we have? 68 modelled, another 86 with ok data.
 ## This will increase with Alessandro's data. Re-create niche file, and re-run the criteria.
 ## Let's get another 40 exotic trees with good models
-checked.trees = subset(MODEL.CHECK, Total.growers >= 25 & CHECK_MAP <= 2 & Plant.type == "Tree")$searchTaxon ## 67
-subset(MODEL.CHECK, Total.growers >= 25 & CHECK_MAP <= 2 & Plant.type == "Tree" & Origin == "Exotic")$searchTaxon
+checked.trees = subset(MODEL.CHECK, Total.growers >= 25 & check.map <= 2 & Plant.type == "Tree")$searchTaxon ## 67
+subset(MODEL.CHECK, Total.growers >= 25 & check.map <= 2 & Plant.type == "Tree" & Origin == "Exotic")$searchTaxon
 
 
 #########################################################################################################################

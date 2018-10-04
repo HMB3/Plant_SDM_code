@@ -251,8 +251,8 @@ projection(LGA);projection(AUS);projection(SUA.16)
 
 ## Convert the raster data back into a spdf
 COMBO.AWAP.SP   = SpatialPointsDataFrame(coords      = CLEAN.TRUE[c("lon", "lat")], 
-                                           data        = CLEAN.TRUE,
-                                           proj4string = CRS.WGS.84)
+                                         data        = CLEAN.TRUE,
+                                         proj4string = CRS.WGS.84)
 
 
 ## Project using a projected rather than geographic coordinate system
@@ -351,8 +351,9 @@ env.variables = c("Annual_mean_temp",
 ## Create niche summaries for each environmental condition like this...
 ## Here's what the function will produce :
 NICHE.DF = completeFun(COMBO.SUA.LGA, "PET")
+NICHE.DF = completeFun(NICHE.DF,      "Drought_freq_extr")
 dim(NICHE.DF)
-head(niche_estimate (DF = NICHE.DF, colname = "Annual_mean_temp"))  ## including the q05 and q95
+head(niche_estimate (DF = NICHE.DF, colname = "Drought_freq_extr"))  ## including the q05 and q95
 
 
 ## So lets use lapply on the "SearchTaxon"
