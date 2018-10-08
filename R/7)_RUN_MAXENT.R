@@ -33,10 +33,8 @@ SDM.SPAT.ALL = readRDS(paste0('data/base/HIA_LIST/COMBO/SDM_SPAT_ALL_', save_run
 
 #########################################################################################################################
 ## Check the SDM table
-identical(names(env.grids.current),sdm.predictors)
 dim(SDM.SPAT.ALL)
 length(intersect(unique(SDM.SPAT.ALL$searchTaxon), GBIF.spp))  ## should be same as the number of species
-length(unique(SDM.SPAT.ALL$OBS))
 unique(SDM.SPAT.ALL$SOURCE)
 
 
@@ -52,7 +50,7 @@ lapply(GBIF.spp, function(spp){
   ## Skip the species if the directory already exists, before the loop
   outdir <- maxent_path
   
-  if(dir.exists(file.path(outdir, gsub(' ', '_', spp)))) {
+  if(dir.exists(file.path(maxent_path, gsub(' ', '_', spp)))) {
     message('Skipping ', spp, ' - already run.')
     invisible(return(NULL))
     
@@ -63,7 +61,8 @@ lapply(GBIF.spp, function(spp){
     message('Doing ', spp) 
     
     ## Subset the records to only the taxa being processed
-    occurrence <- subset(SDM.SPAT.ALL, searchTaxon == spp)
+    #occurrence <- subset(SDM.SPAT.ALL, searchTaxon == spp)
+    occurrence <- subset(SDM.SPAT.ALL, searchTaxon == spp & SOURCE != "INVENTORY")
     
     ## Now get the background points. These can come from any spp, other than the modelled species.
     background <- subset(SDM.SPAT.ALL, searchTaxon != spp)
@@ -76,8 +75,8 @@ lapply(GBIF.spp, function(spp){
                          name                    = spp, 
                          outdir, 
                          template.raster,
-                         min_n                   = 20,     ## This should be higher...
-                         max_bg_size             = 70000, 
+                         min_n                   = 20,            ## This should be higher...
+                         max_bg_size             = 70000,         ## could be 50k or lower, it just depends on the biogeography
                          Koppen                  = Koppen_1975,
                          background_buffer_width = 200000,
                          shapefiles              = TRUE,
@@ -88,9 +87,9 @@ lapply(GBIF.spp, function(spp){
       ## https://stackoverflow.com/questions/19394886/trycatch-in-r-not-working-properly
       #function(e) message('Species skipped ', spp)) ## skip any species for which the function fails
       error = function(cond) {
-        
+
         message(paste('Species skipped ', spp))
-        
+
       })
     
   } else {
@@ -100,95 +99,6 @@ lapply(GBIF.spp, function(spp){
   }  
   
 })
-
-
-
-
-
-#########################################################################################################################
-## 2). RUN SDMs USING A-PRIORI VARIABLES FOR THE BIASED SPECIES
-#########################################################################################################################
-
-
-#########################################################################################################################
-## Run Maxent using a random selection of background points. 
-# SDM.DATA.BIAS = readRDS('./data/base/HIA_LIST/COMBO/BIASED_TREES_RAREFY.rds')
-# length(unique(SDM.DATA.BIAS$searchTaxon)) 
-# dim(SDM.DATA.BIAS)
-# projection(template.raster);projection(SDM.DATA.BIAS);projection(Koppen_1975)
-# 
-# 
-# ## Remove the dodgy columns
-# dropList <- c(setdiff(sdm.predictors, sdm.select), "lon", "lat")
-# background.bias <- background[, !names(background) %in% dropList]
-# SDM.DATA.BIAS   <- SDM.DATA.BIAS[, !names(SDM.DATA.BIAS) %in% dropList]
-# identical(names(background.bias), names(SDM.DATA.BIAS))
-# 
-# 
-# ## Now bind on the background points............................................................................................
-# intersect(sort(unique(SDM.DATA.BIAS$searchTaxon)), sort(unique(background$searchTaxon)))    ## check the species don't overlap
-# SDM.DATA.BIAS = rbind(SDM.DATA.BIAS, background.bias)
-# names(SDM.DATA.BIAS)
-# 
-# 
-# ## Change the output directory
-# out_dir       = 'output/maxent/SPP_RAREFY_3KM'
-# 
-# 
-# #########################################################################################################################
-# ## Loop over all the species spp = test.bias[1]
-# lapply(SPP.BIAS, function(spp){
-# 
-#   ## Skip the species if the directory already exists, before the loop
-#   outdir <- out_dir
-#   if(dir.exists(file.path(outdir, gsub(' ', '_', spp)))) {
-#     message('Skipping ', spp, ' - already run.')
-#     invisible(return(NULL))
-# 
-#   }
-# 
-#   ## Print the taxa being processed to screen
-#   if(spp %in% SDM.DATA.BIAS$searchTaxon) {
-#     message('Doing ', spp)
-# 
-#     ## Subset the records to only the taxa being processed
-#     occurrence <- subset(SDM.DATA.BIAS, searchTaxon == spp)
-# 
-#     ## Now get the background points. These can come from any spp, other than the modelled species.
-#     background <- subset(SDM.DATA.BIAS, searchTaxon != spp)
-# 
-#     ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
-#     tryCatch(
-#       FIT_MAXENT_TARG_BG(occ                     = occurrence,
-#                          bg                      = background,
-#                          sdm.predictors          = sdm.select,
-#                          name                    = spp,
-#                          outdir,
-#                          template.raster,
-#                          min_n                   = 20,     ## This should be higher...
-#                          max_bg_size             = 100000,
-#                          Koppen                  = Koppen_1975,
-#                          background_buffer_width = 200000,
-#                          shapefiles              = TRUE,
-#                          features                = 'lpq',
-#                          replicates              = 5,
-#                          responsecurves          = TRUE),
-# 
-#       ## https://stackoverflow.com/questions/19394886/trycatch-in-r-not-working-properly
-#       #function(e) message('Species skipped ', spp)) ## skip any species for which the function fails
-#       error = function(cond) {
-# 
-#         message(paste('Species skipped ', spp))
-# 
-#       })
-# 
-#   } else {
-# 
-#     message(spp, ' skipped - no data.')         ## This condition ignores species which have no data...
-# 
-#   }
-# 
-# })
 
 
 
@@ -214,6 +124,10 @@ lapply(GBIF.spp, function(spp){
 
      
 ##     Recuced BG points to 70k
+##     
+##     
+##     Check mapping function is working for campbelltown species.......................................................
+##     setdiff(camp.spp, TPL.SPP)
      
 
 ## 4). Use more forgiving thresholds (10%) for all species: Done

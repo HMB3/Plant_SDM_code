@@ -346,6 +346,7 @@ gc()
 ## save data
 saveRDS(GBIF.LAND, paste0('data/base/HIA_LIST/GBIF/GBIF_TREES_LAND_', save_run, '.rds'))
 
+
 ## Now save .rds file for the next session
 gc()
 

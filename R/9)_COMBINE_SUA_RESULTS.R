@@ -243,7 +243,7 @@ table(SDM.CHECK$MAXENT_RATING)
 
 
 SUA.COMPLETE$SPECIES = gsub("_", " ", SUA.COMPLETE$SPECIES)
-length(intersect(unique(MAXENT.RATING$SPECIES), unique(SUA.COMPLETE$SPECIES)))
+length(intersect(unique(SDM.CHECK$SPECIES), unique(SUA.COMPLETE$SPECIES)))
 
 
 #########################################################################################################################
@@ -276,10 +276,14 @@ write.csv(SUA.TOP.PRESENCE, paste0('output/tables/MAXNET_SUA_TOP_',  save_run, '
 
 ## We simply need a count of all the species that are being lost, gained or remaining stable in each SUA
 length(unique(SUA.COMPLETE$SPECIES))
-SUA.PLOT   = table(SUA.COMPLETE$SUA, SUA.COMPLETE$GAIN_LOSS)
+SUA.PLOT.GOOD = subset(SUA.COMPLETE, MAXENT_RATING < 3)
+unique(SUA.PLOT.GOOD$MAXENT_RATING)
+
+SUA.PLOT   = table(SUA.PLOT.GOOD$SUA, SUA.PLOT.GOOD$GAIN_LOSS)
 SUA.PLOT.M = melt(SUA.PLOT) 
 names(SUA.PLOT.M) = c("SUA", "AREA_CHANGE", "SPECIES_COUNT")
 head(SUA.PLOT.M)
+length(unique(SUA.PLOT.M$SPECIES))
 
 
 #########################################################################################################################
@@ -335,10 +339,6 @@ theme(axis.title.x     = element_text(face = "bold", colour = "black", size = 15
       legend.text      = element_text(face = "bold", size = 12),
       panel.background = element_blank(), axis.line = element_line(colour = "black"),
       panel.border     = element_rect(colour = "black", fill = NA, size = 2))
-  
-  #guides(colour = guide_legend(title.hjust = 1.5))
-
-  #theme_classic() 
 
 dev.off()
 

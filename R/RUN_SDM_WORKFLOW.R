@@ -24,14 +24,14 @@ source('./R/HIA_TREE_LIST.R')
 GBIF.spp      = TPL.SPP # setdiff(TPL.SPP, intersect(TPL.SPP, ala.download))  ## your list of species
 GBIF.spp.rev  = sort(GBIF.spp, decreasing = TRUE)                   ## the list reversed - only needed for a big list
 
-save_run      = "COMBINED_SUA_400_SPP_300km_SPAT"     ## a variable to append the run name to the output files
+save_run      = "SUA_ANALYSIS_380_spp_300km_SPAT"                   ## a variable to append the run name to the output files
 map_spp_list  = gsub(" ", "_", GBIF.spp)                            ## species list with "_" for mapping
 map_spp_rev   = sort(map_spp_list, decreasing = TRUE)               ## reversed
 
 GBIF_path     = "./data/base/HIA_LIST/GBIF/OCC_SEARCH/"             ## The path where GBIF data is stored
 ALA_path      = "./data/base/HIA_LIST/ALA/TREES_TEST/"              ## The path where ALA data is stored - duplicated if in the same place
 
-maxent_path   = 'output/maxent/SUA_TREES_OLD_ALA/'                  ## The directory where files are saved               
+maxent_path   = 'output/maxent/SUA_TREES_ANALYSIS'                  ## The directory where files are saved               
 
 
 #########################################################################################################################
@@ -53,8 +53,7 @@ source('./R/INVENTORY_RASTER.R',          echo = TRUE)
 ## Then prepare the SDM table
 ## Then clean the spatial outliers
 source('./R/5)_GBIF_ALA_CLEAN_NICHES.R',  echo = TRUE)
-source('./R/6)_PREPARE_SDM_TABLE.R',      echo = TRUE)
-source('./R/CLEAN_SPATIAL_OUTLIERS.R',    echo = TRUE)
+source('./R/6)_PREPARE_SDM_TABLE_1KM.R',  echo = TRUE)
 
 
 ## Step 7 :: Run maxent on a table of all species

@@ -14,12 +14,12 @@
 #########################################################################################################################
 ## Create maxent maps for a given time period 
 # x             = scen_2030[1]
-# species       = SPP_BIAS[1]
+# species       = GBIF.spp[1]
 # time_slice    = 30
-# maxent_path   = "./output/maxent/SPP_BIAS"
+# maxent_path   = "./output/maxent/WITHOUT_INV"
 # climate_path  = "./data/base/worldclim/aus/1km/bio"
 # grid_names    = grid.names
-# current_grids = env.grids.current
+# current_grids = aus.grids.current
 # scen_list     = scen_2030
 
 
@@ -76,8 +76,7 @@ project_maxent_grids = function(scen_list, species_list, maxent_path, climate_pa
           ## Read in the occurrence points used to create the SDM :: need the transform to plot later
           occ <- readRDS(sprintf('%s/%s/%s_occ.rds', maxent_path, species, save_name)) %>%
             spTransform(ALB.CONICAL)  
-          ## '+init=epsg:4326' ## '+init=ESRI:3577' ## '+init=ESRI:54009'
-          
+
           ## Create file path fpr current raster doesn't exist, create it
           f_current <- sprintf('%s/%s/full/%s_current.tif', maxent_path, species, species)
           
@@ -142,7 +141,7 @@ project_maxent_grids = function(scen_list, species_list, maxent_path, climate_pa
                     ## Plot the Aus shapefile with the occurrence points for reference
                     ## Can the points be made more legible for both poorly and well recorded species?
                     ## layer(sp.polygons(aus_albers), data = list(aus_albers = aus_albers))
-                    latticeExtra::layer(sp.polygons(aus), data = list(aus_albers = aus_albers)) +
+                    latticeExtra::layer(sp.polygons(aus), data = list(aus = aus)) +
                     latticeExtra::layer(sp.points(occ, pch = 19, cex = 0.15, 
                                     col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
             dev.off()

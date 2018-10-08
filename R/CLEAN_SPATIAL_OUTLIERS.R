@@ -17,8 +17,8 @@ dim(SDM.DATA.ALL)
 length(unique(SDM.DATA.ALL$searchTaxon))
 length(unique(SDM.DATA.ALL$OBS))
 
-identical(head(SDM.DATA.ALL$OBS, 100), head(CLEAN.TRUE$OBS))
-identical(tail(SDM.DATA.ALL$OBS, 100), tail(CLEAN.TRUE$OBS))
+identical(head(SDM.DATA.ALL$OBS, 100), head(CLEAN.TRUE$OBS, 100))
+identical(tail(SDM.DATA.ALL$OBS, 100), tail(CLEAN.TRUE$OBS, 100))
 unique(SDM.DATA.ALL$SOURCE)
 
 
@@ -131,7 +131,7 @@ length(unique(SPAT.OUT$searchTaxon))
 
 ## Just get the records that were not spatial outliers
 SDM.SPAT.ALL = subset(SPAT.FLAG, SPAT_OUT == "TRUE")  # & GBIF.SPAT.OUT == "TRUE")
-unique(SDM.SPAT.TRUE$SPAT_OUT)   
+unique(SDM.SPAT.ALL$SPAT_OUT)   
   
 
 ## What percentage of records are retained?
@@ -180,9 +180,47 @@ SDM.SPAT.ALL    = SpatialPointsDataFrame(coords       = SDM.SPAT.ALL[c("lon", "l
                                           proj4string = CRS('+init=ESRI:54009'))
 
 
-coordinates(SDM.SPAT.TRUE)    <- ~lon+lat
+coordinates(SDM.SPAT.ALL)        <- ~lon+lat
 proj4string(COMBO.RASTER.ALL)    <- '+init=epsg:4326'
 COMBO.RASTER.ALL                 <- spTransform(COMBO.RASTER.ALL, CRS('+init=ESRI:54009'))
+
+
+
+
+
+#########################################################################################################################
+## 3). CREATE BACKGROUND POINTS AND VARIBALE NAMES
+#########################################################################################################################
+
+
+#########################################################################################################################
+## Add in random records from previously saved runs
+background = readRDS("./data/base/HIA_LIST/COMBO/SDM_DATA_CLEAN_052018.rds")
+background = background [!background$searchTaxon %in% GBIF.spp, ]               ## Don't add records for other species
+length(unique(background$searchTaxon));dim(background)
+intersect(unique(background$searchTaxon), GBIF.spp)
+
+
+#########################################################################################################################
+## Make the columns match......................................................
+names(background)
+names(SDM.SPAT.ALL)
+setdiff(names(SDM.SPAT.ALL), names(background))
+
+background$OBS      = "BG"
+background$SOURCE   = "BG"
+background$SPAT_OUT = "BG"
+background$index    = "BG"
+
+
+drops <- c("lon", "lat") # list of col names
+SDM.SPAT.ALL <- SDM.SPAT.ALL[,!(names(SDM.SPAT.ALL) %in% drops)]
+setdiff(names(SDM.SPAT.ALL), names(background))
+
+
+## Now bind on the background points............................................................................................
+projection(SDM.SPAT.ALL);projection(background)
+SDM.SPAT.ALL = rbind(SDM.SPAT.ALL, background)
 
 
 

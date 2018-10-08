@@ -17,8 +17,8 @@
 
 #########################################################################################################################
 ## Read in the three data tables
-#TI.RASTER.CONVERT = readRDS("./data/base/HIA_LIST/COMBO/TI_RASTER_CONVERT_NEW_ALA_300_SPAT.rds")
-#COMBO.RASTER.CONVERT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONVERT_NEW_ALA_300_SPAT.rds")
+#TI.RASTER.CONVERT = readRDS(paste0('data/base/HIA_LIST/COMBO/TI_RASTER_CONVERT_', save_run, '.rds'))
+#COMBO.RASTER.CONVERT = readRDS(paste0('data/base/HIA_LIST/COMBO/COMBO_RASTER_CONVERT_', save_run, '.rds'))
 rasterTmpFile()
 
 
@@ -35,7 +35,7 @@ names(TI.RASTER.CONVERT)
 
 #########################################################################################################################
 ## Create a unique identifier
-COMBO.RASTER.CONVERT$CC.OBS <- 1:nrow(TIB.GBIF)
+COMBO.RASTER.CONVERT$CC.OBS <- 1:nrow(COMBO.RASTER.CONVERT)
 
 
 
@@ -122,36 +122,36 @@ LUT.100K = LUT.100K [order(LUT.100K)]
 ## step 
 
 
-## Create a data frame of species name and spatial outlier
-SPAT.OUT <- unique(TIB.GBIF$species) %>%  ## LUT.100K
-  
-  ## pipe the list of species into lapply
-  lapply(function(x) {
-    
-    ## Create the species df by subsetting by species
-    f <- subset(TIB.GBIF, species == x)
-    
-    ## Run the spatial outlier detection
-    message("Running spatial outlier detection for ", x)
-    message(dim(f)[1], " records for ", x)
-    sp.flag <- cc_outl(f,
-                       lon     = "decimallongitude",
-                       lat     = "decimallatitude",
-                       species = "species",
-                       method  = "distance",
-                       #mltpl   = 5,
-                       tdi     = 300,
-                       value   = "flags")
-    
-    ## Now add attache column for species, and the flag for each record
-    #d = data.frame(searchTaxon = x, SPAT_OUT = sp.flag)
-    d = cbind(species = x,
-              SPAT_OUT = sp.flag, f)[c("species", "SPAT_OUT", "CC.OBS")]
-    
-  }) %>%
-  
-  ## Finally, bind all the rows together
-  bind_rows
+# ## Create a data frame of species name and spatial outlier
+# SPAT.OUT <- unique(TIB.GBIF$species) %>%  ## LUT.100K
+#   
+#   ## pipe the list of species into lapply
+#   lapply(function(x) {
+#     
+#     ## Create the species df by subsetting by species
+#     f <- subset(TIB.GBIF, species == x)
+#     
+#     ## Run the spatial outlier detection
+#     message("Running spatial outlier detection for ", x)
+#     message(dim(f)[1], " records for ", x)
+#     sp.flag <- cc_outl(f,
+#                        lon     = "decimallongitude",
+#                        lat     = "decimallatitude",
+#                        species = "species",
+#                        method  = "distance",
+#                        #mltpl   = 5,
+#                        tdi     = 300,
+#                        value   = "flags")
+#     
+#     ## Now add attache column for species, and the flag for each record
+#     #d = data.frame(searchTaxon = x, SPAT_OUT = sp.flag)
+#     d = cbind(species = x,
+#               SPAT_OUT = sp.flag, f)[c("species", "SPAT_OUT", "CC.OBS")]
+#     
+#   }) %>%
+#   
+#   ## Finally, bind all the rows together
+#   bind_rows
 
 
 ## Save data
@@ -174,28 +174,24 @@ SPAT.OUT <- unique(TIB.GBIF$species) %>%  ## LUT.100K
 ## Join data :: exclude the decimal lat/long, check the length 
 identical(dim(TIB.GBIF)[1],dim(FLAGS)[1])#;length(GBIF.SPAT.OUT)
 names(FLAGS)[1]    = c("coord_spp")
-names(SPAT.OUT)[1] = c("spatial_spp")
 identical(COMBO.RASTER.CONVERT$searchTaxon, FLAGS$coord_spp)                                            ## order matches
 
 
 #########################################################################################################################
 ## Is the species column the same as the searchTaxon column?
 TEST.GEO   = cbind(COMBO.RASTER.CONVERT, FLAGS)
-TEST.GEO   = join(TEST.GEO, SPAT.OUT)
 identical(TEST.GEO$searchTaxon, TEST.GEO$coord_spp)                                                     ## order matches
-identical(TEST.GEO$searchTaxon, TEST.GEO$spatial_spp) 
-identical(COMBO.RASTER.CONVERT$searchTaxon, TEST.GEO$spatial_spp)  
 
 
 ## Not sure why the inverse did not work :: get only the records which were not flagged as being dodgy.
-dim(subset(TEST.GEO, summary == "TRUE" | SPAT_OUT == "TRUE"))
-CLEAN.TRUE = subset(TEST.GEO, summary == "TRUE" & SPAT_OUT == "TRUE")
+dim(subset(TEST.GEO, summary == "TRUE"))
+CLEAN.TRUE = subset(TEST.GEO, summary == "TRUE")
 unique(CLEAN.TRUE$summary)   
 #unique(CLEAN.TRUE$SPAT_OUT)   
 
                                     
 ## What percentage of records are retained?
-identical(dim(CLEAN.TRUE)[1], (dim(COMBO.RASTER.CONVERT)[1] - dim(subset(TEST.GEO, summary == "FALSE" | SPAT_OUT == "FALSE"))[1]))
+identical(dim(CLEAN.TRUE)[1], (dim(COMBO.RASTER.CONVERT)[1] - dim(subset(TEST.GEO, summary == "FALSE"))[1]))
 length(unique(CLEAN.TRUE$searchTaxon))
 message(round(dim(CLEAN.TRUE)[1]/dim(TEST.GEO)[1]*100, 2), " % records retained")                                               
 
@@ -555,6 +551,7 @@ head(COMBO.LGA$SUA_COUNT)
 # head(COMBO.LGA$LGA_COUNT)
 
 
+## Pick up from here.....................................................................................................
 
 
 
@@ -609,8 +606,6 @@ head(COMBO.LGA$SUA_COUNT)
 ## Save
 saveRDS(COMBO.LGA,             paste0('data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_',  save_run, '.rds'))
 #saveRDS(COMBO.RASTER.CONTEXT,  paste0('data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_', save_run, '.rds'))
-
-
 
 
 #########################################################################################################################

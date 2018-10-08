@@ -12,79 +12,6 @@
 
 #########################################################################################################################
 ## Setup for project 
-# library(gtools)
-# library(GISTools)
-# library(devtools)
-# library(Rcpp)
-# library(raster)
-# library(rgdal)
-# library(plyr)
-# library(dplyr)
-# library(sfsmisc)
-# #library(spatstat)
-# library(data.table)
-# library(rvest)
-# #library(vegan)
-# 
-# library(SDMTools)
-# library(rmaxent)
-# library(dismo)
-# #library(BiodiversityR)
-# library(biomod2)
-# #library(AdaptR)
-# library(red)
-# library(ConR)
-# library(dat)
-# 
-# library(ff)
-# library(rgeos)
-# library(sp)
-# library(raster)
-# library(rJava)
-# library(things)
-# library(digest)
-# 
-# library(ALA4R)
-# library(rgbif)
-# library(scrubr)
-# library(RCurl)
-# library(httr)
-# 
-# library(taxonlookup)
-# library(Taxonstand)
-# #library(speciesgeocodeR)
-# library(CoordinateCleaner)
-# library(spatialEco)
-# library(raster)
-# library(rnaturalearth)
-# library(gdalUtils)
-# 
-# #library(knitr)
-# #library(htmltools)
-# library(yaml)
-# library(caTools)
-# library(bitops)
-# library(rmarkdown)
-# library(gsubfn)
-# library(functional)
-# library(splitstackshape)
-# 
-# library(tidyverse)
-# library(stringr)
-# library(maptools)
-# #library(ggmap)
-# library(rgeos)
-# library(magrittr)
-# library(datastorr)
-# #library(baad.data)
-# #library(rapportools)
-# 
-# library(Cairo)
-# library(lattice)
-# library(latticeExtra)
-# library(PerformanceAnalytics)
-# library(timetk)
-# library(spThin)
 
 
 ## Load only the packages needed for the analysis
@@ -93,16 +20,6 @@ p <- c('ff',    'things', 'raster',        'dismo',        'sp',           'latt
        'tidyr', 'readr',  'rnaturalearth', 'rasterVis',    'RColorBrewer', 'latticeExtra', 'parallel',     
        'taxonlookup',     'ALA4R',         'stringr',      'Taxonstand',   'CoordinateCleaner', 'gsubfn', 'PerformanceAnalytics',
        'rvest', 'magrittr', 'devtools',    'ggplot2',      'reshape2', 'rmarkdown', 'flexdashboard', 'shiny', 'rgbif')
-
-# library(raster)
-# library(dismo)
-# library(gdalUtils)
-# library(RColorBrewer)
-# library(rasterVis)
-# library(latticeExtra)
-# library(rnaturalearth)
-# library(magrittr)
-# library(devtools)
 
 
 ## Require packages
@@ -200,15 +117,22 @@ grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',   
 
 #########################################################################################################################
 ## Create a raster stack of current environmental conditions if needed
-i  <- match(sdm.predictors, sdm.predictors)
-ff <- file.path('./data/base/worldclim/world/0.5/bio/current',
-                sprintf('bio_%02d.tif', i))
+env.grids.current = stack(
+  file.path('./data/base/worldclim/world/0.5/bio/current',
+            sprintf('bio_%02d', 1:19)))
+
+
+# i  <- match(sdm.predictors, sdm.predictors)
+# ff <- file.path('./data/base/worldclim/world/0.5/bio/current',
+#                 sprintf('bio_%02d.tif', i))
+# env.grids.current = stack(sub('0.5', '1km', ff))
 
 
 ## Name the grids :: these should be indentical
-env.grids.current = stack(sub('0.5', '1km', ff))
-names(env.grids.current) <- sdm.predictors[i]
+names(env.grids.current) <- sdm.predictors
 identical(names(env.grids.current),sdm.predictors)
+
+
 
 
 h <- read_html('http://www.worldclim.org/cmip5_30s') 
@@ -306,10 +230,17 @@ CLEAN.list          = read.csv("./data/base/HIA_LIST/HIA/HIA.CLEAN.csv",        
 GROWING             = read.csv("./data/base/HIA_LIST/HIA/database_aus_sp_growing.csv",           stringsAsFactors = FALSE)
 MOD_2               = read.csv("./data/base/HIA_LIST/HIA/MOD2_LIST.csv",                         stringsAsFactors = FALSE)
 MOD.2.3             = read.csv("./data/base/HIA_LIST/HIA/MODULE_2_3.csv",                        stringsAsFactors = FALSE)
+
 RISK.LIST           = read.csv("./data/base/HIA_LIST/HIA/RISK_LIST.csv",                         stringsAsFactors = FALSE)
 RISK.BINOMIAL.CLEAN = read.csv("./data/base/HIA_LIST/HIA/RISK_BINOMIAL_DF.csv",                  stringsAsFactors = FALSE)
 MAXENT.RATING       = read.csv("./output/maxent/MAXENT_RATING_26_2018.csv",                      stringsAsFactors = FALSE)
 MXT.CHECK           = read.csv("./output/maxent/CHECK_SPP_MAPS_BIAS_0310_2018.csv",              stringsAsFactors = FALSE)
+INV.CHECK           = read.csv("./output/maxent/TREES_INVENTORY_RESULTS.csv",                    stringsAsFactors = FALSE)
+INV.SPP             = INV.CHECK$searchTaxon 
+
+
+URBAN.FOREST        = read.csv("./data/base/HIA_LIST/URBAN/URBAN_FOREST.csv",                    stringsAsFactors = FALSE)
+URBAN.FOR.SPP       = URBAN.FOREST$Species 
 TI.LIST             = read.csv("./data/base/HIA_LIST/COMBO/ALE_TREE_SPP_LIST.csv",               stringsAsFactors = FALSE)
 TI.XY               = read.csv("./data/base/HIA_LIST/COMBO/ALE_TREE_SPP_XY.csv",                 stringsAsFactors = FALSE)
 SPP.BIAS            = read.csv("./output/maxent/SPP_BOUNDARY_BIAS.csv", stringsAsFactors = FALSE)

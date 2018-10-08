@@ -278,7 +278,6 @@ ALA.TREES.CLEAN <- ALA.TRIM.MATCH %>%
          
          year >= 1950 & !is.na(year))
 
-
 ## Check
 names(ALA.TREES.CLEAN)
 

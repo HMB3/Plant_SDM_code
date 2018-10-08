@@ -48,9 +48,9 @@ setdiff(names(GBIF.LAND), names(ALA.TREES.LAND))
 
 
 ## Rename a few fields
-GBIF.LAND     = dplyr::rename(GBIF.LAND, 
-                              coordinateUncertaintyInMetres = coordinateUncertaintyInMeters,
-                              rank = taxonRank)
+# GBIF.LAND     = dplyr::rename(GBIF.LAND, 
+#                               #coordinateUncertaintyInMetres = coordinateUncertaintyInMeters,
+#                               rank = taxonRank)
 
 
 #########################################################################################################################
@@ -151,17 +151,17 @@ env.grids.current = stack(
 PET               = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
 
 
-#########################################################################################################################
-## Also netCDF AWAP rasters
-awap.extreme = stack(list.files(as.character('./data/base/AWAP'), pattern = '.nc$', full.names = TRUE))
-names(awap.extreme)
-names(awap.extreme) = c("Drought_freq_extr", "Drought_max_dur_extr", "Drought_max_int_extr", "Drought_max_rel_int_extr",
-                        "Drought_mean_dur_extr", "Drought_mean_int_extr", "Drought_mean_rel_int_extr")
-names(awap.extreme)
-projection(awap.extreme)
-plot(awap.extreme[["Drought_max_dur_extr"]])
-plot(awap.extreme[["Drought_max_int_extr"]])
-plot(awap.extreme[["Drought_mean_rel_int_extr"]])
+# #########################################################################################################################
+# ## Also netCDF AWAP rasters
+# awap.extreme = stack(list.files(as.character('./data/base/AWAP'), pattern = '.nc$', full.names = TRUE))
+# names(awap.extreme)
+# names(awap.extreme) = c("Drought_freq_extr", "Drought_max_dur_extr", "Drought_max_int_extr", "Drought_max_rel_int_extr",
+#                         "Drought_mean_dur_extr", "Drought_mean_int_extr", "Drought_mean_rel_int_extr")
+# names(awap.extreme)
+# projection(awap.extreme)
+# plot(awap.extreme[["Drought_max_dur_extr"]])
+# plot(awap.extreme[["Drought_max_int_extr"]])
+# plot(awap.extreme[["Drought_mean_rel_int_extr"]])
 
 
 #########################################################################################################################
