@@ -142,9 +142,9 @@ names(COMBO.POINTS)
 #########################################################################################################################
 ## Create a stack of rasters to sample: get all the Worldclim variables just for good measure
 ## Use the Mollweide projection for the points and rasters 
-env.grids.current = stack(
-  file.path('./data/base/worldclim/world/0.5/bio/current',
-            sprintf('bio_%02d', 1:19)))
+# world.grids.current = stack(
+#   file.path('./data/base/worldclim/world/0.5/bio/current',
+#             sprintf('bio_%02d', 1:19)))
 
 
 ## Also get the PET raster
@@ -166,10 +166,10 @@ PET               = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
 
 #########################################################################################################################
 ## Extract worldclim data
-projection(COMBO.POINTS);projection(env.grids.current)
+projection(COMBO.POINTS);projection(world.grids.current)
 dim(COMBO.POINTS);dim(GBIF.ALA.COMBO)
 
-COMBO.RASTER <- raster::extract(env.grids.current, COMBO.POINTS) %>% 
+COMBO.RASTER <- raster::extract(world.grids.current, COMBO.POINTS) %>% 
   
   cbind(GBIF.ALA.COMBO, .) %>% 
   

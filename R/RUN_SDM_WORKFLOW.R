@@ -21,17 +21,17 @@ source('./R/HIA_TREE_LIST.R')
 
 
 ## Set global species variables here : species lists, and saving directories
-GBIF.spp      = TPL.SPP # setdiff(TPL.SPP, intersect(TPL.SPP, ala.download))  ## your list of species
+GBIF.spp      = INV.SPP # TPL.SPP # setdiff(TPL.SPP, intersect(TPL.SPP, ala.download))  ## your list of species
 GBIF.spp.rev  = sort(GBIF.spp, decreasing = TRUE)                   ## the list reversed - only needed for a big list
 
 save_run      = "SUA_ANALYSIS_380_spp_300km_SPAT"                   ## a variable to append the run name to the output files
-map_spp_list  = gsub(" ", "_", GBIF.spp)                            ## species list with "_" for mapping
-map_spp_rev   = sort(map_spp_list, decreasing = TRUE)               ## reversed
+map_spp_list  = gsub(" ", "_", GBIF.spp)                         ## species list with "_" for mapping
+map_spp_rev   = sort(map_spp_list, decreasing = TRUE)            ## reversed
 
-GBIF_path     = "./data/base/HIA_LIST/GBIF/OCC_SEARCH/"             ## The path where GBIF data is stored
-ALA_path      = "./data/base/HIA_LIST/ALA/TREES_TEST/"              ## The path where ALA data is stored - duplicated if in the same place
+GBIF_path     = "./data/base/HIA_LIST/GBIF/OCC_SEARCH/"          ## The path where GBIF data is stored
+ALA_path      = "./data/base/HIA_LIST/ALA/TREES_TEST/"           ## The path where ALA data is stored - duplicated if in the same place
 
-maxent_path   = 'output/maxent/SUA_TREES_ANALYSIS'                  ## The directory where files are saved               
+maxent_path   = 'output/maxent/WITHOUT_INV'                      ## The directory where files are saved               
 
 
 #########################################################################################################################

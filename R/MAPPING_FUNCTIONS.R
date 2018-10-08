@@ -14,7 +14,7 @@
 #########################################################################################################################
 ## Create maxent maps for a given time period 
 # x             = scen_2030[1]
-# species       = GBIF.spp[1]
+# species       = map_spp_list[1]
 # time_slice    = 30
 # maxent_path   = "./output/maxent/WITHOUT_INV"
 # climate_path  = "./data/base/worldclim/aus/1km/bio"
@@ -68,10 +68,9 @@ project_maxent_grids = function(scen_list, species_list, maxent_path, climate_pa
           scen_name = eval(parse(text = sprintf('gcms.%s$GCM[gcms.%s$id == x]', time_slice, time_slice)))           
           
           ########################################################################################################################
-          ## Now read in the SDM model calibrated on current conditions  ## maxent_fitted.rds
-          #m <- readRDS(sprintf('%s/%s/full/model.rds', maxent_path, species)) 
+          ## Now read in the SDM model calibrated on current conditions
           m <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, species)) 
-          m <- m$me_full  ## class(m);View(m)
+          m <- m$me_full  ##
           
           ## Read in the occurrence points used to create the SDM :: need the transform to plot later
           occ <- readRDS(sprintf('%s/%s/%s_occ.rds', maxent_path, species, save_name)) %>%
@@ -110,12 +109,17 @@ project_maxent_grids = function(scen_list, species_list, maxent_path, climate_pa
               m, s[[colnames(m@presence)]])$prediction_logistic
             writeRaster(pred.future, f_future, overwrite = TRUE)
             
+            ## Re-project the current raster here
+            #pred.current <- projectRaster(pred.current, crs = ALB.CONICAL)
+            
             ## Now create the empty panel just before plotting
             empty_ras <- init(pred.current, function(x) NA) 
             
-            ## Check projections ..................................................................................................
+            ## Check exents, what is going wromg here?...........................................................................
             projection(aus);projection(occ);projection(empty_ras)
             projection(pred.current);projection(pred.future)
+            
+            identical(extent(pred.current), extent(pred.future))
             
             ########################################################################################################################
             ## Use the levelplot function to make a multipanel output: occurrence points, current raster and future raster

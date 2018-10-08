@@ -63,7 +63,7 @@ ALL.SUA.POP   = read.csv("./data/base/CONTEXTUAL/ABS_SUA_POP.csv", stringsAsFact
 URB.POP       = read.csv("./data/base/CONTEXTUAL/ABS_URBAN_CENTRE_POP.csv", stringsAsFactors = FALSE)
 
 
-##
+## Load template rasters
 template.raster = raster("./data/template_hasData.tif")
 template.cells  = readRDS("./data/hasData_cells.rds")
 load("./data/base/CONTEXTUAL/urbanareas.rda")
@@ -74,7 +74,7 @@ load("./data/base/CONTEXTUAL/urbanareas.rda")
 # saveRDS(Koppen_aus, file = paste("./data/base/CONTEXTUAL/KOPPEN_AUS.rds"))
 
 
-## Set definitions :: best to minimise the number of projection used in this project
+## Set coordinate system definitions :: best to minimise the number of projection used in this project
 CRS.MOL      <- CRS('+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +units=m +no_defs')
 CRS.MOL.SDM  <- CRS('+init=ESRI:54009 +proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0')
 CRS.WGS.84   <- CRS("+init=epsg:4326")
@@ -116,8 +116,8 @@ grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',   
 
 
 #########################################################################################################################
-## Create a raster stack of current environmental conditions if needed
-env.grids.current = stack(
+## Create a raster stack of current global environmental conditions
+world.grids.current = stack(
   file.path('./data/base/worldclim/world/0.5/bio/current',
             sprintf('bio_%02d', 1:19)))
 
@@ -129,10 +129,8 @@ env.grids.current = stack(
 
 
 ## Name the grids :: these should be indentical
-names(env.grids.current) <- sdm.predictors
-identical(names(env.grids.current),sdm.predictors)
-
-
+# names(world.grids.current) <- sdm.predictors
+# identical(names(world.grids.current),sdm.predictors)
 
 
 h <- read_html('http://www.worldclim.org/cmip5_30s') 
@@ -187,7 +185,9 @@ scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cc85bi70", "gf85bi70", "hg85b
 # 
 # shapefile = aus
 
-## Now divide the current environmental grids by 10
+
+#########################################################################################################################
+## Create a raster stack of current Australian environmental conditions, and divide the current environmental grids by 10
 aus.grids.current <- stack(
   file.path('./data/base/worldclim/aus/1km/bio/current',   ## ./data/base/worldclim/aus/1km/bio
             sprintf('bio_%02d.tif', 1:19)))
@@ -198,7 +198,12 @@ for(i in 1:11) {
   message(i)
   aus.grids.current[[i]] <- aus.grids.current[[i]]/10
   
-}
+}   
+
+
+## The future rasters are read in in the mapping function
+
+
 
 
 

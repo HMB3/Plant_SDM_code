@@ -45,11 +45,6 @@ head(gcms.50) ; head(gcms.70) ; head(gcms.30)
 #########################################################################################################################
 ## For each species, use a function to create raster files and maps under all six GCMs at each time step
 
-## First remove species without data from the modelling step 7
-# no_data      <- c ("Baeckea_virgata",           "Kennedia_beckxiana")
-# map_spp_list     <- map_spp_list [! map_spp_list %in% no_data]
-# no_data %in% map_spp_list
-
 
 #########################################################################################################################
 ## Create 2030 maps

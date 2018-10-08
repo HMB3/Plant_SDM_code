@@ -74,14 +74,14 @@ names(TI.POINTS)
 #########################################################################################################################
 ## Create a stack of rasters to sample: get all the Worldclim variables just for good measure
 ## Use the Mollweide projection for the points and rasters 
-aus.grids.current = stack(
+inventory.grids.current = stack(
   file.path('./data/base/worldclim/aus/1km/bio/current/WGS/', 
             sprintf('bio_%02d.tif', 1:19))) 
 
 
 ## Also get the PET raster
 PET               = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
-projection(PET);projection(aus.grids.current)
+projection(PET);projection(inventory.grids.current)
 # PET <- PET %>%
 #   projectRaster(crs = CRS.WGS.84)
 # saveRDS(PET, "./data/base/worldclim/world/1km/PET_WGS84.rds")
@@ -89,21 +89,21 @@ projection(PET);projection(aus.grids.current)
 
 #########################################################################################################################
 ## Check the projection and raster extents for worldclim vs aus data
-# aus.grids.current <- aus.grids.current %>%
+# inventory.grids.current <- inventory.grids.current %>%
 #   projectRaster(crs = CRS.WGS.84)
-# saveRDS(aus.grids.current, "./data/base/worldclim/aus/1km/bio/current/aus_grids_current.rds")
-# projection(TI.POINTS);projection(aus.grids.current)
+# saveRDS(inventory.grids.current, "./data/base/worldclim/aus/1km/bio/current/aus_grids_current.rds")
+# projection(TI.POINTS);projection(inventory.grids.current)
 # 
 # 
 # ## Save projected files
-# saveRDS(aus.grids.current, "./data/base/worldclim/aus/1km/bio/current/aus_grids_current.rds")
-# aus.grids.current = readRDS("./data/base/worldclim/aus/1km/bio/current/aus_grids_current.rds")
+# saveRDS(inventory.grids.current, "./data/base/worldclim/aus/1km/bio/current/aus_grids_current.rds")
+# inventory.grids.current = readRDS("./data/base/worldclim/aus/1km/bio/current/aus_grids_current.rds")
 
 
 #########################################################################################################################
 ## Now extract data
-projection(TI.POINTS);projection(aus.grids.current);projection(PET)
-TI.RASTER <- raster::extract(aus.grids.current, TI.POINTS) %>% 
+projection(TI.POINTS);projection(inventory.grids.current);projection(PET)
+TI.RASTER <- raster::extract(inventory.grids.current, TI.POINTS) %>% 
   cbind(TI.XY.SPP, .)
 summary(TI.RASTER)
 class(TI.RASTER)
@@ -223,8 +223,8 @@ dim(NA.POINTS)
 
 #########################################################################################################################
 ## Now extract raster data, but only for the NA points
-# projection(NA.POINTS);projection(aus.grids.current);projection(PET)
-# NA.RASTER <- raster::extract(aus.grids.current, NA.POINTS, buffer=1000) %>% 
+# projection(NA.POINTS);projection(inventory.grids.current);projection(PET)
+# NA.RASTER <- raster::extract(inventory.grids.current, NA.POINTS, buffer=1000) %>% 
 #   cbind(TI.NA[c("lon", "lat", "SOURCE", "INVENTORY")], .)
 # saveRDS(NA.RASTER, 'data/base/HIA_LIST/COMBO/TI_NA_RASTER.rds')
 # 
@@ -239,13 +239,13 @@ dim(NA.POINTS)
 # ## Now try to extract the nearest values for the NA rasters. This is just too slow to bother for only 112 points
 # # TI.NA  = TI.RASTER[is.na(TI.RASTER$bio_01),]
 # NA.XY  = TI.NA[c("lon", "lat")]
-# TI.NA  <- names(aus.grids.current) %>%
+# TI.NA  <- names(inventory.grids.current) %>%
 # 
 #   ## pipe the list of raster names into lapply
 #   lapply(function(x) {
 # 
 #     ## Create the raster values
-#     r = aus.grids.current[[x]]
+#     r = inventory.grids.current[[x]]
 #     r@data@values = values(r)
 #     str(r@data@values)
 #     xy = NA.XY
