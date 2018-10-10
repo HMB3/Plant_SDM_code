@@ -21,6 +21,7 @@
 ## Read in all data to run the SDM code :: species lists, shapefile, rasters & tables
 #source('./R/HIA_LIST_MATCHING.R')
 rasterTmpFile()
+load("SDM_COMBINE..RData")
 
 
 #########################################################################################################################
@@ -196,7 +197,7 @@ hist(MAXENT.RESULTS$max_tss)
 plot(MAXENT.RESULTS$Training.AUC, MAXENT.RESULTS$max_tss, pch = 19, col  = "blue",
     xlab = "AUC", ylab = "TSS", 
     abline(lm(MAXENT.RESULTS$max_tss ~ MAXENT.RESULTS$Training.AUC)))
-legend("topleft", bty="n", legend=paste("R2 is", format(summary(lm.auc)$adj.r.squared, digits=4)))
+legend("topleft", bty="n", legend=paste("R2 is", format(summary(lm.auc)$adj.r.squared, digits = 4)))
 
 
 ## Now check the match between the species list, and the results list. These need to match, so we can access
@@ -266,7 +267,7 @@ MAXENT.SUMMARY.NICHE   = MAXENT.SUMMARY.NICHE[, c("searchTaxon",
                                                   "Total.growers",     
                                                   "Number.of.States",
                                                   "Number_var",
-                                                  "X.Training.samples",                                                                
+                                                  "X.Training.samples",  
                                                   "Iterations",                                                                        
                                                   "Training.AUC",
                                                   "max_tss",
@@ -366,11 +367,8 @@ time_slice = 50
 area_occ   = 10
 
 
-## Check the length matches - order should be correct, as well as the length
-length(SDM.RESULTS.DIR);length(map_spp);length(percent.10.log);length(percent.10.om)
-
-
-## Can the numeric lists be reversed?
+#########################################################################################################################
+## Reverse sort the lists
 SDM.DIR.REV     = sort(SDM.RESULTS.DIR, decreasing = TRUE)
 map_spp_rev     = sort(map_spp,         decreasing = TRUE) 
 percent.log.rev = percent.10.log[sort(order(percent.10.log), decreasing = TRUE)]
@@ -378,6 +376,11 @@ percent.om.rev  = percent.10.om[sort(order(percent.10.om),   decreasing = TRUE)]
 
 
 #load("SDM_COMBINE.RData")
+load("SDM_COMBINE..RData")
+
+## Check the length matches - order should be correct, as well as the length
+length(SDM.RESULTS.DIR);length(map_spp);length(percent.10.log);length(percent.10.om)
+length(SDM.DIR.REV);length(map_spp_rev);length(percent.log.rev);length(percent.om.rev)
 
   
 #########################################################################################################################
@@ -443,6 +446,14 @@ mapply(combine_gcm_threshold,
        time_slice   = 30,  ## 50, 70
        area_occ     = 10)
 
+
+mapply(SUA_tables,
+       DIR_list     = SDM.RESULTS.DIR,
+       species_list = map_spp,
+       maxent_path  = maxent_path,
+       thresholds   = percent.10.log,
+       time_slice   = 30,
+       area_occ     = 10)
 
 
 #########################################################################################################################

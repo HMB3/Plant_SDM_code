@@ -20,13 +20,13 @@
 
 
 ## Read in the table of species in SUAs
-SUA.SPP.COUNT = readRDS(paste0('data/base/HIA_LIST/COMBO/SUA_SPP_COUNT', save_run, '.rds'))
+SUA.SPP.COUNT = readRDS(paste0('data/base/HIA_LIST/COMBO/SUA_SPP_COUNT_', save_run, '.rds'))
 length(unique(SUA.SPP.COUNT$SPECIES))
 
 
 #########################################################################################################################
 ## Create a list of the gain/loss tables. Just run this on the final SUA table 
-GAIN.LOSS.list = list.files(maxent_path, pattern = 'gain_loss_table_', full.names = TRUE, recursive = TRUE) 
+GAIN.LOSS.list = list.files(maxent_dir, pattern = 'gain_loss_table_', full.names = TRUE, recursive = TRUE) 
 
 
 ## Chrck the exceptios - if all spp models have completed successfully, should be number of species * 3 time periods
@@ -84,7 +84,7 @@ write.csv(GAIN.LOSS.TABLE, paste0('output/tables/OVERALL_GAIN_LOSS_TABLE_', save
 
 #########################################################################################################################
 ## The multiple thresholds could present a problem
-SUA.tables = list.files(maxent_path, pattern = 'area_SUA_summary_', full.names = TRUE, recursive = TRUE) 
+SUA.tables = list.files(maxent_dir, pattern = 'area_SUA_summary_', full.names = TRUE, recursive = TRUE) 
 length(SUA.tables)/3;length(map_spp) 
 
 

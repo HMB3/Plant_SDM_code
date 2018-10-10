@@ -431,11 +431,11 @@ COMBO.NICHE = subset(COMBO.NICHE, select = -c(searchTaxon.1,  searchTaxon.2,  se
 #########################################################################################################################
 ## Add counts for each species, and record the total number of taxa processed
 ## dim(COMBO.RASTER.CONVERT);dim(CLEAN.TRUE)
-COMBO.count = as.data.frame(table(COMBO.SUA.LGA$searchTaxon))$Freq
+GLOBAL_RECORDS = as.data.frame(table(COMBO.SUA.LGA$searchTaxon))$Freq
 identical(length(COMBO.count), dim(COMBO.NICHE)[1])
 
 Total.taxa.processed = dim(COMBO.NICHE)[1]
-COMBO.NICHE  = cbind(COMBO.count, COMBO.NICHE)
+COMBO.NICHE  = cbind(GLOBAL_RECORDS, COMBO.NICHE)
 names(COMBO.NICHE)
 dim(COMBO.NICHE)
 #saveRDS(COMBO.NICHE, file = paste("./data/base/HIA_LIST/GBIF/COMBO_NICHE_CLEAN.rds"))
@@ -554,7 +554,6 @@ head(COMBO.LGA$SUA_COUNT)
 ## Pick up from here.....................................................................................................
 
 
-
 #########################################################################################################################
 ## 8). JOIN ON CONTEXTUAL DATA
 #########################################################################################################################
@@ -562,50 +561,59 @@ head(COMBO.LGA$SUA_COUNT)
 
 #########################################################################################################################
 ## Now join the horticultural contextual data onto one or both tables ()
-# names(COMBO.RASTER.CONVERT)
-# names(CLEAN.SPP)
-# COMBO.RASTER.CONTEXT = join(CLEAN.TRUE, HIA.SPP.JOIN)
-# #COMBO.RASTER.CONTEXT  = COMBO.RASTER.CONTEXT[,  c(42, 1, 65, 2:41, 43:61, 62:64, 66:78)]                         ## REDO
-# names(COMBO.RASTER.CONTEXT)
-# 
-# 
-# ## Now join hort context to all the niche
-# COMBO.NICHE.CONTEXT = join(COMBO.LGA, HIA.SPP.JOIN)
-# #COMBO.NICHE.CONTEXT =  COMBO.NICHE.CONTEXT[, c(2, 185, 1, 183:184, 186:197, 3:182)] 
-# head(COMBO.NICHE.CONTEXT$AUS_RECORDS)
-# head(COMBO.NICHE.CONTEXT$LGA_COUNT)
-# 
-# 
-# ## Join on the total growers? The synonyms won't match here
-# names(COMBO.NICHE.CONTEXT)
-# COMBO.NICHE.CONTEXT$searchTaxon [! COMBO.NICHE.CONTEXT$searchTaxon  %in% TOT.GROW$searchTaxon]
-# COMBO.NICHE.CONTEXT$searchTaxon [! COMBO.NICHE.CONTEXT$searchTaxon  %in% HIA.list$Binomial]
-# COMBO.NICHE.CONTEXT$Total.growers = join(COMBO.NICHE.CONTEXT, TOT.GROW)$Total.growers
-# 
-# 
-# ## Set NA to blank, then sort by no. of growers
-# COMBO.NICHE.CONTEXT$Number.of.growers[is.na(COMBO.NICHE.CONTEXT$Number.of.growers)] <- 0
-# COMBO.NICHE.CONTEXT = COMBO.NICHE.CONTEXT[with(COMBO.NICHE.CONTEXT, rev(order(Number.of.growers))), ]
-# 
-# 
-# ## View the data
-# names(COMBO.RASTER.CONTEXT)
-# names(COMBO.NICHE.CONTEXT)
-# dim(COMBO.RASTER.CONTEXT)
-# dim(COMBO.NICHE.CONTEXT)
-# 
-# 
-# ## Print the dataframe dimensions to screen
-# dim(CLEAN.TRUE)
-# dim(COMBO.NICHE.CONTEXT)
-# length(unique(CLEAN.TRUE$searchTaxon))
-# length(COMBO.NICHE.CONTEXT$searchTaxon)
+COMBO.RASTER.CONTEXT = CLEAN.TRUE
+names(COMBO.RASTER.CONTEXT)
+
+
+## Now join hort context to all the niche
+names(CLEAN.SPP)
+COMBO.NICHE.CONTEXT = join(COMBO.LGA, HIA.SPP.JOIN)
+#COMBO.NICHE.CONTEXT =  COMBO.NICHE.CONTEXT[, c(2, 185, 1, 183:184, 186:197, 3:182)]
+head(COMBO.NICHE.CONTEXT$AUS_RECORDS)
+head(COMBO.NICHE.CONTEXT$LGA_COUNT)
+
+
+#########################################################################################################################
+## Now combine the SDM output with the niche context data 
+## Get the number of aus records too ....................................................................................
+
+NICHE.CONTEXT   = COMBO.NICHE.CONTEXT[, c("searchTaxon", "Plant.type", "Origin", "Total.growers", "Number.of.States")]
+TREE.PLANTINGS  = TREE.EVERGREEN[, c("searchTaxon",
+                                     "Plantings")]
+
+
+## Now remove the underscore and join data 
+COMBO.NICHE.CONTEXT       = join(COMBO.LGA, NICHE.CONTEXT,  type = "left")  ## join does not support the sorting
+COMBO.NICHE.CONTEXT       = join(COMBO.NICHE.CONTEXT , TREE.PLANTINGS, type = "left")  
+COMBO.NICHE.CONTEXT       = COMBO.NICHE.CONTEXT [order(COMBO.NICHE.CONTEXT $searchTaxon),]
+
+
+## Re-order table
+#COMBO.NICHE.CONTEXT =  COMBO.NICHE.CONTEXT[, c(2, 185, 1, 183:184, 186:197, 3:182)]
+
+## Set NA to blank, then sort by no. of growers
+COMBO.NICHE.CONTEXT$Number.of.growers[is.na(COMBO.NICHE.CONTEXT$Total.growers)] <- 0
+COMBO.NICHE.CONTEXT = COMBO.NICHE.CONTEXT[with(COMBO.NICHE.CONTEXT, rev(order(Total.growers))), ]
+
+
+## View the data
+names(COMBO.RASTER.CONTEXT)
+names(COMBO.NICHE.CONTEXT)
+dim(COMBO.RASTER.CONTEXT)
+dim(COMBO.NICHE.CONTEXT)
+
+
+## Print the dataframe dimensions to screen
+dim(CLEAN.TRUE)
+dim(COMBO.NICHE.CONTEXT)
+length(unique(CLEAN.TRUE$searchTaxon))
+length(COMBO.NICHE.CONTEXT$searchTaxon)
 
 
 #########################################################################################################################
 ## Save
-saveRDS(COMBO.LGA,             paste0('data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_',  save_run, '.rds'))
-#saveRDS(COMBO.RASTER.CONTEXT,  paste0('data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_', save_run, '.rds'))
+saveRDS(COMBO.NICHE.CONTEXT, paste0('data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_',  save_run, '.rds'))
+saveRDS(COMBO.RASTER.CONTEXT,  paste0('data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_', save_run, '.rds'))
 
 
 #########################################################################################################################

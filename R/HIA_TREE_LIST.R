@@ -49,6 +49,7 @@ aus           = readRDS("./data/base/CONTEXTUAL/aus_states.rds")
 LAND          = readRDS("./data/base/CONTEXTUAL/LAND_world.rds")
 areal_unit    = readRDS("./data/base/CONTEXTUAL/SUA/SUA_2016_AUST.rds")
 areal_unit    = areal_unit[order(areal_unit$SUA_NAME16),]
+SUA_2011      = readOGR('data/base/CONTEXTUAL/SUA/SUA_2011_AUST.shp')
 Koppen        = readRDS('data/base/CONTEXTUAL/Koppen_1975.rds')
 Koppen_aus    = readRDS('data/base/CONTEXTUAL/KOPPEN_AUS.rds')
 Koppen_zones  = unique(readOGR('data/base/CONTEXTUAL/WC05_1975H_Koppen_Shapefile/WC05_1975H_Koppen_Kriticos_2012.shp')@data[, 1:2])
@@ -235,6 +236,7 @@ CLEAN.list          = read.csv("./data/base/HIA_LIST/HIA/HIA.CLEAN.csv",        
 GROWING             = read.csv("./data/base/HIA_LIST/HIA/database_aus_sp_growing.csv",           stringsAsFactors = FALSE)
 MOD_2               = read.csv("./data/base/HIA_LIST/HIA/MOD2_LIST.csv",                         stringsAsFactors = FALSE)
 MOD.2.3             = read.csv("./data/base/HIA_LIST/HIA/MODULE_2_3.csv",                        stringsAsFactors = FALSE)
+APNI                = readRDS("./data/base/HIA_LIST/ALA/APNI_LIST.rds")
 
 RISK.LIST           = read.csv("./data/base/HIA_LIST/HIA/RISK_LIST.csv",                         stringsAsFactors = FALSE)
 RISK.BINOMIAL.CLEAN = read.csv("./data/base/HIA_LIST/HIA/RISK_BINOMIAL_DF.csv",                  stringsAsFactors = FALSE)
@@ -629,6 +631,52 @@ setdiff(TREE.HIA.SPP, SUA.SPP)
 ala.download = list.files("./data/base/HIA_LIST/ALA/SPECIES/", pattern = ".RData")
 ala.download = gsub("_ALA_records.RData", "", ala.download)
 ala.download = trimws(ala.download)
+
+
+
+
+
+#########################################################################################################################
+## 8). CREATE LIST OF INVENTORY SPECIES
+#########################################################################################################################
+
+
+#########################################################################################################################
+## Create a count of the horticultural species
+TI.LUT = as.data.frame(table(TI.XY$searchTaxon))
+names(TI.LUT) = c("searchTaxon", "FREQUENCY")
+TI.LUT = TI.LUT[with(TI.LUT, rev(order(FREQUENCY))), ] 
+head(TI.LUT);dim(TI.LUT)
+
+length(intersect(CLEAN.SPP$Binomial, TI.LUT $searchTaxon))
+length(intersect(TI.LUT$searchTaxon, unique(APNI$searchTaxon)))
+length(intersect(CLEAN.SPP$Binomial, unique(APNI$searchTaxon)))
+
+
+#########################################################################################################################
+## Join on the native data and the APNI
+CLEAN.ORIGIN    = dplyr::rename(CLEAN.SPP, 
+                                searchTaxon = Binomial)[c("searchTaxon", "Origin", "Plant.type", "Number.of.States")]
+
+
+## Pipe the dataset into here
+TI.COUNT.NAT  <- TI.LUT %>% 
+  
+  join(., APNI) %>% 
+  
+  join(., CLEAN.ORIGIN) %>% 
+  
+  join(., TOT.GROW) %>% 
+  
+  join(., MAXENT.CHECK[c("searchTaxon", "check.map")]) 
+  
+head(TI.COUNT.NAT)
+#write.csv(TI.COUNT.NAT, './data/base/HIA_LIST/COMBO/TREE_INVENTORY_COUNT.csv', row.names = FALSE)
+#length(intersect(MAXENT.CHECK$))
+length(intersect(MAXENT.CHECK$searchTaxon, TI.LUT$searchTaxon))
+
+
+
 
 
 #########################################################################################################################

@@ -33,6 +33,10 @@ rasterTmpFile()
 TI.XY.SPP = TI.XY[TI.XY$searchTaxon %in% GBIF.spp, ]
  
 
+## Write out the table
+#write.csv(COMBO.LUT, "./data/base/HIA_LIST/COMBO/SUA_TREES_GBIF_ALA_LUT.csv", row.names = FALSE)
+
+
 #########################################################################################################################
 ## Create points: the over function seems to need geographic coordinates for this data
 TI.POINTS   = SpatialPointsDataFrame(coords      = TI.XY.SPP[c("lon", "lat")], 
