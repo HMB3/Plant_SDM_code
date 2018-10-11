@@ -27,6 +27,7 @@ sapply(p, require, character.only = TRUE)
 source_gist('26e8091f082f2b3dd279', filename = 'polygonizer.R')
 source_gist('c6a1cb61b8b6616143538950e6ec34aa', filename = 'hatch.R')
 
+
 ## Source functions
 source('./R/GREEN_CITIES_FUNCTIONS.R')
 source('./R/MAXENT_FUNCTIONS.R')
@@ -70,9 +71,10 @@ template.cells  = readRDS("./data/hasData_cells.rds")
 load("./data/base/CONTEXTUAL/urbanareas.rda")
 
 
-# Koppen_aus = readOGR("H:/green_cities_sdm/data/base/CONTEXTUAL/KOPPEN_AUS.shp",
-#                    layer = "KOPPEN_AUS")
-# saveRDS(Koppen_aus, file = paste("./data/base/CONTEXTUAL/KOPPEN_AUS.rds"))
+SUA_2016  = readOGR("./data/base/CONTEXTUAL/SUA/SUA_2016_AUST.shp",
+                   layer = "SUA_2016_AUST")
+unique(SUA_2016$SUA_NAME16)
+saveRDS(SUA_2016 , file = paste("./data/base/CONTEXTUAL/SUA/SUA_2016_AUST.rds"))
 
 
 ## Set coordinate system definitions :: best to minimise the number of projection used in this project
@@ -203,9 +205,20 @@ for(i in 1:11) {
 
 
 ## The future rasters are read in in the mapping function
+SUA_BIO1_2030_stats = read.csv("./data/base/worldclim/aus/1km/bio/SUA_BIO1_2030_stats.csv", stringsAsFactors = FALSE)
+SUA_BIO1_2050_stats = read.csv("./data/base/worldclim/aus/1km/bio/SUA_BIO1_2050_stats.csv", stringsAsFactors = FALSE)
+SUA_BIO1_2070_stats = read.csv("./data/base/worldclim/aus/1km/bio/SUA_BIO1_2050_stats.csv", stringsAsFactors = FALSE)
+
+SUA_BIO1_2030_stats[["PERIOD"]] <- 30
+colnames(SUA_BIO1_2050_stats)[1] <- "PERIOD"
+SUA_BIO1_2050_stats[["PERIOD"]] <- 50
+colnames(SUA_BIO1_2070_stats)[1] <- "PERIOD"
+SUA_BIO1_2070_stats[["PERIOD"]] <- 70
 
 
-
+SUA_ZONAL_STATS = bind_rows(SUA_BIO1_2030_stats,
+                            SUA_BIO1_2050_stats,
+                            SUA_BIO1_2070_stats)
 
 
 
@@ -297,7 +310,8 @@ EURO.NURSE.LOC      = read.csv("./data/base/HIA_LIST/URBAN/Euro_garden_flora_nur
 #########################################################################################################################
 ## Experimental trait lists ::
 #HEAT.RISK  = read.csv("./data/base/HIA_LIST/RENEE/MOD3_HEAT_RANKS_072018.csv",                   stringsAsFactors = FALSE)
-TRAIT.SPP  = read.csv("./data/base/HIA_LIST/RENEE/RankingTraits_Control_latest.csv",             stringsAsFactors = FALSE)
+#TRAIT.SPP  = read.csv("./data/base/HIA_LIST/RENEE/RankingTraits_Control_latest.csv",              stringsAsFactors = FALSE)
+TRAIT.SPP  = read.csv("./data/base/HIA_LIST/RENEE/RankingTraits_ALL.csv",                          stringsAsFactors = FALSE)
 
 
 ## Now find the match between the trait species and the trait species... 

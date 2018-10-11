@@ -271,7 +271,9 @@ write.csv(SUA.TOP.PRESENCE, paste0('output/tables/MAXNET_SUA_TOP_',  save_run, '
 #########################################################################################################################
 
 
-## This plot is producing blank for the full list of species............................................................
+## Try getting the cell stats for all the SUAs
+
+
 
 
 ## We simply need a count of all the species that are being lost, gained or remaining stable in each SUA

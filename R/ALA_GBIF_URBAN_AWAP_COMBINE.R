@@ -153,10 +153,25 @@ PET               = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
 
 #########################################################################################################################
 ## Also netCDF AWAP rasters
-awap.extreme = stack(list.files(as.character('./data/base/AWAP'), pattern = '.nc$', full.names = TRUE))
+awap.extreme  = stack(list.files(as.character('./data/base/AWAP'), pattern = 'extreme_droughts.nc$',  full.names = TRUE))
+awap.severe   = stack(list.files(as.character('./data/base/AWAP'), pattern = 'severe_droughts.nc$',   full.names = TRUE))
+awap.moderate = stack(list.files(as.character('./data/base/AWAP'), pattern = 'moderate_droughts.nc$', full.names = TRUE))
+
 names(awap.extreme)
+names(awap.severe)
+names(awap.moderate)
+
 names(awap.extreme) = c("Drought_freq_extr", "Drought_max_dur_extr", "Drought_max_int_extr", "Drought_max_rel_int_extr",
                         "Drought_mean_dur_extr", "Drought_mean_int_extr", "Drought_mean_rel_int_extr")
+
+names(awap.severe) = c("Drought_freq_extr", "Drought_max_dur_extr", "Drought_max_int_extr", "Drought_max_rel_int_extr",
+                        "Drought_mean_dur_extr", "Drought_mean_int_extr", "Drought_mean_rel_int_extr")
+
+names(awap.moderate) = c("Drought_freq_extr", "Drought_max_dur_extr", "Drought_max_int_extr", "Drought_max_rel_int_extr",
+                       "Drought_mean_dur_extr", "Drought_mean_int_extr", "Drought_mean_rel_int_extr")
+
+
+
 names(awap.extreme)
 projection(awap.extreme)
 plot(awap.extreme[["Drought_max_dur_extr"]])

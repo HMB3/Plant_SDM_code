@@ -273,6 +273,23 @@ MAXENT.SUMMARY.NICHE   = MAXENT.SUMMARY.NICHE[, c("searchTaxon",
                                                   "max_tss",
                                                   "X.Background.points",  
                                                   "X10.percentile.training.presence.Logistic.threshold")]
+
+
+#########################################################################################################################
+## Create a taxonomic lookup table
+length(intersect(MAXENT.SUMMARY.NICHE$searchTaxon, APNI$searchTaxon))
+
+
+SDM.TAXA <- MAXENT.SUMMARY.NICHE[["searchTaxon"]] %>%  
+  lookup_table(., by_species = TRUE) 
+SDM.TAXA <- setDT(SDM.TAXA, keep.rownames = TRUE)[]
+colnames(SDM.TAXA)[1] <- "searchTaxon"
+# APNI[["APNI"]] <- ifelse(is.na(APNI[["APNI"]]), 
+#                              'FALSE', APNI[["APNI"]])
+SDM.TAXA <- join(SDM.TAXA, APNI)
+
+
+MAXENT.SUMMARY.NICHE = join(SDM.TAXA, MAXENT.SUMMARY.NICHE)
 View(MAXENT.SUMMARY.NICHE)
 
 
@@ -357,13 +374,17 @@ tail(SDM.RESULTS.DIR, 20);tail(map_spp, 20); tail(MAXENT.RESULTS, 20)[, c("searc
 #########################################################################################################################
 
 
+#load("SDM_COMBINE.RData")
+load("SDM_COMBINE.RData")
+
+
 ## Test problematic species by entering the values and running the function manually
 ## Common errors are due to corrupt rasters in the previous step
-DIR        = SDM.RESULTS.DIR[59]
-species    = map_spp_list[59]
-thresh     = percent.10.log[59]
-percent    = percent.10.om[59]
-time_slice = 50
+DIR        = SDM.RESULTS.DIR[1]
+species    = map_spp_list[1]
+thresh     = percent.10.log[1]
+percent    = percent.10.om[1]
+time_slice = 30
 area_occ   = 10
 
 
@@ -374,9 +395,6 @@ map_spp_rev     = sort(map_spp,         decreasing = TRUE)
 percent.log.rev = percent.10.log[sort(order(percent.10.log), decreasing = TRUE)]
 percent.om.rev  = percent.10.om[sort(order(percent.10.om),   decreasing = TRUE)]
 
-
-#load("SDM_COMBINE.RData")
-load("SDM_COMBINE..RData")
 
 ## Check the length matches - order should be correct, as well as the length
 length(SDM.RESULTS.DIR);length(map_spp);length(percent.10.log);length(percent.10.om)
@@ -452,6 +470,15 @@ mapply(SUA_tables,
        species_list = map_spp,
        maxent_path  = maxent_path,
        thresholds   = percent.10.log,
+       time_slice   = 30,
+       area_occ     = 10)
+
+
+mapply(SUA_tables,
+       DIR_list     = SDM.DIR.REV,
+       species_list = map_spp_rev,
+       maxent_path  = maxent_path,
+       thresholds   = percent.log.rev,
        time_slice   = 30,
        area_occ     = 10)
 
