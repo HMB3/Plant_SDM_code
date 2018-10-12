@@ -165,10 +165,10 @@ names(awap.extreme) = c("Drought_freq_extr", "Drought_max_dur_extr", "Drought_ma
                         "Drought_mean_dur_extr", "Drought_mean_int_extr", "Drought_mean_rel_int_extr")
 
 names(awap.severe) = c("Drought_freq_extr", "Drought_max_dur_extr", "Drought_max_int_extr", "Drought_max_rel_int_extr",
-                        "Drought_mean_dur_extr", "Drought_mean_int_extr", "Drought_mean_rel_int_extr")
+                       "Drought_mean_dur_extr", "Drought_mean_int_extr", "Drought_mean_rel_int_extr")
 
 names(awap.moderate) = c("Drought_freq_extr", "Drought_max_dur_extr", "Drought_max_int_extr", "Drought_max_rel_int_extr",
-                       "Drought_mean_dur_extr", "Drought_mean_int_extr", "Drought_mean_rel_int_extr")
+                         "Drought_mean_dur_extr", "Drought_mean_int_extr", "Drought_mean_rel_int_extr")
 
 
 
