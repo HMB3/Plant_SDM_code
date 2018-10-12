@@ -21,7 +21,7 @@
 ## Read in all data to run the SDM code :: species lists, shapefile, rasters & tables
 #source('./R/HIA_LIST_MATCHING.R')
 rasterTmpFile()
-load("SDM_COMBINE..RData")
+load("SDM_COMBINE.RData")
 
 
 #########################################################################################################################
@@ -128,13 +128,21 @@ MAXENT.RESULTS <- maxent.tables[c(1:length(maxent.tables))] %>%
     ## Load each .RData file
     d <- read.csv(f)
     
+    ## load model
     m <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, x))
     m <- m$me_full
     number_var = length(m@lambdas) - 4                                   ## (the last 4 slots of lambdas are not variables) 
     
+    ## get variable importance
+    m.vars  = ENMeval::var.importance(m)
+    top.var = m.vars[rev(order(m.vars[["percent.contribution"]])),][["variable"]][1]
+
+    
     ## Now add a model column
     d = cbind(searchTaxon = x, 
-              Number_var  = number_var, d)  ## see step 7, make a variable for multiple runs
+              Number_var  = number_var, 
+              Top_var     = top.var,
+              d)  
     dim(d)
     
     ## Remove path gunk, and species
@@ -230,7 +238,8 @@ SDM.RESULTS.DIR = unlist(SDM.RESULTS.DIR)
 
 #########################################################################################################################
 ## Now combine the SDM output with the niche context data 
-## Get the number of aus records too ....................................................................................
+
+## Update NICHE.CONTEXT for SUA species .................................................................................
 NICHE.CONTEXT   = COMBO.NICHE.CONTEXT[, c("searchTaxon", "COMBO.count",  "AUS_RECORDS",  "Plant.type", "Origin", 
                                           "Total.growers",     
                                           "Number.of.States")]
@@ -242,6 +251,7 @@ TREE.PLANTINGS  = TREE.EVERGREEN[, c("searchTaxon",
 ## Check with John and Linda which columns will help with model selection
 MAXENT.SUMMARY   = MAXENT.RESULTS[, c("searchTaxon",
                                       "Number_var",
+                                      "Top_var",
                                       "X.Training.samples",                                                                
                                       "Iterations",                                                                        
                                       "Training.AUC",
@@ -267,6 +277,7 @@ MAXENT.SUMMARY.NICHE   = MAXENT.SUMMARY.NICHE[, c("searchTaxon",
                                                   "Total.growers",     
                                                   "Number.of.States",
                                                   "Number_var",
+                                                  "Top_var",
                                                   "X.Training.samples",  
                                                   "Iterations",                                                                        
                                                   "Training.AUC",
@@ -284,12 +295,21 @@ SDM.TAXA <- MAXENT.SUMMARY.NICHE[["searchTaxon"]] %>%
   lookup_table(., by_species = TRUE) 
 SDM.TAXA <- setDT(SDM.TAXA, keep.rownames = TRUE)[]
 colnames(SDM.TAXA)[1] <- "searchTaxon"
-# APNI[["APNI"]] <- ifelse(is.na(APNI[["APNI"]]), 
-#                              'FALSE', APNI[["APNI"]])
 SDM.TAXA <- join(SDM.TAXA, APNI)
 
+# 
+# MAXENT.SUMMARY.NICHE = join(SDM.TAXA, MAXENT.SUMMARY.NICHE)
+# View(MAXENT.SUMMARY.NICHE)
 
-MAXENT.SUMMARY.NICHE = join(SDM.TAXA, MAXENT.SUMMARY.NICHE)
+
+#########################################################################################################################
+## Join on the native data and the APNI
+MAXENT.SUMMARY.NICHE <- SDM.TAXA %>% 
+  
+  join(., MAXENT.SUMMARY.NICHE) %>% 
+  
+  join(., MAXENT.CHECK[c("searchTaxon", "check.map")]) 
+
 View(MAXENT.SUMMARY.NICHE)
 
 
@@ -380,10 +400,10 @@ load("SDM_COMBINE.RData")
 
 ## Test problematic species by entering the values and running the function manually
 ## Common errors are due to corrupt rasters in the previous step
-DIR        = SDM.RESULTS.DIR[1]
-species    = map_spp_list[1]
-thresh     = percent.10.log[1]
-percent    = percent.10.om[1]
+DIR        = SDM.RESULTS.DIR[31]
+species    = map_spp[31]
+thresh     = percent.10.log[31]
+percent    = percent.10.om[31]
 time_slice = 30
 area_occ   = 10
 
@@ -410,7 +430,8 @@ suitability.2030 = tryCatch(mapply(combine_gcm_threshold,
                                    thresholds   = percent.10.log,
                                    percentiles  = percent.10.om,
                                    time_slice   = 30,
-                                   area_occ     = 10),
+                                   area_occ     = 10,
+                                   write_rasters = FALSE),
                             
                             error = function(cond) {
                               
@@ -427,7 +448,8 @@ suitability.2050 = tryCatch(mapply(combine_gcm_threshold,
                                    thresholds   = percent.10.log,
                                    percentiles  = percent.10.om,
                                    time_slice   = 50,
-                                   area_occ     = 10),
+                                   area_occ     = 10,
+                                   write_rasters = FALSE),
                             
                             error = function(cond) {
                               
@@ -444,7 +466,8 @@ suitability.2070 = tryCatch(mapply(combine_gcm_threshold,
                                    thresholds   = percent.10.log,
                                    percentiles  = percent.10.om,
                                    time_slice   = 70,
-                                   area_occ     = 10),
+                                   area_occ     = 10,
+                                   write_rasters = FALSE),
                             
                             error = function(cond) {
                               
@@ -462,25 +485,9 @@ mapply(combine_gcm_threshold,
        thresholds   = percent.log.rev,
        percentiles  = percent.om.rev,
        time_slice   = 30,  ## 50, 70
-       area_occ     = 10)
+       area_occ     = 10,
+       write_rasters = FALSE)
 
-
-mapply(SUA_tables,
-       DIR_list     = SDM.RESULTS.DIR,
-       species_list = map_spp,
-       maxent_path  = maxent_path,
-       thresholds   = percent.10.log,
-       time_slice   = 30,
-       area_occ     = 10)
-
-
-mapply(SUA_tables,
-       DIR_list     = SDM.DIR.REV,
-       species_list = map_spp_rev,
-       maxent_path  = maxent_path,
-       thresholds   = percent.log.rev,
-       time_slice   = 30,
-       area_occ     = 10)
 
 
 #########################################################################################################################

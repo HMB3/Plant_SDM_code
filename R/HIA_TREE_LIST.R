@@ -19,8 +19,8 @@ p <- c('ff',    'things', 'raster',        'dismo',        'sp',           'latt
        'rgdal', 'rgeos',  'gdalUtils',     'rmaxent',      'readr',        'plyr',         'dplyr',        
        'tidyr', 'readr',  'rnaturalearth', 'rasterVis',    'RColorBrewer', 'latticeExtra', 'parallel',     
        'taxonlookup',     'ALA4R',         'stringr',      'Taxonstand',   'CoordinateCleaner', 'gsubfn', 'PerformanceAnalytics',
-       'rvest', 'magrittr', 'devtools',    'ggplot2',      'reshape2', 'rmarkdown', 'flexdashboard', 'shiny', 'rgbif')
-
+       'rvest', 'magrittr', 'devtools',    'ggplot2',      'reshape2', 'rmarkdown', 'flexdashboard', 'shiny', 'rgbif',
+       'ENMeval')
 
 ## Require packages
 sapply(p, require, character.only = TRUE)
