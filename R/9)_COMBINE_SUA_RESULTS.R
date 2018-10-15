@@ -12,11 +12,7 @@
 #########################################################################################################################
 
 
-## Drag the NEW_ALA folder into the old one..............................................................................
-## Reset maxent_path to new species
-## Re-caclculate SUA.SPP for all 380 species
-## Check maps for the next lot of species
-## Then calculate table for all 380 species
+## Check the match between the SUA shapefile and population fields......................................................
 
 
 ## Read in the table of species in SUAs
@@ -123,7 +119,7 @@ summary(SUA.PRESENCE)
 ## Now join on the population. Note that the ABS area shapefile does not have the same SUAs as the ABS table
 
 
-## Update this table to incorporate central coast, etc...................................................................
+## Update this to match SUA names between SUA_NAME16 and the population table............................................
 SUA.DENS = areal_unit@data
 SUA.DENS = SUA.DENS[, c("SUA_NAME16", "AREASQKM16")]
 names(SUA.DENS) = c("SUA", "AREA_SQKM")
@@ -131,8 +127,10 @@ head(SUA.DENS)
 
 
 ## Check the "urban centres" file
-sort(intersect(ALL.SUA.POP$SUA, SUA.PRESENCE$SUA))
-setdiff(ALL.SUA.POP$SUA, SUA.PRESENCE$SUA)
+length(intersect(ALL.SUA.POP$SUA, SUA.PRESENCE$SUA))
+length(intersect(ALL.SUA.POP$SUA, SUA.DENS$SUA))
+setdiff(SUA.DENS$SUA, ALL.SUA.POP$SUA)
+setdiff(ALL.SUA.POP$SUA, SUA.DENS$SUA)
 
 
 ## Check the "urban centres" file

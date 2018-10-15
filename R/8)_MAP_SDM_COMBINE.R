@@ -497,18 +497,7 @@ mapply(combine_gcm_threshold,
 ## intersect(list.files(maxent_path), map_spp_list) 
 
 
-## 1). Fix species that didn't work on the last run, and run the remaining species
-
-## 2). Then combine species into one big table - should be 238 * 3 time periods - a list of 714 tables
-
-## 3). Create threshold maps for species rated 2 and 3 - could use john's code to summarise the outputted data
-
-## 4). Create mess maps for species rated 2 and 3 - this takes a long time
-
-## 5). Follow up with ALA RE field names 
-
-## 6). Create protcol for species cleaning - initial clean using just the png files, then threshold and mess maps for the 1s
-##     and 2s.
+## 1). Fix the species mapping loop over two lists at once : mapply
 
 
 
