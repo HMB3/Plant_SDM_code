@@ -235,8 +235,8 @@ message(length(unique(SUA.COMPLETE$SPECIES)), " Species analysed in ", length(un
 
 
 ## Include the maxent rating?
-SDM.CHECK = MXT.CHECK[, c("searchTaxon", "check.map")]
-names(SDM.CHECK) = c("SPECIES", "MAXENT_RATING")
+SDM.CHECK = MXT.CHECK[, c("searchTaxon", "Origin", "Check.map")]
+names(SDM.CHECK) = c("SPECIES", "ORIGIN", "MAXENT_RATING")
 table(SDM.CHECK$MAXENT_RATING)
 
 
@@ -248,17 +248,10 @@ length(intersect(unique(SDM.CHECK$SPECIES), unique(SUA.COMPLETE$SPECIES)))
 ## Join on a column for if the species has records in the SUA
 
 ## Add this in when we have rated the species
-SUA.COMPLETE = merge(SUA.COMPLETE, SDM.CHECK)
-SUA.COMPLETE = join(SUA.COMPLETE, SUA.SPP.COUNT)
-#unique(SUA.COMPLETE$MAXENT_RATING)....................................................................................
-summary(SUA.COMPLETE)
-View(SUA.COMPLETE)
-
-
-#########################################################################################################################
-## Save table
-write.csv(SUA.COMPLETE, paste0('output/tables/MAXENT_SUA_PRESENCE_', save_run, '.csv'), row.names = FALSE)
-write.csv(SUA.TOP.PRESENCE, paste0('output/tables/MAXNET_SUA_TOP_',  save_run, '.csv'), row.names = FALSE)
+SUA.PREDICT = merge(SDM.CHECK, SUA.COMPLETE)
+SUA.PREDICT = join(SUA.SPP.COUNT, SUA.PREDICT)
+SUA.PREDICT = completeFun(SUA.PREDICT, "MAXENT_RATING")
+unique(SUA.PREDICT$MAXENT_RATING)
 
 
 
@@ -269,21 +262,71 @@ write.csv(SUA.TOP.PRESENCE, paste0('output/tables/MAXNET_SUA_TOP_',  save_run, '
 #########################################################################################################################
 
 
-## Try getting the cell stats for all the SUAs
+#########################################################################################################################
+## Future rasters
+SUA.BIO1.current.stats = read.csv("./data/base/worldclim/aus/1km/bio/SUA_BIO1_current_stats.csv", stringsAsFactors = FALSE)
+SUA.BIO1.2030.stats    = read.csv("./data/base/worldclim/aus/1km/bio/SUA_BIO1_2030_stats.csv",    stringsAsFactors = FALSE)
+SUA.BIO1.2050.stats    = read.csv("./data/base/worldclim/aus/1km/bio/SUA_BIO1_2050_stats.csv",    stringsAsFactors = FALSE)
+SUA.BIO1.2070.stats    = read.csv("./data/base/worldclim/aus/1km/bio/SUA_BIO1_2050_stats.csv",    stringsAsFactors = FALSE)
+
+
+#########################################################################################################################
+## Rename zonal stats
+names(SUA.BIO1.current.stats)[names(SUA.BIO1.current.stats) == "SUA_NAME16"] <- "SUA"
+names(SUA.BIO1.current.stats)[names(SUA.BIO1.current.stats) == "MEAN"] <- "CURRENT_MAT"
+
+
+## Can't join these data
+SUA.BIO1.2030.stats[["PERIOD"]]  <- 30
+colnames(SUA.BIO1.2030.stats)[1] <- "SUA"
+
+# SUA.BIO1.2050.stats[["PERIOD"]]  <- 50
+# colnames(SUA.BIO1.2050.stats)[1] <- "SUA"
+# 
+# SUA.BIO1.2070.stats[["PERIOD"]]  <- 50
+# colnames(SUA.BIO1.2070.stats)[1] <- "SUA"
+# 
+# SUA.ZONAL.STATS = bind_rows(SUA.BIO1.2030.stats,
+#                             SUA.BIO1.2050.stats,
+#                             SUA.BIO1.2070.stats)
+# SUA.ZONAL.STATS[["CLIMATE"]] = "BIO.01.MAT" 
+# 
+# 
+# ## Divide columns by 10
+# SUA.ZONAL.STATS.CONVERT = as.data.table(SUA.ZONAL.STATS)                           ## Check this works, also inefficient
+# SUA.ZONAL.STATS.CONVERT[, (names(SUA.ZONAL.STATS[c(5:10)])) := lapply(.SD, function(x) 
+#   x / 10 ), .SDcols = names(SUA.ZONAL.STATS[c(5:10)])]
+# SUA.ZONAL.STATS.CONVERT = as.data.frame(SUA.ZONAL.STATS.CONVERT) 
+# View(SUA.ZONAL.STATS)
+SUA.BIO1.current.stats[["CURRENT_MAT"]] = SUA.BIO1.current.stats[["CURRENT_MAT"]]/10
+
+## Merge MAP onto the results table
+SUA.PREDICT = join(SUA.PREDICT, SUA.BIO1.current.stats[c("SUA", "CURRENT_MAT")])
+summary(SUA.PREDICT)
+View(SUA.PREDICT)
+
+
+#########################################################################################################################
+## Save table
+write.csv(SUA.PREDICT, paste0('output/tables/MAXENT_SUA_PRESENCE_', save_run, '.csv'), row.names = FALSE)
+write.csv(SUA.TOP.PRESENCE, paste0('output/tables/MAXNET_SUA_TOP_',  save_run, '.csv'), row.names = FALSE)
 
 
 
-
+#########################################################################################################################
 ## We simply need a count of all the species that are being lost, gained or remaining stable in each SUA
-length(unique(SUA.COMPLETE$SPECIES))
-SUA.PLOT.GOOD = subset(SUA.COMPLETE, MAXENT_RATING < 3)
+length(unique(SUA.PREDICT$SPECIES))
+SUA.PLOT.GOOD = subset(SUA.PREDICT, MAXENT_RATING < 3 & ORIGIN == "Native")
 unique(SUA.PLOT.GOOD$MAXENT_RATING)
+length(unique(SUA.PLOT.GOOD$SPECIES))
 
+       
 SUA.PLOT   = table(SUA.PLOT.GOOD$SUA, SUA.PLOT.GOOD$GAIN_LOSS)
 SUA.PLOT.M = melt(SUA.PLOT) 
 names(SUA.PLOT.M) = c("SUA", "AREA_CHANGE", "SPECIES_COUNT")
 head(SUA.PLOT.M)
-length(unique(SUA.PLOT.M$SPECIES))
+
+
 
 
 #########################################################################################################################

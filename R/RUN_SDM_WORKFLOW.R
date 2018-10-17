@@ -23,7 +23,7 @@ source('./R/HIA_TREE_LIST.R')
 GBIF.spp      = TPL.SPP # setdiff(TPL.SPP, intersect(TPL.SPP, ala.download))  ## your list of species
 GBIF.spp.rev  = sort(GBIF.spp, decreasing = TRUE)                   ## the list reversed - only needed for a big list
 
-save_run      = "COMBINED_SUA_400_SPP_300km_SPAT"                   ## a variable to append the run name to the output files
+save_run      = "SUA_ANALYSIS_380_spp_300km_SPAT"                ## a variable to append the run name to the output files
 map_spp_list  = gsub(" ", "_", GBIF.spp)                         ## species list with "_" for mapping
 map_spp_rev   = sort(map_spp_list, decreasing = TRUE)            ## reversed
 

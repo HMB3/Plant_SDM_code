@@ -56,7 +56,7 @@ TIB.GBIF <- COMBO.RASTER.CONVERT %>% dplyr::rename(species          = searchTaxo
 
 
 ## Add a column for unique observation so we can check the records match up after joining
-TIB.GBIF$CC.OBS <- 1:nrow(TIB.GBIF)
+#TIB.GBIF$CC.OBS <- 1:nrow(TIB.GBIF)
 identical(length(TIB.GBIF$CC.OBS), dim(TIB.GBIF)[1])
 
 
@@ -222,7 +222,7 @@ message("Tree inventory data increases records by ", round(dim(CLEAN.TRUE)[1]/di
 
 ## Save niches
 saveRDS(CLEAN.TRUE, paste0('data/base/HIA_LIST/COMBO/CLEAN_TRUE_', save_run, '.rds'))
-
+#CLEAN.TRUE = readRDS(paste0('data/base/HIA_LIST/COMBO/CLEAN_TRUE_', save_run, '.rds'))
 
 
 
@@ -234,9 +234,10 @@ saveRDS(CLEAN.TRUE, paste0('data/base/HIA_LIST/COMBO/CLEAN_TRUE_', save_run, '.r
 
 ## Select columns
 GBIF.ALA.CHECK  = select(CLEAN.TRUE,     OBS, searchTaxon, scientificName, lat, lon, SOURCE, INVENTORY, year, 
-                         coordinateUncertaintyInMetres, #geodeticDatum,  
+                         #coordinateUncertaintyInMetres, #geodeticDatum,  
                          country, locality, basisOfRecord, institutionCode, 
-                         rank, Taxonomic.status, New.Taxonomic.status)
+                         #rank, 
+                         Taxonomic.status, New.Taxonomic.status)
 
 
 ## Rename the fields so that ArcMap can handle them
@@ -245,14 +246,16 @@ GBIF.ALA.CHECK     = dplyr::rename(GBIF.ALA.CHECK,
                                    LAT       = lat,
                                    LON       = lon,
                                    SC_NAME   = scientificName,
-                                   RANK      = rank,
+                                   #RANK      = rank,
                                    BASIS     = basisOfRecord,                
                                    LOCAL     = locality,                      
                                    INSTIT    = institutionCode,                
                                    COUNTRY   = country,                
-                                   COORD_UN  = coordinateUncertaintyInMetres,
+                                   #COORD_UN  = coordinateUncertaintyInMetres,
                                    #DATUM     = geodeticDatum,                 
-                                   YEAR      = year)
+                                   YEAR      = year,
+                                   TAX_STAT  = Taxonomic.status,
+                                   NEW_STA   = New.Taxonomic.status)
 names(GBIF.ALA.CHECK)
 
 
@@ -324,7 +327,7 @@ projection(COMBO.RASTER.SP);projection(LGA.WGS);projection(SUA.WGS);projection(A
 SUA.JOIN      = over(COMBO.RASTER.SP, SUA.WGS)              
 COMBO.SUA.LGA = cbind.data.frame(COMBO.RASTER.SP, SUA.JOIN) 
 saveRDS(COMBO.SUA.LGA, file = paste0('data/base/HIA_LIST/COMBO/COMBO_SUA_OVER_', save_run, '.rds'))
-## COMBO.SUA.LGA = readRDS("./data/base/HIA_LIST/GBIF/COMBO_SUA_LGA.rds")
+## COMBO.SUA.LGA = readRDS("paste0('data/base/HIA_LIST/COMBO/COMBO_SUA_OVER_', save_run, '.rds'))
 ## str(unique(COMBO.SUA.LGA$searchTaxon))
 
 

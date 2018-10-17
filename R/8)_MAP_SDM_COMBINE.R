@@ -21,7 +21,6 @@
 ## Read in all data to run the SDM code :: species lists, shapefile, rasters & tables
 #source('./R/HIA_LIST_MATCHING.R')
 rasterTmpFile()
-load("SDM_COMBINE.RData")
 
 
 #########################################################################################################################
@@ -395,15 +394,16 @@ tail(SDM.RESULTS.DIR, 20);tail(map_spp, 20); tail(MAXENT.RESULTS, 20)[, c("searc
 
 
 #load("SDM_COMBINE.RData")
-load("SDM_COMBINE.RData")
+#save.image("STEP_8_MAPPING.RData")
+load("STEP_8_MAPPING.RData")
 
 
 ## Test problematic species by entering the values and running the function manually
 ## Common errors are due to corrupt rasters in the previous step
-DIR        = SDM.RESULTS.DIR[31]
-species    = map_spp[31]
-thresh     = percent.10.log[31]
-percent    = percent.10.om[31]
+DIR        = SDM.RESULTS.DIR[25]
+species    = map_spp[25]
+thresh     = percent.10.log[25]
+percent    = percent.10.om[25]
 time_slice = 30
 area_occ   = 10
 
@@ -423,14 +423,13 @@ length(SDM.DIR.REV);length(map_spp_rev);length(percent.log.rev);length(percent.o
   
 #########################################################################################################################
 ## Combine output and calculate gain and loss for 2030
-suitability.2030 = tryCatch(mapply(combine_gcm_threshold,
+suitability.2030 = tryCatch(mapply(SUA_cell_count,                                               ## combine_gcm_threshold
                                    DIR_list     = SDM.RESULTS.DIR,
                                    species_list = map_spp,
                                    maxent_path  = maxent_path,
                                    thresholds   = percent.10.log,
                                    percentiles  = percent.10.om,
                                    time_slice   = 30,
-                                   area_occ     = 10,
                                    write_rasters = FALSE),
                             
                             error = function(cond) {
@@ -441,14 +440,13 @@ suitability.2030 = tryCatch(mapply(combine_gcm_threshold,
 
 
 ## Combine GCM output for 2050 
-suitability.2050 = tryCatch(mapply(combine_gcm_threshold, 
+suitability.2050 = tryCatch(mapply(SUA_cell_count,                                               ## combine_gcm_threshold
                                    DIR_list     = SDM.RESULTS.DIR,
                                    species_list = map_spp,
                                    maxent_path  = maxent_path,
                                    thresholds   = percent.10.log,
                                    percentiles  = percent.10.om,
                                    time_slice   = 50,
-                                   area_occ     = 10,
                                    write_rasters = FALSE),
                             
                             error = function(cond) {
@@ -459,14 +457,13 @@ suitability.2050 = tryCatch(mapply(combine_gcm_threshold,
 
 
 ## Combine GCM output for 2070 
-suitability.2070 = tryCatch(mapply(combine_gcm_threshold, 
+suitability.2070 = tryCatch(mapply(SUA_cell_count,                                               ## combine_gcm_threshold
                                    DIR_list     = SDM.RESULTS.DIR,
                                    species_list = map_spp,
                                    maxent_path  = maxent_path,
                                    thresholds   = percent.10.log,
                                    percentiles  = percent.10.om,
                                    time_slice   = 70,
-                                   area_occ     = 10,
                                    write_rasters = FALSE),
                             
                             error = function(cond) {
@@ -478,14 +475,13 @@ suitability.2070 = tryCatch(mapply(combine_gcm_threshold,
 
 #########################################################################################################################
 ## Reverse the order of the lists to speed up the output
-mapply(combine_gcm_threshold,
+mapply(SUA_cell_count,
        DIR_list     = SDM.DIR.REV,
        species_list = map_spp_rev,
        maxent_path  = maxent_path,
        thresholds   = percent.log.rev,
        percentiles  = percent.om.rev,
        time_slice   = 30,  ## 50, 70
-       area_occ     = 10,
        write_rasters = FALSE)
 
 
@@ -497,10 +493,10 @@ mapply(combine_gcm_threshold,
 ## intersect(list.files(maxent_path), map_spp_list) 
 
 
-## 1). Fix the species mapping loop over two lists at once : mapply
+## 1). Check why the future code is breaking, and if we can simply use the gain/loss raster
 
 
-
+## 2). Fix the species mapping loop over two lists at once : mapply
 
 
 

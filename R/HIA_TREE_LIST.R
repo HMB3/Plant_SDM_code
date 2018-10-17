@@ -20,7 +20,7 @@ p <- c('ff',    'things', 'raster',        'dismo',        'sp',           'latt
        'tidyr', 'readr',  'rnaturalearth', 'rasterVis',    'RColorBrewer', 'latticeExtra', 'parallel',     
        'taxonlookup',     'ALA4R',         'stringr',      'Taxonstand',   'CoordinateCleaner', 'gsubfn', 'PerformanceAnalytics',
        'rvest', 'magrittr', 'devtools',    'ggplot2',      'reshape2', 'rmarkdown', 'flexdashboard', 'shiny', 'rgbif',
-       'ENMeval')
+       'ENMeval', 'tibble')
 
 ## Require packages
 sapply(p, require, character.only = TRUE)
@@ -71,12 +71,54 @@ template.cells  = readRDS("./data/hasData_cells.rds")
 load("./data/base/CONTEXTUAL/urbanareas.rda")
 
 
+#########################################################################################################################
+## Read in SUA shapefile and convert columns to numeric and character
 SUA_2016  = readOGR("./data/base/CONTEXTUAL/SUA/SUA_2016_AUST.shp",
-                   layer = "SUA_2016_AUST")
+                   layer = "SUA_2016_AUST", stringsAsFactors = FALSE)
+SUA_2016$SUA_CODE16 <- as.numeric(as.character(SUA_2016$SUA_CODE16))
+SUA_2016$SUA_NAME16 <- as.character(SUA_2016$SUA_NAME16)
+class(SUA_2016$SUA_CODE16)
+class(SUA_2016$SUA_NAME16)
+head(SUA_2016)
+
+
 unique(SUA_2016$SUA_NAME16)
 saveRDS(SUA_2016 , file = paste("./data/base/CONTEXTUAL/SUA/SUA_2016_AUST.rds"))
 
 
+###################################################################################################################
+## Rasterize the SUA shapefile
+# areal_unit = readRDS("./data/base/CONTEXTUAL/SUA/SUA_2016_AUST.rds") %>%
+#   spTransform(ALB.CONICAL)
+# 
+# ##  Rasterize shapefile
+# message('rasterizing SUA shapefile')
+# areal_unit = areal_unit[order(areal_unit$SUA_NAME16),]
+# f <- tempfile()
+# 
+# writeOGR(areal_unit, tempdir(), basename(f), 'ESRI Shapefile')
+# template <- raster('./output/maxent/SUA_TREES_ANALYSIS/Acacia_retinodes/full/Acacia_retinodes_ac85bi30.tif')
+# 
+# areal_unit_rast <- gdal_rasterize(
+#   normalizePath(paste0(f, '.shp')), 
+#   
+#   'H:/green_cities_sdm/data/base/CONTEXTUAL/SUA/SUA_2016_AUST.tif', tr=res(template),
+#   te = c(bbox(template)), a = 'SUA_CODE16', a_nodata = 0, init = 0, ot = 'UInt16', output_Raster = TRUE)
+# 
+# areal_unit_vec <- c(areal_unit_rast[])
+# summary(areal_unit_vec)
+
+
+## Save RDS for areal_unit_rast and areal_unit_vec
+# saveRDS(areal_unit_rast, file = paste("./data/base/CONTEXTUAL/SUA/SUA_2016_RAST.rds"))
+# saveRDS(areal_unit_vec, file = paste("./data/base/CONTEXTUAL/SUA/SUA_2016_VEC.rds"))
+
+areal_unit_rast = readRDS("./data/base/CONTEXTUAL/SUA/SUA_2016_RAST.rds")
+areal_unit_vec  = readRDS("./data/base/CONTEXTUAL/SUA/SUA_2016_VEC.rds")
+summary(areal_unit_vec)
+
+
+#########################################################################################################################
 ## Set coordinate system definitions :: best to minimise the number of projection used in this project
 CRS.MOL      <- CRS('+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +units=m +no_defs')
 CRS.MOL.SDM  <- CRS('+init=ESRI:54009 +proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0')
@@ -204,22 +246,6 @@ for(i in 1:11) {
 }   
 
 
-## The future rasters are read in in the mapping function
-SUA_BIO1_2030_stats = read.csv("./data/base/worldclim/aus/1km/bio/SUA_BIO1_2030_stats.csv", stringsAsFactors = FALSE)
-SUA_BIO1_2050_stats = read.csv("./data/base/worldclim/aus/1km/bio/SUA_BIO1_2050_stats.csv", stringsAsFactors = FALSE)
-SUA_BIO1_2070_stats = read.csv("./data/base/worldclim/aus/1km/bio/SUA_BIO1_2050_stats.csv", stringsAsFactors = FALSE)
-
-SUA_BIO1_2030_stats[["PERIOD"]] <- 30
-colnames(SUA_BIO1_2050_stats)[1] <- "PERIOD"
-SUA_BIO1_2050_stats[["PERIOD"]] <- 50
-colnames(SUA_BIO1_2070_stats)[1] <- "PERIOD"
-SUA_BIO1_2070_stats[["PERIOD"]] <- 70
-
-
-SUA_ZONAL_STATS = bind_rows(SUA_BIO1_2030_stats,
-                            SUA_BIO1_2050_stats,
-                            SUA_BIO1_2070_stats)
-
 
 
 
@@ -254,7 +280,9 @@ APNI                = readRDS("./data/base/HIA_LIST/ALA/APNI_LIST.rds")
 RISK.LIST           = read.csv("./data/base/HIA_LIST/HIA/RISK_LIST.csv",                         stringsAsFactors = FALSE)
 RISK.BINOMIAL.CLEAN = read.csv("./data/base/HIA_LIST/HIA/RISK_BINOMIAL_DF.csv",                  stringsAsFactors = FALSE)
 MAXENT.RATING       = read.csv("./output/maxent/MAXENT_RATING_26_2018.csv",                      stringsAsFactors = FALSE)
-MXT.CHECK           = read.csv("./output/maxent/CHECK_SPP_MAPS_BIAS_0310_2018.csv",              stringsAsFactors = FALSE)
+#MXT.CHECK           = read.csv("./output/maxent/CHECK_SPP_MAPS_BIAS_0310_2018.csv",              stringsAsFactors = FALSE)
+MXT.CHECK           = read.csv("./output/maxent/MAXNET_ORIGN_RESULTS.csv",                       stringsAsFactors = FALSE)
+
 INV.CHECK           = read.csv("./output/maxent/TREES_INVENTORY_RESULTS.csv",                    stringsAsFactors = FALSE)
 INV.SPP             = INV.CHECK$searchTaxon 
 
