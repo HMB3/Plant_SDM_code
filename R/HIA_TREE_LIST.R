@@ -275,6 +275,7 @@ CLEAN.list          = read.csv("./data/base/HIA_LIST/HIA/HIA.CLEAN.csv",        
 GROWING             = read.csv("./data/base/HIA_LIST/HIA/database_aus_sp_growing.csv",           stringsAsFactors = FALSE)
 MOD_2               = read.csv("./data/base/HIA_LIST/HIA/MOD2_LIST.csv",                         stringsAsFactors = FALSE)
 MOD.2.3             = read.csv("./data/base/HIA_LIST/HIA/MODULE_2_3.csv",                        stringsAsFactors = FALSE)
+MOD.3               = read.csv("./data/base/HIA_LIST/HIA/MODULE_2_3.csv",                        stringsAsFactors = FALSE)
 APNI                = readRDS("./data/base/HIA_LIST/ALA/APNI_LIST.rds")
 
 RISK.LIST           = read.csv("./data/base/HIA_LIST/HIA/RISK_LIST.csv",                         stringsAsFactors = FALSE)
@@ -340,7 +341,13 @@ EURO.NURSE.LOC      = read.csv("./data/base/HIA_LIST/URBAN/Euro_garden_flora_nur
 #HEAT.RISK  = read.csv("./data/base/HIA_LIST/RENEE/MOD3_HEAT_RANKS_072018.csv",                   stringsAsFactors = FALSE)
 #TRAIT.SPP  = read.csv("./data/base/HIA_LIST/RENEE/RankingTraits_Control_latest.csv",              stringsAsFactors = FALSE)
 TRAIT.SPP  = read.csv("./data/base/HIA_LIST/RENEE/RankingTraits_ALL.csv",                          stringsAsFactors = FALSE)
-
+MOD.3.SPP  = read.csv("./data/base/HIA_LIST/RENEE/MOD_IST_3_OCT18.csv",                            stringsAsFactors = FALSE)
+MOD.3.CHK  = join(MOD.3.SPP, MXT.CHECK[c("searchTaxon", "Check.map", "Origin", "genus", "order", "group",
+                                         "Plant.type",  "Plantings", "COMBO.count", "AUS_RECORDS",
+                                         "Total.growers",  "Number.of.States")], type = "full") 
+MOD.3.CHK  = MOD.3.CHK [with(MOD.3.CHK , order(Check.map)), ]
+write.csv(MOD.3.CHK, "./data/base/HIA_LIST/RENEE/MOD3_OCT18_MAP.csv", row.names = FALSE)
+length(intersect(MOD.3.SPP$searchTaxon, GBIF.spp))
 
 ## Now find the match between the trait species and the trait species... 
 #colnames(HEAT.RISK)[colnames(HEAT.RISK)=="Species"] <- "searchTaxon"

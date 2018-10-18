@@ -152,7 +152,7 @@ PET               = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
 
 
 #########################################################################################################################
-## Also netCDF AWAP rasters
+## Also extract the netCDF AWAP drought rasters
 awap.extreme  = stack(list.files(as.character('./data/base/AWAP'), pattern = 'extreme_droughts.nc$',  full.names = TRUE))
 awap.severe   = stack(list.files(as.character('./data/base/AWAP'), pattern = 'severe_droughts.nc$',   full.names = TRUE))
 awap.moderate = stack(list.files(as.character('./data/base/AWAP'), pattern = 'moderate_droughts.nc$', full.names = TRUE))
@@ -177,6 +177,12 @@ projection(awap.extreme)
 plot(awap.extreme[["Drought_max_dur_extr"]])
 plot(awap.extreme[["Drought_max_int_extr"]])
 plot(awap.extreme[["Drought_mean_rel_int_extr"]])
+
+
+#########################################################################################################################
+## Also extract the netCDF BOM Heatwave rasters
+awap.extreme  = stack(list.files(as.character('./data/base/AWAP'), pattern = 'bp_1961-1990.nc$',  full.names = TRUE))
+
 
 
 #########################################################################################################################

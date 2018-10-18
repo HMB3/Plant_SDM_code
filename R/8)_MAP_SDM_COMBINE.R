@@ -493,7 +493,8 @@ mapply(SUA_cell_count,
 ## intersect(list.files(maxent_path), map_spp_list) 
 
 
-## 1). Check why the future code is breaking, and if we can simply use the gain/loss raster
+## 1). Update step 9: Intersect the species origin, plus MAT, MAP PET and Koppem with the SUA
+##     Update columns in step
 
 
 ## 2). Fix the species mapping loop over two lists at once : mapply

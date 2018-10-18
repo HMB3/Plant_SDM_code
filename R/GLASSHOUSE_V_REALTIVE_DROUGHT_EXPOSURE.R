@@ -31,10 +31,10 @@ length(intersect(TRAIT.SPP$searchTaxon,    TRAIT.NICHE.CONTEXT$searchTaxon))
 #########################################################################################################################
 ## Just get the species with data for Tcrit?
 TRAIT.NICHE.AUS = completeFun(TRAIT.SPP, "Tcrit_C")
-TRAIT.NICHE.AUS = subset(TRAIT.NICHE.AUS, Native_Woody == "yes")
-unique(TRAIT.NICHE.AUS$Native_Woody)
-dim(TRAIT.NICHE.AUS)
-NICHE.SPP = TRAIT.NICHE.AUS
+TRAIT.NICHE.WOODY = subset(TRAIT.NICHE.AUS, Native_Woody == "yes")
+unique(TRAIT.NICHE.WOODY$Native_Woody)
+dim(TRAIT.NICHE.WOODY)
+NICHE.SPP = TRAIT.NICHE.WOODY 
 
 
 ## But how many species have good records? This will change a bit with Alessandro's data
@@ -152,10 +152,14 @@ histogram_GBIF_records(taxa.list = HIST.TAXA[1:2], DF = MAX.TMAX.RASTER,
 
 #########################################################################################################################
 ## merge the full niche df with the heatwave niche df
-TRAIT.NICHE.RISK = merge(TRAIT.NICHE.AUS,   TRAIT.NICHE.CONTEXT,  by = "searchTaxon")
+TRAIT.NICHE.RISK = merge(TRAIT.NICHE.WOODY ,   TRAIT.NICHE.CONTEXT,  by = "searchTaxon")
+TRAIT.NICHE.AUS = merge(TRAIT.NICHE.AUS,   TRAIT.NICHE.CONTEXT,  by = "searchTaxon")
 dim(TRAIT.NICHE.RISK)[1]
 names(TRAIT.NICHE.RISK)
 
+
+## Check Diana's calculation
+plot(TRAIT.NICHE.RISK$Annual_mean_temp_median, TRAIT.NICHE.RISK$Tcrit_C)
 
 #########################################################################################################################
 ## TLP vs drought
