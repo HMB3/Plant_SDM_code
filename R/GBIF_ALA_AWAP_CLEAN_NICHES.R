@@ -17,19 +17,19 @@
 
 #########################################################################################################################
 ## Read in the three data tables
-#COMBO.AWAP.CONVERT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_RASTER_CONVERT_NEW_ALA_300_SPAT.rds")
+COMBO.AWAP.CONVERT = readRDS(paste0('data/base/HIA_LIST/COMBO/COMBO_AWAP_CONVERT_', save_run, '.rds'))
 rasterTmpFile()
 
 
 ## Check dimensions of the occurrence and inventory data tables.
 length(unique(COMBO.AWAP.CONVERT$searchTaxon))
 formatC(dim(COMBO.AWAP.CONVERT)[1], format = "e", digits = 2)
-names(COMBO.AWAP.CONVERT)
+sort(names(COMBO.AWAP.CONVERT))
 
 
 #########################################################################################################################
 ## Create a unique identifier
-COMBO.AWAP.CONVERT$CC.OBS <- 1:nrow(TIB.GBIF)
+COMBO.AWAP.CONVERT$CC.OBS <- 1:nrow(COMBO.AWAP.CONVERT)
 
 
 
@@ -43,9 +43,10 @@ COMBO.AWAP.CONVERT$CC.OBS <- 1:nrow(TIB.GBIF)
 #########################################################################################################################
 ## Rename the columns to fit the CleanCoordinates format and create a tibble. 
 ## A Tibble is needed for running the spatial outlier cleaning
-TIB.GBIF <- COMBO.AWAP.CONVERT %>% dplyr::rename(species          = searchTaxon,
-                                                   decimallongitude = lon, 
-                                                   decimallatitude  = lat) %>%
+TIB.GBIF = COMBO.AWAP.CONVERT[, !duplicated(names(COMBO.AWAP.CONVERT))]
+TIB.GBIF <- TIB.GBIF %>% dplyr::rename(species          = searchTaxon,
+                                       decimallongitude = lon, 
+                                       decimallatitude  = lat) %>%
   timetk::tk_tbl()
 
 
@@ -158,27 +159,27 @@ head(SPAT.OUT)
 ## Join data :: exclude the decimal lat/long, check the length 
 identical(dim(TIB.GBIF)[1],dim(FLAGS)[1])#;length(GBIF.SPAT.OUT)
 names(FLAGS)[1]    = c("coord_spp")
-names(SPAT.OUT)[1] = c("spatial_spp")
+#names(SPAT.OUT)[1] = c("spatial_spp")
 identical(COMBO.AWAP.CONVERT$searchTaxon, FLAGS$coord_spp)                                            ## order matches
 
 
 #########################################################################################################################
 ## Is the species column the same as the searchTaxon column?
 TEST.GEO   = cbind(COMBO.AWAP.CONVERT, FLAGS)
-TEST.GEO   = join(TEST.GEO, SPAT.OUT)
+#TEST.GEO   = join(TEST.GEO, SPAT.OUT)
 identical(TEST.GEO$searchTaxon, TEST.GEO$coord_spp)                                                     ## order matches
-identical(TEST.GEO$searchTaxon, TEST.GEO$spatial_spp) 
-identical(COMBO.AWAP.CONVERT$searchTaxon, TEST.GEO$spatial_spp)  
+#identical(TEST.GEO$searchTaxon, TEST.GEO$spatial_spp) 
+#identical(COMBO.AWAP.CONVERT$searchTaxon, TEST.GEO$spatial_spp)  
 
 
 ## Keep records which passed the GBIF and spatial test
-dim(subset(TEST.GEO, summary == "TRUE" | SPAT_OUT == "TRUE"))
-CLEAN.TRUE = subset(TEST.GEO, summary == "TRUE" & SPAT_OUT == "TRUE")
-unique(CLEAN.TRUE$summary);unique(CLEAN.TRUE$SPAT_OUT)   
+dim(subset(TEST.GEO, summary == "TRUE")) #| SPAT_OUT == "TRUE"))
+CLEAN.TRUE = subset(TEST.GEO, summary == "TRUE")# & SPAT_OUT == "TRUE")
+unique(CLEAN.TRUE$summary)#;unique(CLEAN.TRUE$SPAT_OUT)   
 
                                     
 ## What percentage of records are retained?
-identical(dim(CLEAN.TRUE)[1], (dim(COMBO.AWAP.CONVERT)[1] - dim(subset(TEST.GEO, summary == "FALSE" | SPAT_OUT == "FALSE"))[1]))
+identical(dim(CLEAN.TRUE)[1], (dim(COMBO.AWAP.CONVERT)[1] - dim(subset(TEST.GEO, summary == "FALSE"))[1])) #| SPAT_OUT == "FALSE"))[1]))
 length(unique(CLEAN.TRUE$searchTaxon))
 message(round(dim(CLEAN.TRUE)[1]/dim(TEST.GEO)[1]*100, 2), " % records retained")                                               
 
@@ -228,7 +229,8 @@ GBIF.ALA.AWAP.SPDF    = SpatialPointsDataFrame(coords      = GBIF.ALA.AWAP[c("LO
                                                proj4string = CRS.WGS.84)
 
 ## Write the shapefile out just in case
-writeOGR(obj = GBIF.ALA.AWAP.SPDF, dsn = "./data/base/HIA_LIST/COMBO", layer = "CLEAN_AWAP_SPDF", driver = "ESRI Shapefile")
+writeOGR(obj = GBIF.ALA.AWAP.SPDF, dsn = "./data/base/HIA_LIST/COMBO", layer = "CLEAN_AWAP_SPDF", driver = "ESRI Shapefile",
+         overwrite = TRUE)
 
 
 
@@ -344,7 +346,9 @@ env.variables = c("Annual_mean_temp",
                   "Drought_max_rel_int_extr",
                   "Drought_mean_dur_extr", 
                   "Drought_mean_int_extr", 
-                  "Drought_mean_rel_int_extr")
+                  "Drought_mean_rel_int_extr",
+                  "HWF", "HWA", "HWM", "HWD", "HWN",
+                  "HW_CUM_ALL", "HW_CUM_AV",  "HW_CUM_HOT")
 
 
 #########################################################################################################################

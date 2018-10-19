@@ -283,7 +283,7 @@ for (i in 1:length(TAXA)) {
 
 
 ## Write the shapefile out just in case
-writeOGR(obj = GBIF.ALA.SPDF, dsn = "./data/base/HIA_LIST/COMBO", layer = "CLEAN_SPDF", driver = "ESRI Shapefile")
+writeOGR(obj = GBIF.ALA.SPDF, dsn = "./data/base/HIA_LIST/COMBO", layer = paste0("CLEAN_SPDF_", save_run), driver = "ESRI Shapefile")
 
 
 
@@ -301,7 +301,7 @@ writeOGR(obj = GBIF.ALA.SPDF, dsn = "./data/base/HIA_LIST/COMBO", layer = "CLEAN
 
 ## We want to know the count of species that occur in 'n' LGAs, across a range of climates. Read in LGA and SUA
 length(unique(CLEAN.TRUE$searchTaxon))
-projection(LGA);projection(AUS);projection(SUA.16)
+projection(LGA);projection(AUS);projection(SUA_16)
 
 
 ## Convert the raster data back into a spdf

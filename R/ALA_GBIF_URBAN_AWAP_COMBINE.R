@@ -21,10 +21,8 @@
 #source('./R/HIA_LIST_MATCHING.R')
 rasterTmpFile()
 
-# GBIF.LAND = readRDS(paste0('data/base/HIA_LIST/GBIF/GBIF_TREES_LAND_', save_run, '.rds'))
-## Load GBIF and ALA data
-#
-#ALA.TREES.LAND = readRDS(paste0('data/base/HIA_LIST/ALA/ALA_TREES_LAND_', save_run, '.rds'))
+GBIF.LAND = readRDS(paste0('data/base/HIA_LIST/GBIF/GBIF_TREES_LAND_', save_run, '.rds'))
+ALA.TREES.LAND = readRDS(paste0('data/base/HIA_LIST/ALA/ALA_TREES_LAND_', save_run, '.rds'))
 
 
 
@@ -181,8 +179,39 @@ plot(awap.extreme[["Drought_mean_rel_int_extr"]])
 
 #########################################################################################################################
 ## Also extract the netCDF BOM Heatwave rasters
-awap.extreme  = stack(list.files(as.character('./data/base/AWAP'), pattern = 'bp_1961-1990.nc$',  full.names = TRUE))
+## read in each file using nc_open
+#awap.heatwave  = stack(list.files(as.character('./data/base/AWAP'), pattern = 'AWAP_HW',  full.names = TRUE))
 
+HWF = raster('./data/base/AWAP/AWAP_HWF.nc')  #number of heatwave days in a season
+names(HWF) = "HWF"
+
+HWA = raster('./data/base/AWAP/AWAP_HWA.nc')  #hottest day of hottest heatwave
+names(HWA) = "HWA"
+
+HWM =  raster('./data/base/AWAP/AWAP_HWM.nc')  #average heatwave intensity
+names(HWM) = "HWM"
+
+HWD =  raster('./data/base/AWAP/AWAP_HWD.nc') #length of longest event
+names(HWD) = "HWD"
+
+HWN = raster('./data/base/AWAP/AWAP_HWN.nc')  #number of individual heatwaves
+names(HWN) = "HWN"
+
+cum_all =  raster('./data/base/AWAP/AWAP_HW_cum_all.nc') #the total temperature across all heatwaves in the season
+names(cum_all) = "HW_CUM_ALL"
+
+cum_av = raster('./data/base/AWAP/AWAP_HW_cum_av.nc') #the average total temperature across all heatwaves in the season
+names(cum_av) = "HW_CUM_AV"
+
+cum_hot = raster('./data/base/AWAP/AWAP_HW_cum_hottest.nc') #the cumulative heat during the hottest heatwave.
+names(cum_hot) = "HW_CUM_HOT"
+
+
+## rename
+awap.heatwave = stack(HWF, HWA, HWM, HWD, HWN, cum_all, cum_av, cum_hot)
+names(AWAP.heatwave)
+plot(HWF)
+plot(cum_hot)
 
 
 #########################################################################################################################
@@ -237,21 +266,27 @@ names(COMBO.RASTER)[names(COMBO.RASTER) == "."] <- 'PET'
 
 
 #########################################################################################################################
-## Extract AWAP data
-projection(COMBO.POINTS);projection(awap.extreme)
+## Extract AWAP drought and heatwave data
+projection(COMBO.POINTS);projection(awap.extreme);projection(awap.heatwave)
 
-COMBO.AWAP <- raster::extract(awap.extreme, COMBO.POINTS) %>% 
-  
-  cbind(COMBO.RASTER, .) 
+COMBO.DROUGHT <- raster::extract(awap.extreme, COMBO.POINTS)
+COMBO.HEAT    <- raster::extract(awap.heatwave, COMBO.POINTS) 
+COMBO.AWAP = cbind(COMBO.RASTER, COMBO.DROUGHT, COMBO.HEAT)
+
 
 
 ## Check 
 dim(COMBO.AWAP)
 names(COMBO.AWAP)
+
 summary(COMBO.AWAP$Annual_mean_temp)
 summary(COMBO.AWAP$PET)
 
+summary(COMBO.AWAP$Drought_mean_rel_int_extr)  ## 8365 NA values for drought
+summary(COMBO.AWAP$Drought_max_int_ext)        ## 45089 NA values for heatwave
 
+summary(COMBO.AWAP$HWA)
+summary(COMBO.AWAP$HW_CUM_HOT)
 
 
 
@@ -323,7 +358,7 @@ saveRDS(COMBO.AWAP.CONVERT, paste0('data/base/HIA_LIST/COMBO/COMBO_AWAP_CONVERT_
 
 
 ## Now save .RData file for the next session...
-#save.image("STEP_4_NICHES.RData")
+## save.image("TRAITS_RASTER.RData")
 
 
 

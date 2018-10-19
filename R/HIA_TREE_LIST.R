@@ -20,7 +20,7 @@ p <- c('ff',    'things', 'raster',        'dismo',        'sp',           'latt
        'tidyr', 'readr',  'rnaturalearth', 'rasterVis',    'RColorBrewer', 'latticeExtra', 'parallel',     
        'taxonlookup',     'ALA4R',         'stringr',      'Taxonstand',   'CoordinateCleaner', 'gsubfn', 'PerformanceAnalytics',
        'rvest', 'magrittr', 'devtools',    'ggplot2',      'reshape2', 'rmarkdown', 'flexdashboard', 'shiny', 'rgbif',
-       'ENMeval', 'tibble')
+       'ENMeval', 'tibble', 'ncdf4')
 
 ## Require packages
 sapply(p, require, character.only = TRUE)
@@ -341,7 +341,7 @@ EURO.NURSE.LOC      = read.csv("./data/base/HIA_LIST/URBAN/Euro_garden_flora_nur
 #HEAT.RISK  = read.csv("./data/base/HIA_LIST/RENEE/MOD3_HEAT_RANKS_072018.csv",                   stringsAsFactors = FALSE)
 #TRAIT.SPP  = read.csv("./data/base/HIA_LIST/RENEE/RankingTraits_Control_latest.csv",              stringsAsFactors = FALSE)
 TRAIT.SPP  = read.csv("./data/base/HIA_LIST/RENEE/RankingTraits_ALL.csv",                          stringsAsFactors = FALSE)
-MOD.3.SPP  = read.csv("./data/base/HIA_LIST/RENEE/MOD_IST_3_OCT18.csv",                            stringsAsFactors = FALSE)
+MOD.3.SPP  = read.csv("./data/base/HIA_LIST/RENEE/MOD3_OCT18.csv",                            stringsAsFactors = FALSE)
 MOD.3.CHK  = join(MOD.3.SPP, MXT.CHECK[c("searchTaxon", "Check.map", "Origin", "genus", "order", "group",
                                          "Plant.type",  "Plantings", "COMBO.count", "AUS_RECORDS",
                                          "Total.growers",  "Number.of.States")], type = "full") 
