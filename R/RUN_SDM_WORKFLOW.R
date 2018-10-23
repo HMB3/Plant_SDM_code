@@ -31,7 +31,7 @@ GBIF_path     = "./data/base/HIA_LIST/GBIF/OCC_SEARCH/"          ## The path whe
 ALA_path      = "./data/base/HIA_LIST/ALA/TREES_TEST/"           ## The path where ALA data is stored - duplicated if in the same place
 
 maxent_path   = './output/maxent/SUA_TREES_ANALYSIS/'            ## The directory where files are saved               
-maxent_dir    = './output/maxent/SUA_TREES_ANALYSIS/' 
+maxent_dir    = 'output/maxent/SUA_TREES_ANALYSIS' 
 
 
 #########################################################################################################################

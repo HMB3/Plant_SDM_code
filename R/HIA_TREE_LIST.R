@@ -690,6 +690,10 @@ ala.download = trimws(ala.download)
 #########################################################################################################################
 
 
+## Losers
+losers = c("Cryptocarya laevigata", "Syzygium wilsonii", "Dysoxylum fraserianum")
+
+
 #########################################################################################################################
 ## Create a count of the horticultural species
 TI.LUT = as.data.frame(table(TI.XY$searchTaxon))

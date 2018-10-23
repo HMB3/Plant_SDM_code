@@ -78,7 +78,7 @@ FLAGS  <- CleanCoordinates(TIB.GBIF,
 
 ## save/load the flags
 identical(dim(FLAGS)[1], dim(TIB.GBIF)[1])
-saveRDS(FLAGS, paste0('data/base/HIA_LIST/COMBO/ALA_GBIF_FLAGS_', save_run, '.rds'))
+#saveRDS(FLAGS, paste0('data/base/HIA_LIST/COMBO/ALA_GBIF_FLAGS_', save_run, '.rds'))
 #FLAGS = readRDS('data/base/HIA_LIST/COMBO/ALA_GBIF_FLAGS_OLD_ALA.rds')
 
 

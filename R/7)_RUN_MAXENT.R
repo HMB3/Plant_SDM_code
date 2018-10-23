@@ -26,6 +26,7 @@ SDM.SPAT.ALL = readRDS(paste0('data/base/HIA_LIST/COMBO/SDM_SPAT_ALL_', save_run
 
 
 
+
 #########################################################################################################################
 ## 1). RUN SDMs USING A-PRIORI VARIABLES FOR ALL SPECIES
 #########################################################################################################################
@@ -48,7 +49,7 @@ projection(template.raster);projection(SDM.SPAT.ALL);projection(Koppen_1975)
 lapply(GBIF.spp, function(spp){ 
   
   ## Skip the species if the directory already exists, before the loop
-  outdir <- maxent_path
+  outdir <- maxent_dir
   
   if(dir.exists(file.path(maxent_path, gsub(' ', '_', spp)))) {
     message('Skipping ', spp, ' - already run.')
@@ -62,7 +63,7 @@ lapply(GBIF.spp, function(spp){
     
     ## Subset the records to only the taxa being processed
     #occurrence <- subset(SDM.SPAT.ALL, searchTaxon == spp)
-    occurrence <- subset(SDM.SPAT.ALL, searchTaxon == spp & SOURCE != "INVENTORY")
+    occurrence <- subset(SDM.SPAT.ALL, searchTaxon == spp)# & SOURCE != "INVENTORY")
     
     ## Now get the background points. These can come from any spp, other than the modelled species.
     background <- subset(SDM.SPAT.ALL, searchTaxon != spp)

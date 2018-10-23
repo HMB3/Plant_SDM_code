@@ -174,8 +174,8 @@ length(unique(ALA.TRIM$species))
 ALA.TREES.TAXO <- TPL(unique(ALA.TRIM$scientificName), infra = TRUE,
                  corr = TRUE, repeats = 100)  ## to stop it timing out...
 sort(names(ALA.TREES.TAXO))
-saveRDS(ALA.TREES.TAXO, paste0('data/base/HIA_LIST/COMBO/ALA_TAXO_', save_run, '.rds'))
-ALA.TREES.TAXO = readRDS(paste0('data/base/HIA_LIST/COMBO/ALA_TAXO_', save_run, '.rds'))
+#saveRDS(ALA.TREES.TAXO, paste0('data/base/HIA_LIST/COMBO/ALA_TAXO_', save_run, '.rds'))
+#ALA.TREES.TAXO = readRDS(paste0('data/base/HIA_LIST/COMBO/ALA_TAXO_', save_run, '.rds'))
 
 
 ## Check the taxonomy by running scientificName through TPL. Then join the GBIF data to the taxonomic check, using 
@@ -370,7 +370,7 @@ ALA.TREES.LAND = ALA.TREES.LAND[c("searchTaxon",      "scientificName", "SOURCE"
                                   "year", "locality", "country", 
                                   "basisOfRecord",    "institutionCode", "rank",
                                   "Taxonomic.status", "New.Taxonomic.status", "New.Genus", "New.Species")]
-saveRDS(ALA.TREES.LAND, paste0('data/base/HIA_LIST/ALA/ALA_TREES_LAND_', save_run, '.rds'))
+#saveRDS(ALA.TREES.LAND, paste0('data/base/HIA_LIST/ALA/ALA_TREES_LAND_', save_run, '.rds'))
 
 
 
