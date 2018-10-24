@@ -61,7 +61,7 @@ GBIF.ALL <- gbif.download %>%   ## spp.download[c(1:length(spp.download))]
     names(dat)[names(dat) == 'decimalLatitude']  <- 'lat'
     names(dat)[names(dat) == 'decimalLongitude'] <- 'lon'
     dat$searchTaxon = gsub("_GBIF_records.RData", "", dat$searchTaxon)
-    dat
+    return(dat)
     
   }) %>%
   
@@ -77,7 +77,6 @@ formatC(dim(GBIF.ALL)[1], format = "e", digits = 2)
 
 ## Almost none of the GBIF data has no scientificName. This is the right field to use for matching taxonomy
 (sum(is.na(GBIF.ALL$species))        + dim(subset(GBIF.ALL, species == ""))       [1])/dim(GBIF.ALL)[1]*100
-(sum(is.na(GBIF.ALL$name))           + dim(subset(GBIF.ALL, name == ""))          [1])/dim(GBIF.ALL)[1]*100
 (sum(is.na(GBIF.ALL$scientificName)) + dim(subset(GBIF.ALL, scientificName == ""))[1])/dim(GBIF.ALL)[1]*100
 
 
@@ -95,7 +94,6 @@ formatC(dim(GBIF.TRIM)[1], format = "e", digits = 2)
 
 
 ## What are the unique species?
-length(unique(GBIF.TRIM$name))
 length(unique(GBIF.TRIM$species))
 length(unique(GBIF.TRIM$searchTaxon)) 
 length(unique(GBIF.TRIM$scientificName))  
@@ -150,7 +148,7 @@ length(unique(GBIF.TRIM$scientificName))
 GBIF.TAXO <- TPL(unique(GBIF.TRIM$scientificName), infra = TRUE,
                  corr = TRUE, repeats = 100)  ## to stop it timing out...
 sort(names(GBIF.TAXO))
-#saveRDS(GBIF.TAXO, paste0('data/base/HIA_LIST/COMBO/GBIF_TAXO_', save_run, '.rds'))
+saveRDS(GBIF.TAXO, paste0('data/base/HIA_LIST/COMBO/GBIF_TAXO_', save_run, '.rds'))
 #GBIF.TAXO = readRDS('data/base/HIA_LIST/COMBO/GBIF_TAXO_200.rds')
 
 

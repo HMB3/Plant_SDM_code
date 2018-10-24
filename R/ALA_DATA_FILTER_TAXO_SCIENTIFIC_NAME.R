@@ -370,7 +370,7 @@ ALA.TREES.LAND = ALA.TREES.LAND[c("searchTaxon",      "scientificName", "SOURCE"
                                   "year", "locality", "country", 
                                   "basisOfRecord",    "institutionCode", "rank",
                                   "Taxonomic.status", "New.Taxonomic.status", "New.Genus", "New.Species")]
-#saveRDS(ALA.TREES.LAND, paste0('data/base/HIA_LIST/ALA/ALA_TREES_LAND_', save_run, '.rds'))
+saveRDS(ALA.TREES.LAND, paste0('data/base/HIA_LIST/ALA/ALA_TREES_LAND_', save_run, '.rds'))
 
 
 

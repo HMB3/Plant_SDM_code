@@ -905,7 +905,6 @@ gbifColsToDrop <- c(
 ## 
 gbif.keep <- c(## TAXONOMY
                "searchTaxon",
-               "name",
                "species",
                "scientificName",
                "taxonRank",

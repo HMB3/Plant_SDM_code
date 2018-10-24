@@ -272,18 +272,18 @@ TAXA <- unique(GBIF.ALA.SPDF$TAXON)
 
 #########################################################################################################################
 ## Then, loop over the species list and create a shapefile for each 
-for (i in 1:length(TAXA)) {
-  
-  ## Need to check the OBS column matches up - or do we not need this again?
-  message("Writing shapefile for ", TAXA[i])
-  tmp <- GBIF.ALA.SPDF[GBIF.ALA.SPDF$TAXON == TAXA[i], ] 
-  writeOGR(tmp, dsn = "./data/base/HIA_LIST/COMBO/CLEAN_GBIF", TAXA[i], driver = "ESRI Shapefile", overwrite_layer = TRUE)
-  
-}
+# for (i in 1:length(TAXA)) {
+#   
+#   ## Need to check the OBS column matches up - or do we not need this again?
+#   message("Writing shapefile for ", TAXA[i])
+#   tmp <- GBIF.ALA.SPDF[GBIF.ALA.SPDF$TAXON == TAXA[i], ] 
+#   writeOGR(tmp, dsn = "./data/base/HIA_LIST/COMBO/CLEAN_GBIF", TAXA[i], driver = "ESRI Shapefile", overwrite_layer = TRUE)
+#   
+# }
 
 
 ## Write the shapefile out just in case
-writeOGR(obj = GBIF.ALA.SPDF, dsn = "./data/base/HIA_LIST/COMBO", layer = paste0("CLEAN_SPDF_", save_run), driver = "ESRI Shapefile")
+# writeOGR(obj = GBIF.ALA.SPDF, dsn = "./data/base/HIA_LIST/COMBO", layer = paste0("CLEAN_SPDF_", save_run), driver = "ESRI Shapefile")
 
 
 
@@ -441,7 +441,6 @@ Total.taxa.processed = dim(COMBO.NICHE)[1]
 COMBO.NICHE  = cbind(GLOBAL_RECORDS, COMBO.NICHE)
 names(COMBO.NICHE)
 dim(COMBO.NICHE)
-#saveRDS(COMBO.NICHE, file = paste("./data/base/HIA_LIST/GBIF/COMBO_NICHE_CLEAN.rds"))
 
 
 #########################################################################################################################
@@ -461,97 +460,6 @@ head(COMBO.LGA$SUA_COUNT)
 
 
 
-#########################################################################################################################
-## 7). CALCULATE AREA OF OCCUPANCY RANGES 
-#########################################################################################################################
-
-
-## These numbers don't look that accurate: Try convert into a sp data frame and projecting into a projected system?
-## Create a species list to estimate the ranges for
-# spp.geo = as.character(unique(COMBO.RASTER$searchTaxon)) 
-# data    = COMBO.RASTER
-
-
-#########################################################################################################################
-## AREA OF OCCUPANCY (AOO)
-## For every species in the list: calculate the AOO
-# GBIF.AOO <- spp.geo[c(1:length(spp.geo))] %>%
-# 
-#   ## Pipe the list into lapply
-#   lapply(function(x) {
-# 
-#     ## Subset the the data frame
-#     DF      = subset(data, searchTaxon == x)[, c("lon", "lat")]
-# 
-#     ## Calculate area of occupancy according the the "red" package
-#     aoo (DF)
-# 
-#     ## Warning messages: Ask John if this is a problem
-#     ## In rgdal::project(longlat, paste("+proj=utm +zone=", zone,  ... :
-#     ## 3644 projected point(s) not finite
-# 
-#   }) %>%
-# 
-#   ## Finally, create one dataframe for all niches
-#   as.data.frame
-
-
-#########################################################################################################################
-## EXTENT OF OCCURRENCE
-## For every species in the list: calculate the EOO
-# GBIF.EOO <- spp.geo[c(1:length(spp.geo))] %>% 
-#   
-#   ## Pipe the list into lapply
-#   lapply(function(x) {
-#     
-#     ## Subset the the data frame 
-#     DF      = subset(data, searchTaxon == x)[, c("searchTaxon", "lon", "lat")]
-#     DF.GEO  = dplyr::rename(DF, 
-#                             identifier = searchTaxon,
-#                             XCOOR      = lon,
-#                             YCOOR      = lat)
-#     
-#     ## Calculate area of occupancy according the the "red" package
-#     CalcRange (DF.GEO)
-#     
-#     ## Warning messages: Ask John if this is a problem
-#     ## In rgdal::project(longlat, paste("+proj=utm +zone=", zone,  ... :
-#     ## 3644 projected point(s) not finite
-#     
-#   }) %>% 
-#   
-#   ## Finally, create one dataframe for all niches
-#   as.data.frame
-
-
-#########################################################################################################################
-## Clean it up :: the order of species should be preserved
-# GBIF.AOO = gather(GBIF.AOO)
-# str(GBIF.AOO)
-# str(unique(GBIF.ALA.COMBO.HIA$searchTaxon))                     ## same number of species...
-# 
-# 
-# ## Now join on the GEOGRAPHIC RANGE
-# COMBO.NICHE$AREA_OCCUPANCY = GBIF.AOO$value                     ## vectors same length so don't need to match
-
-
-## AOO is calculated as the area of all known or predicted cells for the species. The resolution will be 2x2km as 
-## required by IUCN. A single value in km2.
-
-#########################################################################################################################
-## Add the counts of Australian records for each species to the niche database
-# names(COMBO.NICHE)
-# names(SUA.AGG)
-# dim(COMBO.NICHE)
-# dim(SUA.AGG)
-# 
-# 
-# COMBO.LGA = join(COMBO.NICHE, SUA.AGG)                            ## The tapply needs to go where the niche summaries are
-# names(COMBO.LGA)
-# 
-# dim(COMBO.LGA)
-# head(COMBO.LGA$AUS_RECORDS)
-# head(COMBO.LGA$LGA_COUNT)
 
 
 ## Pick up from here.....................................................................................................

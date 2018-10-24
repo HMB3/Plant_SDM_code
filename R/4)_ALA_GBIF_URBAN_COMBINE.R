@@ -151,19 +151,6 @@ names(COMBO.POINTS)
 PET               = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
 
 
-# #########################################################################################################################
-# ## Also netCDF AWAP rasters
-# awap.extreme = stack(list.files(as.character('./data/base/AWAP'), pattern = '.nc$', full.names = TRUE))
-# names(awap.extreme)
-# names(awap.extreme) = c("Drought_freq_extr", "Drought_max_dur_extr", "Drought_max_int_extr", "Drought_max_rel_int_extr",
-#                         "Drought_mean_dur_extr", "Drought_mean_int_extr", "Drought_mean_rel_int_extr")
-# names(awap.extreme)
-# projection(awap.extreme)
-# plot(awap.extreme[["Drought_max_dur_extr"]])
-# plot(awap.extreme[["Drought_max_int_extr"]])
-# plot(awap.extreme[["Drought_mean_rel_int_extr"]])
-
-
 #########################################################################################################################
 ## Extract worldclim data
 projection(COMBO.POINTS);projection(world.grids.current)
@@ -213,15 +200,6 @@ POINTS.PET <- raster::extract(PET, COMBO.POINTS) %>%
   cbind(COMBO.RASTER, .)
 COMBO.RASTER = POINTS.PET
 names(COMBO.RASTER)[names(COMBO.RASTER) == "."] <- 'PET'
-
-
-#########################################################################################################################
-## Extract AWAP data
-projection(COMBO.POINTS);projection(awap.extreme)
-
-COMBO.AWAP <- raster::extract(awap.extreme, COMBO.POINTS) %>% 
-  
-  cbind(COMBO.RASTER, .) 
 
 
 ## Check 
