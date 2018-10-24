@@ -133,15 +133,15 @@ Print_global_histogram(taxa.list    = HIST.TAXA,
                        env.var.1    = "Max_temp_warm_month",   
                        env.col.1    = "orange",  
                        env.units.1  = "°C",
-                       env.var.2    = "Max_tmax",   
-                       env.col.2    = "red",     
+                       env.var.2    = "Annual_precip",   
+                       env.col.2    = "blue",     
                        env.units.2  = "°C")
 
 
 ## Save the histograms to file?
-histogram_GBIF_records(taxa.list = HIST.TAXA[1:2], DF = MAX.TMAX.RASTER,
+histogram_GBIF_records(taxa.list = HIST.TAXA[31], DF = TRAIT.RASTER.CONTEXT,
                        env.var.1 = "Max_temp_warm_month",   env.col.1 = "orange",     env.units.1 = "°C",
-                       env.var.2 = "Max_tmax",              env.col.2 = "firebrick1", env.units.2 = "°C")
+                       env.var.2 = "Annual_precip",         env.col.2 = "blue", env.units.2 = "°mm")
 
 
 

@@ -80,7 +80,7 @@ write.csv(GAIN.LOSS.TABLE, paste0('output/tables/OVERALL_GAIN_LOSS_TABLE_', save
 
 #########################################################################################################################
 ## The multiple thresholds could present a problem
-SUA.tables = list.files(maxent_dir, pattern = 'area_SUA_summary_', full.names = TRUE, recursive = TRUE) 
+SUA.tables = list.files(maxent_dir, pattern = 'SUA_cell_count', full.names = TRUE, recursive = TRUE) 
 length(SUA.tables)/3;length(map_spp) 
 
 
@@ -107,12 +107,16 @@ SUA.PRESENCE <- SUA.tables %>%
 dim(SUA.PRESENCE)
 head(SUA.PRESENCE, 10);tail(SUA.PRESENCE, 10)
 length(unique(SUA.PRESENCE$SPECIES))
+length(unique(SUA.PRESENCE$SUA_NAME16))
+length(unique(SUA.PRESENCE$SUA_CODE16))
 
 
 ## Subset to just the analysis species - some species did not process properly?
 SUA.PRESENCE  =  SUA.PRESENCE[SUA.PRESENCE$SPECIES %in% map_spp_list , ] 
 SUA.PRESENCE  =  SUA.PRESENCE[complete.cases(SUA.PRESENCE), ]
+SUA.PRESENCE$SUA_NAME16 = as.character(SUA.PRESENCE$SUA_NAME16)
 summary(SUA.PRESENCE)
+length(unique(SUA.PRESENCE$SPECIES))
 
 
 #########################################################################################################################
@@ -144,7 +148,6 @@ TOP.SUA.POP             = ALL.SUA.POP[, c("SUA", "POP_2017")]
 SUA.DEN                 = merge(TOP.SUA.POP, SUA.DENS)
 SUA.DEN$POP_DESNITY     = SUA.DEN$POP_2017/SUA.DEN$AREA_SQKM
 SUA.DEN                 = SUA.DEN[, c("SUA", "POP_2017", "POP_DESNITY")]
-View(SUA.DEN)
 
 
 ## Try to harmonise the SUAs in both the area and population tables.......................................................
@@ -153,12 +156,12 @@ setdiff(TOP.SUA.POP$SUA, SUA.DENS$SUA)
 
 
 ## Make the SUA field character not factor
-SUA.PRESENCE$SUA = as.character(SUA.PRESENCE$SUA)
+setnames(SUA.PRESENCE, old = c("SUA_NAME16", "n_cells"), new = c("SUA", "CELL_COUNT"))
 class(SUA.PRESENCE$SUA)
 class(SUA.DEN$SUA)
 
 
-## 87 SUAs overlap between the ABS shapefile and the table
+## (94 SUAs overlap between the ABS shapefile and the Population table
 str(unique(sort(SUA.DEN$SUA)))
 str(unique(sort(SUA.PRESENCE$SUA)))
 str(intersect(unique(sort(SUA.DEN$SUA)), unique(sort(SUA.PRESENCE$SUA))))
@@ -166,47 +169,31 @@ SUA.PRESENCE = join(SUA.PRESENCE, SUA.DEN)
 
 
 ## Check this combined table
-SUA.PRESENCE = SUA.PRESENCE[, c("SUA",         "POP_2017",     "AREA_SQKM", "POP_DESNITY",
-                                "SPECIES",     "PERIOD",       "AREA_THRESH", 
-                                "MAX_TRAIN",   "CURRENT_AREA", "FUTURE_AREA", 
-                                "AREA_CHANGE", "PRESENT",      "GAIN_LOSS")]
+SUA.PRESENCE = SUA.PRESENCE[, c("SUA_CODE16",  "SUA",      "AREASQKM16", "POP_DESNITY",      "POP_2017",
+                                "SPECIES",     "PERIOD",   "THRESH",    "CURRENT_SUITABLE", "FUTURE_SUITABLE",
+                                "LOST",        "GAINED",   "STABLE",    "NEVER",            "NODAT",
+                                "CELL_COUNT",  "CHANGE",   "GAIN_LOSS")]
 
 
 ## Which SUA's are missing populations? We should have the Central Coast. An updated table can vbe joined on like this
-SUA.PRESENCE = as.data.frame(rbindlist(list(SUA.PRESENCE, URB.POP), fill = TRUE)[, c('SUA', 'POP_2017') :=
-                                                             lapply(.SD, na.omit) , SUA, .SDcols = SUA:POP_2017][])
+# SUA.PRESENCE = as.data.frame(rbindlist(list(SUA.PRESENCE, URB.POP), fill = TRUE)[, c('SUA', 'POP_2017') :=
+#                                                              lapply(.SD, na.omit) , SUA, .SDcols = SUA:POP_2017][])
 
 
 ## Just check there are no NA species
-SUA.COMPLETE = completeFun(SUA.PRESENCE, "CURRENT_AREA")
-SUA.COMPLETE = completeFun(SUA.COMPLETE, "FUTURE_AREA")
+SUA.COMPLETE = completeFun(SUA.PRESENCE, "CURRENT_SUITABLE")
 summary(SUA.COMPLETE)
 
 
 ## Which species are missing?
-intersect(unique(SUA.PRESENCE[is.na(SUA.PRESENCE$POP_2017),]$SUA),
-          intersect(URB.POP$SUA, SUA.COMPLETE$SUA))
-
-length(unique(SUA.COMPLETE$SPECIES))
-summary(SUA.COMPLETE$POP_2017)
-View(SUA.COMPLETE)
+# intersect(unique(SUA.PRESENCE[is.na(SUA.PRESENCE$POP_2017),]$SUA),
+#           intersect(URB.POP$SUA, SUA.COMPLETE$SUA))
 
 
 #########################################################################################################################
 ## Find the species with the greatest increase/decrease?
-summary(SUA.COMPLETE$AREA_CHANGE)
-
-
-## Increasing
-INCREASE.50 = subset(SUA.COMPLETE, AREA_CHANGE >= 50 & PERIOD == 50)
-summary(INCREASE.50$AREA_CHANGE)
-unique(INCREASE.50$SPECIES)
-
-
-## Decreasing
-DECREASE.50 = subset(SUA.COMPLETE, AREA_CHANGE <= -50 & PERIOD == 50)
-summary(DECREASE.50$AREA_CHANGE)
-unique(DECREASE.50$SPECIES)
+summary(SUA.COMPLETE$CHANGE)
+unique(SUA.COMPLETE$GAIN_LOSS)
 
 
 #########################################################################################################################
@@ -226,7 +213,6 @@ MAP_SUA = c("Adelaide", "Brisbane", "Darwin", "Perth", "Sydney", "Hobart", "Melb
 SUA.TOP.PRESENCE  = SUA.PRESENCE[SUA.PRESENCE$SUA %in% BIG_SUA, ] 
 SUA.TOP.PRESENCE  = SUA.TOP.PRESENCE [with(SUA.TOP.PRESENCE , rev(order(POP_2017))), ]
 summary(SUA.TOP.PRESENCE)
-View(SUA.TOP.PRESENCE)
 
 
 #########################################################################################################################
@@ -237,22 +223,32 @@ message(length(unique(SUA.COMPLETE$SPECIES)), " Species analysed in ", length(un
 ## Include the maxent rating?
 SDM.CHECK = MXT.CHECK[, c("searchTaxon", "Origin", "Check.map")]
 names(SDM.CHECK) = c("SPECIES", "ORIGIN", "MAXENT_RATING")
+
+
+## What are the proportions of Origin and complete
+table(SDM.CHECK$ORIGIN)
+round(with(SDM.CHECK, table(ORIGIN)/sum(table(ORIGIN))*100), 1)
+
 table(SDM.CHECK$MAXENT_RATING)
+round(with(SDM.CHECK, table(MAXENT_RATING)/sum(table(MAXENT_RATING))*100), 1)
 
 
 SUA.COMPLETE$SPECIES = gsub("_", " ", SUA.COMPLETE$SPECIES)
 length(intersect(unique(SDM.CHECK$SPECIES), unique(SUA.COMPLETE$SPECIES)))
 
 
+## Create a plot of number of records vs. maxent rating, Boxplot with no. occurrences on y, and maxent rating on x
+## ......................................................................................................................
+
+
 #########################################################################################################################
 ## Join on a column for if the species has records in the SUA
-
-## Add this in when we have rated the species
-SUA.PREDICT = merge(SDM.CHECK, SUA.COMPLETE)
-SUA.PREDICT = join(SUA.SPP.COUNT, SUA.PREDICT)
-SUA.PREDICT = completeFun(SUA.PREDICT, "MAXENT_RATING")
+SUA.PREDICT = merge(SUA.COMPLETE, SDM.CHECK, all.x = TRUE)
+SUA.PREDICT = join(SUA.PREDICT, SUA.SPP.COUNT, type = "full")
+#SUA.PREDICT = completeFun(SUA.PREDICT, "MAXENT_RATING")
 unique(SUA.PREDICT$MAXENT_RATING)
-
+length(unique(SUA.PREDICT$SPECIES))
+identical(dim(SUA.PREDICT)[1], dim(SUA.COMPLETE)[1])
 
 
 
@@ -264,7 +260,11 @@ unique(SUA.PREDICT$MAXENT_RATING)
 
 #########################################################################################################################
 ## Future rasters
-SUA.BIO1.current.stats = read.csv("./data/base/worldclim/aus/1km/bio/SUA_BIO1_current_stats.csv", stringsAsFactors = FALSE)
+SUA.BIO1.current.stats  = read.csv("./data/base/worldclim/aus/1km/bio/SUA_BIO1_current_stats.csv",  stringsAsFactors = FALSE)
+SUA.BIO12.current.stats = read.csv("./data/base/worldclim/aus/1km/bio/SUA_BIO12_current_stats.csv", stringsAsFactors = FALSE)
+SUA.KOP                 = read.csv("./data/base/worldclim/aus/1km/bio/SUA_KOPPEN.csv",              stringsAsFactors = FALSE)
+SUA.PET                 = read.csv("./data/base/worldclim/aus/1km/bio/SUA_PET_current_stats.csv",   stringsAsFactors = FALSE)
+
 SUA.BIO1.2030.stats    = read.csv("./data/base/worldclim/aus/1km/bio/SUA_BIO1_2030_stats.csv",    stringsAsFactors = FALSE)
 SUA.BIO1.2050.stats    = read.csv("./data/base/worldclim/aus/1km/bio/SUA_BIO1_2050_stats.csv",    stringsAsFactors = FALSE)
 SUA.BIO1.2070.stats    = read.csv("./data/base/worldclim/aus/1km/bio/SUA_BIO1_2050_stats.csv",    stringsAsFactors = FALSE)
@@ -274,6 +274,15 @@ SUA.BIO1.2070.stats    = read.csv("./data/base/worldclim/aus/1km/bio/SUA_BIO1_20
 ## Rename zonal stats
 names(SUA.BIO1.current.stats)[names(SUA.BIO1.current.stats) == "SUA_NAME16"] <- "SUA"
 names(SUA.BIO1.current.stats)[names(SUA.BIO1.current.stats) == "MEAN"] <- "CURRENT_MAT"
+
+names(SUA.BIO12.current.stats)[names(SUA.BIO12.current.stats) == "SUA_NAME16"] <- "SUA"
+names(SUA.BIO12.current.stats)[names(SUA.BIO12.current.stats) == "MEAN"] <- "CURRENT_MAP"
+
+names(SUA.PET)[names(SUA.PET) == "SUA_NAME16"] <- "SUA"
+names(SUA.PET)[names(SUA.PET) == "MEAN"] <- "CURRENT_PET"
+
+names(SUA.KOP)[names(SUA.KOP) == "SUA_NAME16"] <- "SUA"
+names(SUA.KOP)[names(SUA.KOP) == "MAJORITY"] <- "MAJOR_KOP"
 
 
 ## Can't join these data
@@ -302,14 +311,17 @@ SUA.BIO1.current.stats[["CURRENT_MAT"]] = SUA.BIO1.current.stats[["CURRENT_MAT"]
 
 ## Merge MAP onto the results table
 SUA.PREDICT = join(SUA.PREDICT, SUA.BIO1.current.stats[c("SUA", "CURRENT_MAT")])
+SUA.PREDICT = join(SUA.PREDICT, SUA.BIO12.current.stats[c("SUA", "CURRENT_MAP")])
+SUA.PREDICT = join(SUA.PREDICT, SUA.KOP[c("SUA", "MAJOR_KOP")])
+SUA.PREDICT = join(SUA.PREDICT, SUA.PET[c("SUA", "CURRENT_PET")])
 summary(SUA.PREDICT)
 View(SUA.PREDICT)
-
+t = SUA.PREDICT[is.na(SUA.PREDICT$MAJOR_KOP),]
 
 #########################################################################################################################
 ## Save table
-write.csv(SUA.PREDICT, paste0('output/tables/MAXENT_SUA_PRESENCE_', save_run, '.csv'), row.names = FALSE)
-write.csv(SUA.TOP.PRESENCE, paste0('output/tables/MAXNET_SUA_TOP_',  save_run, '.csv'), row.names = FALSE)
+write.csv(SUA.PREDICT, paste0('output/tables/MAXENT_SUA_PRESENCE_KOPPEN', save_run, '.csv'), row.names = FALSE)
+write.csv(SUA.TOP.PRESENCE, paste0('output/tables/MAXNET_SUA_TOP_',       save_run, '.csv'), row.names = FALSE)
 
 
 

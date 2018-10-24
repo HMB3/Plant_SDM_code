@@ -301,7 +301,7 @@ TAXA <- unique(GBIF.ALA.SPDF$TAXON)
 
 ## We want to know the count of species that occur in 'n' LGAs, across a range of climates. Read in LGA and SUA
 length(unique(CLEAN.TRUE$searchTaxon))
-projection(LGA);projection(AUS);projection(SUA_16)
+projection(LGA);projection(AUS);projection(SUA.16)
 
 
 ## Convert the raster data back into a spdf

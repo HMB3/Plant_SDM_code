@@ -1642,12 +1642,12 @@ histogram_GBIF_records = function (DF, taxa.list, env.var.1, env.col.1, env.unit
                   taxa.n, "_", env.var.1, "_world_GBIF_histo.png", sep = "")
     
     ## If it's already downloaded, skip
-    if (file.exists (file)) {
-      
-      print (paste ("Global histogram exists for", taxa.n, "skipping")) 
-      next
-      
-    }
+    # if (file.exists (file)) {
+    #   
+    #   print (paste ("Global histogram exists for", taxa.n, "skipping")) 
+    #   next
+    #   
+    # }
     
     #####################################################
     ## 1). Plot histograms for global occurences of taxa.n

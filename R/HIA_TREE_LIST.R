@@ -20,7 +20,7 @@ p <- c('ff',    'things', 'raster',        'dismo',        'sp',           'latt
        'tidyr', 'readr',  'rnaturalearth', 'rasterVis',    'RColorBrewer', 'latticeExtra', 'parallel',     
        'taxonlookup',     'ALA4R',         'stringr',      'Taxonstand',   'CoordinateCleaner', 'gsubfn', 'PerformanceAnalytics',
        'rvest', 'magrittr', 'devtools',    'ggplot2',      'reshape2', 'rmarkdown', 'flexdashboard', 'shiny', 'rgbif',
-       'ENMeval', 'tibble', 'ncdf4')
+       'ENMeval', 'tibble', 'ncdf4', 'Cairo')
 
 ## Require packages
 sapply(p, require, character.only = TRUE)
@@ -691,7 +691,8 @@ ala.download = trimws(ala.download)
 
 
 ## Losers
-losers = c("Cryptocarya laevigata", "Syzygium wilsonii", "Dysoxylum fraserianum")
+losers  = c("Cryptocarya laevigata", "Syzygium wilsonii", "Dysoxylum fraserianum")
+winners = c("Alectryon oleifolius", "Flindersia australis", "Flindersia maculata", "Grevillea baileyana")
 
 
 #########################################################################################################################

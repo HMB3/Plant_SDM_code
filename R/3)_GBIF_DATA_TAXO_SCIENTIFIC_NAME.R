@@ -148,6 +148,7 @@ length(unique(GBIF.TRIM$scientificName))
 GBIF.TAXO <- TPL(unique(GBIF.TRIM$scientificName), infra = TRUE,
                  corr = TRUE, repeats = 100)  ## to stop it timing out...
 sort(names(GBIF.TAXO))
+
 saveRDS(GBIF.TAXO, paste0('data/base/HIA_LIST/COMBO/GBIF_TAXO_', save_run, '.rds'))
 #GBIF.TAXO = readRDS('data/base/HIA_LIST/COMBO/GBIF_TAXO_200.rds')
 

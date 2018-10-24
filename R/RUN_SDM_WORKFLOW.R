@@ -20,6 +20,7 @@ source('./R/HIA_TREE_LIST.R')
 
 
 ## Set global species variables here : species lists, and saving directories
+## GBIF.spp = trimws(unique(c(MOD.3.SPP$searchTaxon, trait.spp)))
 GBIF.spp      = TPL.SPP # setdiff(TPL.SPP, intersect(TPL.SPP, ala.download))  ## your list of species
 GBIF.spp.rev  = sort(GBIF.spp, decreasing = TRUE)                   ## the list reversed - only needed for a big list
 
