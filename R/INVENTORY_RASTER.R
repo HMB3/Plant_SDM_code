@@ -218,11 +218,11 @@ summary(TI.RASTER$Isothermality)
 
 #########################################################################################################################
 ## Which records are NA?
-TI.NA      = TI.RASTER.CONVERT[is.na(TI.RASTER.CONVERT$Annual_mean_temp),]
-NA.POINTS  = SpatialPointsDataFrame(coords      = TI.NA[c("lon", "lat")], 
-                                    data        = TI.NA[c("lon", "lat")],
-                                    proj4string = CRS.WGS.84)
-dim(NA.POINTS)
+# TI.NA      = TI.RASTER.CONVERT[is.na(TI.RASTER.CONVERT$Annual_mean_temp),]
+# NA.POINTS  = SpatialPointsDataFrame(coords      = TI.NA[c("lon", "lat")], 
+#                                     data        = TI.NA[c("lon", "lat")],
+#                                     proj4string = CRS.WGS.84)
+# dim(NA.POINTS)
 
 
 #########################################################################################################################

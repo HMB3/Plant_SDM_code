@@ -346,9 +346,7 @@ MOD.3.CHK  = join(MOD.3.SPP, MXT.CHECK[c("searchTaxon", "Check.map", "Origin", "
                                          "Plant.type",  "Plantings", "COMBO.count", "AUS_RECORDS",
                                          "Total.growers",  "Number.of.States")], type = "full") 
 MOD.3.CHK  = MOD.3.CHK [with(MOD.3.CHK , order(Check.map)), ]
-write.csv(MOD.3.CHK, "./data/base/HIA_LIST/RENEE/MOD3_OCT18_MAP.csv", row.names = FALSE)
-length(intersect(MOD.3.SPP$searchTaxon, GBIF.spp))
-
+#write.csv(MOD.3.CHK, "./data/base/HIA_LIST/RENEE/MOD3_OCT18_MAP.csv", row.names = FALSE)
 ## Now find the match between the trait species and the trait species... 
 #colnames(HEAT.RISK)[colnames(HEAT.RISK)=="Species"] <- "searchTaxon"
 colnames(TRAIT.SPP)[colnames(TRAIT.SPP)=="Species"] <- "searchTaxon"

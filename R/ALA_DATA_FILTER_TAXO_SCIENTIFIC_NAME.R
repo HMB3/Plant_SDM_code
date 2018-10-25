@@ -218,10 +218,12 @@ unique(Match.SN$New.Taxonomic.status)
 
 
 ## Also include records where the "scientificName" and the "searchTaxon" don't match, but status is synonym
-## This is the aame as the subset of species which are accpeted, but not on our list
+## Also, the ALA taxonomy is right for some species - catch this with status = "accepted"
+## This is the same as the subset of species which are accpeted, but not on our list
 match.true  = unique(subset(Match.SN, Match.SN.ST == "TRUE")$scientificName)
 match.false = unique(subset(Match.SN, Match.SN.ST == "FALSE" &
-                              Taxonomic.status == "Synonym")$scientificName)  
+                              Taxonomic.status == "Synonym" |
+                              Taxonomic.status == "Accepted" )$scientificName)  
 keep.SN     = unique(c(match.true, match.false))
 length(keep.SN)
 

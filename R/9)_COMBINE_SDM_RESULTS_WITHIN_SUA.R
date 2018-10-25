@@ -316,7 +316,7 @@ SUA.PREDICT = join(SUA.PREDICT, SUA.KOP[c("SUA", "MAJOR_KOP")])
 SUA.PREDICT = join(SUA.PREDICT, SUA.PET[c("SUA", "CURRENT_PET")])
 summary(SUA.PREDICT)
 View(SUA.PREDICT)
-t = SUA.PREDICT[is.na(SUA.PREDICT$MAJOR_KOP),]
+#t = SUA.PREDICT[is.na(SUA.PREDICT$MAJOR_KOP),]
 
 #########################################################################################################################
 ## Save table
@@ -333,10 +333,15 @@ unique(SUA.PLOT.GOOD$MAXENT_RATING)
 length(unique(SUA.PLOT.GOOD$SPECIES))
 
        
-SUA.PLOT   = table(SUA.PLOT.GOOD$SUA, SUA.PLOT.GOOD$GAIN_LOSS)
-SUA.PLOT.M = melt(SUA.PLOT) 
+SUA.PLOT       = table(SUA.PLOT.GOOD$SUA, SUA.PLOT.GOOD$GAIN_LOSS)
+
+SUA.PLOT.M = melt(SUA.PLOT)
+SUA.SPP.M  = melt(table(SUA.PLOT.GOOD$SUA, SUA.PLOT.GOOD$GAIN_LOSS, SUA.PLOT.GOOD$SPECIES)) 
+
 names(SUA.PLOT.M) = c("SUA", "AREA_CHANGE", "SPECIES_COUNT")
+names(SUA.SPP.M) = c("SUA", "AREA_CHANGE", "SPECIES", "SPECIES_COUNT")
 head(SUA.PLOT.M)
+head(SUA.SPP.M)
 
 
 
@@ -361,6 +366,14 @@ SUA.PLOT.MAJOR = SUA.PLOT.M[SUA.PLOT.M$SUA %in% MAP_SUA, ]
 unique(SUA.PLOT.MAJOR$SUA)
 
 
+SUA.SPP.M$SUA = gsub("Canberra - Queanbeyan", "Canberra", SUA.SPP.M$SUA)
+SUA.SPP.MAJOR = SUA.SPP.M[SUA.SPP.M$SUA %in% MAP_SUA, ] 
+SUA.SP.1.MAJOR = subset(SUA.SPP.MAJOR, SPECIES == "Eucalyptus camaldulensis")
+unique(SUA.SP.1.MAJOR$SUA)
+unique(SUA.SP.1.MAJOR$SPECIES)
+
+
+#########################################################################################################################
 ## Change PNG output
 png(sprintf('output/figures/SUA_BAR_PLOT/SUA_BAR_PLOT_%s.png', save_run),      
     15, 8, units = 'in', res = 500)
@@ -378,7 +391,7 @@ ggplot(SUA.PLOT.MAJOR, aes(x = SUA, fill = AREA_CHANGE)) +
            position = "stack", stat = "identity", colour="black") +
   
   ## The colour scheme
-  scale_fill_manual(values=rev(colorRampPalette(c('skyblue3', 'brown1', 'seagreen3'))(3))) +
+  scale_fill_manual(values=rev(colorRampPalette(c('seagreen3','brown1', 'grey', 'skyblue3'))(4))) +
   
   ## The axes labels
   labs(title = "Predicted gains and losses within Significant Urban Areas (SUAs)", 
@@ -397,6 +410,46 @@ theme(axis.title.x     = element_text(face = "bold", colour = "black", size = 15
 
 dev.off()
 
+
+
+
+
+#########################################################################################################################
+## Could create a loop to plot each species
+png(sprintf('output/figures/SUA_BAR_PLOT/SUA_BAR_PLOT_%s.png', save_run),      
+    15, 8, units = 'in', res = 500)
+
+ggplot(SUA.SP.1.MAJOR, aes(x = SUA, fill = AREA_CHANGE)) + 
+  
+  ## The species being lost
+  geom_bar(data = subset(SUA.SP.1.MAJOR, AREA_CHANGE %in% c("LOSS")),
+           aes(y = -SPECIES_COUNT), 
+           position = "stack", stat = "identity", colour="black") +
+  
+  ## The species being gained or remaining stable
+  geom_bar(data = subset(SUA.SP.1.MAJOR, !AREA_CHANGE %in% c("LOSS")), 
+           aes(y = SPECIES_COUNT), 
+           position = "stack", stat = "identity", colour="black") +
+  
+  ## The colour scheme
+  scale_fill_manual(values=rev(colorRampPalette(c('seagreen3','brown1', 'grey', 'skyblue3'))(4))) +
+  
+  ## The axes labels
+  labs(title = "Predicted gains and losses within Significant Urban Areas (SUAs)", 
+       x = "SUA", y = "Species Count") +
+  
+  ## Format axes
+  theme(axis.title.x     = element_text(face = "bold", colour = "black", size = 15),
+        axis.text.x      = element_text(angle = 45, vjust = 0.5, size = 12),
+        axis.title.y     = element_text(face = "bold", colour = "black", size = 15),
+        axis.text.y      = element_text(vjust = 0.5, size = 12),
+        title            = element_text(face = "bold", colour = "black", size = 20),
+        legend.title     = element_blank(),
+        legend.text      = element_text(face = "bold", size = 12),
+        panel.background = element_blank(), axis.line = element_line(colour = "black"),
+        panel.border     = element_rect(colour = "black", fill = NA, size = 2))
+
+dev.off()
 
 
 
