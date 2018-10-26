@@ -19,6 +19,32 @@
 source('./R/HIA_TREE_LIST.R')
 
 
+
+## Next step is to model the differences between the SUA species list and the HIA species list
+## That's 377 species currently. Then there are another 1000-odd species on the larger clean list
+## It's time to start thinking strategically as to how to structure the analyses. So for one species, how much data is
+## taken up? Need to back this up, then conisder what the wesbite will eventually need - make sure all the necessary 
+## files are create by the functions, or can be created by running another script/loop. Two directory structures:
+
+
+## All files, for Macquarie science IT backup
+## Reduced file set, for theweb developers
+
+## Do we need the rasters themselves, to be read somehow by another function, or do we need already formatted images?
+## Depends on how the website works - what language, how they handle objects, etc. Just saving the rasters is better,
+## because they style decisons could be made after - that's a separate job.
+
+
+## One of the outstanding tasks is how to tune the spatial cleaning, and also run the mess map creation. Discuss this with
+## Rony, see if he has time to play around with different settings.
+
+
+## Step one is to create the same taxonomy for the next lot of species - GBIF, TPL, etc
+## Then crunch the data
+## Then check the file system flattening systems Shawn sent. Will it work the same way?
+## Try running the next lot of species remotely. Probably no time to figure out how to make the mapping and summary parallel
+
+
 ## Set global species variables here : species lists, and saving directories
 ## GBIF.spp = sort(trimws(unique(c(MOD.3.SPP$searchTaxon, trait.spp))))
 GBIF.spp      = TPL.SPP                                          ## your list of species
@@ -64,7 +90,7 @@ source('./R/7)_RUN_MAXENT.R', echo = TRUE)
 ## Step 8 :: Create habitat suitability maps for each species using six GCMs and three time slices (2030/50/70). 
 ## Then summarise maxent results and estimate species presences in significant urban areas under climate change
 ## Takes awhile, so probably run different time slices (2030, 2050, 2070) in separate R sessions
-source('./R/8)_PREDICT_SDM_SCENARIOS.R', echo = TRUE)
+source('./R/8)_MAP_SDM_COMBINE.R', echo = TRUE)
 
 
 

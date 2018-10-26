@@ -1630,8 +1630,8 @@ Print_global_histogram = function (taxa.list, DF, env.var.1, env.col.1, env.unit
 
 
 ## create simple maps of all GBIF records for selected taxa, in Australia and overseas
-histogram_GBIF_records = function (DF, taxa.list, env.var.1, env.col.1, env.units.1,
-                                   env.var.2, env.col.2, env.units.2) {
+histogram_GBIF_records = function (DF, taxa.list, env.1, env.col.1, env.units.1,
+                                   env.2, env.col.2, env.units.2) {
   
   ###############################
   ## for all the taxa in the list
@@ -1687,7 +1687,7 @@ histogram_GBIF_records = function (DF, taxa.list, env.var.1, env.col.1, env.unit
     ## now create the boxplot
     boxplot(env.2, horizontal = TRUE,  outline = TRUE, 
             #ylim  = c(min.2, max.2), 
-            frame = FALSE, col = env.col.2, axes = FALSE)
+            frame = FALSE, col = env.col.2, axes = TRUE)
     
     ## and the histogram
     hist(env.2, 
@@ -1713,43 +1713,43 @@ histogram_GBIF_records = function (DF, taxa.list, env.var.1, env.col.1, env.unit
     ## print the boxplot
     boxplot(env.1, horizontal = TRUE,  outline = TRUE, 
             ylim  = c(min.1, max.1), 
-            frame = FALSE, col = env.col.1, axes = FALSE)
+            frame = FALSE, col = env.col.1, axes = TRUE)
     
     ## and print the
-    hist(env.1, xlim = c(min.1, max.1),
-         breaks = 50, border = NA, col = env.col.1, main = "",
-         xlab = paste0(taxa.n, " ", env.var.1, " ", "(", env.units.1, ")", sep = ""), ylab = "",
-         cex.lab = 5, cex.axis = 4)
+    # hist(env.1, xlim = c(min.1, max.1),
+    #      breaks = 50, border = NA, col = env.col.1, main = "",
+    #      xlab = paste0(taxa.n, " ", env.var.1, " ", "(", env.units.1, ")", sep = ""), ylab = "",
+    #      cex.lab = 5, cex.axis = 4)
     
     ## finsh the device
-    dev.off()
+    # dev.off()
     
     #################################
     ## 3). Save env.2 histogram to file
-    CairoPNG(width  = 16180, height = 12000,
-             file   = paste("./output/figures/Traits_v_glasshouse/", 
-                            taxa.n, "_", env.var.2, "_world_GBIF_histo.png", sep = ""),
-             canvas = "white", bg = "white", units = "px", dpi = 600)
+    # CairoPNG(width  = 16180, height = 12000,
+    #          file   = paste("./output/figures/Traits_v_glasshouse/", 
+    #                         taxa.n, "_", env.var.2, "_world_GBIF_histo.png", sep = ""),
+    #          canvas = "white", bg = "white", units = "px", dpi = 600)
     
     ## create layout
-    nf <- layout(mat = matrix(c(1,2), 2,1, byrow = TRUE), height = c(1,3))
-    par(mar = c(7.5, 5.5, 4, 2),
-        oma = c(4, 4, 4, 4),
-        mgp = c(6, 3, 0),
-        font.lab = 2, lwd = 2)
+    # nf <- layout(mat = matrix(c(1,2), 2,1, byrow = TRUE), height = c(1,3))
+    # par(mar = c(7.5, 5.5, 4, 2),
+    #     oma = c(4, 4, 4, 4),
+    #     mgp = c(6, 3, 0),
+    #     font.lab = 2, lwd = 2)
     
     ## print the boxplot
     boxplot(env.2, horizontal = TRUE,  outline = TRUE, 
             #ylim  = c(min.2, max.2), 
-            frame = FALSE, col = env.col.2, axes = FALSE)
+            frame = FALSE, col = env.col.2, axes = TRUE)
     
     ## and print the
-    hist(env.2, 
-         #xlim = c(min.2, max.2),
-         breaks = 50, border = NA, 
-         col = env.col.2, main = "",
-         xlab = paste0(taxa.n, " ", env.var.2, " ", "(", env.units.2, ")", sep = ""), 
-         ylab = "", cex.lab = 5, cex.axis = 4)
+    # hist(env.2, 
+    #      #xlim = c(min.2, max.2),
+    #      breaks = 50, border = NA, 
+    #      col = env.col.2, main = "",
+    #      xlab = paste0(taxa.n, " ", env.var.2, " ", "(", env.units.2, ")", sep = ""), 
+    #      ylab = "", cex.lab = 5, cex.axis = 4)
     
     ## finsh the device
     dev.off()

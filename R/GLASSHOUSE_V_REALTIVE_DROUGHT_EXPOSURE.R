@@ -26,6 +26,8 @@ dim(TRAIT.RASTER.CONTEXT)
 
 ## Now find the match between the trait species and the trait species... 
 length(intersect(TRAIT.SPP$searchTaxon,    TRAIT.NICHE.CONTEXT$searchTaxon))
+losers %in% TRAIT.NICHE.CONTEXT$searchTaxon
+winners %in% TRAIT.NICHE.CONTEXT$searchTaxon
 
 
 #########################################################################################################################
@@ -86,9 +88,7 @@ for (i in 1:length(OCC.TAXA)) {
   plot(LAND, main = OCC.TAXA[i])
   points(spp.points, col = "red", cex = .5, pch = 19)
   
-  
   ## Then plot the GBIF histogram?
-  
   
   ## Plot just the Australian points
   plot(aus, main = OCC.TAXA[i])
@@ -123,7 +123,8 @@ writeOGR(obj = TRAIT.SPDF , dsn = "./data/base/HIA_LIST/COMBO", layer = "GLASSHO
 
 ##############################################################################################
 ## histograms of temperature and rainfall
-HIST.TAXA = as.list(unique(TRAIT.RASTER.CONTEXT$searchTaxon))
+HIST.TAXA = (as.list(unique(TRAIT.RASTER.CONTEXT$searchTaxon)))
+HIST.TAXA = losers
 names(TRAIT.RASTER.CONTEXT)
 
 
@@ -139,9 +140,12 @@ Print_global_histogram(taxa.list    = HIST.TAXA,
 
 
 ## Save the histograms to file?
-histogram_GBIF_records(taxa.list = HIST.TAXA[31], DF = TRAIT.RASTER.CONTEXT,
-                       env.var.1 = "Max_temp_warm_month",   env.col.1 = "orange",     env.units.1 = "°C",
-                       env.var.2 = "Annual_precip",         env.col.2 = "blue", env.units.2 = "°mm")
+
+
+
+Boxplot_GBIF_records(taxa.list = HIST.TAXA,       DF = TRAIT.RASTER.CONTEXT,
+                     env.1 = "Max_temp_warm_month",   env.col.1 = "orange",     env.units.1 = "°C",
+                     env.2 = "Annual_precip",         env.col.2 = "blue",       env.units.2 = "°mm")
 
 
 

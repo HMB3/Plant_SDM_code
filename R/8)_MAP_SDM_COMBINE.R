@@ -128,19 +128,27 @@ MAXENT.RESULTS <- maxent.tables[c(1:length(maxent.tables))] %>%
     d <- read.csv(f)
     
     ## load model
-    m <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, x))
-    m <- m$me_full
-    number_var = length(m@lambdas) - 4                                   ## (the last 4 slots of lambdas are not variables) 
+      m <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, x))
+      m <- m$me_full
+      number_var = length(m@lambdas) - 4                                   ## (the last 4 slots of lambdas are not variables) 
     
     ## get variable importance
-    m.vars  = ENMeval::var.importance(m)
-    top.var = m.vars[rev(order(m.vars[["percent.contribution"]])),][["variable"]][1]
+    m.vars    = ENMeval::var.importance(m)
+
+    var.pcont = m.vars[rev(order(m.vars[["percent.contribution"]])),][["variable"]][1]
+    pcont     = m.vars[rev(order(m.vars[["percent.contribution"]])),][["percent.contribution"]][1]
+    
+    var.pimp  = m.vars[rev(order(m.vars[["permutation.importance"]])),][["variable"]][1]
+    pimp      = m.vars[rev(order(m.vars[["permutation.importance"]])),][["permutation.importance"]][1]
 
     
     ## Now add a model column
     d = cbind(searchTaxon = x, 
               Number_var  = number_var, 
-              Top_var     = top.var,
+              Var_pcont   = var.pcont,
+              Per_cont    = pcont,
+              Var_pimp   = var.pimp,
+              Perm_imp   = pimp,
               d)  
     dim(d)
     
@@ -250,7 +258,10 @@ TREE.PLANTINGS  = TREE.EVERGREEN[, c("searchTaxon",
 ## Check with John and Linda which columns will help with model selection
 MAXENT.SUMMARY   = MAXENT.RESULTS[, c("searchTaxon",
                                       "Number_var",
-                                      "Top_var",
+                                      "Var_pcont",
+                                      "Per_cont",
+                                      "Var_pimp",
+                                      "Perm_imp",
                                       "X.Training.samples",                                                                
                                       "Iterations",                                                                        
                                       "Training.AUC",
@@ -400,10 +411,10 @@ load("STEP_8_MAPPING.RData")
 
 ## Test problematic species by entering the values and running the function manually
 ## Common errors are due to corrupt rasters in the previous step
-DIR        = SDM.RESULTS.DIR[25]
-species    = map_spp[25]
-thresh     = percent.10.log[25]
-percent    = percent.10.om[25]
+DIR        = SDM.RESULTS.DIR[2]
+species    = map_spp[2]
+thresh     = percent.10.log[2]
+percent    = percent.10.om[2]
 time_slice = 30
 area_occ   = 10
 
