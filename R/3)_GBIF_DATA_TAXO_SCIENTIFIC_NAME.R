@@ -23,6 +23,10 @@ rasterTmpFile()
 #########################################################################################################################
 
 
+## Print the species run to the screen
+message('Combing GBIF occurrence data for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
+
+
 #########################################################################################################################
 ## Create a list of species from the downloaded files
 gbif.download = list.files(GBIF_path, pattern = ".RData")

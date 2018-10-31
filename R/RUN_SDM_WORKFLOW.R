@@ -26,8 +26,10 @@ source('./R/HIA_TREE_LIST.R')
 ## files are create by the functions, or can be created by running another script/loop. Two directory structures:
 
 
-## All files, for Macquarie science IT backup
-## Reduced file set, for theweb developers
+## 1). All files, for Macquarie science IT backup
+
+## 2). Reduced file set, for the web developers
+
 
 ## Do we need the rasters themselves, to be read somehow by another function, or do we need already formatted images?
 ## Depends on how the website works - what language, how they handle objects, etc. Just saving the rasters is better,
@@ -38,12 +40,14 @@ source('./R/HIA_TREE_LIST.R')
 ## Rony, see if he has time to play around with different settings.
 
 
+#########################################################################################################################
 ## Step one is to create the same taxonomy for the next lot of species - GBIF, TPL, etc
 ## Then crunch the data
 ## Then check the file system flattening systems Shawn sent. Will it work the same way?
-## Try running the next lot of species remotely. Probably no time to figure out how to make the mapping and summary parallel
+## Then Try running the next lot of species remotely. Probably no time to figure out how to make the mapping and summary parallel
 
 
+#########################################################################################################################
 ## %%&*). For rapid assessment of species, how could we mine the data for potentially useful species?
 ## Could search both the overall loss/gain table, and also the SUA table, for the summary of the cells gained and lost.
 ## So top and tail the list - check maps for the biggest losers and gainers overall. Prioritise checking these species
@@ -62,7 +66,7 @@ GBIF_path     = "./data/base/HIA_LIST/GBIF/OCC_SEARCH/"          ## The path whe
 ALA_path      = "./data/base/HIA_LIST/ALA/TREES_TEST/"           ## The path where ALA data is stored - duplicated if in the same place
 
 maxent_path   = './output/maxent/SUA_TREES_ANALYSIS/'            ## The directory where files are saved               
-maxent_dir    = 'output/maxent/SUA_TREES_ANALYSIS' 
+maxent_dir    = 'output/maxent/SUA_TREES_ANALYSIS'               ## Another version of the path that John's coding needs to run a loop
 
 
 #########################################################################################################################

@@ -15,9 +15,16 @@ ala.download = list.files(ALA_path, pattern = ".RData")
 length(ala.download)
 
 
+#########################################################################################################################
 ## For now, use the old version of the ALA
 ## the base url for biocache downloads (used by offline occurrence downloads)
+# install.packages("devtools")
+# devtools::install_github("AtlasOfLivingAustralia/ALA4R")
+# devtools::build(vignettes=FALSE)
 
+
+## Print the species run to the screen
+message('Combing ALA occurrence data for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
 
 
 #########################################################################################################################

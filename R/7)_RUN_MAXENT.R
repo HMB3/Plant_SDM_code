@@ -18,10 +18,13 @@
 ## requirements.
 
 
+## Print the species run to the screen
+message('Running maxent models for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
+
 
 #########################################################################################################################
 ## Load packages, functions and data
-#SDM.SPAT.ALL = readRDS(paste0('data/base/HIA_LIST/COMBO/SDM_SPAT_ALL_', save_run, '.rds'))
+SDM.SPAT.ALL = readRDS(paste0('data/base/HIA_LIST/COMBO/SDM_SPAT_ALL_', save_run, '.rds'))
 
 
 

@@ -9,17 +9,20 @@
 
 ## It then creates a table of the species niche :
 
-## 2). A table with one row for each species, including contextual data and species attributes (niches, traits, etc.)
+## 1). A table with one row for each species, including contextual data and species attributes (niches, traits, etc.)
 
 ## These tables are subsequently used to estimate the current global realised niche/climatic tolerance using the best 
 ## available data, and susequently model the niches using the maxent algorithm.
 
 
+## Print the species run to the screen
+message('Cleaning outliers and creating niches for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
+
+
 #########################################################################################################################
 ## Read in the three data tables
-#TI.RASTER.CONVERT = readRDS(paste0('data/base/HIA_LIST/COMBO/TI_RASTER_CONVERT_', save_run, '.rds'))
-#COMBO.RASTER.CONVERT = readRDS(paste0('data/base/HIA_LIST/COMBO/COMBO_RASTER_CONVERT_', save_run, '.rds'))
-rasterTmpFile()
+TI.RASTER.CONVERT = readRDS(paste0('data/base/HIA_LIST/COMBO/TI_RASTER_CONVERT_', save_run, '.rds'))
+COMBO.RASTER.CONVERT = readRDS(paste0('data/base/HIA_LIST/COMBO/COMBO_RASTER_CONVERT_', save_run, '.rds'))
 
 
 ## Check dimensions of the occurrence and inventory data tables.

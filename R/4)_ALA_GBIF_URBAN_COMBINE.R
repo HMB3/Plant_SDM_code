@@ -21,10 +21,14 @@
 #source('./R/HIA_LIST_MATCHING.R')
 rasterTmpFile()
 
-# GBIF.LAND = readRDS(paste0('data/base/HIA_LIST/GBIF/GBIF_TREES_LAND_', save_run, '.rds'))
+
+## Print the species run to the screen
+message('Extracting Worldclim data for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
+
+
 ## Load GBIF and ALA data
-#
-#ALA.TREES.LAND = readRDS(paste0('data/base/HIA_LIST/ALA/ALA_TREES_LAND_', save_run, '.rds'))
+GBIF.LAND      = readRDS(paste0('data/base/HIA_LIST/GBIF/GBIF_TREES_LAND_', save_run, '.rds'))
+ALA.TREES.LAND = readRDS(paste0('data/base/HIA_LIST/ALA/ALA_TREES_LAND_',   save_run, '.rds'))
 
 
 

@@ -17,6 +17,11 @@
 ## under each projection (2030, 2050 and 2070) is also be calculated. 
 
 
+## Print the species run to the screen
+message('Creating habitat suitability maps for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
+
+
+
 #########################################################################################################################
 ## Read in all data to run the SDM code :: species lists, shapefile, rasters & tables
 #source('./R/HIA_LIST_MATCHING.R')
