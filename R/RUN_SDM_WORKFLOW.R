@@ -20,7 +20,7 @@ source('./R/HIA_TREE_LIST.R')
 
 
 
-## Next step is to model the differences between the SUA species list and the HIA species list
+## Next step is to model the differences between the SUA species list, and the HIA species list
 ## That's 377 species currently. Then there are another 1000-odd species on the larger clean list
 ## It's time to start thinking strategically as to how to structure the analyses. So for one species, how much data is
 ## taken up? Need to back this up, then conisder what the wesbite will eventually need - make sure all the necessary 
@@ -32,7 +32,7 @@ source('./R/HIA_TREE_LIST.R')
 
 ## Do we need the rasters themselves, to be read somehow by another function, or do we need already formatted images?
 ## Depends on how the website works - what language, how they handle objects, etc. Just saving the rasters is better,
-## because they style decisons could be made after - that's a separate job.
+## because then style decisons could be made after - that's a separate job.
 
 
 ## One of the outstanding tasks is how to tune the spatial cleaning, and also run the mess map creation. Discuss this with
@@ -45,12 +45,17 @@ source('./R/HIA_TREE_LIST.R')
 ## Try running the next lot of species remotely. Probably no time to figure out how to make the mapping and summary parallel
 
 
+## %%&*). For rapid assessment of species, how could we mine the data for potentially useful species?
+## Could search both the overall loss/gain table, and also the SUA table, for the summary of the cells gained and lost.
+## So top and tail the list - check maps for the biggest losers and gainers overall. Prioritise checking these species
+
+
 ## Set global species variables here : species lists, and saving directories
 ## GBIF.spp = sort(trimws(unique(c(MOD.3.SPP$searchTaxon, trait.spp))))
-GBIF.spp      = TPL.SPP                                          ## your list of species
+GBIF.spp      = TPL.HIA                                          ## your list of species
 GBIF.spp.rev  = sort(GBIF.spp, decreasing = TRUE)                ## the list reversed - only needed for a big list
 
-save_run      = "NEW_TRAIT_SPP" # "SUA_ANALYSIS_380_spp_300km_SPAT"                ## a variable to append the run name to the output files
+save_run      = "HIA_SPP_25_GROW"                                ## a variable to append the run name to the output files
 map_spp_list  = gsub(" ", "_", GBIF.spp)                         ## species list with "_" for mapping
 map_spp_rev   = sort(map_spp_list, decreasing = TRUE)            ## reversed
 

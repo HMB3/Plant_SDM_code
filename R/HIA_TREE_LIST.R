@@ -536,7 +536,8 @@ HIA.SPP.LOOKUP = lookup_table(HIA.SPP[["Binomial"]], by_species = TRUE) ## conve
 HIA.SPP.LOOKUP = setDT(HIA.SPP.LOOKUP , keep.rownames = TRUE)[]
 HIA.SPP.LOOKUP = dplyr::rename(HIA.SPP.LOOKUP, Binomial = rn)
 head(HIA.SPP.LOOKUP) ## Can merge on the bilogical data here...
-## write.csv(HIA.SPP.LOOKUP, "./data/base/HIA_LIST/HIA/HIA_BINOMIAL_LOOKUP.csv", row.names = FALSE)
+## write.csv(HIA.SPP.LOOKUP, "./data/base/HIA_LIST/HIA/HIA_BINOMIAL_LOOKUP.csv",   row.names = FALSE)
+## write.csv(CLEAN.SPP,      "./data/base/HIA_LIST/HIA/CLEAN_BINOMIAL_LOOKUP.csv", row.names = FALSE)
 
 
 
@@ -569,7 +570,7 @@ subset(MODEL.CHECK, Total.growers >= 25 & check.map <= 2 & Plant.type == "Tree" 
 
 #########################################################################################################################
 ## What is the intersection betwen the evergreen list and the Tree inventories?
-TREE.HIA.SPP = intersect(subset(TI.LIST, Plantings > 50)$searchTaxon, CLEAN.SPP$Binomial) 
+TREE.HIA.SPP = intersect(subset(TI.LIST, Plantings > 50)$searchTaxon, CLEAN.SPP$Binomial) ##
 TREE.200.SPP = intersect(subset(TI.LIST, Plantings > 500)$searchTaxon, CLEAN.SPP$Binomial) 
 ##intersect(head(TI.LIST, 600)$searchTaxon, CLEAN.SPP$Binomial)
 summary(TI.LIST[TI.LIST$searchTaxon %in% TREE.HIA.SPP, ])
@@ -632,6 +633,10 @@ write.csv(TREE.EVERGREEN, "./data/base/HIA_LIST/COMBO/TREE_EVERGREEN.csv", row.n
 
 
 
+## What is the difference between the SUA list and the greater list?
+length(setdiff(HIA.SPP$Binomial, TREE.EVERGREEN$searchTaxon))
+length(setdiff(CLEAN.SPP$Binomial, TREE.EVERGREEN$searchTaxon))
+length(intersect(CLEAN.SPP$Binomial, HIA.SPP$Binomial))
 
 
 
@@ -639,6 +644,22 @@ write.csv(TREE.EVERGREEN, "./data/base/HIA_LIST/COMBO/TREE_EVERGREEN.csv", row.n
 #########################################################################################################################
 ## 7). CHECK TAXONOMY AND ORIGIN OF THE MANUSCRIPT SPECIES
 #########################################################################################################################
+
+
+## The problems is the mis-match between what we searched, and what GBIF returned. 
+
+## 1). Create the inital list by combing the planted trees with evergreen list
+##     TREE.HIA.SPP = intersect(subset(TI.LIST, Plantings > 50)$searchTaxon, CLEAN.SPP$Binomial) 
+##     This is about 400 species
+##     Origin
+##     NA     Exotic Native 
+##     20.5   25.8   53.8 
+
+## 2). Clean this list using the GBIF backbone taxonomy :: use the "species" column in from the GBIF "species lookup" tool
+##     https://www.gbif.org/tools/species-lookup
+
+## 3). Run the GBIF "species" list through the TPL taxonomy. Take "New" Species and Genus as the "searchTaxon"
+
 
 
 # ## Run taxonstand for the manuscript tree species
@@ -660,25 +681,36 @@ SUA_SPP             = gsub(" ", "_", SUA.SPP)
 setdiff(TREE.HIA.SPP, SUA.SPP)
 
 
-# TPL.SUA <- TPL(unique(SUA.SPP), infra = TRUE, corr = TRUE, repeats = 100)
+HIA.GBIF             = read.csv("./data/base/HIA_LIST/COMBO/HIA_SPP_GBIF_MATCH.csv",      stringsAsFactors = FALSE)
+CLEAN.GBIF           = read.csv("./data/base/HIA_LIST/COMBO/CLEAN_SPP_GBIF_MATCH.csv",    stringsAsFactors = FALSE)
+HIA.GBIF             = sort(unique(HIA.GBIF$HIA_GBIF_SPP_MATCH))
+CLEAN.GBIF           = sort(unique(CLEAN.GBIF$CLEAN_GBIF_SPP_MATCH))
+length(HIA.GBIF);length(CLEAN.GBIF)
+
+
+#########################################################################################################################
+## only run TPL checks once - they are slow
+# TPL.SUA   <- TPL(unique(SUA.SPP), infra = TRUE, corr = TRUE, repeats = 100)
+# TPL.HIA   <- TPL(unique(HIA.GBIF), infra = TRUE, corr = TRUE, repeats = 100)
+# TPL.CLEAN <- TPL(unique(CLEAN.GBIF), infra = TRUE, corr = TRUE, repeats = 100)
 # View(TPL.SUA[c("Taxon", "Taxonomic.status", "New.Taxonomic.status", "New.Genus", "New.Species")])
 # saveRDS(TPL.SUA, file = paste("./data/base/HIA_LIST/GBIF/TPL_SUA.rds"))
-# saveRDS(TPL.SUA, file = paste("./data/base/HIA_LIST/GBIF/TPL_SUA.rds"))
+# saveRDS(TPL.HIA, file = paste("./data/base/HIA_LIST/HIA/TPL_HIA.rds"))
+# saveRDS(TPL.CLEAN, file = paste("./data/base/HIA_LIST/HIA/TPL_CLEAN.rds"))
 #write.csv(TPL.SUA, "./data/base/HIA_LIST/GBIF/TPL_SUA.csv", row.names = FALSE)
 
 
 ## Note that TPL is not always right for Australian species :: Eucalyptus largiflorens is the accepted Australian name
-## bicolor is not recognised by the ALA
+## bicolor is not recognised by the ALA. Here we are 
 TPL.SUA = readRDS("./data/base/HIA_LIST/GBIF/TPL_SUA.rds")
+TPL.HIA = readRDS("./data/base/HIA_LIST/HIA/TPL_HIA.rds")
+
 TPL.SPP = paste(TPL.SUA$New.Genus, TPL.SUA$New.Species, sep = " ")
 TPL_SPP = gsub(" ", "_", TPL.SPP)
 setdiff(TREE.HIA.SPP, SUA.SPP)
 
-
-ala.download = list.files("./data/base/HIA_LIST/ALA/SPECIES/", pattern = ".RData")
-ala.download = gsub("_ALA_records.RData", "", ala.download)
-ala.download = trimws(ala.download)
-
+TPL.HIA = paste(TPL.HIA$New.Genus, TPL.HIA$New.Species, sep = " ")
+TPL_HIA = gsub(" ", "_", TPL.HIA)
 
 
 

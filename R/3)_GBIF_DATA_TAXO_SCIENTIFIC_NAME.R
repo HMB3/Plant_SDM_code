@@ -116,7 +116,8 @@ length(unique(GBIF.TRIM$scientificName))
 ##     NA     Exotic Native 
 ##     20.5   25.8   53.8 
 
-## 2). Clean this list using the GBIF backbone taxonomy :: use the "species" column
+## 2). Clean this list using the GBIF backbone taxonomy :: use the "species" column in from the GBIF "species lookup" tool
+##     https://www.gbif.org/tools/species-lookup
 
 ## 3). Run the GBIF "species" list through the TPL taxonomy. Take "New" Species and Genus as the "searchTaxon"
 
