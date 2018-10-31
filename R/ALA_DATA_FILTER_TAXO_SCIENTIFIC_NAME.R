@@ -15,6 +15,29 @@ ala.download = list.files(ALA_path, pattern = ".RData")
 length(ala.download)
 
 
+## Now these lists are getting too long for the combine step. Can we restrict them to just the strings that partially 
+## match the  species list for each run?
+ala.spp.download <- paste(GBIF.spp, "_ALA_records.RData", sep = "")
+ala.download     = ala.download[ala.download %in% ala.spp.download ] 
+length(ala.download);length(GBIF.spp)
+
+
+#########################################################################################################################
+## Incude records where the "scientificName" and the "searchTaxon" match, and where the taxonomic status is 
+## accepted, synonym or unresolved
+
+
+## Also include records where the "scientificName" and the "searchTaxon" don't match, but status is synonym
+## Also, the ALA taxonomy is right for some species - catch this with status = "accepted"
+## This is the same as the subset of species which are accpeted, but not on our list
+match.true  = unique(subset(Match.SN, Match.SN.ST == "TRUE")$scientificName)
+match.false = unique(subset(Match.SN, Match.SN.ST == "FALSE" &
+                              Taxonomic.status == "Synonym" |
+                              Taxonomic.status == "Accepted" )$scientificName)  
+keep.SN     = unique(c(match.true, match.false))
+length(keep.SN)
+
+
 #########################################################################################################################
 ## For now, use the old version of the ALA
 ## the base url for biocache downloads (used by offline occurrence downloads)
@@ -24,7 +47,7 @@ length(ala.download)
 
 
 ## Print the species run to the screen
-message('Combing ALA occurrence data for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
+message('Combining ALA occurrence data for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
 
 
 #########################################################################################################################
@@ -106,41 +129,6 @@ dim(ALA.ALL)
 (sum(is.na(ALA.ALL$scientificNameOriginal))  + dim(subset(ALA.ALL, scientificNameOriginal == ""))[1])/dim(ALA.ALL)[1]*100
 (sum(is.na(ALA.ALL$scientificName))          + dim(subset(ALA.ALL, scientificName == ""))[1])/dim(ALA.ALL)[1]*100
 (sum(is.na(ALA.ALL$species))                 + dim(subset(ALA.ALL, species == ""))[1])/dim(ALA.ALL)[1]*100
-
-
-## What is the match between scientificNameOriginal, and the searchTaxon?
-# Match.ALA = ALA.ALL  %>%
-#   mutate(Match.SNO.ST =
-#            str_detect(scientificNameOriginal, searchTaxon)) %>%
-# 
-#   mutate(Match.SN.ST =
-#            str_detect(scientificName, searchTaxon)) %>%
-# 
-#   mutate(Match.SP.ST =
-#            str_detect(species, searchTaxon)) %>%
-#   
-#   select(one_of(c("searchTaxon",
-#                   "scientificName",
-#                   "scientificNameOriginal",
-#                   "species",
-#                   "Match.SNO.ST",
-#                   "Match.SN.ST",
-#                   "Match.SP.ST")))
-# View(Match.ALA)
-# 
-# 
-# ## So for 15-12% of the records, neither the scientificNameOriginal or the species match the search taxon.
-# dim(subset(Match.ALA,  Match.SNO.ST == "FALSE"))[1]/dim(Match.ALA)[1]*100
-# dim(subset(Match.ALA,  Match.SN.ST  == "FALSE"))[1]/dim(Match.ALA)[1]*100
-# dim(subset(Match.ALA,  Match.SN.ST  == "FALSE"))[1]/dim(Match.ALA)[1]*100
-
-
-## So rename 'scientificNameOriginal' to 'scientificName', to match GBIF
-# ALA.RENAME = ALA.ALL
-# ALA.RENAME$scientificName = NULL 
-# ALA.RENAME$scientificName = ALA.RENAME$scientificNameOriginal
-# ALA.RENAME$species = NULL 
-# (sum(is.na(ALA.RENAME$scientificName)) + dim(subset(ALA.RENAME, scientificName == ""))[1])/dim(ALA.ALL)[1]*100
 
 
 ########################################################################################################################

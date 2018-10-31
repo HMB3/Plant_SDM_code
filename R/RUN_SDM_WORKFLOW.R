@@ -71,7 +71,8 @@ maxent_dir    = 'output/maxent/SUA_TREES_ANALYSIS'               ## Another vers
 
 #########################################################################################################################
 ## Now source each step in the workflow. 
-length(GBIF.spp)
+message('Running SDM workflow for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
+
 
 ## Step 3 :: combine GBIF occurrence data with ALA data and filter to records > 1950
 source('./R/ALA_DATA_FILTER_TAXO_SCIENTIFIC_NAME.R', echo = TRUE)

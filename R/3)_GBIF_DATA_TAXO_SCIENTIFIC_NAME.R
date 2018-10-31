@@ -24,7 +24,7 @@ rasterTmpFile()
 
 
 ## Print the species run to the screen
-message('Combing GBIF occurrence data for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
+message('Combining GBIF occurrence data for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
 
 
 #########################################################################################################################
@@ -33,8 +33,12 @@ gbif.download = list.files(GBIF_path, pattern = ".RData")
 length(gbif.download)
 
 
-## what is causing the NA lat problem?
-## Some of the species have lat/lon, and some have decimal lat/lon. Need to re-download the latest species
+## Now these lists are getting too long for the combine step. Can we restrict them to just the strings that partially 
+## match the  species list for each run?
+gbif.spp.download <- paste(GBIF.spp, "_ALA_records.RData", sep = "")
+gbif.download     = gbif.download[gbif.download %in% gbif.spp.download ] 
+length(gbif.download);length(GBIF.spp)
+
 
 
 #########################################################################################################################
