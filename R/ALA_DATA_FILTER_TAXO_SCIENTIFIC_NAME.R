@@ -3,14 +3,20 @@
 #########################################################################################################################
 
 
+## This code combines all the the ALA downloads for each species into one file
+## The issue now becomes how to deal with different species runs that overlap. 
+## Can all the species records from multiple runs be combined? Otherwise R is very slow generating the big table of species
+## 
+
+
 #########################################################################################################################
-## This code updates the ALA data
+## Create a list of Rdata files
 ala.download = list.files(ALA_path, pattern = ".RData")
 length(ala.download)
 
 
 ## For now, use the old version of the ALA
-## the base url for biocache downloads (used by offline occurrence downloads
+## the base url for biocache downloads (used by offline occurrence downloads)
 
 
 
@@ -42,10 +48,11 @@ ALA.ALL <- ala.download %>%
     }
     
     ## Create the searchTaxon column
+    message ('Reading ALA data for ', x)
     d[,"searchTaxon"] = x
     d[,"searchTaxon"] = gsub("_ALA_records.RData", "", d[,"searchTaxon"])
     
-    ## Choose onl 
+    ## Choose only the desired columns
     d = d %>%
       select(one_of(ALA.keep))
     
@@ -54,6 +61,10 @@ ALA.ALL <- ala.download %>%
       d["id"] <- as.character(d["id"])
       
     }
+    
+    ## Then print warnings
+    warnings()
+    
     
     ## This is a list of columns in different ALA files which have weird characters
     d[,"coordinateUncertaintyInMetres"] = as.numeric(unlist(d["coordinateUncertaintyInMetres"]))

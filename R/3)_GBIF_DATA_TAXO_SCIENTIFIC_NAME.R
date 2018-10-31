@@ -48,6 +48,7 @@ GBIF.ALL <- gbif.download %>%   ## spp.download[c(1:length(spp.download))]
     d <- get(load(f))
     
     ## Now drop the columns which we don't need
+    message ('Reading GBIF data for ', x)
     dat <- data.frame(searchTaxon = x, d[, colnames(d) %in% gbif.keep],
                       stringsAsFactors = FALSE)
     

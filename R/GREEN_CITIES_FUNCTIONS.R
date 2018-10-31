@@ -300,7 +300,7 @@ download_GBIF_all_species = function (species_list, path) {
     }
     
     ## 3). Skip species with no records
-    if (occ_search(scientificName = sp.n)$meta$count == 0) {
+    if (occ_search(scientificName = sp.n)$meta$count <= 2) {
       
       ## now append the species which had no records to the skipped list
       print (paste ("No GBIF records for", sp.n, "skipping"))
@@ -405,14 +405,25 @@ download_ALA_all_species = function (species_list, path) {
       
     }
     
-    ## 3). Download ALL records from ALA :: 
+    ## 3). Skip species with no records
+    if (dim(occurrences(taxon = sp.n, download_reason_id = 7)$data)[1] <= 2) {
+      
+      ## now append the species which had no records to the skipped list
+      print (paste ("No ALA records for", sp.n, "skipping"))
+      records = paste ("No ALA records |", sp.n)
+      skip.spp.list <- c(skip.spp.list, records)
+      next
+      
+    }
+    
+    ## 4). Download ALL records from ALA :: 
     message("Downloading ALA records for ", sp.n, " using ALA4R :: occurrences")
     ALA = occurrences(taxon = sp.n, download_reason_id = 7)   ## could use more arguments here, download_reason_id = 7, etc.
     ALA = ALA[["data"]]
     cat("Synonyms returned for :: ", sp.n, unique(ALA$scientificName), sep="\n")
     message(dim(ALA[1]), " Records returned for ", sp.n)
     
-    ## 4). save records to .Rdata file, note that using .csv files seemed to cause problems...
+    ## 5). save records to .Rdata file, note that using .csv files seemed to cause problems...
     save(ALA, file = paste(path, sp.n, "_ALA_records.RData", sep = ""))
     #return(skip.spp.list)
     
