@@ -19,7 +19,6 @@
 source('./R/HIA_TREE_LIST.R')
 
 
-
 ## Next step is to model the differences between the SUA species list, and the HIA species list
 ## That's 377 species currently. Then there are another 1000-odd species on the larger clean list
 ## It's time to start thinking strategically as to how to structure the analyses. So for one species, how much data is
@@ -68,7 +67,7 @@ maxent_dir    = 'output/maxent/SUA_TREES_ANALYSIS'
 
 #########################################################################################################################
 ## Now source each step in the workflow. 
-
+length(GBIF.spp)
 
 ## Step 3 :: combine GBIF occurrence data with ALA data and filter to records > 1950
 source('./R/ALA_DATA_FILTER_TAXO_SCIENTIFIC_NAME.R', echo = TRUE)

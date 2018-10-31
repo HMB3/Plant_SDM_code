@@ -700,19 +700,26 @@ length(HIA.GBIF);length(CLEAN.GBIF)
 #write.csv(TPL.SUA, "./data/base/HIA_LIST/GBIF/TPL_SUA.csv", row.names = FALSE)
 
 
+#########################################################################################################################
+##  Create species list from the TPL taxonomy
 ## Note that TPL is not always right for Australian species :: Eucalyptus largiflorens is the accepted Australian name
 ## bicolor is not recognised by the ALA. Here we are 
-TPL.SUA = readRDS("./data/base/HIA_LIST/GBIF/TPL_SUA.rds")
-TPL.HIA = readRDS("./data/base/HIA_LIST/HIA/TPL_HIA.rds")
+TPL.SUA   = readRDS("./data/base/HIA_LIST/GBIF/TPL_SUA.rds")
+TPL.HIA   = readRDS("./data/base/HIA_LIST/HIA/TPL_HIA.rds")
+TPL.CLEAN = readRDS("./data/base/HIA_LIST/HIA/TPL_CLEAN.rds")
 
-TPL.SPP = paste(TPL.SUA$New.Genus, TPL.SUA$New.Species, sep = " ")
-TPL_SPP = gsub(" ", "_", TPL.SPP)
+TPL.SPP   = paste(TPL.SUA$New.Genus, TPL.SUA$New.Species, sep = " ")  ## using the latest binomial names from TPL
+TPL_SPP   = gsub(" ", "_", TPL.SPP)
 setdiff(TREE.HIA.SPP, SUA.SPP)
 
-TPL.HIA = paste(TPL.HIA$New.Genus, TPL.HIA$New.Species, sep = " ")
-TPL_HIA = gsub(" ", "_", TPL.HIA)
+TPL.HIA   = paste(TPL.HIA$New.Genus, TPL.HIA$New.Species, sep = " ")
+TPL_HIA   = gsub(" ", "_", TPL.HIA)
+
+TPL.CLEAN = paste(TPL.CLEAN$New.Genus, TPL.CLEAN$New.Species, sep = " ")
+TPL_HIA   = gsub(" ", "_", TPL.CLEAN)
 
 
+length(TPL.SUA);length(TPL.SPP);length(TPL.CLEAN)
 
 
 #########################################################################################################################
