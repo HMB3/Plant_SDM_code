@@ -21,6 +21,7 @@
 #source('./R/HIA_LIST_MATCHING.R')
 rasterTmpFile()
 
+
 ## Print the species run to the screen
 message('Extracting Worldclim data for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
 
@@ -92,31 +93,46 @@ COMBO.LUT = COMBO.LUT[with(COMBO.LUT, rev(order(FREQUENCY))), ]
 head(COMBO.LUT);dim(COMBO.LUT)
 
 
-## Write out the table
-#write.csv(COMBO.LUT, "./data/base/HIA_LIST/COMBO/SUA_TREES_GBIF_ALA_LUT.csv", row.names = FALSE)
+#########################################################################################################################
+## save data
+if(save_data == "TRUE") {
+  
+  ## save .rds file for the next session
+  write.csv(COMBO.LUT, "./data/base/HIA_LIST/COMBO/SUA_TREES_GBIF_ALA_LUT.csv", row.names = FALSE)
+  
+} else {
+  
+  message(' skip file saving, not many species analysed')   ##
+  
+}
 
 
 #########################################################################################################################
 ## Create points: the 'over' function seems to need geographic coordinates for this data...
-# COMBO.POINTS   = SpatialPointsDataFrame(coords      = GBIF.ALA.COMBO[c("lon", "lat")], 
-#                                         data        = GBIF.ALA.COMBO[c("lon", "lat")],
-#                                         proj4string = CRS.WGS.84)
+COMBO.POINTS   = SpatialPointsDataFrame(coords      = GBIF.ALA.COMBO[c("lon", "lat")],
+                                        data        = GBIF.ALA.COMBO[c("lon", "lat")],
+                                        proj4string = CRS.WGS.84)
+
+
+## Check the logic of if the niche is different when calculate this way, insted of using all data.
+## Would the median, 95-5, etc, be the same using only unique values?...................................................
+
 
 ## Now get the XY centroids of the unique 1km * 1km WORLDCLIM blocks where ALA records are found
 ## Get cell number(s) of WORLDCLIM raster from row and/or column numbers. Cell numbers start at 1 in the upper left corner, 
 ## and increase from left to right, and then from top to bottom. The last cell number equals the number of raster cells 
-COMBO.POINTS <- cellFromXY(world.grids.current, GBIF.ALA.COMBO[c("lon", "lat")]) %>% 
-  
-  ## get the unique raster cells
-  unique %>% 
-  
-  ## Get coordinates of the center of raster cells for a row, column, or cell number of WORLDCLIM raster
-  xyFromCell(world.grids.current, .) %>%
-  
-  as.data.frame() %>%
-  
-  SpatialPointsDataFrame(coords = ., data = .,
-                         proj4string = CRS.WGS.84)
+# COMBO.POINTS <- cellFromXY(world.grids.current, GBIF.ALA.COMBO[c("lon", "lat")]) %>% 
+#   
+#   ## get the unique raster cells
+#   unique %>% 
+#   
+#   ## Get coordinates of the center of raster cells for a row, column, or cell number of WORLDCLIM raster
+#   xyFromCell(world.grids.current, .) %>%
+#   
+#   as.data.frame() %>%
+#   
+#   SpatialPointsDataFrame(coords = ., data = .,
+#                          proj4string = CRS.WGS.84)
 
 
 ## Check
@@ -206,9 +222,7 @@ COMBO.RASTER <- raster::extract(world.grids.current, COMBO.POINTS) %>%
     Precip_col_qu        = bio_19)
 
 
-## Save/load
-#summary(COMBO.RASTER)
-#saveRDS(COMBO.RASTER, file = paste("./data/base/HIA_LIST/GBIF/COMBO_GBIF_ALA_RASTER.rds"))
+## Free some memory
 gc();gc()
 
 

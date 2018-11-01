@@ -166,7 +166,10 @@ world.grids.current = stack(
   file.path('./data/base/worldclim/world/0.5/bio/current',
             sprintf('bio_%02d', 1:19)))
 
-
+## Create a velox raster of the world raster stack
+vx.world <- velox(world.grids.current)
+writeRaster(vx.world, './data/base/worldclim/world/0.5/bio/current/vx_world.tif')
+vx.world  = raster('./data/base/worldclim/world/0.5/bio/current/vx_world.tif')
 # i  <- match(sdm.predictors, sdm.predictors)
 # ff <- file.path('./data/base/worldclim/world/0.5/bio/current',
 #                 sprintf('bio_%02d.tif', i))

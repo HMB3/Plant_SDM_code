@@ -242,7 +242,7 @@ round(with(GBIF.TRIM.MATCH, table(New.Taxonomic.status)/sum(table(New.Taxonomic.
 
 ## Check NAs again
 (sum(is.na(GBIF.TRIM.MATCH$scientificName)) + dim(subset(GBIF.TRIM.MATCH, scientificName == ""))[1])/dim(GBIF.TRIM.MATCH)[1]*100
-View(GBIF.TRIM.MATCH[is.na(GBIF.TRIM.MATCH$scientificName),])
+# View(GBIF.TRIM.MATCH[is.na(GBIF.TRIM.MATCH$scientificName),])
 
 
 
