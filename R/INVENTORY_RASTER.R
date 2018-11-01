@@ -39,9 +39,32 @@ TI.XY.SPP = TI.XY[TI.XY$searchTaxon %in% GBIF.spp, ]
 
 #########################################################################################################################
 ## Create points: the over function seems to need geographic coordinates for this data
-TI.POINTS   = SpatialPointsDataFrame(coords      = TI.XY.SPP[c("lon", "lat")], 
-                                     data        = TI.XY.SPP[c("lon", "lat")],
-                                     proj4string = CRS.WGS.84)
+# TI.POINTS   = SpatialPointsDataFrame(coords      = TI.XY.SPP[c("lon", "lat")], 
+#                                      data        = TI.XY.SPP[c("lon", "lat")],
+#                                      proj4string = CRS.WGS.84)
+# 
+# 
+# ## Check
+# dim(TI.POINTS)
+# projection(TI.POINTS)
+# names(TI.POINTS)
+
+
+## Now get the XY centroids of the unique 1km * 1km WORLDCLIM blocks where ALA records are found
+## Get cell number(s) of WORLDCLIM raster from row and/or column numbers. Cell numbers start at 1 in the upper left corner, 
+## and increase from left to right, and then from top to bottom. The last cell number equals the number of raster cells 
+TI.POINTS <- cellFromXY(world.grids.current, TI.XY.SPP[c("lon", "lat")]) %>% 
+  
+  ## get the unique raster cells
+  unique %>% 
+  
+  ## Get coordinates of the center of raster cells for a row, column, or cell number of WORLDCLIM raster
+  xyFromCell(world.temp, .) %>%
+  
+  as.data.frame() %>%
+  
+  SpatialPointsDataFrame(coords = ., data = .,
+                         proj4string = CRS.WGS.84)
 
 
 ## Check

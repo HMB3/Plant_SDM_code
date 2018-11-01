@@ -291,16 +291,13 @@ message(round((dim(ALA.TREES.CLEAN)[1])/dim(ALA.TRIM.MATCH)[1]*100, 2),
 
 #########################################################################################################################
 ## Can use WORLDCIM rasters to get only records where wordlclim data is. 
-## First, get one of the BIOCLIM variables
 message('Removing ALA points in the ocean for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
-world.temp = raster("./data/base/worldclim/world/0.5/bio/current/bio_01")
-#plot(world.temp)
 
 
 ## Now get the XY centroids of the unique 1km * 1km WORLDCLIM blocks where ALA records are found
 ## Get cell number(s) of WORLDCLIM raster from row and/or column numbers. Cell numbers start at 1 in the upper left corner, 
 ## and increase from left to right, and then from top to bottom. The last cell number equals the number of raster cells 
-xy <- cellFromXY(world.temp, ALA.TREES.CLEAN[c("lon", "lat")]) %>% 
+xy <- cellFromXY(world.grids.current, ALA.TREES.CLEAN[c("lon", "lat")]) %>% 
   
   ## get the unique raster cells
   unique %>% 

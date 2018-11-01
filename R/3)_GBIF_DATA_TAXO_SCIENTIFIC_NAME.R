@@ -283,18 +283,15 @@ length(unique(GBIF.CLEAN$searchTaxon))
 #########################################################################################################################
 
 
+#########################################################################################################################
 ## Can use WORLDCIM rasters to get only records where wordlclim data is. 
-## At the global scale, there probably is no alterntive to using WORLDCLIM...
-
-
-## First, get one of the BIOCLIM variables
-world.temp = raster("./data/base/worldclim/world/0.5/bio/current/bio_01")
+message('Removing GBIF points in the ocean for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
 
 
 ## Now get the XY centroids of the unique 1km * 1km WORLDCLIM blocks where GBIF records are found
 ## Get cell number(s) of WORLDCLIM raster from row and/or column numbers. Cell numbers start at 1 in the upper left corner, 
 ## and increase from left to right, and then from top to bottom. The last cell number equals the number of raster cells 
-xy <- cellFromXY(world.temp, GBIF.CLEAN[c("lon", "lat")]) %>% 
+xy <- cellFromXY(world.grids.current, GBIF.CLEAN[c("lon", "lat")]) %>% 
   
   ## get the unique raster cells
   unique %>% 

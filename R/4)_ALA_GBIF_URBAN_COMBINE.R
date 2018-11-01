@@ -21,7 +21,6 @@
 #source('./R/HIA_LIST_MATCHING.R')
 rasterTmpFile()
 
-
 ## Print the species run to the screen
 message('Extracting Worldclim data for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
 
@@ -99,9 +98,25 @@ head(COMBO.LUT);dim(COMBO.LUT)
 
 #########################################################################################################################
 ## Create points: the 'over' function seems to need geographic coordinates for this data...
-COMBO.POINTS   = SpatialPointsDataFrame(coords      = GBIF.ALA.COMBO[c("lon", "lat")], 
-                                        data        = GBIF.ALA.COMBO[c("lon", "lat")],
-                                        proj4string = CRS.WGS.84)
+# COMBO.POINTS   = SpatialPointsDataFrame(coords      = GBIF.ALA.COMBO[c("lon", "lat")], 
+#                                         data        = GBIF.ALA.COMBO[c("lon", "lat")],
+#                                         proj4string = CRS.WGS.84)
+
+## Now get the XY centroids of the unique 1km * 1km WORLDCLIM blocks where ALA records are found
+## Get cell number(s) of WORLDCLIM raster from row and/or column numbers. Cell numbers start at 1 in the upper left corner, 
+## and increase from left to right, and then from top to bottom. The last cell number equals the number of raster cells 
+COMBO.POINTS <- cellFromXY(world.grids.current, GBIF.ALA.COMBO[c("lon", "lat")]) %>% 
+  
+  ## get the unique raster cells
+  unique %>% 
+  
+  ## Get coordinates of the center of raster cells for a row, column, or cell number of WORLDCLIM raster
+  xyFromCell(world.temp, .) %>%
+  
+  as.data.frame() %>%
+  
+  SpatialPointsDataFrame(coords = ., data = .,
+                         proj4string = CRS.WGS.84)
 
 
 ## Check
@@ -157,6 +172,7 @@ PET               = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
 
 #########################################################################################################################
 ## Extract worldclim data
+## This step is a bottle neck ...........................................................................................
 message('Extracting raster values for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
 projection(COMBO.POINTS);projection(world.grids.current)
 dim(COMBO.POINTS);dim(GBIF.ALA.COMBO)
