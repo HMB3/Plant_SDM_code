@@ -6,36 +6,6 @@
 ## This code combines all the the ALA downloads for each species into one file
 ## The issue now becomes how to deal with different species runs that overlap. 
 ## Can all the species records from multiple runs be combined? Otherwise R is very slow generating the big table of species
-## 
-
-
-#########################################################################################################################
-## Create a list of Rdata files
-ala.download = list.files(ALA_path, pattern = ".RData")
-length(ala.download)
-
-
-## Now these lists are getting too long for the combine step. Can we restrict them to just the strings that partially 
-## match the  species list for each run?
-ala.spp.download <- paste(GBIF.spp, "_ALA_records.RData", sep = "")
-ala.download     = ala.download[ala.download %in% ala.spp.download ] 
-length(ala.download);length(GBIF.spp)
-
-
-#########################################################################################################################
-## Incude records where the "scientificName" and the "searchTaxon" match, and where the taxonomic status is 
-## accepted, synonym or unresolved
-
-
-## Also include records where the "scientificName" and the "searchTaxon" don't match, but status is synonym
-## Also, the ALA taxonomy is right for some species - catch this with status = "accepted"
-## This is the same as the subset of species which are accpeted, but not on our list
-match.true  = unique(subset(Match.SN, Match.SN.ST == "TRUE")$scientificName)
-match.false = unique(subset(Match.SN, Match.SN.ST == "FALSE" &
-                              Taxonomic.status == "Synonym" |
-                              Taxonomic.status == "Accepted" )$scientificName)  
-keep.SN     = unique(c(match.true, match.false))
-length(keep.SN)
 
 
 #########################################################################################################################
@@ -46,13 +16,26 @@ length(keep.SN)
 # devtools::build(vignettes=FALSE)
 
 
+#########################################################################################################################
+## 1). COMBINE ALA SPECIES INTO ONE DATASET
+#########################################################################################################################
+
+
 ## Print the species run to the screen
 message('Combining ALA occurrence data for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
 
 
 #########################################################################################################################
-## 1). COMBINE ALA SPECIES INTO ONE DATASET
-#########################################################################################################################
+## Create a list of Rdata files
+ala.download = list.files(ALA_path, pattern = ".RData")
+length(ala.download)
+
+
+## Now these lists are getting too long for the combine step. 
+## Restrict them to just the strings that partially match the  species list for each run
+ala.spp.download <- paste(GBIF.spp, "_ALA_records.RData", sep = "")
+ala.download     = ala.download[ala.download %in% ala.spp.download ] 
+message('downloaded species ', length(ala.download), ' analyzed species ', length(GBIF.spp))
 
 
 ## Some species fail because ALA does not recognise their taxonomy. E.G.:
@@ -177,6 +160,7 @@ length(unique(ALA.TRIM$species))
 
 #########################################################################################################################
 ## Use "Taxonstand" to check the taxonomy :: which field to use?
+message('Running TPL taxonomy for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
 ALA.TREES.TAXO <- TPL(unique(ALA.TRIM$scientificName), infra = TRUE,
                  corr = TRUE, repeats = 100)  ## to stop it timing out...
 sort(names(ALA.TREES.TAXO))
@@ -308,6 +292,7 @@ message(round((dim(ALA.TREES.CLEAN)[1])/dim(ALA.TRIM.MATCH)[1]*100, 2),
 #########################################################################################################################
 ## Can use WORLDCIM rasters to get only records where wordlclim data is. 
 ## First, get one of the BIOCLIM variables
+message('Removing ALA points in the ocean for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
 world.temp = raster("./data/base/worldclim/world/0.5/bio/current/bio_01")
 #plot(world.temp)
 

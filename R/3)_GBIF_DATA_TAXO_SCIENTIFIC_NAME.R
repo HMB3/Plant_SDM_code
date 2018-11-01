@@ -37,7 +37,7 @@ length(gbif.download)
 ## match the  species list for each run?
 gbif.spp.download <- paste(GBIF.spp, "_ALA_records.RData", sep = "")
 gbif.download     = gbif.download[gbif.download %in% gbif.spp.download ] 
-length(gbif.download);length(GBIF.spp)
+message('downloaded species ', length(ala.download), ' analyzed species ', length(GBIF.spp))
 
 
 
@@ -310,6 +310,7 @@ xy <- SpatialPointsDataFrame(coords = xy, data = as.data.frame(xy),
 
 
 ## Now extract the temperature values for the unique 1km centroids which contain GBIF data
+message('Removing GBIF points in the ocean for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
 class(xy)
 z   = raster::extract(world.temp, xy)
 hist(z, border = NA, col = "orange", breaks = 50, main = "", xlab = "Worldclim Annual temp")
@@ -336,6 +337,7 @@ length(unique(GBIF.LAND$searchTaxon))
 
 ## Add a source column
 GBIF.LAND$SOURCE = 'GBIF'
+unique(GBIF.LAND$SOURCE)
 names(GBIF.LAND)
 
 ## Free some memory

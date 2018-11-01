@@ -157,6 +157,7 @@ PET               = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
 
 #########################################################################################################################
 ## Extract worldclim data
+message('Extracting raster values for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
 projection(COMBO.POINTS);projection(world.grids.current)
 dim(COMBO.POINTS);dim(GBIF.ALA.COMBO)
 

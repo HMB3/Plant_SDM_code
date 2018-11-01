@@ -71,6 +71,7 @@ identical(length(TIB.GBIF$CC.OBS), dim(TIB.GBIF)[1])
 #########################################################################################################################
 ## Don't run the outliers test here, it is slower. Also, can't run cleaning on the urban tree inventory data, because this
 ## removes all the records near capital cities 
+message('Flagging GBIF outliers for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
 FLAGS  <- CleanCoordinates(TIB.GBIF,
                            #countries        = "country",    ## too many flagged here...
                            capitals.rad     = 0.12,
@@ -326,6 +327,9 @@ head(SUA.WGS)
 
 #########################################################################################################################
 ## Run join between species records and LGAs/SUAs :: Double check they are the same
+message('Joining occurence data to SUAs for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
+
+
 projection(COMBO.RASTER.SP);projection(LGA.WGS);projection(SUA.WGS);projection(AUS.WGS)
 SUA.JOIN      = over(COMBO.RASTER.SP, SUA.WGS)              
 COMBO.SUA.LGA = cbind.data.frame(COMBO.RASTER.SP, SUA.JOIN) 
@@ -407,6 +411,7 @@ head(niche_estimate (DF = NICHE.DF, colname = "Annual_mean_temp"))  ## including
 
 ## So lets use lapply on the "SearchTaxon"
 ## test = run_function_concatenate(list, DF, "DF, colname = x") 
+message('Estimating global niches for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
 COMBO.NICHE <- env.variables %>% 
   
   ## Pipe the list into lapply
@@ -475,6 +480,7 @@ head(COMBO.LGA$SUA_COUNT)
 
 #########################################################################################################################
 ## Now join the horticultural contextual data onto one or both tables ()
+message('Joining contextual data for raster and niche files', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
 COMBO.RASTER.CONTEXT = CLEAN.TRUE
 names(COMBO.RASTER.CONTEXT)
 
