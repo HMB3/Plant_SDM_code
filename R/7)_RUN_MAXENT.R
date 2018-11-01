@@ -23,8 +23,17 @@ message('Running maxent models for ', length(GBIF.spp), ' species in the set ', 
 
 
 #########################################################################################################################
-## Load packages, functions and data
-SDM.SPAT.ALL = readRDS(paste0('data/base/HIA_LIST/COMBO/SDM_SPAT_ALL_', save_run, '.rds'))
+## Load SDM table
+if(save_data == "TRUE") {
+  
+  ## read in RDS files from previous step
+  SDM.SPAT.ALL = readRDS(paste0('data/base/HIA_LIST/COMBO/SDM_SPAT_ALL_', save_run, '.rds'))
+  
+} else {
+  
+  message(' skip file reading, not many species analysed')   ##
+  
+}
 
 
 

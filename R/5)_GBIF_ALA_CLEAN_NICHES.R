@@ -20,9 +20,18 @@ message('Cleaning outliers and creating niches for ', length(GBIF.spp), ' specie
 
 
 #########################################################################################################################
-## Read in the three data tables
-TI.RASTER.CONVERT = readRDS(paste0('data/base/HIA_LIST/COMBO/TI_RASTER_CONVERT_', save_run, '.rds'))
-COMBO.RASTER.CONVERT = readRDS(paste0('data/base/HIA_LIST/COMBO/COMBO_RASTER_CONVERT_', save_run, '.rds'))
+## Read in the two data tables
+if(save_data == "TRUE") {
+  
+  ## read in RDS files from previous step
+  TI.RASTER.CONVERT = readRDS(paste0('data/base/HIA_LIST/COMBO/TI_RASTER_CONVERT_', save_run, '.rds'))
+  COMBO.RASTER.CONVERT = readRDS(paste0('data/base/HIA_LIST/COMBO/COMBO_RASTER_CONVERT_', save_run, '.rds'))
+  
+} else {
+  
+  message(' skip file reading, not many species analysed')   ##
+  
+}
 
 
 ## Check dimensions of the occurrence and inventory data tables.

@@ -15,12 +15,12 @@
 
 
 ## Load only the packages needed for the analysis
-p <- c('ff',    'things', 'raster',        'dismo',        'sp',           'latticeExtra', 'data.table', 
-       'rgdal', 'rgeos',  'gdalUtils',     'rmaxent',      'readr',        'plyr',         'dplyr',        
-       'tidyr', 'readr',  'rnaturalearth', 'rasterVis',    'RColorBrewer', 'latticeExtra', 'parallel',     
-       'taxonlookup',     'ALA4R',         'stringr',      'Taxonstand',   'CoordinateCleaner', 'gsubfn', 'PerformanceAnalytics',
-       'rvest', 'magrittr', 'devtools',    'ggplot2',      'reshape2', 'rmarkdown', 'flexdashboard', 'shiny', 'rgbif',
-       'ENMeval', 'tibble', 'ncdf4', 'Cairo', 'velox')
+p <- c('ff',    'things',    'raster',        'dismo',        'sp',           'latticeExtra', 'data.table', 
+       'rgdal', 'rgeos',     'gdalUtils',     'rmaxent',      'readr',        'plyr',         'dplyr',        
+       'tidyr', 'readr',     'rnaturalearth', 'rasterVis',    'RColorBrewer', 'latticeExtra', 'parallel',     
+       'ALA4R', 'stringr',   'Taxonstand',    'CoordinateCleaner', 'gsubfn', 'PerformanceAnalytics',
+       'rvest', 'magrittr',  'devtools',      'ggplot2',      'reshape2', 'rmarkdown', 'flexdashboard', 'shiny', 'rgbif',
+       'ENMeval', 'tibble',  'ncdf4',         'Cairo', 'velox', 'taxonlookup')
 
 ## Require packages
 sapply(p, require, character.only = TRUE)

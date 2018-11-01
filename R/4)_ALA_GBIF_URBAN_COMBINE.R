@@ -5,15 +5,13 @@
 
 #########################################################################################################################
 ## This code combines the GBIF records with the ALA records, then extracts environmental values. 
-
-
 ## It creates :
 
 ## 1). A large table with one row for each species record
 
 
-## This tables are subsequently used to estimate the current global realised niche/climatic tolerance 
-## and susequently model the niches using the maxent algorithm.  
+## This table is subsequently used to estimate the current global realised niche/climatic tolerance, snd susequently model 
+## the niches using the maxent algorithm.  
 
 
 #########################################################################################################################
@@ -26,9 +24,18 @@ rasterTmpFile()
 message('Extracting Worldclim data for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
 
 
-## Load GBIF and ALA data
-GBIF.LAND      = readRDS(paste0('data/base/HIA_LIST/GBIF/GBIF_TREES_LAND_', save_run, '.rds'))
-ALA.TREES.LAND = readRDS(paste0('data/base/HIA_LIST/ALA/ALA_TREES_LAND_',   save_run, '.rds'))
+if(save_data == "TRUE") {
+  
+  ## Load GBIF and ALA data
+  GBIF.LAND      = readRDS(paste0('data/base/HIA_LIST/GBIF/GBIF_TREES_LAND_', save_run, '.rds'))
+  ALA.TREES.LAND = readRDS(paste0('data/base/HIA_LIST/ALA/ALA_TREES_LAND_',   save_run, '.rds'))
+  
+} else {
+  
+  message(' skip file reading, not many species analysed')   ##
+  
+}
+
 
 
 

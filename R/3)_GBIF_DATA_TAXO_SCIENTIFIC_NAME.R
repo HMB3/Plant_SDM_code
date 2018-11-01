@@ -33,8 +33,7 @@ gbif.download = list.files(GBIF_path, pattern = ".RData")
 length(gbif.download)
 
 
-## Now these lists are getting too long for the combine step. Can we restrict them to just the strings that partially 
-## match the  species list for each run?
+## Now these lists are getting too long for the combine step. Restrict to just the matching strings for each run?
 gbif.spp.download <- paste(GBIF.spp, "_GBIF_records.RData", sep = "")
 gbif.download     = gbif.download[gbif.download %in% gbif.spp.download ] 
 message('downloaded species ', length(ala.download), ' analyzed species ', length(GBIF.spp))
@@ -126,8 +125,9 @@ length(unique(GBIF.TRIM$scientificName))
 
 ## 2). Clean this list using the GBIF backbone taxonomy :: use the "species" column in from the GBIF "species lookup" tool
 ##     https://www.gbif.org/tools/species-lookup
+##     Then export the csv
 
-## 3). Run the GBIF "species" list through the TPL taxonomy. Take "New" Species and Genus as the "searchTaxon"
+## 3). Import the CSV, and run the GBIF "species" list through the TPL taxonomy. Take "New" Species and Genus as the "searchTaxon"
 
 ## 4). Use rgbif and ALA4R to download occurence data, using "searchTaxon".
 ##     For GBIF, we use
@@ -136,15 +136,18 @@ length(unique(GBIF.TRIM$scientificName))
 ##     ALA  <- occurrences(taxon = sp.n, download_reason_id = 7)
     
 
-##     This returns multiple keys and synonyms, but there is no simple way to skip these
+##     This returns multiple keys and synonyms, but there is no simple way to skip these....
 
 
 ## 5). Join the TPL taxonomy to the "scientificName" field. We can't use "name" (the equivalent of "species", it seems),
 ##     because name is always the same as the searchTaxon and not reliable (i.e. they will always match, and we know that
-##     no one has gone through and checked each one.
+##     no one has gone through and checked each one).
      
-##     Exclude records where the "scientificName" both doesn't match the "searchTaxon", and, also is not a synonym according to TPL
+##     Exclude records where the "scientificName" both doesn't match the "searchTaxon", and, is also not a synonym according to TPL
 ##     The remaining records are either "accepted" "synonym" or "uresolved", with 97% of searched records matching returned records.
+##     To this conditon, we add for ALA records where "scientificName" both doesn't match the "searchTaxon", we also include "accepted"
+##     This doesn't happen for GBIF, but it does for ALA, because the APC taxonomy is different again from GBIF and TPL. Where they don't agree.
+##     ALA is correct. But as a global analysis, we take TPL as the baseline.
      
 ##     Then we model these records as before. Of ~400 species we downloaded, we will pick the 200 with the best maps.
 ##     One line in the MS : we matched the GBIF backbone taxo against the TPL taxo, and searched the ALA and GBIF for the currently 

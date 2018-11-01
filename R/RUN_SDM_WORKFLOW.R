@@ -17,7 +17,7 @@
 #########################################################################################################################
 ## Read in all data to run the SDM code :: species lists, shapefile, rasters & tables
 source('./R/HIA_TREE_LIST.R')
-
+## load("H:/green_cities_sdm/TEST_RUN.RData")
 
 ## Next step is to model the differences between the SUA species list, and the HIA species list
 ## That's 377 species currently. Then there are another 1000-odd species on the larger clean list
