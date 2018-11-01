@@ -60,13 +60,14 @@ GBIF.spp.rev  = sort(GBIF.spp, decreasing = TRUE)                ## the list rev
 
 save_run      = "HIA_SPP_25_GROW"                                ## a variable to append the run name to the output files
 map_spp_list  = gsub(" ", "_", GBIF.spp)                         ## species list with "_" for mapping
-map_spp_rev   = sort(map_spp_list, decreasing = TRUE)            ## reversed
+map_spp_rev   = sort(map_spp_list, decreasing = TRUE)            ## reversed, so we can run two at once
 
 GBIF_path     = "./data/base/HIA_LIST/GBIF/OCC_SEARCH/"          ## The path where GBIF data is stored
 ALA_path      = "./data/base/HIA_LIST/ALA/TREES_TEST/"           ## The path where ALA data is stored - duplicated if in the same place
 
 maxent_path   = './output/maxent/SUA_TREES_ANALYSIS/'            ## The directory where files are saved               
 maxent_dir    = 'output/maxent/SUA_TREES_ANALYSIS'               ## Another version of the path that John's coding needs to run a loop
+save_data     = 'FALSE'
 
 
 #########################################################################################################################

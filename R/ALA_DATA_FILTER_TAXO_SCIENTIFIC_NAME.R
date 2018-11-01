@@ -111,7 +111,6 @@ dim(ALA.ALL)
 ## How many records have no species label? Need to check this so we know the latest download is working
 (sum(is.na(ALA.ALL$scientificNameOriginal))  + dim(subset(ALA.ALL, scientificNameOriginal == ""))[1])/dim(ALA.ALL)[1]*100
 (sum(is.na(ALA.ALL$scientificName))          + dim(subset(ALA.ALL, scientificName == ""))[1])/dim(ALA.ALL)[1]*100
-(sum(is.na(ALA.ALL$species))                 + dim(subset(ALA.ALL, species == ""))[1])/dim(ALA.ALL)[1]*100
 
 
 ########################################################################################################################
@@ -303,7 +302,7 @@ xy <- cellFromXY(world.grids.current, ALA.TREES.CLEAN[c("lon", "lat")]) %>%
   unique %>% 
   
   ## Get coordinates of the center of raster cells for a row, column, or cell number of WORLDCLIM raster
-  xyFromCell(world.temp, .)
+  xyFromCell(world.grids.current, .)
 
 
 ## For some reason, we need to convert the xy coords to a spatial points data frame, in order to avoid this error:
@@ -314,7 +313,7 @@ xy <- SpatialPointsDataFrame(coords = xy, data = as.data.frame(xy),
 
 ## Now extract the temperature values for the unique 1km centroids which contain ALA data
 class(xy)
-z   = raster::extract(world.temp, xy)
+z   = raster::extract(world.grids.current, xy)
 hist(z, border = NA, col = "orange", breaks = 50, main = "", xlab = "Worldclim Annual temp")
 
 
@@ -324,8 +323,8 @@ onland = z %>% is.na %>%  `!` # %>% xy[.,]  cells on land or not
 
 ## Finally, filter the cleaned ALA data to only those points on land. 
 ## This is achieved with the final [onland]
-ALA.TREES.LAND = filter(ALA.TREES.CLEAN, cellFromXY(world.temp, ALA.TREES.CLEAN[c("lon", "lat")]) %in% 
-                     unique(cellFromXY(world.temp, ALA.TREES.CLEAN[c("lon", "lat")]))[onland])
+ALA.TREES.LAND = filter(ALA.TREES.CLEAN, cellFromXY(world.grids.current, ALA.TREES.CLEAN[c("lon", "lat")]) %in% 
+                     unique(cellFromXY(world.grids.current, ALA.TREES.CLEAN[c("lon", "lat")]))[onland])
 
 
 ## how many records were on land?
@@ -360,7 +359,24 @@ ALA.TREES.LAND = ALA.TREES.LAND[c("searchTaxon",      "scientificName", "SOURCE"
                                   "year", "locality", "country", 
                                   "basisOfRecord",    "institutionCode", "rank",
                                   "Taxonomic.status", "New.Taxonomic.status", "New.Genus", "New.Species")]
-saveRDS(ALA.TREES.LAND, paste0('data/base/HIA_LIST/ALA/ALA_TREES_LAND_', save_run, '.rds'))
+
+
+#########################################################################################################################
+## save data
+if(save_data == "TRUE") {
+  
+  ## save .rds file for the next session
+  saveRDS(ALA.TREES.LAND, paste0('data/base/HIA_LIST/ALA/ALA_TREES_LAND_', save_run, '.rds'))
+  
+} else {
+  
+  message(' skip file saving, not many species analysed')   ##
+  
+}
+
+## get rid of some memory
+gc()
+
 
 
 

@@ -111,7 +111,7 @@ COMBO.POINTS <- cellFromXY(world.grids.current, GBIF.ALA.COMBO[c("lon", "lat")])
   unique %>% 
   
   ## Get coordinates of the center of raster cells for a row, column, or cell number of WORLDCLIM raster
-  xyFromCell(world.temp, .) %>%
+  xyFromCell(world.grids.current, .) %>%
   
   as.data.frame() %>%
   
@@ -295,13 +295,22 @@ length(unique(COMBO.RASTER.CONVERT$searchTaxon));length(GBIF.spp)
 #        pch = ".", col = "red", cex = 3, asp = 1, main = "temp records < -5")
 
 
+
 #########################################################################################################################
-## Save the summary datasets
-saveRDS(COMBO.RASTER.CONVERT, paste0('data/base/HIA_LIST/COMBO/COMBO_RASTER_CONVERT_', save_run, '.rds'))
+## save data
+if(save_data == "TRUE") {
+  
+  ## save .rds file for the next session
+  saveRDS(COMBO.RASTER.CONVERT, paste0('data/base/HIA_LIST/COMBO/COMBO_RASTER_CONVERT_', save_run, '.rds'))
+  
+} else {
+  
+  message(' skip file saving, not many species analysed')   ##
+  
+}
 
-
-## Now save .RData file for the next session...
-#save.image("STEP_4_NICHES.RData")
+## get rid of some memory
+gc()
 
 
 

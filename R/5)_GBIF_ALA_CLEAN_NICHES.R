@@ -223,12 +223,18 @@ identical(dim(CLEAN.TRUE)[1], length(CLEAN.TRUE$OBS))
 ## How many records are added by including the tree inventories?
 message("Tree inventory data increases records by ", round(dim(CLEAN.TRUE)[1]/dim(TEST.GEO)[1]*100, 2), " % ")   
 
-
-## Save niches
-saveRDS(CLEAN.TRUE, paste0('data/base/HIA_LIST/COMBO/CLEAN_TRUE_', save_run, '.rds'))
-#CLEAN.TRUE = readRDS(paste0('data/base/HIA_LIST/COMBO/CLEAN_TRUE_', save_run, '.rds'))
-
-
+#########################################################################################################################
+## save data
+if(save_data == "TRUE") {
+  
+  ## save .rds file for the next session
+  saveRDS(CLEAN.TRUE, paste0('data/base/HIA_LIST/COMBO/CLEAN_TRUE_', save_run, '.rds'))
+  
+} else {
+  
+  message(' skip file saving, not many species analysed')   ##
+  
+}
 
 
 #########################################################################################################################
@@ -333,9 +339,22 @@ message('Joining occurence data to SUAs for ', length(GBIF.spp), ' species in th
 projection(COMBO.RASTER.SP);projection(LGA.WGS);projection(SUA.WGS);projection(AUS.WGS)
 SUA.JOIN      = over(COMBO.RASTER.SP, SUA.WGS)              
 COMBO.SUA.LGA = cbind.data.frame(COMBO.RASTER.SP, SUA.JOIN) 
-saveRDS(COMBO.SUA.LGA, file = paste0('data/base/HIA_LIST/COMBO/COMBO_SUA_OVER_', save_run, '.rds'))
-## COMBO.SUA.LGA = readRDS("paste0('data/base/HIA_LIST/COMBO/COMBO_SUA_OVER_', save_run, '.rds'))
-## str(unique(COMBO.SUA.LGA$searchTaxon))
+
+
+#########################################################################################################################
+## save data
+if(save_data == "TRUE") {
+  
+  ## save .rds file for the next session
+  saveRDS(COMBO.SUA.LGA, file = paste0('data/base/HIA_LIST/COMBO/COMBO_SUA_OVER_', save_run, '.rds'))
+  
+} else {
+  
+  message(' skip file saving, not many species analysed')   ##
+  
+}
+
+
 
 
 #########################################################################################################################
@@ -351,7 +370,20 @@ names(SUA.AGG) = c("searchTaxon", "AUS_RECORDS", "SUA_COUNT")
 ## Now create a table of all the SUA's that each species occurrs
 SUA.SPP.COUNT = as.data.frame(table(COMBO.SUA.LGA[["SUA_NAME16"]], COMBO.SUA.LGA[["searchTaxon"]]))
 names(SUA.SPP.COUNT) = c("SUA", "SPECIES", "SUA_COUNT")
-saveRDS(SUA.SPP.COUNT, paste0('data/base/HIA_LIST/COMBO/SUA_SPP_COUNT', save_run, '.rds'))
+
+
+#########################################################################################################################
+## save data
+if(write_rasters == "TRUE") {
+  
+  ## save .rds file for the next session
+  saveRDS(SUA.SPP.COUNT, paste0('data/base/HIA_LIST/COMBO/SUA_SPP_COUNT', save_run, '.rds'))
+  
+} else {
+  
+  message(' skip file saving, not many species analysed')   ##
+  
+}
 
 
 ## Check : That's ok, but we want a table of which SUA each species is actually in.
@@ -531,9 +563,19 @@ length(COMBO.NICHE.CONTEXT$searchTaxon)
 
 
 #########################################################################################################################
-## Save
-saveRDS(COMBO.NICHE.CONTEXT, paste0('data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_',  save_run, '.rds'))
-saveRDS(COMBO.RASTER.CONTEXT,  paste0('data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_', save_run, '.rds'))
+## save data
+if(save_data == "TRUE") {
+  
+  ## save .rds file for the next session
+  saveRDS(COMBO.NICHE.CONTEXT,   paste0('data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_',  save_run, '.rds'))
+  saveRDS(COMBO.RASTER.CONTEXT,  paste0('data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_', save_run, '.rds'))
+  
+} else {
+  
+  message(' skip file saving, not many species analysed')   ##
+  
+}
+
 
 
 #########################################################################################################################

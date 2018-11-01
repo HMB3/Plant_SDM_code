@@ -35,7 +35,7 @@ length(gbif.download)
 
 ## Now these lists are getting too long for the combine step. Can we restrict them to just the strings that partially 
 ## match the  species list for each run?
-gbif.spp.download <- paste(GBIF.spp, "_ALA_records.RData", sep = "")
+gbif.spp.download <- paste(GBIF.spp, "_GBIF_records.RData", sep = "")
 gbif.download     = gbif.download[gbif.download %in% gbif.spp.download ] 
 message('downloaded species ', length(ala.download), ' analyzed species ', length(GBIF.spp))
 
@@ -85,7 +85,6 @@ formatC(dim(GBIF.ALL)[1], format = "e", digits = 2)
 
 
 ## Almost none of the GBIF data has no scientificName. This is the right field to use for matching taxonomy
-(sum(is.na(GBIF.ALL$species))        + dim(subset(GBIF.ALL, species == ""))       [1])/dim(GBIF.ALL)[1]*100
 (sum(is.na(GBIF.ALL$scientificName)) + dim(subset(GBIF.ALL, scientificName == ""))[1])/dim(GBIF.ALL)[1]*100
 
 
@@ -204,7 +203,7 @@ unique(Match.SN$New.Taxonomic.status)
 
 #########################################################################################################################
 ## Incude records where the "scientificName" and the "searchTaxon" match, and where the taxonomic status is 
-## accepted, synonym or unresolved
+## accepted, synonym or unresolved.
 
 
 ## Also include records where the "scientificName" and the "searchTaxon" don't match, but status is synonym
@@ -217,7 +216,7 @@ length(keep.SN)
 
 
 #########################################################################################################################
-## Now remove these from the GBIF dataset?
+## Now remove these from the GBIF dataset
 GBIF.TRIM.MATCH = GBIF.TRIM.TAXO[GBIF.TRIM.TAXO$scientificName %in% keep.SN, ]
 Match.record    = Match.SN[Match.SN$scientificName %in% keep.SN, ]
 
@@ -297,7 +296,7 @@ xy <- cellFromXY(world.grids.current, GBIF.CLEAN[c("lon", "lat")]) %>%
   unique %>% 
   
   ## Get coordinates of the center of raster cells for a row, column, or cell number of WORLDCLIM raster
-  xyFromCell(world.temp, .)
+  xyFromCell(world.grids.current, .)
 
 
 ## For some reason, we need to convert the xy coords to a spatial points data frame, in order to avoid this error:
@@ -309,7 +308,7 @@ xy <- SpatialPointsDataFrame(coords = xy, data = as.data.frame(xy),
 ## Now extract the temperature values for the unique 1km centroids which contain GBIF data
 message('Removing GBIF points in the ocean for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
 class(xy)
-z   = raster::extract(world.temp, xy)
+z   = raster::extract(world.grids.current, xy)
 hist(z, border = NA, col = "orange", breaks = 50, main = "", xlab = "Worldclim Annual temp")
 
 
@@ -319,8 +318,8 @@ onland = z %>% is.na %>%  `!` # %>% xy[.,]  cells on land or not
 
 ## Finally, filter the cleaned GBIF data to only those points on land. 
 ## This is achieved with the final [onland]
-GBIF.LAND = filter(GBIF.CLEAN, cellFromXY(world.temp, GBIF.CLEAN[c("lon", "lat")]) %in% 
-                     unique(cellFromXY(world.temp,    GBIF.CLEAN[c("lon", "lat")]))[onland])
+GBIF.LAND = filter(GBIF.CLEAN, cellFromXY(world.grids.current, GBIF.CLEAN[c("lon", "lat")]) %in% 
+                     unique(cellFromXY(world.grids.current,    GBIF.CLEAN[c("lon", "lat")]))[onland])
 
 
 ## how many records were on land?
@@ -352,10 +351,18 @@ gc()
 
 #########################################################################################################################
 ## save data
-saveRDS(GBIF.LAND, paste0('data/base/HIA_LIST/GBIF/GBIF_TREES_LAND_', save_run, '.rds'))
+if(save_data == "TRUE") {
+  
+  ## save .rds file for the next session
+  saveRDS(GBIF.LAND, paste0('data/base/HIA_LIST/GBIF/GBIF_TREES_LAND_', save_run, '.rds'))
+ 
+} else {
+  
+  message(' skip file saving, not many species analysed')   ##
+  
+}
 
-
-## Now save .rds file for the next session
+## get rid of some memory
 gc()
 
 

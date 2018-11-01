@@ -24,7 +24,7 @@ p <- c('ff',    'things', 'raster',        'dismo',        'sp',           'latt
 
 ## Require packages
 sapply(p, require, character.only = TRUE)
-source_gist('26e8091f082f2b3dd279', filename = 'polygonizer.R')
+source_gist('26e8091f082f2b3dd279',             filename = 'polygonizer.R')
 source_gist('c6a1cb61b8b6616143538950e6ec34aa', filename = 'hatch.R')
 
 
@@ -34,7 +34,7 @@ source('./R/MAXENT_FUNCTIONS.R')
 source('./R/MAPPING_FUNCTIONS.R')
 source('./R/HIA_CLEAN_MATCHING.R')
 rasterOptions(tmpdir = file.path('/green_cities_sdm/RTEMP')) 
-set.tempdir('/green_cities_sdm/RTEMP')
+#set.tempdir('/green_cities_sdm/RTEMP')
 
 
 
