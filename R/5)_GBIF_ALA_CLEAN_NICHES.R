@@ -202,7 +202,7 @@ CLEAN.TRUE = subset(TEST.GEO, summary == "TRUE")
 unique(CLEAN.TRUE$summary)   
 #unique(CLEAN.TRUE$SPAT_OUT)   
 
-                                    
+
 ## What percentage of records are retained?
 identical(dim(CLEAN.TRUE)[1], (dim(COMBO.RASTER.CONVERT)[1] - dim(subset(TEST.GEO, summary == "FALSE"))[1]))
 length(unique(CLEAN.TRUE$searchTaxon))
@@ -314,277 +314,236 @@ TAXA <- unique(GBIF.ALA.SPDF$TAXON)
 
 
 #########################################################################################################################
-## See the ABS for details :: there are 563 LGAs
-## http://www.abs.gov.au/ausstats/abs@.nsf/Lookup/by%20Subject/1270.0.55.003~July%202016~Main%20Features~Local%20Government%20Areas%20(LGA)~7
-
-
-## We want to know the count of species that occur in 'n' LGAs, across a range of climates. Read in LGA and SUA
-length(unique(CLEAN.TRUE$searchTaxon))
-projection(LGA);projection(AUS);projection(SUA.16)
-
-
-## Convert the raster data back into a spdf
-COMBO.RASTER.SP   = SpatialPointsDataFrame(coords      = CLEAN.TRUE[c("lon", "lat")], 
-                                           data        = CLEAN.TRUE,
-                                           proj4string = CRS.WGS.84)
-
-
-## Project using a projected rather than geographic coordinate system
-LGA.WGS  = spTransform(LGA,    CRS.WGS.84)
-SUA.WGS  = spTransform(SUA.16, CRS.WGS.84)
-AUS.WGS  = spTransform(AUS,    CRS.WGS.84)
-
-
-## Remove the columns we don't need
-LGA.WGS = LGA.WGS[, c("LGA_CODE16", "LGA_NAME16")] 
-head(SUA.WGS)
-
-
-#########################################################################################################################
-## Run join between species records and LGAs/SUAs :: Double check they are the same
-message('Joining occurence data to SUAs for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
-
-
-projection(COMBO.RASTER.SP);projection(LGA.WGS);projection(SUA.WGS);projection(AUS.WGS)
-SUA.JOIN      = over(COMBO.RASTER.SP, SUA.WGS)              
-COMBO.SUA.LGA = cbind.data.frame(COMBO.RASTER.SP, SUA.JOIN) 
-
-
-#########################################################################################################################
-## save data
+## Only run this code if we are saving niches 
 if(save_data == "TRUE") {
   
+  ## We want to know the count of species that occur in 'n' LGAs, across a range of climates. Read in LGA and SUA
+  length(unique(CLEAN.TRUE$searchTaxon))
+  projection(LGA);projection(AUS);projection(SUA.16)
+  
+  
+  ## Convert the raster data back into a spdf
+  COMBO.RASTER.SP   = SpatialPointsDataFrame(coords      = CLEAN.TRUE[c("lon", "lat")], 
+                                             data        = CLEAN.TRUE,
+                                             proj4string = CRS.WGS.84)
+  
+  
+  ## Project using a projected rather than geographic coordinate system
+  LGA.WGS  = spTransform(LGA,    CRS.WGS.84)
+  SUA.WGS  = spTransform(SUA.16, CRS.WGS.84)
+  AUS.WGS  = spTransform(AUS,    CRS.WGS.84)
+  
+  
+  ## Remove the columns we don't need
+  LGA.WGS = LGA.WGS[, c("LGA_CODE16", "LGA_NAME16")] 
+  head(SUA.WGS)
+  
+  
+  #########################################################################################################################
+  ## Run join between species records and LGAs/SUAs :: Double check they are the same
+  ## See the ABS for details :: there are 563 LGAs
+  ## http://www.abs.gov.au/ausstats/abs@.nsf/Lookup/by%20Subject/1270.0.55.003~July%202016~Main%20Features~Local%20Government%20Areas%20(LGA)~7
+  message('Joining occurence data to SUAs for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
+  
+  
+  projection(COMBO.RASTER.SP);projection(LGA.WGS);projection(SUA.WGS);projection(AUS.WGS)
+  SUA.JOIN      = over(COMBO.RASTER.SP, SUA.WGS)              
+  COMBO.SUA.LGA = cbind.data.frame(COMBO.RASTER.SP, SUA.JOIN) 
+  
+  
+  #########################################################################################################################
   ## save .rds file for the next session
   saveRDS(COMBO.SUA.LGA, file = paste0('data/base/HIA_LIST/COMBO/COMBO_SUA_OVER_', save_run, '.rds'))
   
-} else {
   
-  message(' skip file saving, not many species analysed')   ##
+  #########################################################################################################################
+  ## AGGREGATE THE NUMBER OF SUAs EACH SPECIES IS FOUND IN. NA LGAs ARE OUTSIDE AUS
+  SUA.AGG   = tapply(COMBO.SUA.LGA$SUA_NAME16, COMBO.SUA.LGA$searchTaxon, function(x) length(unique(x))) ## group SUA by species name
+  SUA.AGG   = as.data.frame(SUA.AGG)
+  AUS.AGG   = aggregate(SUA_NAME16 ~ searchTaxon, data = COMBO.SUA.LGA, function(x) {sum(!is.na(x))}, na.action = NULL)
   
-}
-
-
-
-
-#########################################################################################################################
-## AGGREGATE THE NUMBER OF SUAs EACH SPECIES IS FOUND IN. NA LGAs ARE OUTSIDE AUS
-SUA.AGG   = tapply(COMBO.SUA.LGA$SUA_NAME16, COMBO.SUA.LGA$searchTaxon, function(x) length(unique(x))) ## group SUA by species name
-SUA.AGG   = as.data.frame(SUA.AGG)
-AUS.AGG   = aggregate(SUA_NAME16 ~ searchTaxon, data = COMBO.SUA.LGA, function(x) {sum(!is.na(x))}, na.action = NULL)
-
-SUA.AGG   = cbind.data.frame(AUS.AGG, SUA.AGG)
-names(SUA.AGG) = c("searchTaxon", "AUS_RECORDS", "SUA_COUNT")
-
-
-## Now create a table of all the SUA's that each species occurrs
-SUA.SPP.COUNT = as.data.frame(table(COMBO.SUA.LGA[["SUA_NAME16"]], COMBO.SUA.LGA[["searchTaxon"]]))
-names(SUA.SPP.COUNT) = c("SUA", "SPECIES", "SUA_COUNT")
-
-
-#########################################################################################################################
-## save data
-if(write_rasters == "TRUE") {
+  SUA.AGG   = cbind.data.frame(AUS.AGG, SUA.AGG)
+  names(SUA.AGG) = c("searchTaxon", "AUS_RECORDS", "SUA_COUNT")
   
-  ## save .rds file for the next session
+  
+  ## Now create a table of all the SUA's that each species occurrs
+  SUA.SPP.COUNT = as.data.frame(table(COMBO.SUA.LGA[["SUA_NAME16"]], COMBO.SUA.LGA[["searchTaxon"]]))
+  names(SUA.SPP.COUNT) = c("SUA", "SPECIES", "SUA_COUNT")
+  
+  
+  #########################################################################################################################
+  ## save data
+  ## Save .rds file for the next session
   saveRDS(SUA.SPP.COUNT, paste0('data/base/HIA_LIST/COMBO/SUA_SPP_COUNT', save_run, '.rds'))
   
-} else {
   
-  message(' skip file saving, not many species analysed')   ##
   
-}
-
-
-## Check : That's ok, but we want a table of which SUA each species is actually in.
-dim(SUA.AGG)
-head(SUA.AGG)
-
-
-## 
-names(COMBO.SUA.LGA)
-COMBO.SUA.LGA = subset(COMBO.SUA.LGA, select = -c(lon.1, lat.1))
-names(COMBO.SUA.LGA)
-dim(COMBO.SUA.LGA)
-str(unique(COMBO.SUA.LGA$searchTaxon))
-unique(COMBO.SUA.LGA$SOURCE)
-
-
-
-
-
-#########################################################################################################################
-## 6). CREATE NICHES FOR SELECTED TAXA
-#########################################################################################################################
-
-
-#########################################################################################################################
-## Now summarise the niches. But figure out a cleaner way of doing this
-env.variables = c("Annual_mean_temp",
-                  "Mean_diurnal_range",
-                  "Isothermality",
-                  "Temp_seasonality",
-                  "Max_temp_warm_month",
-                  "Min_temp_cold_month",
-                  "Temp_annual_range",
-                  "Mean_temp_wet_qu",
-                  "Mean_temp_dry_qu",
-                  "Mean_temp_warm_qu",
-                  "Mean_temp_cold_qu",
-                  
-                  "Annual_precip",
-                  "Precip_wet_month",
-                  "Precip_dry_month",
-                  "Precip_seasonality",
-                  "Precip_wet_qu",
-                  "Precip_dry_qu",
-                  "Precip_warm_qu",
-                  "Precip_col_qu",
-                  "PET")
-
-
-#########################################################################################################################
-## Create niche summaries for each environmental condition like this...
-## Here's what the function will produce :
-NICHE.DF = completeFun(COMBO.SUA.LGA, "PET")
-dim(NICHE.DF)
-head(niche_estimate (DF = NICHE.DF, colname = "Annual_mean_temp"))  ## including the q05 and q95
-
-
-## So lets use lapply on the "SearchTaxon"
-## test = run_function_concatenate(list, DF, "DF, colname = x") 
-message('Estimating global niches for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
-COMBO.NICHE <- env.variables %>% 
+  ## Check : That's ok, but we want a table of which SUA each species is actually in.
+  dim(SUA.AGG)
+  head(SUA.AGG)
   
-  ## Pipe the list into lapply
-  lapply(function(x) {
+  
+  ## 
+  names(COMBO.SUA.LGA)
+  COMBO.SUA.LGA = subset(COMBO.SUA.LGA, select = -c(lon.1, lat.1))
+  names(COMBO.SUA.LGA)
+  dim(COMBO.SUA.LGA)
+  str(unique(COMBO.SUA.LGA$searchTaxon))
+  unique(COMBO.SUA.LGA$SOURCE)
+  
+  
+  
+  
+  
+  #########################################################################################################################
+  ## 6). CREATE NICHES FOR SELECTED TAXA
+  #########################################################################################################################
+  
+  
+  #########################################################################################################################
+  ## Now summarise the niches. But figure out a cleaner way of doing this
+  message('Estimating global niches for ', length(GBIF.spp), ' species across ', length(env.variables), ' climate variables')
+
+  
+  #########################################################################################################################
+  ## Create niche summaries for each environmental condition like this...
+  ## Here's what the function will produce :
+  NICHE.DF = completeFun(COMBO.SUA.LGA, "PET")
+  dim(NICHE.DF)
+  head(niche_estimate (DF = NICHE.DF, colname = "Annual_mean_temp"))  ## including the q05 and q95
+  
+  
+  ## So lets use lapply on the "SearchTaxon"
+  ## test = run_function_concatenate(list, DF, "DF, colname = x") 
+  message('Estimating global niches for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
+  COMBO.NICHE <- env.variables %>% 
     
-    ## Now use the niche width function on each colname (so 8 environmental variables)
-    ## Also, need to figure out how to make the aggregating column generic (species, genus, etc.)
-    ## currently it only works hard-wired
-    niche_estimate (DF = NICHE.DF, colname = x)
+    ## Pipe the list into lapply
+    lapply(function(x) {
+      
+      ## Now use the niche width function on each colname (so 8 environmental variables)
+      ## Also, need to figure out how to make the aggregating column generic (species, genus, etc.)
+      ## currently it only works hard-wired
+      niche_estimate (DF = NICHE.DF, colname = x)
+      
+      ## would be good to remove the duplicate columns here
+      
+    }) %>% 
     
-    ## would be good to remove the duplicate columns here
-    
-  }) %>% 
+    ## finally, create one dataframe for all niches
+    as.data.frame
   
-  ## finally, create one dataframe for all niches
-  as.data.frame
-
-
-## Remove duplicate Taxon columns and check the output :: would be great to skip these columns when running the function
-names(COMBO.NICHE)
-COMBO.NICHE = subset(COMBO.NICHE, select = -c(searchTaxon.1,  searchTaxon.2,  searchTaxon.3,  searchTaxon.4,
-                                              searchTaxon.5,  searchTaxon.6,  searchTaxon.7,  searchTaxon.7,
-                                              searchTaxon.8,  searchTaxon.9,  searchTaxon.10, searchTaxon.11,
-                                              searchTaxon.12, searchTaxon.13, searchTaxon.14, searchTaxon.15,
-                                              searchTaxon.16, searchTaxon.17, searchTaxon.18, searchTaxon.19))
-
-
-#########################################################################################################################
-## Add counts for each species, and record the total number of taxa processed
-## dim(COMBO.RASTER.CONVERT);dim(CLEAN.TRUE)
-GLOBAL_RECORDS = as.data.frame(table(COMBO.SUA.LGA$searchTaxon))$Freq
-identical(length(COMBO.count), dim(COMBO.NICHE)[1])
-
-Total.taxa.processed = dim(COMBO.NICHE)[1]
-COMBO.NICHE  = cbind(GLOBAL_RECORDS, COMBO.NICHE)
-names(COMBO.NICHE)
-dim(COMBO.NICHE)
-
-
-#########################################################################################################################
-## Add the counts of Australian records for each species to the niche database
-names(COMBO.NICHE)
-names(SUA.AGG)
-dim(COMBO.NICHE)
-dim(SUA.AGG)
-
-
-COMBO.LGA = join(COMBO.NICHE, SUA.AGG)                            ## The tapply needs to go where the niche summaries are
-names(COMBO.LGA)
-
-dim(COMBO.LGA)
-head(COMBO.LGA$AUS_RECORDS)
-head(COMBO.LGA$SUA_COUNT)
-
-
-
-
-
-## Pick up from here.....................................................................................................
-
-
-#########################################################################################################################
-## 8). JOIN ON CONTEXTUAL DATA
-#########################################################################################################################
-
-
-#########################################################################################################################
-## Now join the horticultural contextual data onto one or both tables ()
-message('Joining contextual data for raster and niche files', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
-COMBO.RASTER.CONTEXT = CLEAN.TRUE
-names(COMBO.RASTER.CONTEXT)
-
-
-## Now join hort context to all the niche
-names(CLEAN.SPP)
-COMBO.NICHE.CONTEXT = join(COMBO.LGA, HIA.SPP.JOIN)
-#COMBO.NICHE.CONTEXT =  COMBO.NICHE.CONTEXT[, c(2, 185, 1, 183:184, 186:197, 3:182)]
-head(COMBO.NICHE.CONTEXT$AUS_RECORDS)
-head(COMBO.NICHE.CONTEXT$LGA_COUNT)
-
-
-#########################################################################################################################
-## Now combine the SDM output with the niche context data 
-## Get the number of aus records too ....................................................................................
-
-NICHE.CONTEXT   = COMBO.NICHE.CONTEXT[, c("searchTaxon", "Plant.type", "Origin", "Total.growers", "Number.of.States")]
-TREE.PLANTINGS  = TREE.EVERGREEN[, c("searchTaxon",
-                                     "Plantings")]
-
-
-## Now remove the underscore and join data 
-COMBO.NICHE.CONTEXT       = join(COMBO.LGA, NICHE.CONTEXT,  type = "left")  ## join does not support the sorting
-COMBO.NICHE.CONTEXT       = join(COMBO.NICHE.CONTEXT , TREE.PLANTINGS, type = "left")  
-COMBO.NICHE.CONTEXT       = COMBO.NICHE.CONTEXT [order(COMBO.NICHE.CONTEXT $searchTaxon),]
-
-
-## Re-order table
-#COMBO.NICHE.CONTEXT =  COMBO.NICHE.CONTEXT[, c(2, 185, 1, 183:184, 186:197, 3:182)]
-
-## Set NA to blank, then sort by no. of growers
-COMBO.NICHE.CONTEXT$Number.of.growers[is.na(COMBO.NICHE.CONTEXT$Total.growers)] <- 0
-COMBO.NICHE.CONTEXT = COMBO.NICHE.CONTEXT[with(COMBO.NICHE.CONTEXT, rev(order(Total.growers))), ]
-
-
-## View the data
-names(COMBO.RASTER.CONTEXT)
-names(COMBO.NICHE.CONTEXT)
-dim(COMBO.RASTER.CONTEXT)
-dim(COMBO.NICHE.CONTEXT)
-
-
-## Print the dataframe dimensions to screen
-dim(CLEAN.TRUE)
-dim(COMBO.NICHE.CONTEXT)
-length(unique(CLEAN.TRUE$searchTaxon))
-length(COMBO.NICHE.CONTEXT$searchTaxon)
-
-
-#########################################################################################################################
-## save data
-if(save_data == "TRUE") {
   
+  ## Remove duplicate Taxon columns and check the output :: would be great to skip these columns when running the function
+  names(COMBO.NICHE)
+  COMBO.NICHE = subset(COMBO.NICHE, select = -c(searchTaxon.1,  searchTaxon.2,  searchTaxon.3,  searchTaxon.4,
+                                                searchTaxon.5,  searchTaxon.6,  searchTaxon.7,  searchTaxon.7,
+                                                searchTaxon.8,  searchTaxon.9,  searchTaxon.10, searchTaxon.11,
+                                                searchTaxon.12, searchTaxon.13, searchTaxon.14, searchTaxon.15,
+                                                searchTaxon.16, searchTaxon.17, searchTaxon.18, searchTaxon.19))
+  
+  
+  #########################################################################################################################
+  ## Add counts for each species, and record the total number of taxa processed
+  ## dim(COMBO.RASTER.CONVERT);dim(CLEAN.TRUE)
+  GLOBAL_RECORDS = as.data.frame(table(COMBO.SUA.LGA$searchTaxon))$Freq
+  identical(length(COMBO.count), dim(COMBO.NICHE)[1])
+  
+  Total.taxa.processed = dim(COMBO.NICHE)[1]
+  COMBO.NICHE  = cbind(GLOBAL_RECORDS, COMBO.NICHE)
+  names(COMBO.NICHE)
+  dim(COMBO.NICHE)
+  
+  
+  #########################################################################################################################
+  ## Add the counts of Australian records for each species to the niche database
+  names(COMBO.NICHE)
+  names(SUA.AGG)
+  dim(COMBO.NICHE)
+  dim(SUA.AGG)
+  
+  
+  COMBO.LGA = join(COMBO.NICHE, SUA.AGG)                            ## The tapply needs to go where the niche summaries are
+  names(COMBO.LGA)
+  
+  dim(COMBO.LGA)
+  head(COMBO.LGA$AUS_RECORDS)
+  head(COMBO.LGA$SUA_COUNT)
+  
+  ## Pick up tidying from here.............................................................................................
+  
+  
+  
+  
+  
+  #########################################################################################################################
+  ## 8). JOIN ON CONTEXTUAL DATA
+  #########################################################################################################################
+  
+  
+  #########################################################################################################################
+  ## Now join the horticultural contextual data onto one or both tables ()
+  message('Joining contextual data for raster and niche files', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
+  COMBO.RASTER.CONTEXT = CLEAN.TRUE
+  names(COMBO.RASTER.CONTEXT)
+  
+  
+  ## Now join hort context to all the niche
+  names(CLEAN.SPP)
+  COMBO.NICHE.CONTEXT = join(COMBO.LGA, HIA.SPP.JOIN)
+  #COMBO.NICHE.CONTEXT =  COMBO.NICHE.CONTEXT[, c(2, 185, 1, 183:184, 186:197, 3:182)]
+  head(COMBO.NICHE.CONTEXT$AUS_RECORDS)
+  head(COMBO.NICHE.CONTEXT$LGA_COUNT)
+  
+  
+  #########################################################################################################################
+  ## Now combine the SDM output with the niche context data 
+  ## Get the number of aus records too ....................................................................................
+  
+  NICHE.CONTEXT   = COMBO.NICHE.CONTEXT[, c("searchTaxon", "Plant.type", "Origin", "Total.growers", "Number.of.States")]
+  TREE.PLANTINGS  = TREE.EVERGREEN[, c("searchTaxon",
+                                       "Plantings")]
+  
+  
+  ## Now remove the underscore and join data 
+  COMBO.NICHE.CONTEXT       = join(COMBO.LGA, NICHE.CONTEXT,  type = "left")  ## join does not support the sorting
+  COMBO.NICHE.CONTEXT       = join(COMBO.NICHE.CONTEXT , TREE.PLANTINGS, type = "left")  
+  COMBO.NICHE.CONTEXT       = COMBO.NICHE.CONTEXT [order(COMBO.NICHE.CONTEXT $searchTaxon),]
+  
+  
+  ## Re-order table
+  #COMBO.NICHE.CONTEXT =  COMBO.NICHE.CONTEXT[, c(2, 185, 1, 183:184, 186:197, 3:182)]
+  
+  ## Set NA to blank, then sort by no. of growers
+  COMBO.NICHE.CONTEXT$Number.of.growers[is.na(COMBO.NICHE.CONTEXT$Total.growers)] <- 0
+  COMBO.NICHE.CONTEXT = COMBO.NICHE.CONTEXT[with(COMBO.NICHE.CONTEXT, rev(order(Total.growers))), ]
+  
+  
+  ## View the data
+  names(COMBO.RASTER.CONTEXT)
+  names(COMBO.NICHE.CONTEXT)
+  dim(COMBO.RASTER.CONTEXT)
+  dim(COMBO.NICHE.CONTEXT)
+  
+  
+  ## Print the dataframe dimensions to screen
+  dim(CLEAN.TRUE)
+  dim(COMBO.NICHE.CONTEXT)
+  length(unique(CLEAN.TRUE$searchTaxon))
+  length(COMBO.NICHE.CONTEXT$searchTaxon)
+  
+  
+  #########################################################################################################################
   ## save .rds file for the next session
   saveRDS(COMBO.NICHE.CONTEXT,   paste0('data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_',  save_run, '.rds'))
   saveRDS(COMBO.RASTER.CONTEXT,  paste0('data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_', save_run, '.rds'))
   
+  
 } else {
   
-  message(' skip file saving, not many species analysed')   ##
+  message(' skip file reading, not many species analysed')   ##
   
 }
-
 
 
 #########################################################################################################################

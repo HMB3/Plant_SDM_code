@@ -68,6 +68,7 @@ ALA_path      = "./data/base/HIA_LIST/ALA/TREES_TEST/"           ## The path whe
 maxent_path   = './output/maxent/SUA_TREES_ANALYSIS/'            ## The directory where files are saved               
 maxent_dir    = 'output/maxent/SUA_TREES_ANALYSIS'               ## Another version of the path that John's coding needs to run a loop
 save_data     = 'FALSE'
+save_data     = "TRUE"
 
 
 #########################################################################################################################

@@ -313,7 +313,7 @@ xy <- SpatialPointsDataFrame(coords = xy, data = as.data.frame(xy),
 
 ## Now extract the temperature values for the unique 1km centroids which contain ALA data
 class(xy)
-z   = raster::extract(world.grids.current, xy)
+z   = raster::extract(world.grids.current[["bio_01"]], xy)
 hist(z, border = NA, col = "orange", breaks = 50, main = "", xlab = "Worldclim Annual temp")
 
 

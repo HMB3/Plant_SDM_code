@@ -182,11 +182,9 @@ names(COMBO.POINTS)
 
 
 #########################################################################################################################
-## Create a stack of rasters to sample: get all the Worldclim variables just for good measure
-## Use the Mollweide projection for the points and rasters 
-# world.grids.current = stack(
-#   file.path('./data/base/worldclim/world/0.5/bio/current',
-#             sprintf('bio_%02d', 1:19)))
+## This step is a bottleneck - create niche summaries using both unique cells, and also all cells, and plot them (LM).
+## If they are not different, then consider using the unique version. Email john, and include both code and output.
+## Then we can decide what makes sense
 
 
 ## Also get the PET raster
