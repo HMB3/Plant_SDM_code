@@ -36,7 +36,7 @@ length(gbif.download)
 ## Now these lists are getting too long for the combine step. Restrict to just the matching strings for each run?
 gbif.spp.download <- paste(GBIF.spp, "_GBIF_records.RData", sep = "")
 gbif.download     = gbif.download[gbif.download %in% gbif.spp.download ] 
-message('downloaded species ', length(ala.download), ' analyzed species ', length(GBIF.spp))
+message('downloaded species ', length(gbif.download), ' analyzed species ', length(GBIF.spp))
 
 
 

@@ -306,7 +306,9 @@ RISK.LIST           = read.csv("./data/base/HIA_LIST/HIA/RISK_LIST.csv",        
 RISK.BINOMIAL.CLEAN = read.csv("./data/base/HIA_LIST/HIA/RISK_BINOMIAL_DF.csv",                  stringsAsFactors = FALSE)
 MAXENT.RATING       = read.csv("./output/maxent/MAXENT_RATING_26_2018.csv",                      stringsAsFactors = FALSE)
 #MXT.CHECK           = read.csv("./output/maxent/CHECK_SPP_MAPS_BIAS_0310_2018.csv",              stringsAsFactors = FALSE)
-MXT.CHECK           = read.csv("./output/maxent/MAXNET_ORIGN_RESULTS.csv",                       stringsAsFactors = FALSE)
+MXT.CHECK           = read.csv("./output/maxent/MAXNET_ORIGIN_RESULTS.csv",                      stringsAsFactors = FALSE)
+native.good.models  = subset(MXT.CHECK, Origin == "Native" & Check.map <=2)$searchTaxon
+native.sua          = subset(MXT.CHECK, Origin == "Native")$searchTaxon
 
 INV.CHECK           = read.csv("./output/maxent/TREES_INVENTORY_RESULTS.csv",                    stringsAsFactors = FALSE)
 INV.SPP             = INV.CHECK$searchTaxon 

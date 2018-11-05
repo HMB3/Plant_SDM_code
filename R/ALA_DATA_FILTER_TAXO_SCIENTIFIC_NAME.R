@@ -132,7 +132,7 @@ length(unique(ALA.TRIM$species))
 (sum(is.na(ALA.TRIM$scientificName)) + dim(subset(ALA.TRIM, scientificName == ""))[1])/dim(ALA.TRIM)[1]*100
 
 
-
+## Total original records for 176 species  1141520 + 1033700 = 2,175,220
 
 
 #########################################################################################################################

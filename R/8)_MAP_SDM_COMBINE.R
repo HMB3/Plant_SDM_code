@@ -117,13 +117,12 @@ maxent.tables = list.files(maxent_path)
 maxent.tables = intersect(maxent.tables, map_spp_list)   
 maxent_path   = maxent_path                             
 length(maxent.tables)                                    ## Should match the number of taxa tested
-#no_data %in% maxent.tables
 
 
 ## Create a table of the results 
 MAXENT.RESULTS <- maxent.tables[c(1:length(maxent.tables))] %>%         
   
-  ## pipe the list into lapply
+  ## Pipe the list into lapply
   lapply(function(x) {
     
     ## Create the character string
@@ -133,27 +132,26 @@ MAXENT.RESULTS <- maxent.tables[c(1:length(maxent.tables))] %>%
     d <- read.csv(f)
     
     ## load model
-      m <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, x))
-      m <- m$me_full
-      number_var = length(m@lambdas) - 4                                   ## (the last 4 slots of lambdas are not variables) 
+    m <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, x))
+    m <- m$me_full
+    number_var = length(m@lambdas) - 4                                   ## (the last 4 slots of lambdas are not variables) 
     
-    ## get variable importance
+    ## Get variable importance
     m.vars    = ENMeval::var.importance(m)
-
+    
     var.pcont = m.vars[rev(order(m.vars[["percent.contribution"]])),][["variable"]][1]
     pcont     = m.vars[rev(order(m.vars[["percent.contribution"]])),][["percent.contribution"]][1]
     
     var.pimp  = m.vars[rev(order(m.vars[["permutation.importance"]])),][["variable"]][1]
     pimp      = m.vars[rev(order(m.vars[["permutation.importance"]])),][["permutation.importance"]][1]
-
     
     ## Now add a model column
     d = cbind(searchTaxon = x, 
               Number_var  = number_var, 
               Var_pcont   = var.pcont,
               Per_cont    = pcont,
-              Var_pimp   = var.pimp,
-              Perm_imp   = pimp,
+              Var_pimp    = var.pimp,
+              Perm_imp    = pimp,
               d)  
     dim(d)
     
@@ -250,17 +248,17 @@ SDM.RESULTS.DIR = unlist(SDM.RESULTS.DIR)
 
 #########################################################################################################################
 ## Now combine the SDM output with the niche context data 
-
 ## Update NICHE.CONTEXT for SUA species .................................................................................
 NICHE.CONTEXT   = COMBO.NICHE.CONTEXT[, c("searchTaxon", "COMBO.count",  "AUS_RECORDS",  "Plant.type", "Origin", 
                                           "Total.growers",     
                                           "Number.of.States")]
 
+
 TREE.PLANTINGS  = TREE.EVERGREEN[, c("searchTaxon",
                                      "Plantings")]
 
 
-## Check with John and Linda which columns will help with model selection
+## Which columns will help with model selection
 MAXENT.SUMMARY   = MAXENT.RESULTS[, c("searchTaxon",
                                       "Number_var",
                                       "Var_pcont",
@@ -292,7 +290,10 @@ MAXENT.SUMMARY.NICHE   = MAXENT.SUMMARY.NICHE[, c("searchTaxon",
                                                   "Total.growers",     
                                                   "Number.of.States",
                                                   "Number_var",
-                                                  "Top_var",
+                                                  "Var_pcont",
+                                                  "Per_cont",
+                                                  "Var_pimp",
+                                                  "Perm_imp",
                                                   "X.Training.samples",  
                                                   "Iterations",                                                                        
                                                   "Training.AUC",

@@ -55,10 +55,10 @@ source('./R/HIA_TREE_LIST.R')
 
 ## Set global species variables here : species lists, and saving directories
 ## GBIF.spp = sort(trimws(unique(c(MOD.3.SPP$searchTaxon, trait.spp))))
-GBIF.spp      = TPL.HIA                                          ## your list of species
+GBIF.spp      = native.good.models                                          ## your list of species
 GBIF.spp.rev  = sort(GBIF.spp, decreasing = TRUE)                ## the list reversed - only needed for a big list
 
-save_run      = "HIA_SPP_25_GROW"                                ## a variable to append the run name to the output files
+save_run      = "SUA_ANALYSIS_NATIVE_GOOD"               ## "HIA_SPP_25_GROW"  ## a variable to append the run name to the output files
 map_spp_list  = gsub(" ", "_", GBIF.spp)                         ## species list with "_" for mapping
 map_spp_rev   = sort(map_spp_list, decreasing = TRUE)            ## reversed, so we can run two at once
 
@@ -67,8 +67,8 @@ ALA_path      = "./data/base/HIA_LIST/ALA/TREES_TEST/"           ## The path whe
 
 maxent_path   = './output/maxent/SUA_TREES_ANALYSIS/'            ## The directory where files are saved               
 maxent_dir    = 'output/maxent/SUA_TREES_ANALYSIS'               ## Another version of the path that John's coding needs to run a loop
-save_data     = 'FALSE'
-save_data     = "TRUE"
+save_data     = 'TRUE'
+read_data     = 'FALSE'
 
 
 #########################################################################################################################

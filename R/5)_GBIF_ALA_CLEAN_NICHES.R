@@ -92,18 +92,13 @@ FLAGS  <- CleanCoordinates(TIB.GBIF,
 ## save/load the flags
 identical(dim(FLAGS)[1], dim(TIB.GBIF)[1])
 #saveRDS(FLAGS, paste0('data/base/HIA_LIST/COMBO/ALA_GBIF_FLAGS_', save_run, '.rds'))
-#FLAGS = readRDS('data/base/HIA_LIST/COMBO/ALA_GBIF_FLAGS_OLD_ALA.rds')
+#FLAGS = readRDS(paste0('data/base/HIA_LIST/COMBO/ALA_GBIF_FLAGS_', save_run, '.rds'))
 
 
 ## Flagging ~ 1.64%, excluding the spatial outliers. Seems reasonable?
 summary(FLAGS)
 FLAGS = FLAGS[ ,!(colnames(FLAGS) == "decimallongitude" | colnames(FLAGS) == "decimallatitude")]
 message(round(summary(FLAGS)[8]/dim(FLAGS)[1]*100, 2), " % records removed")
-
-
-## A plot of the flags for each species would be good. Rony knows how to do this
-
-
 
 
 
@@ -122,12 +117,12 @@ message(round(summary(FLAGS)[8]/dim(FLAGS)[1]*100, 2), " % records removed")
 ## Check the frequency table first, to see if any species are likely to hit this threshold ::
 ## So there are a few species with +100k records, this will be hard for the computer 
 ## Could split them up into species under 200k or not?
-COMBO.LUT = as.data.frame(table(TIB.GBIF$species))
-names(COMBO.LUT) = c("species", "FREQUENCY")
-COMBO.LUT = COMBO.LUT[with(COMBO.LUT, rev(order(FREQUENCY))), ] 
-head(COMBO.LUT);summary(COMBO.LUT$FREQUENCY)  ## Quercus robur, 214, and Fraxinus excelsior, 156
-LUT.100K = as.character(subset(COMBO.LUT, FREQUENCY < 100000)$species)
-LUT.100K = LUT.100K [order(LUT.100K)]
+# COMBO.LUT = as.data.frame(table(TIB.GBIF$species))
+# names(COMBO.LUT) = c("species", "FREQUENCY")
+# COMBO.LUT = COMBO.LUT[with(COMBO.LUT, rev(order(FREQUENCY))), ] 
+# head(COMBO.LUT);summary(COMBO.LUT$FREQUENCY)  ## Quercus robur, 214, and Fraxinus excelsior, 156
+# LUT.100K = as.character(subset(COMBO.LUT, FREQUENCY < 100000)$species)
+# LUT.100K = LUT.100K [order(LUT.100K)]
 
 
 ## Unfortunately, the cc_outl function can't handle vectors of a certain size - over 40 GB at least.
@@ -210,10 +205,19 @@ message(round(dim(CLEAN.TRUE)[1]/dim(TEST.GEO)[1]*100, 2), " % records retained"
 
 
 #########################################################################################################################
+## Record how many points were removed, just from the analysis species
+## GBIF, ALA 1144726 + 1257152
+length(native.sua)
+CLEAN.NATIVE = CLEAN.TRUE[CLEAN.TRUE$searchTaxon %in% native.sua, ]
+length(unique(CLEAN.NATIVE$searchTaxon))
+message(round(dim(CLEAN.NATIVE)[1]/2401878*100, 2), " % records retained")
+
+
+#########################################################################################################################
 ## Now bind on the urban tree inventory data. We are assuming this data is clean, after we manually fix the taxonomy
 ## Check the NAs
 intersect(names(TI.RASTER.CONVERT), names(CLEAN.TRUE))
-CLEAN.TRUE = bind_rows(CLEAN.TRUE, TI.RASTER.CONVERT)
+CLEAN.TRUE.INV = bind_rows(CLEAN.TRUE, TI.RASTER.CONVERT)
 
 
 names(CLEAN.TRUE)
@@ -244,6 +248,7 @@ if(save_data == "TRUE") {
   message(' skip file saving, not many species analysed')   ##
   
 }
+
 
 
 #########################################################################################################################
