@@ -21,7 +21,7 @@ message('Cleaning outliers and creating niches for ', length(GBIF.spp), ' specie
 
 #########################################################################################################################
 ## Read in the two data tables
-if(save_data == "TRUE") {
+if(read_data == "TRUE") {
   
   ## read in RDS files from previous step
   TI.RASTER.CONVERT = readRDS(paste0('data/base/HIA_LIST/COMBO/TI_RASTER_CONVERT_', save_run, '.rds'))
@@ -217,7 +217,7 @@ message(round(dim(CLEAN.NATIVE)[1]/2401878*100, 2), " % records retained")
 ## Now bind on the urban tree inventory data. We are assuming this data is clean, after we manually fix the taxonomy
 ## Check the NAs
 intersect(names(TI.RASTER.CONVERT), names(CLEAN.TRUE))
-CLEAN.TRUE.INV = bind_rows(CLEAN.TRUE, TI.RASTER.CONVERT)
+CLEAN.TRUE = bind_rows(CLEAN.TRUE, TI.RASTER.CONVERT)
 
 
 names(CLEAN.TRUE)
@@ -235,6 +235,7 @@ identical(dim(CLEAN.TRUE)[1], length(CLEAN.TRUE$OBS))
 
 ## How many records are added by including the tree inventories?
 message("Tree inventory data increases records by ", round(dim(CLEAN.TRUE)[1]/dim(TEST.GEO)[1]*100, 2), " % ")   
+
 
 #########################################################################################################################
 ## save data
@@ -373,13 +374,13 @@ if(save_data == "TRUE") {
   
   ## Now create a table of all the SUA's that each species occurrs
   SUA.SPP.COUNT = as.data.frame(table(COMBO.SUA.LGA[["SUA_NAME16"]], COMBO.SUA.LGA[["searchTaxon"]]))
-  names(SUA.SPP.COUNT) = c("SUA", "SPECIES", "SUA_COUNT")
+  names(SUA.SPP.COUNT) = c("SUA", "SPECIES", "SUA_RECORDS")
   
   
   #########################################################################################################################
   ## save data
   ## Save .rds file for the next session
-  saveRDS(SUA.SPP.COUNT, paste0('data/base/HIA_LIST/COMBO/SUA_SPP_COUNT', save_run, '.rds'))
+  saveRDS(SUA.SPP.COUNT, paste0('data/base/HIA_LIST/COMBO/SUA_SPP_COUNT_', save_run, '.rds'))
   
   
   
@@ -452,7 +453,7 @@ if(save_data == "TRUE") {
   ## Add counts for each species, and record the total number of taxa processed
   ## dim(COMBO.RASTER.CONVERT);dim(CLEAN.TRUE)
   GLOBAL_RECORDS = as.data.frame(table(COMBO.SUA.LGA$searchTaxon))$Freq
-  identical(length(COMBO.count), dim(COMBO.NICHE)[1])
+  identical(length(GLOBAL_RECORDS), dim(COMBO.NICHE)[1])
   
   Total.taxa.processed = dim(COMBO.NICHE)[1]
   COMBO.NICHE  = cbind(GLOBAL_RECORDS, COMBO.NICHE)
@@ -505,14 +506,11 @@ if(save_data == "TRUE") {
   ## Now combine the SDM output with the niche context data 
   ## Get the number of aus records too ....................................................................................
   
-  NICHE.CONTEXT   = COMBO.NICHE.CONTEXT[, c("searchTaxon", "Plant.type", "Origin", "Total.growers", "Number.of.States")]
-  TREE.PLANTINGS  = TREE.EVERGREEN[, c("searchTaxon",
-                                       "Plantings")]
-  
-  
-  ## Now remove the underscore and join data 
-  COMBO.NICHE.CONTEXT       = join(COMBO.LGA, NICHE.CONTEXT,  type = "left")  ## join does not support the sorting
-  COMBO.NICHE.CONTEXT       = join(COMBO.NICHE.CONTEXT , TREE.PLANTINGS, type = "left")  
+  #NICHE.CONTEXT   = TOT.GROW[, c("searchTaxon", "Plant.type", "Origin", "Total.growers", "Number.of.States")]
+  TREE.PLANTINGS            = TREE.EVERGREEN[, c("searchTaxon",
+                                                 "Plantings")]
+  COMBO.NICHE.CONTEXT       = join(COMBO.LGA, TOT.GROW,  type = "left")  ## join does not support the sorting
+  COMBO.NICHE.CONTEXT       = join(COMBO.NICHE.CONTEXT, TREE.PLANTINGS, type = "left")  
   COMBO.NICHE.CONTEXT       = COMBO.NICHE.CONTEXT [order(COMBO.NICHE.CONTEXT $searchTaxon),]
   
   
@@ -525,10 +523,9 @@ if(save_data == "TRUE") {
   
   
   ## View the data
-  names(COMBO.RASTER.CONTEXT)
-  names(COMBO.NICHE.CONTEXT)
   dim(COMBO.RASTER.CONTEXT)
   dim(COMBO.NICHE.CONTEXT)
+  View(COMBO.NICHE.CONTEXT)
   
   
   ## Print the dataframe dimensions to screen

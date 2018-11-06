@@ -18,9 +18,10 @@
 p <- c('ff',    'things',    'raster',        'dismo',        'sp',           'latticeExtra', 'data.table', 
        'rgdal', 'rgeos',     'gdalUtils',     'rmaxent',      'readr',        'plyr',         'dplyr',        
        'tidyr', 'readr',     'rnaturalearth', 'rasterVis',    'RColorBrewer', 'latticeExtra', 'parallel',     
-       'ALA4R', 'stringr',   'Taxonstand',    'CoordinateCleaner', 'gsubfn', 'PerformanceAnalytics',
-       'rvest', 'magrittr',  'devtools',      'ggplot2',      'reshape2', 'rmarkdown', 'flexdashboard', 'shiny', 'rgbif',
+       'ALA4R', 'stringr',   'Taxonstand',    'CoordinateCleaner', 'gsubfn',  'PerformanceAnalytics',
+       'rvest', 'magrittr',  'devtools',      'ggplot2',      'reshape2',     'rmarkdown', 'flexdashboard', 'shiny', 'rgbif',
        'ENMeval', 'tibble',  'ncdf4',         'Cairo', 'velox', 'taxonlookup')
+
 
 ## Require packages
 sapply(p, require, character.only = TRUE)
@@ -50,7 +51,7 @@ aus           = readRDS("./data/base/CONTEXTUAL/aus_states.rds")
 LAND          = readRDS("./data/base/CONTEXTUAL/LAND_world.rds")
 areal_unit    = readRDS("./data/base/CONTEXTUAL/SUA/SUA_2016_AUST.rds")
 areal_unit    = areal_unit[order(areal_unit$SUA_NAME16),]
-SUA_2011      = readOGR('data/base/CONTEXTUAL/SUA/SUA_2011_AUST.shp')
+# SUA_2011      = readOGR('data/base/CONTEXTUAL/SUA/SUA_2011_AUST.shp')
 Koppen        = readRDS('data/base/CONTEXTUAL/Koppen_1975.rds')
 Koppen_aus    = readRDS('data/base/CONTEXTUAL/KOPPEN_AUS.rds')
 Koppen_zones  = unique(readOGR('data/base/CONTEXTUAL/WC05_1975H_Koppen_Shapefile/WC05_1975H_Koppen_Kriticos_2012.shp')@data[, 1:2])
@@ -73,17 +74,17 @@ load("./data/base/CONTEXTUAL/urbanareas.rda")
 
 #########################################################################################################################
 ## Read in SUA shapefile and convert columns to numeric and character
-SUA_2016  = readOGR("./data/base/CONTEXTUAL/SUA/SUA_2016_AUST.shp",
-                   layer = "SUA_2016_AUST", stringsAsFactors = FALSE)
-SUA_2016$SUA_CODE16 <- as.numeric(as.character(SUA_2016$SUA_CODE16))
-SUA_2016$SUA_NAME16 <- as.character(SUA_2016$SUA_NAME16)
-class(SUA_2016$SUA_CODE16)
-class(SUA_2016$SUA_NAME16)
-head(SUA_2016)
-
-
-unique(SUA_2016$SUA_NAME16)
-saveRDS(SUA_2016 , file = paste("./data/base/CONTEXTUAL/SUA/SUA_2016_AUST.rds"))
+# SUA_2016  = readOGR("./data/base/CONTEXTUAL/SUA/SUA_2016_AUST.shp",
+#                    layer = "SUA_2016_AUST", stringsAsFactors = FALSE)
+# SUA_2016$SUA_CODE16 <- as.numeric(as.character(SUA_2016$SUA_CODE16))
+# SUA_2016$SUA_NAME16 <- as.character(SUA_2016$SUA_NAME16)
+# class(SUA_2016$SUA_CODE16)
+# class(SUA_2016$SUA_NAME16)
+# head(SUA_2016)
+# 
+# 
+# unique(SUA_2016$SUA_NAME16)
+# saveRDS(SUA_2016 , file = paste("./data/base/CONTEXTUAL/SUA/SUA_2016_AUST.rds"))
 
 
 ###################################################################################################################
@@ -283,8 +284,10 @@ for(i in 1:11) {
 COMBO.NICHE.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_STANDARD_CLEAN.rds")
 CLEAN.NICHE.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_APRIL_2018_COORD_CLEAN.rds")
 MAXENT.CHECK        = read.csv("./output/maxent/CHECK_SPP_MAPS_BIAS_0310_2018.csv", stringsAsFactors = FALSE)
-OVERALL.LOSS        = read.csv("./output/tables/OVERALL_LOSS.csv",              stringsAsFactors = FALSE)
-APPENDIX            = read.csv("./data/base/HIA_LIST/COMBO/Appendix_table.csv", stringsAsFactors = FALSE)
+OVERALL.LOSS        = read.csv("./output/tables/OVERALL_LOSS.csv",                  stringsAsFactors = FALSE)
+APPENDIX            = read.csv("./data/base/HIA_LIST/COMBO/Appendix_table.csv",     stringsAsFactors = FALSE)
+AUS.FROGS           = read.csv("./data/base/Frog/AUS_FROGS.csv",                    stringsAsFactors = FALSE)
+AUS.FROGS           = AUS.FROGS$Scientific.Name
 str(unique(COMBO.NICHE.CONTEXT$searchTaxon))  ## long enough
 
 
@@ -445,7 +448,8 @@ renee.list       = renee.taxa[c("Species", "Growth_Form")]
 #########################################################################################################################
 ## Merge the ~1000 with the top 200
 ## This merge won't get the ones that match to binomial
-HIA.list$Binomial <- sub('(^\\S+ \\S+).*', '\\1', HIA.list$Species) # \\s = white space; \\S = not white space
+HIA.list$Binomial <- sub('(^\\S+ \\S+).*', '\\1',   HIA.list$Species) # \\s = white space; \\S = not white space
+CLEAN.list$Binomial <- sub('(^\\S+ \\S+).*', '\\1', CLEAN.list$Species) # \\s = white space; \\S = not white space
 
 
 #########################################################################################################################
@@ -454,9 +458,23 @@ HIA.list$Binomial <- sub('(^\\S+ \\S+).*', '\\1', HIA.list$Species) # \\s = whit
 n <- tapply(HIA.list$Number.of.growers, HIA.list$Binomial, sum, na.rm = TRUE)
 HIA.list$Number.of.growers.total <- n[HIA.list$Binomial]
 TOT.GROW = HIA.list[c("Binomial",
-                      "Number.of.growers.total")]
-names(TOT.GROW) = c("searchTaxon", "Total.growers")
+                      "Plant.type",
+                      "Origin",
+                      "Number.of.growers.total",
+                      "Number.of.States")]
+names(TOT.GROW) = c("searchTaxon", "Plant.type", "Origin", "Total.growers", "Number.of.States")
 TOT.GROW        = TOT.GROW[!duplicated(TOT.GROW[,c('searchTaxon')]),] 
+
+
+#########################################################################################################################
+## Now sum the number of growers across multiple varieties
+## Just get the count for each unique binomial
+n.spp <- tapply(CLEAN.list$Number.of.growers, CLEAN.list$Binomial, sum, na.rm = TRUE)
+CLEAN.list$Number.of.growers.total <- n.spp[CLEAN.list$Binomial]
+CLEAN.GROW = CLEAN.list[c("Binomial",
+                         "Number.of.growers.total")]
+names(CLEAN.GROW ) = c("searchTaxon", "Total.growers")
+CLEAN.GROW         = CLEAN.GROW [!duplicated(CLEAN.GROW [,c('searchTaxon')]),] 
 
 
 ## Join the total growers to the NICHE data

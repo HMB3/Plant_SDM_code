@@ -24,7 +24,7 @@ rasterTmpFile()
 message('Extracting Worldclim data for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
 
 
-if(save_data == "TRUE") {
+if(read_data == "TRUE") {
   
   ## Load GBIF and ALA data
   GBIF.LAND      = readRDS(paste0('data/base/HIA_LIST/GBIF/GBIF_TREES_LAND_', save_run, '.rds'))

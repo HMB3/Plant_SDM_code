@@ -25,10 +25,6 @@ length(unique(SUA.SPP.COUNT$SPECIES))
 GAIN.LOSS.list = list.files(maxent_dir, pattern = 'gain_loss_table_', full.names = TRUE, recursive = TRUE) 
 
 
-## Chrck the exceptios - if all spp models have completed successfully, should be number of species * 3 time periods
-length(GAIN.LOSS.list)/3;length(map_spp)
-
-
 ## Now combine the SUA tables for each species into one table 
 GAIN.LOSS.TABLE <- GAIN.LOSS.list %>%
   
@@ -51,6 +47,10 @@ GAIN.LOSS.TABLE <- GAIN.LOSS.list %>%
 ## Subset to just the analysis species - some species did not process properly?
 GAIN.LOSS.TABLE          =  GAIN.LOSS.TABLE[GAIN.LOSS.TABLE$SPECIES %in% map_spp_list , ] 
 GAIN.LOSS.TABLE.COMPLETE =  GAIN.LOSS.TABLE[complete.cases(GAIN.LOSS.TABLE), ]
+
+
+## Check the exceptions - if all spp models have completed successfully, should be number of species * 3 time periods
+length(GAIN.LOSS.TABLE.COMPLETE$SPECIES)/12;length(map_spp)
 summary(GAIN.LOSS.TABLE.COMPLETE)
 
 
@@ -221,7 +221,8 @@ message(length(unique(SUA.COMPLETE$SPECIES)), " Species analysed in ", length(un
 
 
 ## Include the maxent rating?
-SDM.CHECK = MXT.CHECK[, c("searchTaxon", "Origin", "Check.map")]
+MAXENT.SUMMARY.NICHE = read.csv(paste0('output/maxent/MAXENT_SUMMARY_', save_run, '.csv'), stringsAsFactors = FALSE)
+SDM.CHECK = MAXENT.SUMMARY.NICHE[, c("searchTaxon", "Origin", "check.map")]
 names(SDM.CHECK) = c("SPECIES", "ORIGIN", "MAXENT_RATING")
 
 
@@ -309,6 +310,7 @@ colnames(SUA.BIO1.2030.stats)[1] <- "SUA"
 # View(SUA.ZONAL.STATS)
 SUA.BIO1.current.stats[["CURRENT_MAT"]] = SUA.BIO1.current.stats[["CURRENT_MAT"]]/10
 
+
 ## Merge MAP onto the results table
 SUA.PREDICT = join(SUA.PREDICT, SUA.BIO1.current.stats[c("SUA", "CURRENT_MAT")])
 SUA.PREDICT = join(SUA.PREDICT, SUA.BIO12.current.stats[c("SUA", "CURRENT_MAP")])
@@ -328,7 +330,7 @@ write.csv(SUA.TOP.PRESENCE, paste0('output/tables/MAXNET_SUA_TOP_',       save_r
 #########################################################################################################################
 ## We simply need a count of all the species that are being lost, gained or remaining stable in each SUA
 length(unique(SUA.PREDICT$SPECIES))
-SUA.PLOT.GOOD = subset(SUA.PREDICT, MAXENT_RATING < 3 & ORIGIN == "Native")
+SUA.PLOT.GOOD = subset(SUA.PREDICT, MAXENT_RATING < 3) #& ORIGIN == "Native")
 unique(SUA.PLOT.GOOD$MAXENT_RATING)
 length(unique(SUA.PLOT.GOOD$SPECIES))
 

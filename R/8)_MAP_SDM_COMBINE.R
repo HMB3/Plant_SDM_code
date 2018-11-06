@@ -23,9 +23,17 @@ message('Creating habitat suitability maps for ', length(GBIF.spp), ' species in
 
 
 #########################################################################################################################
-## Read in all data to run the SDM code :: species lists, shapefile, rasters & tables
-#source('./R/HIA_LIST_MATCHING.R')
-rasterTmpFile()
+## Read in niche data for table creation
+if(read_data == "TRUE") {
+  
+  ## Load GBIF and ALA data
+  COMBO.NICHE.CONTEXT = readRDS(paste0('data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_',  save_run, '.rds'))
+  
+} else {
+  
+  message(' skip file reading, not many species analysed')   ##
+  
+}
 
 
 #########################################################################################################################
@@ -111,12 +119,15 @@ env.grids.2070 = tryCatch(project_maxent_grids(scen_list     = scen_2070,
 #########################################################################################################################
 
 
+## Update this with just the native species with good models. This is then joined on at
+
+
 #########################################################################################################################
-## Create a file list for each model run
+## Create a file list for each model run: Try crunching this into just the species required
 maxent.tables = list.files(maxent_path)                 
 maxent.tables = intersect(maxent.tables, map_spp_list)   
 maxent_path   = maxent_path                             
-length(maxent.tables)                                    ## Should match the number of taxa tested
+length(maxent.tables)                                                          ## Should match the number of taxa tested
 
 
 ## Create a table of the results 
@@ -248,14 +259,9 @@ SDM.RESULTS.DIR = unlist(SDM.RESULTS.DIR)
 
 #########################################################################################################################
 ## Now combine the SDM output with the niche context data 
-## Update NICHE.CONTEXT for SUA species .................................................................................
-NICHE.CONTEXT   = COMBO.NICHE.CONTEXT[, c("searchTaxon", "COMBO.count",  "AUS_RECORDS",  "Plant.type", "Origin", 
-                                          "Total.growers",     
-                                          "Number.of.States")]
-
-
-TREE.PLANTINGS  = TREE.EVERGREEN[, c("searchTaxon",
-                                     "Plantings")]
+NICHE.CONTEXT   = COMBO.NICHE.CONTEXT[, c("searchTaxon",     "Origin",      "Plant.type", 
+                                          "GLOBAL_RECORDS",  "AUS_RECORDS", "Plantings", "SUA_COUNT",
+                                          "Total.growers",   "Number.of.States")]
 
 
 ## Which columns will help with model selection
@@ -276,17 +282,19 @@ MAXENT.SUMMARY   = MAXENT.RESULTS[, c("searchTaxon",
 ## Now remove the underscore and join data 
 MAXENT.SUMMARY$searchTaxon = gsub("_", " ", MAXENT.SUMMARY$searchTaxon)
 MAXENT.SUMMARY.NICHE       = join(MAXENT.SUMMARY,       NICHE.CONTEXT,  type = "left")  ## join does not support the sorting
-MAXENT.SUMMARY.NICHE       = join(MAXENT.SUMMARY.NICHE, TREE.PLANTINGS, type = "left")  
 MAXENT.SUMMARY.NICHE       = MAXENT.SUMMARY.NICHE[order(MAXENT.SUMMARY.NICHE$searchTaxon),]
 
 
 ## Re-order table
+## What is the difference between SUA_count here and in the SUA table? Here it is the number of SUA's that species occurs in,
+## but in the SUA table, it is the number of records for each species in each SUA
 MAXENT.SUMMARY.NICHE   = MAXENT.SUMMARY.NICHE[, c("searchTaxon",
                                                   "Origin",
                                                   "Plant.type", 
-                                                  "Plantings",
-                                                  "COMBO.count",  
-                                                  "AUS_RECORDS",  
+                                                  "GLOBAL_RECORDS",  
+                                                  "AUS_RECORDS", 
+                                                  "Plantings", 
+                                                  "SUA_COUNT", 
                                                   "Total.growers",     
                                                   "Number.of.States",
                                                   "Number_var",
@@ -336,6 +344,7 @@ length(intersect(MAXENT.SUMMARY.NICHE$searchTaxon, GBIF.spp))
 #########################################################################################################################
 ## Save - could add date as a sprintf variable to save multiple versions?
 ## write.csv(MAXENT.SUMMARY.NICHE, paste0('output/maxent/MAXENT_SUMMARY_', save_run, '.csv'), row.names = FALSE)
+## MAXENT.SUMMARY.NICHE = read.csv(paste0('output/maxent/MAXENT_SUMMARY_', save_run, '.csv'), stringsAsFactors = FALSE)
 
 
 
