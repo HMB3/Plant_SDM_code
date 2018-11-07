@@ -188,10 +188,21 @@ world.grids.current = stack(
   file.path('./data/base/worldclim/world/0.5/bio/current',
             sprintf('bio_%02d', 1:19)))
 
+
+## Create a raster stack of current Australian environmental conditions
+inventory.grids.current = stack(
+  file.path('./data/base/worldclim/aus/1km/bio/current/WGS/', 
+            sprintf('bio_%02d.tif', 1:19))) 
+
+
+## Also get the PET raster
+PET               = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
+
+
 ## Create a velox raster of the world raster stack
-vx.world <- velox(world.grids.current)
-writeRaster(vx.world, './data/base/worldclim/world/0.5/bio/current/vx_world.tif')
-vx.world  = raster('./data/base/worldclim/world/0.5/bio/current/vx_world.tif')
+# vx.world <- velox(world.grids.current)
+# writeRaster(vx.world, './data/base/worldclim/world/0.5/bio/current/vx_world.tif')
+# vx.world  = raster('./data/base/worldclim/world/0.5/bio/current/vx_world.tif')
 # i  <- match(sdm.predictors, sdm.predictors)
 # ff <- file.path('./data/base/worldclim/world/0.5/bio/current',
 #                 sprintf('bio_%02d.tif', i))

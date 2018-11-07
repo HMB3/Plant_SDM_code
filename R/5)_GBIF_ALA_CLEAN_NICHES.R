@@ -468,7 +468,6 @@ if(save_data == "TRUE") {
   dim(COMBO.NICHE)
   dim(SUA.AGG)
   
-  
   COMBO.LGA = join(COMBO.NICHE, SUA.AGG)                            ## The tapply needs to go where the niche summaries are
   names(COMBO.LGA)
   
@@ -496,7 +495,7 @@ if(save_data == "TRUE") {
   
   ## Now join hort context to all the niche
   names(CLEAN.SPP)
-  COMBO.NICHE.CONTEXT = join(COMBO.LGA, HIA.SPP.JOIN)
+  COMBO.NICHE.CONTEXT = join(COMBO.LGA, TOT.GROW)
   #COMBO.NICHE.CONTEXT =  COMBO.NICHE.CONTEXT[, c(2, 185, 1, 183:184, 186:197, 3:182)]
   head(COMBO.NICHE.CONTEXT$AUS_RECORDS)
   head(COMBO.NICHE.CONTEXT$LGA_COUNT)

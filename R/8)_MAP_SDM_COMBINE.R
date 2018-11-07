@@ -21,7 +21,6 @@
 message('Creating habitat suitability maps for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
 
 
-
 #########################################################################################################################
 ## Read in niche data for table creation
 if(read_data == "TRUE") {

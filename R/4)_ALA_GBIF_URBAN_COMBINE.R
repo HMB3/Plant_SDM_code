@@ -187,10 +187,6 @@ names(COMBO.POINTS)
 ## Then we can decide what makes sense
 
 
-## Also get the PET raster
-PET               = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
-
-
 #########################################################################################################################
 ## Extract worldclim data
 ## This step is a bottle neck ...........................................................................................
