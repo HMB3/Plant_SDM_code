@@ -62,7 +62,7 @@ head(GAIN.LOSS.TABLE.COMPLETE, 18)
 
 ## How many species are lost?
 length(unique(GAIN.LOSS.TABLE$SPECIES))                                   
-length(unique(GAIN.LOSS.TABLE.COMPLETE$SPECIES)) ## somewhat mysterious?  
+length(unique(GAIN.LOSS.TABLE.COMPLETE$SPECIES)) 
 
 
 #########################################################################################################################
@@ -246,6 +246,8 @@ length(intersect(unique(SDM.CHECK$SPECIES), unique(SUA.COMPLETE$SPECIES)))
 ## Join on a column for if the species has records in the SUA
 SUA.PREDICT = merge(SUA.COMPLETE, SDM.CHECK, all.x = TRUE)
 SUA.PREDICT = join(SUA.PREDICT, SUA.SPP.COUNT, type = "full")
+#SUA.PREDICT = subset(SUA.PREDICT,  SUA_RECORDS > 0)
+summary(SUA.PREDICT$SUA_RECORDS)
 #SUA.PREDICT = completeFun(SUA.PREDICT, "MAXENT_RATING")
 unique(SUA.PREDICT$MAXENT_RATING)
 length(unique(SUA.PREDICT$SPECIES))
@@ -334,77 +336,171 @@ SUA.PLOT.GOOD = subset(SUA.PREDICT, MAXENT_RATING < 3) #& ORIGIN == "Native")
 unique(SUA.PLOT.GOOD$MAXENT_RATING)
 length(unique(SUA.PLOT.GOOD$SPECIES))
 
-       
-SUA.PLOT       = table(SUA.PLOT.GOOD$SUA, SUA.PLOT.GOOD$GAIN_LOSS)
 
-SUA.PLOT.M = melt(SUA.PLOT)
-SUA.SPP.M  = melt(table(SUA.PLOT.GOOD$SUA, SUA.PLOT.GOOD$GAIN_LOSS, SUA.PLOT.GOOD$SPECIES)) 
-
-names(SUA.PLOT.M) = c("SUA", "AREA_CHANGE", "SPECIES_COUNT")
-names(SUA.SPP.M) = c("SUA", "AREA_CHANGE", "SPECIES", "SPECIES_COUNT")
-head(SUA.PLOT.M)
-head(SUA.SPP.M)
+#########################################################################################################################
+## Create plots in the format needed for ggplot bar  
+SUA.PLOT.GOOD.30 = subset(SUA.PLOT.GOOD, PERIOD == 30)
+SUA.PLOT.GOOD.50 = subset(SUA.PLOT.GOOD, PERIOD == 50)
+SUA.PLOT.GOOD.70 = subset(SUA.PLOT.GOOD, PERIOD == 70)
+unique(SUA.PLOT.GOOD.30$PERIOD);unique(SUA.PLOT.GOOD.50$PERIOD);unique(SUA.PLOT.GOOD.70$PERIOD)
 
 
+SUA.PLOT.30       = table(SUA.PLOT.GOOD.30$SUA, SUA.PLOT.GOOD.30$GAIN_LOSS)
+SUA.PLOT.50       = table(SUA.PLOT.GOOD.50$SUA, SUA.PLOT.GOOD.50$GAIN_LOSS)
+SUA.PLOT.70       = table(SUA.PLOT.GOOD.70$SUA, SUA.PLOT.GOOD.70$GAIN_LOSS)
+SUA.PLOT.30.M     = melt(SUA.PLOT.30)
+SUA.PLOT.50.M     = melt(SUA.PLOT.50)
+SUA.PLOT.70.M     = melt(SUA.PLOT.70)
+#SUA.SPP.M      = melt(table(SUA.PLOT.GOOD$SUA, SUA.PLOT.GOOD$GAIN_LOSS, SUA.PLOT.GOOD$SPECIES)) 
+
+names(SUA.PLOT.30.M) = c("SUA", "AREA_CHANGE", "SPECIES_COUNT")
+names(SUA.PLOT.50.M) = c("SUA", "AREA_CHANGE", "SPECIES_COUNT")
+names(SUA.PLOT.70.M) = c("SUA", "AREA_CHANGE", "SPECIES_COUNT")
+
+SUA.PLOT.30.M        = subset(SUA.PLOT.30.M, AREA_CHANGE != "NEVER" & AREA_CHANGE != "STABLE")
+SUA.PLOT.50.M        = subset(SUA.PLOT.50.M, AREA_CHANGE != "NEVER" & AREA_CHANGE != "STABLE")
+SUA.PLOT.70.M        = subset(SUA.PLOT.70.M, AREA_CHANGE != "NEVER" & AREA_CHANGE != "STABLE") 
+head(SUA.PLOT.30.M)
+head(SUA.PLOT.70.M)
 
 
 #########################################################################################################################
-## This will plot all the SUAs.
-## Could add a column to SUA for what the mean annual temperature is, to see if there is a pattern
-ggplot(SUA.PLOT.M, aes(x = SUA, fill = AREA_CHANGE)) + 
-  
-  geom_bar(data = subset(SUA.PLOT.M, AREA_CHANGE %in% c("LOSS")),
+## Attach the climate
+SUA.CLIM      = SUA.PREDICT[!duplicated(SUA.PREDICT[,c('SUA')]),][c("SUA", "CURRENT_MAT", "CURRENT_MAP", "CURRENT_PET")]
+SUA.PLOT.30.M = join(SUA.PLOT.30.M, SUA.CLIM)
+SUA.PLOT.50.M = join(SUA.PLOT.50.M, SUA.CLIM)
+SUA.PLOT.70.M = join(SUA.PLOT.70.M, SUA.CLIM)
+head(SUA.PLOT.30.M);dim(SUA.PLOT.30.M)
+   
+
+#########################################################################################################################
+## Create PNG output for all SUAs, 2030
+png(sprintf('output/figures/SUA_BAR_PLOT/ALL_SUA_BAR_PLOT_%s.png', 2030),      
+    10, 8, units = 'in', res = 500)
+
+## 2030
+ggplot(SUA.PLOT.30.M,  aes(x = reorder(SUA, CURRENT_MAT), fill = AREA_CHANGE)) + 
+
+  geom_bar(data = subset(SUA.PLOT.30.M, AREA_CHANGE %in% c("LOSS")),
            aes(y = -SPECIES_COUNT), position = "stack", stat = "identity") +
   
-  geom_bar(data = subset(SUA.PLOT.M, !AREA_CHANGE %in% c("LOSS")), 
-           aes(y = SPECIES_COUNT), position = "stack", stat = "identity")
+  scale_fill_manual(values=rev(colorRampPalette(c('brown1', 'seagreen3'))(2))) +
+
+  geom_bar(data = subset(SUA.PLOT.30.M, !AREA_CHANGE %in% c("LOSS")), 
+           aes(y = SPECIES_COUNT), position = "stack", stat = "identity") +
+  
+  ## The colour scheme
+  #scale_fill_manual(values=rev(colorRampPalette(c('seagreen3','brown1', 'grey', 'skyblue3'))(4))) +
+  scale_fill_manual(values=rev(colorRampPalette(c('brown1', 'seagreen3'))(2))) +
+  
+  ## The axes labels
+  labs(title = "Predicted native species gain/loss (number) within SUAs to 2030", 
+       x = "SUA by increasing MAT", y = "Species Count") +
+  
+  ## Format axes
+  theme(axis.title.x     = element_text(face = "bold", colour = "black", size = 15),
+        axis.text.x      = element_text(angle = 90, vjust = 0.5, size = 8),
+        axis.title.y     = element_text(face = "bold", colour = "black", size = 15),
+        axis.text.y      = element_text(vjust = 0.5, size = 12),
+        title            = element_text(face = "bold", colour = "black", size = 15),
+        legend.title     = element_blank(),
+        legend.text      = element_text(face = "bold", size = 12),
+        panel.background = element_blank(), axis.line = element_line(colour = "black"),
+        panel.border     = element_rect(colour = "black", fill = NA, size = 2))
+
+dev.off()
+
+
+#########################################################################################################################
+## Create PNG output for all SUAs, 2070
+png(sprintf('output/figures/SUA_BAR_PLOT/ALL_SUA_BAR_PLOT_%s.png', 2070),      
+    10, 8, units = 'in', res = 500)
+
+## 2070
+ggplot(SUA.PLOT.70.M,  aes(x = reorder(SUA, CURRENT_MAT), fill = AREA_CHANGE)) + 
+  
+  geom_bar(data = subset(SUA.PLOT.70.M, AREA_CHANGE %in% c("LOSS")),
+           aes(y = -SPECIES_COUNT), position = "stack", stat = "identity") +
+  
+  scale_fill_manual(values=rev(colorRampPalette(c('brown1', 'seagreen3'))(2))) +
+  
+  geom_bar(data = subset(SUA.PLOT.70.M, !AREA_CHANGE %in% c("LOSS")), 
+           aes(y = SPECIES_COUNT), position = "stack", stat = "identity") +
+  
+  ## The colour scheme
+  #scale_fill_manual(values=rev(colorRampPalette(c('seagreen3','brown1', 'grey', 'skyblue3'))(4))) +
+  scale_fill_manual(values=rev(colorRampPalette(c('brown1', 'seagreen3'))(2))) +
+  
+  ## The axes labels
+  labs(title = "Predicted native species gain/loss (number) within SUAs to 2070", 
+       x = "SUA by increasing MAT", y = "Species Count") +
+  
+  ## Format axes
+  theme(axis.title.x     = element_text(face = "bold", colour = "black", size = 15),
+        axis.text.x      = element_text(angle = 90, size = 8), # vjust = 0.5, 
+        axis.title.y     = element_text(face = "bold", colour = "black", size = 15),
+        axis.text.y      = element_text(vjust = 0.5, size = 12),
+        title            = element_text(face = "bold", colour = "black", size = 15),
+        legend.title     = element_blank(),
+        legend.text      = element_text(face = "bold", size = 12),
+        panel.background = element_blank(), axis.line = element_line(colour = "black"),
+        panel.border     = element_rect(colour = "black", fill = NA, size = 2))
+
+dev.off()
+
 
 
 #########################################################################################################################
 ## Try plotting a subset of just the mapped SUAs
-unique(SUA.PLOT.M$SUA)
-SUA.PLOT.M$SUA = gsub("Canberra - Queanbeyan", "Canberra", SUA.PLOT.M$SUA)
-SUA.PLOT.MAJOR = SUA.PLOT.M[SUA.PLOT.M$SUA %in% MAP_SUA, ] 
-unique(SUA.PLOT.MAJOR$SUA)
+SUA.PLOT.30.M$SUA = gsub("Canberra - Queanbeyan", "Canberra", SUA.PLOT.30.M$SUA)
+SUA.PLOT.50.M$SUA = gsub("Canberra - Queanbeyan", "Canberra", SUA.PLOT.50.M$SUA)
+SUA.PLOT.70.M$SUA = gsub("Canberra - Queanbeyan", "Canberra", SUA.PLOT.70.M$SUA)
+
+SUA.PLOT.MAJOR.30 = SUA.PLOT.30.M[SUA.PLOT.30.M$SUA %in% MAP_SUA, ]
+SUA.PLOT.MAJOR.50 = SUA.PLOT.50.M[SUA.PLOT.50.M$SUA %in% MAP_SUA, ] 
+SUA.PLOT.MAJOR.70 = SUA.PLOT.70.M[SUA.PLOT.70.M$SUA %in% MAP_SUA, ] 
+unique(SUA.PLOT.MAJOR.30$SUA);unique(SUA.PLOT.MAJOR.70$SUA)
 
 
-SUA.SPP.M$SUA = gsub("Canberra - Queanbeyan", "Canberra", SUA.SPP.M$SUA)
-SUA.SPP.MAJOR = SUA.SPP.M[SUA.SPP.M$SUA %in% MAP_SUA, ] 
-SUA.SP.1.MAJOR = subset(SUA.SPP.MAJOR, SPECIES == "Eucalyptus camaldulensis")
-unique(SUA.SP.1.MAJOR$SUA)
-unique(SUA.SP.1.MAJOR$SPECIES)
+# SUA.SPP.M$SUA = gsub("Canberra - Queanbeyan", "Canberra", SUA.SPP.M$SUA)
+# SUA.SPP.MAJOR = SUA.SPP.M[SUA.SPP.M$SUA %in% MAP_SUA, ] 
+# SUA.SP.1.MAJOR = subset(SUA.SPP.MAJOR, SPECIES == "Eucalyptus camaldulensis")
+# unique(SUA.SP.1.MAJOR$SUA)
+# unique(SUA.SP.1.MAJOR$SPECIES)
 
 
 #########################################################################################################################
-## Change PNG output
-png(sprintf('output/figures/SUA_BAR_PLOT/SUA_BAR_PLOT_%s.png', save_run),      
-    15, 8, units = 'in', res = 500)
+## Create PNG output for Major captuials, 2030
+png(sprintf('output/figures/SUA_BAR_PLOT/SUA_BAR_PLOT_%s.png', 2030),      
+    10, 8, units = 'in', res = 500)
 
-ggplot(SUA.PLOT.MAJOR, aes(x = SUA, fill = AREA_CHANGE)) + 
+## 2030
+ggplot(SUA.PLOT.MAJOR.30,  aes(x = reorder(SUA, CURRENT_MAT), fill = AREA_CHANGE)) + 
   
   ## The species being lost
-  geom_bar(data = subset(SUA.PLOT.MAJOR, AREA_CHANGE %in% c("LOSS")),
+  geom_bar(data = subset(SUA.PLOT.MAJOR.30, AREA_CHANGE %in% c("LOSS")),
            aes(y = -SPECIES_COUNT), 
            position = "stack", stat = "identity", colour="black") +
   
   ## The species being gained or remaining stable
-  geom_bar(data = subset(SUA.PLOT.MAJOR, !AREA_CHANGE %in% c("LOSS")), 
+  geom_bar(data = subset(SUA.PLOT.MAJOR.30, !AREA_CHANGE %in% c("LOSS")), 
            aes(y = SPECIES_COUNT), 
            position = "stack", stat = "identity", colour="black") +
   
   ## The colour scheme
-  scale_fill_manual(values=rev(colorRampPalette(c('seagreen3','brown1', 'grey', 'skyblue3'))(4))) +
+  #scale_fill_manual(values=rev(colorRampPalette(c('seagreen3','brown1', 'grey', 'skyblue3'))(4))) +
+  scale_fill_manual(values=rev(colorRampPalette(c('brown1', 'seagreen3'))(2))) +
   
   ## The axes labels
-  labs(title = "Predicted gains and losses within Significant Urban Areas (SUAs)", 
-       x = "SUA", y = "Species Count") +
+  labs(title = "Predicted native species gain/loss (number) within SUAs to 2030", 
+       x = "SUA by increasing MAT", y = "Species Count") +
 
 ## Format axes
 theme(axis.title.x     = element_text(face = "bold", colour = "black", size = 15),
       axis.text.x      = element_text(angle = 45, vjust = 0.5, size = 12),
       axis.title.y     = element_text(face = "bold", colour = "black", size = 15),
       axis.text.y      = element_text(vjust = 0.5, size = 12),
-      title            = element_text(face = "bold", colour = "black", size = 20),
+      title            = element_text(face = "bold", colour = "black", size = 15),
       legend.title     = element_blank(),
       legend.text      = element_text(face = "bold", size = 12),
       panel.background = element_blank(), axis.line = element_line(colour = "black"),
@@ -414,44 +510,127 @@ dev.off()
 
 
 
-
-
 #########################################################################################################################
-## Could create a loop to plot each species
-png(sprintf('output/figures/SUA_BAR_PLOT/SUA_BAR_PLOT_%s.png', save_run),      
-    15, 8, units = 'in', res = 500)
+## Create PNG output for 2050
+png(sprintf('output/figures/SUA_BAR_PLOT/SUA_BAR_PLOT_%s.png', 2050),      
+    10, 8, units = 'in', res = 500)
 
-ggplot(SUA.SP.1.MAJOR, aes(x = SUA, fill = AREA_CHANGE)) + 
+## 2050
+ggplot(SUA.PLOT.MAJOR.50,  aes(x = reorder(SUA, CURRENT_MAT), fill = AREA_CHANGE)) + 
   
   ## The species being lost
-  geom_bar(data = subset(SUA.SP.1.MAJOR, AREA_CHANGE %in% c("LOSS")),
+  geom_bar(data = subset(SUA.PLOT.MAJOR.50, AREA_CHANGE %in% c("LOSS")),
            aes(y = -SPECIES_COUNT), 
            position = "stack", stat = "identity", colour="black") +
   
   ## The species being gained or remaining stable
-  geom_bar(data = subset(SUA.SP.1.MAJOR, !AREA_CHANGE %in% c("LOSS")), 
+  geom_bar(data = subset(SUA.PLOT.MAJOR.50, !AREA_CHANGE %in% c("LOSS")), 
            aes(y = SPECIES_COUNT), 
            position = "stack", stat = "identity", colour="black") +
   
   ## The colour scheme
-  scale_fill_manual(values=rev(colorRampPalette(c('seagreen3','brown1', 'grey', 'skyblue3'))(4))) +
+  #scale_fill_manual(values=rev(colorRampPalette(c('seagreen3','brown1', 'grey', 'skyblue3'))(4))) +
+  scale_fill_manual(values=rev(colorRampPalette(c('brown1', 'seagreen3'))(2))) +
   
   ## The axes labels
-  labs(title = "Predicted gains and losses within Significant Urban Areas (SUAs)", 
-       x = "SUA", y = "Species Count") +
+  labs(title = "Predicted native species gain/loss (number) within SUAs to 2050", 
+       x = "SUA by increasing MAT", y = "Species Count") +
   
   ## Format axes
   theme(axis.title.x     = element_text(face = "bold", colour = "black", size = 15),
         axis.text.x      = element_text(angle = 45, vjust = 0.5, size = 12),
         axis.title.y     = element_text(face = "bold", colour = "black", size = 15),
         axis.text.y      = element_text(vjust = 0.5, size = 12),
-        title            = element_text(face = "bold", colour = "black", size = 20),
+        title            = element_text(face = "bold", colour = "black", size = 15),
         legend.title     = element_blank(),
         legend.text      = element_text(face = "bold", size = 12),
         panel.background = element_blank(), axis.line = element_line(colour = "black"),
         panel.border     = element_rect(colour = "black", fill = NA, size = 2))
 
 dev.off()
+
+
+#########################################################################################################################
+## Create PNG output for 2070
+png(sprintf('output/figures/SUA_BAR_PLOT/SUA_BAR_PLOT_%s.png', 2070),      
+    10, 8, units = 'in', res = 500)
+
+## 2070
+ggplot(SUA.PLOT.MAJOR.70,  aes(x = reorder(SUA, CURRENT_MAT), fill = AREA_CHANGE)) + 
+  
+  ## The species being lost
+  geom_bar(data = subset(SUA.PLOT.MAJOR.70, AREA_CHANGE %in% c("LOSS")),
+           aes(y = -SPECIES_COUNT), 
+           position = "stack", stat = "identity", colour="black") +
+  
+  ## The species being gained or remaining stable
+  geom_bar(data = subset(SUA.PLOT.MAJOR.70, !AREA_CHANGE %in% c("LOSS")), 
+           aes(y = SPECIES_COUNT), 
+           position = "stack", stat = "identity", colour="black") +
+  
+  ## The colour scheme
+  #scale_fill_manual(values=rev(colorRampPalette(c('seagreen3','brown1', 'grey', 'skyblue3'))(4))) +
+  scale_fill_manual(values=rev(colorRampPalette(c('brown1', 'seagreen3'))(2))) +
+  
+  ## The axes labels
+  labs(title = "Predicted native species gain/loss (number) within SUAs to 2070", 
+       x = "SUA by increasing MAT", y = "Species Count") +
+  
+  ## Format axes
+  theme(axis.title.x     = element_text(face = "bold", colour = "black", size = 15),
+        axis.text.x      = element_text(angle = 45, vjust = 0.5, size = 12),
+        axis.title.y     = element_text(face = "bold", colour = "black", size = 15),
+        axis.text.y      = element_text(vjust = 0.5, size = 12),
+        title            = element_text(face = "bold", colour = "black", size = 15),
+        legend.title     = element_blank(),
+        legend.text      = element_text(face = "bold", size = 12),
+        panel.background = element_blank(), axis.line = element_line(colour = "black"),
+        panel.border     = element_rect(colour = "black", fill = NA, size = 2))
+
+dev.off()
+
+
+
+#########################################################################################################################
+## Now, lets try excluding any species that has a 0 count in that SUA
+
+
+#########################################################################################################################
+## Could create a loop to plot each species
+# png(sprintf('output/figures/SUA_BAR_PLOT/SUA_BAR_PLOT_%s.png', save_run),      
+#     15, 8, units = 'in', res = 500)
+
+# ggplot(SUA.SP.1.MAJOR, aes(x = SUA, fill = AREA_CHANGE)) + 
+#   
+#   ## The species being lost
+#   geom_bar(data = subset(SUA.SP.1.MAJOR, AREA_CHANGE %in% c("LOSS")),
+#            aes(y = -SPECIES_COUNT), 
+#            position = "stack", stat = "identity", colour="black") +
+#   
+#   ## The species being gained or remaining stable
+#   geom_bar(data = subset(SUA.SP.1.MAJOR, !AREA_CHANGE %in% c("LOSS")), 
+#            aes(y = SPECIES_COUNT), 
+#            position = "stack", stat = "identity", colour="black") +
+#   
+#   ## The colour scheme
+#   scale_fill_manual(values=rev(colorRampPalette(c('seagreen3','brown1', 'grey', 'skyblue3'))(4))) +
+#   
+#   ## The axes labels
+#   labs(title = "Predicted gains and losses within Significant Urban Areas (SUAs)", 
+#        x = "SUA", y = "Species Count") +
+#   
+#   ## Format axes
+#   theme(axis.title.x     = element_text(face = "bold", colour = "black", size = 15),
+#         axis.text.x      = element_text(angle = 45, vjust = 0.5, size = 12),
+#         axis.title.y     = element_text(face = "bold", colour = "black", size = 15),
+#         axis.text.y      = element_text(vjust = 0.5, size = 12),
+#         title            = element_text(face = "bold", colour = "black", size = 20),
+#         legend.title     = element_blank(),
+#         legend.text      = element_text(face = "bold", size = 12),
+#         panel.background = element_blank(), axis.line = element_line(colour = "black"),
+#         panel.border     = element_rect(colour = "black", fill = NA, size = 2))
+# 
+# dev.off()
 
 
 
@@ -470,87 +649,87 @@ dev.off()
 raster.dirs <- list.dirs(path = maxent_path, full.names = FALSE, recursive = FALSE)
 
 
-## Loop over the directories for the best species: current maps
-raster.current <- sapply(raster.dirs, function(x) {
-  
-  ## List the files for that time slice
-  list.files(paste0(maxent_path, x), pattern = 'current_suit_above', full.names = TRUE, recursive = TRUE)
-  
-})
-
-
-
-## 2030 maps
-raster.2030 <- sapply(raster.dirs, function(x) {
-  
-  ## List the files for that time slice
-  list.files(paste0(maxent_path, x), pattern = '2030_4GCMs_above', full.names = TRUE, recursive = TRUE)
-  
-})
-
-
-## 2050 maps
-raster.2050 <- sapply(raster.dirs, function(x) {
-  
-  ## List the files for that time slice
-  list.files(paste0(maxent_path, x), pattern = '2050_4GCMs_above', full.names = TRUE, recursive = TRUE)
-  
-})
-
-
-## 2070 maps
-raster.2070 <- sapply(raster.dirs, function(x) {
-  
-  ## List the files for that time slice
-  list.files(paste0("./output/maxent/SET_VAR_KOPPEN/", x), pattern = '2070_4GCMs_above', full.names = TRUE, recursive = TRUE)
-  
-})
-
-
-#########################################################################################################################
-## Now unlist so we can create a raster stack
-raster.current  = unlist(raster.current)
-raster.2030  = unlist(raster.2030)
-raster.2050  = unlist(raster.2050)
-raster.2070  = unlist(raster.2070)
-
-
-## Check length
-length(raster.current);length(raster.2030);length(raster.2050);length(raster.2070)
-
-
-## Then create raster stacks and sum
-stack.current   = stack(raster.current, quick = TRUE)
-stack.2030      = stack(raster.2030, quick = TRUE)
-stack.2050      = stack(raster.2050, quick = TRUE)
-stack.2070      = stack(raster.2070, quick = TRUE)
-
-
-## writeRaster(stack.2030, filename = 'output/maxent/multilayer.tif', options = "INTERLEAVE=BAND", overwrite = TRUE)
-## mystack = stack("multilayer.tif")
-
-
-## Summing takes a long time
-sum.current  = sum(stack.current) 
-sum.2030     = sum(stack.2030) 
-sum.2050     = sum(stack.2050) 
-sum.2070     = sum(stack.2070) 
-
-
-#########################################################################################################################
-## Plot to check
-plot(sum.current)
-plot(sum.2030)
-plot(sum.2050)
-plot(sum.2070)
-
-
-#########################################################################################################################
-## write out rasters
-writeRaster(sum.current, 'output/maxent/checked_spp_current_richness.tif')
-writeRaster(sum.2030,    'output/maxent/checked_spp_2030_richness.tif')
-writeRaster(sum.2050,    'output/maxent/checked_spp_2050_richness.tif')
-writeRaster(sum.2070,    'output/maxent/checked_spp_2070_richness.tif')
+# ## Loop over the directories for the best species: current maps
+# raster.current <- sapply(raster.dirs, function(x) {
+#   
+#   ## List the files for that time slice
+#   list.files(paste0(maxent_path, x), pattern = 'current_suit_above', full.names = TRUE, recursive = TRUE)
+#   
+# })
+# 
+# 
+# 
+# ## 2030 maps
+# raster.2030 <- sapply(raster.dirs, function(x) {
+#   
+#   ## List the files for that time slice
+#   list.files(paste0(maxent_path, x), pattern = '2030_4GCMs_above', full.names = TRUE, recursive = TRUE)
+#   
+# })
+# 
+# 
+# ## 2050 maps
+# raster.2050 <- sapply(raster.dirs, function(x) {
+#   
+#   ## List the files for that time slice
+#   list.files(paste0(maxent_path, x), pattern = '2050_4GCMs_above', full.names = TRUE, recursive = TRUE)
+#   
+# })
+# 
+# 
+# ## 2070 maps
+# raster.2070 <- sapply(raster.dirs, function(x) {
+#   
+#   ## List the files for that time slice
+#   list.files(paste0("./output/maxent/SET_VAR_KOPPEN/", x), pattern = '2070_4GCMs_above', full.names = TRUE, recursive = TRUE)
+#   
+# })
+# 
+# 
+# #########################################################################################################################
+# ## Now unlist so we can create a raster stack
+# raster.current  = unlist(raster.current)
+# raster.2030  = unlist(raster.2030)
+# raster.2050  = unlist(raster.2050)
+# raster.2070  = unlist(raster.2070)
+# 
+# 
+# ## Check length
+# length(raster.current);length(raster.2030);length(raster.2050);length(raster.2070)
+# 
+# 
+# ## Then create raster stacks and sum
+# stack.current   = stack(raster.current, quick = TRUE)
+# stack.2030      = stack(raster.2030, quick = TRUE)
+# stack.2050      = stack(raster.2050, quick = TRUE)
+# stack.2070      = stack(raster.2070, quick = TRUE)
+# 
+# 
+# ## writeRaster(stack.2030, filename = 'output/maxent/multilayer.tif', options = "INTERLEAVE=BAND", overwrite = TRUE)
+# ## mystack = stack("multilayer.tif")
+# 
+# 
+# ## Summing takes a long time
+# sum.current  = sum(stack.current) 
+# sum.2030     = sum(stack.2030) 
+# sum.2050     = sum(stack.2050) 
+# sum.2070     = sum(stack.2070) 
+# 
+# 
+# #########################################################################################################################
+# ## Plot to check
+# plot(sum.current)
+# plot(sum.2030)
+# plot(sum.2050)
+# plot(sum.2070)
+# 
+# 
+# #########################################################################################################################
+# ## write out rasters
+# writeRaster(sum.current, 'output/maxent/checked_spp_current_richness.tif')
+# writeRaster(sum.2030,    'output/maxent/checked_spp_2030_richness.tif')
+# writeRaster(sum.2050,    'output/maxent/checked_spp_2050_richness.tif')
+# writeRaster(sum.2070,    'output/maxent/checked_spp_2070_richness.tif')
 
 
 

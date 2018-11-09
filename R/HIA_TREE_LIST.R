@@ -300,6 +300,13 @@ APPENDIX            = read.csv("./data/base/HIA_LIST/COMBO/Appendix_table.csv", 
 AUS.FROGS           = read.csv("./data/base/Frog/AUS_FROGS.csv",                    stringsAsFactors = FALSE)
 AUS.FROGS           = AUS.FROGS$Scientific.Name
 str(unique(COMBO.NICHE.CONTEXT$searchTaxon))  ## long enough
+background          = readRDS("./data/base/HIA_LIST/COMBO/SDM_DATA_CLEAN_052018.rds")
+
+
+# writeOGR(obj    = background, 
+#          dsn    = "./data/base/HIA_LIST/COMBO", 
+#          layer  = paste0('background_SUA'),
+#          driver = "ESRI Shapefile", overwrite_layer = TRUE)
 
 
 #########################################################################################################################
