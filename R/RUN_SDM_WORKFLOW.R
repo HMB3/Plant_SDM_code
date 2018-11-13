@@ -4,13 +4,6 @@
 
 
 ## This code runs the whole SDM workflow for the HIA project, for a subset of species (e.g. whichever you supply)
-
-
-#########################################################################################################################
-## 1). RUN THE DRAFT CODE
-#########################################################################################################################
-
-
 ## In order to run this from katana, we need to use only the necessary packages. 
 
 
@@ -55,10 +48,10 @@ source('./R/HIA_TREE_LIST.R')
 
 ## Set global species variables here : species lists, and saving directories
 ## GBIF.spp = sort(trimws(unique(c(MOD.3.SPP$searchTaxon, trait.spp))))
-GBIF.spp      = unique(c(TPL.HIA, TPL.CLEAN))[1:10]                    ## your list of species
+GBIF.spp      = unique(c(TPL.HIA, TPL.CLEAN, ALL.INV.EV))[1:100]  ## your list of species
 GBIF.spp.rev  = sort(GBIF.spp, decreasing = TRUE)                ## the list reversed - only needed for a big list
 
-save_run      = "EVERGREEN_10"                       ## a variable to append the run name to the output files
+save_run      = "SUA_ANALYSIS_NATIVE_GOOD" #"EVERGREEN_100"      ## a variable to append the run name to the output files
 map_spp_list  = gsub(" ", "_", GBIF.spp)                         ## species list with "_" for mapping
 map_spp_rev   = sort(map_spp_list, decreasing = TRUE)            ## reversed, so we can run two at once
 
@@ -69,6 +62,15 @@ maxent_path   = './output/maxent/SUA_TREES_ANALYSIS/'            ## The director
 maxent_dir    = 'output/maxent/SUA_TREES_ANALYSIS'               ## Another version of the path that John's coding needs to run a loop
 save_data     = 'TRUE'                                           ## Arguments for saving the intermediary output - i.e. niches
 read_data     = 'FALSE'                                          ## Leave these the same - saves data, but doesn't read back in
+save_path     = 'data/base/HIA_LIST/COMBO'
+
+
+
+
+
+#########################################################################################################################
+## 1). RUN THE DRAFT CODE
+#########################################################################################################################
 
 
 #########################################################################################################################
@@ -86,7 +88,9 @@ source('./R/3)_GBIF_DATA_TAXO_SCIENTIFIC_NAME.R',    echo = TRUE)
 
 
 ## Step 4 :: combine GBIF, ALA and urban occurrence data into a single table, extract environmental condtions
-## INVENTORY_RASTER will be a problem for species that are not in Alessandro's dataset
+## INVENTORY_RASTER will be a problem for species that are not in Alessandro's dataset.
+## Also, consider constructing the niche dataset separately to SDMs, so we can model one species at a time
+## This is dealt with by save_data     = 'FALSE'
 source('./R/4)_ALA_GBIF_URBAN_COMBINE.R', echo = TRUE)
 source('./R/INVENTORY_RASTER.R',          echo = TRUE)
 
@@ -107,6 +111,42 @@ source('./R/7)_RUN_MAXENT.R', echo = TRUE)
 ## Then summarise maxent results and estimate species presences in significant urban areas under climate change
 ## Takes awhile, so probably run different time slices (2030, 2050, 2070) in separate R sessions
 source('./R/8)_MAP_SDM_COMBINE.R', echo = TRUE)
+
+
+
+
+
+#########################################################################################################################
+## 2). COMBINE THE NICHE RUNS TOGETHER
+#########################################################################################################################
+
+
+## Create a list of all dataframes with the extension from this run
+COMBO.NICHE.list = list.files(save_path, pattern = 'COMBO_NICHE_CONTEXT_EVERGREEN', full.names = TRUE, recursive = TRUE)
+
+
+## Now combine the SUA tables for each species into one table 
+COMBO.NICHE.ALL <- COMBO.NICHE.list %>%
+  
+  ## pipe the list into lapply
+  lapply(function(x) {
+    
+    ## create the character string
+    f <- paste0(x)
+    
+    ## load each .csv file
+    d <- readRDS(f)
+    d
+    
+  }) %>%
+  
+  ## finally, bind all the rows together
+  bind_rows
+
+
+## This is a summary of maxent output for current conditions
+dim(COMBO.NICHE.ALL)
+names(COMBO.NICHE.ALL)[1:10]
 
 
 

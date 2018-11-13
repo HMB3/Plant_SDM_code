@@ -65,11 +65,6 @@ length(unique(GAIN.LOSS.TABLE$SPECIES))
 length(unique(GAIN.LOSS.TABLE.COMPLETE$SPECIES)) 
 
 
-#########################################################################################################################
-## Now write CSV 
-write.csv(GAIN.LOSS.TABLE, paste0('output/tables/OVERALL_GAIN_LOSS_TABLE_', save_run, '.csv'), row.names = FALSE)
-
-
 
 
 
@@ -323,14 +318,26 @@ View(SUA.PREDICT)
 #t = SUA.PREDICT[is.na(SUA.PREDICT$MAJOR_KOP),]
 
 #########################################################################################################################
-## Save table
-write.csv(SUA.PREDICT, paste0('output/tables/MAXENT_SUA_PRESENCE_KOPPEN', save_run, '.csv'), row.names = FALSE)
-write.csv(SUA.TOP.PRESENCE, paste0('output/tables/MAXNET_SUA_TOP_',       save_run, '.csv'), row.names = FALSE)
+## Save tables
+if(save_data == "TRUE") {
+  
+  ## Load GBIF and ALA data
+  write.csv(GAIN.LOSS.TABLE,  paste0('output/tables/OVERALL_GAIN_LOSS_TABLE_',   save_run, '.csv'), row.names = FALSE)
+  write.csv(SUA.PREDICT,      paste0('output/tables/MAXENT_SUA_PRESENCE_KOPPEN', save_run, '.csv'), row.names = FALSE)
+  write.csv(SUA.TOP.PRESENCE, paste0('output/tables/MAXNET_SUA_TOP_',            save_run, '.csv'), row.names = FALSE)
+  
+} else {
+  
+  message('Skip file saving, not many species analysed')   ##
+  
+}
+
 
 
 
 #########################################################################################################################
-## We simply need a count of all the species that are being lost, gained or remaining stable in each SUA
+## We can count of all the species that are being lost, gained or remaining stable in each SUA
+## However, this doesn't give us the turner of species, because it ignores the species identities
 length(unique(SUA.PREDICT$SPECIES))
 SUA.PLOT.GOOD = subset(SUA.PREDICT, MAXENT_RATING < 3) #& ORIGIN == "Native")
 unique(SUA.PLOT.GOOD$MAXENT_RATING)
@@ -343,8 +350,12 @@ SUA.PLOT.GOOD.30 = subset(SUA.PLOT.GOOD, PERIOD == 30)
 SUA.PLOT.GOOD.50 = subset(SUA.PLOT.GOOD, PERIOD == 50)
 SUA.PLOT.GOOD.70 = subset(SUA.PLOT.GOOD, PERIOD == 70)
 unique(SUA.PLOT.GOOD.30$PERIOD);unique(SUA.PLOT.GOOD.50$PERIOD);unique(SUA.PLOT.GOOD.70$PERIOD)
+dim(SUA.PLOT.GOOD.30);dim(SUA.PLOT.GOOD.50);dim(SUA.PLOT.GOOD.70)
 
 
+## This is the point where the proportion of species could be counted
+## Create the 
+## round(with(SUA.PLOT.GOOD.30, table(SUA)/sum(table(GAIN_LOSS))*100), 1)
 SUA.PLOT.30       = table(SUA.PLOT.GOOD.30$SUA, SUA.PLOT.GOOD.30$GAIN_LOSS)
 SUA.PLOT.50       = table(SUA.PLOT.GOOD.50$SUA, SUA.PLOT.GOOD.50$GAIN_LOSS)
 SUA.PLOT.70       = table(SUA.PLOT.GOOD.70$SUA, SUA.PLOT.GOOD.70$GAIN_LOSS)
@@ -373,10 +384,31 @@ SUA.PLOT.70.M = join(SUA.PLOT.70.M, SUA.CLIM)
 head(SUA.PLOT.30.M);dim(SUA.PLOT.30.M)
    
 
+## Can we use ggplot to plot the percentage of species inside an LGA which is being lost or gained?
+## How to calculate the gain/loss? Could do :
+## Final - Now / Now *100. OR
+## Gain % = gain/(gained + lost)   * 100
+## Lost % = lost/(lost   + gained) * 100
+## This works for a subset, but not the whole dataset
+t = subset(SUA.PLOT.30.M, SUA == "Hobart" | SUA == "Adelaide" | SUA == "Darwin")
+ggplot(t,  aes(x = reorder(SUA, CURRENT_MAT), fill = AREA_CHANGE)) + 
+  
+  geom_bar(data = subset(t, AREA_CHANGE %in% c("LOSS")),
+           aes(y = -SPECIES_COUNT/sum(t$SPECIES_COUNT)), position = "stack", stat = "identity") +
+  
+  scale_fill_manual(values=rev(colorRampPalette(c('brown1', 'seagreen3'))(2))) +
+  
+  geom_bar(data = subset(t, !AREA_CHANGE %in% c("LOSS")), 
+           aes(y = SPECIES_COUNT/sum(t$SPECIES_COUNT)), position = "stack", stat = "identity") +
+  scale_y_continuous(labels=scales::percent)
+
+
+
 #########################################################################################################################
 ## Create PNG output for all SUAs, 2030
 png(sprintf('output/figures/SUA_BAR_PLOT/ALL_SUA_BAR_PLOT_%s.png', 2030),      
     10, 8, units = 'in', res = 500)
+
 
 ## 2030
 ggplot(SUA.PLOT.30.M,  aes(x = reorder(SUA, CURRENT_MAT), fill = AREA_CHANGE)) + 
@@ -384,14 +416,14 @@ ggplot(SUA.PLOT.30.M,  aes(x = reorder(SUA, CURRENT_MAT), fill = AREA_CHANGE)) +
   geom_bar(data = subset(SUA.PLOT.30.M, AREA_CHANGE %in% c("LOSS")),
            aes(y = -SPECIES_COUNT), position = "stack", stat = "identity") +
   
-  scale_fill_manual(values=rev(colorRampPalette(c('brown1', 'seagreen3'))(2))) +
+  scale_fill_manual(values = rev(colorRampPalette(c('brown1', 'seagreen3'))(2))) +
 
   geom_bar(data = subset(SUA.PLOT.30.M, !AREA_CHANGE %in% c("LOSS")), 
            aes(y = SPECIES_COUNT), position = "stack", stat = "identity") +
   
   ## The colour scheme
   #scale_fill_manual(values=rev(colorRampPalette(c('seagreen3','brown1', 'grey', 'skyblue3'))(4))) +
-  scale_fill_manual(values=rev(colorRampPalette(c('brown1', 'seagreen3'))(2))) +
+  scale_fill_manual(values = rev(colorRampPalette(c('brown1', 'seagreen3'))(2))) +
   
   ## The axes labels
   labs(title = "Predicted native species gain/loss (number) within SUAs to 2030", 

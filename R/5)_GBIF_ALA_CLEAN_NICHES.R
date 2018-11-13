@@ -24,7 +24,7 @@ message('Cleaning outliers and creating niches for ', length(GBIF.spp), ' specie
 if(read_data == "TRUE") {
   
   ## read in RDS files from previous step
-  TI.RASTER.CONVERT = readRDS(paste0('data/base/HIA_LIST/COMBO/TI_RASTER_CONVERT_', save_run, '.rds'))
+  #TI.RASTER.CONVERT = readRDS(paste0('data/base/HIA_LIST/COMBO/TI_RASTER_CONVERT_', save_run, '.rds'))
   COMBO.RASTER.CONVERT = readRDS(paste0('data/base/HIA_LIST/COMBO/COMBO_RASTER_CONVERT_', save_run, '.rds'))
   
 } else {
@@ -232,13 +232,14 @@ message(round(dim(CLEAN.NATIVE)[1]/2401878*100, 2), " % records retained")
 ## Check the NAs
 if(dim(TI.XY.SPP)[1] > 0) {
 
+message('Combining Australian inventory data with occurrence data') 
 intersect(names(TI.RASTER.CONVERT), names(CLEAN.TRUE))
 CLEAN.TRUE = bind_rows(CLEAN.TRUE, TI.RASTER.CONVERT)
 
 } else {
   
   ## Update with global data
-  message('No Australian inventory data for this species')   ##
+  message('No Australian inventory data for these species')   ##
   CLEAN.TRUE = CLEAN.TRUE
   
 }
@@ -377,8 +378,6 @@ if(save_data == "TRUE") {
   
   projection(COMBO.RASTER.SP);projection(LGA.WGS);projection(SUA.WGS);projection(AUS.WGS)
   SUA.JOIN      = over(COMBO.RASTER.SP,   SUA.WGS)
-  INV.JOIN      = over(TI.RASTER.CONVERT, SUA.WGS)
-  
   COMBO.SUA.LGA = cbind.data.frame(COMBO.RASTER.SP, SUA.JOIN) 
   
   
@@ -561,6 +560,7 @@ if(save_data == "TRUE") {
   
   #########################################################################################################################
   ## save .rds file for the next session
+  message('Writing niche and raster data for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
   saveRDS(COMBO.NICHE.CONTEXT,   paste0('data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_',  save_run, '.rds'))
   saveRDS(COMBO.RASTER.CONTEXT,  paste0('data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_', save_run, '.rds'))
   

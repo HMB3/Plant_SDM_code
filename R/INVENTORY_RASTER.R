@@ -34,7 +34,7 @@ TI.XY.SPP = TI.XY[TI.XY$searchTaxon %in% GBIF.spp, ]
 length(unique(TI.XY.SPP$searchTaxon))
 
 
-message('Extracting rasters for ', 
+message('Extracting raster values for ', 
         length(unique(TI.XY.SPP$searchTaxon)), ' urban species across ',
         length(unique(TI.XY.SPP$INVENTORY)),   ' Councils ')
 

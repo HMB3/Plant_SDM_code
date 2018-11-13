@@ -600,6 +600,11 @@ HIA.SPP.LOOKUP = dplyr::rename(HIA.SPP.LOOKUP, Binomial = rn)
 head(HIA.SPP.LOOKUP) ## Can merge on the bilogical data here...
 ## write.csv(HIA.SPP.LOOKUP, "./data/base/HIA_LIST/HIA/HIA_BINOMIAL_LOOKUP.csv",   row.names = FALSE)
 ## write.csv(CLEAN.SPP,      "./data/base/HIA_LIST/HIA/CLEAN_BINOMIAL_LOOKUP.csv", row.names = FALSE)
+## write.csv(CLEAN.SPP,      "./data/base/HIA_LIST/HIA/CLEAN_BINOMIAL_LOOKUP.csv", row.names = FALSE)
+
+length(intersect(TI.LIST$searchTaxon, CLEAN.SPP$Binomial))
+ALL.INV.EV = intersect(TI.LIST$searchTaxon, CLEAN.SPP$Binomial)
+# write.csv(ALL.INV.EV, "./data/base/HIA_LIST/HIA/CLEAN_BINOMIAL_LOOKUP.csv", row.names = FALSE)
 
 
 
@@ -751,14 +756,16 @@ length(HIA.GBIF);length(CLEAN.GBIF)
 
 
 #########################################################################################################################
-## only run TPL checks once - they are slow
+## only run TPL checks once, they are slow
 # TPL.SUA   <- TPL(unique(SUA.SPP), infra = TRUE, corr = TRUE, repeats = 100)
 # TPL.HIA   <- TPL(unique(HIA.GBIF), infra = TRUE, corr = TRUE, repeats = 100)
 # TPL.CLEAN <- TPL(unique(CLEAN.GBIF), infra = TRUE, corr = TRUE, repeats = 100)
+# TPL.INV   <- TPL(unique(ALL.INV.EV), infra = TRUE, corr = TRUE, repeats = 100)
 # View(TPL.SUA[c("Taxon", "Taxonomic.status", "New.Taxonomic.status", "New.Genus", "New.Species")])
 # saveRDS(TPL.SUA, file = paste("./data/base/HIA_LIST/GBIF/TPL_SUA.rds"))
 # saveRDS(TPL.HIA, file = paste("./data/base/HIA_LIST/HIA/TPL_HIA.rds"))
 # saveRDS(TPL.CLEAN, file = paste("./data/base/HIA_LIST/HIA/TPL_CLEAN.rds"))
+# saveRDS(TPL.INV, file = paste("./data/base/HIA_LIST/HIA/TPL_INV.rds"))
 #write.csv(TPL.SUA, "./data/base/HIA_LIST/GBIF/TPL_SUA.csv", row.names = FALSE)
 
 
@@ -769,6 +776,7 @@ length(HIA.GBIF);length(CLEAN.GBIF)
 TPL.SUA   = readRDS("./data/base/HIA_LIST/GBIF/TPL_SUA.rds")
 TPL.HIA   = readRDS("./data/base/HIA_LIST/HIA/TPL_HIA.rds")
 TPL.CLEAN = readRDS("./data/base/HIA_LIST/HIA/TPL_CLEAN.rds")
+TPL.INV   = readRDS("./data/base/HIA_LIST/HIA/TPL_CLEAN.rds")
 
 TPL.SPP   = paste(TPL.SUA$New.Genus, TPL.SUA$New.Species, sep = " ")  ## using the latest binomial names from TPL
 TPL_SPP   = gsub(" ", "_", TPL.SPP)
