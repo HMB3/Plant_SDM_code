@@ -20,7 +20,7 @@ message('Cleaning outliers and creating niches for ', length(GBIF.spp), ' specie
 
 
 #########################################################################################################################
-## Read in the two data tables
+## Read in the global data
 if(read_data == "TRUE") {
   
   ## read in RDS files from previous step
@@ -30,6 +30,20 @@ if(read_data == "TRUE") {
 } else {
   
   message(' skip file reading, not many species analysed')   ##
+  
+}
+
+
+#########################################################################################################################
+## Read in the global data
+if(dim(TI.XY.SPP)[1] > 0) {
+  
+  ## Read in RDS files from previous step
+  TI.RASTER.CONVERT = readRDS(paste0('data/base/HIA_LIST/COMBO/TI_RASTER_CONVERT_', save_run, '.rds'))
+  
+} else {
+  
+  message(' skip file reading, no urban records')   ##
   
 }
 
@@ -216,13 +230,22 @@ message(round(dim(CLEAN.NATIVE)[1]/2401878*100, 2), " % records retained")
 #########################################################################################################################
 ## Now bind on the urban tree inventory data. We are assuming this data is clean, after we manually fix the taxonomy
 ## Check the NAs
+if(dim(TI.XY.SPP)[1] > 0) {
+
 intersect(names(TI.RASTER.CONVERT), names(CLEAN.TRUE))
 CLEAN.TRUE = bind_rows(CLEAN.TRUE, TI.RASTER.CONVERT)
+
+} else {
+  
+  ## Update with global data
+  message('No Australian inventory data for this species')   ##
+  CLEAN.TRUE = CLEAN.TRUE
+  
+}
 
 
 names(CLEAN.TRUE)
 unique(CLEAN.TRUE$SOURCE) 
-unique(CLEAN.TRUE$INVENTORY) 
 length(unique(CLEAN.TRUE$searchTaxon))
 summary(CLEAN.TRUE$Annual_mean_temp)
 
@@ -353,7 +376,9 @@ if(save_data == "TRUE") {
   
   
   projection(COMBO.RASTER.SP);projection(LGA.WGS);projection(SUA.WGS);projection(AUS.WGS)
-  SUA.JOIN      = over(COMBO.RASTER.SP, SUA.WGS)              
+  SUA.JOIN      = over(COMBO.RASTER.SP,   SUA.WGS)
+  INV.JOIN      = over(TI.RASTER.CONVERT, SUA.WGS)
+  
   COMBO.SUA.LGA = cbind.data.frame(COMBO.RASTER.SP, SUA.JOIN) 
   
   

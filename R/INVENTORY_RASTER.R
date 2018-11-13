@@ -31,6 +31,12 @@ rasterTmpFile()
 #########################################################################################################################
 ## Restrict the inventory species to just the analysed species
 TI.XY.SPP = TI.XY[TI.XY$searchTaxon %in% GBIF.spp, ]
+length(unique(TI.XY.SPP$searchTaxon))
+
+
+message('Extracting rasters for ', 
+        length(unique(TI.XY.SPP$searchTaxon)), ' urban species across ',
+        length(unique(TI.XY.SPP$INVENTORY)),   ' Councils ')
 
 
 #########################################################################################################################

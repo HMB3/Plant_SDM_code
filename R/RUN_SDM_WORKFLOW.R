@@ -28,7 +28,7 @@ source('./R/HIA_TREE_LIST.R')
 
 ## 1). All files, for Macquarie science IT backup
 
-## 2). Reduced file set, for the web developers
+## 2). Reduced file set, for cloudstor and the web developers
 
 
 ## Do we need the rasters themselves, to be read somehow by another function, or do we need already formatted images?
@@ -48,17 +48,17 @@ source('./R/HIA_TREE_LIST.R')
 
 
 #########################################################################################################################
-## %%&*). For rapid assessment of species, how could we mine the data for potentially useful species?
+## For rapid assessment of species, how could we mine the data for potentially useful species?
 ## Could search both the overall loss/gain table, and also the SUA table, for the summary of the cells gained and lost.
 ## So top and tail the list - check maps for the biggest losers and gainers overall. Prioritise checking these species
 
 
 ## Set global species variables here : species lists, and saving directories
 ## GBIF.spp = sort(trimws(unique(c(MOD.3.SPP$searchTaxon, trait.spp))))
-GBIF.spp      = native.good.models                               ## your list of species
+GBIF.spp      = unique(c(TPL.HIA, TPL.CLEAN))[1:10]                    ## your list of species
 GBIF.spp.rev  = sort(GBIF.spp, decreasing = TRUE)                ## the list reversed - only needed for a big list
 
-save_run      = "SUA_ANALYSIS_NATIVE_GOOD"                       ## a variable to append the run name to the output files
+save_run      = "EVERGREEN_10"                       ## a variable to append the run name to the output files
 map_spp_list  = gsub(" ", "_", GBIF.spp)                         ## species list with "_" for mapping
 map_spp_rev   = sort(map_spp_list, decreasing = TRUE)            ## reversed, so we can run two at once
 
@@ -77,11 +77,16 @@ message('Running SDM workflow for ', length(GBIF.spp), ' species in the set ', "
 
 
 ## Step 3 :: combine GBIF occurrence data with ALA data and filter to records > 1950
+source('./R/1)_GBIF_ALA_DOWNLOAD.R', echo = TRUE)
+
+
+## Step 3 :: combine GBIF occurrence data with ALA data and filter to records > 1950
 source('./R/ALA_DATA_FILTER_TAXO_SCIENTIFIC_NAME.R', echo = TRUE)
 source('./R/3)_GBIF_DATA_TAXO_SCIENTIFIC_NAME.R',    echo = TRUE)
 
 
-## Step 4 :: combine GBIF, ALA and urban occurrence data into a single table, extract environmental condtions 
+## Step 4 :: combine GBIF, ALA and urban occurrence data into a single table, extract environmental condtions
+## INVENTORY_RASTER will be a problem for species that are not in Alessandro's dataset
 source('./R/4)_ALA_GBIF_URBAN_COMBINE.R', echo = TRUE)
 source('./R/INVENTORY_RASTER.R',          echo = TRUE)
 
