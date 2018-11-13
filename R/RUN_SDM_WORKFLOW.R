@@ -48,10 +48,10 @@ source('./R/HIA_TREE_LIST.R')
 
 ## Set global species variables here : species lists, and saving directories
 ## GBIF.spp = sort(trimws(unique(c(MOD.3.SPP$searchTaxon, trait.spp))))
-GBIF.spp      = unique(c(TPL.HIA, TPL.CLEAN, ALL.INV.EV))[1:100]  ## your list of species
+GBIF.spp      = unique(c(TPL.HIA, TPL.CLEAN, ALL.INV.EV))[1:500] ## your list of species
 GBIF.spp.rev  = sort(GBIF.spp, decreasing = TRUE)                ## the list reversed - only needed for a big list
 
-save_run      = "SUA_ANALYSIS_NATIVE_GOOD" #"EVERGREEN_100"      ## a variable to append the run name to the output files
+save_run      = "EVERGREEN_500"                                  ## a variable to append the run name to the output files
 map_spp_list  = gsub(" ", "_", GBIF.spp)                         ## species list with "_" for mapping
 map_spp_rev   = sort(map_spp_list, decreasing = TRUE)            ## reversed, so we can run two at once
 
@@ -122,7 +122,8 @@ source('./R/8)_MAP_SDM_COMBINE.R', echo = TRUE)
 
 
 ## Create a list of all dataframes with the extension from this run
-COMBO.NICHE.list = list.files(save_path, pattern = 'COMBO_NICHE_CONTEXT_EVERGREEN', full.names = TRUE, recursive = TRUE)
+COMBO.NICHE.list  = list.files(save_path, pattern = 'COMBO_NICHE_CONTEXT_EVERGREEN', full.names = TRUE, recursive = TRUE)
+COMBO.RASTER.list = list.files(save_path, pattern = 'COMBO_NICHE_CONTEXT_EVERGREEN', full.names = TRUE, recursive = TRUE)
 
 
 ## Now combine the SUA tables for each species into one table 
