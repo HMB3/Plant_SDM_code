@@ -12,9 +12,6 @@
 #########################################################################################################################
 
 
-## Check the match between the SUA shapefile and population fields......................................................
-
-
 ## Read in the table of species in SUAs
 SUA.SPP.COUNT = readRDS(paste0('data/base/HIA_LIST/COMBO/SUA_SPP_COUNT_', save_run, '.rds'))
 length(unique(SUA.SPP.COUNT$SPECIES))
@@ -116,9 +113,6 @@ length(unique(SUA.PRESENCE$SPECIES))
 
 #########################################################################################################################
 ## Now join on the population. Note that the ABS area shapefile does not have the same SUAs as the ABS table
-
-
-## Update this to match SUA names between SUA_NAME16 and the population table............................................
 SUA.DENS = areal_unit@data
 SUA.DENS = SUA.DENS[, c("SUA_NAME16", "AREASQKM16")]
 names(SUA.DENS) = c("SUA", "AREA_SQKM")
@@ -145,7 +139,7 @@ SUA.DEN$POP_DESNITY     = SUA.DEN$POP_2017/SUA.DEN$AREA_SQKM
 SUA.DEN                 = SUA.DEN[, c("SUA", "POP_2017", "POP_DESNITY")]
 
 
-## Try to harmonise the SUAs in both the area and population tables.......................................................
+## Try to harmonise the SUAs in both the area and population tables
 setdiff(SUA.DEN$SUA, TOP.SUA.POP$SUA)
 setdiff(TOP.SUA.POP$SUA, SUA.DENS$SUA)
 
@@ -170,19 +164,9 @@ SUA.PRESENCE = SUA.PRESENCE[, c("SUA_CODE16",  "SUA",      "AREASQKM16", "POP_DE
                                 "CELL_COUNT",  "CHANGE",   "GAIN_LOSS")]
 
 
-## Which SUA's are missing populations? We should have the Central Coast. An updated table can vbe joined on like this
-# SUA.PRESENCE = as.data.frame(rbindlist(list(SUA.PRESENCE, URB.POP), fill = TRUE)[, c('SUA', 'POP_2017') :=
-#                                                              lapply(.SD, na.omit) , SUA, .SDcols = SUA:POP_2017][])
-
-
 ## Just check there are no NA species
 SUA.COMPLETE = completeFun(SUA.PRESENCE, "CURRENT_SUITABLE")
 summary(SUA.COMPLETE)
-
-
-## Which species are missing?
-# intersect(unique(SUA.PRESENCE[is.na(SUA.PRESENCE$POP_2017),]$SUA),
-#           intersect(URB.POP$SUA, SUA.COMPLETE$SUA))
 
 
 #########################################################################################################################
@@ -192,12 +176,7 @@ unique(SUA.COMPLETE$GAIN_LOSS)
 
 
 #########################################################################################################################
-## Rank by population
-## SUA.PRESENCE = SUA.PRESENCE [with(SUA.PRESENCE , rev(order(POP_2017))), ]
-
-
-## Use a numerical definition of the most populated areas, OR, just take the capital cities
-## MAIN_SUA = c("Sydney", "Melbourne", "Canberra - Queanbeyan", "Brisbane", "Perth", "Adelaide", "Hobart", "Darwin")
+## Select the major SUAs
 top_n   = 8
 BIG.SUA = head(TOP.SUA.POP[with(TOP.SUA.POP, rev(order(POP_2017))), ], top_n)
 BIG_SUA = BIG.SUA$SUA
@@ -224,7 +203,6 @@ names(SDM.CHECK) = c("SPECIES", "ORIGIN", "MAXENT_RATING")
 ## What are the proportions of Origin and complete
 table(SDM.CHECK$ORIGIN)
 round(with(SDM.CHECK, table(ORIGIN)/sum(table(ORIGIN))*100), 1)
-
 table(SDM.CHECK$MAXENT_RATING)
 round(with(SDM.CHECK, table(MAXENT_RATING)/sum(table(MAXENT_RATING))*100), 1)
 
@@ -251,6 +229,7 @@ identical(dim(SUA.PREDICT)[1], dim(SUA.COMPLETE)[1])
 
 
 
+
 #########################################################################################################################
 ## 3). CREATE PLOTS OF SPECIES LOSS AND GAIN
 #########################################################################################################################
@@ -263,9 +242,9 @@ SUA.BIO12.current.stats = read.csv("./data/base/worldclim/aus/1km/bio/SUA_BIO12_
 SUA.KOP                 = read.csv("./data/base/worldclim/aus/1km/bio/SUA_KOPPEN.csv",              stringsAsFactors = FALSE)
 SUA.PET                 = read.csv("./data/base/worldclim/aus/1km/bio/SUA_PET_current_stats.csv",   stringsAsFactors = FALSE)
 
-SUA.BIO1.2030.stats    = read.csv("./data/base/worldclim/aus/1km/bio/SUA_BIO1_2030_stats.csv",    stringsAsFactors = FALSE)
-SUA.BIO1.2050.stats    = read.csv("./data/base/worldclim/aus/1km/bio/SUA_BIO1_2050_stats.csv",    stringsAsFactors = FALSE)
-SUA.BIO1.2070.stats    = read.csv("./data/base/worldclim/aus/1km/bio/SUA_BIO1_2050_stats.csv",    stringsAsFactors = FALSE)
+SUA.BIO1.2030.stats     = read.csv("./data/base/worldclim/aus/1km/bio/SUA_BIO1_2030_stats.csv",     stringsAsFactors = FALSE)
+SUA.BIO1.2050.stats     = read.csv("./data/base/worldclim/aus/1km/bio/SUA_BIO1_2050_stats.csv",     stringsAsFactors = FALSE)
+SUA.BIO1.2070.stats     = read.csv("./data/base/worldclim/aus/1km/bio/SUA_BIO1_2050_stats.csv",     stringsAsFactors = FALSE)
 
 
 #########################################################################################################################
@@ -283,28 +262,9 @@ names(SUA.KOP)[names(SUA.KOP) == "SUA_NAME16"] <- "SUA"
 names(SUA.KOP)[names(SUA.KOP) == "MAJORITY"] <- "MAJOR_KOP"
 
 
-## Can't join these data
+## Divide temperature by 10
 SUA.BIO1.2030.stats[["PERIOD"]]  <- 30
 colnames(SUA.BIO1.2030.stats)[1] <- "SUA"
-
-# SUA.BIO1.2050.stats[["PERIOD"]]  <- 50
-# colnames(SUA.BIO1.2050.stats)[1] <- "SUA"
-# 
-# SUA.BIO1.2070.stats[["PERIOD"]]  <- 50
-# colnames(SUA.BIO1.2070.stats)[1] <- "SUA"
-# 
-# SUA.ZONAL.STATS = bind_rows(SUA.BIO1.2030.stats,
-#                             SUA.BIO1.2050.stats,
-#                             SUA.BIO1.2070.stats)
-# SUA.ZONAL.STATS[["CLIMATE"]] = "BIO.01.MAT" 
-# 
-# 
-# ## Divide columns by 10
-# SUA.ZONAL.STATS.CONVERT = as.data.table(SUA.ZONAL.STATS)                           ## Check this works, also inefficient
-# SUA.ZONAL.STATS.CONVERT[, (names(SUA.ZONAL.STATS[c(5:10)])) := lapply(.SD, function(x) 
-#   x / 10 ), .SDcols = names(SUA.ZONAL.STATS[c(5:10)])]
-# SUA.ZONAL.STATS.CONVERT = as.data.frame(SUA.ZONAL.STATS.CONVERT) 
-# View(SUA.ZONAL.STATS)
 SUA.BIO1.current.stats[["CURRENT_MAT"]] = SUA.BIO1.current.stats[["CURRENT_MAT"]]/10
 
 
@@ -316,6 +276,7 @@ SUA.PREDICT = join(SUA.PREDICT, SUA.PET[c("SUA", "CURRENT_PET")])
 summary(SUA.PREDICT)
 View(SUA.PREDICT)
 #t = SUA.PREDICT[is.na(SUA.PREDICT$MAJOR_KOP),]
+
 
 #########################################################################################################################
 ## Save tables
@@ -331,8 +292,6 @@ if(save_data == "TRUE") {
   message('Skip file saving, not many species analysed')   ##
   
 }
-
-
 
 
 #########################################################################################################################
@@ -353,26 +312,38 @@ unique(SUA.PLOT.GOOD.30$PERIOD);unique(SUA.PLOT.GOOD.50$PERIOD);unique(SUA.PLOT.
 dim(SUA.PLOT.GOOD.30);dim(SUA.PLOT.GOOD.50);dim(SUA.PLOT.GOOD.70)
 
 
-## This is the point where the proportion of species could be counted
-## Create the 
-## round(with(SUA.PLOT.GOOD.30, table(SUA)/sum(table(GAIN_LOSS))*100), 1)
-SUA.PLOT.30       = table(SUA.PLOT.GOOD.30$SUA, SUA.PLOT.GOOD.30$GAIN_LOSS)
-SUA.PLOT.50       = table(SUA.PLOT.GOOD.50$SUA, SUA.PLOT.GOOD.50$GAIN_LOSS)
-SUA.PLOT.70       = table(SUA.PLOT.GOOD.70$SUA, SUA.PLOT.GOOD.70$GAIN_LOSS)
-SUA.PLOT.30.M     = melt(SUA.PLOT.30)
-SUA.PLOT.50.M     = melt(SUA.PLOT.50)
-SUA.PLOT.70.M     = melt(SUA.PLOT.70)
-#SUA.SPP.M      = melt(table(SUA.PLOT.GOOD$SUA, SUA.PLOT.GOOD$GAIN_LOSS, SUA.PLOT.GOOD$SPECIES)) 
+## Melt the table into the right format : but does this mean the different categories are mutually exclusive?
+## Species can only fall in the categories gain, loss, stable, never, in each SUA. So yes, they are exclusive.
+SUA.PLOT.30          = table(SUA.PLOT.GOOD.30$SUA, SUA.PLOT.GOOD.30$GAIN_LOSS)
+SUA.PLOT.50          = table(SUA.PLOT.GOOD.50$SUA, SUA.PLOT.GOOD.50$GAIN_LOSS)
+SUA.PLOT.70          = table(SUA.PLOT.GOOD.70$SUA, SUA.PLOT.GOOD.70$GAIN_LOSS)
+SUA.PLOT.30.M        = melt(SUA.PLOT.30)
+SUA.PLOT.50.M        = melt(SUA.PLOT.50)
+SUA.PLOT.70.M        = melt(SUA.PLOT.70)
 
 names(SUA.PLOT.30.M) = c("SUA", "AREA_CHANGE", "SPECIES_COUNT")
 names(SUA.PLOT.50.M) = c("SUA", "AREA_CHANGE", "SPECIES_COUNT")
 names(SUA.PLOT.70.M) = c("SUA", "AREA_CHANGE", "SPECIES_COUNT")
 
-SUA.PLOT.30.M        = subset(SUA.PLOT.30.M, AREA_CHANGE != "NEVER" & AREA_CHANGE != "STABLE")
-SUA.PLOT.50.M        = subset(SUA.PLOT.50.M, AREA_CHANGE != "NEVER" & AREA_CHANGE != "STABLE")
-SUA.PLOT.70.M        = subset(SUA.PLOT.70.M, AREA_CHANGE != "NEVER" & AREA_CHANGE != "STABLE") 
-head(SUA.PLOT.30.M)
-head(SUA.PLOT.70.M)
+SUA.PLOT.30.M        = subset(SUA.PLOT.30.M, AREA_CHANGE != "NEVER")# & AREA_CHANGE != "STABLE")
+SUA.PLOT.50.M        = subset(SUA.PLOT.50.M, AREA_CHANGE != "NEVER")# & AREA_CHANGE != "STABLE")
+SUA.PLOT.70.M        = subset(SUA.PLOT.70.M, AREA_CHANGE != "NEVER")# & AREA_CHANGE != "STABLE") 
+
+SUA.30.M.LOSS        = subset(SUA.PLOT.30.M, AREA_CHANGE %in% c("LOSS"))
+SUA.30.M.GAIN        = subset(SUA.PLOT.30.M, AREA_CHANGE %in% c("GAIN"))
+SUA.30.M.STABLE      = subset(SUA.PLOT.30.M, AREA_CHANGE %in% c("STABLE"))
+
+SUA.50.M.LOSS        = subset(SUA.PLOT.50.M, AREA_CHANGE %in% c("LOSS"))
+SUA.50.M.GAIN        = subset(SUA.PLOT.50.M, AREA_CHANGE %in% c("GAIN"))
+SUA.50.M.STABLE      = subset(SUA.PLOT.50.M, AREA_CHANGE %in% c("STABLE"))
+
+SUA.70.M.LOSS        = subset(SUA.PLOT.70.M, AREA_CHANGE %in% c("LOSS"))
+SUA.70.M.GAIN        = subset(SUA.PLOT.70.M, AREA_CHANGE %in% c("GAIN"))
+SUA.70.M.STABLE      = subset(SUA.PLOT.70.M, AREA_CHANGE %in% c("STABLE"))
+
+head(SUA.30.M.LOSS)
+head(SUA.30.M.GAIN)
+head(SUA.30.M.STABLE)
 
 
 #########################################################################################################################
@@ -387,20 +358,32 @@ head(SUA.PLOT.30.M);dim(SUA.PLOT.30.M)
 ## Can we use ggplot to plot the percentage of species inside an LGA which is being lost or gained?
 ## How to calculate the gain/loss? Could do :
 ## Final - Now / Now *100. OR
-## Gain % = gain/(gained + lost)   * 100
-## Lost % = lost/(lost   + gained) * 100
-## This works for a subset, but not the whole dataset
-t = subset(SUA.PLOT.30.M, SUA == "Hobart" | SUA == "Adelaide" | SUA == "Darwin")
-ggplot(t,  aes(x = reorder(SUA, CURRENT_MAT), fill = AREA_CHANGE)) + 
+## Gain % = gain/(stable + lost)   * 100
+## Lost % = lost/(stable + lost) * 100
+
+
+## Order by current temp
+ggplot(SUA.PLOT.30.M,  aes(x = reorder(SUA, CURRENT_MAT), fill = AREA_CHANGE)) + 
   
-  geom_bar(data = subset(t, AREA_CHANGE %in% c("LOSS")),
-           aes(y = -SPECIES_COUNT/sum(t$SPECIES_COUNT)), position = "stack", stat = "identity") +
+  ## Subset data to make counting easier
+  geom_bar(data        = subset(SUA.PLOT.30.M, AREA_CHANGE %in% c("LOSS")),
+           
+           ## Create % count
+           aes(y = -(SPECIES_COUNT/(SUA.30.M.LOSS$SPECIES_COUNT + SUA.30.M.STABLE$SPECIES_COUNT))), 
+           position = "stack", stat = "identity") +
   
-  scale_fill_manual(values=rev(colorRampPalette(c('brown1', 'seagreen3'))(2))) +
+  ## Subset data to make counting easier
+  geom_bar(data  = subset(SUA.PLOT.30.M, AREA_CHANGE %in% c("GAIN")), 
+           
+           aes(y = (SPECIES_COUNT/(SUA.30.M.LOSS$SPECIES_COUNT + SUA.30.M.STABLE$SPECIES_COUNT))), 
+           position = "stack", stat = "identity") +
   
-  geom_bar(data = subset(t, !AREA_CHANGE %in% c("LOSS")), 
-           aes(y = SPECIES_COUNT/sum(t$SPECIES_COUNT)), position = "stack", stat = "identity") +
-  scale_y_continuous(labels=scales::percent)
+  scale_y_continuous(labels = scales::percent) +
+  
+  scale_fill_manual(values = rev(colorRampPalette(c('brown1', 'seagreen3'))(2))) +
+  
+  labs(title = "Predicted native species gain/loss (number) within SUAs to 2030", 
+       x = "SUA by increasing MAT", y = "% Original species gained/lost") 
 
 
 
@@ -511,13 +494,15 @@ ggplot(SUA.PLOT.MAJOR.30,  aes(x = reorder(SUA, CURRENT_MAT), fill = AREA_CHANGE
   
   ## The species being lost
   geom_bar(data = subset(SUA.PLOT.MAJOR.30, AREA_CHANGE %in% c("LOSS")),
-           aes(y = -SPECIES_COUNT), 
+           aes(y = -SPECIES_COUNT/sum(SUA.PLOT.MAJOR.30$SPECIES_COUNT)), 
            position = "stack", stat = "identity", colour="black") +
   
   ## The species being gained or remaining stable
   geom_bar(data = subset(SUA.PLOT.MAJOR.30, !AREA_CHANGE %in% c("LOSS")), 
-           aes(y = SPECIES_COUNT), 
+           aes(y = SPECIES_COUNT/sum(SUA.PLOT.MAJOR.30$SPECIES_COUNT)), 
            position = "stack", stat = "identity", colour="black") +
+  
+  scale_y_continuous(labels=scales::percent) +
   
   ## The colour scheme
   #scale_fill_manual(values=rev(colorRampPalette(c('seagreen3','brown1', 'grey', 'skyblue3'))(4))) +
