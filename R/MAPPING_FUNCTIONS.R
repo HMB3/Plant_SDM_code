@@ -274,7 +274,6 @@ SUA_cell_count = function(DIR_list, species_list, maxent_path, thresholds,
           current_suit_percent = percent_greater(f_current) 
           
           ## If we are just using the combined rasters without calculating the difference, don't worry about the zeros   
-          
           #########################################################################################################################
           ## First, calculate the cells which are greater that the: 
           ## Maximum training sensitivity plus specificity Logistic threshold
@@ -448,37 +447,38 @@ SUA_cell_count = function(DIR_list, species_list, maxent_path, thresholds,
             # save_name = gsub(' ', '_', species)
             # empty_ras <- init(current_suit_thresh, function(x) NA)
             # 
-            # png(sprintf('%s/%s/full/%s_%s.png', maxent_path, save.spp, save.spp, "current_suit"),      
+            # png(sprintf('%s/%s/full/%s_%s.png', maxent_path, save_name, save_name, "current_suit"),
             #     11, 4, units = 'in', res = 300)
-            # 
-            # message('writing thresholded map for ', 'species')
-            # 
-            # occ <- readRDS(sprintf('%s/%s/%s_occ.rds', maxent_path, species, save_name)) %>%
-            #   spTransform(ALB.CONICAL)  
-            # 
+            # # 
+            # # message('writing thresholded map for ', 'species')
+            # # 
+            # # occ <- readRDS(sprintf('%s/%s/%s_occ.rds', maxent_path, species, save_name)) %>%
+            # #   spTransform(ALB.CONICAL)  
+            # # 
             # ## Need an empty frame
-            # print(levelplot(stack(empty_ras,
-            #                       current_suit_thresh, 
-            #                       gain_loss, 
+            # print(levelplot(stack(f_current,
+            #                       combo_suit_thresh,
+            #                       #gain_loss,
             #                       quick = TRUE), margin = FALSE,
-            #                 
+            # 
             #                 ## Create a colour scheme using colbrewer: 100 is to make it continuos
             #                 ## Also, make it a one-directional colour scheme
-            #                 #scales      = list(draw = FALSE), 
+            #                 #scales      = list(draw = FALSE),
             #                 #at = seq(0, 1, length = 100),
             #                 #col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
             #                 # str(gain_loss@data@attributes)
-            #                 
+            # 
             #                 ## Give each plot a name: the third panel is the GCM
-            #                 names.attr = c('Australian records', 'Current threshold', 'Gain/loss raster'),
+            #                 names.attr = c('Current climatic suitability', paste0('Suitability in 20', time_slice)),#, 'Gain/loss raster'),
             #                 colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
             #                 main       = list(gsub('_current_suit_above_', '_', names(spp.thresh)), font = 4, cex = 2)) +
-            #         
+            # 
             #         ## Plot the Aus shapefile with the occurrence points for reference
             #         ## Can the points be made more legible for both poorly and well recorded species?
-            #         layer(sp.polygons(aus), data = list(aus_albers = aus)) +
-            #         layer(sp.points(occ, pch = 19, cex = 0.15, 
-            #                         col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(spp.points = occ)))
+            #         latticeExtra::layer(sp.polygons(aus), data = list(aus = aus)))
+            #         #layer(sp.polygons(aus), data = list(aus = aus))) #+
+            #         # layer(sp.points(occ, pch = 19, cex = 0.15,
+            #         #                 col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(spp.points = occ)))
             # 
             # dev.off()
             

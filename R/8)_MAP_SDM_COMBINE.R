@@ -425,12 +425,12 @@ load("STEP_8_MAPPING.RData")
 
 ## Test problematic species by entering the values and running the function manually
 ## Common errors are due to corrupt rasters in the previous step
-DIR        = SDM.RESULTS.DIR[2]
-species    = map_spp[2]
-thresh     = percent.10.log[2]
-percent    = percent.10.om[2]
+DIR        = SDM.RESULTS.DIR[1]
+species    = map_spp[1]
+thresh     = percent.10.log[1]
+percent    = percent.10.om[1]
 time_slice = 30
-area_occ   = 10
+
 
 
 #########################################################################################################################

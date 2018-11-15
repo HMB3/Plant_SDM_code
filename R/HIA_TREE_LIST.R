@@ -800,6 +800,8 @@ length(TPL.SUA);length(TPL.SPP);length(TPL.CLEAN)
 ## Losers
 losers  = c("Cryptocarya laevigata", "Syzygium wilsonii", "Dysoxylum fraserianum")
 winners = c("Alectryon oleifolius", "Flindersia australis", "Flindersia maculata", "Grevillea baileyana")
+gard.aus = c("Lophostemon confertus", "Eucalyptus leucoxylon", "Cupaniopsis anacardioides", 
+             "Tristaniopsis laurina", "Jacaranda mimosifolia", "Pongamia pinnata", "Melia azedarach")
 
 
 #########################################################################################################################

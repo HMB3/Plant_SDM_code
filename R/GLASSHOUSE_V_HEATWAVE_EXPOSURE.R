@@ -15,8 +15,8 @@
 
 #########################################################################################################################
 ## Read in niche data
-TRAIT.NICHE.CONTEXT  = readRDS("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_TRAIT_SPP.rds")
-TRAIT.RASTER.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_AWAP_CONVERT_TRAIT_SPP.rds")
+TRAIT.NICHE.CONTEXT  = readRDS(paste0('data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_HEATWAVE',  save_run, '.rds'))
+TRAIT.RASTER.CONTEXT = readRDS(paste0('data/base/HIA_LIST/COMBO/COMBO_AWAP_CONVERT_',  save_run, '.rds'))
 
 
 ##
@@ -26,8 +26,6 @@ dim(TRAIT.RASTER.CONTEXT)
 
 ## Now find the match between the trait species and the trait species... 
 length(intersect(TRAIT.SPP$searchTaxon,    TRAIT.NICHE.CONTEXT$searchTaxon))
-losers %in% TRAIT.NICHE.CONTEXT$searchTaxon
-winners %in% TRAIT.NICHE.CONTEXT$searchTaxon
 
 
 #########################################################################################################################
@@ -88,7 +86,9 @@ for (i in 1:length(OCC.TAXA)) {
   plot(LAND, main = OCC.TAXA[i])
   points(spp.points, col = "red", cex = .5, pch = 19)
   
+  
   ## Then plot the GBIF histogram?
+  
   
   ## Plot just the Australian points
   plot(aus, main = OCC.TAXA[i])
@@ -123,8 +123,7 @@ writeOGR(obj = TRAIT.SPDF , dsn = "./data/base/HIA_LIST/COMBO", layer = "GLASSHO
 
 ##############################################################################################
 ## histograms of temperature and rainfall
-HIST.TAXA = (as.list(unique(TRAIT.RASTER.CONTEXT$searchTaxon)))
-HIST.TAXA = losers
+HIST.TAXA = as.list(unique(TRAIT.RASTER.CONTEXT$searchTaxon))
 names(TRAIT.RASTER.CONTEXT)
 
 
@@ -134,18 +133,15 @@ Print_global_histogram(taxa.list    = HIST.TAXA,
                        env.var.1    = "Max_temp_warm_month",   
                        env.col.1    = "orange",  
                        env.units.1  = "°C",
-                       env.var.2    = "Annual_precip",   
-                       env.col.2    = "blue",     
+                       env.var.2    = "Max_tmax",   
+                       env.col.2    = "red",     
                        env.units.2  = "°C")
 
 
 ## Save the histograms to file?
-
-
-
-Boxplot_GBIF_records(taxa.list = HIST.TAXA,       DF = TRAIT.RASTER.CONTEXT,
-                     env.1 = "Max_temp_warm_month",   env.col.1 = "orange",     env.units.1 = "°C",
-                     env.2 = "Annual_precip",         env.col.2 = "blue",       env.units.2 = "°mm")
+histogram_GBIF_records(taxa.list = HIST.TAXA[1:2], DF = MAX.TMAX.RASTER,
+                       env.var.1 = "Max_temp_warm_month",   env.col.1 = "orange",     env.units.1 = "°C",
+                       env.var.2 = "Max_tmax",              env.col.2 = "firebrick1", env.units.2 = "°C")
 
 
 
@@ -167,29 +163,38 @@ plot(TRAIT.NICHE.RISK$Annual_mean_temp_median, TRAIT.NICHE.RISK$Tcrit_C)
 
 #########################################################################################################################
 ## TLP vs drought
-TLP.DR.INT    = TRAIT.NICHE.RISK[, c("TLP_MPa", 
-                                     "Drought_max_int_extr_q95",
-                                     "Drought_max_int_extr_max", 
-                                     "Drought_max_int_extr_median",
-                                     "Drought_max_int_extr_mode")] 
+TRAIT.NICHE.RISK$searchTaxon
+length(TRAIT.NICHE.RISK$searchTaxon)
+TCRIT.HWN    = TRAIT.NICHE.RISK[, c("Tcrit_C", 
+                                     "HWN_q95",
+                                     "HWN_max", 
+                                     "HWN_median",
+                                     "HWN_mode")] 
 
-TLP.DR.REL.INT    = TRAIT.NICHE.RISK[, c("TLP_MPa", 
-                                         "Drought_max_rel_int_extr_q95",
-                                         "Drought_max_rel_int_extr_max", 
-                                         "Drought_max_rel_int_extr_median",
-                                         "Drought_max_rel_int_extr_mode")] 
+TCRIT.HWA    = TRAIT.NICHE.RISK[, c("Tcrit_C", 
+                                         "HWA_q95",
+                                         "HWA_max", 
+                                         "HWA_median",
+                                         "HWA_mode")] 
 
-TCRIT.DR.REL.INT    = TRAIT.NICHE.RISK[, c("Tcrit_C", 
-                                           "Drought_max_rel_int_extr_q95",
-                                           "Drought_max_rel_int_extr_max", 
-                                           "Drought_max_rel_int_extr_median",
-                                           "Drought_max_rel_int_extr_mode")] 
+TCRIT.HWF    = TRAIT.NICHE.RISK[, c("Tcrit_C", 
+                                           "HWF_q95",
+                                           "HWF_max", 
+                                           "HWF_median",
+                                           "HWF_mode")]
+
+TCRIT.HCH    = TRAIT.NICHE.RISK[, c("Tcrit_C", 
+                                    "HW_CUM_HOT_q95",
+                                    "HW_CUM_HOT_max", 
+                                    "HW_CUM_HOT_median",
+                                    "HW_CUM_HOT_mode")] 
 
 ## Rename
-names(TLP.DR.INT)         = c("TLP",   "95%",  "MAX",  "MEDIAN", "MODE")
-names(TLP.DR.REL.INT)     = c("TLP",   "95%",  "MAX",  "MEDIAN", "MODE")
-names(TCRIT.DR.REL.INT )  = c("Tcrit",   "95%",  "MAX",  "MEDIAN", "MODE")
-summary(TLP.DR.REL.INT)
+names(TCRIT.HWN)     = c("TLP",   "95%",  "MAX",  "MEDIAN", "MODE")
+names(TCRIT.HWA)     = c("TLP",   "95%",  "MAX",  "MEDIAN", "MODE")
+names(TCRIT.HWF)     = c("Tcrit",   "95%",  "MAX",  "MEDIAN", "MODE")
+names(TCRIT.HCH)     = c("Tcrit",   "95%",  "MAX",  "MEDIAN", "MODE")
+summary(TCRIT.HWN)
 
 
 
@@ -207,8 +212,7 @@ summary(TLP.DR.REL.INT)
 
 #########################################################################################################################
 ## Plot leaf turgor loss point vs the AUS Max drought intesntiy - MAT (1950-2000)
-plot(awap.extreme[["Drought_max_int_extr"]], main = "Maximum drought intensity (AWAP, mm 1900-2011)")
-
+plot(awap.heatwave[["HWN"]],        main = "No. heatwave days in a season (AWAP, 1961-19901)")
 
 # CairoPNG(width = 8090, height = 8090, 
 #          file = "./output/figures/Glasshouse_niches/TLP_v_AWAP_DROUGHT_INTENSITY.png", 
@@ -219,32 +223,53 @@ par(mar = c(8, 8, 6, 4),
 
 par(lwd = 2)
 
-pairs(TLP.DR.INT,  
+pairs(TCRIT.HWN,  
       lower.panel = panel.cor,
       #diag.panel  = panel.hist,
       upper.panel = panel.smooth, #function(...) smoothScatter(..., nrpoints = 0, add = TRUE))
       cex.labels  = 1.5, cex.axis = 2, font.labels = 2,
-      main = "Leaf turgor loss point (TLP) vs Max drought intensity (AWAP 1900-2011)")
+      main = "Leaf critical temperature (Tcrit) vs No.indiv heatwaves (AWAP 1961-1990)")
 
 
 #########################################################################################################################
-## Plot leaf turgor loss point vs the AUS relative drought intesntiy - MAT (1950-2000)
-plot(awap.extreme[["Drought_max_rel_int_extr"]], main = "Relative drought intensity (AWAP, % 1900-2011)")
+## Plot Tcrit vs hottest day (1961-1990)
+plot(awap.heatwave[["HWA"]], main = "Hottest day of hottest heatwave (AWAP 1961-1990)")
 
-pairs(TLP.DR.REL.INT,  
+pairs(TCRIT.HWA,  
       lower.panel = panel.cor,
       #diag.panel  = panel.hist,
       upper.panel = panel.smooth, #function(...) smoothScatter(..., nrpoints = 0, add = TRUE))
       cex.labels  = 1.5, cex.axis = 2, font.labels = 2,
-      main = "Leaf turgor loss point (TLP) vs Max drought relative intensity (AWAP 1900-2011)")
+      main = "Leaf critical temperature (Tcrit) vs Hottest day of hottest heatwave (AWAP 1961-1990)")
 
 
-pairs(TCRIT.DR.REL.INT,  
+#########################################################################################################################
+## Plot Tcrit vs number of heatwave days in a season (1961-1990)
+plot(awap.heatwave[["HWF"]], main = "Number of heatwave days in a season (AWAP 1961-1990)")
+
+
+pairs(TCRIT.HWF,  
       lower.panel = panel.cor,
       #diag.panel  = panel.hist,
       upper.panel = panel.smooth, #function(...) smoothScatter(..., nrpoints = 0, add = TRUE))
       cex.labels  = 1.5, cex.axis = 2, font.labels = 2,
-      main = "Leaf critical temp (Tcrit) vs Max relative drought intensity (AWAP 1900-2011)")
+      main = "Leaf critical temperature (Tcrit) vs No. heatw days season (AWAP 1961-1990)")
+
+## finish the device
+dev.off()
+
+
+#########################################################################################################################
+## Plot Tcrit vs number of heatwave days in a season (1961-1990)
+plot(awap.heatwave[["HW_CUM_HOT"]], main = "Cumulative heat during the hottest heatwave (AWAP 1961-1990)")
+
+
+pairs(TCRIT.HCH,  
+      lower.panel = panel.cor,
+      #diag.panel  = panel.hist,
+      upper.panel = panel.smooth, #function(...) smoothScatter(..., nrpoints = 0, add = TRUE))
+      cex.labels  = 1.5, cex.axis = 2, font.labels = 2,
+      main = "Cumulative heat during the hottest heatwave (AWAP 1961-1990)")
 
 ## finish the device
 dev.off()
@@ -252,9 +277,8 @@ dev.off()
 
 
 
-
 #########################################################################################################################
-## 4). RUN GAMS AND PLOT FOR INDIVIDUAL RELATIONSHIPS
+## 4). RUN GAMS
 #########################################################################################################################
 
 
@@ -292,13 +316,9 @@ plot(TLP.DR.REL.INT[,"MAX"], TLP.DR.REL.INT[,"TLP"],
      col = alpha("blue", 0.3), pch = 19, cex = 2, 
      #cex.axis = 5, cex.lab = 6,
      las = 1, xlab = "Max reltive drought (% 1900-2011)", ylab = "TLP")
-
-box(lwd = 3)
+box(lwd=3)
 
 lines(TLP.MAX.TEST$MAX, PRED.TLP.MAX, col = "orange",  lwd = 8)
-
-legend("bottomright", bty = "n", cex = 2, pt.cex = 2, 
-       text.col = "orange", legend = paste("DE =", format(summary(TLP.MAX.GAM)$dev.expl, digits = 3)))
 
 
 

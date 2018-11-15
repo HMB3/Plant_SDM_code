@@ -396,7 +396,7 @@ download_ALA_all_species = function (species_list, path) {
     ## 2). Then check the spelling...incorrect nomenclature will return NULL result
     if (is.null(occurrences(taxon = sp.n, download_reason_id = 7)$data) == TRUE) {
       
-      ## now append the species which had incorrect nomenclature to the skipped list
+      ## Now append the species which had incorrect nomenclature to the skipped list
       ## this is slow, but it works for now
       print (paste ("Possible incorrect nomenclature", sp.n, "skipping"))
       nomenclature = paste ("Possible incorrect nomenclature |", sp.n)

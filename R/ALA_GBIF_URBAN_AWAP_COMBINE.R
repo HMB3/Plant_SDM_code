@@ -182,6 +182,21 @@ plot(awap.extreme[["Drought_mean_rel_int_extr"]])
 ## read in each file using nc_open
 #awap.heatwave  = stack(list.files(as.character('./data/base/AWAP'), pattern = 'AWAP_HW',  full.names = TRUE))
 
+
+# Indices calculated for a 5 month summer (nov-mar inclusive)
+# 
+# Heatwaves are 3 or more consecutive days where the maximum temperature is above the 90th percentile for that calendar day. Calendar day percentiles use a 7-day window either side, and are for the period 1961-1990.
+# 
+# HWF = number of heatwave days in a season #
+# HWA = hottest day of hottest heatwave     #
+# HWM = average heatwave intensity
+# HWD = length of longest event
+# HWN = number of individual heatwaves      #
+# Cum_all = the total temperature across all heatwaves in the season
+# Cum_average = the average total temperature across all heatwaves in the season
+# Cum_hottest = the cumulative heat during the hottest heatwave.
+
+
 HWF = raster('./data/base/AWAP/AWAP_HWF.nc')  #number of heatwave days in a season
 names(HWF) = "HWF"
 
@@ -209,7 +224,7 @@ names(cum_hot) = "HW_CUM_HOT"
 
 ## rename
 awap.heatwave = stack(HWF, HWA, HWM, HWD, HWN, cum_all, cum_av, cum_hot)
-names(AWAP.heatwave)
+names(awap.heatwave)
 plot(HWF)
 plot(cum_hot)
 
