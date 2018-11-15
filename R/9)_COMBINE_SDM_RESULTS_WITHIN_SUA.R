@@ -358,7 +358,7 @@ SUA.PLOT.30.M = join(SUA.PLOT.30.M, SUA.CLIM)
 SUA.PLOT.50.M = join(SUA.PLOT.50.M, SUA.CLIM)
 SUA.PLOT.70.M = join(SUA.PLOT.70.M, SUA.CLIM)
 head(SUA.PLOT.30.M);dim(SUA.PLOT.30.M)
-   
+
 
 #########################################################################################################################
 ## Use ggplot to plot the percentage of species inside an LGA which is being lost or gained
@@ -395,7 +395,7 @@ ggplot(SUA.PLOT.30.M,  aes(x = reorder(SUA, CURRENT_MAT), fill = AREA_CHANGE)) +
   scale_fill_manual(values = rev(colorRampPalette(c('brown1', 'seagreen3'))(2))) +
   
   labs(#title = "Predicted native species gain/loss (number) within SUAs to 2030", 
-       x = "SUA by increasing MAT", y = "% Original species gained/lost")  +
+    x = "SUA by increasing MAT", y = "% Original species")  +
   
   ## Format axes
   theme(axis.title.x     = element_text(face = "bold", colour = "black", size = 15),
@@ -403,17 +403,19 @@ ggplot(SUA.PLOT.30.M,  aes(x = reorder(SUA, CURRENT_MAT), fill = AREA_CHANGE)) +
         axis.title.y     = element_text(face = "bold", colour = "black", size = 15),
         axis.text.y      = element_text(vjust = 0.5, size = 12),
         title            = element_text(face = "bold", colour = "black", size = 15),
-        legend.title     = element_blank(),
+        legend.title     = element_text(face = "bold", colour = "black", size = 12),
         legend.text      = element_text(face = "bold", size = 12),
         panel.background = element_blank(), axis.line = element_line(colour = "black"),
-        panel.border     = element_rect(colour = "black", fill = NA, size = 2))
+        panel.border     = element_rect(colour = "black", fill = NA, size = 2)) +
+  
+  guides(fill = guide_legend(title = "Current vs. 2030"))
 
 dev.off()
 
 
 #########################################################################################################################
 ## Create PNG output for all SUAs for 2070, ordered by mean annual temperature
-png(sprintf('output/figures/SUA_BAR_PLOT/ALL_SUA_BAR_PLOT_%s.png', 2070),      
+png(sprintf('output/figures/SUA_BAR_PLOT/ALL_SUA_BAR_PLOT_%s_%s.png', 2070, 'temp'),      
     10, 8, units = 'in', res = 500)
 
 ## 2070
@@ -438,7 +440,7 @@ ggplot(SUA.PLOT.70.M,  aes(x = reorder(SUA, CURRENT_MAT), fill = AREA_CHANGE)) +
   scale_fill_manual(values = rev(colorRampPalette(c('brown1', 'seagreen3'))(2))) +
   
   labs(#title = "Predicted native species gain/loss (number) within SUAs to 2070", 
-       x = "SUA by increasing MAT", y = "% Original species current-2070")  +
+    x = "SUA by increasing MAT", y = "% Original species")  +
   
   ## Format axes
   theme(axis.title.x     = element_text(face = "bold", colour = "black", size = 15),
@@ -446,33 +448,35 @@ ggplot(SUA.PLOT.70.M,  aes(x = reorder(SUA, CURRENT_MAT), fill = AREA_CHANGE)) +
         axis.title.y     = element_text(face = "bold", colour = "black", size = 15),
         axis.text.y      = element_text(vjust = 0.5, size = 12),
         title            = element_text(face = "bold", colour = "black", size = 15),
-        legend.title     = element_blank(),
+        legend.title     = element_text(face = "bold", colour = "black", size = 12),
         legend.text      = element_text(face = "bold", size = 12),
         panel.background = element_blank(), axis.line = element_line(colour = "black"),
-        panel.border     = element_rect(colour = "black", fill = NA, size = 2))
+        panel.border     = element_rect(colour = "black", fill = NA, size = 2)) +
+  
+  guides(fill = guide_legend(title = "Current vs. 2070"))
 
 dev.off()
 
 
 #########################################################################################################################
-## Create PNG output for all SUAs for 2070, ordered by mean annual temperature
-png(sprintf('output/figures/SUA_BAR_PLOT/ALL_SUA_BAR_PLOT_%s.png', 2070),      
+## Create PNG output for all SUAs for 2070, ordered by area
+png(sprintf('output/figures/SUA_BAR_PLOT/ALL_SUA_BAR_PLOT_%s_%s.png', 2070, 'area'),      
     10, 8, units = 'in', res = 500)
 
 ## 2070
-ggplot(SUA.PLOT.70.M,  aes(x = reorder(SUA, CURRENT_MAT), fill = AREA_CHANGE)) + 
+ggplot(SUA.PLOT.70.M,  aes(x = reorder(SUA, AREASQKM16), fill = AREA_CHANGE)) + 
   
   ## Plot species being lost from each SUA
   geom_bar(data        = subset(SUA.PLOT.70.M, AREA_CHANGE %in% c("LOSS")),
            
-           ## Create % lost: the species lost, divided by those that were both lost + always there
+           ## Create % lost: the species lost, divided by those that were both lost + those always there
            aes(y = -(SPECIES_COUNT/(SUA.70.M.LOSS$SPECIES_COUNT + SUA.70.M.STABLE$SPECIES_COUNT))), 
            position = "stack", stat = "identity") +
   
   ## Plot species being gained inside each SUA
   geom_bar(data  = subset(SUA.PLOT.70.M, AREA_CHANGE %in% c("GAIN")), 
            
-           ## Create % gained: the species gained, divided by those that were both lost + always there
+           ## Create % gained: the species gained, divided by those that were both lost + those always there
            aes(y = (SPECIES_COUNT/(SUA.70.M.LOSS$SPECIES_COUNT + SUA.70.M.STABLE$SPECIES_COUNT))), 
            position = "stack", stat = "identity") +
   
@@ -480,8 +484,8 @@ ggplot(SUA.PLOT.70.M,  aes(x = reorder(SUA, CURRENT_MAT), fill = AREA_CHANGE)) +
   
   scale_fill_manual(values = rev(colorRampPalette(c('brown1', 'seagreen3'))(2))) +
   
-  labs(title = "Predicted native species gain/loss (number) within SUAs to 2070", 
-       x = "SUA by increasing MAT", y = "% Original species gained/lost")  +
+  labs(#title = "Predicted native species gain/loss (number) within SUAs to 2070", 
+    x = "SUA by increasing Area", y = "% Original species")  +
   
   ## Format axes
   theme(axis.title.x     = element_text(face = "bold", colour = "black", size = 15),
@@ -489,10 +493,12 @@ ggplot(SUA.PLOT.70.M,  aes(x = reorder(SUA, CURRENT_MAT), fill = AREA_CHANGE)) +
         axis.title.y     = element_text(face = "bold", colour = "black", size = 15),
         axis.text.y      = element_text(vjust = 0.5, size = 12),
         title            = element_text(face = "bold", colour = "black", size = 15),
-        legend.title     = element_blank(),
+        legend.title     = element_text(face = "bold", colour = "black", size = 12),
         legend.text      = element_text(face = "bold", size = 12),
         panel.background = element_blank(), axis.line = element_line(colour = "black"),
-        panel.border     = element_rect(colour = "black", fill = NA, size = 2))
+        panel.border     = element_rect(colour = "black", fill = NA, size = 2)) +
+  
+  guides(fill = guide_legend(title = "Current vs. 2070"))
 
 dev.off()
 
@@ -526,7 +532,7 @@ SUA.70.MJ.STABLE      = subset(SUA.PLOT.MAJOR.70, AREA_CHANGE %in% c("STABLE"))
 
 #########################################################################################################################
 ## Create PNG output for Major captuials, 2030
-png(sprintf('output/figures/SUA_BAR_PLOT/SUA_BAR_PLOT_%s.png', 2030),      
+png(sprintf('output/figures/SUA_BAR_PLOT/CAPITAL_SUA_BAR_PLOT_%s_%s.png', 2030, 'temp'),      
     10, 8, units = 'in', res = 500)
 
 ## 2030
@@ -551,48 +557,7 @@ ggplot(SUA.PLOT.MAJOR.30,  aes(x = reorder(SUA, CURRENT_MAT), fill = AREA_CHANGE
   scale_fill_manual(values = rev(colorRampPalette(c('brown1', 'seagreen3'))(2))) +
   
   labs(title = "Predicted native species gain/loss (number) within SUAs to 2030", 
-       x = "SUA by increasing MAT", y = "% Original species gained/lost")  +
-
-## Format axes
-theme(axis.title.x     = element_text(face = "bold", colour = "black", size = 15),
-      axis.text.x      = element_text(angle = 45, vjust = 0.5, size = 12),
-      axis.title.y     = element_text(face = "bold", colour = "black", size = 15),
-      axis.text.y      = element_text(vjust = 0.5, size = 12),
-      title            = element_text(face = "bold", colour = "black", size = 15),
-      legend.title     = element_blank(),
-      legend.text      = element_text(face = "bold", size = 12),
-      panel.background = element_blank(), axis.line = element_line(colour = "black"),
-      panel.border     = element_rect(colour = "black", fill = NA, size = 2))
-
-dev.off()
-
-
-
-#########################################################################################################################
-## Create PNG output for 2050
-png(sprintf('output/figures/SUA_BAR_PLOT/SUA_BAR_PLOT_%s.png', 2050),      
-    10, 8, units = 'in', res = 500)
-
-## 2050
-ggplot(SUA.PLOT.MAJOR.50,  aes(x = reorder(SUA, CURRENT_MAT), fill = AREA_CHANGE)) + 
-  
-  ## The species being lost
-  geom_bar(data = subset(SUA.PLOT.MAJOR.50, AREA_CHANGE %in% c("LOSS")),
-           aes(y = -SPECIES_COUNT), 
-           position = "stack", stat = "identity", colour="black") +
-  
-  ## The species being gained or remaining stable
-  geom_bar(data = subset(SUA.PLOT.MAJOR.50, !AREA_CHANGE %in% c("LOSS")), 
-           aes(y = SPECIES_COUNT), 
-           position = "stack", stat = "identity", colour="black") +
-  
-  ## The colour scheme
-  #scale_fill_manual(values=rev(colorRampPalette(c('seagreen3','brown1', 'grey', 'skyblue3'))(4))) +
-  scale_fill_manual(values=rev(colorRampPalette(c('brown1', 'seagreen3'))(2))) +
-  
-  ## The axes labels
-  labs(title = "Predicted native species gain/loss (number) within SUAs to 2050", 
-       x = "SUA by increasing MAT", y = "Species Count") +
+       x = "SUA by increasing MAT", y = "% Original species")  +
   
   ## Format axes
   theme(axis.title.x     = element_text(face = "bold", colour = "black", size = 15),
@@ -600,39 +565,45 @@ ggplot(SUA.PLOT.MAJOR.50,  aes(x = reorder(SUA, CURRENT_MAT), fill = AREA_CHANGE
         axis.title.y     = element_text(face = "bold", colour = "black", size = 15),
         axis.text.y      = element_text(vjust = 0.5, size = 12),
         title            = element_text(face = "bold", colour = "black", size = 15),
-        legend.title     = element_blank(),
+        legend.title     = element_text(face = "bold", colour = "black", size = 12),
         legend.text      = element_text(face = "bold", size = 12),
         panel.background = element_blank(), axis.line = element_line(colour = "black"),
-        panel.border     = element_rect(colour = "black", fill = NA, size = 2))
+        panel.border     = element_rect(colour = "black", fill = NA, size = 2)) +
+  
+  guides(fill = guide_legend(title = "Current vs. 2030"))
 
 dev.off()
 
 
+
 #########################################################################################################################
-## Create PNG output for 2070
-png(sprintf('output/figures/SUA_BAR_PLOT/SUA_BAR_PLOT_%s.png', 2070),      
+## Create PNG output for Major captuials, 2070
+png(sprintf('output/figures/SUA_BAR_PLOT/CAPITAL_SUA_BAR_PLOT_%s_%s.png', 2070, 'temp'),      
     10, 8, units = 'in', res = 500)
 
 ## 2070
 ggplot(SUA.PLOT.MAJOR.70,  aes(x = reorder(SUA, CURRENT_MAT), fill = AREA_CHANGE)) + 
   
-  ## The species being lost
-  geom_bar(data = subset(SUA.PLOT.MAJOR.70, AREA_CHANGE %in% c("LOSS")),
-           aes(y = -SPECIES_COUNT), 
-           position = "stack", stat = "identity", colour="black") +
+  ## Plot species being lost from each SUA
+  geom_bar(data        = subset(SUA.PLOT.MAJOR.70, AREA_CHANGE %in% c("LOSS")),
+           
+           ## Create % lost: the species lost, divided by those that were both lost + those always there
+           aes(y = -(SPECIES_COUNT/(SUA.70.MJ.LOSS$SPECIES_COUNT + SUA.70.MJ.STABLE$SPECIES_COUNT))), 
+           position = "stack", stat = "identity") +
   
-  ## The species being gained or remaining stable
-  geom_bar(data = subset(SUA.PLOT.MAJOR.70, !AREA_CHANGE %in% c("LOSS")), 
-           aes(y = SPECIES_COUNT), 
-           position = "stack", stat = "identity", colour="black") +
+  ## Plot species being gained inside each SUA
+  geom_bar(data  = subset(SUA.PLOT.MAJOR.70, AREA_CHANGE %in% c("GAIN")), 
+           
+           ## Create % gained: the species gained, divided by those that were both lost + those always there
+           aes(y = (SPECIES_COUNT/(SUA.70.MJ.LOSS$SPECIES_COUNT + SUA.70.MJ.STABLE$SPECIES_COUNT))), 
+           position = "stack", stat = "identity") +
   
-  ## The colour scheme
-  #scale_fill_manual(values=rev(colorRampPalette(c('seagreen3','brown1', 'grey', 'skyblue3'))(4))) +
-  scale_fill_manual(values=rev(colorRampPalette(c('brown1', 'seagreen3'))(2))) +
+  scale_y_continuous(labels = scales::percent) +
   
-  ## The axes labels
+  scale_fill_manual(values = rev(colorRampPalette(c('brown1', 'seagreen3'))(2))) +
+  
   labs(title = "Predicted native species gain/loss (number) within SUAs to 2070", 
-       x = "SUA by increasing MAT", y = "Species Count") +
+       x = "SUA by increasing MAT", y = "% Original species")  +
   
   ## Format axes
   theme(axis.title.x     = element_text(face = "bold", colour = "black", size = 15),
@@ -640,13 +611,59 @@ ggplot(SUA.PLOT.MAJOR.70,  aes(x = reorder(SUA, CURRENT_MAT), fill = AREA_CHANGE
         axis.title.y     = element_text(face = "bold", colour = "black", size = 15),
         axis.text.y      = element_text(vjust = 0.5, size = 12),
         title            = element_text(face = "bold", colour = "black", size = 15),
-        legend.title     = element_blank(),
+        legend.title     = element_text(face = "bold", colour = "black", size = 12),
         legend.text      = element_text(face = "bold", size = 12),
         panel.background = element_blank(), axis.line = element_line(colour = "black"),
-        panel.border     = element_rect(colour = "black", fill = NA, size = 2))
+        panel.border     = element_rect(colour = "black", fill = NA, size = 2)) +
+  
+  guides(fill = guide_legend(title = "Current vs. 2070"))
 
 dev.off()
 
+
+#########################################################################################################################
+## Create PNG output for Major captuials, 2070
+png(sprintf('output/figures/SUA_BAR_PLOT/CAPITAL_SUA_BAR_PLOT_%s_%s.png', 2070, 'area'),      
+    10, 8, units = 'in', res = 500)
+
+## 2070
+ggplot(SUA.PLOT.MAJOR.70,  aes(x = reorder(SUA, AREASQKM16), fill = AREA_CHANGE)) + 
+  
+  ## Plot species being lost from each SUA
+  geom_bar(data        = subset(SUA.PLOT.MAJOR.70, AREA_CHANGE %in% c("LOSS")),
+           
+           ## Create % lost: the species lost, divided by those that were both lost + those always there
+           aes(y = -(SPECIES_COUNT/(SUA.70.MJ.LOSS$SPECIES_COUNT + SUA.70.MJ.STABLE$SPECIES_COUNT))), 
+           position = "stack", stat = "identity") +
+  
+  ## Plot species being gained inside each SUA
+  geom_bar(data  = subset(SUA.PLOT.MAJOR.70, AREA_CHANGE %in% c("GAIN")), 
+           
+           ## Create % gained: the species gained, divided by those that were both lost + those always there
+           aes(y = (SPECIES_COUNT/(SUA.70.MJ.LOSS$SPECIES_COUNT + SUA.70.MJ.STABLE$SPECIES_COUNT))), 
+           position = "stack", stat = "identity") +
+  
+  scale_y_continuous(labels = scales::percent) +
+  
+  scale_fill_manual(values = rev(colorRampPalette(c('brown1', 'seagreen3'))(2))) +
+  
+  labs(title = "Predicted native species gain/loss (number) within SUAs to 2070", 
+       x = "SUA by increasing Area", y = "% Original species")  +
+  
+  ## Format axes
+  theme(axis.title.x     = element_text(face = "bold", colour = "black", size = 15),
+        axis.text.x      = element_text(angle = 45, vjust = 0.5, size = 12),
+        axis.title.y     = element_text(face = "bold", colour = "black", size = 15),
+        axis.text.y      = element_text(vjust = 0.5, size = 12),
+        title            = element_text(face = "bold", colour = "black", size = 15),
+        legend.title     = element_text(face = "bold", colour = "black", size = 12),
+        legend.text      = element_text(face = "bold", size = 12),
+        panel.background = element_blank(), axis.line = element_line(colour = "black"),
+        panel.border     = element_rect(colour = "black", fill = NA, size = 2)) +
+  
+  guides(fill = guide_legend(title = "Current vs. 2070"))
+
+dev.off()
 
 
 #########################################################################################################################
