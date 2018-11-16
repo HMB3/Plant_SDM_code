@@ -47,7 +47,7 @@ GAIN.LOSS.TABLE.COMPLETE =  GAIN.LOSS.TABLE[complete.cases(GAIN.LOSS.TABLE), ]
 
 
 ## Check the exceptions - if all spp models have completed successfully, should be number of species * 3 time periods
-length(GAIN.LOSS.TABLE.COMPLETE$SPECIES)/12;length(map_spp)
+length(GAIN.LOSS.TABLE.COMPLETE$SPECIES)/12
 summary(GAIN.LOSS.TABLE.COMPLETE)
 
 
@@ -78,7 +78,6 @@ LOSS.TABLE = subset(GAIN.LOSS.TABLE, CHANGE == "LOST")
 #########################################################################################################################
 ## The multiple thresholds could present a problem
 SUA.tables = list.files(maxent_dir, pattern = 'SUA_cell_count', full.names = TRUE, recursive = TRUE) 
-length(SUA.tables)/3;length(map_spp) 
 
 
 ## Now combine the SUA tables for each species into one table 
@@ -245,6 +244,7 @@ identical(dim(SUA.PREDICT)[1], dim(SUA.COMPLETE)[1])
 SUA.BIO1.current.stats  = read.csv("./data/base/worldclim/aus/1km/bio/SUA_BIO1_current_stats.csv",  stringsAsFactors = FALSE)
 SUA.BIO12.current.stats = read.csv("./data/base/worldclim/aus/1km/bio/SUA_BIO12_current_stats.csv", stringsAsFactors = FALSE)
 SUA.KOP                 = read.csv("./data/base/worldclim/aus/1km/bio/SUA_KOPPEN.csv",              stringsAsFactors = FALSE)
+KOP.LUT                 = read.csv("./data/base/worldclim/aus/1km/bio/KOPPEN_LUT.csv",              stringsAsFactors = FALSE)
 SUA.PET                 = read.csv("./data/base/worldclim/aus/1km/bio/SUA_PET_current_stats.csv",   stringsAsFactors = FALSE)
 
 SUA.BIO1.2030.stats     = read.csv("./data/base/worldclim/aus/1km/bio/SUA_BIO1_2030_stats.csv",     stringsAsFactors = FALSE)
@@ -276,7 +276,7 @@ SUA.BIO1.current.stats[["CURRENT_MAT"]] = SUA.BIO1.current.stats[["CURRENT_MAT"]
 ## Merge MAP onto the results table
 SUA.PREDICT = join(SUA.PREDICT, SUA.BIO1.current.stats[c("SUA", "CURRENT_MAT")])
 SUA.PREDICT = join(SUA.PREDICT, SUA.BIO12.current.stats[c("SUA", "CURRENT_MAP")])
-SUA.PREDICT = join(SUA.PREDICT, SUA.KOP[c("SUA", "MAJOR_KOP")])
+SUA.PREDICT = join(SUA.PREDICT, Kop.loc[c("SUA", "ClimateZ")])
 SUA.PREDICT = join(SUA.PREDICT, SUA.PET[c("SUA", "CURRENT_PET")])
 summary(SUA.PREDICT)
 View(SUA.PREDICT)
@@ -353,7 +353,16 @@ head(SUA.30.M.STABLE)
 
 #########################################################################################################################
 ## Attach the climate
-SUA.CLIM      = SUA.PREDICT[!duplicated(SUA.PREDICT[,c('SUA')]),][c("SUA", "CURRENT_MAT", "CURRENT_MAP", "CURRENT_PET", "AREASQKM16")]
+SUA.CLIM      = SUA.PREDICT[!duplicated(SUA.PREDICT[,c('SUA')]),][c("SUA", "CURRENT_MAT", "CURRENT_MAP", 
+                                                                    "CURRENT_PET", "AREASQKM16", "ClimateZ")]
+
+kop.sort   = as.character(unique(sort(SUA.CLIM$ClimateZ)))
+kop.number = 1:10
+kop.join   = as.data.frame(cbind(kop.sort, kop.number))
+names(kop.join) = c("ClimateZ", "kop.number")
+SUA.CLIM      = join(SUA.CLIM, kop.join)
+
+#SUA.CLIM$ClimateZ = as.character(SUA.CLIM$ClimateZ)
 SUA.PLOT.30.M = join(SUA.PLOT.30.M, SUA.CLIM)
 SUA.PLOT.50.M = join(SUA.PLOT.50.M, SUA.CLIM)
 SUA.PLOT.70.M = join(SUA.PLOT.70.M, SUA.CLIM)
@@ -361,7 +370,7 @@ head(SUA.PLOT.30.M);dim(SUA.PLOT.30.M)
 
 
 #########################################################################################################################
-## Use ggplot to plot the percentage of species inside an LGA which is being lost or gained
+## Use ggplot to plot the percentage of species inside an LGA, which is being lost or gained
 ## How to calculate the gain/loss? Could do :
 ## Final - Now / Now *100. OR
 ## Gain % = gain/(stable + lost)   * 100
@@ -370,7 +379,7 @@ head(SUA.PLOT.30.M);dim(SUA.PLOT.30.M)
 
 #########################################################################################################################
 ## Create PNG output for all SUAs for 2030, ordered by mean annual temperature
-png(sprintf('output/figures/SUA_BAR_PLOT/ALL_SUA_BAR_PLOT_%s_%s.png', 2030, 'temp'),      
+png(sprintf('output/figures/SUA_percent/ALL_SUA_BAR_PLOT_%s_%s.png', 2030, 'temp'),      
     10, 8, units = 'in', res = 500)
 
 ## 2030
@@ -415,7 +424,7 @@ dev.off()
 
 #########################################################################################################################
 ## Create PNG output for all SUAs for 2070, ordered by mean annual temperature
-png(sprintf('output/figures/SUA_BAR_PLOT/ALL_SUA_BAR_PLOT_%s_%s.png', 2070, 'temp'),      
+png(sprintf('output/figures/SUA_percent/ALL_SUA_BAR_PLOT_%s_%s.png', 2070, 'temp'),      
     10, 8, units = 'in', res = 500)
 
 ## 2070
@@ -460,7 +469,7 @@ dev.off()
 
 #########################################################################################################################
 ## Create PNG output for all SUAs for 2070, ordered by area
-png(sprintf('output/figures/SUA_BAR_PLOT/ALL_SUA_BAR_PLOT_%s_%s.png', 2070, 'area'),      
+png(sprintf('output/figures/SUA_percent/ALL_SUA_BAR_PLOT_%s_%s.png', 2070, 'area'),      
     10, 8, units = 'in', res = 500)
 
 ## 2070
@@ -532,7 +541,7 @@ SUA.70.MJ.STABLE      = subset(SUA.PLOT.MAJOR.70, AREA_CHANGE %in% c("STABLE"))
 
 #########################################################################################################################
 ## Create PNG output for Major captuials, 2030
-png(sprintf('output/figures/SUA_BAR_PLOT/CAPITAL_SUA_BAR_PLOT_%s_%s.png', 2030, 'temp'),      
+png(sprintf('output/figures/SUA_percent/CAPITAL_SUA_BAR_PLOT_%s_%s.png', 2030, 'temp'),      
     10, 8, units = 'in', res = 500)
 
 ## 2030
@@ -556,8 +565,7 @@ ggplot(SUA.PLOT.MAJOR.30,  aes(x = reorder(SUA, CURRENT_MAT), fill = AREA_CHANGE
   
   scale_fill_manual(values = rev(colorRampPalette(c('brown1', 'seagreen3'))(2))) +
   
-  labs(title = "Predicted native species gain/loss (number) within SUAs to 2030", 
-       x = "SUA by increasing MAT", y = "% Original species")  +
+  labs(x = "SUA by increasing MAT", y = "% Original species")  +
   
   ## Format axes
   theme(axis.title.x     = element_text(face = "bold", colour = "black", size = 15),
@@ -578,7 +586,7 @@ dev.off()
 
 #########################################################################################################################
 ## Create PNG output for Major captuials, 2070
-png(sprintf('output/figures/SUA_BAR_PLOT/CAPITAL_SUA_BAR_PLOT_%s_%s.png', 2070, 'temp'),      
+png(sprintf('output/figures/SUA_percent/CAPITAL_SUA_BAR_PLOT_%s_%s.png', 2070, 'temp'),      
     10, 8, units = 'in', res = 500)
 
 ## 2070
@@ -602,8 +610,7 @@ ggplot(SUA.PLOT.MAJOR.70,  aes(x = reorder(SUA, CURRENT_MAT), fill = AREA_CHANGE
   
   scale_fill_manual(values = rev(colorRampPalette(c('brown1', 'seagreen3'))(2))) +
   
-  labs(title = "Predicted native species gain/loss (number) within SUAs to 2070", 
-       x = "SUA by increasing MAT", y = "% Original species")  +
+  labs(x = "SUA by increasing MAT", y = "% Original species")  +
   
   ## Format axes
   theme(axis.title.x     = element_text(face = "bold", colour = "black", size = 15),
@@ -623,7 +630,7 @@ dev.off()
 
 #########################################################################################################################
 ## Create PNG output for Major captuials, 2070
-png(sprintf('output/figures/SUA_BAR_PLOT/CAPITAL_SUA_BAR_PLOT_%s_%s.png', 2070, 'area'),      
+png(sprintf('output/figures/SUA_percent/CAPITAL_SUA_BAR_PLOT_%s_%s.png', 2070, 'area'),      
     10, 8, units = 'in', res = 500)
 
 ## 2070
@@ -647,8 +654,7 @@ ggplot(SUA.PLOT.MAJOR.70,  aes(x = reorder(SUA, AREASQKM16), fill = AREA_CHANGE)
   
   scale_fill_manual(values = rev(colorRampPalette(c('brown1', 'seagreen3'))(2))) +
   
-  labs(title = "Predicted native species gain/loss (number) within SUAs to 2070", 
-       x = "SUA by increasing Area", y = "% Original species")  +
+  labs(x = "SUA by increasing Area", y = "% Original species")  +
   
   ## Format axes
   theme(axis.title.x     = element_text(face = "bold", colour = "black", size = 15),
@@ -668,156 +674,10 @@ dev.off()
 
 #########################################################################################################################
 ## Now, lets try excluding any species that has a 0 count in that SUA
+source('./R/SUA_PRESENT_PLOT.R')
 
 
-#########################################################################################################################
-## Could create a loop to plot each species
-# png(sprintf('output/figures/SUA_BAR_PLOT/SUA_BAR_PLOT_%s.png', save_run),      
-#     15, 8, units = 'in', res = 500)
-
-# ggplot(SUA.SP.1.MAJOR, aes(x = SUA, fill = AREA_CHANGE)) + 
-#   
-#   ## The species being lost
-#   geom_bar(data = subset(SUA.SP.1.MAJOR, AREA_CHANGE %in% c("LOSS")),
-#            aes(y = -SPECIES_COUNT), 
-#            position = "stack", stat = "identity", colour="black") +
-#   
-#   ## The species being gained or remaining stable
-#   geom_bar(data = subset(SUA.SP.1.MAJOR, !AREA_CHANGE %in% c("LOSS")), 
-#            aes(y = SPECIES_COUNT), 
-#            position = "stack", stat = "identity", colour="black") +
-#   
-#   ## The colour scheme
-#   scale_fill_manual(values=rev(colorRampPalette(c('seagreen3','brown1', 'grey', 'skyblue3'))(4))) +
-#   
-#   ## The axes labels
-#   labs(title = "Predicted gains and losses within Significant Urban Areas (SUAs)", 
-#        x = "SUA", y = "Species Count") +
-#   
-#   ## Format axes
-#   theme(axis.title.x     = element_text(face = "bold", colour = "black", size = 15),
-#         axis.text.x      = element_text(angle = 45, vjust = 0.5, size = 12),
-#         axis.title.y     = element_text(face = "bold", colour = "black", size = 15),
-#         axis.text.y      = element_text(vjust = 0.5, size = 12),
-#         title            = element_text(face = "bold", colour = "black", size = 20),
-#         legend.title     = element_blank(),
-#         legend.text      = element_text(face = "bold", size = 12),
-#         panel.background = element_blank(), axis.line = element_line(colour = "black"),
-#         panel.border     = element_rect(colour = "black", fill = NA, size = 2))
-# 
-# dev.off()
-
-
-
-#########################################################################################################################
-## 4). CREATE A RICHNESS MAP FOR EACH TIME PERIOD
-#########################################################################################################################
-
-
-## Probably don't need this anymore - just use ArcMap to sum the rasters................................................
-## Search for
-
-
-#########################################################################################################################
-## Look through the output directory for species where the code didn't finish. This is usually species with < 27 files
-## Summing 200 rasters will take ages 
-raster.dirs <- list.dirs(path = maxent_path, full.names = FALSE, recursive = FALSE)
-
-
-# ## Loop over the directories for the best species: current maps
-# raster.current <- sapply(raster.dirs, function(x) {
-#   
-#   ## List the files for that time slice
-#   list.files(paste0(maxent_path, x), pattern = 'current_suit_above', full.names = TRUE, recursive = TRUE)
-#   
-# })
-# 
-# 
-# 
-# ## 2030 maps
-# raster.2030 <- sapply(raster.dirs, function(x) {
-#   
-#   ## List the files for that time slice
-#   list.files(paste0(maxent_path, x), pattern = '2030_4GCMs_above', full.names = TRUE, recursive = TRUE)
-#   
-# })
-# 
-# 
-# ## 2050 maps
-# raster.2050 <- sapply(raster.dirs, function(x) {
-#   
-#   ## List the files for that time slice
-#   list.files(paste0(maxent_path, x), pattern = '2050_4GCMs_above', full.names = TRUE, recursive = TRUE)
-#   
-# })
-# 
-# 
-# ## 2070 maps
-# raster.2070 <- sapply(raster.dirs, function(x) {
-#   
-#   ## List the files for that time slice
-#   list.files(paste0("./output/maxent/SET_VAR_KOPPEN/", x), pattern = '2070_4GCMs_above', full.names = TRUE, recursive = TRUE)
-#   
-# })
-# 
-# 
-# #########################################################################################################################
-# ## Now unlist so we can create a raster stack
-# raster.current  = unlist(raster.current)
-# raster.2030  = unlist(raster.2030)
-# raster.2050  = unlist(raster.2050)
-# raster.2070  = unlist(raster.2070)
-# 
-# 
-# ## Check length
-# length(raster.current);length(raster.2030);length(raster.2050);length(raster.2070)
-# 
-# 
-# ## Then create raster stacks and sum
-# stack.current   = stack(raster.current, quick = TRUE)
-# stack.2030      = stack(raster.2030, quick = TRUE)
-# stack.2050      = stack(raster.2050, quick = TRUE)
-# stack.2070      = stack(raster.2070, quick = TRUE)
-# 
-# 
-# ## writeRaster(stack.2030, filename = 'output/maxent/multilayer.tif', options = "INTERLEAVE=BAND", overwrite = TRUE)
-# ## mystack = stack("multilayer.tif")
-# 
-# 
-# ## Summing takes a long time
-# sum.current  = sum(stack.current) 
-# sum.2030     = sum(stack.2030) 
-# sum.2050     = sum(stack.2050) 
-# sum.2070     = sum(stack.2070) 
-# 
-# 
-# #########################################################################################################################
-# ## Plot to check
-# plot(sum.current)
-# plot(sum.2030)
-# plot(sum.2050)
-# plot(sum.2070)
-# 
-# 
-# #########################################################################################################################
-# ## write out rasters
-# writeRaster(sum.current, 'output/maxent/checked_spp_current_richness.tif')
-# writeRaster(sum.2030,    'output/maxent/checked_spp_2030_richness.tif')
-# writeRaster(sum.2050,    'output/maxent/checked_spp_2050_richness.tif')
-# writeRaster(sum.2070,    'output/maxent/checked_spp_2070_richness.tif')
-
-
-
-#########################################################################################################################
-## OUTSTANDING PREDICTION TASKS:
-#########################################################################################################################
-
-
-#########################################################################################################################
-## 
-
-
-
+## Update
 
 
 #########################################################################################################################
