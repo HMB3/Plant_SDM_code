@@ -163,7 +163,7 @@ message('Running TPL taxonomy for ', length(GBIF.spp), ' species in the set ', "
 ALA.TREES.TAXO <- TPL(unique(ALA.TRIM$scientificName), infra = TRUE,
                  corr = TRUE, repeats = 100)  ## to stop it timing out...
 sort(names(ALA.TREES.TAXO))
-#saveRDS(ALA.TREES.TAXO, paste0('data/base/HIA_LIST/COMBO/ALA_TAXO_', save_run, '.rds'))
+saveRDS(ALA.TREES.TAXO, paste0('data/base/HIA_LIST/COMBO/ALA_TAXO_', save_run, '.rds'))
 #ALA.TREES.TAXO = readRDS(paste0('data/base/HIA_LIST/COMBO/ALA_TAXO_', save_run, '.rds'))
 
 

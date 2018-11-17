@@ -67,26 +67,26 @@ URB.POP       = read.csv("./data/base/CONTEXTUAL/ABS_URBAN_CENTRE_POP.csv", stri
 
 
 ## Create centroids for SUAs
-class(SUA.16)
-plot(SUA.16)
-writeSpatialShape(SUA.16, "SUA.16")
-cents <- coordinates(SUA.16)
-cents <- SpatialPointsDataFrame(coords = cents, data = SUA.16@data, 
-                                proj4string = CRS("+proj=longlat +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +no_defs"))
-points(cents, col = "Blue")
-writeSpatialShape(cents, "cents")
-
-SUA_centroids <- coordinates(SUA.16)
-SUA_location  = data.frame(SUA_centroids)
-SUA_location  = cbind(SUA.16$SUA_NAME16, SUA_location)
-names(SUA_location)   = c("SUA","rndCoord.lon", "rndCoord.lat")
-SUA_location$rndCoord.lon = RoundCoordinates(SUA_location$rndCoord.lon)
-SUA_location$rndCoord.lat = RoundCoordinates(SUA_location$rndCoord.lat)
-
-
-points(centroids, pch = 3, col = "Red")
-Kop.loc <- data.frame(SUA_location, ClimateZ = LookupCZ(SUA_location))
-Kop.loc = Kop.loc[c("SUA", "ClimateZ")]
+# class(SUA.16)
+# plot(SUA.16)
+# writeSpatialShape(SUA.16, "SUA.16")
+# cents <- coordinates(SUA.16)
+# cents <- SpatialPointsDataFrame(coords = cents, data = SUA.16@data, 
+#                                 proj4string = CRS("+proj=longlat +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +no_defs"))
+# points(cents, col = "Blue")
+# writeSpatialShape(cents, "cents")
+# 
+# SUA_centroids <- coordinates(SUA.16)
+# SUA_location  = data.frame(SUA_centroids)
+# SUA_location  = cbind(SUA.16$SUA_NAME16, SUA_location)
+# names(SUA_location)   = c("SUA","rndCoord.lon", "rndCoord.lat")
+# SUA_location$rndCoord.lon = RoundCoordinates(SUA_location$rndCoord.lon)
+# SUA_location$rndCoord.lat = RoundCoordinates(SUA_location$rndCoord.lat)
+# 
+# 
+# points(centroids, pch = 3, col = "Red")
+# Kop.loc <- data.frame(SUA_location, ClimateZ = LookupCZ(SUA_location))
+# Kop.loc = Kop.loc[c("SUA", "ClimateZ")]
 
 
 ## Load template rasters

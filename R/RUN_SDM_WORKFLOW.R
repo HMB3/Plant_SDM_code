@@ -123,7 +123,7 @@ source('./R/8)_MAP_SDM_COMBINE.R', echo = TRUE)
 
 ## Create a list of all dataframes with the extension from this run
 COMBO.NICHE.list  = list.files(save_path, pattern = 'COMBO_NICHE_CONTEXT_EVERGREEN', full.names = TRUE, recursive = TRUE)
-COMBO.RASTER.list = list.files(save_path, pattern = 'COMBO_NICHE_CONTEXT_EVERGREEN', full.names = TRUE, recursive = TRUE)
+COMBO.RASTER.list = list.files(save_path, pattern = 'COMBO_RASTER_CONTEXT_EVERGREEN', full.names = TRUE, recursive = TRUE)
 
 
 ## Now combine the SUA tables for each species into one table 
