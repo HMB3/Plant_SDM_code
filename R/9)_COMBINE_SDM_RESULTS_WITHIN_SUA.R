@@ -1,5 +1,5 @@
 #########################################################################################################################
-################################# SUMMARISE THE HABITAT SUITABILITY RESULTS ############################################# 
+################################# SUMMARISE SPEICES GAINS BY SUA ######################################################## 
 #########################################################################################################################
 
 
@@ -12,8 +12,9 @@
 #########################################################################################################################
 
 
-## Read in the table of species in SUAs
-SUA.SPP.COUNT = readRDS(paste0('data/base/HIA_LIST/COMBO/SUA_SPP_COUNT_', save_run, '.rds'))
+## Read in the table of species in SUAs and their niches
+SUA.SPP.COUNT       = readRDS(paste0('data/base/HIA_LIST/COMBO/SUA_SPP_COUNT_', save_run, '.rds'))
+COMBO.NICHE.CONTEXT = readRDS(paste0('data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_',  save_run, '.rds'))
 length(unique(SUA.SPP.COUNT$SPECIES))
 
 
@@ -135,6 +136,10 @@ intersect(SUA.DENS$SUA, URB.POP$SUA)
 setdiff(URB.POP$SUA, SUA.DENS$SUA)
 
 
+## Fill in the missing population fields
+ALL.SUA.POP$POP_2017 = as.numeric(ALL.SUA.POP$POP_2017)
+
+
 ## Also, we can calcualte a measure of population density to rank the SUAs. The area's don't look super accurate, but they
 ## are from the ABS shapefile, so take them to be the standard.
 TOP.SUA.POP             = ALL.SUA.POP[, c("SUA", "POP_2017")]
@@ -163,9 +168,11 @@ SUA.PRESENCE = join(SUA.PRESENCE, SUA.DEN)
 
 ## Check this combined table
 SUA.PRESENCE = SUA.PRESENCE[, c("SUA_CODE16",  "SUA",      "AREASQKM16", "POP_DESNITY",      "POP_2017",
-                                "SPECIES",     "PERIOD",   "THRESH",    "CURRENT_SUITABLE", "FUTURE_SUITABLE",
-                                "LOST",        "GAINED",   "STABLE",    "NEVER",            "NODAT",
+                                "SPECIES",     "PERIOD",   "THRESH",    "CURRENT_SUITABLE",  "FUTURE_SUITABLE",
+                                "LOST",        "GAINED",   "STABLE",    "NEVER",             "NODAT",
                                 "CELL_COUNT",  "CHANGE",   "GAIN_LOSS")]
+SUA.PRESENCE$POP_2017 = as.numeric(SUA.PRESENCE$POP_2017)
+URB.POP$POP_2017      = as.numeric(URB.POP$POP_2017)
 
 
 ## Just check there are no NA species
@@ -174,9 +181,9 @@ summary(SUA.COMPLETE)
 
 
 #########################################################################################################################
-## Find the species with the greatest increase/decrease?
-summary(SUA.COMPLETE$CHANGE)
-unique(SUA.COMPLETE$GAIN_LOSS)
+## Fill in missing population values
+t = FillIn(SUA.PRESENCE, URB.POP, "POP_2017", "POP_2017", KeyVar = c("SUA"), allow.cartesian = FALSE, KeepD2Vars = FALSE)
+
 
 
 #########################################################################################################################
@@ -228,7 +235,9 @@ summary(SUA.PREDICT$SUA_RECORDS)
 #SUA.PREDICT = completeFun(SUA.PREDICT, "MAXENT_RATING")
 unique(SUA.PREDICT$MAXENT_RATING)
 length(unique(SUA.PREDICT$SPECIES))
+length(unique(SUA.PREDICT$SUA))
 identical(dim(SUA.PREDICT)[1], dim(SUA.COMPLETE)[1])
+dim(SUA.PREDICT)
 
 
 
@@ -273,14 +282,35 @@ colnames(SUA.BIO1.2030.stats)[1] <- "SUA"
 SUA.BIO1.current.stats[["CURRENT_MAT"]] = SUA.BIO1.current.stats[["CURRENT_MAT"]]/10
 
 
+#########################################################################################################################
+## Create Koppen climate zone for centroid of each SUA
+writeSpatialShape(SUA.16, "SUA.16")
+cents <- coordinates(SUA.16)
+cents <- SpatialPointsDataFrame(coords = cents, data = SUA.16@data,
+                                proj4string = CRS("+proj=longlat +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +no_defs"))
+
+plot(SUA.16)
+points(cents, col = "Blue")
+writeSpatialShape(cents, "cents")
+
+SUA_centroids <- coordinates(SUA.16)
+SUA_location  = data.frame(SUA_centroids)
+SUA_location  = cbind(SUA.16$SUA_NAME16, SUA_location)
+names(SUA_location)   = c("SUA","rndCoord.lon", "rndCoord.lat")
+SUA_location$rndCoord.lon = RoundCoordinates(SUA_location$rndCoord.lon)
+SUA_location$rndCoord.lat = RoundCoordinates(SUA_location$rndCoord.lat)
+
+points(centroids, pch = 3, col = "Red")
+Kop.loc <- data.frame(SUA_location, ClimateZ = LookupCZ(SUA_location))
+Kop.loc = Kop.loc[c("SUA", "ClimateZ")]
+
+
 ## Merge MAP onto the results table
 SUA.PREDICT = join(SUA.PREDICT, SUA.BIO1.current.stats[c("SUA", "CURRENT_MAT")])
 SUA.PREDICT = join(SUA.PREDICT, SUA.BIO12.current.stats[c("SUA", "CURRENT_MAP")])
 SUA.PREDICT = join(SUA.PREDICT, Kop.loc[c("SUA", "ClimateZ")])
 SUA.PREDICT = join(SUA.PREDICT, SUA.PET[c("SUA", "CURRENT_PET")])
 summary(SUA.PREDICT)
-View(SUA.PREDICT)
-#t = SUA.PREDICT[is.na(SUA.PREDICT$MAJOR_KOP),]
 
 
 #########################################################################################################################
@@ -354,28 +384,34 @@ head(SUA.30.M.STABLE)
 #########################################################################################################################
 ## Attach the climate
 SUA.CLIM      = SUA.PREDICT[!duplicated(SUA.PREDICT[,c('SUA')]),][c("SUA", "CURRENT_MAT", "CURRENT_MAP", 
-                                                                    "CURRENT_PET", "AREASQKM16", "ClimateZ")]
+                                                                    "CURRENT_PET", "AREASQKM16", "ClimateZ", "POP_2017")]
 
-kop.sort   = as.character(unique(sort(SUA.CLIM$ClimateZ)))
-kop.number = 1:10
-kop.join   = as.data.frame(cbind(kop.sort, kop.number))
-names(kop.join) = c("ClimateZ", "kop.number")
-SUA.CLIM      = join(SUA.CLIM, kop.join)
 
-#SUA.CLIM$ClimateZ = as.character(SUA.CLIM$ClimateZ)
 SUA.PLOT.30.M = join(SUA.PLOT.30.M, SUA.CLIM)
 SUA.PLOT.50.M = join(SUA.PLOT.50.M, SUA.CLIM)
 SUA.PLOT.70.M = join(SUA.PLOT.70.M, SUA.CLIM)
-head(SUA.PLOT.30.M);dim(SUA.PLOT.30.M)
+
+SUA.30.M.LOSS   = join(SUA.30.M.LOSS,   SUA.CLIM)
+SUA.30.M.GAIN   = join(SUA.30.M.GAIN,   SUA.CLIM)
+SUA.30.M.STABLE = join(SUA.30.M.STABLE, SUA.CLIM)
+
+SUA.70.M.LOSS   = join(SUA.70.M.LOSS,   SUA.CLIM)
+SUA.70.M.GAIN   = join(SUA.70.M.GAIN,   SUA.CLIM)
+SUA.70.M.STABLE = join(SUA.70.M.STABLE, SUA.CLIM)
+
 
 
 #########################################################################################################################
 ## Use ggplot to plot the percentage of species inside an LGA, which is being lost or gained
-## How to calculate the gain/loss? Could do :
-## Final - Now / Now *100. OR
-## Gain % = gain/(stable + lost)   * 100
-## Lost % = lost/(stable + lost) * 100
+## Calculate the gain/loss for counts of all species?
 
+## Gain % = gain/(stable + lost)   * 100
+## Lost % = lost/(stable + lost)   * 100
+
+## Calculate the gain/loss for for only species that are recorded within each SUA?
+
+## Gain % = gain/(stable + lost + gained)   * 100
+## Lost % = lost/(stable + lost + gained)   * 100
 
 #########################################################################################################################
 ## Create PNG output for all SUAs for 2030, ordered by mean annual temperature
@@ -674,7 +710,7 @@ dev.off()
 
 #########################################################################################################################
 ## Now, lets try excluding any species that has a 0 count in that SUA
-source('./R/SUA_PRESENT_PLOT.R')
+#source('./R/SUA_PRESENT_PLOT.R')
 
 
 ## Update
