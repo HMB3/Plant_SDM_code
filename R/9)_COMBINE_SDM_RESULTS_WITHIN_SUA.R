@@ -13,7 +13,7 @@
 
 
 ## Read in the table of species in SUAs and their niches
-SUA.SPP.COUNT       = readRDS(paste0('data/base/HIA_LIST/COMBO/SUA_SPP_COUNT_', save_run, '.rds'))
+SUA.SPP.COUNT       = readRDS(paste0('data/base/HIA_LIST/COMBO/SUA_SPP_COUNT_',        save_run, '.rds'))
 COMBO.NICHE.CONTEXT = readRDS(paste0('data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_',  save_run, '.rds'))
 length(unique(SUA.SPP.COUNT$SPECIES))
 
@@ -229,14 +229,16 @@ dim(SUA.PREDICT)
 
 
 #########################################################################################################################
-## Future rasters
-## Add in cell stats for Max temp of the warmest month
+## Current climate
 SUA.BIO1.current.stats  = read.csv("./data/base/worldclim/aus/1km/bio/SUA_BIO1_current_stats.csv",  stringsAsFactors = FALSE)
+SUA.BIO5.current.stats  = read.csv("./data/base/worldclim/aus/1km/bio/SUA_BIO5_current_stats.csv",  stringsAsFactors = FALSE)
 SUA.BIO12.current.stats = read.csv("./data/base/worldclim/aus/1km/bio/SUA_BIO12_current_stats.csv", stringsAsFactors = FALSE)
 SUA.KOP                 = read.csv("./data/base/worldclim/aus/1km/bio/SUA_KOPPEN.csv",              stringsAsFactors = FALSE)
 KOP.LUT                 = read.csv("./data/base/worldclim/aus/1km/bio/KOPPEN_LUT.csv",              stringsAsFactors = FALSE)
 SUA.PET                 = read.csv("./data/base/worldclim/aus/1km/bio/SUA_PET_current_stats.csv",   stringsAsFactors = FALSE)
 
+
+## Future climate
 SUA.BIO1.2030.stats     = read.csv("./data/base/worldclim/aus/1km/bio/SUA_BIO1_2030_stats.csv",     stringsAsFactors = FALSE)
 SUA.BIO1.2050.stats     = read.csv("./data/base/worldclim/aus/1km/bio/SUA_BIO1_2050_stats.csv",     stringsAsFactors = FALSE)
 SUA.BIO1.2070.stats     = read.csv("./data/base/worldclim/aus/1km/bio/SUA_BIO1_2050_stats.csv",     stringsAsFactors = FALSE)
@@ -244,8 +246,11 @@ SUA.BIO1.2070.stats     = read.csv("./data/base/worldclim/aus/1km/bio/SUA_BIO1_2
 
 #########################################################################################################################
 ## Rename zonal stats
-names(SUA.BIO1.current.stats)[names(SUA.BIO1.current.stats) == "SUA_NAME16"] <- "SUA"
-names(SUA.BIO1.current.stats)[names(SUA.BIO1.current.stats) == "MEAN"] <- "CURRENT_MAT"
+names(SUA.BIO1.current.stats)[names(SUA.BIO1.current.stats)   == "SUA_NAME16"] <- "SUA"
+names(SUA.BIO1.current.stats)[names(SUA.BIO1.current.stats)   == "MEAN"] <- "CURRENT_MAT"
+
+names(SUA.BIO5.current.stats)[names(SUA.BIO5.current.stats)   == "SUA_NAME16"] <- "SUA"
+names(SUA.BIO5.current.stats)[names(SUA.BIO5.current.stats)   == "MEAN"] <- "CURRENT_MAXT"
 
 names(SUA.BIO12.current.stats)[names(SUA.BIO12.current.stats) == "SUA_NAME16"] <- "SUA"
 names(SUA.BIO12.current.stats)[names(SUA.BIO12.current.stats) == "MEAN"] <- "CURRENT_MAP"
@@ -287,18 +292,18 @@ Kop.loc = Kop.loc[c("SUA", "ClimateZ")]
 
 
 #########################################################################################################################
-## Merge MAP onto the results table
+## Merge average climate of SUAs onto the SUA maxent results table
 SUA.PREDICT = join(SUA.PREDICT, SUA.BIO1.current.stats[c("SUA", "CURRENT_MAT")])
 SUA.PREDICT = join(SUA.PREDICT, SUA.BIO12.current.stats[c("SUA", "CURRENT_MAP")])
-SUA.PREDICT = join(SUA.PREDICT, Kop.loc[c("SUA", "ClimateZ")])
+SUA.PREDICT = join(SUA.PREDICT, SUA.BIO5.current.stats[c("SUA", "CURRENT_MAXT")])
 SUA.PREDICT = join(SUA.PREDICT, SUA.PET[c("SUA", "CURRENT_PET")])
+SUA.PREDICT = join(SUA.PREDICT, Kop.loc[c("SUA", "ClimateZ")])
 summary(SUA.PREDICT)
 
 
 #########################################################################################################################
 ## Save tables
 if(save_data == "TRUE") {
-  
   
   ## Save basic results and SUA results to file
   message(length(unique(SUA.COMPLETE$SPECIES)), " Species analysed in ", length(unique(SUA.COMPLETE$SUA)), " SUAs")
@@ -329,6 +334,9 @@ length(unique(SUA.PLOT.GOOD$SPECIES))
 #########################################################################################################################
 ## 4). SUBSET DATA TO MAKE PLOTTING EASIER
 #########################################################################################################################
+
+
+## Start from here to re-create the plots below 
 
 
 #########################################################################################################################
@@ -376,8 +384,8 @@ head(SUA.30.M.STABLE)
 
 #########################################################################################################################
 ## Attach the climate
-SUA.CLIM      = SUA.PREDICT[!duplicated(SUA.PREDICT[,c('SUA')]),][c("SUA", "CURRENT_MAT", "CURRENT_MAP", 
-                                                                    "CURRENT_PET", "AREASQKM16", "ClimateZ", "POP_2017")]
+SUA.CLIM      = SUA.PREDICT[!duplicated(SUA.PREDICT[,c('SUA')]),][c("SUA", "CURRENT_MAT", "CURRENT_MAP", "CURRENT_PET", "CURRENT_MAXT",
+                                                                    "AREASQKM16", "ClimateZ", "POP_2017")]
 
 
 ## Find a more efficient way to join everything on to the subsets
@@ -411,12 +419,28 @@ SUA.70.M.STABLE = join(SUA.70.M.STABLE, SUA.CLIM)
 
 
 #########################################################################################################################
+## Create arguments for the different settings
+## EG ALL_SPP, REC_SPP
+## EG ALL_SUA, LARGE_SUA
+SUAs    = "ALL_SUAs"
+SUAs    = "LARGE_SUAs"
+
+SUA_SPP = "REC_SPP"
+SUA_SPP = "ALL_SPP"
+
+SUA_ORDER  = "CURRENT_MAT"
+SUA_ORDER  = "CURRENT_MAP"
+SUA_ORDER  = "AREASQKM16"
+
+
+
+
+
+#########################################################################################################################
 ## Run different variations
 #"./R/SUA_GAIN_LOSS_ALL_SUAs.R"       ## 1).
 #"./R/SUA_%100_PLOT_LARGER_SUAs.R"    ## 2).
-#"./R/SUA_RAIN_PLOT.R"                ## 2). using rain not temp
-
-
+#"./R/SUA_RAIN_PLOT.R"                ## 2), using rain not temp
 
 
 

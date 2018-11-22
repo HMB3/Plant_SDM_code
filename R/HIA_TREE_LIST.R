@@ -20,7 +20,7 @@ p <- c('ff',    'things',    'raster',        'dismo',        'sp',           'l
        'tidyr', 'readr',     'rnaturalearth', 'rasterVis',    'RColorBrewer', 'latticeExtra', 'parallel',     
        'ALA4R', 'stringr',   'Taxonstand',    'CoordinateCleaner', 'gsubfn',  'PerformanceAnalytics',
        'rvest', 'magrittr',  'devtools',      'ggplot2',      'reshape2',     'rmarkdown', 'flexdashboard', 'shiny', 'rgbif',
-       'ENMeval', 'tibble',  'ncdf4',         'Cairo', 'velox', 'taxonlookup', 'kgc', 'maptools', 'DataCombine')
+       'ENMeval', 'tibble',  'ncdf4',         'Cairo', 'velox', 'taxonlookup', 'kgc', 'maptools', 'DataCombine', 'mgcv')
 
 
 ## Require packages
@@ -342,7 +342,7 @@ HIA.RAW             = read.csv("./data/base/HIA_LIST/HIA/HIA_ORIGINAL_RAW.csv", 
 CLEAN.list          = read.csv("./data/base/HIA_LIST/HIA/HIA.CLEAN.csv",                         stringsAsFactors = FALSE)
 GROWING             = read.csv("./data/base/HIA_LIST/HIA/database_aus_sp_growing.csv",           stringsAsFactors = FALSE)
 MOD_2               = read.csv("./data/base/HIA_LIST/HIA/MOD2_LIST.csv",                         stringsAsFactors = FALSE)
-#Manuel              = read.csv("./data/base/HIA_LIST/MANUEL/species_module2.csv",       stringsAsFactors = FALSE)
+Manuel              = read.csv("./data/base/HIA_LIST/MANUEL/species_module2.csv",                stringsAsFactors = FALSE)
 MOD.2.3             = read.csv("./data/base/HIA_LIST/HIA/MODULE_2_3.csv",                        stringsAsFactors = FALSE)
 MOD.3               = read.csv("./data/base/HIA_LIST/HIA/MODULE_2_3.csv",                        stringsAsFactors = FALSE)
 APNI                = readRDS("./data/base/HIA_LIST/ALA/APNI_LIST.rds")
@@ -434,9 +434,9 @@ renee.taxa           = read.csv("./data/base/HIA_LIST/HIA/RENEE_TAXA.csv",      
 renee.50             = read.csv("./data/base/HIA_LIST/HIA/RENEE_TOP_50.csv",                stringsAsFactors = FALSE)
 MQ.glasshouse        = read.csv("./data/base/HIA_LIST/HIA/MQ_glasshouse.csv",               stringsAsFactors = FALSE)
 Manuel.experimental  = read.csv("./data/base/HIA_LIST/HIA/Manuel_experimental_species.csv", stringsAsFactors = FALSE)
-Manuel.group         = read.csv("./MANUEL/SUA_by_SPP.csv",                                  stringsAsFactors = FALSE)
-TREE.NETWORK         = read.csv("./MANUEL/COMBO_APNI.csv",                                  stringsAsFactors = FALSE)
-NURSE.MATCH          = read.csv("./MANUEL/nurseries.csv",                                   stringsAsFactors = FALSE)
+Manuel.group         = read.csv("./data/base/HIA_LIST/MANUEL/SUA_by_SPP.csv",               stringsAsFactors = FALSE)
+TREE.NETWORK         = read.csv("./data/base/HIA_LIST/MANUEL/COMBO_APNI.csv",               stringsAsFactors = FALSE)
+NURSE.MATCH          = read.csv("./data/base/HIA_LIST/MANUEL/nurseries.csv",                stringsAsFactors = FALSE)
 campbelltown         = read.csv("./data/base/HIA_LIST/HIA/campbelltown_species.csv",        stringsAsFactors = FALSE)
 
 
