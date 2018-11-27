@@ -3,7 +3,8 @@
 #########################################################################################################################
 
 
-## This code install lots of packages. On this computer, they currently sit here ::
+## This code installs a list of packages. On this computer, they currently sit here ::
+## .libPaths() 
 ## C:\Users\user\Documents\R\win-library
 
 
@@ -53,8 +54,10 @@ ipak(packages)
 
 
 
+
+
 #########################################################################################################################
-## EXTRA PACKAGES...
+## EXTRA PACKAGES NOT on CRAN...
 #########################################################################################################################
 
 
@@ -65,18 +68,13 @@ ipak(packages)
 ## install.packages("climates",,"http://rforge.net/",type="source")
 
 
-#########################################################################################################################
-## Find where R stores packages
-##  .libPaths()
-
-
-## Remove all the packages
+## To rsemove all the packages
 ## rownames(installed.packages())
 ## remove.packages()
 
 
 #########################################################################################################################
-## Install github packages that can't be downloaded from CRAN............................................................
+## Install github packages that can't be downloaded from CRAN
 devtools::install_github("ropensci/rgbif")
 library(devtools)
 install_github('johnbaums/rmaxent')
@@ -87,22 +85,41 @@ install_github('johnbaums/things')
 install_github("ropenscilabs/datastorr")
 install_github("wcornwell/taxonlookup")
 install_github('KarelMokany/AdaptR')
+install_github("danlwarren/ENMTools")
+devtools::install_github("richfitz/datastorr")
+devtools::install_github("traitecoevo/baad.data")
 
 
-#install_github("danlwarren/ENMTools")
-#devtools::install_github("richfitz/datastorr")
-#devtools::install_github("traitecoevo/baad.data")
+#########################################################################################################################
+## Load only the packages needed for the SDM analysis
+p <- c('ff',    'things',    'raster',        'dismo',        'sp',           'latticeExtra', 'data.table', 
+       'rgdal', 'rgeos',     'gdalUtils',     'rmaxent',      'readr',        'plyr',         'dplyr',        
+       'tidyr', 'readr',     'rnaturalearth', 'rasterVis',    'RColorBrewer', 'latticeExtra', 'parallel',     
+       'ALA4R', 'stringr',   'Taxonstand',    'CoordinateCleaner', 'gsubfn',  'PerformanceAnalytics',
+       'rvest', 'magrittr',  'devtools',      'ggplot2',      'reshape2',     'rmarkdown', 'flexdashboard', 'shiny', 'rgbif',
+       'ENMeval', 'tibble',  'ncdf4',         'Cairo', 'velox', 'taxonlookup', 'kgc', 'maptools', 'DataCombine', 'mgcv')
 
 
+## Require packages
+sapply(p, require, character.only = TRUE)
+source_gist('26e8091f082f2b3dd279',             filename = 'polygonizer.R')
+source_gist('c6a1cb61b8b6616143538950e6ec34aa', filename = 'hatch.R')
+
+
+#########################################################################################################################
+## To run maxent in R, you need Java installed on your computer, and the main version of Java needs to match the R Version
+## See these instructions:
+## https://www.rdocumentation.org/packages/dismo/versions/1.1-4/topics/maxent
 ## check that R maxent is installed
 # list.files(system.file("java", package = "dismo"))
 # ENMevaluate
 
 
+
 ## Also, update R here too: https://cran.r-project.org/web/packages/installr/index.html
 # installing/loading the package:
-if(!require(installr)) {
-  install.packages("installr"); require(installr)} ## load / install+load installr
+# if(!require(installr)) {
+#   install.packages("installr"); require(installr)} ## load / install+load installr
 
 
 ## Check the settings again

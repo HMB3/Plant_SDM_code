@@ -236,6 +236,7 @@ SUA.BIO12.current.stats = read.csv("./data/base/worldclim/aus/1km/bio/SUA_BIO12_
 SUA.KOP                 = read.csv("./data/base/worldclim/aus/1km/bio/SUA_KOPPEN.csv",              stringsAsFactors = FALSE)
 KOP.LUT                 = read.csv("./data/base/worldclim/aus/1km/bio/KOPPEN_LUT.csv",              stringsAsFactors = FALSE)
 SUA.PET                 = read.csv("./data/base/worldclim/aus/1km/bio/SUA_PET_current_stats.csv",   stringsAsFactors = FALSE)
+SUA.AI                  = read.csv("./data/base/worldclim/aus/1km/bio/SUA_AI_current_stats.csv",    stringsAsFactors = FALSE)
 
 
 ## Future climate
@@ -258,6 +259,9 @@ names(SUA.BIO12.current.stats)[names(SUA.BIO12.current.stats) == "MEAN"] <- "CUR
 names(SUA.PET)[names(SUA.PET) == "SUA_NAME16"] <- "SUA"
 names(SUA.PET)[names(SUA.PET) == "MEAN"] <- "CURRENT_PET"
 
+names(SUA.AI)[names(SUA.AI) == "SUA_NAME16"] <- "SUA"
+names(SUA.AI)[names(SUA.AI) == "MEAN"] <- "CURRENT_AI"
+
 names(SUA.KOP)[names(SUA.KOP) == "SUA_NAME16"] <- "SUA"
 names(SUA.KOP)[names(SUA.KOP) == "MAJORITY"] <- "MAJOR_KOP"
 
@@ -266,6 +270,10 @@ names(SUA.KOP)[names(SUA.KOP) == "MAJORITY"] <- "MAJOR_KOP"
 SUA.BIO1.2030.stats[["PERIOD"]]  <- 30
 colnames(SUA.BIO1.2030.stats)[1] <- "SUA"
 SUA.BIO1.current.stats[["CURRENT_MAT"]] = SUA.BIO1.current.stats[["CURRENT_MAT"]]/10
+
+
+## Divide PET by 10,000
+SUA.AI[["CURRENT_AI"]] = SUA.AI[["CURRENT_AI"]]/10000
 
 
 #########################################################################################################################
@@ -297,6 +305,7 @@ SUA.PREDICT = join(SUA.PREDICT, SUA.BIO1.current.stats[c("SUA", "CURRENT_MAT")])
 SUA.PREDICT = join(SUA.PREDICT, SUA.BIO12.current.stats[c("SUA", "CURRENT_MAP")])
 SUA.PREDICT = join(SUA.PREDICT, SUA.BIO5.current.stats[c("SUA", "CURRENT_MAXT")])
 SUA.PREDICT = join(SUA.PREDICT, SUA.PET[c("SUA", "CURRENT_PET")])
+SUA.PREDICT = join(SUA.PREDICT, SUA.AI[c("SUA", "CURRENT_AI")])
 SUA.PREDICT = join(SUA.PREDICT, Kop.loc[c("SUA", "ClimateZ")])
 summary(SUA.PREDICT)
 
@@ -384,8 +393,8 @@ head(SUA.30.M.STABLE)
 
 #########################################################################################################################
 ## Attach the climate
-SUA.CLIM      = SUA.PREDICT[!duplicated(SUA.PREDICT[,c('SUA')]),][c("SUA", "CURRENT_MAT", "CURRENT_MAP", "CURRENT_PET", "CURRENT_MAXT",
-                                                                    "AREASQKM16", "ClimateZ", "POP_2017")]
+SUA.CLIM      = SUA.PREDICT[!duplicated(SUA.PREDICT[,c('SUA')]),][c("SUA", "CURRENT_MAT", "CURRENT_MAP", "CURRENT_PET", "CURRENT_AI",
+                                                                    "CURRENT_MAXT", "AREASQKM16", "ClimateZ", "POP_2017")]
 
 
 ## Find a more efficient way to join everything on to the subsets
@@ -430,6 +439,8 @@ SUA_SPP = "ALL_SPP"
 
 SUA_ORDER  = "CURRENT_MAT"
 SUA_ORDER  = "CURRENT_MAP"
+SUA_ORDER  = "CURRENT_MAXT"
+SUA_ORDER  = "CURRENT_AI"
 SUA_ORDER  = "AREASQKM16"
 
 

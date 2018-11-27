@@ -9,8 +9,9 @@
 
 #########################################################################################################################
 ## Read in all data to run the SDM code :: species lists, shapefile, rasters & tables
-source('./R/HIA_TREE_LIST.R')
-## load("H:/green_cities_sdm/TEST_RUN.RData")
+#source('./R/HIA_TREE_LIST.R')
+load("H:/green_cities_sdm/TEST_RUN.RData")
+## save.image("TEST_RUN.RData")
 
 ## Next step is to model the differences between the SUA species list, and the HIA species list
 ## That's 377 species currently. Then there are another 1000-odd species on the larger clean list
@@ -126,7 +127,8 @@ COMBO.NICHE.list  = list.files(save_path, pattern = 'COMBO_NICHE_CONTEXT_EVERGRE
 COMBO.RASTER.list = list.files(save_path, pattern = 'COMBO_RASTER_CONTEXT_EVERGREEN', full.names = TRUE, recursive = TRUE)
 
 
-## Now combine the SUA tables for each species into one table 
+#########################################################################################################################
+## Now combine the niche tables for each species into one table 
 COMBO.NICHE.ALL <- COMBO.NICHE.list %>%
   
   ## pipe the list into lapply
@@ -145,9 +147,47 @@ COMBO.NICHE.ALL <- COMBO.NICHE.list %>%
   bind_rows
 
 
-## This is a summary of maxent output for current conditions
+## Update this
+str(COMBO.NICHE.ALL)
 dim(COMBO.NICHE.ALL)
-names(COMBO.NICHE.ALL)[1:10]
+
+
+## Make sure the Species are unique
+COMBO.NICHE.ALL = COMBO.NICHE.ALL[!duplicated(COMBO.NICHE.ALL[,c('searchTaxon')]),]
+dim(COMBO.NICHE.ALL)
+length(unique(COMBO.NICHE.ALL$searchTaxon))
+length(setdiff(Manuel$Species, COMBO.NICHE.ALL$searchTaxon))
+
+
+#########################################################################################################################
+## Now combine the raster tables for each species into one table 
+COMBO.RASTER.ALL <- COMBO.RASTER.list %>%
+  
+  ## pipe the list into lapply
+  lapply(function(x) {
+    
+    ## create the character string
+    f <- paste0(x)
+    
+    ## load each .csv file
+    d <- readRDS(f)
+    d
+    
+  }) %>%
+  
+  ## finally, bind all the rows together
+  bind_rows
+
+
+## This is a summary of maxent output for current conditions
+dim(COMBO.RASTER.ALL)
+names(COMBO.RASTER.ALL)[1:10]
+
+
+#########################################################################################################################
+## Save the niche and raster data
+saveRDS(COMBO.NICHE.ALL,  paste0('data/base/HIA_LIST/COMBO/COMBO_NICHE_ALL_',  save_run, '.rds'))
+saveRDS(COMBO.RASTER.ALL, paste0('data/base/HIA_LIST/COMBO/COMBO_RASTER_ALL_', save_run, '.rds'))
 
 
 
@@ -159,6 +199,7 @@ names(COMBO.NICHE.ALL)[1:10]
 
 
 ## Find points that make the code not reproducible
+## Improve the raster extract step
 ## Figure out how to make step 8 parallel
 
 

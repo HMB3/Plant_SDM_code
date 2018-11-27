@@ -840,6 +840,12 @@ length(intersect(TI.LUT$searchTaxon, unique(APNI$searchTaxon)))
 length(intersect(CLEAN.SPP$Binomial, unique(APNI$searchTaxon)))
 
 
+
+## Intersection between Manuel's list and all the HIA species
+WPW.spp = unique(c(TPL.HIA, TPL.CLEAN, ALL.INV.EV))
+WPW.MANUEL = setdiff(Manuel$Species, WPW.spp)
+
+
 #########################################################################################################################
 ## Join on the native data and the APNI
 CLEAN.ORIGIN    = dplyr::rename(CLEAN.SPP, 
