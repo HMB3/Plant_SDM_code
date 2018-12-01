@@ -68,7 +68,7 @@ env.grids.2030 = tryCatch(project_maxent_grids(scen_list     = scen_2030,
                                                time_slice    = 30,
                                                current_grids = aus.grids.current),
                           
-                          ## Will this work outside a loop?
+                          ## Skip species
                           error = function(cond) {
                             
                             message(paste('Species skipped - check', spp))
