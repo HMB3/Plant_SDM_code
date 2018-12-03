@@ -312,7 +312,7 @@ xy <- SpatialPointsDataFrame(coords = xy, data = as.data.frame(xy),
 message('Removing GBIF points in the ocean for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
 class(xy)
 z   = raster::extract(world.grids.current[["bio_01"]], xy)
-hist(z, border = NA, col = "orange", breaks = 50, main = "", xlab = "Worldclim Annual temp")
+#hist(z, border = NA, col = "orange", breaks = 50, main = "", xlab = "Worldclim Annual temp")
 
 
 ## Then track which values of Z are on land or not

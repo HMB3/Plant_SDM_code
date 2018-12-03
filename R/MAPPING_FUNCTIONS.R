@@ -24,7 +24,8 @@
 
 
 ## One function for all time periods
-project_maxent_grids = function(scen_list, species_list, maxent_path, climate_path, grid_names, time_slice, current_grids) {
+project_maxent_grids = function(scen_list, species_list, maxent_path, 
+                                climate_path, grid_names, time_slice, current_grids) {
   
   ## Read in Australia
   aus = AUS %>%
