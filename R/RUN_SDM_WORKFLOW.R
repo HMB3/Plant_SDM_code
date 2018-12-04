@@ -13,6 +13,7 @@
 load("H:/green_cities_sdm/TEST_RUN.RData")
 ## save.image("TEST_RUN.RData")
 
+
 ## Next step is to model the differences between the SUA species list, and the HIA species list
 ## That's 377 species currently. Then there are another 1000-odd species on the larger clean list
 ## It's time to start thinking strategically as to how to structure the analyses. So for one species, how much data is
@@ -123,7 +124,7 @@ source('./R/8)_MAP_SDM_COMBINE.R', echo = TRUE)
 
 
 ## Create a list of all dataframes with the extension from this run
-COMBO.NICHE.list  = list.files(save_path, pattern = 'COMBO_NICHE_CONTEXT_EVERGREEN', full.names = TRUE, recursive = TRUE)
+COMBO.NICHE.list  = list.files(save_path, pattern = 'COMBO_NICHE_CONTEXT_EVERGREEN',  full.names = TRUE, recursive = TRUE)
 COMBO.RASTER.list = list.files(save_path, pattern = 'COMBO_RASTER_CONTEXT_EVERGREEN', full.names = TRUE, recursive = TRUE)
 
 

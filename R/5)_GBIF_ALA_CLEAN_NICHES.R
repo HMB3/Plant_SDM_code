@@ -24,7 +24,6 @@ message('Cleaning outliers and creating niches for ', length(GBIF.spp), ' specie
 if(read_data == "TRUE") {
   
   ## read in RDS files from previous step
-  #TI.RASTER.CONVERT = readRDS(paste0('data/base/HIA_LIST/COMBO/TI_RASTER_CONVERT_', save_run, '.rds'))
   COMBO.RASTER.CONVERT = readRDS(paste0('data/base/HIA_LIST/COMBO/COMBO_RASTER_CONVERT_', save_run, '.rds'))
   
 } else {

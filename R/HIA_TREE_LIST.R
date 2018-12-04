@@ -20,7 +20,7 @@ p <- c('ff',    'things',    'raster',        'dismo',        'sp',           'l
        'tidyr', 'readr',     'rnaturalearth', 'rasterVis',    'RColorBrewer', 'latticeExtra', 'parallel',     
        'ALA4R', 'stringr',   'Taxonstand',    'CoordinateCleaner', 'gsubfn',  'PerformanceAnalytics',
        'rvest', 'magrittr',  'devtools',      'ggplot2',      'reshape2',     'rmarkdown', 'flexdashboard', 'shiny', 'rgbif',
-       'ENMeval', 'tibble',  'ncdf4',         'Cairo', 'velox', 'taxonlookup', 'kgc', 'maptools', 'DataCombine', 'mgcv')
+       'ENMeval', 'tibble',  'ncdf4',         'Cairo', 'velox', 'taxonlookup', 'kgc', 'maptools', 'DataCombine', 'mgcv', 'rsq')
 
 
 ## Require packages
@@ -36,6 +36,7 @@ source('./R/MAPPING_FUNCTIONS.R')
 source('./R/HIA_CLEAN_MATCHING.R')
 rasterOptions(tmpdir = file.path('/green_cities_sdm/RTEMP')) 
 #set.tempdir('/green_cities_sdm/RTEMP')
+
 
 
 
