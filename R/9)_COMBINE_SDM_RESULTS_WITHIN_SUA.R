@@ -208,7 +208,7 @@ length(intersect(unique(SDM.CHECK$SPECIES), unique(SUA.COMPLETE$SPECIES)))
 
 #########################################################################################################################
 ## Join on a column for if the species has records in the SUA
-SUA.PREDICT = merge(SUA.COMPLETE, SDM.CHECK, all.x = TRUE)
+SUA.PREDICT = merge(SUA.COMPLETE, SDM.CHECK,  all.x = TRUE)
 SUA.PREDICT = join(SUA.PREDICT, SUA.SPP.COUNT, type = "full")
 SUA.PREDICT = subset(SUA.PREDICT,  SUA_RECORDS > 0)
 summary(SUA.PREDICT$SUA_RECORDS)
@@ -343,9 +343,6 @@ length(unique(SUA.PLOT.GOOD$SPECIES))
 #########################################################################################################################
 ## 4). SUBSET DATA TO MAKE PLOTTING EASIER
 #########################################################################################################################
-
-
-## Start from here to re-create the plots below 
 
 
 #########################################################################################################################
