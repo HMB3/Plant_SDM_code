@@ -99,7 +99,8 @@ FLAGS  <- CleanCoordinates(TIB.GBIF,
                            capitals.rad     = 0.12,
                            countrycheck     = TRUE,
                            duplicates       = TRUE,
-                           seas             = FALSE)
+                           seas             = FALSE,
+                           verbose          = FALSE)
 
 
 ## save/load the flags

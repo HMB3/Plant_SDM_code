@@ -14,7 +14,7 @@ load("H:/green_cities_sdm/TEST_RUN.RData")
 ## save.image("TEST_RUN.RData")
 
 
-## Next step is to model the differences between the SUA species list, and the HIA species list
+## Next step is to model the differences between the SUA species list, and the HIA species list.
 ## That's 377 species currently. Then there are another 1000-odd species on the larger clean list
 ## It's time to start thinking strategically as to how to structure the analyses. So for one species, how much data is
 ## taken up? Need to back this up, then conisder what the wesbite will eventually need - make sure all the necessary 

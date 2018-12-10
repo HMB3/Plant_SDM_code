@@ -7,7 +7,7 @@
 
 
 #########################################################################################################################
-## Create the gain and loss variables for plotting
+## Create the gain and loss variables for plotting.
 SUA.GAIN.2070                   = subset(SUA.PLOT.70.M, AREA_CHANGE %in% c("GAIN"))
 SUA.LOSS.2070                   = subset(SUA.PLOT.70.M, AREA_CHANGE %in% c("LOSS"))
 SUA.STABLE.2070                 = subset(SUA.PLOT.70.M, AREA_CHANGE %in% c("STABLE"))

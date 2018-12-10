@@ -7,7 +7,7 @@
 ## then cleans the list as best as possible in R to use the species binomial as the unit for downloading and analysis.
 
 ## All the cleaining methods will throw up some anomalies, which need to be tracked, and checked with the team for how
-## each case is treated (see outstanding tasks at the bottom)
+## each case is treated (see outstanding tasks at the bottom).
 
 
 #########################################################################################################################

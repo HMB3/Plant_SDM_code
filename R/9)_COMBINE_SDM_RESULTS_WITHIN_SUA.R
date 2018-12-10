@@ -12,7 +12,7 @@
 #########################################################################################################################
 
 
-## Read in the table of species in SUAs and their niches
+## Read in the table of species in SUAs and their niches.
 SUA.SPP.COUNT       = readRDS(paste0('data/base/HIA_LIST/COMBO/SUA_SPP_COUNT_',        save_run, '.rds'))
 COMBO.NICHE.CONTEXT = readRDS(paste0('data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_',  save_run, '.rds'))
 length(unique(SUA.SPP.COUNT$SPECIES))

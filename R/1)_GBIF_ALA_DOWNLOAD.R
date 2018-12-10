@@ -24,7 +24,7 @@
 # server_config
 
 
-## Create a list of all the taxa to download
+## Create a list of all the taxa to download.
 all.taxa     =  GBIF.spp
 all.taxa.rev =  all.taxa[rev(order(all.taxa))]
 

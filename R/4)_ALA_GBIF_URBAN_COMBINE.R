@@ -7,7 +7,7 @@
 ## This code combines the GBIF records with the ALA records, then extracts environmental values. 
 ## It creates :
 
-## 1). A large table with one row for each species record
+## 1). A large table with one row for each species record.
 
 
 ## This table is subsequently used to estimate the current global realised niche/climatic tolerance, snd susequently model 
