@@ -7,9 +7,11 @@ html_document: default
 pdf_document: default
 ---
 
+\
+
 This R markdown file summarises my contribution to the 'Which Plant Where' project at Macquarie University, 
-outlining the key functions I created during my postdoctural work. WPW is part of the Green Cities
-co-investment fund 
+outlining the key functions I have created during my postdoctural work. WPW is part of the Green Cities
+co-investment fund. 
 
 https://horticulture.com.au/co-investment-fund/green-cities-fund/
 
@@ -19,7 +21,8 @@ https://www.whichplantwhere.com.au/
 
 The text and code below summarises a workflow in R that can be used to relatively rapidly assess the effect
 of climate change on a given taxon within Australia, from dowloading occurrence records, through to creating
-maps of predicted climatic suitablity across Australia at 1km*1km resolution. 
+maps of predicted climatic suitablity across Australia at 1km*1km resolution. An example for 10 species is
+given in the markdown file.
 
 \
 
@@ -54,7 +57,7 @@ urban areas that are currently unsuitable.
 by 2070 to less than half of its current extent, with suitable habitat in urban regions projected 
 to decline for ~90% of species.
 
-**Main conclusions:** The number of species with suitable climate within the five largest Australian 
+**Main conclusions:** The number of species with suitable climate within the largest Australian 
 urban areas is projected to progressively decline as climate change intensifies. Our results 
 highlight changing patterns of climatic space for different species, indicating that a pro-active 
 approach, utilizing multiple lines of evidence, is needed to identify new planting opportunities. 
@@ -64,22 +67,15 @@ We also identify key issues associated with the use of CSMs for species in urban
 
 
 #########################################################################################################
-# **<span style="color:blue"> 1). Methods </span>**
+# **<span style="color:blue"> Methods </span>**
 #########################################################################################################
 
-\
-
 #########################################################################################################
-## **Defining significant Urban Areas:** 
+### **Defining significant Urban Areas** 
 Our spatial units for estimating species' future climatic suitability are the 101 Australian Significant 
 Urban Areas (SUAs). SUAs are defined by the Australian Bureau of Statistics (ABS) as containing at least 
-10,000 people within a single labour market ::
-
-http://www.abs.gov.au/ausstats/abs@.nsf/Latestproducts/7D88D2916BF4BBE3CA257A980013999D?opendocument
-
-
-The SUA boundaries were taken from the 2016 SUA shapefile from the ABS, which cover the full span of 
-current Australian climate (Fig 1). 
+10,000 people within a single labour market. The SUA boundaries were taken from the 2016 SUA shapefile 
+from the ABS, and cover the full span of current Australian climate (Fig 1). 
 
 
 \newpage 
@@ -88,10 +84,11 @@ current Australian climate (Fig 1).
 
 \newpage 
 ![](output/figures/CV_figs/figMAT_PET_SUA.png)
+
 **Figure 1.** Largest Significant Urban Areas in each Australian State and Territory 
-(a). The distribution of SUAs in climate space [b, largest SUAs labelled. MAT = current 
-mean annual temperature (worldcim 1960-1990), MAP = current annual precipitation, 
-PET = current potential evaporation]. 
+(top panel). The distribution of SUAs in climate space [bottom panel, largest SUAs labelled. 
+MAT = current mean annual temperature (worldclim 1960-1990), MAP = current annual 
+precipitation, PET = current potential evaporation]. 
 
 \
 
@@ -121,22 +118,21 @@ source("./R/READ_PACKAGES.R")
 
 
 ## List of Variables used to run the SDM analyses
-GBIF.spp      = native.good.models[1:3]                          ## A list of species
-GBIF.spp.rev  = sort(GBIF.spp, decreasing = TRUE)                ## the list reversed - used for local analyses
+GBIF.spp      = native.good.models[1:10]                  ## A list of species
+GBIF.spp.rev  = sort(GBIF.spp, decreasing = TRUE)         ## the list reversed - used for local analyses
 
-save_run      = "SUA_RMD"                       ## A variable to append the run name to the output files
-map_spp_list  = gsub(" ", "_", GBIF.spp)                         ## Species list with "_" for mapping
-map_spp_rev   = sort(map_spp_list, decreasing = TRUE)            ## Reversed, so we can run two at once
+save_run      = "SUA_RMD"                                 ## A variable to append the run name to output files
+map_spp_list  = gsub(" ", "_", GBIF.spp)                  ## Species list with "_" for mapping
+map_spp_rev   = sort(map_spp_list, decreasing = TRUE)     ## Reversed, so we can run two at once
 
-GBIF_path     = "./data/base/HIA_LIST/GBIF/OCC_SEARCH/"          ## The path where GBIF data is stored
-ALA_path      = "./data/base/HIA_LIST/ALA/TREES_TEST/"           ## The path where ALA data is stored  place
+GBIF_path     = "./data/base/HIA_LIST/GBIF/OCC_SEARCH/"   ## The path where GBIF data is stored
+ALA_path      = "./data/base/HIA_LIST/ALA/TREES_TEST/"    ## The path where ALA data is stored  place
 
-maxent_path   = './output/maxent/SUA_TREES_ANALYSIS/'            ## The directory where files are saved               
-maxent_dir    = 'output/maxent/SUA_TREES_ANALYSIS'               ## Another version of the path for the maxent functions
-save_data     = 'TRUE'                                           ## Argument for saving the intermediary output - e.g. data frames
-read_data     = 'FALSE'                                          ## Argument for saving the intermediary output - e.g. data frames
+maxent_path   = './output/maxent/SUA_TREES_ANALYSIS/'     ## The directory where files are saved               
+maxent_dir    = 'output/maxent/SUA_TREES_ANALYSIS'        ## Another version of the path for the maxent functions
+save_data     = 'TRUE'                                    ## Argument for saving the intermediary output - e.g. data frames
+read_data     = 'FALSE'                                   ## Argument for saving the intermediary output - e.g. data frames
 save_path     = 'data/base/HIA_LIST/COMBO'
-
 
 ```
 
@@ -204,7 +200,6 @@ download_ALA_all_species = function (species_list, path) {
     
     ## 5). save records to .Rdata file
     save(ALA, file = paste(path, sp.n, "_ALA_records.RData", sep = ""))
-    #return(skip.spp.list)
     
   }
   
@@ -218,25 +213,24 @@ We then undertook an intensive spatial data-cleaning process to remove spatially
 that, if retained, can cause species' climate tolerances to be miscalculated. Spatially invalid records, 
 those taken before 1950, duplicate records, those within 10 km of capital cities, herbaria and biodiversity 
 institutions, and individual records > 300 km from other records were all removed using the CoordinateCleaner 
-package (version 1.0-7,  resulting in 22.2% of ~ 2.2 million records for 248 species being removed). 
-We then calibrated climate suitability models (CSMs) for all 248 native planted and sold tree species 
-using best practices, as summarised below.
+package (version 1.0-7). We then calibrated climate suitability models (CSMs) for all 248 native planted 
+and sold tree species using best practices, as summarised below.
 
 \
 
 ```{r echo = FALSE, message = FALSE, warning = FALSE}
-## Step 2 :: combine GBIF occurrence data with ALA data and filter to records > 1950
+## Combine GBIF occurrence data with ALA data and filter to records > 1950
 source('./R/ALA_DATA_FILTER_TAXO_SCIENTIFIC_NAME.R', echo = FALSE)
 source('./R/3)_GBIF_DATA_TAXO_SCIENTIFIC_NAME.R',    echo = FALSE)
 
 
-## Step 3 :: combine GBIF, ALA and urban occurrence data into a single table, extract environmental condtions
+## Combine GBIF, ALA and urban occurrence data into a single table, extract environmental condtions
 source('./R/4)_ALA_GBIF_URBAN_COMBINE.R', echo = FALSE)
 source('./R/INVENTORY_RASTER.R',          echo = FALSE)
 
 
-## Step 4 :: clean the occurrence data using the 'CleanCoordinates' function in the CoordinateCleaner package to remove
-## records near herbaria, duplicates, etc. & add contextual info for each record (taxonomic and horticultural) 
+## Clean the occurrence data using the 'CleanCoordinates' function in the CoordinateCleaner package to remove
+## records near herbaria, duplicates, etc. & add contextual info for each record (taxonomic and horticultural)
 ## Then prepare the SDM table
 ## Then clean the spatial outliers
 source('./R/5)_GBIF_ALA_CLEAN_NICHES.R',  echo = FALSE)
@@ -277,15 +271,14 @@ We modelled climatic suitability under current conditions (1960-1990) using the 
 (Elith et al. 2011; Phillips et al. 2006; Phillips and Dudik 2008) within the Dismo R package 
 (Hijmans et al. 2016). Maxent is a machine learning, correlative approach to modelling climatic suitability 
 that is generally regarded as superior to other algorithms that are used to model presence-only 
-occurrence data (Elith et al. 2006). 
+occurrence data (Elith et al. 2006). To run models for all species, we created a function in the 
+R programming language which splits a table of species records * environment into only those spatial 
+records for a given species, and calibrates a Maxent model under current climate for that species.
 
 \
 
-To run models for all species, we created a function in the R programming language which splits a table 
-of species records * environment into only those spatial records for a given species, and calibrates 
-a Maxent model under current climate for that species.
 
-```{r run maxent}
+```{r run maxent, eval = FALSE, echo = TRUE}
 
 #########################################################################################################
 ## A function which splits a table of species records * enviromental conditions into records for each 
@@ -344,6 +337,8 @@ lapply(GBIF.spp, function(spp){
 
 
 ```
+
+\
 
 
 ```{r eval = FALSE, echo = TRUE}
@@ -579,7 +574,8 @@ Operating Characteristic curve (AUC, Swets, 1988) and the True Skill Statistic (
 cross-validation. This involved splitting the occurrence data for each species into five subsets of 
 roughly equal size (i.e. folds), fitting the model to four of the five folds and predicting to the 
 fifth. This process was repeated until each fold was used four times for model fitting and once for 
-model evaluation (Stone, 1974). 
+model evaluation (Stone, 1974). Below is a plot and table of the results for the full models (i.e. 
+using all the data). 
 
 \
 
@@ -591,9 +587,11 @@ kable(MAXENT.RESULTS[c("searchTaxon", "X.Background.points", "Var_pimp", "Perm_i
 
 \
 
-We then created a function to take the model for each species, and project it onto the six climate scenarios 
-for three future time periods (2030, 2050 and 2070), using the 'Rmaxent' package (i.e. looping over species
-and GCM scenario).
+#########################################################################################################
+## **Combining the  models**
+We then created a function to take the maxent model for each species, and project it onto the six climate 
+scenarios for three future time periods (2030, 2050 and 2070), using the 'Rmaxent' package (i.e. looping 
+over each future climate scenario and species, for one period at a time).
 
 \
 
@@ -617,6 +615,7 @@ env.grids.2030 = tryCatch(project_maxent_grids(scen_list     = scen_2030,
 
 ```
 
+\
 
 ```{r eval = FALSE, echo = TRUE}
 
@@ -737,8 +736,6 @@ project_maxent_grids = function(scen_list, species_list, maxent_path,
                             main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
                     
                     ## Plot the Aus shapefile with the occurrence points for reference
-                    ## Can the points be made more legible for both poorly and well recorded species?
-                    ## layer(sp.polygons(aus_albers), data = list(aus_albers = aus_albers))
                     latticeExtra::layer(sp.polygons(aus), data = list(aus = aus)) +
                     latticeExtra::layer(sp.points(occ, pch = 19, cex = 0.15, 
                                                   col = c('red', 'transparent', 'transparent')
@@ -769,7 +766,7 @@ project_maxent_grids = function(scen_list, species_list, maxent_path,
 
 \
 
-The resulting maps generated by this function illustrates how climatic suitability varies across the landscape, 
+The resulting maps generated by this function illustrate how climatic suitability varies across the landscape, 
 with values of grid cells ranging from 0 (not suitable) to 1 (suitable, see Elith et al. 2011; Merow et al. 2013 
 for more details of the  Maxent algorithm).
 
@@ -778,13 +775,13 @@ for more details of the  Maxent algorithm).
 
 **Figure 2.** Example of a continuous suitabiliy map for one species under current condtions. 
 Species occurrence points are plotted in red on the left panel. The cells in the centre and 
-lower panels are coded from 0 - no to low suitability, to 6, all GCMs met the threshold.
+lower panels are coded from 0 - no to low suitability, to 1, highly suitable.
 
 \
 
 
 #########################################################################################################
-## **Summarising CSM output** 
+## **Summarising the climatic suitability output within Significant Urban areas** 
 For each species, we generated maps illustrating areas where suitable climate is projected to occur under 
 current and future conditions. In these maps, a grid cell is given a value between 0 (highly unsuitable) 
 and 1 (highly suitable). Using a species-specific threshold  -  the 10th percentile training presence 
@@ -804,9 +801,9 @@ We then calculated changes to the size of suitable climate in terms of i) overal
 ii) loss of currently suitable areas and iii) gain in new areas. Finally, we intersected species' maps 
 with Significant Urban Areas (SUAs) from the 2016 Census. We then calculated the current area that 
 is projected to be climatically suitable within all SUAs, and the extent to which this area may change 
-under the future scenarios (2030, 2050 and 2070). This was achieved by creating a third function, that 
-counts cells lost or gained within an SUA (i.e. looping over each species and threshold, for each 
-time period, E.G. 2030)
+under the future time periods (2030, 2050 and 2070). This was achieved by creating a third function, 
+that counts cells lost or gained within an SUA (i.e. looping over each species and maxent threshold, 
+for each time period, E.G. 2030)
 
 \
 
@@ -831,6 +828,7 @@ suitability.2030 = tryCatch(mapply(SUA_cell_count,
 
 ```
 
+\
 
 ```{r eval = FALSE, echo = TRUE}
 
@@ -1103,9 +1101,6 @@ SUA_cell_count = function(DIR_list, species_list, maxent_path, thresholds,
 ```
 
 
-
-
-
 \newpage 
 ![](output/figures/CV_figs/A_implexa_FUTURE_SUIT.png)
 
@@ -1156,9 +1151,9 @@ while the bottom right panel shows the losses.
 \
 
 Our preliminary results indicate that climatically suitable habitat for many species is likely to decline 
-(Table 1). For the 176 species analysed here, suitable habitat for half these species is projected to decline 
-by 2070 to less than 42% of its current extent. Only 4.5% of species are projected 
-to have increases to the size of suitable habitat. 
+For the 176 species analysed here, suitable habitat for half these species is projected to decline 
+by 2070 to less than 42% of its current extent. Only 4.5% of species are projected to have increases 
+to the size of suitable habitat. 
 
 \
 
@@ -1211,5 +1206,5 @@ used when combined with species-specific trait or experimental data.
 \
 
 #########################################################################################################
-# TBC
+# **TBC...**
 #########################################################################################################
