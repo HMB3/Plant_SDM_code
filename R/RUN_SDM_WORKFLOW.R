@@ -11,7 +11,6 @@
 ## Read in all data to run the SDM code :: species lists, shapefile, rasters & tables
 #source('./R/HIA_TREE_LIST.R')
 load("H:/green_cities_sdm/TEST_RUN.RData")
-## save.image("TEST_RUN.RData")
 
 
 ## Next step is to model the differences between the SUA species list, and the HIA species list.
@@ -49,7 +48,6 @@ load("H:/green_cities_sdm/TEST_RUN.RData")
 
 
 ## Set global species variables here : species lists, and saving directories
-## GBIF.spp = sort(trimws(unique(c(MOD.3.SPP$searchTaxon, trait.spp))))
 GBIF.spp      = WPW.spp[1:5]                                     ## your list of species
 GBIF.spp.rev  = sort(GBIF.spp, decreasing = TRUE)                ## the list reversed - only needed for a big list
 
@@ -58,7 +56,7 @@ map_spp_list  = gsub(" ", "_", GBIF.spp)                         ## species list
 map_spp_rev   = sort(map_spp_list, decreasing = TRUE)            ## reversed, so we can run two at once
 
 GBIF_path     = "./data/base/HIA_LIST/GBIF/OCC_SEARCH/"          ## The path where GBIF data is stored
-ALA_path      = "./data/base/HIA_LIST/ALA/TREES_TEST/"           ## The path where ALA data is stored  place
+ALA_path      = "./data/base/HIA_LIST/ALA/TREES_TEST/"           ## The path where ALA data is stored place
 
 maxent_path   = './output/maxent/SUA_TREES_ANALYSIS/'            ## The directory where files are saved               
 maxent_dir    = 'output/maxent/SUA_TREES_ANALYSIS'               ## Another version of the path that John's coding needs to run a loop
@@ -199,9 +197,13 @@ saveRDS(COMBO.RASTER.ALL, paste0('data/base/HIA_LIST/COMBO/COMBO_RASTER_ALL_', s
 #########################################################################################################################
 
 
-## Find points that make the code not reproducible
+## Find points that make the code not reproducible - look for all hard coded paths
+
+## Flatten the structure for an example species
+
 ## Improve the raster extract step
-## Figure out how to make step 8 parallel
+
+## Figure out how to make step 8 parallel - help from Shawn
 
 
 #########################################################################################################################

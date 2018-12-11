@@ -9,7 +9,7 @@
 
 
 ## Print the species run to the screen
-message('Preparinf SDM table for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
+message('Preparing SDM table for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
 
 
 #########################################################################################################################
@@ -137,8 +137,8 @@ COMBO.LUT <- SDM.COORDS %>%
   as.data.frame() %>%
   select(species) %>%
   table() %>%
-  as.data.frame(row.names = FALSE) 
-COMBO.LUT <- setDT(COMBO.LUT, keep.rownames = FALSE)[]
+  as.data.frame(row.names = TRUE) 
+COMBO.LUT <- setDT(COMBO.LUT, keep.rownames = TRUE)[]
 names(COMBO.LUT) = c("species", "FREQUENCY")
 COMBO.LUT = COMBO.LUT[with(COMBO.LUT, rev(order(FREQUENCY))), ] 
 
