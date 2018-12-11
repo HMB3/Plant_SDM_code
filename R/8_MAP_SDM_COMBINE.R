@@ -333,7 +333,7 @@ MAXENT.SUMMARY.NICHE <- SDM.TAXA %>%
   
   join(., MAXENT.CHECK[c("searchTaxon", "check.map")]) 
 
-View(MAXENT.SUMMARY.NICHE)
+#View(MAXENT.SUMMARY.NICHE)
 
 
 #View(MAXENT.SUMMARY.TABLE)

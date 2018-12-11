@@ -362,7 +362,7 @@ SUA_cell_count = function(DIR_list, species_list, maxent_path, thresholds,
             add_column(., SPECIES = species,    .after = "AREASQKM16") %>%
             add_column(., PERIOD  = time_slice, .after = "SPECIES")    %>%
             add_column(., THRESH  = thresh,     .after = "PERIOD")
-          View(d4)
+          #View(d4)
           
           #r[d2$cell_number] <- d2$class
           
@@ -841,7 +841,7 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
             
             ##
             unique(GCM.AREA.SUMMARY$GAIN_LOSS) 
-            View(GCM.AREA.SUMMARY) 
+            #View(GCM.AREA.SUMMARY) 
             
             #########################################################################################################################
             ## Then save the table of SUA results for all species to a datafile...
@@ -946,7 +946,7 @@ combine_gcm_threshold = function(DIR_list, species_list, maxent_path, thresholds
                 
                 ##
                 GCM.AREA.SUMMARY$GAIN_LOSS 
-                View(GCM.AREA.SUMMARY) 
+                #View(GCM.AREA.SUMMARY) 
                 
                 #########################################################################################################################
                 ## Then save the table of SUA results for all species to a datafile...
@@ -1281,7 +1281,7 @@ SUA_tables = function(DIR_list, species_list, maxent_path, thresholds, time_slic
         
         ##
         GCM.AREA.SUMMARY$GAIN_LOSS 
-        View(GCM.AREA.SUMMARY) 
+        #View(GCM.AREA.SUMMARY) 
         
         #########################################################################################################################
         ## Then save the table of SUA results for all species to a datafile...

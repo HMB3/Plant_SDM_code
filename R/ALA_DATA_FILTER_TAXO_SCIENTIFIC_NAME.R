@@ -58,7 +58,10 @@ ALA.ALL <- ala.download %>%
       
       d <- d[["data"]]
       
+    } else {
+      d = data.frame("searchTaxon" = c())
     }
+    
     
     ## Create the searchTaxon column
     message ('Reading ALA data for ', x)
@@ -77,7 +80,6 @@ ALA.ALL <- ala.download %>%
     
     ## Then print warnings
     warnings()
-    
     
     ## This is a list of columns in different ALA files which have weird characters
     d[,"coordinateUncertaintyInMetres"] = as.numeric(unlist(d["coordinateUncertaintyInMetres"]))
@@ -292,7 +294,7 @@ message(round((dim(ALA.TREES.CLEAN)[1])/dim(ALA.TRIM.MATCH)[1]*100, 2),
 ## Can use WORLDCIM rasters to get only records where wordlclim data is. 
 message('Removing ALA points in the ocean for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
 
-str (world.grids.current)
+#str (world.grids.current)
 
 
 ## Now get the XY centroids of the unique 1km * 1km WORLDCLIM blocks where ALA records are found

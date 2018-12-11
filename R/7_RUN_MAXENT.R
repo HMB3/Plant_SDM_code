@@ -108,6 +108,7 @@ lapply(GBIF.spp, function(spp){
       error = function(cond) {
 
         message(paste('Species skipped ', spp))
+        write.csv(data.frame(), file.path(dir_name, "failed.txt"))
 
       })
     

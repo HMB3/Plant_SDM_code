@@ -219,7 +219,9 @@ setdiff(names(SDM.SPAT.ALL), names(background))
 
 
 ## Now bind on the background points............................................................................................
-projection(SDM.SPAT.ALL);projection(background)
+projection(SDM.SPAT.ALL);
+projection(background)
+browser()
 SDM.SPAT.ALL = rbind(SDM.SPAT.ALL, background)
 
 

@@ -27,7 +27,8 @@ if(read_data == "TRUE") {
   
 }
 
-
+#  some proj libs do not like the ESRI string code
+sp_epsg54009 = "+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0"
 
 
 #########################################################################################################################
@@ -58,7 +59,7 @@ COMBO.RASTER.ALL  <- dplyr::select(CLEAN.TRUE, searchTaxon, lon, lat, SOURCE, OB
 ## Create a spatial points object, and change to a projected system to calculate distance more accurately 
 coordinates(COMBO.RASTER.ALL)    <- ~lon+lat
 proj4string(COMBO.RASTER.ALL)    <- '+init=epsg:4326'
-COMBO.RASTER.ALL                 <- spTransform(COMBO.RASTER.ALL, CRS('+init=ESRI:54009'))
+COMBO.RASTER.ALL                 <- spTransform(COMBO.RASTER.ALL, CRS(sp_epsg54009))
 
 
 ## Now split using the data using the species column, and get the unique occurrence cells
@@ -258,7 +259,7 @@ message(round(dim(SDM.SPAT.ALL)[1]/dim(SPAT.FLAG)[1]*100, 2), " % records retain
 ## Convert back to format for SDMs
 SDM.SPAT.ALL    = SpatialPointsDataFrame(coords      = SDM.SPAT.ALL[c("lon", "lat")],
                                          data        = SDM.SPAT.ALL,
-                                         proj4string = CRS('+init=ESRI:54009'))
+                                         proj4string = CRS(sp_epsg54009))
 projection(SDM.SPAT.ALL)
 
 
@@ -336,6 +337,10 @@ if(save_data == "TRUE") {
 #########################################################################################################################
 
 
+#  dodgy, but need to make sure there are no ESRI: codes in the coord systems
+projection(background) = "+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0"
+
+
 #########################################################################################################################
 ## Add in random records from previously saved runs
 background = background [!background$searchTaxon %in% GBIF.spp, ]               ## Don't add records for other species
@@ -363,8 +368,11 @@ setdiff(names(SDM.SPAT.ALL), names(background))
 
 #########################################################################################################################
 ## Now bind on the background points
+browser()
+
 SDM.SPAT.ALL = rbind(SDM.SPAT.ALL, background)
-projection(SDM.SPAT.ALL);projection(background)
+projection(SDM.SPAT.ALL);
+projection(background)
 
 
 ## And check what the

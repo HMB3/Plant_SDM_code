@@ -1802,7 +1802,7 @@ COMBO_check_records = function (taxa.list,
     summary.table <- subset(DF, searchTaxon == taxa)
     
     ## print to screen
-    View(summary.table)
+    #View(summary.table)
     
   }
   
