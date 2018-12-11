@@ -1,0 +1,3 @@
+/data
+run_workflow.pbs.e*
+run_workflow.pbs.o*
