@@ -50,10 +50,10 @@ load("H:/green_cities_sdm/TEST_RUN.RData")
 
 ## Set global species variables here : species lists, and saving directories
 ## GBIF.spp = sort(trimws(unique(c(MOD.3.SPP$searchTaxon, trait.spp))))
-GBIF.spp      = unique(c(TPL.HIA, TPL.CLEAN, ALL.INV.EV))[1:500] ## your list of species
+GBIF.spp      = WPW.spp[1:5]                                     ## your list of species
 GBIF.spp.rev  = sort(GBIF.spp, decreasing = TRUE)                ## the list reversed - only needed for a big list
 
-save_run      = "EVERGREEN_500"                                  ## a variable to append the run name to the output files
+save_run      = "WPW_TEST"                                       ## a variable to append the run name to the output files
 map_spp_list  = gsub(" ", "_", GBIF.spp)                         ## species list with "_" for mapping
 map_spp_rev   = sort(map_spp_list, decreasing = TRUE)            ## reversed, so we can run two at once
 
@@ -81,19 +81,19 @@ message('Running SDM workflow for ', length(GBIF.spp), ' species in the set ', "
 
 
 ## Step 3 :: combine GBIF occurrence data with ALA data and filter to records > 1950
-source('./R/1)_GBIF_ALA_DOWNLOAD.R', echo = TRUE)
+source('./R/1_GBIF_ALA_DOWNLOAD.R', echo = TRUE)
 
 
 ## Step 3 :: combine GBIF occurrence data with ALA data and filter to records > 1950
 source('./R/ALA_DATA_FILTER_TAXO_SCIENTIFIC_NAME.R', echo = TRUE)
-source('./R/3)_GBIF_DATA_TAXO_SCIENTIFIC_NAME.R',    echo = TRUE)
+source('./R/3_GBIF_DATA_TAXO_SCIENTIFIC_NAME.R',     echo = TRUE)
 
 
 ## Step 4 :: combine GBIF, ALA and urban occurrence data into a single table, extract environmental condtions
 ## INVENTORY_RASTER will be a problem for species that are not in Alessandro's dataset.
 ## Also, consider constructing the niche dataset separately to SDMs, so we can model one species at a time
 ## This is dealt with by save_data     = 'FALSE'
-source('./R/4)_ALA_GBIF_URBAN_COMBINE.R', echo = TRUE)
+source('./R/4_ALA_GBIF_URBAN_COMBINE.R',  echo = TRUE)
 source('./R/INVENTORY_RASTER.R',          echo = TRUE)
 
 
@@ -101,18 +101,18 @@ source('./R/INVENTORY_RASTER.R',          echo = TRUE)
 ## records near herbaria, duplicates, etc. & add contextual info for each record (taxonomic and horticultural) 
 ## Then prepare the SDM table
 ## Then clean the spatial outliers
-source('./R/5)_GBIF_ALA_CLEAN_NICHES.R',  echo = TRUE)
-source('./R/6)_PREPARE_SDM_TABLE_1KM.R',  echo = TRUE)
+source('./R/5_GBIF_ALA_CLEAN_NICHES.R',  echo = TRUE)
+source('./R/6_PREPARE_SDM_TABLE_1KM.R',  echo = TRUE)
 
 
 ## Step 7 :: Run maxent on a table of all species
-source('./R/7)_RUN_MAXENT.R', echo = TRUE)
+source('./R/7_RUN_MAXENT.R', echo = TRUE)
 
 
 ## Step 8 :: Create habitat suitability maps for each species using six GCMs and three time slices (2030/50/70). 
 ## Then summarise maxent results and estimate species presences in significant urban areas under climate change
 ## Takes awhile, so probably run different time slices (2030, 2050, 2070) in separate R sessions
-source('./R/8)_MAP_SDM_COMBINE.R', echo = TRUE)
+source('./R/8_MAP_SDM_COMBINE.R', echo = TRUE)
 
 
 

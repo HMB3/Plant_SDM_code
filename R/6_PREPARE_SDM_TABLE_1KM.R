@@ -137,8 +137,8 @@ COMBO.LUT <- SDM.COORDS %>%
   as.data.frame() %>%
   select(species) %>%
   table() %>%
-  as.data.frame(row.names = TRUE) 
-COMBO.LUT <- setDT(COMBO.LUT, keep.rownames = TRUE)[]
+  as.data.frame(row.names = FALSE) 
+COMBO.LUT <- setDT(COMBO.LUT, keep.rownames = FALSE)[]
 names(COMBO.LUT) = c("species", "FREQUENCY")
 COMBO.LUT = COMBO.LUT[with(COMBO.LUT, rev(order(FREQUENCY))), ] 
 

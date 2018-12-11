@@ -34,8 +34,7 @@ source('./R/GREEN_CITIES_FUNCTIONS.R')
 source('./R/MAXENT_FUNCTIONS.R')
 source('./R/MAPPING_FUNCTIONS.R')
 source('./R/HIA_CLEAN_MATCHING.R')
-rasterOptions(tmpdir = file.path('/green_cities_sdm/RTEMP')) 
-#set.tempdir('/green_cities_sdm/RTEMP')
+rasterOptions(tmpdir = file.path('./RTEMP')) 
 
 
 

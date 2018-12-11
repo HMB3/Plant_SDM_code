@@ -162,7 +162,6 @@ GBIF.TAXO <- TPL(unique(GBIF.TRIM$scientificName), infra = TRUE,
 sort(names(GBIF.TAXO))
 
 saveRDS(GBIF.TAXO, paste0('data/base/HIA_LIST/COMBO/GBIF_TAXO_', save_run, '.rds'))
-#GBIF.TAXO = readRDS('data/base/HIA_LIST/COMBO/GBIF_TAXO_200.rds')
 
 
 #########################################################################################################################
@@ -174,6 +173,10 @@ saveRDS(GBIF.TAXO, paste0('data/base/HIA_LIST/COMBO/GBIF_TAXO_', save_run, '.rds
 ## "scientificName" as the join field
 GBIF.TRIM.TAXO <- GBIF.TRIM %>%
   left_join(., GBIF.TAXO, by = c("scientificName" = "Taxon"))
+
+
+## Create a new column for the new species name according to TPL
+GBIF.TRIM.TAXO$New_binomial = paste(GBIF.TRIM.TAXO$New.Genus, GBIF.TRIM.TAXO$New.Species, sep = " ") 
 names(GBIF.TRIM.TAXO)
 
 
@@ -186,7 +189,7 @@ names(GBIF.TRIM.TAXO)
 ## currently using 'str_detect'
 Match.SN = GBIF.TRIM.TAXO  %>%
   mutate(Match.SN.ST = 
-           str_detect(scientificName, searchTaxon)) %>%
+           str_detect(searchTaxon, New_binomial)) %>%  ## scientificName, New_binomial
   
   select(one_of(c("scientificName",
                   "searchTaxon",
@@ -200,6 +203,7 @@ Match.SN = GBIF.TRIM.TAXO  %>%
 
 ## How many records don't match?
 dim(Match.SN)
+unique(Match.SN$Match.SN.ST)
 unique(Match.SN$Taxonomic.status)
 unique(Match.SN$New.Taxonomic.status)
 

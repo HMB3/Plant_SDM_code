@@ -548,7 +548,7 @@ if(save_data == "TRUE") {
   ## View the data
   dim(COMBO.RASTER.CONTEXT)
   dim(COMBO.NICHE.CONTEXT)
-  View(COMBO.NICHE.CONTEXT)
+  #View(COMBO.NICHE.CONTEXT)
   
   
   ## Print the dataframe dimensions to screen
