@@ -1,171 +1,0 @@
-unlimited
-                  ff               things               raster 
-                TRUE                 TRUE                 TRUE 
-               dismo                   sp         latticeExtra 
-                TRUE                 TRUE                 TRUE 
-          data.table                rgdal                rgeos 
-                TRUE                 TRUE                 TRUE 
-           gdalUtils              rmaxent                readr 
-                TRUE                 TRUE                 TRUE 
-                plyr                dplyr                tidyr 
-                TRUE                 TRUE                 TRUE 
-               readr        rnaturalearth            rasterVis 
-                TRUE                 TRUE                 TRUE 
-        RColorBrewer         latticeExtra             parallel 
-                TRUE                 TRUE                 TRUE 
-               ALA4R              stringr           Taxonstand 
-                TRUE                 TRUE                 TRUE 
-   CoordinateCleaner               gsubfn PerformanceAnalytics 
-                TRUE                 TRUE                 TRUE 
-               rvest             magrittr             devtools 
-                TRUE                 TRUE                 TRUE 
-             ggplot2             reshape2            rmarkdown 
-                TRUE                 TRUE                 TRUE 
-       flexdashboard                shiny                rgbif 
-                TRUE                 TRUE                 TRUE 
-             ENMeval               tibble                ncdf4 
-                TRUE                 TRUE                 TRUE 
-               Cairo          taxonlookup                  kgc 
-                TRUE                 TRUE                 TRUE 
-            maptools          DataCombine                 mgcv 
-                TRUE                 TRUE                 TRUE 
-                 rsq 
-                TRUE 
-
-> all.taxa = GBIF.spp
-
-> all.taxa.rev = all.taxa[rev(order(all.taxa))]
-
-> if (FALSE) {
-+     skipped.taxa = download_GBIF_all_species(species_list = all.taxa, 
-+         path = GBIF_path)
-+     ALA.taxa = download_ALA_all_ .... [TRUNCATED] 
-
-> message("Combining ALA occurrence data for ", length(GBIF.spp), 
-+     " species in the set ", "'", save_run, "'")
-
-> ala.download = list.files(ALA_path, pattern = ".RData")
-
-> length(ala.download)
-[1] 4466
-
-> ala.spp.download <- paste(GBIF.spp, "_ALA_records.RData", 
-+     sep = "")
-
-> ala.download = ala.download[ala.download %in% ala.spp.download]
-
-> message("downloaded species ", length(ala.download), 
-+     " analyzed species ", length(GBIF.spp))
-
-> ALA.ALL <- ala.download %>% lapply(function(x) {
-+     f <- sprintf(paste0(ALA_path, "%s"), x)
-+     d <- get(load(f))
-+     if (length(class(d)) >  .... [TRUNCATED] 
-
-> ALA.ALL = ALA.ALL[ALA.ALL$searchTaxon %in% GBIF.spp, 
-+     ]
-
-> length(unique(ALA.ALL$searchTaxon))
-[1] 5
-
-> sort(names(ALA.ALL))
- [1] "IBRA7Regions"                  "basisOfRecord"                
- [3] "catalogNumber"                 "coordinateUncertaintyInMetres"
- [5] "country"                       "eventDate"                    
- [7] "family"                        "genus"                        
- [9] "geodeticDatum"                 "id"                           
-[11] "institutionCode"               "lat"                          
-[13] "localGovernmentAreas"          "locality"                     
-[15] "lon"                           "month"                        
-[17] "occCultivatedEscapee"          "rank"                         
-[19] "scientificName"                "scientificNameOriginal"       
-[21] "searchTaxon"                   "species"                      
-[23] "state"                         "year"                         
-[25] "zeroCoordinates"              
-
-> dim(ALA.ALL)
-[1] 32845    25
-
-> (sum(is.na(ALA.ALL$lat)) + dim(subset(ALA.ALL, year < 
-+     1950))[1])/dim(ALA.ALL)[1] * 100
-[1] 4.840919
-
-> (sum(is.na(ALA.ALL$scientificNameOriginal)) + dim(subset(ALA.ALL, 
-+     scientificNameOriginal == ""))[1])/dim(ALA.ALL)[1] * 100
-[1] 0
-
-> (sum(is.na(ALA.ALL$scientificName)) + dim(subset(ALA.ALL, 
-+     scientificName == ""))[1])/dim(ALA.ALL)[1] * 100
-[1] 0.003044603
-
-> sort(names(ALA.ALL))
- [1] "IBRA7Regions"                  "basisOfRecord"                
- [3] "catalogNumber"                 "coordinateUncertaintyInMetres"
- [5] "country"                       "eventDate"                    
- [7] "family"                        "genus"                        
- [9] "geodeticDatum"                 "id"                           
-[11] "institutionCode"               "lat"                          
-[13] "localGovernmentAreas"          "locality"                     
-[15] "lon"                           "month"                        
-[17] "occCultivatedEscapee"          "rank"                         
-[19] "scientificName"                "scientificNameOriginal"       
-[21] "searchTaxon"                   "species"                      
-[23] "state"                         "year"                         
-[25] "zeroCoordinates"              
-
-> ALA.TRIM <- ALA.ALL %>% select(one_of(ALA.keep))
-
-> dim(ALA.TRIM)
-[1] 32845    25
-
-> sort(names(ALA.TRIM))
- [1] "IBRA7Regions"                  "basisOfRecord"                
- [3] "catalogNumber"                 "coordinateUncertaintyInMetres"
- [5] "country"                       "eventDate"                    
- [7] "family"                        "genus"                        
- [9] "geodeticDatum"                 "id"                           
-[11] "institutionCode"               "lat"                          
-[13] "localGovernmentAreas"          "locality"                     
-[15] "lon"                           "month"                        
-[17] "occCultivatedEscapee"          "rank"                         
-[19] "scientificName"                "scientificNameOriginal"       
-[21] "searchTaxon"                   "species"                      
-[23] "state"                         "year"                         
-[25] "zeroCoordinates"              
-
-> length(unique(ALA.TRIM$searchTaxon))
-[1] 5
-
-> length(unique(ALA.TRIM$scientificNameOriginal))
-[1] 100
-
-> length(unique(ALA.TRIM$scientificName))
-[1] 19
-
-> length(unique(ALA.TRIM$species))
-[1] 13
-
-> (sum(is.na(ALA.TRIM$scientificName)) + dim(subset(ALA.TRIM, 
-+     scientificName == ""))[1])/dim(ALA.TRIM)[1] * 100
-[1] 0.003044603
-
-> message("Running TPL taxonomy for ", length(GBIF.spp), 
-+     " species in the set ", "'", save_run, "'")
-
-> ALA.TREES.TAXO <- TPL(unique(ALA.TRIM$scientificName), 
-+     infra = TRUE, corr = TRUE, repeats = 100)
-  |                                                          |                                                  |   0%  |                                                          |+++                                               |   5%  |                                                          |+++++                                             |  11%  |                                                          |++++++++                                          |  16%  |                                                          |+++++++++++                                       |  21%  |                                                          |+++++++++++++                                     |  26%  |                                                          |++++++++++++++++                                  |  32%  |                                                          |++++++++++++++++++                                |  37%  |                                                          |+++++++++++++++++++++                             |  42%  |                                                          |++++++++++++++++++++++++                          |  47%  |                                                          |++++++++++++++++++++++++++                        |  53%  |                                                          |+++++++++++++++++++++++++++++                     |  58%  |                                                          |++++++++++++++++++++++++++++++++                  |  63%  |                                                          |++++++++++++++++++++++++++++++++++                |  68%  |                                                          |+++++++++++++++++++++++++++++++++++++             |  74%  |                                                          |+++++++++++++++++++++++++++++++++++++++           |  79%  |                                                          |++++++++++++++++++++++++++++++++++++++++++        |  84%  |                                                          |+++++++++++++++++++++++++++++++++++++++++++++     |  89%  |                                                          |+++++++++++++++++++++++++++++++++++++++++++++++   |  95%  |                                                          |++++++++++++++++++++++++++++++++++++++++++++++++++| 100%
-
-> sort(names(ALA.TREES.TAXO))
- [1] "Abbrev"                 "Authority"              "Date"                  
- [4] "Family"                 "Genus"                  "Higher.level"          
- [7] "Hybrid.marker"          "ID"                     "Infraspecific"         
-[10] "Infraspecific.rank"     "New.Authority"          "New.Genus"             
-[13] "New.Hybrid.marker"      "New.ID"                 "New.Infraspecific"     
-[16] "New.Infraspecific.rank" "New.Species"            "New.Taxonomic.status"  
-[19] "Plant.Name.Index"       "Species"                "TPL.version"           
-[22] "Taxon"                  "Taxonomic.status"       "Typo"                  
-[25] "WFormat"               
-
-> saveRDS(ALA.TREES.TAXO, paste0("data/base/HIA_LIST/COMBO/ALA_TAXO_", 
-+     save_run, ".rds"))
