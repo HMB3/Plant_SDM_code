@@ -24,7 +24,7 @@ message('Running maxent models for ', length(GBIF.spp), ' species in the set ', 
 
 #########################################################################################################################
 ## Load SDM table
-if(save_data == "TRUE") {
+if(read_data == "TRUE") {
   
   ## read in RDS files from previous step
   SDM.SPAT.ALL = readRDS(paste0('data/base/HIA_LIST/COMBO/SDM_SPAT_ALL_', save_run, '.rds'))
