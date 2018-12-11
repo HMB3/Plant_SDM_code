@@ -15,7 +15,7 @@ cmd_args <- commandArgs(TRUE)
 rdata_file = cmd_args[1]
 if (is.na(rdata_file)) {rdata_file = "../TEST_RUN.RData"}
 message (rdata_file)
-#load(rdata_file)
+load(rdata_file)
 ## save.image("TEST_RUN.RData")
 
 
