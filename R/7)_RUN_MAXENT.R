@@ -63,11 +63,17 @@ lapply(GBIF.spp, function(spp){
   ## Skip the species if the directory already exists, before the loop
   outdir <- maxent_dir
   
-  if(dir.exists(file.path(maxent_path, gsub(' ', '_', spp)))) {
+  dir_name = file.path(maxent_path, gsub(' ', '_', spp))
+  if(dir.exists(dir_name)) {
     message('Skipping ', spp, ' - already run.')
     invisible(return(NULL))
     
   }
+
+  #  create the directory so other parallel runs don't try to do it
+  dir.create(dir_name)
+  write.csv(data.frame(), file.path(dir_name, "in_progress.txt"))
+  
   
   ## Print the taxa being processed to screen
   if(spp %in% SDM.SPAT.ALL$searchTaxon) {
@@ -108,8 +114,12 @@ lapply(GBIF.spp, function(spp){
   } else {
     
     message(spp, ' skipped - no data.')         ## This condition ignores species which have no data...
+    write.csv(data.frame(), file.path(dir_name, "completed.txt"))
     
   }  
+
+  #  now add a file to the dir to denote that it has completed
+  write.csv(data.frame(), file.path(dir_name, "completed.txt"))
   
 })
 

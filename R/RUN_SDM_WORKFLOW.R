@@ -10,7 +10,12 @@
 #########################################################################################################################
 ## Read in all data to run the SDM code :: species lists, shapefile, rasters & tables
 #source('./R/HIA_TREE_LIST.R')
-load("H:/green_cities_sdm/TEST_RUN.RData")
+##load("H:/green_cities_sdm/TEST_RUN.RData")
+cmd_args <- commandArgs(TRUE)
+rdata_file = cmd_args[1]
+if (is.na(rdata_file)) {rdata_file = "../TEST_RUN.RData"}
+message (rdata_file)
+##load(rdata_file)
 ## save.image("TEST_RUN.RData")
 
 
@@ -34,6 +39,67 @@ load("H:/green_cities_sdm/TEST_RUN.RData")
 ## One of the outstanding tasks is how to tune the spatial cleaning, and also run the mess map creation. Discuss this with
 ## Rony, see if he has time to play around with different settings.
 
+#########################################################################################################################
+## Setup for project
+
+
+## Load only the packages needed for the analysis
+p <- c('ff',    'things',    'raster',        'dismo',        'sp',           'latticeExtra', 'data.table',
+       'rgdal', 'rgeos',     'gdalUtils',     'rmaxent',      'readr',        'plyr',         'dplyr',
+       'tidyr', 'readr',     'rnaturalearth', 'rasterVis',    'RColorBrewer', 'latticeExtra', 'parallel',
+       'ALA4R', 'stringr',   'Taxonstand',    'CoordinateCleaner', 'gsubfn',  'PerformanceAnalytics',
+       'rvest', 'magrittr',  'devtools',      'ggplot2',      'reshape2',     'rmarkdown', 'flexdashboard', 'shiny', 'rgbif',
+       'ENMeval', 'tibble',  'ncdf4',         'Cairo', 'taxonlookup', 'kgc', 'maptools', 'DataCombine', 'mgcv', 'rsq')
+
+
+## Require packages
+sapply(p, require, character.only = TRUE)
+source_gist('26e8091f082f2b3dd279',             filename = 'polygonizer.R')
+source_gist('c6a1cb61b8b6616143538950e6ec34aa', filename = 'hatch.R')
+
+
+## Source functions, and set temporary directory (for both raster files and just generally)
+source('./R/GREEN_CITIES_FUNCTIONS.R')
+source('./R/MAXENT_FUNCTIONS.R')
+source('./R/MAPPING_FUNCTIONS.R')
+source('./R/HIA_CLEAN_MATCHING.R')
+rasterOptions(tmpdir = file.path('/green_cities_sdm/RTEMP'))
+#set.tempdir('/green_cities_sdm/RTEMP')
+
+####################################################################
+##
+##  Override the raster objects so we use the local versions
+
+message ("Loading world raster stack")
+world.grids.current = stack(
+  file.path('./data/base/worldclim/world/0.5/bio/current',
+            sprintf('bio_%02d', 1:19)))
+
+## Create a raster stack of current Australian environmental conditions
+message ("Loading inventory raster stack")
+inventory.grids.current = stack(
+  file.path('./data/base/worldclim/aus/1km/bio/current/WGS/',
+            sprintf('bio_%02d.tif', 1:19)))
+
+message ("Loading aus raster stack ./data/base/worldclim/aus/1km/bio/current")
+aus.grids.current <- stack(
+  file.path('./data/base/worldclim/aus/1km/bio/current',   ## ./data/base/worldclim/aus/1km/bio
+            sprintf('bio_%02d.tif', 1:19)))
+
+message ("Iterating over aus current grids")
+for(i in 1:11) {
+  ## simple loop
+  message(i)
+  aus.grids.current[[i]] <- aus.grids.current[[i]]/10
+}
+
+
+template.raster = raster("./data/template_hasData.tif")
+template.cells  = readRDS("./data/hasData_cells.rds")
+
+Koppen_1975   = raster('data/Koppen_1000m_Mollweide54009.tif')
+
+
 
 #########################################################################################################################
 ## Step one is to create the same taxonomy for the next lot of species - GBIF, TPL, etc
@@ -50,15 +116,17 @@ load("H:/green_cities_sdm/TEST_RUN.RData")
 
 ## Set global species variables here : species lists, and saving directories
 ## GBIF.spp = sort(trimws(unique(c(MOD.3.SPP$searchTaxon, trait.spp))))
-GBIF.spp      = unique(c(TPL.HIA, TPL.CLEAN, ALL.INV.EV))[1:500] ## your list of species
+#GBIF.spp      = unique(c(TPL.HIA, TPL.CLEAN, ALL.INV.EV))[1:500] ## your list of species
+WPW.spp = WPW.spp[1:5]
+GBIF.spp      = WPW.spp
 GBIF.spp.rev  = sort(GBIF.spp, decreasing = TRUE)                ## the list reversed - only needed for a big list
 
 save_run      = "EVERGREEN_500"                                  ## a variable to append the run name to the output files
 map_spp_list  = gsub(" ", "_", GBIF.spp)                         ## species list with "_" for mapping
 map_spp_rev   = sort(map_spp_list, decreasing = TRUE)            ## reversed, so we can run two at once
 
-GBIF_path     = "./data/base/HIA_LIST/GBIF/OCC_SEARCH/"          ## The path where GBIF data is stored
-ALA_path      = "./data/base/HIA_LIST/ALA/TREES_TEST/"           ## The path where ALA data is stored  place
+GBIF_path     = "./data/base/HIA_LIST/GBIF/"          ## The path where GBIF data is stored
+ALA_path      = "./data/base/HIA_LIST/ALA/"           ## The path where ALA data is stored  place
 
 maxent_path   = './output/maxent/SUA_TREES_ANALYSIS/'            ## The directory where files are saved               
 maxent_dir    = 'output/maxent/SUA_TREES_ANALYSIS'               ## Another version of the path that John's coding needs to run a loop

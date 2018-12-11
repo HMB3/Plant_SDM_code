@@ -277,15 +277,18 @@ download_GBIF_all_species = function (species_list, path) {
     
     ## 1). First, check if the f*&%$*# file exists
     ## data\base\HIA_LIST\GBIF\SPECIES
-    file = paste0(path, sp.n, "_GBIF_records.RData")
+    file_name = paste0(path, sp.n, "_GBIF_records.RData")
     
     ## If it's already downloaded, skip
-    if (file.exists (file)) {
+    if (file.exists (file_name)) {
       
       print(paste ("file exists for species", sp.n, "skipping"))
       next
       
     }
+    #  create a dummy file
+    dummy = data.frame()
+    save (dummy, file = file_name)
     
     ## 2). Then check the spelling...incorrect nomenclature will return NULL result
     if (is.null(occ_search(scientificName = sp.n, limit = 1)$meta$count) == TRUE) {
@@ -361,12 +364,14 @@ download_GBIF_all_species = function (species_list, path) {
       message(dim(GBIF[1]), " Records returned for ", sp.n)
       
       ## 6). save records to .Rdata file, note that using .csv files seemed to cause problems...
-      save(GBIF, file = paste(path, sp.n, "_GBIF_records.RData", sep = ""))
-      return(skip.spp.list)
+      #save(GBIF, file = paste(path, sp.n, "_GBIF_records.RData", sep = ""))
+      save(GBIF, file = file_name)
+      #return(skip.spp.list)
       
     }
     
   }
+  return(skip.spp.list)
   
 }
 
@@ -383,15 +388,18 @@ download_ALA_all_species = function (species_list, path) {
   for(sp.n in species_list){
     
     ## 1). First, check if the f*&%$*# file exists
-    file = paste0(path, sp.n, "_ALA_records.RData")
+    file_name = paste0(path, sp.n, "_ALA_records.RData")
     
     ## If it's already downloaded, skip
-    if (file.exists (file)) {
+    if (file.exists (file_name)) {
       
       print (paste ("file exists for species", sp.n, "skipping"))
       next
       
     }
+    #  create a dummy file
+    dummy = data.frame()
+    save (dummy, file = file_name)
     
     ## 2). Then check the spelling...incorrect nomenclature will return NULL result
     if (is.null(occurrences(taxon = sp.n, download_reason_id = 7)$data) == TRUE) {
@@ -424,7 +432,8 @@ download_ALA_all_species = function (species_list, path) {
     message(dim(ALA[1]), " Records returned for ", sp.n)
     
     ## 5). save records to .Rdata file, note that using .csv files seemed to cause problems...
-    save(ALA, file = paste(path, sp.n, "_ALA_records.RData", sep = ""))
+    ##save(ALA, file = paste(path, sp.n, "_ALA_records.RData", sep = ""))
+    save (ALA, file = file_name)
     #return(skip.spp.list)
     
   }

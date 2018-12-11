@@ -292,6 +292,8 @@ message(round((dim(ALA.TREES.CLEAN)[1])/dim(ALA.TRIM.MATCH)[1]*100, 2),
 ## Can use WORLDCIM rasters to get only records where wordlclim data is. 
 message('Removing ALA points in the ocean for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
 
+str (world.grids.current)
+
 
 ## Now get the XY centroids of the unique 1km * 1km WORLDCLIM blocks where ALA records are found
 ## Get cell number(s) of WORLDCLIM raster from row and/or column numbers. Cell numbers start at 1 in the upper left corner, 

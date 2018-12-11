@@ -28,18 +28,21 @@
 all.taxa     =  GBIF.spp
 all.taxa.rev =  all.taxa[rev(order(all.taxa))]
 
+#message (GBIF_path)
 
 #########################################################################################################################
 ## Run the download function on the species lists. This function needs to download at least one file, or they 
 ## will return NULL. Saves each spp as .Rdata file, returning list of skipped spp
-skipped.taxa    = download_GBIF_all_species(species_list = all.taxa, 
+# TEMP DISABLE for katana - we have all the records so no need to check again
+if (FALSE) {
+    skipped.taxa    = download_GBIF_all_species(species_list = all.taxa, 
                                             path         = GBIF_path) ## insert path 
 
 
-ALA.taxa        = download_ALA_all_species(species_list = all.taxa.rev, 
+    ALA.taxa        = download_ALA_all_species(species_list = all.taxa.rev, 
                                            path         = ALA_path)
 
-
+}
 
 
 

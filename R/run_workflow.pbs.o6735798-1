@@ -1,0 +1,334 @@
+unlimited
+                  ff               things               raster 
+                TRUE                 TRUE                 TRUE 
+               dismo                   sp         latticeExtra 
+                TRUE                 TRUE                 TRUE 
+          data.table                rgdal                rgeos 
+                TRUE                 TRUE                 TRUE 
+           gdalUtils              rmaxent                readr 
+                TRUE                 TRUE                 TRUE 
+                plyr                dplyr                tidyr 
+                TRUE                 TRUE                 TRUE 
+               readr        rnaturalearth            rasterVis 
+                TRUE                 TRUE                 TRUE 
+        RColorBrewer         latticeExtra             parallel 
+                TRUE                 TRUE                 TRUE 
+               ALA4R              stringr           Taxonstand 
+                TRUE                 TRUE                 TRUE 
+   CoordinateCleaner               gsubfn PerformanceAnalytics 
+                TRUE                 TRUE                 TRUE 
+               rvest             magrittr             devtools 
+                TRUE                 TRUE                 TRUE 
+             ggplot2             reshape2            rmarkdown 
+                TRUE                 TRUE                 TRUE 
+       flexdashboard                shiny                rgbif 
+                TRUE                 TRUE                 TRUE 
+             ENMeval               tibble                ncdf4 
+                TRUE                 TRUE                 TRUE 
+               Cairo          taxonlookup                  kgc 
+                TRUE                 TRUE                 TRUE 
+            maptools          DataCombine                 mgcv 
+                TRUE                 TRUE                 TRUE 
+                 rsq 
+                TRUE 
+
+> all.taxa = GBIF.spp
+
+> all.taxa.rev = all.taxa[rev(order(all.taxa))]
+
+> if (FALSE) {
++     skipped.taxa = download_GBIF_all_species(species_list = all.taxa, 
++         path = GBIF_path)
++     ALA.taxa = download_ALA_all_ .... [TRUNCATED] 
+
+> message("Combining ALA occurrence data for ", length(GBIF.spp), 
++     " species in the set ", "'", save_run, "'")
+
+> ala.download = list.files(ALA_path, pattern = ".RData")
+
+> length(ala.download)
+[1] 4466
+
+> ala.spp.download <- paste(GBIF.spp, "_ALA_records.RData", 
++     sep = "")
+
+> ala.download = ala.download[ala.download %in% ala.spp.download]
+
+> message("downloaded species ", length(ala.download), 
++     " analyzed species ", length(GBIF.spp))
+
+> ALA.ALL <- ala.download %>% lapply(function(x) {
++     f <- sprintf(paste0(ALA_path, "%s"), x)
++     d <- get(load(f))
++     if (length(class(d)) >  .... [TRUNCATED] 
+
+> ALA.ALL = ALA.ALL[ALA.ALL$searchTaxon %in% GBIF.spp, 
++     ]
+
+> length(unique(ALA.ALL$searchTaxon))
+[1] 5
+
+> sort(names(ALA.ALL))
+ [1] "IBRA7Regions"                  "basisOfRecord"                
+ [3] "catalogNumber"                 "coordinateUncertaintyInMetres"
+ [5] "country"                       "eventDate"                    
+ [7] "family"                        "genus"                        
+ [9] "geodeticDatum"                 "id"                           
+[11] "institutionCode"               "lat"                          
+[13] "localGovernmentAreas"          "locality"                     
+[15] "lon"                           "month"                        
+[17] "occCultivatedEscapee"          "rank"                         
+[19] "scientificName"                "scientificNameOriginal"       
+[21] "searchTaxon"                   "species"                      
+[23] "state"                         "year"                         
+[25] "zeroCoordinates"              
+
+> dim(ALA.ALL)
+[1] 32845    25
+
+> (sum(is.na(ALA.ALL$lat)) + dim(subset(ALA.ALL, year < 
++     1950))[1])/dim(ALA.ALL)[1] * 100
+[1] 4.840919
+
+> (sum(is.na(ALA.ALL$scientificNameOriginal)) + dim(subset(ALA.ALL, 
++     scientificNameOriginal == ""))[1])/dim(ALA.ALL)[1] * 100
+[1] 0
+
+> (sum(is.na(ALA.ALL$scientificName)) + dim(subset(ALA.ALL, 
++     scientificName == ""))[1])/dim(ALA.ALL)[1] * 100
+[1] 0.003044603
+
+> sort(names(ALA.ALL))
+ [1] "IBRA7Regions"                  "basisOfRecord"                
+ [3] "catalogNumber"                 "coordinateUncertaintyInMetres"
+ [5] "country"                       "eventDate"                    
+ [7] "family"                        "genus"                        
+ [9] "geodeticDatum"                 "id"                           
+[11] "institutionCode"               "lat"                          
+[13] "localGovernmentAreas"          "locality"                     
+[15] "lon"                           "month"                        
+[17] "occCultivatedEscapee"          "rank"                         
+[19] "scientificName"                "scientificNameOriginal"       
+[21] "searchTaxon"                   "species"                      
+[23] "state"                         "year"                         
+[25] "zeroCoordinates"              
+
+> ALA.TRIM <- ALA.ALL %>% select(one_of(ALA.keep))
+
+> dim(ALA.TRIM)
+[1] 32845    25
+
+> sort(names(ALA.TRIM))
+ [1] "IBRA7Regions"                  "basisOfRecord"                
+ [3] "catalogNumber"                 "coordinateUncertaintyInMetres"
+ [5] "country"                       "eventDate"                    
+ [7] "family"                        "genus"                        
+ [9] "geodeticDatum"                 "id"                           
+[11] "institutionCode"               "lat"                          
+[13] "localGovernmentAreas"          "locality"                     
+[15] "lon"                           "month"                        
+[17] "occCultivatedEscapee"          "rank"                         
+[19] "scientificName"                "scientificNameOriginal"       
+[21] "searchTaxon"                   "species"                      
+[23] "state"                         "year"                         
+[25] "zeroCoordinates"              
+
+> length(unique(ALA.TRIM$searchTaxon))
+[1] 5
+
+> length(unique(ALA.TRIM$scientificNameOriginal))
+[1] 100
+
+> length(unique(ALA.TRIM$scientificName))
+[1] 19
+
+> length(unique(ALA.TRIM$species))
+[1] 13
+
+> (sum(is.na(ALA.TRIM$scientificName)) + dim(subset(ALA.TRIM, 
++     scientificName == ""))[1])/dim(ALA.TRIM)[1] * 100
+[1] 0.003044603
+
+> message("Running TPL taxonomy for ", length(GBIF.spp), 
++     " species in the set ", "'", save_run, "'")
+
+> ALA.TREES.TAXO <- TPL(unique(ALA.TRIM$scientificName), 
++     infra = TRUE, corr = TRUE, repeats = 100)
+  |                                                          |                                                  |   0%  |                                                          |+++                                               |   5%  |                                                          |+++++                                             |  11%  |                                                          |++++++++                                          |  16%  |                                                          |+++++++++++                                       |  21%  |                                                          |+++++++++++++                                     |  26%  |                                                          |++++++++++++++++                                  |  32%  |                                                          |++++++++++++++++++                                |  37%  |                                                          |+++++++++++++++++++++                             |  42%  |                                                          |++++++++++++++++++++++++                          |  47%  |                                                          |++++++++++++++++++++++++++                        |  53%  |                                                          |+++++++++++++++++++++++++++++                     |  58%  |                                                          |++++++++++++++++++++++++++++++++                  |  63%  |                                                          |++++++++++++++++++++++++++++++++++                |  68%  |                                                          |+++++++++++++++++++++++++++++++++++++             |  74%  |                                                          |+++++++++++++++++++++++++++++++++++++++           |  79%  |                                                          |++++++++++++++++++++++++++++++++++++++++++        |  84%  |                                                          |+++++++++++++++++++++++++++++++++++++++++++++     |  89%  |                                                          |+++++++++++++++++++++++++++++++++++++++++++++++   |  95%  |                                                          |++++++++++++++++++++++++++++++++++++++++++++++++++| 100%
+
+> sort(names(ALA.TREES.TAXO))
+ [1] "Abbrev"                 "Authority"              "Date"                  
+ [4] "Family"                 "Genus"                  "Higher.level"          
+ [7] "Hybrid.marker"          "ID"                     "Infraspecific"         
+[10] "Infraspecific.rank"     "New.Authority"          "New.Genus"             
+[13] "New.Hybrid.marker"      "New.ID"                 "New.Infraspecific"     
+[16] "New.Infraspecific.rank" "New.Species"            "New.Taxonomic.status"  
+[19] "Plant.Name.Index"       "Species"                "TPL.version"           
+[22] "Taxon"                  "Taxonomic.status"       "Typo"                  
+[25] "WFormat"               
+
+> saveRDS(ALA.TREES.TAXO, paste0("data/base/HIA_LIST/COMBO/ALA_TAXO_", 
++     save_run, ".rds"))
+
+> ALA.TRIM.TAXO <- ALA.TRIM %>% left_join(., ALA.TREES.TAXO, 
++     by = c(scientificName = "Taxon"))
+
+> names(ALA.TRIM.TAXO)
+ [1] "searchTaxon"                   "scientificName"               
+ [3] "scientificNameOriginal"        "species"                      
+ [5] "rank"                          "genus"                        
+ [7] "family"                        "occCultivatedEscapee"         
+ [9] "basisOfRecord"                 "locality"                     
+[11] "institutionCode"               "id"                           
+[13] "catalogNumber"                 "lat"                          
+[15] "lon"                           "coordinateUncertaintyInMetres"
+[17] "zeroCoordinates"               "country"                      
+[19] "state"                         "IBRA7Regions"                 
+[21] "localGovernmentAreas"          "geodeticDatum"                
+[23] "year"                          "month"                        
+[25] "eventDate"                     "Genus"                        
+[27] "Hybrid.marker"                 "Species"                      
+[29] "Abbrev"                        "Infraspecific.rank"           
+[31] "Infraspecific"                 "Authority"                    
+[33] "ID"                            "Plant.Name.Index"             
+[35] "TPL.version"                   "Taxonomic.status"             
+[37] "Family"                        "New.Genus"                    
+[39] "New.Hybrid.marker"             "New.Species"                  
+[41] "New.Infraspecific.rank"        "New.Infraspecific"            
+[43] "New.Authority"                 "New.ID"                       
+[45] "New.Taxonomic.status"          "Typo"                         
+[47] "WFormat"                       "Higher.level"                 
+[49] "Date"                         
+
+> (sum(is.na(ALA.TRIM.TAXO$scientificName)) + dim(subset(ALA.TRIM.TAXO, 
++     scientificName == ""))[1])/dim(ALA.TRIM)[1] * 100
+[1] 0.003044603
+
+> Match.SN = ALA.TRIM.TAXO %>% mutate(Match.SN.ST = str_detect(scientificName, 
++     searchTaxon)) %>% select(one_of(c("scientificName", "searchTaxon ..." ... [TRUNCATED] 
+
+> dim(Match.SN)
+[1] 32845     8
+
+> unique(Match.SN$Taxonomic.status)
+[1] "Unresolved" ""           "Accepted"   "Synonym"   
+
+> unique(Match.SN$New.Taxonomic.status)
+[1] "Unresolved" ""           "Accepted"  
+
+> match.true = unique(subset(Match.SN, Match.SN.ST == 
++     "TRUE")$scientificName)
+
+> match.false = unique(subset(Match.SN, Match.SN.ST == 
++     "FALSE" & Taxonomic.status == "Synonym" | Taxonomic.status == 
++     "Accepted")$scienti .... [TRUNCATED] 
+
+> keep.SN = unique(c(match.true, match.false))
+
+> length(keep.SN)
+[1] 15
+
+> ALA.TRIM.MATCH = ALA.TRIM.TAXO[ALA.TRIM.TAXO$scientificName %in% 
++     keep.SN, ]
+
+> Match.record = Match.SN[Match.SN$scientificName %in% 
++     keep.SN, ]
+
+> round(with(Match.record, table(Match.SN.ST)/sum(table(Match.SN.ST)) * 
++     100), 2)
+Match.SN.ST
+FALSE  TRUE 
+ 1.58 98.42 
+
+> round(with(Match.record, table(Taxonomic.status)/sum(table(Taxonomic.status)) * 
++     100), 2)
+Taxonomic.status
+Accepted  Synonym 
+   69.59    30.41 
+
+> round(with(Match.record, table(New.Taxonomic.status)/sum(table(New.Taxonomic.status)) * 
++     100), 2)
+New.Taxonomic.status
+Accepted 
+     100 
+
+> message(dim(ALA.TRIM.TAXO)[1] - dim(ALA.TRIM.MATCH)[1], 
++     " records removed")
+
+> message(round((dim(ALA.TRIM.MATCH)[1])/dim(ALA.TRIM.TAXO)[1] * 
++     100, 2), " % records retained using TPL mismatch")
+
+> unique(ALA.TRIM.MATCH$Taxonomic.status)
+[1] "Accepted" "Synonym" 
+
+> unique(ALA.TRIM.MATCH$New.Taxonomic.status)
+[1] "Accepted"
+
+> round(with(ALA.TRIM.MATCH, table(Taxonomic.status)/sum(table(Taxonomic.status)) * 
++     100), 2)
+Taxonomic.status
+Accepted  Synonym 
+   69.59    30.41 
+
+> round(with(ALA.TRIM.MATCH, table(New.Taxonomic.status)/sum(table(New.Taxonomic.status)) * 
++     100), 2)
+New.Taxonomic.status
+Accepted 
+     100 
+
+> (sum(is.na(ALA.TRIM.MATCH$scientificName)) + dim(subset(ALA.TRIM.MATCH, 
++     scientificName == ""))[1])/dim(ALA.TRIM.MATCH)[1] * 100
+[1] 0
+
+> ALA.TREES.CLEAN <- ALA.TRIM.MATCH %>% filter(!is.na(lon) & 
++     !is.na(lat), year >= 1950 & !is.na(year))
+
+> names(ALA.TREES.CLEAN)
+ [1] "searchTaxon"                   "scientificName"               
+ [3] "scientificNameOriginal"        "species"                      
+ [5] "rank"                          "genus"                        
+ [7] "family"                        "occCultivatedEscapee"         
+ [9] "basisOfRecord"                 "locality"                     
+[11] "institutionCode"               "id"                           
+[13] "catalogNumber"                 "lat"                          
+[15] "lon"                           "coordinateUncertaintyInMetres"
+[17] "zeroCoordinates"               "country"                      
+[19] "state"                         "IBRA7Regions"                 
+[21] "localGovernmentAreas"          "geodeticDatum"                
+[23] "year"                          "month"                        
+[25] "eventDate"                     "Genus"                        
+[27] "Hybrid.marker"                 "Species"                      
+[29] "Abbrev"                        "Infraspecific.rank"           
+[31] "Infraspecific"                 "Authority"                    
+[33] "ID"                            "Plant.Name.Index"             
+[35] "TPL.version"                   "Taxonomic.status"             
+[37] "Family"                        "New.Genus"                    
+[39] "New.Hybrid.marker"             "New.Species"                  
+[41] "New.Infraspecific.rank"        "New.Infraspecific"            
+[43] "New.Authority"                 "New.ID"                       
+[45] "New.Taxonomic.status"          "Typo"                         
+[47] "WFormat"                       "Higher.level"                 
+[49] "Date"                         
+
+> message(dim(ALA.TRIM.MATCH)[1] - dim(ALA.TREES.CLEAN)[1], 
++     " records removed")
+
+> message(round((dim(ALA.TREES.CLEAN)[1])/dim(ALA.TRIM.MATCH)[1] * 
++     100, 2), " % records retained using spatially valid records")
+
+> message("Removing ALA points in the ocean for ", length(GBIF.spp), 
++     " species in the set ", "'", save_run, "'")
+
+> xy <- cellFromXY(world.grids.current, ALA.TREES.CLEAN[c("lon", 
++     "lat")]) %>% unique %>% xyFromCell(world.grids.current, .)
+
+> xy <- SpatialPointsDataFrame(coords = xy, data = as.data.frame(xy), 
++     proj4string = CRS("+proj=longlat +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +no_ ..." ... [TRUNCATED] 
+
+> class(xy)
+[1] "SpatialPointsDataFrame"
+attr(,"package")
+[1] "sp"
+
+> z = raster::extract(world.grids.current[["bio_01"]], 
++     xy)
