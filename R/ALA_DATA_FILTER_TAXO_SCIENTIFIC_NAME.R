@@ -55,7 +55,6 @@ ALA.ALL <- ala.download %>%
     ## Load each file - check if some are already dataframes 
     d <- get(load(f))
     if (length(class(d)) > 1) {
-      
       d <- d[["data"]]
       
     } else {
@@ -65,11 +64,11 @@ ALA.ALL <- ala.download %>%
     }
     
     ## Check if the dataframes have data
-    if (dim(d)[1] <= 2) {
+    if (nrow(d) <= 2) {
       
       ## Now append the species which had no records to the skipped list
-      print (paste ("No ALA records for ", x, " skipping "))
-      next
+      #print (paste ("No ALA records for ", x, " skipping "))
+      return (d)
       
     }
     
