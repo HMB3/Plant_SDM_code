@@ -118,15 +118,12 @@ env.grids.2070 = tryCatch(project_maxent_grids(scen_list     = scen_2070,
 #########################################################################################################################
 
 
-## Update this with just the native species with good models. This is then joined on at
-
-
 #########################################################################################################################
 ## Create a file list for each model run: Try crunching this into just the species required
 maxent.tables = list.files(maxent_path)                 
 maxent.tables = intersect(maxent.tables, map_spp_list)   
 maxent_path   = maxent_path                             
-length(maxent.tables)                                                          ## Should match the number of taxa tested
+length(maxent.tables) 
 
 
 ## Create a table of the results 
@@ -228,9 +225,8 @@ plot(MAXENT.RESULTS$Training.AUC, MAXENT.RESULTS$max_tss, pch = 19, col  = "blue
 legend("topleft", bty="n", legend=paste("R2 is", format(summary(lm.auc)$adj.r.squared, digits = 4)))
 
 
-## Now check the match between the species list, and the results list. These need to match, so we can access
-## the right threshold for each species.
-length(intersect(map_spp_list, MAXENT.RESULTS$searchTaxon)) ## Accesssing the files from these directories... 
+## Now check the match between the species list, and the results list. 
+length(intersect(map_spp_list, MAXENT.RESULTS$searchTaxon)) 
 MAXENT.RESULTS  =  MAXENT.RESULTS[MAXENT.RESULTS$searchTaxon %in% map_spp_list , ] 
 map_spp = unique(MAXENT.RESULTS$searchTaxon)
 length(map_spp);setdiff(sort(map_spp_list), sort(map_spp))
@@ -320,10 +316,6 @@ SDM.TAXA <- setDT(SDM.TAXA, keep.rownames = TRUE)[]
 colnames(SDM.TAXA)[1] <- "searchTaxon"
 SDM.TAXA <- join(SDM.TAXA, APNI)
 
-# 
-# MAXENT.SUMMARY.NICHE = join(SDM.TAXA, MAXENT.SUMMARY.NICHE)
-# View(MAXENT.SUMMARY.NICHE)
-
 
 #########################################################################################################################
 ## Join on the native data and the APNI
@@ -335,15 +327,12 @@ MAXENT.SUMMARY.NICHE <- SDM.TAXA %>%
 
 #View(MAXENT.SUMMARY.NICHE)
 
-
-#View(MAXENT.SUMMARY.TABLE)
 length(intersect(MAXENT.SUMMARY.NICHE$searchTaxon, GBIF.spp))
 
 
 #########################################################################################################################
-## Save - could add date as a sprintf variable to save multiple versions?
-## write.csv(MAXENT.SUMMARY.NICHE, paste0('output/maxent/MAXENT_SUMMARY_', save_run, '.csv'), row.names = FALSE)
-## MAXENT.SUMMARY.NICHE = read.csv(paste0('output/maxent/MAXENT_SUMMARY_', save_run, '.csv'), stringsAsFactors = FALSE)
+## Save maxent results
+write.csv(MAXENT.SUMMARY.NICHE, paste0('output/maxent/MAXENT_SUMMARY_', save_run, '.csv'), row.names = FALSE)
 
 
 
@@ -376,11 +365,11 @@ summary(MAXENT.RESULTS["X10.percentile.training.presence.training.omission"])   
 thresh.max.train       = as.list(MAXENT.RESULTS["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"]) 
 thresh.max.train       = thresh.max.train$Maximum.training.sensitivity.plus.specificity.Logistic.threshold
 
-percent.10.log         = as.list(MAXENT.RESULTS["X10.percentile.training.presence.Logistic.threshold"])  ## for the twos 
+percent.10.log         = as.list(MAXENT.RESULTS["X10.percentile.training.presence.Logistic.threshold"])  
 percent.10.log         = percent.10.log$X10.percentile.training.presence.Logistic.threshold
 
 
-percent.10.om          = as.list(MAXENT.RESULTS["X10.percentile.training.presence.training.omission"])   ## discount
+percent.10.om          = as.list(MAXENT.RESULTS["X10.percentile.training.presence.training.omission"])   
 percent.10.om          = percent.10.om$X10.percentile.training.presence.training.omission
 
 
@@ -388,15 +377,6 @@ percent.10.om          = percent.10.om$X10.percentile.training.presence.training
 head(SDM.RESULTS.DIR, 20);head(map_spp, 20); head(MAXENT.RESULTS, 20)[, c("searchTaxon",
                                                                           "Maximum.training.sensitivity.plus.specificity.Logistic.threshold", 
                                                                           "X10.percentile.training.presence.Logistic.threshold")]
-
-tail(SDM.RESULTS.DIR, 20);tail(map_spp, 20); tail(MAXENT.RESULTS, 20)[, c("searchTaxon",
-                                                                          "Maximum.training.sensitivity.plus.specificity.Logistic.threshold", 
-                                                                          "X10.percentile.training.presence.Logistic.threshold")]
-
-
-
-## Save this as an object
-#save.image("MAPPING_DATA_NEW_ALA.RData")
 
 
 
@@ -418,18 +398,18 @@ tail(SDM.RESULTS.DIR, 20);tail(map_spp, 20); tail(MAXENT.RESULTS, 20)[, c("searc
 #########################################################################################################################
 
 
-#load("SDM_COMBINE.RData")
-#save.image("STEP_8_MAPPING.RData")
-load("STEP_8_MAPPING.RData")
+# #load("SDM_COMBINE.RData")
+# #save.image("STEP_8_MAPPING.RData")
+# load("STEP_8_MAPPING.RData")
 
 
 ## Test problematic species by entering the values and running the function manually
 ## Common errors are due to corrupt rasters in the previous step
-DIR        = SDM.RESULTS.DIR[1]
-species    = map_spp[1]
-thresh     = percent.10.log[1]
-percent    = percent.10.om[1]
-time_slice = 30
+# DIR        = SDM.RESULTS.DIR[1]
+# species    = map_spp[1]
+# thresh     = percent.10.log[1]
+# percent    = percent.10.om[1]
+# time_slice = 30
 
 
 
@@ -465,7 +445,7 @@ suitability.2030 = tryCatch(mapply(SUA_cell_count,                              
 
 
 ## Combine GCM output for 2050 
-suitability.2050 = tryCatch(mapply(SUA_cell_count,                                               ## combine_gcm_threshold
+suitability.2050 = tryCatch(mapply(SUA_cell_count,                                               
                                    DIR_list     = SDM.RESULTS.DIR,
                                    species_list = map_spp,
                                    maxent_path  = maxent_path,
@@ -482,7 +462,7 @@ suitability.2050 = tryCatch(mapply(SUA_cell_count,                              
 
 
 ## Combine GCM output for 2070 
-suitability.2070 = tryCatch(mapply(SUA_cell_count,                                               ## combine_gcm_threshold
+suitability.2070 = tryCatch(mapply(SUA_cell_count,                                               
                                    DIR_list     = SDM.RESULTS.DIR,
                                    species_list = map_spp,
                                    maxent_path  = maxent_path,
@@ -500,14 +480,14 @@ suitability.2070 = tryCatch(mapply(SUA_cell_count,                              
 
 #########################################################################################################################
 ## Reverse the order of the lists to speed up the output
-mapply(SUA_cell_count,
-       DIR_list     = SDM.DIR.REV,
-       species_list = map_spp_rev,
-       maxent_path  = maxent_path,
-       thresholds   = percent.log.rev,
-       percentiles  = percent.om.rev,
-       time_slice   = 30,  ## 50, 70
-       write_rasters = FALSE)
+# mapply(SUA_cell_count,
+#        DIR_list     = SDM.DIR.REV,
+#        species_list = map_spp_rev,
+#        maxent_path  = maxent_path,
+#        thresholds   = percent.log.rev,
+#        percentiles  = percent.om.rev,
+#        time_slice   = 30,  ## 50, 70
+#        write_rasters = FALSE)
 
 
 
@@ -515,11 +495,8 @@ mapply(SUA_cell_count,
 ## OUTSTANDING MAPPING TASKS:
 #########################################################################################################################
 
-## intersect(list.files(maxent_path), map_spp_list) 
 
-
-## 1). Update step 9: Intersect the species origin, plus MAT, MAP PET and Koppem with the SUA
-##     Update columns in step
+## 1). 
 
 
 ## 2). Fix the species mapping loop over two lists at once : mapply

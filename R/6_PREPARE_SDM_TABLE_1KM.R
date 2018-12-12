@@ -9,7 +9,7 @@
 
 
 ## Print the species run to the screen
-message('Preparinf SDM table for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
+message('Preparing SDM table for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
 
 
 #########################################################################################################################

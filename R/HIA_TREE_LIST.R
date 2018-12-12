@@ -34,8 +34,7 @@ source('./R/GREEN_CITIES_FUNCTIONS.R')
 source('./R/MAXENT_FUNCTIONS.R')
 source('./R/MAPPING_FUNCTIONS.R')
 source('./R/HIA_CLEAN_MATCHING.R')
-rasterOptions(tmpdir = file.path('/green_cities_sdm/RTEMP')) 
-#set.tempdir('/green_cities_sdm/RTEMP')
+rasterOptions(tmpdir = file.path('./RTEMP')) 
 
 
 
@@ -323,6 +322,10 @@ OVERALL.LOSS        = read.csv("./output/tables/OVERALL_LOSS.csv",              
 APPENDIX            = read.csv("./data/base/HIA_LIST/COMBO/Appendix_table.csv",     stringsAsFactors = FALSE)
 AUS.FROGS           = read.csv("./data/base/Frog/AUS_FROGS.csv",                    stringsAsFactors = FALSE)
 AUS.FROGS           = AUS.FROGS$Scientific.Name
+
+HOLLOW.SPP          = read.csv("./data/base/HIA_LIST/Tree_hollows/Hollow_species.csv", stringsAsFactors = FALSE)
+HOLLOW.SPP          = HOLLOW.SPP$Hollow_species
+
 str(unique(COMBO.NICHE.CONTEXT$searchTaxon))  ## long enough
 background          = readRDS("./data/base/HIA_LIST/COMBO/SDM_DATA_CLEAN_052018.rds")
 

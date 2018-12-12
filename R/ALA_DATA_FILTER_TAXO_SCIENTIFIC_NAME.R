@@ -165,14 +165,14 @@ message('Running TPL taxonomy for ', length(GBIF.spp), ' species in the set ', "
 ALA.TREES.TAXO <- TPL(unique(ALA.TRIM$scientificName), infra = TRUE,
                  corr = TRUE, repeats = 100)  ## to stop it timing out...
 sort(names(ALA.TREES.TAXO))
-saveRDS(ALA.TREES.TAXO, paste0('data/base/HIA_LIST/COMBO/ALA_TAXO_', save_run, '.rds'))
-#ALA.TREES.TAXO = readRDS(paste0('data/base/HIA_LIST/COMBO/ALA_TAXO_', save_run, '.rds'))
+saveRDS(ALA.TREES.TAXO, paste0('data/base/HIA_LIST/COMBO/', 'ALA_TAXO_', save_run, '.rds'))
 
 
 ## Check the taxonomy by running scientificName through TPL. Then join the GBIF data to the taxonomic check, using 
 ## "scientificName" as the join field
 ALA.TRIM.TAXO <- ALA.TRIM %>%
   left_join(., ALA.TREES.TAXO, by = c("scientificName" = "Taxon"))
+ALA.TRIM.TAXO$New_binomial = paste(ALA.TRIM.TAXO$New.Genus, ALA.TRIM.TAXO$New.Species, sep = " ") 
 names(ALA.TRIM.TAXO)
 
 
@@ -185,7 +185,7 @@ names(ALA.TRIM.TAXO)
 ## currently using 'str_detect'
 Match.SN = ALA.TRIM.TAXO  %>%
   mutate(Match.SN.ST = 
-           str_detect(scientificName, searchTaxon)) %>%
+           str_detect(searchTaxon, New_binomial)) %>%  ## scientificName, New_binomial
   
   select(one_of(c("scientificName",
                   "searchTaxon",
@@ -199,6 +199,7 @@ Match.SN = ALA.TRIM.TAXO  %>%
 
 ## How many records don't match?
 dim(Match.SN)
+unique(Match.SN$Match.SN.ST)
 unique(Match.SN$Taxonomic.status)
 unique(Match.SN$New.Taxonomic.status)
 

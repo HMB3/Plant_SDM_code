@@ -11,6 +11,7 @@ os_type = Sys.info()[['sysname']]
 #########################################################################################################################
 ## Read in all data to run the SDM code :: species lists, shapefile, rasters & tables
 #source('./R/HIA_TREE_LIST.R')
+<<<<<<< HEAD
 if (os_type == "Windows") {
     load("H:/green_cities_sdm/TEST_RUN.RData")
 } else {
@@ -125,7 +126,7 @@ PET           = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
 GBIF.spp      = WPW.spp
 GBIF.spp.rev  = sort(GBIF.spp, decreasing = TRUE)                ## the list reversed - only needed for a big list
 
-save_run      = "EVERGREEN_500"                                  ## a variable to append the run name to the output files
+save_run      = "WPW_TEST"                                       ## a variable to append the run name to the output files
 map_spp_list  = gsub(" ", "_", GBIF.spp)                         ## species list with "_" for mapping
 map_spp_rev   = sort(map_spp_list, decreasing = TRUE)            ## reversed, so we can run two at once
 
@@ -153,23 +154,19 @@ message('Running SDM workflow for ', length(GBIF.spp), ' species in the set ', "
 
 
 ## Step 3 :: combine GBIF occurrence data with ALA data and filter to records > 1950
-message ("STEP 1")
 source('./R/1_GBIF_ALA_DOWNLOAD.R', echo = TRUE)
 
 
 ## Step 3 :: combine GBIF occurrence data with ALA data and filter to records > 1950
-message ("FILTERING TAXO SCIENTIFIC NAME")
 source('./R/ALA_DATA_FILTER_TAXO_SCIENTIFIC_NAME.R', echo = TRUE)
-message ("STEP 3")
-source('./R/3_GBIF_DATA_TAXO_SCIENTIFIC_NAME.R',    echo = TRUE)
+source('./R/3_GBIF_DATA_TAXO_SCIENTIFIC_NAME.R',     echo = TRUE)
 
 
 ## Step 4 :: combine GBIF, ALA and urban occurrence data into a single table, extract environmental condtions
 ## INVENTORY_RASTER will be a problem for species that are not in Alessandro's dataset.
 ## Also, consider constructing the niche dataset separately to SDMs, so we can model one species at a time
 ## This is dealt with by save_data     = 'FALSE'
-message ("STEP 4")
-source('./R/4_ALA_GBIF_URBAN_COMBINE.R', echo = TRUE)
+source('./R/4_ALA_GBIF_URBAN_COMBINE.R',  echo = TRUE)
 source('./R/INVENTORY_RASTER.R',          echo = TRUE)
 
 
@@ -177,21 +174,17 @@ source('./R/INVENTORY_RASTER.R',          echo = TRUE)
 ## records near herbaria, duplicates, etc. & add contextual info for each record (taxonomic and horticultural) 
 ## Then prepare the SDM table
 ## Then clean the spatial outliers
-message ("STEP 5")
 source('./R/5_GBIF_ALA_CLEAN_NICHES.R',  echo = TRUE)
-message ("STEP 6")
 source('./R/6_PREPARE_SDM_TABLE_1KM.R',  echo = TRUE)
 
 
 ## Step 7 :: Run maxent on a table of all species
-message ("STEP 7")
 source('./R/7_RUN_MAXENT.R', echo = TRUE)
 
 
 ## Step 8 :: Create habitat suitability maps for each species using six GCMs and three time slices (2030/50/70). 
 ## Then summarise maxent results and estimate species presences in significant urban areas under climate change
 ## Takes awhile, so probably run different time slices (2030, 2050, 2070) in separate R sessions
-message ("STEP 8")
 source('./R/8_MAP_SDM_COMBINE.R', echo = TRUE)
 
 
@@ -279,9 +272,13 @@ saveRDS(COMBO.RASTER.ALL, paste0('data/base/HIA_LIST/COMBO/COMBO_RASTER_ALL_', s
 #########################################################################################################################
 
 
-## Find points that make the code not reproducible
+## Find points that make the code not reproducible - look for all hard coded paths
+
+## Flatten the structure for an example species
+
 ## Improve the raster extract step
-## Figure out how to make step 8 parallel
+
+## Figure out how to make step 8 parallel - help from Shawn
 
 
 #########################################################################################################################
