@@ -6,12 +6,12 @@
 ## This code runs the whole SDM workflow for the HIA project, for a subset of species (e.g. whichever you supply)
 ## In order to run this from katana, we need to use only the necessary packages. 
 
-os_type = Sys.info()[['sysname']]
+on_windows = switch(Sys.info()[['sysname']], Windows=TRUE, FALSE)
 
 #########################################################################################################################
 ## Read in all data to run the SDM code :: species lists, shapefile, rasters & tables
 #source('./R/HIA_TREE_LIST.R')
-if (os_type == "Windows") {
+if (on_windows) {
     load("H:/green_cities_sdm/TEST_RUN.RData")
 } else {
     cmd_args <- commandArgs(TRUE)
