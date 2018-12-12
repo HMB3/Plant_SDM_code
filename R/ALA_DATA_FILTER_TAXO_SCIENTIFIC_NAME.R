@@ -59,9 +59,19 @@ ALA.ALL <- ala.download %>%
       d <- d[["data"]]
       
     } else {
+      
       d = data.frame("searchTaxon" = c())
+      
     }
     
+    ## Check if the dataframes have data
+    if (dim(d)[1] <= 2) {
+      
+      ## Now append the species which had no records to the skipped list
+      print (paste ("No ALA records for ", x, " skipping "))
+      next
+      
+    }
     
     ## Create the searchTaxon column
     message ('Reading ALA data for ', x)
@@ -163,9 +173,9 @@ length(unique(ALA.TRIM$species))
 ## Use "Taxonstand" to check the taxonomy :: which field to use?
 message('Running TPL taxonomy for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
 ALA.TREES.TAXO <- TPL(unique(ALA.TRIM$scientificName), infra = TRUE,
-                 corr = TRUE, repeats = 100)  ## to stop it timing out...
+                      corr = TRUE, repeats = 100)  ## to stop it timing out...
 sort(names(ALA.TREES.TAXO))
-saveRDS(ALA.TREES.TAXO, paste0('data/base/HIA_LIST/COMBO/', 'ALA_TAXO_', save_run, '.rds'))
+#saveRDS(ALA.TREES.TAXO, paste0('data/base/HIA_LIST/COMBO/', 'ALA_TAXO_', save_run, '.rds'))
 
 
 ## Check the taxonomy by running scientificName through TPL. Then join the GBIF data to the taxonomic check, using 
@@ -329,7 +339,7 @@ onland = z %>% is.na %>%  `!` # %>% xy[.,]  cells on land or not
 ## Finally, filter the cleaned ALA data to only those points on land. 
 ## This is achieved with the final [onland]
 ALA.TREES.LAND = filter(ALA.TREES.CLEAN, cellFromXY(world.grids.current, ALA.TREES.CLEAN[c("lon", "lat")]) %in% 
-                     unique(cellFromXY(world.grids.current, ALA.TREES.CLEAN[c("lon", "lat")]))[onland])
+                          unique(cellFromXY(world.grids.current, ALA.TREES.CLEAN[c("lon", "lat")]))[onland])
 
 
 ## how many records were on land?

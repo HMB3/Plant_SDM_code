@@ -1,4 +1,4 @@
-#########################################################################################################################
+########################################################################################################################
 ################################################# FLAG SPATIAL OUTLIERS #################################################
 #########################################################################################################################
 
@@ -231,11 +231,11 @@ message(round(dim(CLEAN.NATIVE)[1]/2401878*100, 2), " % records retained")
 ## Now bind on the urban tree inventory data. We are assuming this data is clean, after we manually fix the taxonomy
 ## Check the NAs
 if(dim(TI.XY.SPP)[1] > 0) {
-
-message('Combining Australian inventory data with occurrence data') 
-intersect(names(TI.RASTER.CONVERT), names(CLEAN.TRUE))
-CLEAN.TRUE = bind_rows(CLEAN.TRUE, TI.RASTER.CONVERT)
-
+  
+  message('Combining Australian inventory data with occurrence data') 
+  intersect(names(TI.RASTER.CONVERT), names(CLEAN.TRUE))
+  CLEAN.TRUE = bind_rows(CLEAN.TRUE, TI.RASTER.CONVERT)
+  
 } else {
   
   ## Update with global data
@@ -433,7 +433,7 @@ if(save_data == "TRUE") {
   #########################################################################################################################
   ## Now summarise the niches. But figure out a cleaner way of doing this
   message('Estimating global niches for ', length(GBIF.spp), ' species across ', length(env.variables), ' climate variables')
-
+  
   
   #########################################################################################################################
   ## Create niche summaries for each environmental condition like this...

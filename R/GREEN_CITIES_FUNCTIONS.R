@@ -352,7 +352,7 @@ download_GBIF_all_species = function (species_list, path) {
       
       GBIF <- occ_data(taxonKey = key, limit = GBIF.download.limit)
       GBIF <- as.data.frame(GBIF$data)
-       
+      
       cat("Synonyms returned for :: ",  sp.n, unique(GBIF$scientificName), sep="\n")
       cat("Names returned for :: ", sp.n, unique(GBIF$name),               sep="\n")
       cat("Takonkeys returned for :: ", sp.n, unique(GBIF$taxonKey),       sep="\n")
@@ -366,11 +366,11 @@ download_GBIF_all_species = function (species_list, path) {
       ## 6). save records to .Rdata file, note that using .csv files seemed to cause problems...
       #save(GBIF, file = paste(path, sp.n, "_GBIF_records.RData", sep = ""))
       save(GBIF, file = file_name)
-      #return(skip.spp.list)
       
     }
     
   }
+  
   return(skip.spp.list)
   
 }
@@ -667,25 +667,25 @@ download_GBIF_all_genera = function (list) {
 
 
 run_function_concatenate = function (list, DF, exp) {
-
-
-COMBO.TABLE <- env.variables[c(1:length(list))] %>% 
   
-  ## Pipe the list into lapply
-  lapply(function(x) {
-    
-    ## Now use the niche width function on each colname (so 8 environmental variables)
-    ## Also, need to figure out how to make the aggregating column generic (species, genus, etc.)
-    ## currently it only works hard-wired
-    func (exp)
-    
-    ## would be good to remove the duplicate columns here
-    
-  }) %>% 
   
-  ## finally, create one dataframe for all niches
-  as.data.frame
-
+  COMBO.TABLE <- env.variables[c(1:length(list))] %>% 
+    
+    ## Pipe the list into lapply
+    lapply(function(x) {
+      
+      ## Now use the niche width function on each colname (so 8 environmental variables)
+      ## Also, need to figure out how to make the aggregating column generic (species, genus, etc.)
+      ## currently it only works hard-wired
+      func (exp)
+      
+      ## would be good to remove the duplicate columns here
+      
+    }) %>% 
+    
+    ## finally, create one dataframe for all niches
+    as.data.frame
+  
 }
 
 
@@ -815,152 +815,152 @@ read_bind_maxent = function (table.list, path) {
 
 ## Keep
 gbifColsToDrop <- c(
-                    "crawlId",
-                    "disposition",
-                    "dynamicProperties",
-                    "elevationAccuracy",
-                    "endDayOfYear",
-                    "startDayOfYear",
-                    
-                    "class",
-                    "kingdom",
-                    "phylum",
-                    
-                    "familyKey",
-                    "genusKey",
-                    "kingdomKey",
-                    "phylumKey",
-                    "publishingOrgKey",
-                    "taxonomicStatus",
-                    "lowestBiostratigraphicZone",
-                    "reproductiveCondition",
-                    "parentNameUsage",
-                    "preparations",
-                    "specificEpithet",
-                    
-                    "coordinatePrecision",
-                    "georeferenceVerificationStatus",
-                    "lastCrawled",
-                    "higherGeography",
-                    "municipality",
-                    "verbatimCoordinateSystem",
-                    "verbatimLocality",
-                    "georeferenceRemarks",
-                    "georeferencedBy",
-                    "georeferencedDate",
-                    "georeferenceProtocol",
-                    "georeferenceSources",
-                    "higherGeographyID",
-                    "http://unknown.org/occurrenceDetails",
-                    "lowestBiostratigraphicZone",
-                    "highestBiostratigraphicZone",
-                    "waterBody",
-                    "verbatimSRS",
-                    "depth",
-                    "depthAccuracy",
-                    
-                    "informationWithheld",
-                    "language",
-                    "protocol",
-                    "rightsHolder",
-                    "publishingCountry",
-                    "accessRights",
-                    "associatedSequences",
-                    "dynamicProperties",
-                    "earliestEpochOrLowestSeries",
-                    "earliestPeriodOrLowestSystem",
-                    
-                    "http...unknown.org.classs", 
-                    "identificationID", 
-                    "identificationQualifier", 
-                    "identificationRemarks",                   
-                    "identifier", 
-                    "individualCount",
-                    
-                    "namePublishedInYear",  
-                    "http...unknown.org.organismQuantity", 
-                    "http...unknown.org.organismQuantityType", 
-                    "http...unknown.org.sampleSizeUnit",       
-                    "http...unknown.org.sampleSizeValue", 
-                    "pointRadiusSpatialFit", 
-                    "samplingEffort", 
-                    "taxonConceptID",  
-                    "nameAccordingToID", 
-                    "parentEventID", 
-                    "earliestEraOrLowestErathem", 
-                    "formation",                               
-                    "http...unknown.org.layer", 
-                    "latestEpochOrHighestSeries", 
-                    "latestPeriodOrHighestSystem", 
-                    "sampleSizeUnit",
-                    
-                    "sampleSizeValue",                          
-                    "sex",                                      
-                    "footprintSpatialFit",                      
-                    "group",                                   
-                    "latestEraOrHighestErathem",                
-                    "associatedOccurrences",                    
-                    "identificationReferences",                 
-                    "http...unknown.org.organismID",  
-                    
-                    "earliestEonOrLowestEonothem",              
-                    "latestEonOrHighestEonothem",               
-                    "verbatimLabel",                            
-                    "verbatimDepth",                           
-                    "furtherInformationURL",                    
-                    "materialSampleID",                         
-                    "parentNameUsageID",                        
-                    "earliestAgeOrLowestStage", 
-                    
-                    "latestAgeOrHighestStage",                  
-                    "member",                                   
-                    "acceptedNameUsageID",                      
-                    "bed",                                     
-                    "lithostratigraphicTerms",                  
-                    "behavior",                                 
-                    "http...unknown.org.furtherInformationURL", 
-                    "minimumDistanceAboveSurfaceInMeters",
-                    "organismScope")
+  "crawlId",
+  "disposition",
+  "dynamicProperties",
+  "elevationAccuracy",
+  "endDayOfYear",
+  "startDayOfYear",
+  
+  "class",
+  "kingdom",
+  "phylum",
+  
+  "familyKey",
+  "genusKey",
+  "kingdomKey",
+  "phylumKey",
+  "publishingOrgKey",
+  "taxonomicStatus",
+  "lowestBiostratigraphicZone",
+  "reproductiveCondition",
+  "parentNameUsage",
+  "preparations",
+  "specificEpithet",
+  
+  "coordinatePrecision",
+  "georeferenceVerificationStatus",
+  "lastCrawled",
+  "higherGeography",
+  "municipality",
+  "verbatimCoordinateSystem",
+  "verbatimLocality",
+  "georeferenceRemarks",
+  "georeferencedBy",
+  "georeferencedDate",
+  "georeferenceProtocol",
+  "georeferenceSources",
+  "higherGeographyID",
+  "http://unknown.org/occurrenceDetails",
+  "lowestBiostratigraphicZone",
+  "highestBiostratigraphicZone",
+  "waterBody",
+  "verbatimSRS",
+  "depth",
+  "depthAccuracy",
+  
+  "informationWithheld",
+  "language",
+  "protocol",
+  "rightsHolder",
+  "publishingCountry",
+  "accessRights",
+  "associatedSequences",
+  "dynamicProperties",
+  "earliestEpochOrLowestSeries",
+  "earliestPeriodOrLowestSystem",
+  
+  "http...unknown.org.classs", 
+  "identificationID", 
+  "identificationQualifier", 
+  "identificationRemarks",                   
+  "identifier", 
+  "individualCount",
+  
+  "namePublishedInYear",  
+  "http...unknown.org.organismQuantity", 
+  "http...unknown.org.organismQuantityType", 
+  "http...unknown.org.sampleSizeUnit",       
+  "http...unknown.org.sampleSizeValue", 
+  "pointRadiusSpatialFit", 
+  "samplingEffort", 
+  "taxonConceptID",  
+  "nameAccordingToID", 
+  "parentEventID", 
+  "earliestEraOrLowestErathem", 
+  "formation",                               
+  "http...unknown.org.layer", 
+  "latestEpochOrHighestSeries", 
+  "latestPeriodOrHighestSystem", 
+  "sampleSizeUnit",
+  
+  "sampleSizeValue",                          
+  "sex",                                      
+  "footprintSpatialFit",                      
+  "group",                                   
+  "latestEraOrHighestErathem",                
+  "associatedOccurrences",                    
+  "identificationReferences",                 
+  "http...unknown.org.organismID",  
+  
+  "earliestEonOrLowestEonothem",              
+  "latestEonOrHighestEonothem",               
+  "verbatimLabel",                            
+  "verbatimDepth",                           
+  "furtherInformationURL",                    
+  "materialSampleID",                         
+  "parentNameUsageID",                        
+  "earliestAgeOrLowestStage", 
+  
+  "latestAgeOrHighestStage",                  
+  "member",                                   
+  "acceptedNameUsageID",                      
+  "bed",                                     
+  "lithostratigraphicTerms",                  
+  "behavior",                                 
+  "http...unknown.org.furtherInformationURL", 
+  "minimumDistanceAboveSurfaceInMeters",
+  "organismScope")
 
 ## 
 gbif.keep <- c(## TAXONOMY
-               "searchTaxon",
-               "species",
-               "scientificName",
-               "taxonRank",
-               "taxonKey",
-               "genus",
-               "family",
-               
-               ## CULTIVATION
-               "cloc",
-               "basisOfRecord",
-               "locality",
-               "establishmentMeans",
-               "institutionCode",
-               "datasetName",
-               "habitat",
-               "eventRemarks",
-               
-               ## RECORD ID
-               "recordedBy",
-               "identifiedBy",
-               "gbifID",
-               "catalogNumber",
-
-               ## PLACE/TIME
-               "lat",
-               "lon",
-               "decimalLatitude",
-               "decimalLongitude",
-               "country",
-               "coordinateUncertaintyInMeters",
-               "geodeticDatum",
-               "year",
-               "month",
-               "day",
-               "eventDate",
-               "eventID")
+  "searchTaxon",
+  "species",
+  "scientificName",
+  "taxonRank",
+  "taxonKey",
+  "genus",
+  "family",
+  
+  ## CULTIVATION
+  "cloc",
+  "basisOfRecord",
+  "locality",
+  "establishmentMeans",
+  "institutionCode",
+  "datasetName",
+  "habitat",
+  "eventRemarks",
+  
+  ## RECORD ID
+  "recordedBy",
+  "identifiedBy",
+  "gbifID",
+  "catalogNumber",
+  
+  ## PLACE/TIME
+  "lat",
+  "lon",
+  "decimalLatitude",
+  "decimalLongitude",
+  "country",
+  "coordinateUncertaintyInMeters",
+  "geodeticDatum",
+  "year",
+  "month",
+  "day",
+  "eventDate",
+  "eventID")
 
 
 ALA.keep <- c(## TAXONOMY
@@ -1438,7 +1438,7 @@ map_GBIF_records = function (taxa.list, DF) {
       
       ## PLot Australian occurrences to screen
       plot(DF[ which(DF$searchTaxon == taxa.n 
-                                      & DF$country == "Australia"), ][, c("lon", "lat")], 
+                     & DF$country == "Australia"), ][, c("lon", "lat")], 
            pch = ".", cex = 5, col = "red", asp = 1)
       
       ## add title
@@ -1488,7 +1488,7 @@ map_GBIF_records = function (taxa.list, DF) {
       
       ## plot
       plot(DF[ which(DF$searchTaxon == taxa.n 
-                                      & DF$country == "Australia"), ][, c("lon", "lat")], 
+                     & DF$country == "Australia"), ][, c("lon", "lat")], 
            pch = ".", cex = 10, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2.5,
            font.main = 4, col.main = "blue",
            main = paste0("Australian occurrences for ", taxa.n), 
@@ -1519,7 +1519,7 @@ print_occurrence_records = function (taxa.list, DF) {
     ################################################################
     ## If the dim = 0 for that taxa subset to Australia, skip to next
     if (dim(DF[ which(DF$searchTaxon == taxa.n 
-                                       & DF$country == "Australia"), ][, c("lon", "lat")])[1] == 0) {
+                      & DF$country == "Australia"), ][, c("lon", "lat")])[1] == 0) {
       
       print (paste ("Possible no Australian records for ", taxa.n, "skipping"))
       
@@ -1547,7 +1547,7 @@ print_occurrence_records = function (taxa.list, DF) {
       
       ## PLot Australian occurrences to screen
       plot(DF[ which(DF$searchTaxon == taxa.n 
-                                      & DF$country == "Australia"), ][, c("lon", "lat")], 
+                     & DF$country == "Australia"), ][, c("lon", "lat")], 
            pch = ".", cex = 5, col = "red", asp = 1)
       
       ## add title
@@ -1818,7 +1818,7 @@ GBIF_summary_slice = function (taxa.list, env.cols, GBIF) {
     
     ## slice the table 
     summary.table <- GBIF[, env.cols][ which(GBIF[["searchTaxon"]] == taxa.n ), ]
-
+    
     ## print to screen
     print(kable(summary.table, row.names = FALSE))
     
