@@ -11,7 +11,6 @@ os_type = Sys.info()[['sysname']]
 #########################################################################################################################
 ## Read in all data to run the SDM code :: species lists, shapefile, rasters & tables
 #source('./R/HIA_TREE_LIST.R')
-<<<<<<< HEAD
 if (os_type == "Windows") {
     load("H:/green_cities_sdm/TEST_RUN.RData")
 } else {
