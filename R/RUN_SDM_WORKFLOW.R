@@ -38,7 +38,7 @@ p <- c('ff',    'things',    'raster',        'dismo',        'sp',           'l
        'tidyr', 'readr',     'rnaturalearth', 'rasterVis',    'RColorBrewer', 'latticeExtra', 'parallel',
        'ALA4R', 'stringr',   'Taxonstand',    'CoordinateCleaner', 'gsubfn',  'PerformanceAnalytics',
        'rvest', 'magrittr',  'devtools',      'ggplot2',      'reshape2',     'rmarkdown', 'flexdashboard', 'shiny', 'rgbif',
-       'ENMeval', 'tibble',  'ncdf4',         'Cairo', 'taxonlookup', 'kgc', 'maptools', 'DataCombine', 'mgcv', 'rsq')
+       'ENMeval', 'tibble',  'ncdf4',         'Cairo', 'taxonlookup', 'kgc', 'maptools', 'DataCombine', 'mgcv', 'rsq', 'utf8')
 
 
 ## Require packages
@@ -111,8 +111,10 @@ PET             = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
 
 #########################################################################################################################
 ## Now set global analysis variables
+## Replace any non - UTF8 character in the string with UTF
 GBIF.spp      = WPW.spp
-GBIF.spp.rev  = sort(GBIF.spp, decreasing = TRUE)                ## the list reversed - only needed for a big list
+GBIF.spp      = as_utf8(GBIF.spp, normalize = TRUE)
+GBIF.spp.rev  = sort(GBIF.spp,   decreasing = TRUE)              ## the list reversed - only needed for a big list
 
 save_run      = "WPW_TEST"                                       ## a variable to append the run name to the output files
 map_spp_list  = gsub(" ", "_", GBIF.spp)                         ## species list with "_" for mapping

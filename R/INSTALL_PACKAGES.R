@@ -9,6 +9,38 @@
 
 
 #########################################################################################################################
+## RE-INSTALL R
+#########################################################################################################################
+
+
+#########################################################################################################################
+## 1).  Before you upgrade, build a temp file with all of your old packages.
+tmp <- installed.packages()
+installedpkgs <- as.vector(tmp[is.na(tmp[,"Priority"]), 1])
+save(installedpkgs, file="installed_old.rda")
+
+## 2). Update R here too: https://cran.r-project.org/web/packages/installr/index.html
+# installing/loading the package:
+# if(!require(installr)) {
+#   install.packages("installr"); require(installr)} ## load / install+load installr
+
+## 3. Once you’ve got the new version up and running, reload the saved packages and re-install them from CRAN.
+tmp <- installed.packages()
+installedpkgs.new <- as.vector(tmp[is.na(tmp[,"Priority"]), 1])
+missing <- setdiff(installedpkgs, installedpkgs.new)
+install.packages(missing)
+update.packages()
+
+
+
+
+
+#########################################################################################################################
+## INSTALL R PACKAGES ON CRAN
+#########################################################################################################################
+
+
+#########################################################################################################################
 ## create a big list of all the packages needed for a project
 ## can't do the special github ones like this though...
 packages <- c('ggplot2',    'plyr',      'reshape2',  'RColorBrewer',  'scales',      'grid',
@@ -30,7 +62,14 @@ packages <- c('ggplot2',    'plyr',      'reshape2',  'RColorBrewer',  'scales',
               'readr',      'readr',     'parallel',  'dismo',         'tidyr',       'envirem',
               'Taxonstand', 'biomod2',   'vegan',     'session',       'rapportools', 'BiodiversityR',
               'spThin',     'digest',    'CoordinateCleaner',          'PerformanceAnalytics', 'timetk',
-              'dat', 'rcreds', 'pkgmaker') # class(packages)
+              'dat', 'rcreds', 'pkgmaker', 'utf8') # class(packages)
+
+p <- c('ff',    'things',    'raster',        'dismo',        'sp',           'latticeExtra', 'data.table',
+       'rgdal', 'rgeos',     'gdalUtils',     'rmaxent',      'readr',        'plyr',         'dplyr',
+       'tidyr', 'readr',     'rnaturalearth', 'rasterVis',    'RColorBrewer', 'latticeExtra', 'parallel',
+       'ALA4R', 'stringr',   'Taxonstand',    'CoordinateCleaner', 'gsubfn',  'PerformanceAnalytics',
+       'rvest', 'magrittr',  'devtools',      'ggplot2',      'reshape2',     'rmarkdown', 'flexdashboard', 'shiny', 'rgbif',
+       'ENMeval', 'tibble',  'ncdf4',         'Cairo', 'taxonlookup', 'kgc', 'maptools', 'DataCombine', 'mgcv', 'rsq')
 
 
 #########################################################################################################################
@@ -49,15 +88,14 @@ ipak <- function(pkg){
 
 
 ## Run the function on the list.....
-ipak(packages)
-
+ipak(p)
 
 
 
 
 
 #########################################################################################################################
-## EXTRA PACKAGES NOT on CRAN...
+## INSTALL PACKAGES NOT ON CRAN
 #########################################################################################################################
 
 
@@ -91,22 +129,6 @@ devtools::install_github("traitecoevo/baad.data")
 
 
 #########################################################################################################################
-## Load only the packages needed for the SDM analysis
-p <- c('ff',    'things',    'raster',        'dismo',        'sp',           'latticeExtra', 'data.table', 
-       'rgdal', 'rgeos',     'gdalUtils',     'rmaxent',      'readr',        'plyr',         'dplyr',        
-       'tidyr', 'readr',     'rnaturalearth', 'rasterVis',    'RColorBrewer', 'latticeExtra', 'parallel',     
-       'ALA4R', 'stringr',   'Taxonstand',    'CoordinateCleaner', 'gsubfn',  'PerformanceAnalytics',
-       'rvest', 'magrittr',  'devtools',      'ggplot2',      'reshape2',     'rmarkdown', 'flexdashboard', 'shiny', 'rgbif',
-       'ENMeval', 'tibble',  'ncdf4',         'Cairo', 'velox', 'taxonlookup', 'kgc', 'maptools', 'DataCombine', 'mgcv')
-
-
-## Require packages
-sapply(p, require, character.only = TRUE)
-source_gist('26e8091f082f2b3dd279',             filename = 'polygonizer.R')
-source_gist('c6a1cb61b8b6616143538950e6ec34aa', filename = 'hatch.R')
-
-
-#########################################################################################################################
 ## To run maxent in R, you need Java installed on your computer, and the main version of Java needs to match the R Version
 ## See these instructions:
 ## https://www.rdocumentation.org/packages/dismo/versions/1.1-4/topics/maxent
@@ -114,12 +136,6 @@ source_gist('c6a1cb61b8b6616143538950e6ec34aa', filename = 'hatch.R')
 # list.files(system.file("java", package = "dismo"))
 # ENMevaluate
 
-
-
-## Also, update R here too: https://cran.r-project.org/web/packages/installr/index.html
-# installing/loading the package:
-# if(!require(installr)) {
-#   install.packages("installr"); require(installr)} ## load / install+load installr
 
 
 ## Check the settings again

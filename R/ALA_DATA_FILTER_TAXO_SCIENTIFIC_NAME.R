@@ -13,7 +13,7 @@
 ## the base url for biocache downloads (used by offline occurrence downloads)
 # install.packages("devtools")
 # devtools::install_github("AtlasOfLivingAustralia/ALA4R")
-# devtools::build(vignettes=FALSE)
+# devtools::build(vignettes = FALSE)
 
 
 #########################################################################################################################
@@ -66,7 +66,7 @@ ALA.ALL <- ala.download %>%
     ## Check if the dataframes have data
     if (nrow(d) <= 2) {
       
-      ## Now append the species which had no records to the skipped list
+      ## If the species has < 2 records, escape the loop
       #print (paste ("No ALA records for ", x, " skipping "))
       return (d)
       
