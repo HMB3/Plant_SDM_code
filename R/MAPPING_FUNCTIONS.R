@@ -244,8 +244,12 @@ SUA_cell_count = function(DIR_list, species_list, maxent_path, thresholds,
       for (thresh in thresholds) {
         
         ## Check if the SUA summary table exists
-        SUA_file =   sprintf('%s/%s/full/%s_20%s_%s%s.csv', maxent_path,
-                             species, species, time_slice, "SUA_cell_count_", thresh)
+        # SUA_file =   sprintf('%s/%s/full/%s_20%s_%s%s.csv', maxent_path,
+        #                      species, species, time_slice, "SUA_cell_count_", thresh)
+        
+        SUA_file =   sprintf('%s/%s/full/%s_20%s_%s%s.tif', maxent_path,
+                             species, species, time_slice, "gain_loss_", thresh)
+
         
         ## The mean of the GCMs doesn't exist, create it
         if(file.exists(SUA_file)) { 
