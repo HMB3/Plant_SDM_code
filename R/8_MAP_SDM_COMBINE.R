@@ -19,20 +19,21 @@
 
 ## Print the species run to the screen
 message('Creating habitat suitability maps for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
+COMBO.NICHE.CONTEXT = readRDS(paste0('data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_',  save_run, '.rds'))
 
 
 #########################################################################################################################
 ## Read in niche data for table creation
-if(read_data == "TRUE") {
-  
-  ## Load GBIF and ALA data
-  COMBO.NICHE.CONTEXT = readRDS(paste0('data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_',  save_run, '.rds'))
-  
-} else {
-  
-  message(' skip file reading, not many species analysed')   ##
-  
-}
+# if(read_data == "TRUE") {
+#   
+#   ## Load GBIF and ALA data
+#   COMBO.NICHE.CONTEXT = readRDS(paste0('data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_',  save_run, '.rds'))
+#   
+# } else {
+#   
+#   message(' skip file reading, not many species analysed')   ##
+#   
+# }
 
 
 #########################################################################################################################
@@ -486,9 +487,33 @@ suitability.2070 = tryCatch(mapply(SUA_cell_count,
 #        maxent_path  = maxent_path,
 #        thresholds   = percent.log.rev,
 #        percentiles  = percent.om.rev,
-#        time_slice   = 30,  ## 50, 70
+#        time_slice   = 70,  ## 50, 70
 #        write_rasters = FALSE)
 
+
+
+
+
+#########################################################################################################################
+## 6). MOVE MAXENT FOLDERS TO NEW LOCATION FOR EACH RUN
+#########################################################################################################################
+
+
+## Create a list of folders for this run of species:EG hollow bearing species 
+run_path         <- "./output/maxent/HOLLOW_SPP"
+run_pat          <- map_spp
+run_pat          <- paste(run_pat, sep = "", collapse = "|")
+maxent_run_list  <- list.files(maxent_path, pattern = run_pat, full.names = TRUE)
+
+
+## Copy or move these files to a specific folder
+## Then you search for a file pattern in that directory
+## This is very slow, would be better done in unix, etc. But 
+file.copy(from      = maxent_run_list, 
+          to        = run_path, 
+          overwrite = FALSE, 
+          recursive = TRUE, 
+          copy.mode = TRUE)
 
 
 #########################################################################################################################
