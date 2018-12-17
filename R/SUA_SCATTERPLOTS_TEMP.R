@@ -53,11 +53,11 @@ SUA.LOSS.2070.CAP$SPECIES_LOSS   = SUA.LOSS.2070.CAP$SPECIES_LOSS*100
 
 #########################################################################################################################
 ## Repeat from here
-SUA.GAIN.2070.GAM                = SUA.GAIN.2070[c("SPECIES_GAIN", "CURRENT_MAT")]
-SUA.LOSS.2070.GAM                = SUA.LOSS.2070[c("SPECIES_LOSS", "CURRENT_MAT")]
+SUA.GAIN.2070.GAM                = SUA.GAIN.2070[c("SPECIES_GAIN", "CURRENT_MAT", "ClimateZ")]
+SUA.LOSS.2070.GAM                = SUA.LOSS.2070[c("SPECIES_LOSS", "CURRENT_MAT", "ClimateZ")]
 
-SUA.GAIN.2070.GAM.CAP            = SUA.GAIN.2070.CAP[c("SPECIES_GAIN", "CURRENT_MAT")]
-SUA.LOSS.2070.GAM.CAP            = SUA.LOSS.2070.CAP[c("SPECIES_LOSS", "CURRENT_MAT")]
+SUA.GAIN.2070.GAM.CAP            = SUA.GAIN.2070.CAP[c("SPECIES_GAIN", "CURRENT_MAT", "ClimateZ")]
+SUA.LOSS.2070.GAM.CAP            = SUA.LOSS.2070.CAP[c("SPECIES_LOSS", "CURRENT_MAT", "ClimateZ")]
 
 
 #########################################################################################################################
@@ -66,8 +66,15 @@ message('Remove SUAs with a species count < 2')
 SUA.GAIN.2070     = subset(SUA.GAIN.2070, SPECIES_GAIN >= 2)
 SUA.LOSS.2070     = subset(SUA.LOSS.2070, SPECIES_LOSS >= 2)
 
+SUA.GAIN.2070.GAM = subset(SUA.GAIN.2070.GAM, SPECIES_GAIN >= 2)
+SUA.LOSS.2070.GAM = subset(SUA.LOSS.2070.GAM, SPECIES_LOSS >= 2)
+
 SUA.GAIN.2070.CAP = subset(SUA.GAIN.2070.CAP, SPECIES_GAIN >= 2)
 SUA.LOSS.2070.CAP = subset(SUA.LOSS.2070.CAP, SPECIES_LOSS >= 2)
+
+SUA.GAIN.2070.GAM.CAP = subset(SUA.GAIN.2070.GAM.CAP, SPECIES_GAIN >= 2)
+SUA.LOSS.2070.GAM.CAP = subset(SUA.LOSS.2070.GAM.CAP, SPECIES_LOSS >= 2)
+
 
 
 #########################################################################################################################
@@ -80,10 +87,14 @@ if(KOP_ZONE == "TEMPERATE") {
   temperate     = c("Cfa", "Cfb", "Csa", "Csb", "Cwa")
   
   SUA.GAIN.2070     =   SUA.GAIN.2070[SUA.GAIN.2070$ClimateZ %in% temperate , ] 
-  SUA.LOSS.2070     =   SUA.LOSS.2070[SUA.LOSS.2070$ClimateZ %in% temperate , ] 
+  SUA.LOSS.2070     =   SUA.LOSS.2070[SUA.LOSS.2070$ClimateZ %in% temperate , ]
+
   
-  SUA.GAIN.2070.CAP =   SUA.GAIN.2070.CAP[SUA.GAIN.2070.CAP$ClimateZ %in% temperate , ] 
-  SUA.LOSS.2070.CAP =   SUA.LOSS.2070.CAP[SUA.LOSS.2070.CAP$ClimateZ %in% temperate , ] 
+  SUA.GAIN.2070.GAM =   SUA.GAIN.2070.GAM[SUA.GAIN.2070.GAM$ClimateZ %in% temperate , ] 
+  SUA.LOSS.2070.GAM =   SUA.LOSS.2070.GAM[SUA.LOSS.2070.GAM$ClimateZ %in% temperate , ] 
+  
+  SUA.GAIN.2070.GAM.CAP =   SUA.GAIN.2070.GAM.CAP[SUA.GAIN.2070.GAM.CAP$ClimateZ %in% temperate , ] 
+  SUA.LOSS.2070.GAM.CAP =   SUA.LOSS.2070.GAM.CAP[SUA.LOSS.2070.GAM.CAP$ClimateZ %in% temperate , ] 
   
 } else {
   
@@ -102,7 +113,9 @@ summary(GAIN.2070.GAM)[["dev.expl"]]
 
 GAIN.2070.TEST  = data.frame(CURRENT_MAT = seq(min(SUA.GAIN.2070[,"CURRENT_MAT"]),
                                                max(SUA.GAIN.2070[,"CURRENT_MAT"]), 
-                                               length = length(SUA.GAIN.2070[["SPECIES_GAIN"]])))
+                                               length = length(SUA.GAIN.2070[["SPECIES_GAIN"]])),
+                             
+                             ClimateZ = SUA.GAIN.2070[,"ClimateZ"])
 
 PRED.GAIN.2070 = predict(GAIN.2070.GAM, newdata = GAIN.2070.TEST, type ='response')
 
@@ -116,7 +129,9 @@ summary(GAIN.2070.GAM.CAP)[["dev.expl"]]
 
 GAIN.2070.TEST.CAP  = data.frame(CURRENT_MAT = seq(min(SUA.GAIN.2070.CAP[,"CURRENT_MAT"]),
                                                max(SUA.GAIN.2070.CAP[,"CURRENT_MAT"]), 
-                                               length = length(SUA.GAIN.2070.CAP[["SPECIES_GAIN"]])))
+                                               length = length(SUA.GAIN.2070.CAP[["SPECIES_GAIN"]])),
+                                 
+                                 ClimateZ = SUA.GAIN.2070.CAP[,"ClimateZ"])
 
 PRED.GAIN.2070.CAP = predict(GAIN.2070.GAM.CAP, newdata = GAIN.2070.TEST.CAP, type ='response')
 
@@ -130,7 +145,9 @@ summary(LOSS.2070.GAM)[["dev.expl"]]
 
 LOSS.2070.TEST  = data.frame(CURRENT_MAT = seq(min(SUA.LOSS.2070[,"CURRENT_MAT"]),
                                                max(SUA.LOSS.2070[,"CURRENT_MAT"]), 
-                                               length = length(SUA.LOSS.2070[["SPECIES_LOSS"]])))
+                                               length = length(SUA.LOSS.2070[["SPECIES_LOSS"]])),
+                             
+                             ClimateZ = SUA.LOSS.2070[,"ClimateZ"])
 
 PRED.LOSS.2070 = predict(LOSS.2070.GAM, newdata = LOSS.2070.TEST, type ='response')
 
@@ -144,7 +161,9 @@ summary(LOSS.2070.GAM.CAP)[["dev.expl"]]
 
 LOSS.2070.TEST.CAP  = data.frame(CURRENT_MAT = seq(min(SUA.LOSS.2070.CAP[,"CURRENT_MAT"]),
                                                max(SUA.LOSS.2070.CAP[,"CURRENT_MAT"]), 
-                                               length = length(SUA.LOSS.2070.CAP[["SPECIES_LOSS"]])))
+                                               length = length(SUA.LOSS.2070.CAP[["SPECIES_LOSS"]])),
+                                 
+                                 ClimateZ = SUA.LOSS.2070.CAP[,"ClimateZ"])
 
 PRED.LOSS.2070.CAP = predict(LOSS.2070.GAM.CAP, newdata = LOSS.2070.TEST.CAP, type ='response')
 
@@ -259,15 +278,15 @@ dev.off()
 
 
 #########################################################################################################################
-## 3). SCATTERPLOT FOR GAMS of GAIN/LOSS, WITH COLORS
+## 3). SCATTERPLOT FOR GAMS of GAIN/LOSS, WITH COLORS FOR KOPPEN ZONE
 #########################################################################################################################
 
 
 #########################################################################################################################
 ## Create PNG
 CairoPNG(width = 18000, height = 16000, 
-         file = sprintf('output/figures/SUA_percent/SUA_2070_SPP_GL_PANEL_COLS_vs_%s_GAM_%s_%s.png',  
-                        'temp', SUAs, SUA_SPP),
+         file = sprintf('output/figures/SUA_percent/SUA_2070_SPP_GL_PANEL_COLS_vs_%s_GAM_%s_%s_%s.png',  
+                        'temp', SUAs, SUA_SPP, KOP_ZONE),
          canvas = "white", bg = "white", units = "px", dpi = 600)
 
 ## Add mfrow
@@ -276,7 +295,6 @@ par(mfrow = c(2, 2),
     mgp   = c(11.8, 3, 0),
     oma   = c(1, 1, 1, 1),
     xpd   = TRUE)
-
 
 #################################################################
 ## PANEL 1 :: GAMs of species gains vs MAT for 2070, ALL SUAs
@@ -379,6 +397,7 @@ par(mar   = c(13.5, 16, 4, 4.8),
     mgp   = c(11.8, 3, 0),
     oma   = c(1, 1, 1, 1))
 
+
 #################################################################
 ## PANEL 1 :: GAMs of species gains vs MAT for 2070, ALL SUAs
 par(font.axis = 1, xpd   = TRUE)
@@ -386,8 +405,8 @@ par(font.axis = 1, xpd   = TRUE)
 plot(NULL ,xaxt='n',yaxt='n',bty='n',ylab='',xlab='', xlim=0:1, ylim=0:1)
 
 ##
-legend("center", levels(SUA.LOSS.2070$ClimateZ),
-       col = c(1:length(unique(SUA.LOSS.2070$ClimateZ))), 
+legend("center", levels(SUA.GAIN.2070$ClimateZ),
+       col = c(1:length(unique(SUA.GAIN.2070$ClimateZ))), 
        pch = 16, pt.cex = 8, cex = 8,
        title = "Kopp_zone", bty = "n")
 

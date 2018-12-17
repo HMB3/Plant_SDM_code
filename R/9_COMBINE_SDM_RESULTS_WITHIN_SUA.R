@@ -22,9 +22,10 @@ length(unique(SUA.SPP.COUNT$SPECIES))
 ## Create arguments for the different settings
 ## EG ALL_SPP, REC_SPP
 ## EG ALL_SUA, LARGE_SUA
-SUAs       = "ALL_SUAs" #"LARGE_SUAs"
-SUA_SPP    = "ALL_SPP"  #"REC_SPP"
+SUAs       = "ALL_SUAs"   #"LARGE_SUAs"
+SUA_SPP    = "ALL_SPP"    #"REC_SPP"
 SUA_ORDER  = "CURRENT_MAT"
+KOP_ZONE   = "TEMPERATE"
 # SUA_ORDER  = "CURRENT_MAP"
 # SUA_ORDER  = "CURRENT_MAXT"
 # SUA_ORDER  = "CURRENT_AI"
