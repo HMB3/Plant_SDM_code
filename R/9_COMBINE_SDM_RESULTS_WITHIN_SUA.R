@@ -19,6 +19,20 @@ length(unique(SUA.SPP.COUNT$SPECIES))
 
 
 #########################################################################################################################
+## Create arguments for the different settings
+## EG ALL_SPP, REC_SPP
+## EG ALL_SUA, LARGE_SUA
+SUAs       = "ALL_SUAs" #"LARGE_SUAs"
+SUA_SPP    = "ALL_SPP"  #"REC_SPP"
+SUA_ORDER  = "CURRENT_MAT"
+# SUA_ORDER  = "CURRENT_MAP"
+# SUA_ORDER  = "CURRENT_MAXT"
+# SUA_ORDER  = "CURRENT_AI"
+# SUA_ORDER  = "AREASQKM16"
+# SUA_ORDER  = "ClimateZ"
+
+
+#########################################################################################################################
 ## Create a list of the gain/loss tables. Just run this on the final SUA table 
 GAIN.LOSS.list = list.files(maxent_dir, pattern = 'gain_loss_table_', full.names = TRUE, recursive = TRUE) 
 
@@ -182,7 +196,8 @@ summary(SUA.COMPLETE)
 
 #########################################################################################################################
 ## Fill in missing population values
-SUA.COMPLETE = FillIn(SUA.PRESENCE, URB.POP, "POP_2017", "POP_2017", KeyVar = c("SUA"), allow.cartesian = FALSE, KeepD2Vars = FALSE)
+SUA.COMPLETE = FillIn(SUA.PRESENCE, URB.POP, "POP_2017", "POP_2017", 
+                      KeyVar = c("SUA"), allow.cartesian = FALSE, KeepD2Vars = FALSE)
 
 
 ## Include the maxent rating?
@@ -202,17 +217,30 @@ SUA.COMPLETE$SPECIES = gsub("_", " ", SUA.COMPLETE$SPECIES)
 length(intersect(unique(SDM.CHECK$SPECIES), unique(SUA.COMPLETE$SPECIES)))
 
 
-## Create a plot of number of records vs. maxent rating, Boxplot with no. occurrences on y, and maxent rating on x
-## ......................................................................................................................
-
-
 #########################################################################################################################
 ## Join on a column for if the species has records in the SUA
 SUA.PREDICT = merge(SUA.COMPLETE, SDM.CHECK,  all.x = TRUE)
 SUA.PREDICT = join(SUA.PREDICT, SUA.SPP.COUNT, type = "full")
-SUA.PREDICT = subset(SUA.PREDICT,  SUA_RECORDS > 0)
-summary(SUA.PREDICT$SUA_RECORDS)
+
+
+#########################################################################################################################
+## If only counting species with records inside the SUA, remove SUA's with < 2 species as their count
+if(SUA_SPP == "REC_SPP") {
+  
+  ## Save basic results and SUA results to file
+  message('Analyse only species with records in SUAs') 
+  SUA.PREDICT = subset(SUA.PREDICT,  SUA_RECORDS > 0)
+  
+} else {
+  
+  message('Analyse all species in SUAs') 
+  
+}
+
+
+#SUA.PREDICT = subset(SUA.PREDICT,  SUA_RECORDS > 0)
 #SUA.PREDICT = completeFun(SUA.PREDICT, "MAXENT_RATING")
+summary(SUA.PREDICT$SUA_RECORDS)
 unique(SUA.PREDICT$MAXENT_RATING)
 length(unique(SUA.PREDICT$SPECIES))
 length(unique(SUA.PREDICT$SUA))
@@ -332,7 +360,7 @@ if(save_data == "TRUE") {
 ## We can count of all the species that are being lost, gained or remaining stable in each SUA
 ## However, this doesn't give us the turner of species, because it ignores the species identities
 length(unique(SUA.PREDICT$SPECIES))
-SUA.PLOT.GOOD = subset(SUA.PREDICT, MAXENT_RATING < 3) #& ORIGIN == "Native")
+SUA.PLOT.GOOD = subset(SUA.PREDICT, MAXENT_RATING < 3) 
 unique(SUA.PLOT.GOOD$MAXENT_RATING)
 length(unique(SUA.PLOT.GOOD$SPECIES))
 
@@ -390,8 +418,9 @@ head(SUA.30.M.STABLE)
 
 #########################################################################################################################
 ## Attach the climate
-SUA.CLIM      = SUA.PREDICT[!duplicated(SUA.PREDICT[,c('SUA')]),][c("SUA", "CURRENT_MAT", "CURRENT_MAP", "CURRENT_PET", "CURRENT_AI",
-                                                                    "CURRENT_MAXT", "AREASQKM16", "ClimateZ", "POP_2017")]
+SUA.CLIM      = SUA.PREDICT[!duplicated(SUA.PREDICT[,c('SUA')]),][c("SUA", "CURRENT_MAT", "CURRENT_MAP", 
+                                                                    "CURRENT_PET", "CURRENT_AI", "CURRENT_MAXT", 
+                                                                    "AREASQKM16", "ClimateZ", "POP_2017")]
 
 
 ## Find a more efficient way to join everything on to the subsets
@@ -422,26 +451,6 @@ SUA.70.M.STABLE = join(SUA.70.M.STABLE, SUA.CLIM)
 ## Option 2).
 ## Gain % = species gained / (stable + lost + gained)   * 100
 ## Lost % = species lost   / (stable + lost + gained)   * 100
-
-
-#########################################################################################################################
-## Create arguments for the different settings
-## EG ALL_SPP, REC_SPP
-## EG ALL_SUA, LARGE_SUA
-SUAs    = "ALL_SUAs"
-SUAs    = "LARGE_SUAs"
-
-SUA_SPP = "REC_SPP"
-SUA_SPP = "ALL_SPP"
-
-SUA_ORDER  = "CURRENT_MAT"
-# SUA_ORDER  = "CURRENT_MAP"
-# SUA_ORDER  = "CURRENT_MAXT"
-# SUA_ORDER  = "CURRENT_AI"
-# SUA_ORDER  = "AREASQKM16"
-# SUA_ORDER  = "ClimateZ"
-
-
 
 
 

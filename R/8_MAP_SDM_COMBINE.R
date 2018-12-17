@@ -332,6 +332,14 @@ length(intersect(MAXENT.SUMMARY.NICHE$searchTaxon, GBIF.spp))
 
 
 #########################################################################################################################
+## Create a plot of number of records vs. maxent rating, Boxplot with no. occurrences on y, and maxent rating on
+# plot(MAXENT.SUMMARY.NICHE$GLOBAL_RECORDS, MAXENT.SUMMARY.NICHE$check.map, pch = 19, col  = "blue",
+#      xlab = "AUC", ylab = "TSS", 
+#      abline(lm(MAXENT.SUMMARY.NICHE$check.map ~ MAXENT.SUMMARY.NICHE$GLOBAL_RECORDS)))
+# legend("topleft", bty="n", legend=paste("R2 is", format(summary(lm.auc)$adj.r.squared, digits = 4)))
+
+
+#########################################################################################################################
 ## Save maxent results
 write.csv(MAXENT.SUMMARY.NICHE, paste0('output/maxent/MAXENT_SUMMARY_', save_run, '.csv'), row.names = FALSE)
 
@@ -372,12 +380,6 @@ percent.10.log         = percent.10.log$X10.percentile.training.presence.Logisti
 
 percent.10.om          = as.list(MAXENT.RESULTS["X10.percentile.training.presence.training.omission"])   
 percent.10.om          = percent.10.om$X10.percentile.training.presence.training.omission
-
-
-## Check that the order of the species names directories and threshold values match before final run
-head(SDM.RESULTS.DIR, 20);head(map_spp, 20); head(MAXENT.RESULTS, 20)[, c("searchTaxon",
-                                                                          "Maximum.training.sensitivity.plus.specificity.Logistic.threshold", 
-                                                                          "X10.percentile.training.presence.Logistic.threshold")]
 
 
 

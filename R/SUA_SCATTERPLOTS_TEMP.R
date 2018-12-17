@@ -61,24 +61,38 @@ SUA.LOSS.2070.GAM.CAP            = SUA.LOSS.2070.CAP[c("SPECIES_LOSS", "CURRENT_
 
 
 #########################################################################################################################
+## Remove SUA's with < 2 species as their count
+message('Remove SUAs with a species count < 2')
+SUA.GAIN.2070     = subset(SUA.GAIN.2070, SPECIES_GAIN >= 2)
+SUA.LOSS.2070     = subset(SUA.LOSS.2070, SPECIES_LOSS >= 2)
+
+SUA.GAIN.2070.CAP = subset(SUA.GAIN.2070.CAP, SPECIES_GAIN >= 2)
+SUA.LOSS.2070.CAP = subset(SUA.LOSS.2070.CAP, SPECIES_LOSS >= 2)
+
+
+#########################################################################################################################
 ## If only counting species with records inside the SUA, remove SUA's with < 2 species as their count
-if(SUA_SPP == "REC_SPP") {
+if(KOP_ZONE == "TEMPERATE") {
   
   ## Save basic results and SUA results to file
-  message('Remove SUAs with a species count < 2')
-  SUA.GAIN.2070     = subset(SUA.GAIN.2070, SPECIES_GAIN >= 2)
-  SUA.LOSS.2070     = subset(SUA.LOSS.2070, SPECIES_LOSS >= 2)
+  message('Analyse only temperate SUAs')
+  non_temperate = c("Am", "Aw", "BSh", "BSk", "BWh")
+  temperate     = c("Cfa", "Cfb", "Csa", "Csb", "Cwa")
   
-  SUA.GAIN.2070.CAP = subset(SUA.GAIN.2070.CAP, SPECIES_GAIN >= 2)
-  SUA.LOSS.2070.CAP = subset(SUA.LOSS.2070.CAP, SPECIES_LOSS >= 2)
+  SUA.GAIN.2070     =   SUA.GAIN.2070[SUA.GAIN.2070$ClimateZ %in% temperate , ] 
+  SUA.LOSS.2070     =   SUA.LOSS.2070[SUA.LOSS.2070$ClimateZ %in% temperate , ] 
+  
+  SUA.GAIN.2070.CAP =   SUA.GAIN.2070.CAP[SUA.GAIN.2070.CAP$ClimateZ %in% temperate , ] 
+  SUA.LOSS.2070.CAP =   SUA.LOSS.2070.CAP[SUA.LOSS.2070.CAP$ClimateZ %in% temperate , ] 
   
 } else {
   
-  message('Create scatterplots for all SUAs') 
+  message('Analyse all SUAs') 
   
 }
 
 
+  
 #########################################################################################################################
 ## Run GAMs of species gains vs MAT for 2070, ALL SUA
 GAIN.2070.GAM = gam(SPECIES_GAIN ~ s (CURRENT_MAT, k = 5), 
