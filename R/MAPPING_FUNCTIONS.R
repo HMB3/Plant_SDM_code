@@ -423,29 +423,35 @@ SUA_cell_count = function(DIR_list, species_list, maxent_path, thresholds,
           ## If the rasters don't exist, write them for each species/threshold
           if(write_rasters == "TRUE") {
             
-            ## Write the current suitability raster, thresholded using the Maximum training sensitivity plus specificity Logistic threshold
+            ## Write the current suitability raster, thresholded using the Maximum training 
+            ## sensitivity plus specificity Logistic threshold
             message('Writing ', species, ' current', ' max train > ', thresh)
             writeRaster(current_suit_thresh, sprintf('%s/%s/full/%s_%s%s.tif', maxent_path,
-                                                     species, species, "current_suit_above_", thresh), overwrite = TRUE)
+                                                     species, species, "current_suit_above_", thresh), 
+                        overwrite = TRUE)
             
             ## Write the combined suitability raster, thresholded using the maximum training value
             message('Writing ', species, ' | 20', time_slice, ' max train > ', thresh)
             writeRaster(combo_suit_thresh, sprintf('%s/%s/full/%s_20%s%s%s.tif', maxent_path,
-                                                   species, species, time_slice, "_Max_train_sensit_above_", thresh), overwrite = TRUE)
+                                                   species, species, time_slice, "_Max_train_sensit_above_", thresh), 
+                        overwrite = TRUE)
             
             ## Write the combined suitability raster, thresholded using the percentile value
             message('Writing ', species, ' | 20', time_slice, ' 10th percentile > ', percent)
             writeRaster(combo_suit_percent, sprintf('%s/%s/full/%s_20%s%s%s.tif', maxent_path,
-                                                    species, species, time_slice, "_10_percentile_omiss_above_", percent), overwrite = TRUE)
+                                                    species, species, time_slice, "_10_percentile_omiss_above_", percent), 
+                        overwrite = TRUE)
             
             ## Write the combined future raster with > 4 GCMs above the maximum training value
             message('Writing ', species, ' | 20', time_slice, ' 4 GCMs > ', percent)
             writeRaster(combo_suit_4GCM, sprintf('%s/%s/full/%s_20%s%s%s.tif', maxent_path,
-                                                 species, species, time_slice, "_4GCMs_above_", thresh), overwrite = TRUE)
+                                                 species, species, time_slice, "_4GCMs_above_", thresh), 
+                        overwrite = TRUE)
             
             ## Write out the gain/loss raster
             writeRaster(gain_loss, sprintf('%s/%s/full/%s_20%s%s%s.tif', maxent_path,
-                                           species, species, time_slice, "_gain_loss_", thresh), datatype = 'INT2U', overwrite = TRUE)
+                                           species, species, time_slice, "_gain_loss_", thresh), datatype = 'INT2U', 
+                        overwrite = TRUE)
             
             #########################################################################################################################
             ## Write gain/loss PNG too
@@ -474,7 +480,8 @@ SUA_cell_count = function(DIR_list, species_list, maxent_path, thresholds,
             #                 # str(gain_loss@data@attributes)
             # 
             #                 ## Give each plot a name: the third panel is the GCM
-            #                 names.attr = c('Current climatic suitability', paste0('Suitability in 20', time_slice)),#, 'Gain/loss raster'),
+            #                 names.attr = c('Current climatic suitability', paste0('Suitability in 20', 
+            #                 time_slice)),#, 'Gain/loss raster'),
             #                 colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
             #                 main       = list(gsub('_current_suit_above_', '_', names(spp.thresh)), font = 4, cex = 2)) +
             # 

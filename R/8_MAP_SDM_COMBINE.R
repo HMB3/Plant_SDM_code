@@ -377,7 +377,6 @@ thresh.max.train       = thresh.max.train$Maximum.training.sensitivity.plus.spec
 percent.10.log         = as.list(MAXENT.RESULTS["X10.percentile.training.presence.Logistic.threshold"])  
 percent.10.log         = percent.10.log$X10.percentile.training.presence.Logistic.threshold
 
-
 percent.10.om          = as.list(MAXENT.RESULTS["X10.percentile.training.presence.training.omission"])   
 percent.10.om          = percent.10.om$X10.percentile.training.presence.training.omission
 
@@ -396,24 +395,12 @@ percent.10.om          = percent.10.om$X10.percentile.training.presence.training
 ## where that cell had a suitability value above the threshold determined by maxent (e.g. the max training sensitivity + specif).
 
 
-#########################################################################################################################
-## Then use the more forgiving threshold
-#########################################################################################################################
-
-
-# #load("SDM_COMBINE.RData")
-# #save.image("STEP_8_MAPPING.RData")
-# load("STEP_8_MAPPING.RData")
-
-
 ## Test problematic species by entering the values and running the function manually
-## Common errors are due to corrupt rasters in the previous step
 # DIR        = SDM.RESULTS.DIR[1]
 # species    = map_spp[1]
 # thresh     = percent.10.log[1]
 # percent    = percent.10.om[1]
 # time_slice = 30
-
 
 
 #########################################################################################################################
@@ -483,14 +470,14 @@ suitability.2070 = tryCatch(mapply(SUA_cell_count,
 
 #########################################################################################################################
 ## Reverse the order of the lists to speed up the output
-# mapply(SUA_cell_count,
-#        DIR_list     = SDM.DIR.REV,
-#        species_list = map_spp_rev,
-#        maxent_path  = maxent_path,
-#        thresholds   = percent.log.rev,
-#        percentiles  = percent.om.rev,
-#        time_slice   = 70,  ## 50, 70
-#        write_rasters = FALSE)
+mapply(SUA_cell_count,
+       DIR_list     = SDM.DIR.REV,
+       species_list = map_spp_rev,
+       maxent_path  = maxent_path,
+       thresholds   = percent.log.rev,
+       percentiles  = percent.om.rev,
+       time_slice   = 70,  ## 50, 70
+       write_rasters = FALSE)
 
 
 
@@ -508,6 +495,16 @@ run_pat          <- paste(run_pat, sep = "", collapse = "|")
 maxent_run_list  <- list.files(maxent_path, pattern = run_pat, full.names = TRUE)
 
 
+## Save the list of maxent directories to file
+lapply(maxent_run_list, write, sprintf("%s%s_maxent_folders.txt", maxent_path, save_run), append = TRUE)
+maxent_file_list = sprintf("%s_maxent_folders.txt", save_run)
+
+
+##  cd H:/green_cities_sdm/output/maxent/SUA_TREES_ANALYSIS
+## cat maxent_file_list | xargs -J % cp % run_path
+## cat HOLLOW_SPP_maxent_folders.txt | xargs -J % cp % HOLLOW_SPP
+
+
 ## Copy or move these files to a specific folder
 ## Then you search for a file pattern in that directory
 ## This is very slow, would be better done in unix, etc. But 
@@ -523,10 +520,10 @@ file.copy(from      = maxent_run_list,
 #########################################################################################################################
 
 
-## 1). 
+##  
 
 
-## 2). Fix the species mapping loop over two lists at once : mapply
+## Fix the species mapping loop over two lists at once : mapply
 
 
 

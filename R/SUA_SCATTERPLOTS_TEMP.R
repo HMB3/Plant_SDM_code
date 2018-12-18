@@ -6,6 +6,33 @@
 ## This code creates scatterplots of species gained/lost in each of the 101 SUAs
 
 
+
+#########################################################################################################################
+## If only analysing temperate SUAs, remove the others
+if(KOP_ZONE == "TEMPERATE") {
+  
+  ## Save basic results and SUA results to file
+  message('Analyse only temperate SUAs')
+  non_temperate = c("Am", "Aw", "BSh", "BSk", "BWh")
+  temperate     = c("Cfa", "Cfb", "Csa", "Csb", "Cwa")
+  
+  SUA.PLOT.70.M     =   SUA.PLOT.70.M[SUA.PLOT.70.M$ClimateZ %in% temperate , ] 
+  # SUA.LOSS.2070     =   SUA.LOSS.2070[SUA.LOSS.2070$ClimateZ %in% temperate , ]
+  # 
+  # 
+  # SUA.GAIN.2070.GAM =   SUA.GAIN.2070.GAM[SUA.GAIN.2070.GAM$ClimateZ %in% temperate , ] 
+  # SUA.LOSS.2070.GAM =   SUA.LOSS.2070.GAM[SUA.LOSS.2070.GAM$ClimateZ %in% temperate , ] 
+  # 
+  # SUA.GAIN.2070.GAM.CAP =   SUA.GAIN.2070.GAM.CAP[SUA.GAIN.2070.GAM.CAP$ClimateZ %in% temperate , ] 
+  # SUA.LOSS.2070.GAM.CAP =   SUA.LOSS.2070.GAM.CAP[SUA.LOSS.2070.GAM.CAP$ClimateZ %in% temperate , ] 
+  
+} else {
+  
+  message('Analyse all SUAs') 
+  
+}
+
+
 #########################################################################################################################
 ## Create the gain and loss variables for plotting.
 SUA.GAIN.2070                   = subset(SUA.PLOT.70.M, AREA_CHANGE %in% c("GAIN"))
@@ -53,11 +80,11 @@ SUA.LOSS.2070.CAP$SPECIES_LOSS   = SUA.LOSS.2070.CAP$SPECIES_LOSS*100
 
 #########################################################################################################################
 ## Repeat from here
-SUA.GAIN.2070.GAM                = SUA.GAIN.2070[c("SPECIES_GAIN", "CURRENT_MAT", "ClimateZ")]
-SUA.LOSS.2070.GAM                = SUA.LOSS.2070[c("SPECIES_LOSS", "CURRENT_MAT", "ClimateZ")]
+SUA.GAIN.2070.GAM                = SUA.GAIN.2070[c("SPECIES_GAIN", "CURRENT_MAT")]
+SUA.LOSS.2070.GAM                = SUA.LOSS.2070[c("SPECIES_LOSS", "CURRENT_MAT")]
 
-SUA.GAIN.2070.GAM.CAP            = SUA.GAIN.2070.CAP[c("SPECIES_GAIN", "CURRENT_MAT", "ClimateZ")]
-SUA.LOSS.2070.GAM.CAP            = SUA.LOSS.2070.CAP[c("SPECIES_LOSS", "CURRENT_MAT", "ClimateZ")]
+SUA.GAIN.2070.GAM.CAP            = SUA.GAIN.2070.CAP[c("SPECIES_GAIN", "CURRENT_MAT")]
+SUA.LOSS.2070.GAM.CAP            = SUA.LOSS.2070.CAP[c("SPECIES_LOSS", "CURRENT_MAT")]
 
 
 #########################################################################################################################
@@ -75,34 +102,6 @@ SUA.LOSS.2070.CAP = subset(SUA.LOSS.2070.CAP, SPECIES_LOSS >= 2)
 SUA.GAIN.2070.GAM.CAP = subset(SUA.GAIN.2070.GAM.CAP, SPECIES_GAIN >= 2)
 SUA.LOSS.2070.GAM.CAP = subset(SUA.LOSS.2070.GAM.CAP, SPECIES_LOSS >= 2)
 
-
-
-#########################################################################################################################
-## If only counting species with records inside the SUA, remove SUA's with < 2 species as their count
-if(KOP_ZONE == "TEMPERATE") {
-  
-  ## Save basic results and SUA results to file
-  message('Analyse only temperate SUAs')
-  non_temperate = c("Am", "Aw", "BSh", "BSk", "BWh")
-  temperate     = c("Cfa", "Cfb", "Csa", "Csb", "Cwa")
-  
-  SUA.GAIN.2070     =   SUA.GAIN.2070[SUA.GAIN.2070$ClimateZ %in% temperate , ] 
-  SUA.LOSS.2070     =   SUA.LOSS.2070[SUA.LOSS.2070$ClimateZ %in% temperate , ]
-
-  
-  SUA.GAIN.2070.GAM =   SUA.GAIN.2070.GAM[SUA.GAIN.2070.GAM$ClimateZ %in% temperate , ] 
-  SUA.LOSS.2070.GAM =   SUA.LOSS.2070.GAM[SUA.LOSS.2070.GAM$ClimateZ %in% temperate , ] 
-  
-  SUA.GAIN.2070.GAM.CAP =   SUA.GAIN.2070.GAM.CAP[SUA.GAIN.2070.GAM.CAP$ClimateZ %in% temperate , ] 
-  SUA.LOSS.2070.GAM.CAP =   SUA.LOSS.2070.GAM.CAP[SUA.LOSS.2070.GAM.CAP$ClimateZ %in% temperate , ] 
-  
-} else {
-  
-  message('Analyse all SUAs') 
-  
-}
-
-
   
 #########################################################################################################################
 ## Run GAMs of species gains vs MAT for 2070, ALL SUA
@@ -113,9 +112,9 @@ summary(GAIN.2070.GAM)[["dev.expl"]]
 
 GAIN.2070.TEST  = data.frame(CURRENT_MAT = seq(min(SUA.GAIN.2070[,"CURRENT_MAT"]),
                                                max(SUA.GAIN.2070[,"CURRENT_MAT"]), 
-                                               length = length(SUA.GAIN.2070[["SPECIES_GAIN"]])),
+                                               length = length(SUA.GAIN.2070[["SPECIES_GAIN"]])))
                              
-                             ClimateZ = SUA.GAIN.2070[,"ClimateZ"])
+                            # ClimateZ = SUA.GAIN.2070[,"ClimateZ"])
 
 PRED.GAIN.2070 = predict(GAIN.2070.GAM, newdata = GAIN.2070.TEST, type ='response')
 
@@ -129,9 +128,7 @@ summary(GAIN.2070.GAM.CAP)[["dev.expl"]]
 
 GAIN.2070.TEST.CAP  = data.frame(CURRENT_MAT = seq(min(SUA.GAIN.2070.CAP[,"CURRENT_MAT"]),
                                                max(SUA.GAIN.2070.CAP[,"CURRENT_MAT"]), 
-                                               length = length(SUA.GAIN.2070.CAP[["SPECIES_GAIN"]])),
-                                 
-                                 ClimateZ = SUA.GAIN.2070.CAP[,"ClimateZ"])
+                                               length = length(SUA.GAIN.2070.CAP[["SPECIES_GAIN"]])))
 
 PRED.GAIN.2070.CAP = predict(GAIN.2070.GAM.CAP, newdata = GAIN.2070.TEST.CAP, type ='response')
 
@@ -145,9 +142,7 @@ summary(LOSS.2070.GAM)[["dev.expl"]]
 
 LOSS.2070.TEST  = data.frame(CURRENT_MAT = seq(min(SUA.LOSS.2070[,"CURRENT_MAT"]),
                                                max(SUA.LOSS.2070[,"CURRENT_MAT"]), 
-                                               length = length(SUA.LOSS.2070[["SPECIES_LOSS"]])),
-                             
-                             ClimateZ = SUA.LOSS.2070[,"ClimateZ"])
+                                               length = length(SUA.LOSS.2070[["SPECIES_LOSS"]])))
 
 PRED.LOSS.2070 = predict(LOSS.2070.GAM, newdata = LOSS.2070.TEST, type ='response')
 
@@ -161,9 +156,7 @@ summary(LOSS.2070.GAM.CAP)[["dev.expl"]]
 
 LOSS.2070.TEST.CAP  = data.frame(CURRENT_MAT = seq(min(SUA.LOSS.2070.CAP[,"CURRENT_MAT"]),
                                                max(SUA.LOSS.2070.CAP[,"CURRENT_MAT"]), 
-                                               length = length(SUA.LOSS.2070.CAP[["SPECIES_LOSS"]])),
-                                 
-                                 ClimateZ = SUA.LOSS.2070.CAP[,"ClimateZ"])
+                                               length = length(SUA.LOSS.2070.CAP[["SPECIES_LOSS"]])))
 
 PRED.LOSS.2070.CAP = predict(LOSS.2070.GAM.CAP, newdata = LOSS.2070.TEST.CAP, type ='response')
 

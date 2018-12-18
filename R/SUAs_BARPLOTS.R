@@ -29,6 +29,32 @@ if(SUAs    == "LARGE_SUAs") {
 }
   
 
+#########################################################################################################################
+## If only analysing temperate SUAs, remove the others
+if(KOP_ZONE == "TEMPERATE") {
+  
+  ## Save basic results and SUA results to file
+  message('Analyse only temperate SUAs')
+  non_temperate = c("Am", "Aw", "BSh", "BSk", "BWh")
+  temperate     = c("Cfa", "Cfb", "Csa", "Csb", "Cwa")
+  
+  SUA.PLOT.70.M   = SUA.PLOT.70.M[SUA.PLOT.70.M$ClimateZ %in% temperate , ]
+  
+  SUA.PLOT.30.M   = SUA.PLOT.30.M[SUA.PLOT.30.M$ClimateZ %in% temperate , ]
+  SUA.30.M.LOSS   = SUA.30.M.LOSS[SUA.30.M.LOSS$ClimateZ %in% temperate , ]
+  SUA.30.M.GAIN   = SUA.30.M.GAIN[SUA.30.M.GAIN$ClimateZ %in% temperate , ]
+  SUA.30.M.STABLE = SUA.30.M.STABLE[SUA.30.M.STABLE$ClimateZ %in% temperate , ]
+  
+  SUA.PLOT.70.M   = SUA.PLOT.70.M[SUA.PLOT.70.M$ClimateZ %in% temperate , ]
+  SUA.70.M.LOSS   = SUA.70.M.LOSS[SUA.70.M.LOSS$ClimateZ %in% temperate , ]
+  SUA.70.M.GAIN   = SUA.70.M.GAIN[SUA.70.M.GAIN$ClimateZ %in% temperate , ]
+  SUA.70.M.STABLE = SUA.70.M.STABLE[SUA.70.M.STABLE$ClimateZ %in% temperate , ]
+  
+} else {
+  
+  message('Analyse all SUAs') 
+  
+}
 
 
 
@@ -88,7 +114,7 @@ dev.off()
 
 #########################################################################################################################
 ## Create PNG output for all SUAs for 2070, ordered by mean annual temperature
-png(sprintf('output/figures/SUA_percent/SUA_BAR_PLOT_SUM_100_%s_%s_%s_%s.png', 2070, SUA_ORDER, SUAs, SUA_SPP),      
+png(sprintf('output/figures/SUA_percent/SUA_BAR_PLOT_SUM_100_%s_%s_%s_%s_%s.png', 2070, SUA_ORDER, SUAs, KOP_ZONE, SUA_SPP),      
     10, 8, units = 'in', res = 500)
 
 ## 2070

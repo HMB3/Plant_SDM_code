@@ -128,7 +128,7 @@ maxent_dir    = 'output/maxent/SUA_TREES_ANALYSIS'               ## Another vers
 save_data     = 'TRUE'                                           ## Arguments for saving the intermediary output - i.e. niches
 read_data     = 'FALSE'                                          ## Leave these the same - saves data, but doesn't read back in
 save_path     = 'data/base/HIA_LIST/COMBO'
-run_path      = "./output/maxent/HOLLOW_SPP"
+
 
 
 
