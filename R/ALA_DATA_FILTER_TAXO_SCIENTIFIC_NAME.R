@@ -171,16 +171,16 @@ length(unique(ALA.TRIM$species))
 #########################################################################################################################
 ## Use "Taxonstand" to check the taxonomy :: which field to use?
 message('Running TPL taxonomy for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
-ALA.TREES.TAXO <- TPL(unique(ALA.TRIM$scientificName), infra = TRUE,
+ALA.TAXO <- TPL(unique(ALA.TRIM$scientificName), infra = TRUE,
                       corr = TRUE, repeats = 100)  ## to stop it timing out...
-sort(names(ALA.TREES.TAXO))
-#saveRDS(ALA.TREES.TAXO, paste0('data/base/HIA_LIST/COMBO/', 'ALA_TAXO_', save_run, '.rds'))
+sort(names(ALA.TAXO))
+saveRDS(ALA.TAXO, paste0(ALA_path, 'ALA_TAXO_', save_run, '.rds'))
 
 
 ## Check the taxonomy by running scientificName through TPL. Then join the GBIF data to the taxonomic check, using 
 ## "scientificName" as the join field
 ALA.TRIM.TAXO <- ALA.TRIM %>%
-  left_join(., ALA.TREES.TAXO, by = c("scientificName" = "Taxon"))
+  left_join(., ALA.TAXO, by = c("scientificName" = "Taxon"))
 ALA.TRIM.TAXO$New_binomial = paste(ALA.TRIM.TAXO$New.Genus, ALA.TRIM.TAXO$New.Species, sep = " ") 
 names(ALA.TRIM.TAXO)
 
@@ -269,7 +269,7 @@ round(with(ALA.TRIM.MATCH, table(New.Taxonomic.status)/sum(table(New.Taxonomic.s
 
 #########################################################################################################################
 ## Now filter the ALA records using conditions which are not too restrictive
-ALA.TREES.CLEAN <- ALA.TRIM.MATCH %>% 
+ALA.CLEAN <- ALA.TRIM.MATCH %>% 
   
   ## Note that these filters are very forgiving...
   ## Unless we include the NAs, very few records are returned!
@@ -282,12 +282,12 @@ ALA.TREES.CLEAN <- ALA.TRIM.MATCH %>%
          year >= 1950 & !is.na(year))
 
 ## Check
-names(ALA.TREES.CLEAN)
+names(ALA.CLEAN)
 
 
 ## How many records were removed by filtering?
-message(dim(ALA.TRIM.MATCH)[1] - dim(ALA.TREES.CLEAN)[1], " records removed")
-message(round((dim(ALA.TREES.CLEAN)[1])/dim(ALA.TRIM.MATCH)[1]*100, 2), 
+message(dim(ALA.TRIM.MATCH)[1] - dim(ALA.CLEAN)[1], " records removed")
+message(round((dim(ALA.CLEAN)[1])/dim(ALA.TRIM.MATCH)[1]*100, 2), 
         " % records retained using spatially valid records")
 
 
@@ -310,7 +310,7 @@ message('Removing ALA points in the ocean for ', length(GBIF.spp), ' species in 
 ## Now get the XY centroids of the unique 1km * 1km WORLDCLIM blocks where ALA records are found
 ## Get cell number(s) of WORLDCLIM raster from row and/or column numbers. Cell numbers start at 1 in the upper left corner, 
 ## and increase from left to right, and then from top to bottom. The last cell number equals the number of raster cells 
-xy <- cellFromXY(world.grids.current, ALA.TREES.CLEAN[c("lon", "lat")]) %>% 
+xy <- cellFromXY(world.grids.current, ALA.CLEAN[c("lon", "lat")]) %>% 
   
   ## get the unique raster cells
   unique %>% 
@@ -337,22 +337,22 @@ onland = z %>% is.na %>%  `!` # %>% xy[.,]  cells on land or not
 
 ## Finally, filter the cleaned ALA data to only those points on land. 
 ## This is achieved with the final [onland]
-ALA.TREES.LAND = filter(ALA.TREES.CLEAN, cellFromXY(world.grids.current, ALA.TREES.CLEAN[c("lon", "lat")]) %in% 
-                          unique(cellFromXY(world.grids.current, ALA.TREES.CLEAN[c("lon", "lat")]))[onland])
+ALA.LAND = filter(ALA.CLEAN, cellFromXY(world.grids.current, ALA.CLEAN[c("lon", "lat")]) %in% 
+                          unique(cellFromXY(world.grids.current, ALA.CLEAN[c("lon", "lat")]))[onland])
 
 
 ## how many records were on land?
-records.ocean = dim(ALA.TREES.CLEAN)[1] - dim(ALA.TREES.LAND)[1]  ## 91575 records are in the ocean   
+records.ocean = dim(ALA.CLEAN)[1] - dim(ALA.LAND)[1]  ## 91575 records are in the ocean   
 
 
 ## Print the dataframe dimensions to screen
-dim(ALA.TREES.LAND)
-length(unique(ALA.TREES.LAND$searchTaxon))
+dim(ALA.LAND)
+length(unique(ALA.LAND$searchTaxon))
 
 
 ## Add a source column
-ALA.TREES.LAND$SOURCE = 'ALA'
-message(round((dim(ALA.TREES.LAND)[1])/dim(ALA.TREES.CLEAN)[1]*100, 2), 
+ALA.LAND$SOURCE = 'ALA'
+message(round((dim(ALA.LAND)[1])/dim(ALA.CLEAN)[1]*100, 2), 
         " % records retained using spatially valid records")
 
 
@@ -362,13 +362,13 @@ gc()
 
 #########################################################################################################################
 ## save data
-dim(ALA.TREES.LAND)
-length(unique(ALA.TREES.LAND$searchTaxon))
+dim(ALA.LAND)
+length(unique(ALA.LAND$searchTaxon))
 
 
 ## One of the ALA columns is causing trouble. Reduce the ALA dataset to a minimum set
-sort(names(ALA.TREES.LAND))
-ALA.TREES.LAND = ALA.TREES.LAND[c("searchTaxon",      "scientificName", "SOURCE", 
+sort(names(ALA.LAND))
+ALA.LAND = ALA.LAND[c("searchTaxon",      "scientificName", "SOURCE", 
                                   "lon", "lat",       "coordinateUncertaintyInMetres", #"geodeticDatum", 
                                   "year", "locality", "country", 
                                   "basisOfRecord",    "institutionCode", "rank",
@@ -380,7 +380,7 @@ ALA.TREES.LAND = ALA.TREES.LAND[c("searchTaxon",      "scientificName", "SOURCE"
 if(save_data == "TRUE") {
   
   ## save .rds file for the next session
-  saveRDS(ALA.TREES.LAND, paste0('data/base/HIA_LIST/ALA/ALA_TREES_LAND_', save_run, '.rds'))
+  saveRDS(ALA.LAND, paste0(ALA_path, 'ALA_LAND_', save_run, '.rds'))
   
 } else {
   

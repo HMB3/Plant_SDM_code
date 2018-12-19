@@ -24,7 +24,7 @@ message('Cleaning outliers and creating niches for ', length(GBIF.spp), ' specie
 if(read_data == "TRUE") {
   
   ## read in RDS files from previous step
-  COMBO.RASTER.CONVERT = readRDS(paste0('data/base/HIA_LIST/COMBO/COMBO_RASTER_CONVERT_', save_run, '.rds'))
+  COMBO.RASTER.CONVERT = readRDS(paste0(DATA_path, 'COMBO_RASTER_CONVERT_',  save_run, '.rds'))
   
 } else {
   
@@ -38,7 +38,7 @@ if(read_data == "TRUE") {
 if(dim(TI.XY.SPP)[1] > 0) {
   
   ## Read in RDS files from previous step
-  TI.RASTER.CONVERT = readRDS(paste0('data/base/HIA_LIST/COMBO/TI_RASTER_CONVERT_', save_run, '.rds'))
+  TI.RASTER.CONVERT = readRDS(paste0(DATA_path, 'TI_RASTER_CONVERT_', save_run, '.rds'))
   
 } else {
   
@@ -105,8 +105,6 @@ FLAGS  <- CleanCoordinates(TIB.GBIF,
 
 ## save/load the flags
 identical(dim(FLAGS)[1], dim(TIB.GBIF)[1])
-#saveRDS(FLAGS, paste0('data/base/HIA_LIST/COMBO/ALA_GBIF_FLAGS_', save_run, '.rds'))
-#FLAGS = readRDS(paste0('data/base/HIA_LIST/COMBO/ALA_GBIF_FLAGS_', save_run, '.rds'))
 
 
 ## Flagging ~ 1.64%, excluding the spatial outliers. Seems reasonable?
@@ -266,7 +264,7 @@ message("Tree inventory data increases records by ", round(dim(CLEAN.TRUE)[1]/di
 if(save_data == "TRUE") {
   
   ## save .rds file for the next session
-  saveRDS(CLEAN.TRUE, paste0('data/base/HIA_LIST/COMBO/CLEAN_TRUE_', save_run, '.rds'))
+  saveRDS(CLEAN.TRUE, paste0(DATA_path, 'CLEAN_TRUE_', save_run, '.rds'))
   
 } else {
   
@@ -383,7 +381,7 @@ if(save_data == "TRUE") {
   
   #########################################################################################################################
   ## save .rds file for the next session
-  saveRDS(COMBO.SUA.LGA, file = paste0('data/base/HIA_LIST/COMBO/COMBO_SUA_OVER_', save_run, '.rds'))
+  saveRDS(COMBO.SUA.LGA, file = paste0(DATA_path, 'COMBO_SUA_OVER_', save_run, '.rds'))
   
   
   #########################################################################################################################
@@ -402,10 +400,8 @@ if(save_data == "TRUE") {
   
   
   #########################################################################################################################
-  ## save data
   ## Save .rds file for the next session
-  saveRDS(SUA.SPP.COUNT, paste0('data/base/HIA_LIST/COMBO/SUA_SPP_COUNT_', save_run, '.rds'))
-  
+  saveRDS(SUA.SPP.COUNT, paste0(DATA_path, 'SUA_SPP_COUNT_', save_run, '.rds'))
   
   
   ## Check : That's ok, but we want a table of which SUA each species is actually in.
@@ -561,8 +557,8 @@ if(save_data == "TRUE") {
   #########################################################################################################################
   ## save .rds file for the next session
   message('Writing niche and raster data for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
-  saveRDS(COMBO.NICHE.CONTEXT,   paste0('data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_',  save_run, '.rds'))
-  saveRDS(COMBO.RASTER.CONTEXT,  paste0('data/base/HIA_LIST/COMBO/COMBO_RASTER_CONTEXT_', save_run, '.rds'))
+  saveRDS(COMBO.NICHE.CONTEXT,   paste0(DATA_path, 'COMBO_NICHE_CONTEXT_',  save_run, '.rds'))
+  saveRDS(COMBO.RASTER.CONTEXT,  paste0(DATA_path, 'COMBO_RASTER_CONTEXT_', save_run, '.rds'))
   
   
 } else {

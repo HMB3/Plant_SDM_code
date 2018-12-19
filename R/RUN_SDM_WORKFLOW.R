@@ -110,7 +110,7 @@ PET             = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
 
 
 #########################################################################################################################
-## Now set global analysis variables
+## Now set global analysis variables :: these assume you are using an R project folder structure
 ## Replace any non - UTF8 character in the string with UTF
 GBIF.spp      = WPW.spp
 GBIF.spp      = as_utf8(GBIF.spp, normalize = TRUE)
@@ -121,7 +121,8 @@ map_spp_list  = gsub(" ", "_", GBIF.spp)                         ## species list
 map_spp_rev   = sort(map_spp_list, decreasing = TRUE)            ## reversed, so we can run two at once
 
 GBIF_path     = "./data/base/HIA_LIST/GBIF/"                     ## The path where GBIF data is stored
-ALA_path      = "./data/base/HIA_LIST/ALA/"                      ## The path where ALA data is stored  place
+ALA_path      = "./data/base/HIA_LIST/ALA/"                      ## The path where ALA data is stored place
+DATA_path     = "./data/ANALYSIS/"                               ## The path where the final data for analyses are stored 
 
 maxent_path   = './output/maxent/SUA_TREES_ANALYSIS/'            ## The directory where files are saved               
 maxent_dir    = 'output/maxent/SUA_TREES_ANALYSIS'               ## Another version of the path that John's coding needs to run a loop

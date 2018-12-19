@@ -27,7 +27,7 @@ message('Running maxent models for ', length(GBIF.spp), ' species in the set ', 
 if(read_data == "TRUE") {
   
   ## read in RDS files from previous step
-  SDM.SPAT.ALL = readRDS(paste0('data/base/HIA_LIST/COMBO/SDM_SPAT_ALL_', save_run, '.rds'))
+  SDM.SPAT.ALL = readRDS(paste0(DATA_path, 'SDM_SPAT_ALL_', save_run, '.rds'))
   
 } else {
   
@@ -134,96 +134,10 @@ lapply(GBIF.spp, function(spp){
 
 
 
-## 1). 400 tree spp that are commonly planted and traded, with sufficient spatial data to model robustly: done
-
-
-##     Update Species table with new ALA data: done 
-
-
-## 2). Fixed the taxonomy
-
-##     Follow steps in file 3). 
-
-##     Keep the 'source' column in the maxent table :: adjust step 7  
-
-     
-##     Recuced BG points to 70k
-##     
-##     
-##     Check mapping function is working for campbelltown species.......................................................
-##     setdiff(camp.spp, TPL.SPP)
-     
-
-## 4). Use more forgiving thresholds (10%) for all species: Done
-##     "X10.percentile.training.presence.Logistic.threshold"
-##     "X10.percentile.training.presence.training.omission"
-  
-
-## 5). Combine output: 
-
-
-##     Create table for appendix.....................................................................................
-
-##     Use 2016 SUA shapefile........................................................................................
-##     This causes mistmatches in the SUAs - e.g. Central coast is gone..............................................
-
-##      Table
-##     "searchTaxon" "No.plantings" "Number.of.growers" "Number.of.States/LGAs/Koppen zones" "Origin" "AUC" "TSS" 
-
-##     Maps: unique raster values for (search in explorer)
-##     "current_suit_above"
-##     "2030_4GCMs_above"
-##     "2050_4GCMs_above"
-##     "2070_4GCMs_above"
-
-   
-## 6). Check combined maps for all species : make sure step 9 is working. 
-##     Create a spreadsheet of all species results. Check as before - 
-
-##     Summary statistics, 
-##     input points, 
-##     current raster,
-##     Future suitability
-
-
-## 7). Create tables in R to summarise gain and loss in each SUA
-##     Update figures and tables - only doing species gain and stable, not loss.............................................
-
-
-## 8). What is the story? Draft results and discussion. Linda to create story - don't do turnover
-
-
-##     Fix mapping function to use mapply in function........................................................................
-
-   
-##     Compare output for MESS species - which outputs?......................................................................
-
-
-##     Run modelling and mapping steps through Katana. To do this, we need a loop that processes one species at a time
-##     This means processing the data up to step 7, then running steps 7 and 8 through Katana 
-
-
-##     Check Shawn's link for flattening the data...................................................................
-
-
-    
-##     Where does the mess mask layer get used, in the combine function?
-##     If so, we need a separate folder for the MESS species to process these
-##     My combine function does everything in one step, so it's not the same process as what John uses
+## 1). Create list of species with bad models
 
 
 
-
-
-##     If needed, thin records for 28 spp. with boundary bias, using the SDM tool box.
-
-##     Settings: Max 5km, min 1km, 5 heterogeneity classes (from a classification of a PCA, using the worldclim layers)
-##     Currently using all spp background records: random 100k for every species, sounds ok?
-
-##     Try to thin the background records in the same way - run the BG points through SDM toolbox too. 
-
-##     Compare the models with and without thinning for a 28 species:
-##     Acacia_implexa, etc.
 
 
 

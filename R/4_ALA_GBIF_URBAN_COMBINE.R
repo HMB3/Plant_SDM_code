@@ -27,8 +27,8 @@ message('Extracting Worldclim data for ', length(GBIF.spp), ' species in the set
 if(read_data == "TRUE") {
   
   ## Load GBIF and ALA data
-  GBIF.LAND      = readRDS(paste0('data/base/HIA_LIST/GBIF/GBIF_TREES_LAND_', save_run, '.rds'))
-  ALA.TREES.LAND = readRDS(paste0('data/base/HIA_LIST/ALA/ALA_TREES_LAND_',   save_run, '.rds'))
+  GBIF.LAND = readRDS(paste0(GBIF_path, 'GBIF_LAND_', save_run, '.rds'))
+  ALA.LAND  = readRDS(paste0(ALA_path,  'ALA_LAND_',  save_run, '.rds'))
   
 } else {
   
@@ -316,7 +316,7 @@ length(unique(COMBO.RASTER.CONVERT$searchTaxon));length(GBIF.spp)
 if(save_data == "TRUE") {
   
   ## save .rds file for the next session
-  saveRDS(COMBO.RASTER.CONVERT, paste0('data/base/HIA_LIST/COMBO/COMBO_RASTER_CONVERT_', save_run, '.rds'))
+  saveRDS(COMBO.RASTER.CONVERT, paste0(DATA_path, 'COMBO_RASTER_CONVERT_',  save_run, '.rds'))
   
 } else {
   

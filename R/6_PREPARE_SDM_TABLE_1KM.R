@@ -17,7 +17,7 @@ message('Preparing SDM table for ', length(GBIF.spp), ' species in the set ', "'
 if(read_data == "TRUE") {
   
   ## read in RDS files from previous step
-  CLEAN.TRUE = readRDS(paste0('data/base/HIA_LIST/COMBO/CLEAN_TRUE_', save_run, '.rds'))
+  CLEAN.TRUE = readRDS(paste0(DATA_path, 'CLEAN_TRUE_', save_run, '.rds'))
   length(intersect(GBIF.spp, unique(CLEAN.TRUE$searchTaxon)))
   rasterTmpFile()
   
@@ -27,7 +27,8 @@ if(read_data == "TRUE") {
   
 }
 
-#  some proj libs do not like the ESRI string code
+
+##  some proj libs do not like the ESRI string code
 sp_epsg54009 = "+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0"
 
 
@@ -152,11 +153,11 @@ length(LUT.100K)
 
 
 ## Unfortunately, the cc_outl function can't handle vectors of a certain size - over 40 GB at least.
-## So we are problably better off moving this code to after the data has been thinned by the SDM step
+## So we have to run this afterthe SDM step
 ## The current settings are not getting enough spatial outliers..........................................................
 
 ## Create a data frame of species name and spatial outlier
-SPAT.OUT <- LUT.100K  %>% # unique(SDM.COORDS$species) %>%  
+SPAT.OUT <- LUT.100K  %>%
   
   ## pipe the list of species into lapply
   lapply(function(x) {
@@ -207,7 +208,7 @@ names(SPAT.OUT)[names(SPAT.OUT) == 'searchTaxon'] <- 'SPAT_SPP'
 if(save_data == "TRUE") {
   
   ## save .rds file for the next session
-  saveRDS(SPAT.OUT, paste0('data/base/HIA_LIST/COMBO/ALA_GBIF_SPAT_OUT_', save_run, '.rds'))
+  saveRDS(SPAT.OUT, paste0(DATA_path, 'ALA_GBIF_SPAT_OUT_', save_run, '.rds'))
   
 } else {
   
@@ -268,13 +269,12 @@ projection(SDM.SPAT.ALL)
 if(save_data == "TRUE") {
   
   ## save .rds file for the next session
-  saveRDS(SPAT.FLAG, paste0('data/base/HIA_LIST/COMBO/SPAT_FLAG_', save_run, '.rds'))
+  saveRDS(SPAT.FLAG, paste0(DATA_path, 'SPAT_FLAG_', save_run, '.rds'))
   
   writeOGR(obj    = SDM.SPAT.ALL, 
-           dsn    = "./data/base/HIA_LIST/COMBO", 
+           dsn    = DATA_path, 
            layer  = paste0('SPAT_OUT_CHECK_', save_run),
            driver = "ESRI Shapefile", overwrite_layer = TRUE)
-  
   
 } else {
   
@@ -316,7 +316,7 @@ if(save_data == "TRUE") {
   
   ## save .shp for future refrence 
   writeOGR(obj    = SPAT.OUT.SPDF, 
-           dsn    = "./data/base/HIA_LIST/COMBO", 
+           dsn    = DATA_path, 
            layer  = paste0('SPAT_OUT_CHECK_', save_run),
            driver = "ESRI Shapefile", overwrite_layer = TRUE)
   
@@ -337,7 +337,7 @@ if(save_data == "TRUE") {
 #########################################################################################################################
 
 
-#  dodgy, but need to make sure there are no ESRI: codes in the coord systems
+##  Dodgy, but need to make sure there are no ESRI: codes in the coord systems
 projection(background) = "+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0"
 
 
@@ -368,7 +368,7 @@ setdiff(names(SDM.SPAT.ALL), names(background))
 
 #########################################################################################################################
 ## Now bind on the background points
-browser()
+#browser()
 
 SDM.SPAT.ALL = rbind(SDM.SPAT.ALL, background)
 projection(SDM.SPAT.ALL);
@@ -386,7 +386,7 @@ length(unique(SDM.SPAT.ALL$searchTaxon))
 if(save_data == "TRUE") {
   
   ## save .rds file for the next session
-  saveRDS(SDM.SPAT.ALL, paste0('data/base/HIA_LIST/COMBO/SDM_SPAT_ALL_', save_run, '.rds'))
+  saveRDS(SDM.SPAT.ALL, paste0(DATA_path, 'SDM_SPAT_ALL_',  save_run, '.rds'))
   
 } else {
   

@@ -42,13 +42,12 @@ message('downloaded species ', length(gbif.download), ' analyzed species ', leng
 
 #########################################################################################################################
 ## Combine all the taxa into a single dataframe at once
-GBIF.ALL <- gbif.download %>%   ## spp.download[c(1:length(spp.download))] 
+GBIF.ALL <- gbif.download %>%   
   
   ## Pipe the list into lapply
   lapply(function(x) {
     
     ## Create a character string of each .RData file
-    #f <- sprintf(paste0(GBIF_path, "%s_GBIF_records.RData"), x)
     f <- sprintf(paste0(GBIF_path, "%s"), x)
     
     ## Load each file
@@ -160,8 +159,7 @@ length(unique(GBIF.TRIM$scientificName))
 GBIF.TAXO <- TPL(unique(GBIF.TRIM$scientificName), infra = TRUE,
                  corr = TRUE, repeats = 100)  ## to stop it timing out...
 sort(names(GBIF.TAXO))
-
-saveRDS(GBIF.TAXO, paste0('data/base/HIA_LIST/COMBO/GBIF_TAXO_', save_run, '.rds'))
+saveRDS(GBIF.TAXO, paste0(GBIF_path, 'GBIF_TAXO_', save_run, '.rds'))
 
 
 #########################################################################################################################
@@ -361,7 +359,7 @@ gc()
 if(save_data == "TRUE") {
   
   ## save .rds file for the next session
-  saveRDS(GBIF.LAND, paste0('data/base/HIA_LIST/GBIF/GBIF_TREES_LAND_', save_run, '.rds'))
+  saveRDS(GBIF.LAND, paste0(GBIF_path, 'GBIF_LAND_', save_run, '.rds'))
  
 } else {
   
@@ -369,7 +367,7 @@ if(save_data == "TRUE") {
   
 }
 
-## get rid of some memory
+## Get rid of some memory
 gc()
 
 

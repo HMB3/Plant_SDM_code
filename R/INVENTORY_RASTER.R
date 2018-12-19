@@ -115,11 +115,7 @@ if(dim(TI.XY.SPP)[1] > 0) {
   
   ## Also get the PET raster
   projection(PET);projection(inventory.grids.current)
-  # PET <- PET %>%
-  #   projectRaster(crs = CRS.WGS.84)
-  # saveRDS(PET, "./data/base/worldclim/world/1km/PET_WGS84.rds")
-  
-  
+
   #########################################################################################################################
   ## Check the projection and raster extents for worldclim vs aus data
   # inventory.grids.current <- inventory.grids.current %>%
@@ -169,11 +165,7 @@ if(dim(TI.XY.SPP)[1] > 0) {
                             Precip_dry_qu        = bio_17,
                             Precip_warm_qu       = bio_18,
                             Precip_col_qu        = bio_19)
-  
-  
-  ## Save/load
-  #summary(TI.RASTER)
-  #saveRDS(TI.RASTER, file = paste("./data/base/HIA_LIST/GBIF/TI_GBIF_ALA_RASTER.rds"))
+
   gc()
   
   
@@ -314,33 +306,13 @@ if(dim(TI.XY.SPP)[1] > 0) {
   # plot(aus.mol, main = "NA Tree inventory records")
   # points(TI.NA.DF, col = "red", cex = .15, pch = 19)
   
-  
-  ## Save the shapefile, to be subsampled in ArcMap
-  # names(TI.NA.DF)
-  # writeOGR(obj = TI.NA.DF, dsn = "./data/base/HIA_LIST/COMBO", layer = "TI_NA", driver = "ESRI Shapefile", overwrite_layer = TRUE)
-  
-  
-  ########################################################################################################################
-  ## How big is the dataset?
-  # message(round(dim(TI.NA)[1]/dim(TI.RASTER.CONVERT)[1]*100, 2), "% of points are outside worldclim extent")
-  # dim(TI.RASTER.CONVERT)
-  # identical(length(unique(TI.RASTER.CONVERT$searchTaxon)), length(GBIF.spp))
-  
-  
-  ## Plot a few points to see :: do those look reasonable?
-  # plot(LAND, col = 'grey', bg = 'sky blue')
-  # points(TI.RASTER.CONVERT[ which(TI.RASTER.CONVERT$Annual_mean_temp < -5), ][, c("lon", "lat")], 
-  #        pch = ".", col = "red", cex = 3, asp = 1, main = "temp records < -5")
-  
-  
   #########################################################################################################################
   ## Save the raster datasets
   TI.RASTER.CONVERT = na.omit(TI.RASTER.CONVERT)
   names(TI.RASTER.CONVERT)
   unique(TI.RASTER.CONVERT$INVENTORY)
   unique(TI.RASTER.CONVERT$searchTaxon)
-  saveRDS(TI.RASTER.CONVERT, paste0('data/base/HIA_LIST/COMBO/TI_RASTER_CONVERT_', save_run, '.rds'))
-  
+  saveRDS(TI.RASTER.CONVERT, paste0(DATA_path, 'TI_RASTER_CONVERT_', save_run, '.rds'))
   
 } else {
   
