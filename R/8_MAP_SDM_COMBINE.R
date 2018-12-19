@@ -19,7 +19,7 @@
 
 ## Print the species run to the screen
 message('Creating habitat suitability maps for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
-COMBO.NICHE.CONTEXT = readRDS(paste0('data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_',  save_run, '.rds'))
+COMBO.NICHE.CONTEXT = readRDS(paste0(DATA_path, 'COMBO_NICHE_CONTEXT_',  save_run, '.rds'))
 
 
 #########################################################################################################################
@@ -61,7 +61,8 @@ head(gcms.50) ; head(gcms.70) ; head(gcms.30)
 
 #########################################################################################################################
 ## Create 2030 maps
-env.grids.2030 = tryCatch(project_maxent_grids(scen_list     = scen_2030,
+env.grids.2030 = tryCatch(project_maxent_grids(shp           = AUS,
+                                               scen_list     = scen_2030,
                                                species_list  = map_spp_list,
                                                maxent_path   = maxent_path, 
                                                climate_path  = "./data/base/worldclim/aus/1km/bio",
@@ -79,7 +80,8 @@ env.grids.2030 = tryCatch(project_maxent_grids(scen_list     = scen_2030,
 
 #########################################################################################################################
 ## Create 2050 maps
-env.grids.2050 = tryCatch(project_maxent_grids(scen_list     = scen_2050,
+env.grids.2050 = tryCatch(project_maxent_grids(shp           = AUS,
+                                               scen_list     = scen_2050,
                                                species_list  = map_spp_list,
                                                time_slice    = 50,
                                                maxent_path   = maxent_path,
@@ -96,7 +98,8 @@ env.grids.2050 = tryCatch(project_maxent_grids(scen_list     = scen_2050,
 
 #########################################################################################################################
 ## Create 2070 maps
-env.grids.2070 = tryCatch(project_maxent_grids(scen_list     = scen_2070,
+env.grids.2070 = tryCatch(project_maxent_grids(shp           = AUS,
+                                               scen_list     = scen_2070,
                                                species_list  = map_spp_list,
                                                time_slice    = 70,
                                                maxent_path   = maxent_path,
@@ -341,7 +344,8 @@ length(intersect(MAXENT.SUMMARY.NICHE$searchTaxon, GBIF.spp))
 
 #########################################################################################################################
 ## Save maxent results
-write.csv(MAXENT.SUMMARY.NICHE, paste0('output/maxent/MAXENT_SUMMARY_', save_run, '.csv'), row.names = FALSE)
+## paste0(DATA_path, 'MAXENT_SUMMARY_',  save_run, '.csv')
+write.csv(MAXENT.SUMMARY.NICHE, paste0(DATA_path, 'MAXENT_SUMMARY_',  save_run, '.csv'), row.names = FALSE)
 
 
 
@@ -418,13 +422,15 @@ length(SDM.DIR.REV);length(map_spp_rev);length(percent.log.rev);length(percent.o
   
 #########################################################################################################################
 ## Combine output and calculate gain and loss for 2030
-suitability.2030 = tryCatch(mapply(SUA_cell_count,                                               ## combine_gcm_threshold
-                                   DIR_list     = SDM.RESULTS.DIR,
-                                   species_list = map_spp,
-                                   maxent_path  = maxent_path,
-                                   thresholds   = percent.10.log,
-                                   percentiles  = percent.10.om,
-                                   time_slice   = 30,
+suitability.2030 = tryCatch(mapply(SUA_cell_count, 
+                                   shp           = SUA_2016,
+                                   vec           = SUA_2016_vec,
+                                   DIR_list      = SDM.RESULTS.DIR,
+                                   species_list  = map_spp,
+                                   maxent_path   = maxent_path,
+                                   thresholds    = percent.10.log,
+                                   percentiles   = percent.10.om,
+                                   time_slice    = 30,
                                    write_rasters = FALSE),
                             
                             error = function(cond) {

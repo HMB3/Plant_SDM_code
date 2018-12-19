@@ -119,7 +119,7 @@ lapply(GBIF.spp, function(spp){
     
   }  
 
-  #  now add a file to the dir to denote that it has completed
+  ## now add a file to the dir to denote that it has completed
   write.csv(data.frame(), file.path(dir_name, "completed.txt"))
   
 })

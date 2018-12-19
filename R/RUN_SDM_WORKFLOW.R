@@ -123,13 +123,12 @@ map_spp_rev   = sort(map_spp_list, decreasing = TRUE)            ## reversed, so
 GBIF_path     = "./data/base/HIA_LIST/GBIF/"                     ## The path where GBIF data is stored
 ALA_path      = "./data/base/HIA_LIST/ALA/"                      ## The path where ALA data is stored place
 DATA_path     = "./data/ANALYSIS/"                               ## The path where the final data for analyses are stored 
+SHP_path      = "./data/ANALYSIS"                                ## The data path for dsn  
 
 maxent_path   = './output/maxent/SUA_TREES_ANALYSIS/'            ## The directory where files are saved               
-maxent_dir    = 'output/maxent/SUA_TREES_ANALYSIS'               ## Another version of the path that John's coding needs to run a loop
+maxent_dir    = 'output/maxent/SUA_TREES_ANALYSIS'               ## Another version of the path needed to run maxent loop
 save_data     = 'TRUE'                                           ## Arguments for saving the intermediary output - i.e. niches
 read_data     = 'FALSE'                                          ## Leave these the same - saves data, but doesn't read back in
-save_path     = 'data/base/HIA_LIST/COMBO'
-
 
 
 
@@ -192,8 +191,8 @@ source('./R/8_MAP_SDM_COMBINE.R', echo = TRUE)
 
 
 ## Create a list of all dataframes with the extension from this run
-# COMBO.NICHE.list  = list.files(save_path, pattern = 'COMBO_NICHE_CONTEXT_EVERGREEN',  full.names = TRUE, recursive = TRUE)
-# COMBO.RASTER.list = list.files(save_path, pattern = 'COMBO_RASTER_CONTEXT_EVERGREEN', full.names = TRUE, recursive = TRUE)
+# COMBO.NICHE.list  = list.files(DATA_path, pattern = 'COMBO_NICHE_CONTEXT_EVERGREEN',  full.names = TRUE, recursive = TRUE)
+# COMBO.RASTER.list = list.files(DATA_path, pattern = 'COMBO_RASTER_CONTEXT_EVERGREEN', full.names = TRUE, recursive = TRUE)
 
 
 # #########################################################################################################################

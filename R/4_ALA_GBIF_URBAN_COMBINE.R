@@ -48,14 +48,14 @@ if(read_data == "TRUE") {
 ## Merge on the ALA data. Consider that GBIF has data for both sources. We are topping up the native ranges with the AVH. 
 ## So there could be duplicates between both sources.
 length(unique(GBIF.LAND$searchTaxon)) 
-length(unique(ALA.TREES.LAND$searchTaxon)) 
+length(unique(ALA.LAND$searchTaxon)) 
 unique(GBIF.LAND$SOURCE)
-unique(ALA.TREES.LAND$SOURCE)
-sort(intersect(sort(names(GBIF.LAND)), sort(names(ALA.TREES.LAND))))
+unique(ALA.LAND$SOURCE)
+sort(intersect(sort(names(GBIF.LAND)), sort(names(ALA.LAND))))
 
 
-dim(GBIF.LAND);dim(ALA.TREES.LAND)
-setdiff(names(GBIF.LAND), names(ALA.TREES.LAND))
+dim(GBIF.LAND);dim(ALA.LAND)
+setdiff(names(GBIF.LAND), names(ALA.LAND))
 
 
 ## Rename a few fields
@@ -66,15 +66,15 @@ setdiff(names(GBIF.LAND), names(ALA.TREES.LAND))
 
 #########################################################################################################################
 ## Bind the rows together
-common.cols = intersect(names(GBIF.LAND), names(ALA.TREES.LAND))
-GBIF.ALA.COMBO = bind_rows(GBIF.LAND, ALA.TREES.LAND)
+common.cols = intersect(names(GBIF.LAND), names(ALA.LAND))
+GBIF.ALA.COMBO = bind_rows(GBIF.LAND, ALA.LAND)
 GBIF.ALA.COMBO = GBIF.ALA.COMBO %>% 
   select(one_of(common.cols))
 
 
 names(GBIF.ALA.COMBO)
 unique(GBIF.ALA.COMBO$SOURCE)
-identical((dim(GBIF.LAND)[1]+dim(ALA.TREES.LAND)[1]),dim(GBIF.ALA.COMBO)[1])      ## Only adding the ovelap...
+identical((dim(GBIF.LAND)[1]+dim(ALA.LAND)[1]),dim(GBIF.ALA.COMBO)[1])      ## Only adding the ovelap...
 
 head(GBIF.ALA.COMBO)
 length(unique(GBIF.ALA.COMBO$searchTaxon))

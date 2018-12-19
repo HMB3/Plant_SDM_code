@@ -46,11 +46,25 @@ rasterOptions(tmpdir = file.path('./RTEMP'))
 
 
 #########################################################################################################################
+## Set coordinate system definitions :: best to minimise the number of projection used in this project
+## Also get rid of the '+init=ESRI", which are not compatible with some systems 
+CRS.MOL      <- CRS('+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +units=m +no_defs')
+CRS.MOL.SDM  <- CRS('+init=ESRI:54009 +proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0')
+CRS.WGS.84   <- CRS("+init=epsg:4326")
+CRS.AUS.ALB  <- CRS("+init=EPSG:3577")
+ALB.CONICAL  <- CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs')
+
+
+#########################################################################################################################
 ## Read in spatial data once, rather than in each script
 aus           = readRDS("./data/base/CONTEXTUAL/aus_states.rds")
 LAND          = readRDS("./data/base/CONTEXTUAL/LAND_world.rds")
-areal_unit    = readRDS("./data/base/CONTEXTUAL/SUA/SUA_2016_AUST.rds")
-areal_unit    = areal_unit[order(areal_unit$SUA_NAME16),]
+SUA_2016      = readRDS("./data/base/CONTEXTUAL/SUA/SUA_2016_AUST.rds")
+SUA_2016      = areal_unit[order(areal_unit$SUA_NAME16),]
+SUA_2016      = SUA_2016 %>%
+  spTransform(ALB.CONICAL)
+
+
 # SUA_2011      = readOGR('data/base/CONTEXTUAL/SUA/SUA_2011_AUST.shp')
 Koppen        = readRDS('data/base/CONTEXTUAL/Koppen_1975.rds')
 Koppen_aus    = readRDS('data/base/CONTEXTUAL/KOPPEN_AUS.rds')
@@ -137,19 +151,9 @@ load("./data/base/CONTEXTUAL/urbanareas.rda")
 # saveRDS(areal_unit_rast, file = paste("./data/base/CONTEXTUAL/SUA/SUA_2016_RAST.rds"))
 # saveRDS(areal_unit_vec, file = paste("./data/base/CONTEXTUAL/SUA/SUA_2016_VEC.rds"))
 
-areal_unit_rast = readRDS("./data/base/CONTEXTUAL/SUA/SUA_2016_RAST.rds")
-areal_unit_vec  = readRDS("./data/base/CONTEXTUAL/SUA/SUA_2016_VEC.rds")
-summary(areal_unit_vec)
-
-
-#########################################################################################################################
-## Set coordinate system definitions :: best to minimise the number of projection used in this project
-CRS.MOL      <- CRS('+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +units=m +no_defs')
-CRS.MOL.SDM  <- CRS('+init=ESRI:54009 +proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0')
-CRS.WGS.84   <- CRS("+init=epsg:4326")
-CRS.AUS.ALB  <- CRS("+init=EPSG:3577")
-ALB.CONICAL  <- CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs')
-
+SUA_2016_rast = readRDS("./data/base/CONTEXTUAL/SUA/SUA_2016_RAST.rds")
+SUA_2016_vec  = readRDS("./data/base/CONTEXTUAL/SUA/SUA_2016_VEC.rds")
+summary(SUA_2016_vec)
 
 
 

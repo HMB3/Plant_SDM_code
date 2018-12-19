@@ -139,8 +139,8 @@ COMBO.LUT <- SDM.COORDS %>%
   as.data.frame() %>%
   select(species) %>%
   table() %>%
-  as.data.frame(row.names = TRUE) 
-COMBO.LUT <- setDT(COMBO.LUT, keep.rownames = TRUE)[]
+  as.data.frame() 
+COMBO.LUT <- setDT(COMBO.LUT, keep.rownames = FALSE)[]
 names(COMBO.LUT) = c("species", "FREQUENCY")
 COMBO.LUT = COMBO.LUT[with(COMBO.LUT, rev(order(FREQUENCY))), ] 
 
@@ -233,7 +233,7 @@ identical(SDM.DATA.ALL$searchTaxon, SPAT.OUT$SPAT_SPP)
 length(unique(SPAT.OUT$SPAT_SPP))
 
 
-SPAT.FLAG = join(as.data.frame(SDM.DATA.ALL), SPAT.OUT)    ## join means the skipped species are left out
+SPAT.FLAG = join(as.data.frame(SDM.DATA.ALL), SPAT.OUT)    ## Join means the skipped species are left out
 dim(SPAT.FLAG)
 
 
@@ -268,11 +268,11 @@ projection(SDM.SPAT.ALL)
 ## save data
 if(save_data == "TRUE") {
   
-  ## save .rds file for the next session
+  ## Save .rds file for the next session
   saveRDS(SPAT.FLAG, paste0(DATA_path, 'SPAT_FLAG_', save_run, '.rds'))
   
   writeOGR(obj    = SDM.SPAT.ALL, 
-           dsn    = DATA_path, 
+           dsn    = SHP_path, 
            layer  = paste0('SPAT_OUT_CHECK_', save_run),
            driver = "ESRI Shapefile", overwrite_layer = TRUE)
   
@@ -316,7 +316,7 @@ if(save_data == "TRUE") {
   
   ## save .shp for future refrence 
   writeOGR(obj    = SPAT.OUT.SPDF, 
-           dsn    = DATA_path, 
+           dsn    = SHP_path, 
            layer  = paste0('SPAT_OUT_CHECK_', save_run),
            driver = "ESRI Shapefile", overwrite_layer = TRUE)
   
