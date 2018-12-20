@@ -14,7 +14,7 @@
 
 ## Read in table of species checks 
 ## load("SDM_COMBINE.RData")
-SDM.SPAT.ALL = readRDS(paste0('data/base/HIA_LIST/COMBO/SDM_SPAT_ALL_', save_run, '.rds'))
+SDM.SPAT.ALL = readRDS(paste0(DATA_path, 'SDM_SPAT_ALL_', save_run, '.rds'))
 length(intersect(unique(SDM.SPAT.ALL$searchTaxon), GBIF.spp))
 
   

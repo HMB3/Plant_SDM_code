@@ -315,7 +315,6 @@ colnames(SDM.TAXA)[1] <- "searchTaxon"
 SDM.TAXA <- join(SDM.TAXA, APNI)
 
 
-#########################################################################################################################
 ## Join on the native data and the APNI
 MAXENT.SUMMARY.NICHE <- SDM.TAXA %>% 
   
@@ -336,7 +335,6 @@ length(intersect(MAXENT.SUMMARY.NICHE$searchTaxon, GBIF.spp))
 
 #########################################################################################################################
 ## Save maxent results
-## paste0(DATA_path, 'MAXENT_SUMMARY_',  save_run, '.csv')
 write.csv(MAXENT.SUMMARY.NICHE, paste0(DATA_path, 'MAXENT_SUMMARY_',  save_run, '.csv'), row.names = FALSE)
 
 
@@ -381,7 +379,7 @@ percent.10.om     = percent.10.om$X10.percentile.training.presence.training.omis
 
 
 #########################################################################################################################
-## 5). SUMARIZE MAXENT RESULTS FOR EACH SPECIES ACROSS MULTIPLE GCMs
+## 5). SUMARIZE MAXENT RESULTS FOR EACH SPECIES ACROSS MULTIPLE GCMs, INSIDE SIGNIFCANT URBAN AREAS
 #########################################################################################################################
 
 
@@ -389,6 +387,7 @@ percent.10.om     = percent.10.om$X10.percentile.training.presence.training.omis
 ## So we can use the values in these columns to threhsold the rasters of habitat suitability (0-1) when combining them.
 ## For each species, we will create a binary raster with cell values between 0-6. These cell values represent the number of GCMs 
 ## where that cell had a suitability value above the threshold determined by maxent (e.g. the max training sensitivity + specif).
+## We then count the number of cells lost, gained, stable and unchanged, both across Australia, and within SUAs
 
 
 ## Test problematic species by entering the values and running the function manually
@@ -423,7 +422,7 @@ length(SDM.DIR.REV);length(map_spp_rev);length(percent.log.rev);length(percent.o
 
   
 #########################################################################################################################
-## Combine output and calculate gain and loss for 2030
+## Combine GCM predictions and calculate gain and loss for 2030
 ## Making the shapefile and vector an argument introduces the error ::
 ## Error in .subset2(x, i, exact = exact) : subscript out of bounds
 suitability.2030 = tryCatch(mapply(SUA_cell_count,                                  ## Function aggreagating GCM predictions by a spatial unit
@@ -436,7 +435,7 @@ suitability.2030 = tryCatch(mapply(SUA_cell_count,                              
                                    thresholds    = percent.10.log,                  ## List of maxent thresholds
                                    percentiles   = percent.10.om,                   ## 2nd List of maxent thresholds
                                    time_slice    = 30,                              ## Time period, eg 2030
-                                   write_rasters = FALSE),                          ## Save the combined rasters?
+                                   write_rasters = TRUE),                           ## Save the combined rasters?
                             
                             error = function(cond) {
                               
@@ -445,15 +444,19 @@ suitability.2030 = tryCatch(mapply(SUA_cell_count,                              
                             })
 
 
+#########################################################################################################################
 ## Combine GCM output for 2050 
-suitability.2050 = tryCatch(mapply(SUA_cell_count,                                               
-                                   DIR_list     = SDM.RESULTS.DIR,
-                                   species_list = map_spp,
-                                   maxent_path  = maxent_path,
-                                   thresholds   = percent.10.log,
-                                   percentiles  = percent.10.om,
-                                   time_slice   = 50,
-                                   write_rasters = FALSE),
+suitability.2050 = tryCatch(mapply(SUA_cell_count, 
+                                   unit_path     = "./data/base/CONTEXTUAL/SUA/",   ## Data path for the spatial unti of analysis 
+                                   unit_file     = "SUA_2016_AUST.rds",             ## Spatial untit of analysis - E.G. SUAs
+                                   unit_vec      = "SUA_2016_VEC.rds", 
+                                   DIR_list      = SDM.RESULTS.DIR,
+                                   species_list  = map_spp,
+                                   maxent_path   = maxent_path,
+                                   thresholds    = percent.10.log,
+                                   percentiles   = percent.10.om,
+                                   time_slice    = 50,
+                                   write_rasters = TRUE),
                             
                             error = function(cond) {
                               
@@ -462,15 +465,19 @@ suitability.2050 = tryCatch(mapply(SUA_cell_count,
                             })
 
 
+#########################################################################################################################
 ## Combine GCM output for 2070 
-suitability.2070 = tryCatch(mapply(SUA_cell_count,                                               
-                                   DIR_list     = SDM.RESULTS.DIR,
-                                   species_list = map_spp,
-                                   maxent_path  = maxent_path,
-                                   thresholds   = percent.10.log,
-                                   percentiles  = percent.10.om,
-                                   time_slice   = 70,
-                                   write_rasters = FALSE),
+suitability.2070 = tryCatch(mapply(SUA_cell_count,
+                                   unit_path     = "./data/base/CONTEXTUAL/SUA/",   ## Data path for the spatial unti of analysis 
+                                   unit_file     = "SUA_2016_AUST.rds",             ## Spatial untit of analysis - E.G. SUAs
+                                   unit_vec      = "SUA_2016_VEC.rds", 
+                                   DIR_list      = SDM.RESULTS.DIR,
+                                   species_list  = map_spp,
+                                   maxent_path   = maxent_path,
+                                   thresholds    = percent.10.log,
+                                   percentiles   = percent.10.om,
+                                   time_slice    = 70,
+                                   write_rasters = TRUE),
                             
                             error = function(cond) {
                               
@@ -482,12 +489,15 @@ suitability.2070 = tryCatch(mapply(SUA_cell_count,
 #########################################################################################################################
 ## Reverse the order of the lists to speed up the output
 mapply(SUA_cell_count,
-       DIR_list     = SDM.DIR.REV,
-       species_list = map_spp_rev,
-       maxent_path  = maxent_path,
-       thresholds   = percent.log.rev,
-       percentiles  = percent.om.rev,
-       time_slice   = 70,  ## 50, 70
+       unit_path     = "./data/base/CONTEXTUAL/SUA/",   ## Data path for the spatial unti of analysis 
+       unit_file     = "SUA_2016_AUST.rds",             ## Spatial untit of analysis - E.G. SUAs
+       unit_vec      = "SUA_2016_VEC.rds", 
+       DIR_list      = SDM.DIR.REV,
+       species_list  = map_spp_rev,
+       maxent_path   = maxent_path,
+       thresholds    = percent.log.rev,
+       percentiles   = percent.om.rev,
+       time_slice    = 70,  ## 50, 70
        write_rasters = FALSE)
 
 
@@ -495,7 +505,42 @@ mapply(SUA_cell_count,
 
 
 #########################################################################################################################
-## 6). MOVE MAXENT FOLDERS TO NEW LOCATION FOR EACH RUN
+## 6). RUN MULTIVARIATE ENVIRONMENTAL SIMILARITY (MESS) MAPS FOR SELECTED SPECIES
+#########################################################################################################################
+
+
+## Mess maps measure the similarity between the new environments and those in the training sample
+## When model predictions are projected into regions, times or spatial resolutions not analysed in the training data, 
+## it may be important to measure the similarity between the new environments and those in the training sample 
+## (Elith et al. 2010), as models are not so reliable when predicting outside their domain (Barbosa et al. 2009). 
+## The Multivariate Environmental Similarity Surfaces (MESS) analysis measures the similarity in the analysed variables 
+## between any given locality in the projection dataset and the localities in the reference (training) dataset 
+## (Elith et al. 2010).
+
+
+#########################################################################################################################
+## Subset the current worldclim grids to just those that were used for the maxent models
+grid_names           = sdm.predictors
+current_grids        = aus.grids.current
+names(current_grids) = grid_names 
+current_grids        = subset(current_grids, intersect(names(current_grids), sdm.select))
+names(current_grids)
+
+
+###########################################################################################################################
+## If processing in parralel, could run mess maps for every species, They are not very big, but how do you use them?
+## We need a recipie or rule-book for dealing with bad species 
+create_maxent_mess(species_list   = map_spp[1:3],
+                   threshold_list = percent.10.log[1:3],
+                   maxent_path    = maxent_path, 
+                   current_grids  = current_grids)
+
+
+
+
+
+#########################################################################################################################
+## 7). MOVE MAXENT FOLDERS TO NEW LOCATION FOR EACH RUN
 #########################################################################################################################
 
 

@@ -181,15 +181,12 @@ project_maxent_grids = function(shp, scen_list, species_list, maxent_path,
 
 
 #########################################################################################################################
-## Loop over directories, species and one threshold for each, also taking a time_slice argument. Next, make the lists generic too
-## pervious version in R/old/model_combine.R
+## Loop over directories, species and one threshold for each, also taking a time_slice argument
 SUA_cell_count = function(unit_path, unit_file, unit_vec, 
                           DIR_list, species_list, 
                           maxent_path, thresholds, percentiles, 
                           time_slice, write_rasters) {
-  
-  ## How can the shapefiles be read in once, not for each species?...................................................
-  
+
   ###################################################################################################################
   ## Read in shapefiles :: this should be done outside the loop. Can't make the function take files as arguments. EG:
   #areal_unit      = shp
@@ -197,7 +194,7 @@ SUA_cell_count = function(unit_path, unit_file, unit_vec,
 
   areal_unit = readRDS(paste0(unit_path, unit_file)) %>%
     spTransform(ALB.CONICAL)
-  areal_unit = areal_unit[order(areal_unit$SUA_NAME16),]
+  areal_unit = areal_unit[order(areal_unit$SUA_NAME16),] ## remove this hard-coding
   
   areal_unit_vec  = readRDS(paste0(unit_path, unit_vec)) 
   #areal_unit_rast = readRDS(paste0(unit_path, unit_ras)) 
@@ -290,24 +287,12 @@ SUA_cell_count = function(unit_path, unit_file, unit_vec,
           suit_ras4_thresh   = thresh_greater(suit.list[[4]])   
           suit_ras5_thresh   = thresh_greater(suit.list[[5]])
           suit_ras6_thresh   = thresh_greater(suit.list[[6]])
-          
-          ## Then calculate the cells which are greater than the 10th percentile training presence training omission
-          suit_ras1_percent  = percent_greater(suit.list[[1]])
-          suit_ras2_percent  = percent_greater(suit.list[[2]])
-          suit_ras3_percent  = percent_greater(suit.list[[3]])
-          suit_ras4_percent  = percent_greater(suit.list[[4]])
-          suit_ras5_percent  = percent_greater(suit.list[[5]])
-          suit_ras6_percent  = percent_greater(suit.list[[6]])
-          
+
           #########################################################################################################################
           ## Then sum them up: All the threshholds
           combo_suit_thresh   =  Reduce("+", list(suit_ras1_thresh, suit_ras2_thresh, suit_ras3_thresh,
                                                   suit_ras4_thresh, suit_ras5_thresh, suit_ras6_thresh))
-          
-          ## All the percentiles
-          combo_suit_percent  =  Reduce("+", list(suit_ras1_percent, suit_ras2_percent, suit_ras3_percent,
-                                                  suit_ras4_percent, suit_ras5_percent, suit_ras6_percent))
-          
+
           #########################################################################################################################
           ## For each species, create a binary raster with cells > 4 GCMs above the maxent threshold = 1, and cells with < 4 GCMs = 0. 
           message('Calculating change for ', species, ' | 20', time_slice, ' combined suitability > ', thresh)
@@ -416,7 +401,6 @@ SUA_cell_count = function(unit_path, unit_file, unit_vec,
           write.csv(d4, sprintf('%s/%s/full/%s_20%s_%s%s.csv', maxent_path,
                                 species, species, time_slice, "SUA_cell_count_", thresh), row.names = FALSE)
           
-          #########################################################################################################################
           #########################################################################################################################
           ## Now write the rasters
           ## If the rasters don't exist, write them for each species/threshold
@@ -544,7 +528,7 @@ create_maxent_mess = function(species_list, threshold_list, maxent_path, current
     spTransform(ALB.CONICAL)
   
   # import gist that plots maps with diverging colour ramps
-  devtools::source_gist('306e4b7e69c87b1826db', filename='diverge0.R') # function that plots a map with a diverging colour ramp
+  #devtools::source_gist('306e4b7e69c87b1826db', filename='diverge0.R') # function that plots a map with a diverging colour ramp
   
   ## First, run a loop over each species  
   mapply(function(species, threshold) {
@@ -554,9 +538,9 @@ create_maxent_mess = function(species_list, threshold_list, maxent_path, current
     #####################################################################
     ## Now read in the model, swd file, occ data and extract the varaible names 
     m    <- readRDS(sprintf('%s%s/full/maxent_fitted.rds', maxent_path, species))[["me_full"]]
-    swd  <- readRDS(sprintf('%s%s/swd.rds', maxent_path, species, species))
-    occ  <- readRDS(sprintf('%s%s/swd.rds', maxent_path, species, species))
-    occ  <- readRDS(sprintf('%s%s/%s_occ.rds', maxent_path, species, species)) %>%
+    swd  <- readRDS(sprintf('%s%s/swd.rds',                maxent_path, species, species))
+    occ  <- readRDS(sprintf('%s%s/swd.rds',                maxent_path, species, species))
+    occ  <- readRDS(sprintf('%s%s/%s_occ.rds',             maxent_path, species, species)) %>%
       spTransform(ALB.CONICAL) 
     #ras_names <- names(m@presence)
     
@@ -569,7 +553,7 @@ create_maxent_mess = function(species_list, threshold_list, maxent_path, current
     if(!file.exists(sprintf('%s%s/full/%s_%s%s%s.tif', maxent_path, species, species, 
                             "current_suit_above_", thresh, "_notNovel"))) {
       
-      ## Read in current continuous raster, and the binary raster thresholded raster (0-1)
+      ## Then read in the current continuous raster, and the binary raster thresholded raster (0-1)
       f_current  <- raster(sprintf('%s%s/full/%s_current.tif', maxent_path, species, species))
       hs_current <- raster(sprintf('%s%s/full/%s_%s%s.tif',    maxent_path,
                                    species, species, "current_suit_above_", threshold))
@@ -592,13 +576,14 @@ create_maxent_mess = function(species_list, threshold_list, maxent_path, current
       
       ##################################################################
       ## Create a PNG file of all the MESS output
+      message('Creating mess maps for each environmental predictor for', species) 
       mapply(function(r, name) {
         
         p <- levelplot(r, margin = FALSE, scales = list(draw = FALSE), 
                        at = seq(minValue(r), maxValue(r), len = 100), 
                        colokey = list(height = 0.6), main = gsub('_', ' ', sprintf('%s (%s)', name, species))) + 
           
-          layer(sp.polygons(aus_albers), data = list(aus_albers = aus_albers))  ## Use this in previous functions
+          layer(sp.polygons(aus), data = list(aus = aus))  ## Use this in previous functions
         
         p <- diverge0(p, 'RdBu')
         f <- sprintf('%s%s/full/%s_messCurrent__%s.png', maxent_path, species, species, name)
@@ -608,6 +593,10 @@ create_maxent_mess = function(species_list, threshold_list, maxent_path, current
         dev.off()
         
       }, unstack(mess_current$similarity), names(mess_current$similarity))
+      
+      ## Write the raster of novel environments to the maxent directory 
+      ## The "full" directory is getting full, could create a sub dir for MESS maps
+      message('Writing maps of novel environments to file for', species) 
       
       writeRaster(novel_current, sprintf('%s%s/full/%s_%s.tif', 
                                          maxent_path, species, species, "current_novel_map"), 
@@ -620,6 +609,8 @@ create_maxent_mess = function(species_list, threshold_list, maxent_path, current
       # is.na(novel_current) is a binary layer showing 
       # not novel [=1] vs novel [=0], 
       # so multiplying with hs_current will mask out novel
+      message('Writing maps of un- novel environments to file for', species) 
+      
       writeRaster(hs_current_notNovel, sub('\\.tif', '_notNovel.tif', hs_current@file@name), 
                   overwrite = TRUE, datatype = 'INT2S')
       
