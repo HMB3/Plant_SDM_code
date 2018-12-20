@@ -183,8 +183,7 @@ project_maxent_grids = function(shp, scen_list, species_list, maxent_path,
 #########################################################################################################################
 ## Loop over directories, species and one threshold for each, also taking a time_slice argument. Next, make the lists generic too
 ## pervious version in R/old/model_combine.R
-SUA_cell_count = function(shp, #
-                          #vec, 
+SUA_cell_count = function(unit_path, unit_file, unit_vec, 
                           DIR_list, species_list, 
                           maxent_path, thresholds, percentiles, 
                           time_slice, write_rasters) {
@@ -192,15 +191,16 @@ SUA_cell_count = function(shp, #
   ## How can the shapefiles be read in once, not for each species?...................................................
   
   ###################################################################################################################
-  ## Read in shapefiles :: this should be done outside the loop
-  # aus        = readRDS('data/base/CONTEXTUAL/aus_states.rds') %>%
-  #   spTransform(ALB.CONICAL)
-  # 
-  # LAND       = readRDS('data/base/CONTEXTUAL/LAND_world.rds')
-  
-  areal_unit      = shp 
+  ## Read in shapefiles :: this should be done outside the loop. Can't make the function take files as arguments. EG:
+  #areal_unit      = shp
   #areal_unit_vec  = vec
-  areal_unit_vec  = readRDS("./data/base/CONTEXTUAL/SUA/SUA_2016_VEC.rds")
+
+  areal_unit = readRDS(paste0(unit_path, unit_file)) %>%
+    spTransform(ALB.CONICAL)
+  areal_unit = areal_unit[order(areal_unit$SUA_NAME16),]
+  
+  areal_unit_vec  = readRDS(paste0(unit_path, unit_vec)) 
+  #areal_unit_rast = readRDS(paste0(unit_path, unit_ras)) 
   
   #SUA_2016_rast = readRDS("./data/base/CONTEXTUAL/SUA/SUA_2016_RAST.rds")
   #SUA_2016_vec  = readRDS("./data/base/CONTEXTUAL/SUA/SUA_2016_VEC.rds")
@@ -255,7 +255,7 @@ SUA_cell_count = function(shp, #
         ## The mean of the GCMs doesn't exist, create it
         if(file.exists(SUA_file)) { 
           
-          message(species, ' SUA_table already exists, skip')
+          message(species, ' ', 20, time_slice, ' SUA aggregation already exists, skip')
           next
           
         }
@@ -279,7 +279,6 @@ SUA_cell_count = function(shp, #
           current_suit_thresh  = thresh_greater(f_current)
           current_suit_percent = percent_greater(f_current) 
           
-          ## If we are just using the combined rasters without calculating the difference, don't worry about the zeros   
           #########################################################################################################################
           ## First, calculate the cells which are greater that the: 
           ## Maximum training sensitivity plus specificity Logistic threshold
@@ -389,8 +388,7 @@ SUA_cell_count = function(shp, #
           gain_loss <- as.factor(r)
           levels(gain_loss)[[1]] <- data.frame(ID = 1:4, label = c('Lost', 'Gained', 'Stable', 'Never_Suitable'))
           z <- as.data.frame(d5)
-          
-          ## The gain/loss raster could be intersected with the SUAs, instead of the combo_suit_4GCM.................................
+
           ## Create a table of the gain/loss/stable :: write this to file as well
           gain_loss_table      = table(z[, 1], z[, 2])
           gain_loss_df         = as.data.frame(raster::freq(gain_loss))

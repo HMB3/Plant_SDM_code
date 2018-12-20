@@ -41,7 +41,7 @@ rasterOptions(tmpdir = file.path('./RTEMP'))
 
 
 #########################################################################################################################
-## 1). READ IN SPATIAL DATA
+## 1). READ IN SHAPEFILES
 #########################################################################################################################
 
 
@@ -109,6 +109,14 @@ template.cells  = readRDS("./data/hasData_cells.rds")
 load("./data/base/CONTEXTUAL/urbanareas.rda")
 
 
+
+
+#########################################################################################################################
+## 2). CREATE RASTER OF SIGNIFCANT URBAN AREAS
+#########################################################################################################################
+
+
+#########################################################################################################################
 #########################################################################################################################
 ## Read in SUA shapefile and convert columns to numeric and character
 # SUA_2016  = readOGR("./data/base/CONTEXTUAL/SUA/SUA_2016_AUST.shp",
@@ -154,6 +162,7 @@ load("./data/base/CONTEXTUAL/urbanareas.rda")
 SUA_2016_rast = readRDS("./data/base/CONTEXTUAL/SUA/SUA_2016_RAST.rds")
 SUA_2016_vec  = readRDS("./data/base/CONTEXTUAL/SUA/SUA_2016_VEC.rds")
 summary(SUA_2016_vec)
+
 
 
 

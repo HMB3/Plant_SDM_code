@@ -426,16 +426,17 @@ length(SDM.DIR.REV);length(map_spp_rev);length(percent.log.rev);length(percent.o
 ## Combine output and calculate gain and loss for 2030
 ## Making the shapefile and vector an argument introduces the error ::
 ## Error in .subset2(x, i, exact = exact) : subscript out of bounds
-suitability.2030 = tryCatch(mapply(SUA_cell_count, 
-                                   shp           = SUA_2016,
-                                   #vec           = SUA_2016_vec,
-                                   DIR_list      = SDM.RESULTS.DIR,
-                                   species_list  = map_spp,
-                                   maxent_path   = maxent_path,
-                                   thresholds    = percent.10.log,
-                                   percentiles   = percent.10.om,
-                                   time_slice    = 30,
-                                   write_rasters = FALSE),
+suitability.2030 = tryCatch(mapply(SUA_cell_count,                                  ## Function aggreagating GCM predictions by a spatial unit
+                                   unit_path     = "./data/base/CONTEXTUAL/SUA/",   ## Data path for the spatial unti of analysis 
+                                   unit_file     = "SUA_2016_AUST.rds",             ## Spatial untit of analysis - E.G. SUAs
+                                   unit_vec      = "SUA_2016_VEC.rds",              ## Vector of rasterized unit cells
+                                   DIR_list      = SDM.RESULTS.DIR,                 ## List of directories with rasters
+                                   species_list  = map_spp,                         ## List of species directories
+                                   maxent_path   = maxent_path,                     ## Directory of maxent results
+                                   thresholds    = percent.10.log,                  ## List of maxent thresholds
+                                   percentiles   = percent.10.om,                   ## 2nd List of maxent thresholds
+                                   time_slice    = 30,                              ## Time period, eg 2030
+                                   write_rasters = FALSE),                          ## Save the combined rasters?
                             
                             error = function(cond) {
                               
