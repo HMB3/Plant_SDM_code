@@ -60,7 +60,7 @@ ALB.CONICAL  <- CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 
 aus           = readRDS("./data/base/CONTEXTUAL/aus_states.rds")
 LAND          = readRDS("./data/base/CONTEXTUAL/LAND_world.rds")
 SUA_2016      = readRDS("./data/base/CONTEXTUAL/SUA/SUA_2016_AUST.rds")
-SUA_2016      = areal_unit[order(areal_unit$SUA_NAME16),]
+SUA_2016      = SUA_2016[order(SUA_2016$SUA_NAME16),]
 SUA_2016      = SUA_2016 %>%
   spTransform(ALB.CONICAL)
 

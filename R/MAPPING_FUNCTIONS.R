@@ -24,7 +24,7 @@
 
 
 ## One function for all time periods
-project_maxent_grids = function(shp, species_list, maxent_path, 
+project_maxent_grids = function(shp, scen_list, species_list, maxent_path, 
                                 climate_path, grid_names, time_slice, current_grids) {
   
   ## Read in Australia
@@ -183,7 +183,9 @@ project_maxent_grids = function(shp, species_list, maxent_path,
 #########################################################################################################################
 ## Loop over directories, species and one threshold for each, also taking a time_slice argument. Next, make the lists generic too
 ## pervious version in R/old/model_combine.R
-SUA_cell_count = function(shp, vec, DIR_list, species_list, 
+SUA_cell_count = function(shp, #
+                          #vec, 
+                          DIR_list, species_list, 
                           maxent_path, thresholds, percentiles, 
                           time_slice, write_rasters) {
   
@@ -197,14 +199,13 @@ SUA_cell_count = function(shp, vec, DIR_list, species_list,
   # LAND       = readRDS('data/base/CONTEXTUAL/LAND_world.rds')
   
   areal_unit      = shp 
-  areal_unit_vec  = vec
+  #areal_unit_vec  = vec
+  areal_unit_vec  = readRDS("./data/base/CONTEXTUAL/SUA/SUA_2016_VEC.rds")
   
+  #SUA_2016_rast = readRDS("./data/base/CONTEXTUAL/SUA/SUA_2016_RAST.rds")
+  #SUA_2016_vec  = readRDS("./data/base/CONTEXTUAL/SUA/SUA_2016_VEC.rds")
   
   ###################################################################################################################
-  ## Read in rasters of the SUA shapefile
-  # areal_unit_rast = rast
-  # areal_unit_vec  = vec
-
   ## Loop over each directory
   lapply(DIR_list, function(DIR) { 
     

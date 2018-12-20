@@ -37,7 +37,7 @@ COMBO.NICHE.CONTEXT = readRDS(paste0(DATA_path, 'COMBO_NICHE_CONTEXT_',  save_ru
 
 
 #########################################################################################################################
-## 1). READ IN THE CURRENT AND FUTURE ENVIRONMENTAL DATA FOR SIX GCMs
+## 1). PROJECT MAXENT MODELS FOR MULTIPLE CLIMATE SCEANARIOS AT 2030, 2050 AND 2070
 #########################################################################################################################
 
 
@@ -49,26 +49,20 @@ COMBO.NICHE.CONTEXT = readRDS(paste0(DATA_path, 'COMBO_NICHE_CONTEXT_',  save_ru
 head(gcms.50) ; head(gcms.70) ; head(gcms.30)
 
 
-
-#########################################################################################################################
-## 2). PROJECT MAXENT MODELS FOR MULTIPLE CLIMATE SCEANARIOS AT 2030, 2050 AND 2070
-#########################################################################################################################
-
-
 #########################################################################################################################
 ## For each species, use a function to create raster files and maps under all six GCMs at each time step
 
 
 #########################################################################################################################
 ## Create 2030 maps
-env.grids.2030 = tryCatch(project_maxent_grids(shp           = AUS,
-                                               scen_list     = scen_2030,
-                                               species_list  = map_spp_list,
-                                               maxent_path   = maxent_path, 
-                                               climate_path  = "./data/base/worldclim/aus/1km/bio",
-                                               grid_names    = grid.names,
-                                               time_slice    = 30,
-                                               current_grids = aus.grids.current),
+env.grids.2030 = tryCatch(project_maxent_grids(shp           = AUS,          ## A shapefile, e.g. Australia
+                                               scen_list     = scen_2030,    ## A list of climate scenarios
+                                               species_list  = map_spp_list, ## A list of species folders with maxent models
+                                               maxent_path   = maxent_path,  ## the output folder
+                                               climate_path  = "./data/base/worldclim/aus/1km/bio", ## climate data
+                                               grid_names    = grid.names,   ## names of the predictor grids
+                                               time_slice    = 30,           ## Time period
+                                               current_grids = aus.grids.current),  ## predictor grids
                           
                           ## Skip species
                           error = function(cond) {
@@ -118,7 +112,7 @@ env.grids.2070 = tryCatch(project_maxent_grids(shp           = AUS,
 
 
 #########################################################################################################################
-## 3). CREATE TABLE OF MAXENT RESULTS FOR CURRENT CONDITIONS
+## 2). CREATE TABLE OF MAXENT RESULTS FOR CURRENT CONDITIONS
 #########################################################################################################################
 
 
@@ -329,8 +323,6 @@ MAXENT.SUMMARY.NICHE <- SDM.TAXA %>%
   
   join(., MAXENT.CHECK[c("searchTaxon", "check.map")]) 
 
-#View(MAXENT.SUMMARY.NICHE)
-
 length(intersect(MAXENT.SUMMARY.NICHE$searchTaxon, GBIF.spp))
 
 
@@ -375,14 +367,14 @@ summary(MAXENT.RESULTS["X10.percentile.training.presence.training.omission"])   
 
 #########################################################################################################################
 ## Turn the maxent results into lists :: we can use these to generate the consensus layers 
-thresh.max.train       = as.list(MAXENT.RESULTS["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"]) 
-thresh.max.train       = thresh.max.train$Maximum.training.sensitivity.plus.specificity.Logistic.threshold
+thresh.max.train  = as.list(MAXENT.RESULTS["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"]) 
+thresh.max.train  = thresh.max.train$Maximum.training.sensitivity.plus.specificity.Logistic.threshold
 
-percent.10.log         = as.list(MAXENT.RESULTS["X10.percentile.training.presence.Logistic.threshold"])  
-percent.10.log         = percent.10.log$X10.percentile.training.presence.Logistic.threshold
+percent.10.log    = as.list(MAXENT.RESULTS["X10.percentile.training.presence.Logistic.threshold"])  
+percent.10.log    = percent.10.log$X10.percentile.training.presence.Logistic.threshold
 
-percent.10.om          = as.list(MAXENT.RESULTS["X10.percentile.training.presence.training.omission"])   
-percent.10.om          = percent.10.om$X10.percentile.training.presence.training.omission
+percent.10.om     = as.list(MAXENT.RESULTS["X10.percentile.training.presence.training.omission"])   
+percent.10.om     = percent.10.om$X10.percentile.training.presence.training.omission
 
 
 
@@ -405,6 +397,16 @@ percent.10.om          = percent.10.om$X10.percentile.training.presence.training
 # thresh     = percent.10.log[1]
 # percent    = percent.10.om[1]
 # time_slice = 30
+shp           = SUA_2016
+vec           = SUA_2016_vec
+DIR           = SDM.RESULTS.DIR[4]
+species       = map_spp[4]
+maxent_path   = maxent_path
+thresh        = percent.10.log[4]
+percent       = percent.10.om[4]
+time_slice    = 30
+write_rasters = FALSE
+
 
 
 #########################################################################################################################
@@ -422,9 +424,11 @@ length(SDM.DIR.REV);length(map_spp_rev);length(percent.log.rev);length(percent.o
   
 #########################################################################################################################
 ## Combine output and calculate gain and loss for 2030
+## Making the shapefile and vector an argument introduces the error ::
+## Error in .subset2(x, i, exact = exact) : subscript out of bounds
 suitability.2030 = tryCatch(mapply(SUA_cell_count, 
                                    shp           = SUA_2016,
-                                   vec           = SUA_2016_vec,
+                                   #vec           = SUA_2016_vec,
                                    DIR_list      = SDM.RESULTS.DIR,
                                    species_list  = map_spp,
                                    maxent_path   = maxent_path,

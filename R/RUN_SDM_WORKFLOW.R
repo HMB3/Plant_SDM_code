@@ -5,6 +5,7 @@
 
 ## This code runs the whole SDM workflow for the HIA project, for a subset of species (e.g. whichever you supply)
 ## In order to run this from katana, we need to use only the necessary packages. Update git
+## save.image("TEST_RUN.RData") 
 on_windows = switch(Sys.info()[['sysname']], Windows = TRUE, FALSE)
 
 
