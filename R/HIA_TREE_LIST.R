@@ -27,6 +27,7 @@ p <- c('ff',    'things',    'raster',        'dismo',        'sp',           'l
 sapply(p, require, character.only = TRUE)
 source_gist('26e8091f082f2b3dd279',             filename = 'polygonizer.R')
 source_gist('c6a1cb61b8b6616143538950e6ec34aa', filename = 'hatch.R')
+devtools::source_gist('306e4b7e69c87b1826db',   filename = 'diverge0.R')
 
 
 ## Source functions, and set temporary directory (for both raster files and just generally)

@@ -46,7 +46,7 @@ p <- c('ff',    'things',    'raster',        'dismo',        'sp',           'l
 sapply(p, require, character.only = TRUE)
 source_gist('26e8091f082f2b3dd279',             filename = 'polygonizer.R')
 source_gist('c6a1cb61b8b6616143538950e6ec34aa', filename = 'hatch.R')
-devtools::source_gist('306e4b7e69c87b1826db', filename='diverge0.R')
+devtools::source_gist('306e4b7e69c87b1826db',   filename = 'diverge0.R')
 
 
 ## Source functions, and set temporary directory (for both raster files and just generally)
@@ -133,6 +133,7 @@ unit_vec      = "SUA_2016_VEC.rds"
 
 maxent_path   = './output/maxent/SUA_TREES_ANALYSIS/'            ## The directory where files are saved               
 maxent_dir    = 'output/maxent/SUA_TREES_ANALYSIS'               ## Another version of the path needed to run maxent loop
+#run_path      = "./output/maxent/HOLLOW_SPP"
 save_data     = 'TRUE'                                           ## Arguments for saving the intermediary output - i.e. niches
 read_data     = 'FALSE'                                          ## Leave these the same - saves data, but doesn't read back in
 

@@ -23,20 +23,6 @@ COMBO.NICHE.CONTEXT = readRDS(paste0(DATA_path, 'COMBO_NICHE_CONTEXT_',  save_ru
 
 
 #########################################################################################################################
-## Read in niche data for table creation
-# if(read_data == "TRUE") {
-#   
-#   ## Load GBIF and ALA data
-#   COMBO.NICHE.CONTEXT = readRDS(paste0('data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_',  save_run, '.rds'))
-#   
-# } else {
-#   
-#   message(' skip file reading, not many species analysed')   ##
-#   
-# }
-
-
-#########################################################################################################################
 ## 1). PROJECT MAXENT MODELS FOR MULTIPLE CLIMATE SCEANARIOS AT 2030, 2050 AND 2070
 #########################################################################################################################
 
@@ -114,6 +100,9 @@ env.grids.2070 = tryCatch(project_maxent_grids(shp           = AUS,
 #########################################################################################################################
 ## 2). CREATE TABLE OF MAXENT RESULTS FOR CURRENT CONDITIONS
 #########################################################################################################################
+
+
+## Next harvest the maxent results and use the outputs for combining the models 
 
 
 #########################################################################################################################
@@ -334,7 +323,7 @@ length(intersect(MAXENT.SUMMARY.NICHE$searchTaxon, GBIF.spp))
 
 
 #########################################################################################################################
-## Save maxent results
+## Save maxent results - what happens to these files, if run for one species at a time?
 write.csv(MAXENT.SUMMARY.NICHE, paste0(DATA_path, 'MAXENT_SUMMARY_',  save_run, '.csv'), row.names = FALSE)
 
 
@@ -352,7 +341,7 @@ write.csv(MAXENT.SUMMARY.NICHE, paste0(DATA_path, 'MAXENT_SUMMARY_',  save_run, 
 ## for all of them. That changes the order of lists, which is a problem for looping over them.
 
 
-## John : for AUC you can report the cross-validated test AUC (if your code currently runs a cross-validated model as well), 
+## John : for AUC, you can report the cross-validated test AUC (if your code currently runs a cross-validated model as well), 
 ## and for the model threshold (for binarising) you can just use the training value (or the crossval one...there's little 
 ## guidance about this and you can really get away with either).
 
@@ -426,11 +415,11 @@ length(SDM.DIR.REV);length(map_spp_rev);length(percent.log.rev);length(percent.o
 ## Making the shapefile and vector an argument introduces the error ::
 ## Error in .subset2(x, i, exact = exact) : subscript out of bounds
 suitability.2030 = tryCatch(mapply(SUA_cell_count,                                  ## Function aggreagating GCM predictions by a spatial unit
-                                   unit_path     = "./data/base/CONTEXTUAL/SUA/",   ## Data path for the spatial unti of analysis 
-                                   unit_file     = "SUA_2016_AUST.rds",             ## Spatial untit of analysis - E.G. SUAs
+                                   unit_path     = "./data/base/CONTEXTUAL/SUA/",   ## Data path for the spatial unit of analysis 
+                                   unit_file     = "SUA_2016_AUST.rds",             ## Spatial unitt of analysis - E.G. SUAs
                                    unit_vec      = "SUA_2016_VEC.rds",              ## Vector of rasterized unit cells
                                    DIR_list      = SDM.RESULTS.DIR,                 ## List of directories with rasters
-                                   species_list  = map_spp,                         ## List of species directories
+                                   species_list  = map_spp,                         ## List of species' directories
                                    maxent_path   = maxent_path,                     ## Directory of maxent results
                                    thresholds    = percent.10.log,                  ## List of maxent thresholds
                                    percentiles   = percent.10.om,                   ## 2nd List of maxent thresholds
@@ -447,8 +436,8 @@ suitability.2030 = tryCatch(mapply(SUA_cell_count,                              
 #########################################################################################################################
 ## Combine GCM output for 2050 
 suitability.2050 = tryCatch(mapply(SUA_cell_count, 
-                                   unit_path     = "./data/base/CONTEXTUAL/SUA/",   ## Data path for the spatial unti of analysis 
-                                   unit_file     = "SUA_2016_AUST.rds",             ## Spatial untit of analysis - E.G. SUAs
+                                   unit_path     = "./data/base/CONTEXTUAL/SUA/",   ## Data path for the spatial unit of analysis 
+                                   unit_file     = "SUA_2016_AUST.rds",             ## Spatial unitt of analysis - E.G. SUAs
                                    unit_vec      = "SUA_2016_VEC.rds", 
                                    DIR_list      = SDM.RESULTS.DIR,
                                    species_list  = map_spp,
@@ -468,8 +457,8 @@ suitability.2050 = tryCatch(mapply(SUA_cell_count,
 #########################################################################################################################
 ## Combine GCM output for 2070 
 suitability.2070 = tryCatch(mapply(SUA_cell_count,
-                                   unit_path     = "./data/base/CONTEXTUAL/SUA/",   ## Data path for the spatial unti of analysis 
-                                   unit_file     = "SUA_2016_AUST.rds",             ## Spatial untit of analysis - E.G. SUAs
+                                   unit_path     = "./data/base/CONTEXTUAL/SUA/",   ## Data path for the spatial unit of analysis 
+                                   unit_file     = "SUA_2016_AUST.rds",             ## Spatial unitt of analysis - E.G. SUAs
                                    unit_vec      = "SUA_2016_VEC.rds", 
                                    DIR_list      = SDM.RESULTS.DIR,
                                    species_list  = map_spp,
@@ -489,8 +478,8 @@ suitability.2070 = tryCatch(mapply(SUA_cell_count,
 #########################################################################################################################
 ## Reverse the order of the lists to speed up the output
 mapply(SUA_cell_count,
-       unit_path     = "./data/base/CONTEXTUAL/SUA/",   ## Data path for the spatial unti of analysis 
-       unit_file     = "SUA_2016_AUST.rds",             ## Spatial untit of analysis - E.G. SUAs
+       unit_path     = "./data/base/CONTEXTUAL/SUA/",   ## Data path for the spatial unit of analysis 
+       unit_file     = "SUA_2016_AUST.rds",             ## Spatial unitt of analysis - E.G. SUAs
        unit_vec      = "SUA_2016_VEC.rds", 
        DIR_list      = SDM.DIR.REV,
        species_list  = map_spp_rev,
@@ -509,7 +498,7 @@ mapply(SUA_cell_count,
 #########################################################################################################################
 
 
-## Mess maps measure the similarity between the new environments and those in the training sample
+## Mess maps measure the similarity between the new environments and those in the training sample.
 ## When model predictions are projected into regions, times or spatial resolutions not analysed in the training data, 
 ## it may be important to measure the similarity between the new environments and those in the training sample 
 ## (Elith et al. 2010), as models are not so reliable when predicting outside their domain (Barbosa et al. 2009). 
@@ -519,7 +508,7 @@ mapply(SUA_cell_count,
 
 
 #########################################################################################################################
-## Subset the current worldclim grids to just those that were used for the maxent models
+## Subset the current worldclim grids to just those eight grids that were used for the maxent models
 grid_names           = sdm.predictors
 current_grids        = aus.grids.current
 names(current_grids) = grid_names 
@@ -529,11 +518,16 @@ names(current_grids)
 
 ###########################################################################################################################
 ## If processing in parralel, could run mess maps for every species, They are not very big, but how do you use them?
-## We need a recipie or rule-book for dealing with bad species 
-create_maxent_mess(species_list   = map_spp[1:3],
-                   threshold_list = percent.10.log[1:3],
-                   maxent_path    = maxent_path, 
-                   current_grids  = current_grids)
+## We need a recipie or rule-book for dealing with bad species. How do you use  the information in a mess map?
+create_maxent_mess(poly           = AUS,
+                   species_list   = map_spp[1:3],                ## List of species' directories
+                   threshold_list = percent.10.log[1:3],         ## List of species' maxent thresholds
+                   maxent_path    = maxent_path,                 ## Maxent output directory
+                   current_grids  = current_grids)               ## Stack of the current environmental rasters
+
+
+## Next step would be to use the mess maps to mask the species with bad maps - or do the same for every species.
+## Are most of the novel environments outside the cities anyway? MESS would come before mapping and sua analysis 
 
 
 
@@ -544,31 +538,31 @@ create_maxent_mess(species_list   = map_spp[1:3],
 #########################################################################################################################
 
 
-## Create a list of folders for this run of species:EG hollow bearing species 
-run_path         <- "./output/maxent/HOLLOW_SPP"
-run_pat          <- map_spp
-run_pat          <- paste(run_pat, sep = "", collapse = "|")
-maxent_run_list  <- list.files(maxent_path, pattern = run_pat, full.names = TRUE)
-
-
-## Save the list of maxent directories to file
-lapply(maxent_run_list, write, sprintf("%s%s_maxent_folders.txt", maxent_path, save_run), append = TRUE)
-maxent_file_list = sprintf("%s_maxent_folders.txt", save_run)
-
-
-##  cd H:/green_cities_sdm/output/maxent/SUA_TREES_ANALYSIS
-## cat maxent_file_list | xargs -J % cp % run_path
-## cat HOLLOW_SPP_maxent_folders.txt | xargs -J % cp % HOLLOW_SPP
-
-
-## Copy or move these files to a specific folder
-## Then you search for a file pattern in that directory
-## This is very slow, would be better done in unix, etc. But 
-file.copy(from      = maxent_run_list, 
-          to        = run_path, 
-          overwrite = FALSE, 
-          recursive = TRUE, 
-          copy.mode = TRUE)
+# ## Create a list of folders for this run of species:EG hollow bearing species 
+# run_path         <- "./output/maxent/HOLLOW_SPP"
+# run_pat          <- map_spp
+# run_pat          <- paste(run_pat, sep = "", collapse = "|")
+# maxent_run_list  <- list.files(maxent_path, pattern = run_pat, full.names = TRUE)
+# 
+# 
+# ## Save the list of maxent directories to file
+# lapply(maxent_run_list, write, sprintf("%s%s_maxent_folders.txt", maxent_path, save_run), append = TRUE)
+# maxent_file_list = sprintf("%s_maxent_folders.txt", save_run)
+# 
+# 
+# ## cd H:/green_cities_sdm/output/maxent/SUA_TREES_ANALYSIS
+# ## cat maxent_file_list | xargs -J % cp % run_path
+# ## cat HOLLOW_SPP_maxent_folders.txt | xargs -J % cp % HOLLOW_SPP
+# 
+# 
+# ## Copy or move these files to a specific folder
+# ## Then you search for a file pattern in that directory
+# ## This is very slow, would be better done in unix, etc. But 
+# file.copy(from      = maxent_run_list, 
+#           to        = run_path, 
+#           overwrite = FALSE, 
+#           recursive = TRUE, 
+#           copy.mode = TRUE)
 
 
 #########################################################################################################################

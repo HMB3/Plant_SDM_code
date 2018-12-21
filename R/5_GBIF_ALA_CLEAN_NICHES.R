@@ -523,12 +523,9 @@ if(save_data == "TRUE") {
   
   #########################################################################################################################
   ## Now combine the SDM output with the niche context data 
-  ## Get the number of aus records too ....................................................................................
-  
-  #NICHE.CONTEXT   = TOT.GROW[, c("searchTaxon", "Plant.type", "Origin", "Total.growers", "Number.of.States")]
   TREE.PLANTINGS            = TREE.EVERGREEN[, c("searchTaxon",
                                                  "Plantings")]
-  COMBO.NICHE.CONTEXT       = join(COMBO.LGA, TOT.GROW,  type = "left")  ## join does not support the sorting
+  COMBO.NICHE.CONTEXT       = join(COMBO.LGA, TOT.GROW,  type = "left")                ## join does not support the sorting
   COMBO.NICHE.CONTEXT       = join(COMBO.NICHE.CONTEXT, TREE.PLANTINGS, type = "left")  
   COMBO.NICHE.CONTEXT       = COMBO.NICHE.CONTEXT [order(COMBO.NICHE.CONTEXT $searchTaxon),]
   
@@ -537,7 +534,8 @@ if(save_data == "TRUE") {
   #COMBO.NICHE.CONTEXT =  COMBO.NICHE.CONTEXT[, c(2, 185, 1, 183:184, 186:197, 3:182)]
   
   ## Set NA to blank, then sort by no. of growers
-  COMBO.NICHE.CONTEXT$Number.of.growers[is.na(COMBO.NICHE.CONTEXT$Total.growers)] <- 0
+  COMBO.NICHE.CONTEXT$Number.of.growers <- NULL
+  COMBO.NICHE.CONTEXT$Total.growers[is.na(COMBO.NICHE.CONTEXT$Total.growers)] <- 0
   COMBO.NICHE.CONTEXT = COMBO.NICHE.CONTEXT[with(COMBO.NICHE.CONTEXT, rev(order(Total.growers))), ]
   
   

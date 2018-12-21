@@ -510,30 +510,28 @@ SUA_cell_count = function(unit_path, unit_file, unit_vec,
 #########################################################################################################################
 ## MESS MAP FUNCTIONS
 #########################################################################################################################
+ 
 
-
-# species       = mess_spp[1]
-# threshold     = MESS.THRESH[1]
-# maxent_path   = maxent_path 
+# species   = map_spp[1]
+# threshold = percent.10.log[1]
+# maxent_path   = maxent_path
 # climate_path  = "./data/base/worldclim/aus/1km/bio"
 # grid_names    = grid.names
 # current_grids = aus.grids.current
 
 
 ## One function for all time periods
-create_maxent_mess = function(species_list, threshold_list, maxent_path, current_grids) {
+create_maxent_mess = function(poly, species_list, threshold_list, maxent_path, current_grids) {
   
   ## Read in Australia
-  aus = AUS %>%
+  poly = poly %>%
     spTransform(ALB.CONICAL)
   
   # import gist that plots maps with diverging colour ramps
-  #devtools::source_gist('306e4b7e69c87b1826db', filename='diverge0.R') # function that plots a map with a diverging colour ramp
+  #devtools::source_gist('306e4b7e69c87b1826db', filename = 'diverge0.R') # plots a map with a diverging colour ramp
   
   ## First, run a loop over each species  
   mapply(function(species, threshold) {
-    
-    ## Create a raster stack for each of the 6 GCMs, not for each species
     
     #####################################################################
     ## Now read in the model, swd file, occ data and extract the varaible names 
@@ -542,16 +540,13 @@ create_maxent_mess = function(species_list, threshold_list, maxent_path, current
     occ  <- readRDS(sprintf('%s%s/swd.rds',                maxent_path, species, species))
     occ  <- readRDS(sprintf('%s%s/%s_occ.rds',             maxent_path, species, species)) %>%
       spTransform(ALB.CONICAL) 
-    #ras_names <- names(m@presence)
     
-    ## Select only the eight bioclim variables used in the maxent models
-    #current_vars <- dropLayer(s_current, setdiff(names(s_current), vars))
-    # names(current_grids) <- grid_names  ## Error in `names<-`(`*tmp*`, value = grid_names) : incorrect number of layer names
-    # current_grids        <- subset(current_grids, intersect(names(current_grids), ras_names))
+    ## Create a folder for the mess maps
+    #dir.create(sprintf('%s%s/full/MESS/', maxent_path, species))
     
     ## First, check if the mess map has already been run
     if(!file.exists(sprintf('%s%s/full/%s_%s%s%s.tif', maxent_path, species, species, 
-                            "current_suit_above_", thresh, "_notNovel"))) {
+                            "current_suit_above_", threshold, "_notNovel"))) {
       
       ## Then read in the current continuous raster, and the binary raster thresholded raster (0-1)
       f_current  <- raster(sprintf('%s%s/full/%s_current.tif', maxent_path, species, species))
@@ -563,10 +558,9 @@ create_maxent_mess = function(species_list, threshold_list, maxent_path, current
       message('Running current mess map for ', species) 
       
       ## Create the current mess map :: check the variable names are the same
-      #length(intersect(names(current_grids), names(swd)))
       mess_current <- similarity(current_grids, swd[, names(current_grids)], full = TRUE)
       novel_current <- mess_current$similarity_min   < 0  ##   All novel environments are < 0
-      novel_current[novel_current==0] <- NA               ##  0 values are NA
+      novel_current[novel_current==0] <- NA               ##   0 values are NA
       
       ##################################################################
       ## Write out the current mess maps 
@@ -576,14 +570,15 @@ create_maxent_mess = function(species_list, threshold_list, maxent_path, current
       
       ##################################################################
       ## Create a PNG file of all the MESS output
-      message('Creating mess maps for each environmental predictor for', species) 
+      message('Creating mess maps for each environmental predictor for', species)
+      
       mapply(function(r, name) {
         
-        p <- levelplot(r, margin = FALSE, scales = list(draw = FALSE), 
-                       at = seq(minValue(r), maxValue(r), len = 100), 
-                       colokey = list(height = 0.6), main = gsub('_', ' ', sprintf('%s (%s)', name, species))) + 
+        p <- levelplot(r, margin = FALSE, scales = list(draw = FALSE),
+                       at = seq(minValue(r), maxValue(r), len = 100),
+                       colokey = list(height = 0.6), main = gsub('_', ' ', sprintf('%s (%s)', name, species))) +
           
-          layer(sp.polygons(aus), data = list(aus = aus))  ## Use this in previous functions
+          latticeExtra::layer(sp.polygons(poly), data = list(poly = poly))   ## Use this in previous functions
         
         p <- diverge0(p, 'RdBu')
         f <- sprintf('%s%s/full/%s_messCurrent__%s.png', maxent_path, species, species, name)
@@ -591,6 +586,7 @@ create_maxent_mess = function(species_list, threshold_list, maxent_path, current
         png(f, 8, 8, units = 'in', res = 300, type = 'cairo')
         print(p)
         dev.off()
+        
         
       }, unstack(mess_current$similarity), names(mess_current$similarity))
       
@@ -608,7 +604,7 @@ create_maxent_mess = function(species_list, threshold_list, maxent_path, current
       # mask out novel environments 
       # is.na(novel_current) is a binary layer showing 
       # not novel [=1] vs novel [=0], 
-      # so multiplying with hs_current will mask out novel
+      # so multiplying this with hs_current will mask out novel
       message('Writing maps of un- novel environments to file for', species) 
       
       writeRaster(hs_current_notNovel, sub('\\.tif', '_notNovel.tif', hs_current@file@name), 
@@ -632,7 +628,7 @@ create_maxent_mess = function(species_list, threshold_list, maxent_path, current
 ## For each scenario, calcualte the mean annual temperature and annual rainfall anomaly
 calculate.anomaly = function(scen_list, time_slice, climate_path) {
   
-  #########################################################################################################################
+  #######################################################################################################################
   ## Create current rasters :: can the raster creation happen just once?
   ## And read in the current data. Can the specific "current" be removed withouth makin a seconf path argument?
   message('current rasters / 10')
