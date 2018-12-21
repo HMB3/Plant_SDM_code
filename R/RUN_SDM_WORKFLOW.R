@@ -275,6 +275,8 @@ source('./R/8_MAP_SDM_COMBINE.R', echo = TRUE)
 
 ## Find points that make the code not reproducible - look for all hard coded paths
 
+## Can we use the mess maps to create the maps and sua steps?
+
 ## Flatten the structure for an example species
 
 ## Improve the raster extract step
