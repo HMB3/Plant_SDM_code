@@ -416,7 +416,7 @@ length(SDM.DIR.REV);length(map_spp_rev);length(percent.log.rev);length(percent.o
 ## Error in .subset2(x, i, exact = exact) : subscript out of bounds
 suitability.2030 = tryCatch(mapply(SUA_cell_count,                                  ## Function aggreagating GCM predictions by a spatial unit
                                    unit_path     = "./data/base/CONTEXTUAL/SUA/",   ## Data path for the spatial unit of analysis 
-                                   unit_file     = "SUA_2016_AUST.rds",             ## Spatial unitt of analysis - E.G. SUAs
+                                   unit_file     = "SUA_2016_AUST.rds",             ## Spatial unit of analysis - E.G. SUAs
                                    unit_vec      = "SUA_2016_VEC.rds",              ## Vector of rasterized unit cells
                                    DIR_list      = SDM.RESULTS.DIR,                 ## List of directories with rasters
                                    species_list  = map_spp,                         ## List of species' directories
@@ -437,7 +437,7 @@ suitability.2030 = tryCatch(mapply(SUA_cell_count,                              
 ## Combine GCM output for 2050 
 suitability.2050 = tryCatch(mapply(SUA_cell_count, 
                                    unit_path     = "./data/base/CONTEXTUAL/SUA/",   ## Data path for the spatial unit of analysis 
-                                   unit_file     = "SUA_2016_AUST.rds",             ## Spatial unitt of analysis - E.G. SUAs
+                                   unit_file     = "SUA_2016_AUST.rds",             
                                    unit_vec      = "SUA_2016_VEC.rds", 
                                    DIR_list      = SDM.RESULTS.DIR,
                                    species_list  = map_spp,

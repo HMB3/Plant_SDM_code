@@ -3,6 +3,9 @@
 #########################################################################################################################
 
 
+## Add both repositories
+## BB z3221316, Popple600
+## GH HMB3 Popple1500
 #git remote set-url --add --push origin https://github.com/HMB3/Plant_SDM_code.git
 #git remote set-url --add --push origin https://bitbucket.org/z3221316/green_cities_sdm.git
 
@@ -150,7 +153,7 @@ read_data     = 'FALSE'                                          ## Leave these 
 #########################################################################################################################
 
 
-## Run the SDM workflow for the species set
+## Run the SDM workflow for the species set.
 
 
 #########################################################################################################################

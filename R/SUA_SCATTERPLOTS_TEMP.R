@@ -165,122 +165,32 @@ PRED.LOSS.2070.CAP = predict(LOSS.2070.GAM.CAP, newdata = LOSS.2070.TEST.CAP, ty
 
 
 #########################################################################################################################
-## 2). SCATTERPLOT FOR GAMS of GAIN/LOSS,
+## 2). SCATTERPLOT FOR GAMS of GAIN/LOSS, WITH COLORS FOR KOPPEN ZONE
 #########################################################################################################################
 
 
 #########################################################################################################################
-## Create PNG
-CairoPNG(width = 18000, height = 16000, 
-         file = sprintf('output/figures/SUA_percent/SUA_2070_SPP_GL_PANEL_vs_%s_GAM_%s_%s.png',  
-                        'temp', SUAs, SUA_SPP),
-         canvas = "white", bg = "white", units = "px", dpi = 600)
+## First, create a data frame of colbrewer colors :: display.brewer.all()
+sua.col <-
+   with(SUA.GAIN.2070,
+        data.frame(ClimateZ = unique(SUA.GAIN.2070$ClimateZ),
+                   color = I(brewer.pal(length(unique(SUA.GAIN.2070$ClimateZ)), 
+                                        name = 'Set2'))))
 
-## Add mfrow
-par(mfrow = c(2, 2),
-    mar   = c(13.5, 16, 4, 4.8), 
-    mgp   = c(11.8, 3, 0),
-    oma   = c(1, 1, 1, 1))
+SUA.GAIN.2070     <- merge(SUA.GAIN.2070,     sua.col)
+SUA.GAIN.2070.CAP <- merge(SUA.GAIN.2070.CAP, sua.col)
 
-
-#################################################################
-## PANEL 1 :: GAMs of species gains vs MAT for 2070, ALL SUAs
-par(font.axis = 1)
-
-plot(SUA.GAIN.2070[,"CURRENT_MAT"], SUA.GAIN.2070[,"SPECIES_GAIN"], 
-     col = alpha("blue", 0.3), pch = 19, cex = 6, 
-     cex.axis = 5, cex.lab = 5,
-     las = 1, ylab = "Species gained (%)", # (% current - 2070)",
-     xlab = "")
-
-box(lwd = 3)
-
-lines(GAIN.2070.TEST$CURRENT_MAT, PRED.GAIN.2070, col = "orange",  lwd = 10)
-
-legend("topright", bty = "n", cex = 5, pt.cex = 5, 
-       text.col = "black", 
-       legend = paste0("DE = ", 
-                       format(summary(GAIN.2070.GAM)$dev.expl *100, digits = 3), "%"))
-
-
-#################################################################
-## PANEL 2 :: GAMs of species gains vs MAT for 2070, BIG SUAs
-par(font.axis = 1)
-
-plot(SUA.GAIN.2070.CAP[,"CURRENT_MAT"], SUA.GAIN.2070.CAP[,"SPECIES_GAIN"], 
-     col = alpha("blue", 0.3), pch = 19, cex = 6, 
-     cex.axis = 5, cex.lab = 5,
-     las = 1,
-     ylab = "", 
-     xlab = "")
-
-box(lwd = 3)
-
-lines(GAIN.2070.TEST.CAP$CURRENT_MAT, PRED.GAIN.2070.CAP, col = "orange",  lwd = 10)
-
-legend("topright", bty = "n", cex = 5, pt.cex = 5, 
-       text.col = "black", 
-       legend = paste0("DE = ", 
-                       format(summary(GAIN.2070.GAM.CAP)$dev.expl *100, digits = 3), "%"))
-
-
-#################################################################
-## PANEL 3 :: GAMs of species gains vs MAT for 2070 ALL SUAs
-par(font.axis = 1)
-
-plot(SUA.LOSS.2070[,"CURRENT_MAT"], SUA.LOSS.2070[,"SPECIES_LOSS"], 
-     col = alpha("blue", 0.3), pch = 19, cex = 6, 
-     cex.axis = 5, cex.lab = 5,
-     las = 1, 
-     ylab = "Species lost (%)", # (% current - 2070)", 
-     xlab = "Current MAT of SUA (1960-1990)")
-
-box(lwd = 3)
-
-lines(LOSS.2070.TEST$CURRENT_MAT, PRED.LOSS.2070, col = "orange",  lwd = 10)
-
-legend("bottomright", bty = "n", cex = 5, pt.cex = 5, 
-       text.col = "black", 
-       legend = paste0("DE = ", format(summary(LOSS.2070.GAM)$dev.expl *100, digits = 3), "%"))
-
-
-#################################################################
-## PANEL 4:: GAMs of species gains vs MAT for 2070 BIG SUAs
-par(font.axis = 1)
-
-plot(SUA.LOSS.2070.CAP[,"CURRENT_MAT"], SUA.LOSS.2070.CAP[,"SPECIES_LOSS"], 
-     col = alpha("blue", 0.3), pch = 19, cex = 6, 
-     cex.axis = 5, cex.lab = 5,
-     las = 1, 
-     ylab = "", 
-     xlab = "Current MAT of SUA (1960-1990)")
-
-box(lwd = 3)
-
-lines(LOSS.2070.TEST.CAP$CURRENT_MAT, PRED.LOSS.2070.CAP, col = "orange",  lwd = 10)
-
-legend("bottomright", bty = "n", cex = 5, pt.cex = 5, 
-       text.col = "black", 
-       legend = paste0("DE = ", format(summary(LOSS.2070.GAM.CAP)$dev.expl *100, digits = 3), "%"))
-
-## Finish the device
-dev.off()
-
-
-
-
-
-#########################################################################################################################
-## 3). SCATTERPLOT FOR GAMS of GAIN/LOSS, WITH COLORS FOR KOPPEN ZONE
-#########################################################################################################################
+SUA.LOSS.2070     <- merge(SUA.LOSS.2070,     sua.col)
+SUA.LOSS.2070.CAP <- merge(SUA.LOSS.2070.CAP, sua.col)
 
 
 #########################################################################################################################
 ## Create PNG
 CairoPNG(width = 18000, height = 16000, 
-         file = sprintf('output/figures/SUA_percent/SUA_2070_SPP_GL_PANEL_COLS_vs_%s_GAM_%s_%s_%s.png',  
+         file = sprintf('output/figures/FIG_2/SUA_2070_SPP_GL_PANEL_COLS_vs_%s_GAM_%s_%s_%s.png',  
                         'temp', SUAs, SUA_SPP, KOP_ZONE),
          canvas = "white", bg = "white", units = "px", dpi = 600)
+
 
 ## Add mfrow
 par(mfrow = c(2, 2),
@@ -289,19 +199,20 @@ par(mfrow = c(2, 2),
     oma   = c(1, 1, 1, 1),
     xpd   = TRUE)
 
+
 #################################################################
 ## PANEL 1 :: GAMs of species gains vs MAT for 2070, ALL SUAs
 par(font.axis = 1)
 
 plot(SUA.GAIN.2070[,"CURRENT_MAT"], SUA.GAIN.2070[,"SPECIES_GAIN"], 
-     col = SUA.GAIN.2070$ClimateZ, pch = 19, cex = 6,
+     col = SUA.GAIN.2070$color, pch = 19, cex = 6,
      cex.axis = 5, cex.lab = 5,
      las = 1, ylab = "Species gained (%)", # (% current - 2070)",
      xlab = "")
 
 box(lwd = 3)
 
-lines(GAIN.2070.TEST$CURRENT_MAT, PRED.GAIN.2070, col = "orange",  lwd = 10)
+lines(GAIN.2070.TEST$CURRENT_MAT, PRED.GAIN.2070, col = "blue",  lwd = 10)
 
 legend("topright", bty = "n", cex = 5, pt.cex = 5, 
        text.col = "black", 
@@ -313,7 +224,7 @@ legend("topright", bty = "n", cex = 5, pt.cex = 5,
 par(font.axis = 1)
 
 plot(SUA.GAIN.2070.CAP[,"CURRENT_MAT"], SUA.GAIN.2070.CAP[,"SPECIES_GAIN"], 
-     col = SUA.GAIN.2070.CAP$ClimateZ, pch = 19, cex = 6,
+     col = SUA.GAIN.2070.CAP$color, pch = 19, cex = 6,
      cex.axis = 5, cex.lab = 5,
      las = 1,
      ylab = "", 
@@ -321,7 +232,7 @@ plot(SUA.GAIN.2070.CAP[,"CURRENT_MAT"], SUA.GAIN.2070.CAP[,"SPECIES_GAIN"],
 
 box(lwd = 3)
 
-lines(GAIN.2070.TEST.CAP$CURRENT_MAT, PRED.GAIN.2070.CAP, col = "orange",  lwd = 10)
+lines(GAIN.2070.TEST.CAP$CURRENT_MAT, PRED.GAIN.2070.CAP, col = "blue",  lwd = 10)
 
 legend("topright", bty = "n", cex = 5, pt.cex = 5, 
        text.col = "black", 
@@ -333,7 +244,7 @@ legend("topright", bty = "n", cex = 5, pt.cex = 5,
 par(font.axis = 1)
 
 plot(SUA.LOSS.2070[,"CURRENT_MAT"], SUA.LOSS.2070[,"SPECIES_LOSS"], 
-     col = SUA.LOSS.2070$ClimateZ, pch = 19, cex = 6,
+     col = SUA.LOSS.2070$color, pch = 19, cex = 6,
      cex.axis = 5, cex.lab = 5,
      las = 1, 
      ylab = "Species lost (%)", # (% current - 2070)", 
@@ -341,7 +252,7 @@ plot(SUA.LOSS.2070[,"CURRENT_MAT"], SUA.LOSS.2070[,"SPECIES_LOSS"],
 
 box(lwd = 3)
 
-lines(LOSS.2070.TEST$CURRENT_MAT, PRED.LOSS.2070, col = "orange",  lwd = 10)
+lines(LOSS.2070.TEST$CURRENT_MAT, PRED.LOSS.2070, col = "blue",  lwd = 10)
 
 legend("bottomright", bty = "n", cex = 5, pt.cex = 5, 
        text.col = "black", 
@@ -353,7 +264,7 @@ legend("bottomright", bty = "n", cex = 5, pt.cex = 5,
 par(font.axis = 1)
 
 plot(SUA.LOSS.2070.CAP[,"CURRENT_MAT"], SUA.LOSS.2070.CAP[,"SPECIES_LOSS"], 
-     col = SUA.LOSS.2070.CAP$ClimateZ, pch = 19, cex = 6, 
+     col = SUA.LOSS.2070.CAP$color, pch = 19, cex = 6, 
      cex.axis = 4, cex.lab = 5,
      las = 1, 
      ylab = "", 
@@ -361,7 +272,7 @@ plot(SUA.LOSS.2070.CAP[,"CURRENT_MAT"], SUA.LOSS.2070.CAP[,"SPECIES_LOSS"],
 
 box(lwd = 3)
 
-lines(LOSS.2070.TEST.CAP$CURRENT_MAT, PRED.LOSS.2070.CAP, col = "orange",  lwd = 10)
+lines(LOSS.2070.TEST.CAP$CURRENT_MAT, PRED.LOSS.2070.CAP, col = "blue",  lwd = 10)
 
 legend("bottomright", bty = "n", cex = 5, pt.cex = 5, 
        text.col = "black", 
@@ -382,8 +293,9 @@ dev.off()
 #########################################################################################################################
 ## Create PNG
 CairoPNG(width = 10000, height = 16000,
-         file = sprintf('output/figures/SUA_percent/SUA_KOPPEN_LEGEND.png'),
+         file = sprintf('output/figures/FIG_2/SUA_KOPPEN_LEGEND.png'),
          canvas = "white", bg = "white", units = "px", dpi = 600)
+
 
 ## Add mfrow
 par(mar   = c(13.5, 16, 4, 4.8), 
@@ -398,10 +310,14 @@ par(font.axis = 1, xpd   = TRUE)
 plot(NULL ,xaxt='n',yaxt='n',bty='n',ylab='',xlab='', xlim=0:1, ylim=0:1)
 
 ##
-legend("center", levels(SUA.GAIN.2070$ClimateZ),
-       col = c(1:length(unique(SUA.GAIN.2070$ClimateZ))), 
+legend(x = "center", 
+       legend = as.character(sua.col$ClimateZ),
+       col = sua.col$color, 
+       #pch = par("pch"), 
+       bty = 'n', xjust = 1,
        pch = 16, pt.cex = 8, cex = 8,
-       title = "Kopp_zone", bty = "n")
+       title = "Koppen Zone")
+
 
 ## finish the device
 dev.off()
@@ -481,7 +397,7 @@ summary(GAIN.2070.EXP)
 timevalues <- seq(0, 30, 1)
 Counts.exponential2 <- exp(predict(GAIN.2070.EXP, list(CURRENT_MAT = timevalues)))
 plot(SUA.GAIN.2070$CURRENT_MAT, SUA.GAIN.2070$SPECIES_GAIN, pch = 16)
-lines(timevalues, Counts.exponential2, lwd = 2, col = "red", xlab = "Time (s)", ylab = "Counts")
+lines(timevalues, Counts.exponential2, lwd = 2, col = "blue", xlab = "Time (s)", ylab = "Counts")
 
 
 
@@ -508,6 +424,112 @@ curve(coef(GAIN.2070.NLS)[2]*exp(-coef(GAIN.2070.NLS)[1]*x),0,6,add=T)
 #add model as text to scatterplot. You need to change parameters from summary(nls)
 # text(4,98,"y=77.11*exp(-0.29*x)", cex=0.7)
 # text(3.8,90,"Pseudo R^2 = 0.54",  cex=0.7)
+
+
+
+#########################################################################################################################
+## 2). SCATTERPLOT FOR GAMS of GAIN/LOSS,
+#########################################################################################################################
+
+
+# #########################################################################################################################
+# ## Create PNG
+# CairoPNG(width = 18000, height = 16000, 
+#          file = sprintf('output/figures/SUA_percent/SUA_2070_SPP_GL_PANEL_vs_%s_GAM_%s_%s.png',  
+#                         'temp', SUAs, SUA_SPP),
+#          canvas = "white", bg = "white", units = "px", dpi = 600)
+# 
+# ## Add mfrow
+# par(mfrow = c(2, 2),
+#     mar   = c(13.5, 16, 4, 4.8), 
+#     mgp   = c(11.8, 3, 0),
+#     oma   = c(1, 1, 1, 1))
+# 
+# 
+# #################################################################
+# ## PANEL 1 :: GAMs of species gains vs MAT for 2070, ALL SUAs
+# par(font.axis = 1)
+# 
+# plot(SUA.GAIN.2070[,"CURRENT_MAT"], SUA.GAIN.2070[,"SPECIES_GAIN"], 
+#      col = alpha("blue", 0.3), pch = 19, cex = 6, 
+#      cex.axis = 5, cex.lab = 5,
+#      las = 1, ylab = "Species gained (%)", # (% current - 2070)",
+#      xlab = "")
+# 
+# box(lwd = 3)
+# 
+# lines(GAIN.2070.TEST$CURRENT_MAT, PRED.GAIN.2070, col = "orange",  lwd = 10)
+# 
+# legend("topright", bty = "n", cex = 5, pt.cex = 5, 
+#        text.col = "black", 
+#        legend = paste0("DE = ", 
+#                        format(summary(GAIN.2070.GAM)$dev.expl *100, digits = 3), "%"))
+# 
+# 
+# #################################################################
+# ## PANEL 2 :: GAMs of species gains vs MAT for 2070, BIG SUAs
+# par(font.axis = 1)
+# 
+# plot(SUA.GAIN.2070.CAP[,"CURRENT_MAT"], SUA.GAIN.2070.CAP[,"SPECIES_GAIN"], 
+#      col = alpha("blue", 0.3), pch = 19, cex = 6, 
+#      cex.axis = 5, cex.lab = 5,
+#      las = 1,
+#      ylab = "", 
+#      xlab = "")
+# 
+# box(lwd = 3)
+# 
+# lines(GAIN.2070.TEST.CAP$CURRENT_MAT, PRED.GAIN.2070.CAP, col = "orange",  lwd = 10)
+# 
+# legend("topright", bty = "n", cex = 5, pt.cex = 5, 
+#        text.col = "black", 
+#        legend = paste0("DE = ", 
+#                        format(summary(GAIN.2070.GAM.CAP)$dev.expl *100, digits = 3), "%"))
+# 
+# 
+# #################################################################
+# ## PANEL 3 :: GAMs of species gains vs MAT for 2070 ALL SUAs
+# par(font.axis = 1)
+# 
+# plot(SUA.LOSS.2070[,"CURRENT_MAT"], SUA.LOSS.2070[,"SPECIES_LOSS"], 
+#      col = alpha("blue", 0.3), pch = 19, cex = 6, 
+#      cex.axis = 5, cex.lab = 5,
+#      las = 1, 
+#      ylab = "Species lost (%)", # (% current - 2070)", 
+#      xlab = "Current MAT of SUA (1960-1990)")
+# 
+# box(lwd = 3)
+# 
+# lines(LOSS.2070.TEST$CURRENT_MAT, PRED.LOSS.2070, col = "orange",  lwd = 10)
+# 
+# legend("bottomright", bty = "n", cex = 5, pt.cex = 5, 
+#        text.col = "black", 
+#        legend = paste0("DE = ", format(summary(LOSS.2070.GAM)$dev.expl *100, digits = 3), "%"))
+# 
+# 
+# #################################################################
+# ## PANEL 4:: GAMs of species gains vs MAT for 2070 BIG SUAs
+# par(font.axis = 1)
+# 
+# plot(SUA.LOSS.2070.CAP[,"CURRENT_MAT"], SUA.LOSS.2070.CAP[,"SPECIES_LOSS"], 
+#      col = alpha("blue", 0.3), pch = 19, cex = 6, 
+#      cex.axis = 5, cex.lab = 5,
+#      las = 1, 
+#      ylab = "", 
+#      xlab = "Current MAT of SUA (1960-1990)")
+# 
+# box(lwd = 3)
+# 
+# lines(LOSS.2070.TEST.CAP$CURRENT_MAT, PRED.LOSS.2070.CAP, col = "orange",  lwd = 10)
+# 
+# legend("bottomright", bty = "n", cex = 5, pt.cex = 5, 
+#        text.col = "black", 
+#        legend = paste0("DE = ", format(summary(LOSS.2070.GAM.CAP)$dev.expl *100, digits = 3), "%"))
+# 
+# ## Finish the device
+# dev.off()
+
+
 
 
 #########################################################################################################################

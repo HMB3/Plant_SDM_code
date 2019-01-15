@@ -132,6 +132,9 @@ length(unique(SUA.PRESENCE$SPECIES))
 
 #########################################################################################################################
 ## Now join on the population. Note that the ABS area shapefile does not have the same SUAs as the ABS table
+areal_unit = readRDS("./data/base/CONTEXTUAL/SUA/SUA_2016_AUST.rds") %>%
+  spTransform(ALB.CONICAL)
+
 SUA.DENS = areal_unit@data
 SUA.DENS = SUA.DENS[, c("SUA_NAME16", "AREASQKM16")]
 names(SUA.DENS) = c("SUA", "AREA_SQKM")
