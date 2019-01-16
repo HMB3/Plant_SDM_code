@@ -6,7 +6,6 @@
 ## This code creates scatterplots of species gained/lost in each of the 101 SUAs
 
 
-
 #########################################################################################################################
 ## If only analysing temperate SUAs, remove the others
 if(KOP_ZONE == "TEMPERATE") {
@@ -17,15 +16,7 @@ if(KOP_ZONE == "TEMPERATE") {
   temperate     = c("Cfa", "Cfb", "Csa", "Csb", "Cwa")
   
   SUA.PLOT.70.M     =   SUA.PLOT.70.M[SUA.PLOT.70.M$ClimateZ %in% temperate , ] 
-  # SUA.LOSS.2070     =   SUA.LOSS.2070[SUA.LOSS.2070$ClimateZ %in% temperate , ]
-  # 
-  # 
-  # SUA.GAIN.2070.GAM =   SUA.GAIN.2070.GAM[SUA.GAIN.2070.GAM$ClimateZ %in% temperate , ] 
-  # SUA.LOSS.2070.GAM =   SUA.LOSS.2070.GAM[SUA.LOSS.2070.GAM$ClimateZ %in% temperate , ] 
-  # 
-  # SUA.GAIN.2070.GAM.CAP =   SUA.GAIN.2070.GAM.CAP[SUA.GAIN.2070.GAM.CAP$ClimateZ %in% temperate , ] 
-  # SUA.LOSS.2070.GAM.CAP =   SUA.LOSS.2070.GAM.CAP[SUA.LOSS.2070.GAM.CAP$ClimateZ %in% temperate , ] 
-  
+
 } else {
   
   message('Analyse all SUAs') 
@@ -309,11 +300,11 @@ par(font.axis = 1, xpd   = TRUE)
 
 plot(NULL ,xaxt='n',yaxt='n',bty='n',ylab='',xlab='', xlim=0:1, ylim=0:1)
 
+
 ##
 legend(x = "center", 
        legend = as.character(sua.col$ClimateZ),
        col = sua.col$color, 
-       #pch = par("pch"), 
        bty = 'n', xjust = 1,
        pch = 16, pt.cex = 8, cex = 8,
        title = "Koppen Zone")

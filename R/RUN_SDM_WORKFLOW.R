@@ -280,6 +280,8 @@ source('./R/8_MAP_SDM_COMBINE.R', echo = TRUE)
 #########################################################################################################################
 
 
+## Figure out how to make the whole process parallel - help from Shawn
+
 ## Find points that make the code not reproducible - look for all hard coded paths
 
 ## Can we use the mess maps to create the maps and sua steps?
@@ -287,8 +289,6 @@ source('./R/8_MAP_SDM_COMBINE.R', echo = TRUE)
 ## Flatten the structure for an example species
 
 ## Improve the raster extract step
-
-## Figure out how to make step 8 parallel - help from Shawn
 
 
 #########################################################################################################################

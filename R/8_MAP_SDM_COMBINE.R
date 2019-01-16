@@ -477,17 +477,17 @@ suitability.2070 = tryCatch(mapply(SUA_cell_count,
 
 #########################################################################################################################
 ## Reverse the order of the lists to speed up the output
-mapply(SUA_cell_count,
-       unit_path     = "./data/base/CONTEXTUAL/SUA/",   ## Data path for the spatial unit of analysis 
-       unit_file     = "SUA_2016_AUST.rds",             ## Spatial unitt of analysis - E.G. SUAs
-       unit_vec      = "SUA_2016_VEC.rds", 
-       DIR_list      = SDM.DIR.REV,
-       species_list  = map_spp_rev,
-       maxent_path   = maxent_path,
-       thresholds    = percent.log.rev,
-       percentiles   = percent.om.rev,
-       time_slice    = 70,  ## 50, 70
-       write_rasters = FALSE)
+# mapply(SUA_cell_count,
+#        unit_path     = "./data/base/CONTEXTUAL/SUA/",   ## Data path for the spatial unit of analysis 
+#        unit_file     = "SUA_2016_AUST.rds",             ## Spatial unitt of analysis - E.G. SUAs
+#        unit_vec      = "SUA_2016_VEC.rds", 
+#        DIR_list      = SDM.DIR.REV,
+#        species_list  = map_spp_rev,
+#        maxent_path   = maxent_path,
+#        thresholds    = percent.log.rev,
+#        percentiles   = percent.om.rev,
+#        time_slice    = 70,  ## 50, 70
+#        write_rasters = FALSE)
 
 
 
