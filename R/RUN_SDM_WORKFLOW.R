@@ -140,7 +140,6 @@ unit_vec      = "SUA_2016_VEC.rds"
 
 maxent_path   = './output/maxent/SUA_TREES_ANALYSIS/'            ## The directory where files are saved               
 maxent_dir    = 'output/maxent/SUA_TREES_ANALYSIS'               ## Another version of the path needed to run maxent loop
-#run_path      = "./output/maxent/HOLLOW_SPP"
 save_data     = 'TRUE'                                           ## Arguments for saving the intermediary output - i.e. niches
 read_data     = 'FALSE'                                          ## Leave these the same - saves data, but doesn't read back in
 
