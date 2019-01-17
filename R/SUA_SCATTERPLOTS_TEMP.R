@@ -35,6 +35,10 @@ SUA.LOSS.2070.CAP               = subset(SUA.LOSS.2070,   AREASQKM16 > 200 & POP
 SUA.STABLE.2070.CAP             = subset(SUA.STABLE.2070, AREASQKM16 > 200 & POP_2017 > 80000)
 
 
+## How many SUA's are temperate
+length(unique(SUA.GAIN.2070$SUA))
+
+
 #########################################################################################################################
 ## All SUAs
 SUA.GAIN.2070$SPECIES_GAIN      = SUA.GAIN.2070$SPECIES_COUNT/(SUA.LOSS.2070$SPECIES_COUNT + 
