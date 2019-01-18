@@ -66,6 +66,10 @@ if(KOP_ZONE == "TEMPERATE") {
 ## Lost % = lost/(stable + lost)   * 100
 
 
+## Also, consider if we should exclude SUAs with < 2 species. This uses a somewhat different column from the data used
+## to make the scatterplots, but check if it's analagous.
+
+
 #########################################################################################################################
 ## Create PNG output for all SUAs for 2030, ordered by mean annual temperature
 png(sprintf('output/figures/SUA_percent/SUA_BAR_PLOT_SUM_100_%s_%s_%s_%s.png', 2030, SUA_ORDER, SUAs, SUA_SPP),      
