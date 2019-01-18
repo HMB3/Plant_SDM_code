@@ -125,7 +125,7 @@ GBIF.spp      = WPW.spp
 GBIF.spp      = as_utf8(GBIF.spp, normalize = TRUE)
 GBIF.spp.rev  = sort(GBIF.spp,   decreasing = TRUE)              ## the list reversed - only needed for a big list
 
-save_run      = "WPW_TEST"                                       ## a variable to append the run name to the output files
+save_run      = "WPW_TEST"                                       ## a variable to append the run name to the output file
 map_spp_list  = gsub(" ", "_", GBIF.spp)                         ## species list with "_" for mapping
 map_spp_rev   = sort(map_spp_list, decreasing = TRUE)            ## reversed, so we can run two at once
 
