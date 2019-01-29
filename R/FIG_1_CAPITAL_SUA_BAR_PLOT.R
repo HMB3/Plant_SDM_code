@@ -9,8 +9,7 @@
 
 #########################################################################################################################
 ## Read in data and aggregate by SUA.
-## Is there a way to cross-check the calculation? I.e was 73% of Adelaide really never suitable for 176 species?
-SUA.LGS           = read.csv("./output/tables/SUA_RESULTS.csv")
+SUA.LGS           = SUA.PLOT.GOOD
 PERIOD            = 70
 SUA.LGS.PERIOD    = SUA.LGS[SUA.LGS$PERIOD == PERIOD, ]
 unique(SUA.LGS.PERIOD$PERIOD)
@@ -25,13 +24,15 @@ SPP.LGS.PERIOD$LOSS_CHANGE   = SPP.LGS.PERIOD$LOST/(SPP.LGS.PERIOD$CELL_COUNT)  
 SPP.LGS.PERIOD$GAIN_CHANGE   = SPP.LGS.PERIOD$GAINED/(SPP.LGS.PERIOD$CELL_COUNT) * 100
 SPP.LGS.PERIOD$STABLE_CHANGE = SPP.LGS.PERIOD$STABLE/(SPP.LGS.PERIOD$CELL_COUNT) * 100
 SPP.LGS.PERIOD$NEVER_CHANGE  = SPP.LGS.PERIOD$NEVER/(SPP.LGS.PERIOD$CELL_COUNT)  * 100
+
+SPP.LGS.PERIOD$SUA           = as.character(SPP.LGS.PERIOD$SUA)
+SPP.LGS.PERIOD$SPECIES       = as.character(SPP.LGS.PERIOD$SPECIES)
 SPP.LGS.PERIOD.M             = melt(SPP.LGS.PERIOD)
 SPP.LGS.PERIOD.M             = subset(SPP.LGS.PERIOD.M, variable %in% c("LOSS_CHANGE", "GAIN_CHANGE", "STABLE_CHANGE"))
 
 
-
 #########################################################################################################################
-## Then aggregate the data by SUA. The numbers become quite small here, and calculating the variance might not make sense
+## Then aggregate the data by SUA - alculating the variance might not make sense
 SUA.LGS.CHANGE.PERIOD = aggregate(. ~ SUA, data = SPP.LGS.PERIOD, sum, na.rm = TRUE)
 SUA.LGS.CHANGE.PERIOD = SUA.LGS.CHANGE.PERIOD[c("SUA", "LOST", "GAINED", "STABLE", "NEVER", "CELL_COUNT", "PERIOD")]
 

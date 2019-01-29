@@ -520,10 +520,10 @@ names(current_grids)
 ## If processing in parralel, could run mess maps for every species, They are not very big, but how do you use them?
 ## We need a recipie or rule-book for dealing with bad species. How do you use  the information in a mess map?
 create_maxent_mess(poly           = AUS,
-                   species_list   = map_spp[1:3],                ## List of species' directories
-                   threshold_list = percent.10.log[1:3],         ## List of species' maxent thresholds
-                   maxent_path    = maxent_path,                 ## Maxent output directory
-                   current_grids  = current_grids)               ## Stack of the current environmental rasters
+                   species_list   = map_spp,                ## List of species' directories
+                   threshold_list = percent.10.log,         ## List of species' maxent thresholds
+                   maxent_path    = maxent_path,            ## Maxent output directory
+                   current_grids  = current_grids)          ## Stack of the current environmental rasters
 
 
 ## Next step would be to use the mess maps to mask the species with bad maps - or do the same for every species.
@@ -570,10 +570,11 @@ create_maxent_mess(poly           = AUS,
 #########################################################################################################################
 
 
-##  
+## What can be done with the MESS maps? Can they be used to create novelty masks for every GCM, then apply these masks 
+## to the combine step? I.e. remove the novel predictions.  
 
 
-## Fix the species mapping loop over two lists at once : mapply
+## Fix the species mapping and combine loops over two lists at once : mapply
 
 
 

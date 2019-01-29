@@ -188,20 +188,13 @@ SUA_cell_count = function(unit_path, unit_file, unit_vec,
                           time_slice, write_rasters) {
 
   ###################################################################################################################
-  ## Read in shapefiles :: this should be done outside the loop. Can't make the function take files as arguments. EG:
-  #areal_unit      = shp
-  #areal_unit_vec  = vec
-
+  ## Read in shapefiles 
   areal_unit = readRDS(paste0(unit_path, unit_file)) %>%
     spTransform(ALB.CONICAL)
-  areal_unit = areal_unit[order(areal_unit$SUA_NAME16),] ## remove this hard-coding
+  areal_unit = areal_unit[order(areal_unit$SUA_NAME16),] 
   
   areal_unit_vec  = readRDS(paste0(unit_path, unit_vec)) 
-  #areal_unit_rast = readRDS(paste0(unit_path, unit_ras)) 
-  
-  #SUA_2016_rast = readRDS("./data/base/CONTEXTUAL/SUA/SUA_2016_RAST.rds")
-  #SUA_2016_vec  = readRDS("./data/base/CONTEXTUAL/SUA/SUA_2016_VEC.rds")
-  
+
   ###################################################################################################################
   ## Loop over each directory
   lapply(DIR_list, function(DIR) { 
@@ -242,9 +235,6 @@ SUA_cell_count = function(unit_path, unit_file, unit_vec,
       for (thresh in thresholds) {
         
         ## Check if the SUA summary table exists
-        # SUA_file =   sprintf('%s/%s/full/%s_20%s_%s%s.csv', maxent_path,
-        #                      species, species, time_slice, "SUA_cell_count_", thresh)
-        
         SUA_file =   sprintf('%s/%s/full/%s_20%s_%s%s.tif', maxent_path,
                              species, species, time_slice, "gain_loss_", thresh)
 

@@ -35,7 +35,7 @@ all.taxa.rev =  all.taxa[rev(order(all.taxa))]
 ## will return NULL. Saves each spp as .Rdata file, returning list of skipped spp
 # TEMP DISABLE for katana - we have all the records so no need to check again
 if (FALSE) {
-    skipped.taxa    = download_GBIF_all_species(species_list = all.taxa, 
+    GBIF.taxa    = download_GBIF_all_species(species_list = all.taxa, 
                                             path         = GBIF_path) ## insert path 
 
 

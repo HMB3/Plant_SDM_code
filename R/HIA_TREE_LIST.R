@@ -431,6 +431,7 @@ EURO.NURSE.LOC      = read.csv("./data/base/HIA_LIST/URBAN/Euro_garden_flora_nur
 #TRAIT.SPP  = read.csv("./data/base/HIA_LIST/RENEE/RankingTraits_Control_latest.csv",              stringsAsFactors = FALSE)
 TRAIT.SPP  = read.csv("./data/base/HIA_LIST/RENEE/RankingTraits_ALL.csv",                          stringsAsFactors = FALSE)
 MOD.3.SPP  = read.csv("./data/base/HIA_LIST/RENEE/MOD3_OCT18.csv",                            stringsAsFactors = FALSE)
+DIANA.SPP  = read.csv("./data/base/HIA_LIST/RENEE/DIANA_SPP.csv",                            stringsAsFactors = FALSE)
 MOD.3.CHK  = join(MOD.3.SPP, MXT.CHECK[c("searchTaxon", "Check.map", "Origin", "genus", "order", "group",
                                          "Plant.type",  "Plantings", "COMBO.count", "AUS_RECORDS",
                                          "Total.growers",  "Number.of.States")], type = "full") 
@@ -456,6 +457,7 @@ Manuel.group         = read.csv("./data/base/HIA_LIST/MANUEL/SUA_by_SPP.csv",   
 TREE.NETWORK         = read.csv("./data/base/HIA_LIST/MANUEL/COMBO_APNI.csv",               stringsAsFactors = FALSE)
 NURSE.MATCH          = read.csv("./data/base/HIA_LIST/MANUEL/nurseries.csv",                stringsAsFactors = FALSE)
 campbelltown         = read.csv("./data/base/HIA_LIST/HIA/campbelltown_species.csv",        stringsAsFactors = FALSE)
+canberra             = read.csv("./data/base/HIA_LIST/canberra_wordcloud.csv",              stringsAsFactors = FALSE)
 
 
 ## The species for the SUA analysis
@@ -471,6 +473,16 @@ intersect(NURSE.MATCH$species, CLEAN.NICHE.CONTEXT$searchTaxon)
 new.spp  = trimws(unique((sort(c(NURSE.MATCH$species, campbelltown$Species)))))
 camp.spp = trimws(campbelltown$Species)
 camp_spp = gsub(" ", "_", camp.spp) 
+
+
+#########################################################################################################################
+## Canberra list
+canb.spp = c("Eucalyptus mannifera",
+             "Pyrus calleryana",
+             "Zelkova serrata",
+             "Ulmus parvifolia",
+             "Quercus palustris",
+             "Eucalyptus polyanthemos")
 
 
 

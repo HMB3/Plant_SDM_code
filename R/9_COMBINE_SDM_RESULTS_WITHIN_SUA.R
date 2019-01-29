@@ -22,8 +22,8 @@ length(unique(SUA.SPP.COUNT$SPECIES))
 ## Create arguments for the different settings
 ## EG ALL_SPP, REC_SPP
 ## EG ALL_SUA, LARGE_SUA
-SUAs       = "ALL_SUAs"   #"LARGE_SUAs"
-SUA_SPP    = "ALL_SPP"    #"REC_SPP"
+SUAs       = "ALL_SUAs"     #"LARGE_SUAs"
+SUA_SPP    = "ALL_SPP"      #"REC_SPP"
 SUA_ORDER  = "CURRENT_MAT"
 KOP_ZONE   = "TEMPERATE"
 # SUA_ORDER  = "CURRENT_MAP"
@@ -78,9 +78,12 @@ length(unique(GAIN.LOSS.TABLE$SPECIES))
 length(unique(GAIN.LOSS.TABLE.COMPLETE$SPECIES)) 
 
 
-GAIN.TABLE = subset(GAIN.LOSS.TABLE, CHANGE == "GAINED")
-LOSS.TABLE = subset(GAIN.LOSS.TABLE, CHANGE == "LOST")
+GAIN.TABLE  = subset(GAIN.LOSS.TABLE, CHANGE == "GAINED")
+GL.TABLE.70 = subset(GAIN.LOSS.TABLE, CHANGE == "GAINED" | CHANGE == "LOST")
+GL.TABLE.70 = subset(GL.TABLE.70, PERIOD == 70) 
 
+LOSS.TABLE = subset(GAIN.LOSS.TABLE, CHANGE == "LOST")
+saveRDS(GL.TABLE.70, file =  paste0(DATA_path, 'GAIN_LOSS_TABLE_',  save_run, '.rds'))
 
 
 
@@ -342,6 +345,26 @@ summary(SUA.PREDICT)
 
 
 #########################################################################################################################
+## If only analysing temperate SUAs, remove the others
+if(KOP_ZONE == "TEMPERATE") {
+  
+  ## Save basic results and SUA results to file
+  message('Analyse only temperate SUAs')
+  non_temperate = c("Am", "Aw", "BSh", "BSk", "BWh")
+  temperate     = c("Cfa", "Cfb", "Csa", "Csb", "Cwa")
+  
+  SUA.PREDICT   =   SUA.PREDICT[SUA.PREDICT$ClimateZ %in% temperate , ]
+  unique(SUA.PREDICT$ClimateZ)
+  
+} else {
+  
+  message('Analyse all SUAs') 
+  
+}
+
+
+
+#########################################################################################################################
 ## Save tables
 if(save_data == "TRUE") {
   
@@ -397,6 +420,10 @@ SUA.PLOT.70.M        = melt(SUA.PLOT.70)
 names(SUA.PLOT.30.M) = c("SUA", "AREA_CHANGE", "SPECIES_COUNT")
 names(SUA.PLOT.50.M) = c("SUA", "AREA_CHANGE", "SPECIES_COUNT")
 names(SUA.PLOT.70.M) = c("SUA", "AREA_CHANGE", "SPECIES_COUNT")
+SUA.PLOT.30.M$PERIOD = 30 
+SUA.PLOT.50.M$PERIOD = 50 
+SUA.PLOT.70.M$PERIOD = 70 
+
 
 SUA.PLOT.30.M        = subset(SUA.PLOT.30.M, AREA_CHANGE != "NEVER")# & AREA_CHANGE != "STABLE")
 SUA.PLOT.50.M        = subset(SUA.PLOT.50.M, AREA_CHANGE != "NEVER")# & AREA_CHANGE != "STABLE")

@@ -98,6 +98,7 @@ SUA.LOSS.2070.CAP = subset(SUA.LOSS.2070.CAP, SPECIES_LOSS >= 2)
 SUA.GAIN.2070.GAM.CAP = subset(SUA.GAIN.2070.GAM.CAP, SPECIES_GAIN >= 2)
 SUA.LOSS.2070.GAM.CAP = subset(SUA.LOSS.2070.GAM.CAP, SPECIES_LOSS >= 2)
 
+
   
 #########################################################################################################################
 ## Run GAMs of species gains vs MAT for 2070, ALL SUA
@@ -178,6 +179,14 @@ SUA.GAIN.2070.CAP <- merge(SUA.GAIN.2070.CAP, sua.col)
 
 SUA.LOSS.2070     <- merge(SUA.LOSS.2070,     sua.col)
 SUA.LOSS.2070.CAP <- merge(SUA.LOSS.2070.CAP, sua.col)
+
+
+#########################################################################################################################
+## Now try saving the datframe so Alessandro can re-produce
+SUA.GL.PLOT = bind_rows(SUA.GAIN.2030, SUA.LOSS.2030, SUA.GAIN.2070, SUA.LOSS.2070)
+saveRDS(SUA.GL.PLOT, file =  paste0(DATA_path, 'SUA_GAIN_LOSS_PLOT_',  save_run, '.rds'))
+write.csv(SUA.GAIN.2030[c("SUA", "ClimateZ")], 
+          file =  paste0(DATA_path, 'SUA_TEMPERATE.csv'), row.names = FALSE)
 
 
 #########################################################################################################################
