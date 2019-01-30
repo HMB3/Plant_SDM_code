@@ -43,12 +43,11 @@ if(SUAs    == "LARGE_SUAs") {
 ## Make all the figures in the MS colorblind safe. The "Paried" color scheme is aparently safe.
 ## No. 1 = light blue, 4 = green, and 8 = dark orange 
 SUA.plot.cols = brewer.pal(12, "Paired")
-SUA.plot.cols[1]
 
 
 #########################################################################################################################
 ## Create PNG output for all SUAs for 2030, ordered by mean annual temperature
-png(sprintf('output/figures/SUA_percent/SUA_BAR_PLOT_SUM_100_%s_%s_%s_%s.png', 2030, SUA_ORDER, SUAs, SUA_SPP),      
+png(sprintf('output/figures/FIG_2/SUA_BAR_PLOT_SUM_100_%s_%s_%s_%s.png', 2030, SUA_ORDER, SUAs, SUA_SPP),      
     10, 8, units = 'in', res = 500)
 
 ## 2030
@@ -80,7 +79,7 @@ ggplot(SUA.PLOT.30.M,  aes(x = reorder(SUA, eval(parse(text = SUA_ORDER))), fill
   theme(#axis.title.x     = element_text(face = "bold", colour = "black", size = 15),
     #axis.text.x      = element_text(angle = 90, vjust = 0.5, size = 8),
     #axis.title.y     = element_text(face = "bold", colour = "black", size = 15),
-    axis.text.y      = element_text(vjust = 0.5, size = 12),
+    axis.text.y      = element_text(vjust = 0.5, size = 30),
     #title            = element_text(face = "bold", colour = "black", size = 15),
     #legend.title     = element_text(face = "bold", colour = "black", size = 12),
     #legend.text      = element_text(face = "bold", size = 12),
@@ -98,7 +97,7 @@ dev.off()
 
 #########################################################################################################################
 ## Create PNG output for all SUAs for 2070, ordered by mean annual temperature
-png(sprintf('output/figures/SUA_percent/SUA_BAR_PLOT_SUM_100_%s_%s_%s_%s.png', 2070, SUA_ORDER, SUAs, SUA_SPP),      
+png(sprintf('output/figures/FIG_2/SUA_BAR_PLOT_SUM_100_%s_%s_%s_%s.png', 2070, SUA_ORDER, SUAs, SUA_SPP),      
     10, 8, units = 'in', res = 500)
 
 ## 2070
@@ -130,7 +129,7 @@ ggplot(SUA.PLOT.70.M,  aes(x = reorder(SUA, eval(parse(text = SUA_ORDER))), fill
   theme(#axis.title.x     = element_text(face = "bold", colour = "black", size = 15),
     #axis.text.x      = element_text(angle = 90, vjust = 0.5, size = 8),
     #axis.title.y     = element_text(face = "bold", colour = "black", size = 15),
-    axis.text.y      = element_text(vjust = 0.5, size = 12),
+    axis.text.y      = element_text(vjust = 0.5, size = 30),
     #title            = element_text(face = "bold", colour = "black", size = 15),
     #legend.title     = element_text(face = "bold", colour = "black", size = 12),
     #legend.text      = element_text(face = "bold", size = 12),

@@ -431,6 +431,21 @@ if(save_data == "TRUE") {
   message('Estimating global niches for ', length(GBIF.spp), ' species across ', length(env.variables), ' climate variables')
   
   
+  if(OCC_SOURCE == "ALA") {
+    
+    ## save .rds file for the next session
+    message('Create niches from ', OCC_SOURCE, ' records')
+    COMBO.SUA.LGA = COMBO.SUA.LGA[COMBO.SUA.LGA$SOURCE %in% OCC_SOURCE , ]
+    message(unique(COMBO.SUA.LGA$SOURCE))
+    
+  } else {
+    
+    message('Create niches from all sources')
+    message(unique(COMBO.SUA.LGA$SOURCE))
+    
+  }
+  
+  
   #########################################################################################################################
   ## Create niche summaries for each environmental condition like this...
   ## Here's what the function will produce :
@@ -550,6 +565,7 @@ if(save_data == "TRUE") {
   dim(COMBO.NICHE.CONTEXT)
   length(unique(CLEAN.TRUE$searchTaxon))
   length(COMBO.NICHE.CONTEXT$searchTaxon)
+  length(unique(COMBO.RASTER.CONTEXT$searchTaxon))
   
   
   #########################################################################################################################

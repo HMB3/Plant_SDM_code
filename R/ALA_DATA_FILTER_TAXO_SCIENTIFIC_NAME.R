@@ -59,7 +59,7 @@ ALA.ALL <- ala.download %>%
       
     } else {
       
-      d = data.frame("searchTaxon" = c())
+      d = d #data.frame("searchTaxon" = c())
       
     }
     
@@ -67,7 +67,7 @@ ALA.ALL <- ala.download %>%
     if (nrow(d) <= 2) {
       
       ## If the species has < 2 records, escape the loop
-      #print (paste ("No ALA records for ", x, " skipping "))
+      print (paste ("No ALA records for ", x, " skipping "))
       return (d)
       
     }

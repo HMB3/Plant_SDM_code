@@ -64,6 +64,15 @@ GBIF.ALL <- gbif.download %>%
       
     }
     
+    ## Check if the dataframes have data
+    if (nrow(dat) <= 2) {
+      
+      ## If the species has < 2 records, escape the loop
+      print (paste ("No GBIF records for ", x, " skipping "))
+      return (d)
+      
+    }
+    
     ## Need to print the object within the loop
     names(dat)[names(dat) == 'decimalLatitude']  <- 'lat'
     names(dat)[names(dat) == 'decimalLongitude'] <- 'lon'

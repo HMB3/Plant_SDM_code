@@ -372,8 +372,12 @@ if(save_data == "TRUE") {
   message(length(unique(SUA.COMPLETE$SPECIES)), " Species analysed in ", length(unique(SUA.COMPLETE$SUA)), " SUAs")
   
   ## Load GBIF and ALA data
-  write.csv(GAIN.LOSS.TABLE,  paste0('output/tables/OVERALL_GAIN_LOSS_TABLE_',   save_run, '.csv'), row.names = FALSE)
-  write.csv(SUA.PREDICT,      paste0('output/tables/MAXENT_SUA_PRESENCE_KOPPEN', save_run, '.csv'), row.names = FALSE)
+  write.csv(GAIN.LOSS.TABLE,  paste0('output/tables/OVERALL_GAIN_LOSS_TABLE_',    save_run, '.csv'), row.names = FALSE)
+  write.csv(SUA.PREDICT,      paste0('output/tables/MAXENT_SUA_PRESENCE_KOPPEN_', save_run, '.csv'), row.names = FALSE)
+  
+  saveRDS(GAIN.LOSS.TABLE,    paste0('output/tables/OVERALL_GAIN_LOSS_TABLE_',      save_run, '.rds'))
+  saveRDS(SUA.PREDICT,        paste0('output/tables/MAXENT_SUA_PRESENCE_KOPPEN_',   save_run, '.rds'))
+  
   
 } else {
   

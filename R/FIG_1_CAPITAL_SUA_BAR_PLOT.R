@@ -25,8 +25,8 @@ SPP.LGS.PERIOD$GAIN_CHANGE   = SPP.LGS.PERIOD$GAINED/(SPP.LGS.PERIOD$CELL_COUNT)
 SPP.LGS.PERIOD$STABLE_CHANGE = SPP.LGS.PERIOD$STABLE/(SPP.LGS.PERIOD$CELL_COUNT) * 100
 SPP.LGS.PERIOD$NEVER_CHANGE  = SPP.LGS.PERIOD$NEVER/(SPP.LGS.PERIOD$CELL_COUNT)  * 100
 
-SPP.LGS.PERIOD$SUA           = as.character(SPP.LGS.PERIOD$SUA)
-SPP.LGS.PERIOD$SPECIES       = as.character(SPP.LGS.PERIOD$SPECIES)
+SPP.LGS.PERIOD$SUA           = as.factor(SPP.LGS.PERIOD$SUA)
+SPP.LGS.PERIOD$SPECIES       = as.factor(SPP.LGS.PERIOD$SPECIES)
 SPP.LGS.PERIOD.M             = melt(SPP.LGS.PERIOD)
 SPP.LGS.PERIOD.M             = subset(SPP.LGS.PERIOD.M, variable %in% c("LOSS_CHANGE", "GAIN_CHANGE", "STABLE_CHANGE"))
 
@@ -55,13 +55,14 @@ SUA.VAR                             = subset(SUA.LGS.CHANGE.PERIOD.M, variable %
 
 #########################################################################################################################
 ## Now create a stacked barplot for each capital city
-capital.cities = c("Adelaide", "Perth", "Brisbane", "Sydney", "Canberra - Queanbeyan", "Melbourne", "Hobart", "Darwin")
+capital.cities = c("Adelaide", "Perth", "Brisbane", "Sydney", "Canberra - Queanbeyan", "Melbourne", "Hobart")
 city           = capital.cities[1]
 
 
 ## Make all the figures in the MS colorblind safe. The "Paried" color scheme is aparently safe.
 ## No. 1 = light blue, 4 = green, and 8 = dark orange 
 SUA.plot.cols = brewer.pal(12, "Paired")
+city = capital.cities[1]
 
 
 for (city in capital.cities) { 
@@ -69,9 +70,9 @@ for (city in capital.cities) {
   ## Subset bigger plot to create error bars.
   ## Unfortunately the error bars are too big
   plot.SUA = subset(SUA.VAR, SUA == city)
-  plot.L   = subset(SUA.LGS.PERIOD.M, SUA.LGS.PERIOD.M$SUA == city & variable == "LOSS_CHANGE")
-  plot.G   = subset(SUA.LGS.PERIOD.M, SUA.LGS.PERIOD.M$SUA == city & variable == "GAIN_CHANGE")
-  plot.S   = subset(SUA.LGS.PERIOD.M, SUA.LGS.PERIOD.M$SUA == city & variable == "STABLE_CHANGE")
+  plot.L   = subset(SUA.LGS.CHANGE.PERIOD.M, SUA.LGS.CHANGE.PERIOD.M$SUA == city & variable == "LOSS_CHANGE")
+  plot.G   = subset(SUA.LGS.CHANGE.PERIOD.M, SUA.LGS.CHANGE.PERIOD.M$SUA == city & variable == "GAIN_CHANGE")
+  plot.S   = subset(SUA.LGS.CHANGE.PERIOD.M, SUA.LGS.CHANGE.PERIOD.M$SUA == city & variable == "STABLE_CHANGE")
   
   L.SD     = aggregate(. ~ SUA, data = plot.L, sd, na.rm = TRUE)[c("value")]
   G.SD     = aggregate(. ~ SUA, data = plot.G, sd, na.rm = TRUE)[c("value")]

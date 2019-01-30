@@ -206,11 +206,11 @@ source('./R/8_MAP_SDM_COMBINE.R', echo = TRUE)
 ## Create a list of all dataframes with the extension from this run
 # COMBO.NICHE.list  = list.files(DATA_path, pattern = 'COMBO_NICHE_CONTEXT_EVERGREEN',  full.names = TRUE, recursive = TRUE)
 # COMBO.RASTER.list = list.files(DATA_path, pattern = 'COMBO_RASTER_CONTEXT_EVERGREEN', full.names = TRUE, recursive = TRUE)
-
-
+# 
+# 
 # #########################################################################################################################
 # ## Now combine the niche tables for each species into one table
-# COMBO.NICHE.ALL <- COMBO.NICHE.list %>%
+# COMBO.NICHE.ALL <- COMBO.NICHE.list[1:8] %>%
 # 
 #   ## pipe the list into lapply
 #   lapply(function(x) {
@@ -238,6 +238,8 @@ source('./R/8_MAP_SDM_COMBINE.R', echo = TRUE)
 # dim(COMBO.NICHE.ALL)
 # length(unique(COMBO.NICHE.ALL$searchTaxon))
 # length(setdiff(Manuel$Species, COMBO.NICHE.ALL$searchTaxon))
+# length(intersect(DIANA.SPP$Name, COMBO.NICHE.ALL$searchTaxon))
+# 
 # 
 # 
 # #########################################################################################################################
@@ -267,9 +269,8 @@ source('./R/8_MAP_SDM_COMBINE.R', echo = TRUE)
 # 
 # #########################################################################################################################
 # ## Save the niche and raster data
-# saveRDS(COMBO.NICHE.ALL,  paste0('data/base/HIA_LIST/COMBO/COMBO_NICHE_ALL_',  save_run, '.rds'))
-# saveRDS(COMBO.RASTER.ALL, paste0('data/base/HIA_LIST/COMBO/COMBO_RASTER_ALL_', save_run, '.rds'))
-
+# saveRDS(COMBO.NICHE.ALL,  paste0(DATA_path, 'COMBO_NICHE_ALL_',  save_run, '.rds'))
+# saveRDS(COMBO.RASTER.ALL, paste0(DATA_path, 'COMBO_RASTER_ALL_', save_run, '.rds'))
 
 
 
