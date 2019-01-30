@@ -509,11 +509,9 @@ if(save_data == "TRUE") {
   dim(COMBO.LGA)
   head(COMBO.LGA$AUS_RECORDS)
   head(COMBO.LGA$SUA_COUNT)
+
   
-  ## Pick up tidying from here.............................................................................................
-  
-  
-  
+
   
   
   #########################################################################################################################
@@ -531,7 +529,6 @@ if(save_data == "TRUE") {
   ## Now join hort context to all the niche
   names(CLEAN.SPP)
   COMBO.NICHE.CONTEXT = join(COMBO.LGA, TOT.GROW)
-  #COMBO.NICHE.CONTEXT =  COMBO.NICHE.CONTEXT[, c(2, 185, 1, 183:184, 186:197, 3:182)]
   head(COMBO.NICHE.CONTEXT$AUS_RECORDS)
   head(COMBO.NICHE.CONTEXT$LGA_COUNT)
   
@@ -544,9 +541,6 @@ if(save_data == "TRUE") {
   COMBO.NICHE.CONTEXT       = join(COMBO.NICHE.CONTEXT, TREE.PLANTINGS, type = "left")  
   COMBO.NICHE.CONTEXT       = COMBO.NICHE.CONTEXT [order(COMBO.NICHE.CONTEXT $searchTaxon),]
   
-  
-  ## Re-order table
-  #COMBO.NICHE.CONTEXT =  COMBO.NICHE.CONTEXT[, c(2, 185, 1, 183:184, 186:197, 3:182)]
   
   ## Set NA to blank, then sort by no. of growers
   COMBO.NICHE.CONTEXT$Number.of.growers <- NULL
@@ -563,16 +557,20 @@ if(save_data == "TRUE") {
   ## Print the dataframe dimensions to screen
   dim(CLEAN.TRUE)
   dim(COMBO.NICHE.CONTEXT)
+  dim(COMBO.RASTER.CONTEXT)
+  
   length(unique(CLEAN.TRUE$searchTaxon))
   length(COMBO.NICHE.CONTEXT$searchTaxon)
   length(unique(COMBO.RASTER.CONTEXT$searchTaxon))
+  
+  unique(COMBO.RASTER.CONTEXT$SOURCE)
   
   
   #########################################################################################################################
   ## save .rds file for the next session
   message('Writing niche and raster data for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
-  saveRDS(COMBO.NICHE.CONTEXT,   paste0(DATA_path, 'COMBO_NICHE_CONTEXT_',  save_run, '.rds'))
-  saveRDS(COMBO.RASTER.CONTEXT,  paste0(DATA_path, 'COMBO_RASTER_CONTEXT_', save_run, '.rds'))
+  saveRDS(COMBO.NICHE.CONTEXT,   paste0(DATA_path, 'COMBO_NICHE_CONTEXT_',  OCC_SOURCE, '_', save_run, '.rds'))
+  saveRDS(COMBO.RASTER.CONTEXT,  paste0(DATA_path, 'COMBO_RASTER_CONTEXT_', OCC_SOURCE, '_', save_run, '.rds'))
   
   
 } else {
