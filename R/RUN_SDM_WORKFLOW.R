@@ -3,7 +3,8 @@
 #########################################################################################################################
 
 
-## Add both repositories
+#########################################################################################################################
+## To Add both repositories
 ## BB z3221316, Popple600
 ## GH HMB3 Popple1500
 #git remote set-url --add --push origin https://github.com/HMB3/Plant_SDM_code.git
@@ -32,6 +33,9 @@ if (on_windows) {
     load(rdata_file)
     
 }
+
+
+
 
 
 #########################################################################################################################
@@ -74,8 +78,7 @@ world.grids.current = stack(
             sprintf('bio_%02d', 1:19)))
 
 ## Create a raster stack of current Australian environmental conditions
-## This is used for exrtacting worldclim data for the tree inventories
-## And running SDMs
+## This is used for exrtacting worldclim data for the tree inventories and running SDMs
 message ("Loading inventory raster stack")
 inventory.grids.current = stack(
   file.path('./data/base/worldclim/aus/1km/bio/current/WGS/',
@@ -135,7 +138,7 @@ DATA_path     = "./data/ANALYSIS/"                               ## The path whe
 SHP_path      = "./data/ANALYSIS"                                ## The data path for readOGR dsn  
 unit_path     = "./data/base/CONTEXTUAL/SUA/"                    ## The data path for the spatial unti of analysis 
 unit_file     = "SUA_2016_AUST.rds"                              ## The spatial untit of analysis - E.G. SUAs
-unit_vec      = "SUA_2016_VEC.rds" 
+unit_vec      = "SUA_2016_VEC.rds"                               ## A vector of the spatial units
 
 
 maxent_path   = './output/maxent/SUA_TREES_ANALYSIS/'            ## The directory where files are saved               
@@ -169,10 +172,7 @@ source('./R/ALA_DATA_FILTER_TAXO_SCIENTIFIC_NAME.R', echo = TRUE)
 source('./R/3_GBIF_DATA_TAXO_SCIENTIFIC_NAME.R',     echo = TRUE)
 
 
-## Step 4 :: combine GBIF, ALA and urban occurrence data into a single table, extract environmental condtions
-## INVENTORY_RASTER will be a problem for species that are not in Alessandro's dataset.
-## Also, consider constructing the niche dataset separately to SDMs, so we can model one species at a time
-## This is dealt with by save_data     = 'FALSE'
+## Step 4 :: combine GBIF, ALA and tree inventory data into a single table, extract environmental condtions
 source('./R/4_ALA_GBIF_URBAN_COMBINE.R',  echo = TRUE)
 source('./R/INVENTORY_RASTER.R',          echo = TRUE)
 
@@ -191,7 +191,7 @@ source('./R/7_RUN_MAXENT.R', echo = TRUE)
 
 ## Step 8 :: Create habitat suitability maps for each species using six GCMs and three time slices (2030/50/70). 
 ## Then summarise maxent results and estimate species presences in significant urban areas under climate change
-## Takes awhile, so probably run different time slices (2030, 2050, 2070) in separate R sessions
+## Then run MESS maps. Or, the MESS maps could be run before the combination step
 source('./R/8_MAP_SDM_COMBINE.R', echo = TRUE)
 
 
