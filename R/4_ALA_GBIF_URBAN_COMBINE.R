@@ -14,6 +14,9 @@
 ## the niches using the maxent algorithm.  
 
 
+## Try using TPL on the combined dataset.................................................................................
+
+
 #########################################################################################################################
 ## Read in all data to run the SDM code :: species lists, shapefile, rasters & tables
 #source('./R/HIA_LIST_MATCHING.R')
@@ -148,6 +151,10 @@ projection(COMBO.POINTS)
 names(COMBO.POINTS)
 
 
+
+#########################################################################################################################
+## 2). PROJECT RASTERS AND EXTRACT ALL WORLDCLIM DATA FOR SPECIES RECORDS
+#########################################################################################################################
 
 
 

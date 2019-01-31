@@ -237,8 +237,10 @@ SUA_cell_count = function(unit_path, unit_file, unit_vec,
         ## Check if the SUA summary table exists
         SUA_file =   sprintf('%s/%s/full/%s_20%s_%s%s.tif', maxent_path,
                              species, species, time_slice, "gain_loss_", thresh)
-
         
+        ## Read in the raster of not novel areas for Australia
+        not_novel = raster(sprintf('%s%s/full/%s_%s%s%s.tif', maxent_path, species, species, "current_suit_above_", threshold, '_notNovel'))
+
         ## The mean of the GCMs doesn't exist, create it
         if(file.exists(SUA_file)) { 
           
@@ -290,6 +292,9 @@ SUA_cell_count = function(unit_path, unit_file, unit_vec,
           ## Functions for thresholding rasters
           band_4           <- function(x) {ifelse(x >=  4, 1, 0) }
           combo_suit_4GCM  <- calc(combo_suit_thresh, fun = band_4)
+          
+          #########################################################################################################################
+          ## Then we could use the notnovel layer to mask the combined dataset.....................................................
           
           #########################################################################################################################
           ## Now create a raster of the gain, loss and stable
@@ -511,7 +516,8 @@ SUA_cell_count = function(unit_path, unit_file, unit_vec,
 
 
 ## Do we need to do mess maps for all the scenarios, or can we just create the masks for current and use these for 
-## future?
+## future? How hard would it be to change the combine step to create another set of results, masked out using
+## novel environments?
 
 
 ## One function for all time periods
@@ -592,13 +598,14 @@ create_maxent_mess = function(poly, species_list, threshold_list, maxent_path, c
                                          maxent_path, species, species, "current_novel_map"), 
                   overwrite = TRUE, datatype = 'INT2S')
       
-      hs_current_notNovel <- hs_current * is.na(novel_current) 
-      
       ##################################################################
       # mask out novel environments 
       # is.na(novel_current) is a binary layer showing 
       # not novel [=1] vs novel [=0], 
       # so multiplying this with hs_current will mask out novel
+      hs_current_notNovel <- hs_current * is.na(novel_current) 
+      
+      ## Write out not-novel raster
       message('Writing maps of un- novel environments to file for', species) 
       
       writeRaster(hs_current_notNovel, sub('\\.tif', '_notNovel.tif', hs_current@file@name), 

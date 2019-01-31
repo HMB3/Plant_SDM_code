@@ -203,8 +203,8 @@ head(MAXENT.RESULTS, 20)[1:5]
 dim(subset(MAXENT.RESULTS, Training.AUC < 0.7))  ## all models should be above 0.7
 
 
-## Are the TSS values ok?
-## Check if the dataframes have data
+#########################################################################################################################
+## Plot AUC vs. TSS
 if (nrow(MAXENT.RESULTS) > 2) {
   
   lm.auc = lm(MAXENT.RESULTS$max_tss ~ MAXENT.RESULTS$Training.AUC)
@@ -214,7 +214,7 @@ if (nrow(MAXENT.RESULTS) > 2) {
        abline(lm(MAXENT.RESULTS$max_tss ~ MAXENT.RESULTS$Training.AUC)))
   legend("topleft", bty="n", legend=paste("R2 is", format(summary(lm.auc)$adj.r.squared, digits = 4)))
   
-  ## If the species has < 2 records, escape the loop
+  ## If the species has < 2 records, don't plot
 } else {
   
   message('Dont plot, only ', length(GBIF.spp), ' species analysed')
@@ -352,7 +352,7 @@ if(save_data == "TRUE") {
 
 
 #########################################################################################################################
-## 4). CREATE LISTS OF HABITAT SUITABILITY THRESHOLDS
+## 3). CREATE LISTS OF HABITAT SUITABILITY THRESHOLDS AND RUN MESS MAPS
 #########################################################################################################################
 
 
@@ -385,11 +385,48 @@ percent.10.om     = as.list(MAXENT.RESULTS["X10.percentile.training.presence.tra
 percent.10.om     = percent.10.om$X10.percentile.training.presence.training.omission
 
 
+#########################################################################################################################
+## RUN MULTIVARIATE ENVIRONMENTAL SIMILARITY (MESS) MAPS FOR SELECTED SPECIES
+#########################################################################################################################
+
+
+## Mess maps measure the similarity between the new environments and those in the training sample.
+## When model predictions are projected into regions, times or spatial resolutions not analysed in the training data, 
+## it may be important to measure the similarity between the new environments and those in the training sample 
+## (Elith et al. 2010), as models are not so reliable when predicting outside their domain (Barbosa et al. 2009). 
+## The Multivariate Environmental Similarity Surfaces (MESS) analysis measures the similarity in the analysed variables 
+## between any given locality in the projection dataset and the localities in the reference (training) dataset 
+## (Elith et al. 2010).
+
+
+#########################################################################################################################
+## Subset the current worldclim grids to just those eight grids that were used for the maxent models
+grid_names           = sdm.predictors
+current_grids        = aus.grids.current
+names(current_grids) = grid_names 
+current_grids        = subset(current_grids, intersect(names(current_grids), sdm.select))
+names(current_grids)
+
+
+###########################################################################################################################
+## If processing in parralel, could run mess maps for every species, They are not very big, but how do you use them?
+## We need a recipie or rule-book for dealing with bad species. How do you use  the information in a mess map?
+create_maxent_mess(poly           = AUS,
+                   species_list   = map_spp,                ## List of species' directories
+                   threshold_list = percent.10.log,         ## List of species' maxent thresholds
+                   maxent_path    = maxent_path,            ## Maxent output directory
+                   current_grids  = current_grids)          ## Stack of the current environmental rasters
+
+
+## Next step would be to use the mess maps to mask the species with bad maps - or do the same for every species.
+## Are most of the novel environments outside the cities anyway? MESS would come before mapping and sua analysis
+
+
 
 
 
 #########################################################################################################################
-## 5). SUMARIZE MAXENT RESULTS FOR EACH SPECIES ACROSS MULTIPLE GCMs, INSIDE SIGNIFCANT URBAN AREAS
+## 4). SUMARIZE MAXENT RESULTS FOR EACH SPECIES ACROSS MULTIPLE GCMs, INSIDE SIGNIFCANT URBAN AREAS
 #########################################################################################################################
 
 
@@ -433,8 +470,7 @@ length(SDM.DIR.REV);length(map_spp_rev);length(percent.log.rev);length(percent.o
   
 #########################################################################################################################
 ## Combine GCM predictions and calculate gain and loss for 2030
-## Making the shapefile and vector an argument introduces the error ::
-## Error in .subset2(x, i, exact = exact) : subscript out of bounds
+## Here we can add the mask of novel environments to SUA aggregation
 suitability.2030 = tryCatch(mapply(SUA_cell_count,                                  ## Function aggreagating GCM predictions by a spatial unit
                                    unit_path     = "./data/base/CONTEXTUAL/SUA/",   ## Data path for the spatial unit of analysis 
                                    unit_file     = "SUA_2016_AUST.rds",             ## Spatial unit of analysis - E.G. SUAs
@@ -514,44 +550,6 @@ suitability.2070 = tryCatch(mapply(SUA_cell_count,
 
 
 
-#########################################################################################################################
-## 6). RUN MULTIVARIATE ENVIRONMENTAL SIMILARITY (MESS) MAPS FOR SELECTED SPECIES
-#########################################################################################################################
-
-
-## Mess maps measure the similarity between the new environments and those in the training sample.
-## When model predictions are projected into regions, times or spatial resolutions not analysed in the training data, 
-## it may be important to measure the similarity between the new environments and those in the training sample 
-## (Elith et al. 2010), as models are not so reliable when predicting outside their domain (Barbosa et al. 2009). 
-## The Multivariate Environmental Similarity Surfaces (MESS) analysis measures the similarity in the analysed variables 
-## between any given locality in the projection dataset and the localities in the reference (training) dataset 
-## (Elith et al. 2010).
-
-
-#########################################################################################################################
-## Subset the current worldclim grids to just those eight grids that were used for the maxent models
-grid_names           = sdm.predictors
-current_grids        = aus.grids.current
-names(current_grids) = grid_names 
-current_grids        = subset(current_grids, intersect(names(current_grids), sdm.select))
-names(current_grids)
-
-
-###########################################################################################################################
-## If processing in parralel, could run mess maps for every species, They are not very big, but how do you use them?
-## We need a recipie or rule-book for dealing with bad species. How do you use  the information in a mess map?
-create_maxent_mess(poly           = AUS,
-                   species_list   = map_spp,                ## List of species' directories
-                   threshold_list = percent.10.log,         ## List of species' maxent thresholds
-                   maxent_path    = maxent_path,            ## Maxent output directory
-                   current_grids  = current_grids)          ## Stack of the current environmental rasters
-
-
-## Next step would be to use the mess maps to mask the species with bad maps - or do the same for every species.
-## Are most of the novel environments outside the cities anyway? MESS would come before mapping and sua analysis 
-
-
-
 
 
 #########################################################################################################################
@@ -592,7 +590,7 @@ create_maxent_mess(poly           = AUS,
 
 
 ## What can be done with the MESS maps? Can they be used to create novelty masks for every GCM, then apply these masks 
-## to the combine step? I.e. remove the novel predictions.  
+## to the combine step? I.e. remove the novel predictions.............................................................  
 
 
 ## Fix the species mapping and combine loops over two lists at once : mapply

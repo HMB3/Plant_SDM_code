@@ -3,6 +3,10 @@
 #########################################################################################################################
 
 
+## Shawn's advice is to make the code more modular, rather than monolithic.
+## Small examples of how to do this could be applied across the different steps 
+
+
 #########################################################################################################################
 ## To Add both repositories
 ## BB z3221316, Popple600
