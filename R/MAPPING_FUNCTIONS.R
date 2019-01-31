@@ -510,6 +510,10 @@ SUA_cell_count = function(unit_path, unit_file, unit_vec,
 # current_grids = aus.grids.current
 
 
+## Do we need to do mess maps for all the scenarios, or can we just create the masks for current and use these for 
+## future?
+
+
 ## One function for all time periods
 create_maxent_mess = function(poly, species_list, threshold_list, maxent_path, current_grids) {
   

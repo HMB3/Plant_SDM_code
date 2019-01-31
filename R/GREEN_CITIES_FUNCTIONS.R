@@ -946,7 +946,7 @@ gbif.keep <- c(## TAXONOMY
   "recordedBy",
   "identifiedBy",
   "gbifID",
-  "catalogNumber",
+  #"catalogNumber",
   
   ## PLACE/TIME
   "lat",
@@ -990,7 +990,6 @@ ALA.keep <- c(## TAXONOMY
   "identificationID",
   "identifiedBy",
   "occurrenceID",
-  "catalogNumber",
   "basisOfRecord",
   "institutionCode",
   
@@ -1045,7 +1044,7 @@ TPL.keep <- c(## GBIF TAXONOMY
   "recordedBy",
   "identifiedBy",
   "gbifID",
-  "catalogNumber",
+  #"catalogNumber",
   
   ## PLACE/TIME
   "lat",

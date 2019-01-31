@@ -204,12 +204,22 @@ dim(subset(MAXENT.RESULTS, Training.AUC < 0.7))  ## all models should be above 0
 
 
 ## Are the TSS values ok?
-lm.auc = lm(MAXENT.RESULTS$max_tss ~ MAXENT.RESULTS$Training.AUC)
-hist(MAXENT.RESULTS$max_tss)
-plot(MAXENT.RESULTS$Training.AUC, MAXENT.RESULTS$max_tss, pch = 19, col  = "blue",
-    xlab = "AUC", ylab = "TSS", 
-    abline(lm(MAXENT.RESULTS$max_tss ~ MAXENT.RESULTS$Training.AUC)))
-legend("topleft", bty="n", legend=paste("R2 is", format(summary(lm.auc)$adj.r.squared, digits = 4)))
+## Check if the dataframes have data
+if (nrow(MAXENT.RESULTS) > 2) {
+  
+  lm.auc = lm(MAXENT.RESULTS$max_tss ~ MAXENT.RESULTS$Training.AUC)
+  hist(MAXENT.RESULTS$max_tss)
+  plot(MAXENT.RESULTS$Training.AUC, MAXENT.RESULTS$max_tss, pch = 19, col  = "blue",
+       xlab = "AUC", ylab = "TSS", 
+       abline(lm(MAXENT.RESULTS$max_tss ~ MAXENT.RESULTS$Training.AUC)))
+  legend("topleft", bty="n", legend=paste("R2 is", format(summary(lm.auc)$adj.r.squared, digits = 4)))
+  
+  ## If the species has < 2 records, escape the loop
+} else {
+  
+  message('Dont plot, only ', length(GBIF.spp), ' species analysed')
+  
+}
 
 
 ## Now check the match between the species list, and the results list. 
@@ -324,7 +334,18 @@ length(intersect(MAXENT.SUMMARY.NICHE$searchTaxon, GBIF.spp))
 
 #########################################################################################################################
 ## Save maxent results - what happens to these files, if run for one species at a time?
-write.csv(MAXENT.SUMMARY.NICHE, paste0(DATA_path, 'MAXENT_SUMMARY_',  save_run, '.csv'), row.names = FALSE)
+#########################################################################################################################
+## save data
+if(save_data == "TRUE") {
+  
+  ## save .rds file for the next session
+  saveRDS(MAXENT.SUMMARY.NICHE, paste0(DATA_path, 'MAXENT_SUMMARY_',  save_run, '.rds'))
+  
+} else {
+  
+  message('Dont plot, only ', length(GBIF.spp), ' species analysed')
+  
+}
 
 
 
@@ -385,15 +406,15 @@ percent.10.om     = percent.10.om$X10.percentile.training.presence.training.omis
 # thresh     = percent.10.log[1]
 # percent    = percent.10.om[1]
 # time_slice = 30
-shp           = SUA_2016
-vec           = SUA_2016_vec
-DIR           = SDM.RESULTS.DIR[4]
-species       = map_spp[4]
-maxent_path   = maxent_path
-thresh        = percent.10.log[4]
-percent       = percent.10.om[4]
-time_slice    = 30
-write_rasters = FALSE
+# shp           = SUA_2016
+# vec           = SUA_2016_vec
+# DIR           = SDM.RESULTS.DIR[4]
+# species       = map_spp[4]
+# maxent_path   = maxent_path
+# thresh        = percent.10.log[4]
+# percent       = percent.10.om[4]
+# time_slice    = 30
+# write_rasters = FALSE
 
 
 
