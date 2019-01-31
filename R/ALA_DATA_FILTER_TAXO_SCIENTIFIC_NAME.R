@@ -77,8 +77,9 @@ ALA.ALL <- ala.download %>%
     d[,"searchTaxon"] = x
     d[,"searchTaxon"] = gsub("_ALA_records.RData", "", d[,"searchTaxon"])
     
-    #  standardi[sz]e cat number colname 
+    #  standardi[sz]e catnum colname 
     if("catalogueNumber" %in% colnames(d)) {
+      #message ("Renaming catalogueNumber column to catalogNumber")
       names(d)[names(d) == 'catalogueNumber'] <- 'catalogNumber'
     }
     

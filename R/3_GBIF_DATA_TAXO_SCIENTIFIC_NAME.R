@@ -55,21 +55,22 @@ GBIF.ALL <- gbif.download %>%
     
     ## Now drop the columns which we don't need
     message ('Reading GBIF data for ', x)
+    
+    ## Check if the dataframes have data
+    if (nrow(d) <= 2) {
+      
+      ## If the species has < 2 records, escape the loop
+      print (paste ("No GBIF records for ", x, " skipping "))
+      return (d)
+      
+    }
+    
     dat <- data.frame(searchTaxon = x, d[, colnames(d) %in% gbif.keep],
                       stringsAsFactors = FALSE)
     
     if(!is.character(dat$gbifID)) {
       
       dat$gbifID <- as.character(dat$gbifID)
-      
-    }
-    
-    ## Check if the dataframes have data
-    if (nrow(dat) <= 2) {
-      
-      ## If the species has < 2 records, escape the loop
-      print (paste ("No GBIF records for ", x, " skipping "))
-      return (d)
       
     }
     
