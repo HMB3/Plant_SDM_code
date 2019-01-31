@@ -35,7 +35,7 @@ if(read_data == "TRUE") {
 
 #########################################################################################################################
 ## Read in the global data
-if(dim(TI.XY.SPP)[1] > 0) {
+if(dim(TI.XY.SPP)[1] > 0 & read_data == "TRUE") {
   
   ## Read in RDS files from previous step
   TI.RASTER.CONVERT = readRDS(paste0(DATA_path, 'TI_RASTER_CONVERT_', save_run, '.rds'))
@@ -51,11 +51,6 @@ if(dim(TI.XY.SPP)[1] > 0) {
 length(unique(COMBO.RASTER.CONVERT$searchTaxon))
 formatC(dim(COMBO.RASTER.CONVERT)[1], format = "e", digits = 2)
 names(COMBO.RASTER.CONVERT)
-
-
-length(unique(TI.RASTER.CONVERT$searchTaxon))
-formatC(dim(TI.RASTER.CONVERT)[1], format = "e", digits = 2)
-names(TI.RASTER.CONVERT)
 
 
 #########################################################################################################################
