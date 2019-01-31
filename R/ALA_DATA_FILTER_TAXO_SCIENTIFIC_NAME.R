@@ -77,6 +77,11 @@ ALA.ALL <- ala.download %>%
     d[,"searchTaxon"] = x
     d[,"searchTaxon"] = gsub("_ALA_records.RData", "", d[,"searchTaxon"])
     
+    #  standardi[sz]e cat number colname 
+    if("catalogueNumber" %in% colnames(d)) {
+      names(d)[names(d) == 'catalogueNumber'] <- 'catalogNumber'
+    }
+    
     ## Choose only the desired columns
     d = d %>%
       select(one_of(ALA.keep))
