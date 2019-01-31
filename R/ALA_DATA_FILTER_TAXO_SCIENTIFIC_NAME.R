@@ -41,6 +41,8 @@ message('downloaded species ', length(ala.download), ' analyzed species ', lengt
 ## Some species fail because ALA does not recognise their taxonomy. E.G.:
 ## Tabebuia rosea, Roystonea regia
 
+#  a spot of paranoia
+gc()
 
 #########################################################################################################################
 ## Combine all the taxa into a single dataframe at once
@@ -56,11 +58,20 @@ ALA.ALL <- ala.download %>%
     d <- get(load(f))
     if (length(class(d)) > 1) {
       d <- d[["data"]]
-      
     } else {
-      
       d = d #data.frame("searchTaxon" = c())
-      
+    }
+
+    #  type standardisation    
+    names(d)[names(d) == 'latitude']  <- 'lat'
+    names(d)[names(d) == 'longitude'] <- 'lon'
+    #  standardi[sz]e catnum colname 
+    if("catalogueNumber" %in% colnames(d)) {
+      #message ("Renaming catalogueNumber column to catalogNumber")
+      names(d)[names(d) == 'catalogueNumber'] <- 'catalogNumber'
+    }
+    if (!is.character(d$catalogNumber)) {
+        d$catalogNumber = as.character(d$catalogNumber)
     }
     
     ## Check if the dataframes have data
@@ -77,15 +88,13 @@ ALA.ALL <- ala.download %>%
     d[,"searchTaxon"] = x
     d[,"searchTaxon"] = gsub("_ALA_records.RData", "", d[,"searchTaxon"])
     
+    if(!is.character(d["id"])) {
+      d["id"] <- as.character(d["id"])
+    }
+    
     ## Choose only the desired columns
     d = d %>%
       select(one_of(ALA.keep))
-    
-    if(!is.character(d["id"])) {
-      
-      d["id"] <- as.character(d["id"])
-      
-    }
     
     ## Then print warnings
     warnings()
@@ -96,8 +105,6 @@ ALA.ALL <- ala.download %>%
     d["month"] = as.numeric(unlist(d["month"]))
     d["id"]    = as.character(unlist(d["id"]))
     
-    names(d)[names(d) == 'latitude']  <- 'lat'
-    names(d)[names(d) == 'longitude'] <- 'lon'
     return(d)
     
   }) %>%
@@ -105,6 +112,8 @@ ALA.ALL <- ala.download %>%
   ## Finally, bind all the rows together
   bind_rows
 
+#  a spot of paranoia
+gc()
 
 #########################################################################################################################
 ## Just get the newly downloaded species
