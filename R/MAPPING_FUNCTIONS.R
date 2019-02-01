@@ -363,7 +363,6 @@ SUA_cell_count = function(unit_path, unit_file, unit_vec,
           r[d5[, 1]==1 & d5[, 2]==1] <- 3  ## 1 in current raster and 1 in future = STABLE
           r[d5[, 1]==0 & d5[, 2]==0] <- 4  ## 0 in current raster and 0 in future = NEVER_SUIT
           
-          
           ## Now convert the raster to a factor and assign lables to the levels
           gain_loss <- as.factor(r)
           levels(gain_loss)[[1]] <- data.frame(ID = 1:4, label = c('Lost', 'Gained', 'Stable', 'Never_Suitable'))

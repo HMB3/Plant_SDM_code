@@ -152,122 +152,6 @@ length(unique(ALA.TRIM$species))
 (sum(is.na(ALA.TRIM$scientificName)) + dim(subset(ALA.TRIM, scientificName == ""))[1])/dim(ALA.TRIM)[1]*100
 
 
-## Total original records for 176 species  1141520 + 1033700 = 2,175,220
-
-
-#########################################################################################################################
-## 2). CHECK TAXONOMY RETURNED BY ALA USING TAXONSTAND
-######################################################################################################################### 
-
-
-## The problems is the mismatch between what we searched, and what GBIF returned. 
-
-
-## 5). Join the TPL taxonomy to the "scientificName" field. We can't use "name" (the equivalent of "species", it seems),
-##     because name is always the same as the searchTaxon and not reliable (i.e. they will always match, and we know that
-##     no one has gone through and checked each one).
-
-
-##     Exclude records where the "scientificName" both doesn't match the "searchTaxon", and, also is not a synonym according to TPL
-##     This is the Same as taking the SNs which are accepted, but which don't match ST.
-
-
-##     Then we model these records as before. Of 390 species we downloaded, we will pick the 200 with acceptable maps.
-##     One line in the MS : we matched the GBIF backbone taxo against the TPL taxo, and searched the currently accepted names
-##     in GBIF and ALA, excluding incorreclty matching records (probably don't say this).
-
-
-#########################################################################################################################
-## Use "Taxonstand" to check the taxonomy :: which field to use?
-message('Running TPL taxonomy for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
-ALA.TAXO <- TPL(unique(ALA.TRIM$scientificName), infra = TRUE,
-                      corr = TRUE, repeats = 100)  ## to stop it timing out...
-sort(names(ALA.TAXO))
-saveRDS(ALA.TAXO, paste0(ALA_path, 'ALA_TAXO_', save_run, '.rds'))
-
-
-## Check the taxonomy by running scientificName through TPL. Then join the GBIF data to the taxonomic check, using 
-## "scientificName" as the join field
-ALA.TRIM.TAXO <- ALA.TRIM %>%
-  left_join(., ALA.TAXO, by = c("scientificName" = "Taxon"))
-ALA.TRIM.TAXO$New_binomial = paste(ALA.TRIM.TAXO$New.Genus, ALA.TRIM.TAXO$New.Species, sep = " ") 
-names(ALA.TRIM.TAXO)
-
-
-## Check NAs again
-(sum(is.na(ALA.TRIM.TAXO$scientificName)) + dim(subset(ALA.TRIM.TAXO, scientificName == ""))[1])/dim(ALA.TRIM)[1]*100
-
-
-#########################################################################################################################
-## However, the scientificName string and the searchTaxon string are not the same. 
-## currently using 'str_detect'
-Match.SN = ALA.TRIM.TAXO  %>%
-  mutate(Match.SN.ST = 
-           str_detect(searchTaxon, New_binomial)) %>%  ## scientificName, New_binomial
-  
-  select(one_of(c("scientificName",
-                  "searchTaxon",
-                  "Taxonomic.status",
-                  "New.Taxonomic.status",
-                  "New.Genus",
-                  "New.Species",
-                  "country",
-                  "Match.SN.ST")))
-
-
-## How many records don't match?
-dim(Match.SN)
-unique(Match.SN$Match.SN.ST)
-unique(Match.SN$Taxonomic.status)
-unique(Match.SN$New.Taxonomic.status)
-
-
-#########################################################################################################################
-## Incude records where the "scientificName" and the "searchTaxon" match, and where the taxonomic status is 
-## accepted, synonym or unresolved
-
-
-## Also include records where the "scientificName" and the "searchTaxon" don't match, but status is synonym
-## Also, the ALA taxonomy is right for some species - catch this with status = "accepted"
-## This is the same as the subset of species which are accpeted, but not on our list
-match.true  = unique(subset(Match.SN, Match.SN.ST == "TRUE")$scientificName)
-match.false = unique(subset(Match.SN, Match.SN.ST == "FALSE" &
-                              Taxonomic.status == "Synonym" |
-                              Taxonomic.status == "Accepted" )$scientificName)  
-keep.SN     = unique(c(match.true, match.false))
-length(keep.SN)
-
-
-#########################################################################################################################
-## Now remove these from the ALA dataset
-ALA.TRIM.MATCH  = ALA.TRIM.TAXO[ALA.TRIM.TAXO$scientificName %in% keep.SN, ]
-Match.record    = Match.SN[Match.SN$scientificName %in% keep.SN, ]
-
-
-## Check the taxonomic status
-round(with(Match.record, table(Match.SN.ST)/sum(table(Match.SN.ST))*100), 2)
-round(with(Match.record, table(Taxonomic.status)/sum(table(Taxonomic.status))*100), 2)
-round(with(Match.record, table(New.Taxonomic.status)/sum(table(New.Taxonomic.status))*100), 2)
-
-
-## How many records were removed by taxonomic filtering?
-message(dim(ALA.TRIM.TAXO)[1] - dim(ALA.TRIM.MATCH)[1], " records removed")
-message(round((dim(ALA.TRIM.MATCH)[1])/dim(ALA.TRIM.TAXO)[1]*100, 2), 
-        " % records retained using TPL mismatch")
-
-
-## Check the taxonomic status of the updated table
-unique(ALA.TRIM.MATCH$Taxonomic.status)
-unique(ALA.TRIM.MATCH$New.Taxonomic.status)
-
-round(with(ALA.TRIM.MATCH, table(Taxonomic.status)/sum(table(Taxonomic.status))*100), 2)
-round(with(ALA.TRIM.MATCH, table(New.Taxonomic.status)/sum(table(New.Taxonomic.status))*100), 2)
-
-
-## Check NAs again
-(sum(is.na(ALA.TRIM.MATCH$scientificName)) + dim(subset(ALA.TRIM.MATCH, scientificName == ""))[1])/dim(ALA.TRIM.MATCH)[1]*100
-
-
 
 
 
@@ -278,7 +162,7 @@ round(with(ALA.TRIM.MATCH, table(New.Taxonomic.status)/sum(table(New.Taxonomic.s
 
 #########################################################################################################################
 ## Now filter the ALA records using conditions which are not too restrictive
-ALA.CLEAN <- ALA.TRIM.MATCH %>% 
+ALA.CLEAN <- ALA.TRIM %>% 
   
   ## Note that these filters are very forgiving...
   ## Unless we include the NAs, very few records are returned!
@@ -295,8 +179,8 @@ names(ALA.CLEAN)
 
 
 ## How many records were removed by filtering?
-message(dim(ALA.TRIM.MATCH)[1] - dim(ALA.CLEAN)[1], " records removed")
-message(round((dim(ALA.CLEAN)[1])/dim(ALA.TRIM.MATCH)[1]*100, 2), 
+message(dim(ALA.TRIM)[1] - dim(ALA.CLEAN)[1], " records removed")
+message(round((dim(ALA.CLEAN)[1])/dim(ALA.TRIM)[1]*100, 2), 
         " % records retained using spatially valid records")
 
 

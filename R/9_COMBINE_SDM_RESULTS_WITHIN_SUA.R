@@ -19,9 +19,7 @@ length(unique(SUA.SPP.COUNT$SPECIES))
 
 
 #########################################################################################################################
-## Create arguments for the different settings
-## EG ALL_SPP, REC_SPP
-## EG ALL_SUA, LARGE_SUA
+## Create arguments for the figures
 SUAs       = "ALL_SUAs"     #"LARGE_SUAs"
 SUA_SPP    = "ALL_SPP"      #"REC_SPP"
 SUA_ORDER  = "CURRENT_MAT"
@@ -414,7 +412,7 @@ dim(SUA.PLOT.GOOD.30);dim(SUA.PLOT.GOOD.50);dim(SUA.PLOT.GOOD.70)
 
 ## Melt the table into the right format : but does this mean the different categories are mutually exclusive?
 ## Species can only fall in the categories gain, loss, stable, never, in each SUA. So yes, they are exclusive.
-SUA.PLOT.30          = table(SUA.PLOT.GOOD.30$SUA, SUA.PLOT.GOOD.30$GAIN_LOSS)
+SUA.PLOT.30          = table(SUA.PLOT.GOOD.30$SUA, SUA.PLOT.GOOD.30$GAIN_LOSS) ## Linda has used current suitable > 1 to do the count
 SUA.PLOT.50          = table(SUA.PLOT.GOOD.50$SUA, SUA.PLOT.GOOD.50$GAIN_LOSS)
 SUA.PLOT.70          = table(SUA.PLOT.GOOD.70$SUA, SUA.PLOT.GOOD.70$GAIN_LOSS)
 SUA.PLOT.30.M        = melt(SUA.PLOT.30)

@@ -19,7 +19,22 @@
 
 ## Print the species run to the screen
 message('Creating habitat suitability maps for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
-COMBO.NICHE.CONTEXT = readRDS(paste0(DATA_path, 'COMBO_NICHE_CONTEXT_',  save_run, '.rds'))
+
+
+## Read in niche data
+if(read_data == "TRUE") {
+  
+  ## Load GBIF and ALA data
+  COMBO.NICHE.CONTEXT = readRDS(paste0(DATA_path, 'COMBO_NICHE_CONTEXT_',  save_run, '.rds'))
+
+} else {
+  
+  message(' skip file reading, running species in parallel')   ##
+  
+}
+
+
+
 
 
 #########################################################################################################################
@@ -352,7 +367,7 @@ if(save_data == "TRUE") {
 
 
 #########################################################################################################################
-## 3). CREATE LISTS OF HABITAT SUITABILITY THRESHOLDS AND RUN MESS MAPS
+## 3). RUN MULTIVARIATE ENVIRONMENTAL SIMILARITY (MESS) MAPS FOR SELECTED SPECIES
 #########################################################################################################################
 
 
@@ -386,8 +401,7 @@ percent.10.om     = percent.10.om$X10.percentile.training.presence.training.omis
 
 
 #########################################################################################################################
-## RUN MULTIVARIATE ENVIRONMENTAL SIMILARITY (MESS) MAPS FOR SELECTED SPECIES
-#########################################################################################################################
+## MESS MAPS FOR EACH SPECIES
 
 
 ## Mess maps measure the similarity between the new environments and those in the training sample.

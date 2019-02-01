@@ -117,50 +117,157 @@ if(save_data == "TRUE") {
 }
 
 
+
+
+
+#########################################################################################################################
+## 2). CHECK TAXONOMY RETURNED BY ALA USING TAXONSTAND
+######################################################################################################################### 
+
+
+## The problems is the mis-match between what we searched, and what GBIF returned.
+
+## 1). Create the inital list by combing the planted trees with evergreen list
+##     TREE.HIA.SPP = intersect(subset(TI.LIST, Plantings > 50)$searchTaxon, CLEAN.SPP$Binomial)
+##     This is about 400 species
+##     Origin
+##     NA     Exotic Native
+##     20.5   25.8   53.8
+
+## 2). Clean this list using the GBIF backbone taxonomy :: use the "species" column in from the GBIF "species lookup" tool
+##     https://www.gbif.org/tools/species-lookup
+##     Then export the csv
+
+## 3). Import the CSV, and run the GBIF "species" list through the TPL taxonomy. Take "New" Species and Genus as the "searchTaxon"
+
+## 4). Use rgbif and ALA4R to download occurence data, using "searchTaxon".
+##     For GBIF, we use
+##     key  <- name_backbone(name = sp.n, rank = 'species')$usageKey
+##     GBIF <- occ_data(taxonKey = key, limit = GBIF.download.limit)
+##     ALA  <- occurrences(taxon = sp.n, download_reason_id = 7)
+
+##     This returns multiple keys and synonyms, but there is no simple way to skip these....
+
+## 5). Join the TPL taxonomy to the "scientificName" field. We can't use "name" (the equivalent of "species", it seems),
+##     because name is always the same as the searchTaxon and not reliable (i.e. they will always match, and we know that
+##     no one has gone through and checked each one).
+
+##     Exclude records where the "scientificName" both doesn't match the "searchTaxon", and, is also not a synonym according to TPL
+##     The remaining records are either "accepted" "synonym" or "uresolved", with 97% of searched records matching returned records.
+##     To this conditon, we add for ALA records where "scientificName" both doesn't match the "searchTaxon", we also include "accepted"
+##     This doesn't happen for GBIF, but it does for ALA, because the APC taxonomy is different again from GBIF and TPL. Where they don't agree,
+##     ALA is correct. But as a global analysis, we take TPL as the baseline.
+
+
+#########################################################################################################################
+## Use "Taxonstand" to check the taxonomy :: which field to use?
+message('Running TPL taxonomy for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
+COMBO.TAXO <- TPL(unique(GBIF.ALA.COMBO$scientificName), infra = TRUE,
+                corr = TRUE, repeats = 100)  ## to stop it timing out...
+sort(names(COMBO.TAXO))
+saveRDS(COMBO.TAXO, paste0(ALA_path, 'ALA_TAXO_', save_run, '.rds'))
+
+
+## Check the taxonomy by running scientificName through TPL. Then join the GBIF data to the taxonomic check, using 
+## "scientificName" as the join field
+COMBO.TAXO <- GBIF.ALA.COMBO %>%
+  left_join(., COMBO.TAXO, by = c("scientificName" = "Taxon"))
+COMBO.TAXO$New_binomial = paste(COMBO.TAXO$New.Genus, COMBO.TAXO$New.Species, sep = " ") 
+names(COMBO.TAXO)
+
+
+## Check NAs again
+(sum(is.na(COMBO.TAXO$scientificName)) + dim(subset(COMBO.TAXO, scientificName == ""))[1])/dim(GBIF.ALA.COMBO)[1]*100
+
+
+#########################################################################################################################
+## However, the scientificName string and the searchTaxon string are not the same. 
+## currently using 'str_detect'
+Match.SN = COMBO.TAXO  %>%
+  mutate(Match.SN.ST = 
+           str_detect(searchTaxon, New_binomial)) %>%  ## Match the searched species with the latest TPL binomial
+  
+  select(one_of(c("scientificName",
+                  "searchTaxon",
+                  "Taxonomic.status",
+                  "New.Taxonomic.status",
+                  "New.Genus",
+                  "New.Species",
+                  "country",
+                  "Match.SN.ST")))
+
+
+## How many records don't match?
+dim(Match.SN)
+unique(Match.SN$Match.SN.ST)
+unique(Match.SN$Taxonomic.status)
+unique(Match.SN$New.Taxonomic.status)
+
+
+#########################################################################################################################
+## Incude records where the "scientificName" and the "searchTaxon" match, and where the taxonomic status is 
+## accepted, synonym or unresolved
+
+
+## Also include records where the "scientificName" and the "searchTaxon" don't match, but status is synonym
+## Also, the ALA taxonomy is right for some species - catch this with status = "accepted"
+## This is the same as the subset of species which are accpeted, but not on our list
+match.true  = unique(subset(Match.SN, Match.SN.ST == "TRUE")$scientificName)
+match.false = unique(subset(Match.SN, Match.SN.ST == "FALSE" &
+                              Taxonomic.status == "Synonym" |
+                              Taxonomic.status == "Accepted" )$scientificName)  
+keep.SN     = unique(c(match.true, match.false))
+length(keep.SN)
+
+
+#########################################################################################################################
+## Now remove these from the ALA dataset
+GBIF.ALA.COMBO  = COMBO.TAXO[COMBO.TAXO$scientificName %in% keep.SN, ]
+Match.record    = Match.SN[Match.SN$scientificName %in% keep.SN, ]
+
+
+## Check the taxonomic status
+round(with(Match.record, table(Match.SN.ST)/sum(table(Match.SN.ST))*100), 2)
+round(with(Match.record, table(Taxonomic.status)/sum(table(Taxonomic.status))*100), 2)
+round(with(Match.record, table(New.Taxonomic.status)/sum(table(New.Taxonomic.status))*100), 2)
+
+
+## How many records were removed by taxonomic filtering?
+message(dim(COMBO.TAXO)[1] - dim(GBIF.ALA.COMBO)[1], " records removed")
+message(round((dim(GBIF.ALA.COMBO)[1])/dim(COMBO.TAXO)[1]*100, 2), 
+        " % records retained using TPL mismatch")
+
+
+## Check the taxonomic status of the updated table
+unique(GBIF.ALA.COMBO$Taxonomic.status)
+unique(GBIF.ALA.COMBO$New.Taxonomic.status)
+
+round(with(GBIF.ALA.COMBO, table(Taxonomic.status)/sum(table(Taxonomic.status))*100), 2)
+round(with(GBIF.ALA.COMBO, table(New.Taxonomic.status)/sum(table(New.Taxonomic.status))*100), 2)
+
+
+## Check NAs again
+(sum(is.na(GBIF.ALA.COMBO$scientificName)) + dim(subset(GBIF.ALA.COMBO, scientificName == ""))[1])/dim(GBIF.ALA.COMBO)[1]*100
+
+
+
+
+
+#########################################################################################################################
+## 2). PROJECT RASTERS AND EXTRACT ALL WORLDCLIM DATA FOR SPECIES RECORDS
+#########################################################################################################################
+
+
 #########################################################################################################################
 ## Create points: the 'over' function seems to need geographic coordinates for this data...
 COMBO.POINTS   = SpatialPointsDataFrame(coords      = GBIF.ALA.COMBO[c("lon", "lat")],
                                         data        = GBIF.ALA.COMBO[c("lon", "lat")],
                                         proj4string = CRS.WGS.84)
 
-
-## Check the logic of if the niche is different when calculate this way, insted of using all data.
-## Would the median, 95-5, etc, be the same using only unique values?...................................................
-
-
-## Now get the XY centroids of the unique 1km * 1km WORLDCLIM blocks where ALA records are found
-## Get cell number(s) of WORLDCLIM raster from row and/or column numbers. Cell numbers start at 1 in the upper left corner, 
-## and increase from left to right, and then from top to bottom. The last cell number equals the number of raster cells 
-# COMBO.POINTS <- cellFromXY(world.grids.current, GBIF.ALA.COMBO[c("lon", "lat")]) %>% 
-#   
-#   ## get the unique raster cells
-#   unique %>% 
-#   
-#   ## Get coordinates of the center of raster cells for a row, column, or cell number of WORLDCLIM raster
-#   xyFromCell(world.grids.current, .) %>%
-#   
-#   as.data.frame() %>%
-#   
-#   SpatialPointsDataFrame(coords = ., data = .,
-#                          proj4string = CRS.WGS.84)
-
-
 ## Check
 dim(COMBO.POINTS)
 projection(COMBO.POINTS)
 names(COMBO.POINTS)
-
-
-
-#########################################################################################################################
-## 2). PROJECT RASTERS AND EXTRACT ALL WORLDCLIM DATA FOR SPECIES RECORDS
-#########################################################################################################################
-
-
-
-#########################################################################################################################
-## 2). PROJECT RASTERS AND EXTRACT ALL WORLDCLIM DATA FOR SPECIES RECORDS
-#########################################################################################################################
 
 
 #########################################################################################################################
@@ -189,14 +296,8 @@ names(COMBO.POINTS)
 
 
 #########################################################################################################################
-## This step is a bottleneck - create niche summaries using both unique cells, and also all cells, and plot them (LM).
-## If they are not different, then consider using the unique version. Email john, and include both code and output.
-## Then we can decide what makes sense
-
-
-#########################################################################################################################
 ## Extract worldclim data
-## This step is a bottle neck ...........................................................................................
+## This step is a bottle neck, can only the unique cells by used ........................................................
 message('Extracting raster values for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
 projection(COMBO.POINTS);projection(world.grids.current)
 dim(COMBO.POINTS);dim(GBIF.ALA.COMBO)
