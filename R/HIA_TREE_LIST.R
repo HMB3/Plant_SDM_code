@@ -842,6 +842,9 @@ TPL_HIA   = gsub(" ", "_", TPL.HIA)
 TPL.CLEAN = paste(TPL.CLEAN$New.Genus, TPL.CLEAN$New.Species, sep = " ")
 TPL_HIA   = gsub(" ", "_", TPL.CLEAN)
 
+TPL.INV   = paste(TPL.INV$New.Genus, TPL.INV$New.Species, sep = " ")
+TPL_INV   = gsub(" ", "_", TPL.INV)
+
 
 length(TPL.SUA);length(TPL.SPP);length(TPL.CLEAN)
 
@@ -872,7 +875,7 @@ length(intersect(CLEAN.SPP$Binomial, unique(APNI$searchTaxon)))
 
 
 ## Intersection between Manuel's list and all the HIA species
-WPW.spp = unique(c(TPL.HIA, TPL.CLEAN, ALL.INV.EV))
+WPW.spp = unique(c(TPL.HIA, TPL.CLEAN, TPL.INV))
 WPW.MANUEL = setdiff(Manuel$Species, WPW.spp)
 
 
@@ -894,6 +897,7 @@ TI.COUNT.NAT  <- TI.LUT %>%
   join(., MAXENT.CHECK[c("searchTaxon", "check.map")]) 
   
 head(TI.COUNT.NAT)
+#write.csv
 #write.csv(TI.COUNT.NAT, './data/base/HIA_LIST/COMBO/TREE_INVENTORY_COUNT.csv', row.names = FALSE)
 #length(intersect(MAXENT.CHECK$))
 length(intersect(MAXENT.CHECK$searchTaxon, TI.LUT$searchTaxon))
