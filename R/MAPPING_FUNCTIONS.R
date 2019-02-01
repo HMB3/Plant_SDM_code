@@ -239,7 +239,8 @@ SUA_cell_count = function(unit_path, unit_file, unit_vec,
                              species, species, time_slice, "gain_loss_", thresh)
         
         ## Read in the raster of not novel areas for Australia
-        not_novel = raster(sprintf('%s%s/full/%s_%s%s%s.tif', maxent_path, species, species, "current_suit_above_", threshold, '_notNovel'))
+        #not_novel = raster(sprintf('%s%s/full/%s_%s%s%s.tif', maxent_path, species, species, "current_suit_above_", thresh, '_notNovel'))
+        #plot()
 
         ## The mean of the GCMs doesn't exist, create it
         if(file.exists(SUA_file)) { 
@@ -267,6 +268,7 @@ SUA_cell_count = function(unit_path, unit_file, unit_vec,
           ## 10th percentile training presence training omission
           current_suit_thresh  = thresh_greater(f_current)
           current_suit_percent = percent_greater(f_current) 
+          
           
           #########################################################################################################################
           ## First, calculate the cells which are greater that the: 

@@ -355,6 +355,11 @@ background          = readRDS("./data/base/HIA_LIST/COMBO/SDM_DATA_CLEAN_052018.
 ## This evergreen list (HIA.list) derives from all species and varieties sold anywhere in Australia in the last 5 years. Anthony Manea cleaned 
 ## up the data and cross-linked to growth form and exotic/native status and derived a list of ~1000 species that are the 
 ## Most commonly sold, covering the right ratio of growth forms, regional representation and native/exotic
+WPW.list            = read.csv("./data/base/HIA_LIST/GBIF/WPW_GBIF_NAMES.csv",                   stringsAsFactors = FALSE)
+WPW.spp             = WPW.list$species
+#saveRDS(WPW.spp, file = paste("./data/base/HIA_LIST/GBIF/WPW_GBIF_NAMES.rds"))
+
+
 HIA.list            = read.csv("./data/base/HIA_LIST/HIA/GREEN_CITIES_DRAFT_LIST_2709_2017.csv", stringsAsFactors = FALSE)
 HIA.RAW             = read.csv("./data/base/HIA_LIST/HIA/HIA_ORIGINAL_RAW.csv",                  stringsAsFactors = FALSE)
 CLEAN.list          = read.csv("./data/base/HIA_LIST/HIA/HIA.CLEAN.csv",                         stringsAsFactors = FALSE)
