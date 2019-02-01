@@ -259,14 +259,6 @@ dim(ALA.LAND)
 length(unique(ALA.LAND$searchTaxon))
 
 
-## One of the ALA columns is causing trouble. Reduce the ALA dataset to a minimum set
-sort(names(ALA.LAND))
-ALA.LAND = ALA.LAND[c("searchTaxon",      "scientificName", "SOURCE", 
-                      "lon", "lat",       "coordinateUncertaintyInMetres", #"geodeticDatum", 
-                      "year", "locality", "country", 
-                      "basisOfRecord",    "institutionCode", "rank")]
-
-
 #########################################################################################################################
 ## save data
 if(save_data == "TRUE") {

@@ -875,7 +875,7 @@ length(intersect(CLEAN.SPP$Binomial, unique(APNI$searchTaxon)))
 
 
 ## Intersection between Manuel's list and all the HIA species
-WPW.spp = unique(c(TPL.HIA, TPL.CLEAN, TPL.INV))
+WPW.spp = as.character(unique(c(TPL.HIA, TPL.CLEAN, TPL.INV)))
 WPW.MANUEL = setdiff(Manuel$Species, WPW.spp)
 
 
@@ -899,6 +899,7 @@ TI.COUNT.NAT  <- TI.LUT %>%
 head(TI.COUNT.NAT)
 #write.csv
 #write.csv(TI.COUNT.NAT, './data/base/HIA_LIST/COMBO/TREE_INVENTORY_COUNT.csv', row.names = FALSE)
+#write.csv(as.data.frame(WPW.spp), './data/base/HIA_LIST/COMBO/WPW_SPP.csv', row.names = FALSE)
 #length(intersect(MAXENT.CHECK$))
 length(intersect(MAXENT.CHECK$searchTaxon, TI.LUT$searchTaxon))
 

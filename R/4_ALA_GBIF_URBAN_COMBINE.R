@@ -61,12 +61,6 @@ dim(GBIF.LAND);dim(ALA.LAND)
 setdiff(names(GBIF.LAND), names(ALA.LAND))
 
 
-## Rename a few fields
-# GBIF.LAND     = dplyr::rename(GBIF.LAND, 
-#                               #coordinateUncertaintyInMetres = coordinateUncertaintyInMeters,
-#                               rank = taxonRank)
-
-
 #########################################################################################################################
 ## Bind the rows together
 common.cols = intersect(names(GBIF.LAND), names(ALA.LAND))
