@@ -140,7 +140,6 @@ GBIF.CLEAN <- GBIF.TRIM %>%
 
 ## How many species are there?
 names(GBIF.CLEAN)
-length(unique(GBIF.TRIM.TAXO$searchTaxon))
 length(unique(GBIF.CLEAN$searchTaxon))
 
 
