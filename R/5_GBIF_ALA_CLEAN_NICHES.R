@@ -338,7 +338,7 @@ TAXA <- unique(GBIF.ALA.SPDF$TAXON)
 
 #########################################################################################################################
 ## Only run this code if we are saving niches 
-if(save_data == "TRUE") {
+if(calc_niche == "TRUE") {
   
   ## We want to know the count of species that occur in 'n' LGAs, across a range of climates. Read in LGA and SUA
   length(unique(CLEAN.TRUE$searchTaxon))
