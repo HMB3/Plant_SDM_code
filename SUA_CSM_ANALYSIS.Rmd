@@ -1,5 +1,5 @@
 ---
-title: "Green Cities climate suitability project"
+title: "Predicted change of suitable habitat for horticultural trees in urban areas under climate change"
 authors: "Hugh Burley, John Baumgartner, Linda Beaumont"
 date: "December 2018"
 output:
@@ -11,7 +11,7 @@ pdf_document: default
 
 This R markdown file summarises my contribution to the 'Which Plant Where' project at Macquarie University, 
 outlining the key functions I have created during my postdoctural work. WPW is part of the Green Cities
-co-investment fund. 
+co-investment fund : 
 
 https://horticulture.com.au/co-investment-fund/green-cities-fund/
 
@@ -45,23 +45,23 @@ planted across Australia's urban landscapes.
 
 **Major taxa analysed:** 176 commonly planted and sold horticultural tree species
 
-**Methods:** Species' occurrence records were obtained from myriad tree inventories and 
-natural history collections, along with baseline climate data (WorldClim) and six scenarios for 
-three time periods: 2030, 2050, 2070. We calibrated climatic suitability models (CSMs) for each 
-species and projected these onto current and future climate scenarios. For each species, we 
-calculated i) changes to the size of climatically suitable habitat across Australia, 
-ii) future loss of currently suitable urban habitat and iii) future gain of habitat across all
-urban areas that are currently unsuitable.
+**Methods:** Species’ occurrence records were obtained from myriad inventories and herbaria, 
+both globally and across Australia, along with baseline climate data (WorldClim, 1960-1990) 
+and six climate scenarios for 2030 and 2070. Climatic suitability models (CSMs) for each 
+species were calibrated and projected onto baseline and future climate scenarios. We 
+calculated changes to the size of climatically suitable habitat across SUAs, for each 
+species, and identified urban areas that are likely to have suitable climate for fewer 
+or more of our study species as climate changes.
 
-**Results:** For more than 50% of the tree species analysed, suitable habitat is projected to decline 
-by 2070 to less than half of its current extent, with suitable habitat in urban regions projected 
-to decline for ~90% of species.
+**Results:** By 2070, climatically suitable habitat in urban regions is projected 
+to decline for ~73% of species, while for 18% of species, suitable climate is predicted 
+to decline to less than half of its baseline extent. Generally, urban areas in cooler 
+regions are predicted to gain more species than they lose, while urban areas in warmer 
+regions may lose more species than they gain. Our results highlight changing patterns 
+of urban climatic space for different species, indicating that governments and nurseries 
+should take a proactive approach –  utilizing multiple lines of evidence (modelling and 
+experiments) – to identify new planting opportunities. 
 
-**Main conclusions:** The number of species with suitable climate within the largest Australian 
-urban areas is projected to progressively decline as climate change intensifies. Our results 
-highlight changing patterns of climatic space for different species, indicating that a pro-active 
-approach, utilizing multiple lines of evidence, is needed to identify new planting opportunities. 
-We also identify key issues associated with the use of CSMs for species in urban environments.
 
 \
 
@@ -74,8 +74,8 @@ We also identify key issues associated with the use of CSMs for species in urban
 ### **Defining significant Urban Areas** 
 Our spatial units for estimating species' future climatic suitability are the 101 Australian Significant 
 Urban Areas (SUAs). SUAs are defined by the Australian Bureau of Statistics (ABS) as containing at least 
-10,000 people within a single labour market. The SUA boundaries were taken from the 2016 SUA shapefile 
-from the ABS, and cover the full span of current Australian climate (Fig 1). 
+10,000 people within a single labour market. The SUA boundaries were taken from the ABS 2016 SUA shapefile, 
+and cover the full span of current Australian climate (Fig 1). 
 
 
 \newpage 
@@ -109,30 +109,12 @@ names from the TPL taxonomy were then used for this analysis.
 
 \
 
-```{r message=FALSE, echo = FALSE, warning = FALSE}
+```{r message=FALSE, echo=FALSE, warning=FALSE}
 
 ########################################################################################################
-## Load data and packages
-load("H:/green_cities_sdm/TEST_RUN.RData")
-source("./R/READ_PACKAGES.R")
-
-
 ## List of Variables used to run the SDM analyses
-GBIF.spp      = native.good.models[1:10]                  ## A list of species
-GBIF.spp.rev  = sort(GBIF.spp, decreasing = TRUE)         ## the list reversed - used for local analyses
-
-save_run      = "SUA_RMD"                                 ## A variable to append the run name to output files
-map_spp_list  = gsub(" ", "_", GBIF.spp)                  ## Species list with "_" for mapping
-map_spp_rev   = sort(map_spp_list, decreasing = TRUE)     ## Reversed, so we can run two at once
-
-GBIF_path     = "./data/base/HIA_LIST/GBIF/OCC_SEARCH/"   ## The path where GBIF data is stored
-ALA_path      = "./data/base/HIA_LIST/ALA/TREES_TEST/"    ## The path where ALA data is stored  place
-
-maxent_path   = './output/maxent/SUA_TREES_ANALYSIS/'     ## The directory where files are saved               
-maxent_dir    = 'output/maxent/SUA_TREES_ANALYSIS'        ## Another version of the path for the maxent functions
-save_data     = 'TRUE'                                    ## Argument for saving the intermediary output - e.g. data frames
-read_data     = 'FALSE'                                   ## Argument for saving the intermediary output - e.g. data frames
-save_path     = 'data/base/HIA_LIST/COMBO'
+load("H:/green_cities_sdm/TEST_RUN.RData")
+source('./R/RMD_READ_PACKAGES.R')
 
 ```
 
@@ -219,22 +201,23 @@ and sold tree species using best practices, as summarised below.
 \
 
 ```{r echo = FALSE, message = FALSE, warning = FALSE}
-## Combine GBIF occurrence data with ALA data and filter to records > 1950
+## Step 3 :: combine GBIF occurrence data with ALA data and filter to records > 1950
 source('./R/ALA_DATA_FILTER_TAXO_SCIENTIFIC_NAME.R', echo = FALSE)
-source('./R/3)_GBIF_DATA_TAXO_SCIENTIFIC_NAME.R',    echo = FALSE)
+source('./R/3_GBIF_DATA_TAXO_SCIENTIFIC_NAME.R',     echo = FALSE)
 
 
-## Combine GBIF, ALA and urban occurrence data into a single table, extract environmental condtions
-source('./R/4)_ALA_GBIF_URBAN_COMBINE.R', echo = FALSE)
+## Step 4 :: combine GBIF, ALA and tree inventory data into a single table, extract environmental condtions
+source('./R/4_ALA_GBIF_URBAN_COMBINE.R',  echo = FALSE)
 source('./R/INVENTORY_RASTER.R',          echo = FALSE)
 
 
-## Clean the occurrence data using the 'CleanCoordinates' function in the CoordinateCleaner package to remove
-## records near herbaria, duplicates, etc. & add contextual info for each record (taxonomic and horticultural)
+## Step 5 :: clean the occurrence data using the 'CleanCoordinates' function in the CoordinateCleaner package to remove
+## records near herbaria, duplicates, etc. & add contextual info for each record (taxonomic and horticultural) 
 ## Then prepare the SDM table
 ## Then clean the spatial outliers
-source('./R/5)_GBIF_ALA_CLEAN_NICHES.R',  echo = FALSE)
-source('./R/6)_PREPARE_SDM_TABLE_1KM.R',  echo = FALSE)
+source('./R/5_GBIF_ALA_CLEAN_NICHES.R',  echo = FALSE)
+source('./R/6_PREPARE_SDM_TABLE_1KM.R',  echo = FALSE)
+
 
 ```
 
@@ -306,20 +289,20 @@ lapply(GBIF.spp, function(spp){
     
     ## Finally fit the models using FIT_MAXENT_TARG_BG. 
     tryCatch(
-      FIT_MAXENT_TARG_BG(occ                     = occurrence, 
-                         bg                      = background, 
-                         sdm.predictors          = sdm.select, 
-                         name                    = spp, 
-                         outdir, 
-                         template.raster,
-                         min_n                   = 20,            
-                         max_bg_size             = 70000,         ## could be 50k or lower
-                         Koppen                  = Koppen_1975,
-                         background_buffer_width = 200000,
-                         shapefiles              = TRUE,
-                         features                = 'lpq',
-                         replicates              = 5,
-                         responsecurves          = TRUE),
+      FIT_MAXENT_TARG_BG(occ                     = occurrence,  ## occurrence points
+                         bg                      = background,  ## background points
+                         sdm.predictors          = sdm.select,  ## predictor variables
+                         name                    = spp,         ## Species name
+                         outdir,                                ## Output directory
+                         template.raster,                       ## Resolution raster
+                         min_n                   = 20,          ## Minimum records           
+                         max_bg_size             = 70000,       ## Max bg points
+                         Koppen                  = Koppen_1975, ## Koppen Shapefile 
+                         background_buffer_width = 200000,      ## Km
+                         shapefiles              = TRUE,        ## Save bg and occ shp?
+                         features                = 'lpq',       ## Maxent features
+                         replicates              = 5,           ## No. of K-fold
+                         responsecurves          = TRUE),       ## save response curves?
       
       error = function(cond) {
 
@@ -598,13 +581,13 @@ over each future climate scenario and species, for one period at a time).
 ```{r, eval=FALSE, echo=TRUE}
 
 ## A function which projects climatic suitability under six GCMs at each time step (2030/50/70)
-env.grids.2030 = tryCatch(project_maxent_grids(scen_list     = scen_2030,
-                                               species_list  = map_spp_list,
-                                               maxent_path   = maxent_path, 
-                                               climate_path  = "./data/base/worldclim/aus/1km/bio",
-                                               grid_names    = grid.names,
-                                               time_slice    = 30,
-                                               current_grids = aus.grids.current),
+env.grids.2030 = tryCatch(project_maxent_grids(scen_list     = scen_2030,    ## List of global circulation models
+                                               species_list  = map_spp_list, ## List of species' directories
+                                               maxent_path   = maxent_path,  ## Directory of maxent results
+                                               climate_path  = "./clim/",    ## Directory of climate rasters
+                                               grid_names    = grid.names,   ## Names of climate rasters
+                                               current_grids = aus.grids,    ## Stack of climate rasters
+                                               time_slice    = 30)           ## Time period 
                           
                           ## Skip species
                           error = function(cond) {
@@ -619,7 +602,7 @@ env.grids.2030 = tryCatch(project_maxent_grids(scen_list     = scen_2030,
 
 ```{r eval = FALSE, echo = TRUE}
 
-## One function for all time periods
+## Run the porject function for each time period separately
 project_maxent_grids = function(scen_list, species_list, maxent_path, 
                                 climate_path, grid_names, time_slice, current_grids) {
   
@@ -773,7 +756,7 @@ for more details of the  Maxent algorithm).
 \newpage 
 ![](output/figures/CV_figs/A_implexa_CURRENT_SUIT.png)
 
-**Figure 2.** Example of a continuous suitabiliy map for one species under current condtions. 
+**Figure 2.** Example of a continuous climatic suitabiliy map for one species under current condtions. 
 Species occurrence points are plotted in red on the left panel. The cells in the centre and 
 lower panels are coded from 0 - no to low suitability, to 1, highly suitable.
 
@@ -811,14 +794,17 @@ for each time period, E.G. 2030)
 
 #########################################################################################################
 ## A function which counts the number cells gained or lost for each species inside an SUA
-suitability.2030 = tryCatch(mapply(SUA_cell_count,                                               
-                                   DIR_list     = SDM.RESULTS.DIR,
-                                   species_list = map_spp,
-                                   maxent_path  = maxent_path,
-                                   thresholds   = percent.10.log,
-                                   percentiles  = percent.10.om,
-                                   time_slice   = 30,
-                                   write_rasters = FALSE),
+suitability.2030 = tryCatch(mapply(SUA_cell_count,                      ## Function aggreagating GCMs by spatial unit
+                                   unit_path     = "./DIR/",            ## Data path for the spatial unit 
+                                   unit_file     = "SUA_2016_AUST.rds", ## Spatial unit of analysis - E.G. SUAs
+                                   unit_vec      = "SUA_2016_VEC.rds",  ## Vector of rasterized unit cells
+                                   DIR_list      = SDM.RESULTS.DIR,     ## List of directories with rasters
+                                   species_list  = map_spp,             ## List of species' directories
+                                   maxent_path   = maxent_path,         ## Directory of maxent results
+                                   thresholds    = percent.10.log,      ## List of maxent thresholds
+                                   percentiles   = percent.10.om,       ## 2nd List of maxent thresholds
+                                   time_slice    = 30,                  ## Time period, eg 2030
+                                   write_rasters = TRUE),               ## Save the combined rasters?
                             
                             error = function(cond) {
                               
@@ -834,25 +820,18 @@ suitability.2030 = tryCatch(mapply(SUA_cell_count,
 
 ########################################################################
 ## Loop over directories, species and one threshold for each species
-SUA_cell_count = function(DIR_list, species_list, maxent_path, thresholds, 
-                          percentiles, time_slice, write_rasters) {
-  
-  ######################################################################
-  ## Read in shapefiles :: this should be done outside the loop
-  aus        = readRDS('data/base/CONTEXTUAL/aus_states.rds') %>%
+SUA_cell_count = function(unit_path, unit_file, unit_vec, 
+                          DIR_list, species_list, 
+                          maxent_path, thresholds, percentiles, 
+                          time_slice, write_rasters) {
+
+  ###################################################################################################################
+  ## Read in shapefiles 
+  areal_unit = readRDS(paste0(unit_path, unit_file)) %>%
     spTransform(ALB.CONICAL)
+  areal_unit = areal_unit[order(areal_unit$SUA_NAME16),] 
   
-  LAND       = readRDS('data/base/CONTEXTUAL/LAND_world.rds')
-  
-  areal_unit = readRDS("./data/base/CONTEXTUAL/SUA/SUA_2016_AUST.rds") %>%
-    spTransform(ALB.CONICAL)
-  areal_unit = areal_unit[order(areal_unit$SUA_NAME16),]
-  
-  #######################################################################
-  ## Read in rasters of the SUA shapefile
-  areal_unit_rast = readRDS("./data/base/CONTEXTUAL/SUA/SUA_2016_RAST.rds")
-  areal_unit_vec  = readRDS("./data/base/CONTEXTUAL/SUA/SUA_2016_VEC.rds")
-  summary(areal_unit_vec)
+  areal_unit_vec  = readRDS(paste0(unit_path, unit_vec)) 
   
   ## Loop over each directory
   lapply(DIR_list, function(DIR) { 
@@ -1114,48 +1093,100 @@ are coded as cells where the species is predicted to be lost, gained, or remain 
 # **<span style="color:blue"> Results </span>**
 #########################################################################################################
 
+#########################################################################################################
+### **Climatically suitable habitat for horticultural tree species** 
+
+All 176 species received AUC and TSS values sufficiently high (i.e. AUC > 0.69 and TSS > 0.29) to indicate 
+acceptable predictive power (see Table S1 in supplementary material). Averaged over all species, climate 
+space across the 82 SUAs was predicted to span 16,150 km2 (± 9,082 km2) in the baseline period. However, 
+we emphasize that the Maxent suitability surfaces have been thresholded: a higher or lower threshold will 
+decrease or increase, respectively, the area classified as “suitable”. The spatial extent of climate space 
+is predicted to decline to an average 13,043 (± 8,924 km2) by 2030, and 12,300 km2 (± 10,016 km2) by 2070. 
+Of the 176 species, 73% are predicted to experience range declines: 18% are predicted to lose > 50% of 
+climate space across their respective SUAs, by 2030, while 34% are predicted to lose > 50% by 2070. Among 
+the 14 species (8%) predicted to have losses exceeding 90% of baseline climate space are Callitris oblonga 
+(Pygmy cypress pine) and Acacia fimbriata (Brisbane golden wattle). In contrast, 11 species are predicted 
+to experience increases in the extent of suitable climate space of more than 50%, e.g. Ficus platypoda 
+(Rock fig) and Brachychiton rupestris (Queensland bottle tree).
+
 \
 
-Generally, the Climatic suitability analyses predict that species in SUAs in cooler areas (e.g., Hobart) 
-are projected to experience greater expansion of suitable climate compared to species in SUAs in warmer 
-areas (e.g. Darwin). This increase of suitable habitat for more species in cooler SUAs is driven by the 
-projection of a southwards shift in climate space: species northern-most range margins are projected to 
-contract, while their southern-most margins may be extended into new areas. Although there is no clear 
-climatic pattern in species losses from SUAs, our projections indicate that the warmer SUAs generally 
-lose more species than they gain. For example, of the eight most populous SUAs in each Australian State 
-and Territory (Hobart, Canberra, Melbourne, Adelaide, Sydney, Perth, Brisbane and Darwin) the warmest 
-will lose suitable climate for more species than they will gain.
+Generally, suitable habitat is predicted to shift poleward. As such, species are likely to experience an 
+extension of their southern (colder) range margin (e.g., Pongamia pinnata and Melia azedarach in Fig. 4), 
+and/or a contraction of their northern (warmer) margin (e.g., Melia azedarach and Syzygium smithii in 
+Fig. 4). However, some species  –  particularly those found along coastal strips of south-east Australia  
+– may experience contraction at both range latitudinal margins (see Syzygium smithii, Fig. 4).
 
 
 \newpage 
-![](output/figures/CV_figs/ALL_SUA.png)
+![](output/figures/CV_figs/FIG_4_PICS.png)
 
-**Figure 4.** The left panel shows a barplot of predicted percentage of original native tree species 
-gains (green) and losses (red) within all of Australia’s 101 significant Urban Areas (SUAs), from 
-current distributions to 2070, derived from the climatic suitability models (CSMs). SUAs are ranked 
-by current mean annual temperature (MAT, e.g. Hobart is the coolest SUA, Darwin the the warmest). 
-The top right panel shows a scatterplot of the species gained in each SUA (y) vs the MAT of each SUA,
-while the bottom right panel shows the losses.
+**Figure 4.** Examples of horticulturally-important tree species for which their 
+climatic distributions are predicted to expand (Pongamia pinnata), shift (Melia azedarach) 
+and shrink (Syzygium smithii) for 2030 (black areas) and 2070 (orange areas), relative 
+to their baseline distributions (grey areas). Australia’s temperate SUAs are plotted 
+in pink on the baseline map. Images are freely available in the public domain from 
+Wikimedia Commons (CC BY-SA 3.0) and credited to Alpsdake (Melia azedarach), 
+L. Shyamal [Pongamia pinnata (Millettia pinnata)] and Akos Kokai (Syzygium smithii).
+
+
+\
+
+
+#########################################################################################################
+## **Climatically suitable habitat for tree species within urban areas** 
+
+
+\
+
+For the baseline period (1960-1990), SUAs were predicted to contain suitable climate for an average of 
+74 of the 176 species (± 30), ranging from 10 species in Geraldton to 139 in Sydney. By 2070, this average 
+is predicted to decline to 63 species (± 30), with ten SUAs (eight in eastern Queensland and two in 
+south-west Western Australia) predicted to have climate space for 50% fewer species (Fig. 5). However, 
+21 of the 82 SUAs may contain suitable climate for more species by 2070 than during the baseline period, 
+including Orange (50% more species), Wangaratta (25%), and all five of the Tasmanian SUAs in this study 
+(6-24%) - SUAs that predominantly lie in cooler regions. In addition, the spatial extent of suitable 
+habitat across SUAs is generally predicted to decline. That is, averaged across their representative 
+species, 12.3% (± 5.8%) of each SUA’s area will no longer be suitable by 2070, although average gains 
+of 6.3% (± 4.3%) may occur elsewhere within the SUA. 
+
+\
+
+\newpage 
+![](output/figures/CV_figs/FIG_2_barplots.png)
+
+**Figure 5.** Based on predictions from a climate suitability model, barplots 
+illustrate the percentage of native tree species with suitable habitat in the 
+baseline period (1960-1990), that are predicted to experience gains (green) or 
+losses (red) in the extent of suitable habitat over 82 Significant Urban Areas 
+(SUA, left panels), and within the 19 largest SUAs (right panels), for 2030 
+(a-b) and 2070 (c-d). SUAs are ranked by current mean annual temperature 
+(MAT, e.g. Hobart is the coolest SUA, Mackay the the warmest)
+
+\
+
+SUAs with warmer baseline mean annual temperature 
+are predicted to have fewer tree species experience increases in suitable habitat compared to cooler 
+SUAs (Fig. 6). Similarly, the percent of tree species predicted to experience losses in suitable 
+habitat increases with increasing mean annual temperature within SUAs. These patterns of change 
+were consistent regardless of the area and population of the SUAs (Fig. 6). In addition, the deviance 
+explained by GAMs in the long term (2070) was higher than the model deviance in the short term (2030).
 
 
 \newpage 
-![](output/figures/CV_figs/BIG_SUA.png)
+![](output/figures/CV_figs/FIG_3_scatterplots.png)
 
-**Figure 5.** The left panel shows a barplot of predicted percentage of original native tree species 
-gains (green) and losses (red) within all Australia’s largest 21 significant Urban Areas (SUAs), from 
-current distributions to 2070, derived from the climatic suitability models (CSMs). SUAs are ranked 
-by current mean annual temperature (MAT, e.g. Hobart is the coolest SUA, Darwin the the warmest). 
-The top right panel shows a scatterplot of the species gained in each SUA (y) vs the MAT of each SUA,
-while the bottom right panel shows the losses.
-
-\
-
-Our preliminary results indicate that climatically suitable habitat for many species is likely to decline 
-For the 176 species analysed here, suitable habitat for half these species is projected to decline 
-by 2070 to less than 42% of its current extent. Only 4.5% of species are projected to have increases 
-to the size of suitable habitat. 
+**Figure 6.** The Scatterplots of the predicted percentage of original native 
+tree species gains (top panels) and losses (bottom panels) within temperate SUAs, 
+vs. the mean annual temperature of the SUA for both 2030 (lighter points) and 
+2070 (darker points). The left panels are for all temperate SUAs, while the 
+right panels are for the SUAs with area > 200 km2 and with population > 80,000. 
+DE = deviance explained from generalised additive models (GAMs) of species 
+gain/loss (y axis) in each SUA vs. the SUA MAT.
 
 \
+
+
 
 #########################################################################################################
 # **<span style="color:blue"> Implications, caveats and future work </span>**
@@ -1163,28 +1194,48 @@ to the size of suitable habitat.
 
 \
 
-The repercussions of loss and gain for the Nursery Industry is two fold. Firstly, if an area becomes unsuitable 
-for a species, this means that existing plants are likely vulnerable to climate change. Secondly, it signifies 
-changing opportunities for growers: species that may have been solid performers in the past may be unreliable 
-in the future, while new opportunities will emerge as suitable climate space appears beyond a species’ current 
-range. Generally, climate space is projected to shift southwards: species northern-most range margins are 
-projected to contract, while southern-most margins may be extended into new places. Our projections indicate, 
-however, that the five most populous SUAs in Australia (Adelaide, Brisbane, Melbourne, Perth and Sydney) will 
-lose suitable climate for more species than they will gain - at least for the current crop of 176 species 
-included in this analysis. 
+Our analysis shows that commonly planted tree species are likely to respond to climate change 
+within temperate urban areas in a similar fashion as they are predicted to respond within natural 
+ecosystems – i.e. migrating pole-wards. Thus species found in SUAs in cooler areas are predicted 
+to experience greater expansion of suitable climate compared to species in SUAs in warmer areas. 
+(Figure 6). This increase of suitable habitat for more species in cooler urban areas is driven by 
+the projection of a southwards (poleward) shift in climate space in the underlying climate models: 
+species’ northern-most range margins are predicted to contract, while their southern-most margins 
+may be extending into new areas.
+
+\newpage 
+![](output/figures/CV_figs/FIG_1_SUA_PLOT_crop.png)
+
+**Figure 6.** The largest Significant Urban Areas (SUA) in each Australian 
+State and Territory (Ade = Adelaide, Bris = Brisbane, Can = Canberra, Hob = Hobart, 
+Mel = Melbourne; Per = Perth, Syd = Sydney - The Northern Territory was not included 
+in this study, Australia’s temperate SUAs are plotted in pink). For each largest SUA, 
+we plot the predicted change in average % of cells lost (orange), gained (green) and 
+stable (light blue) in each SUA across all 176 species according to our climate 
+suitability models, from baseline to 2070.
 
 \
 
-While CSMs are useful tools for exploring the distribution of climatically suitable habitat, several factors 
-should be kept in mind when interpreting their output - particularly when applied to plants growing in urban 
-environments.
+
+The repercussions of loss and gain for the Nursery Industry are two fold. Firstly, 
+if an area becomes unsuitable for a species, this means that existing plants are 
+likely to be vulnerable to climate change. Secondly, it signifies changing opportunities 
+for growers: species that may have been solid performers in the past may be unreliable 
+in the future, while new opportunities will emerge as suitable climate space appears 
+beyond a species’ current range.  
 
 \
 
-**1).** CSMs do not ‘predict’ where a species will occur. These tools identify where suitable conditions for 
-the species occur with respect to the climatic variables used to calibrate the model. However, climatic 
-extremes have been excluded from the model, which may alter the likelihood that a plant will survive in 
-a given location.
+While CSMs are useful tools for exploring the distribution of climatically suitable 
+habitat, several factors should be kept in mind when interpreting their output 
+- particularly when applied to plants growing in urban environments.
+
+\
+
+**1).** CSMs do not ‘predict’ where a species will occur. These tools identify where 
+suitable conditions for the species occur with respect to the climatic variables used 
+to calibrate the model. However, climatic extremes have been excluded from the model, 
+which may alter the likelihood that a plant will survive in a given location.
 
 \
 
