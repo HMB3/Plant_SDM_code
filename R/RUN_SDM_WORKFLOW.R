@@ -137,7 +137,7 @@ if (length(Sys.getenv("PBS_ARRAYID"))) {
 }
 
 GBIF.spp      = as_utf8(GBIF.spp, normalize = TRUE)
-GBIF.spp.rev  = sort(GBIF.spp,   decreasing = TRUE)              ## the list reversed - only needed for a big list
+GBIF.spp.rev  = sort(GBIF.spp,   decreasing = TRUE)              ## The list reversed - only needed for a big list
 
 save_run      = "WPW_TEST"                                       ## a variable to append the run name to the output file
 map_spp_list  = gsub(" ", "_", GBIF.spp)                         ## species list with "_" for mapping
