@@ -371,7 +371,7 @@ if(save_data == "TRUE") {
   
 } else {
   
-  message('Dont plot, only ', length(GBIF.spp), ' species analysed')
+  message('Dont save niche summary, only ', length(GBIF.spp), ' species analysed')
   
 }
 

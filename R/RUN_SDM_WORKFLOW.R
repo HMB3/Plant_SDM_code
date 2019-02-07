@@ -128,6 +128,7 @@ PET             = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
 #########################################################################################################################
 ## Now set global analysis variables :: these assume you are using an R project folder structure
 ## Replace any non - UTF8 character in the string with UTF
+Sys.setenv("PBS_ARRAYID" = 1)
 GBIF.spp      = WPW.spp
 
 #  subset for PBS array jobs
