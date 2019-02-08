@@ -353,7 +353,7 @@ length(intersect(MAXENT.SUMMARY.NICHE$searchTaxon, GBIF.spp))
 
 
 #########################################################################################################################
-## Create a plot of number of records vs. maxent rating, Boxplot with no. occurrences on y, and maxent rating on
+## Create a plot of number of records vs. maxent rating, Boxplot with no. occurrences on y, and maxent rating on x
 # plot(MAXENT.SUMMARY.NICHE$GLOBAL_RECORDS, MAXENT.SUMMARY.NICHE$check.map, pch = 19, col  = "blue",
 #      xlab = "AUC", ylab = "TSS", 
 #      abline(lm(MAXENT.SUMMARY.NICHE$check.map ~ MAXENT.SUMMARY.NICHE$GLOBAL_RECORDS)))

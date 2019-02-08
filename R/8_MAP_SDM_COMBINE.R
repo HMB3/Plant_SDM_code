@@ -50,8 +50,36 @@ if(read_data == "TRUE") {
 head(gcms.50) ; head(gcms.70) ; head(gcms.30)
 
 
+
+## How do the differnt thresholds compare for the set of species modelled?
+summary(MAXENT.RESULTS["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"])    ## The strictest threshold
+summary(MAXENT.RESULTS["X10.percentile.training.presence.Logistic.threshold"])                 ## The next strictest
+summary(MAXENT.RESULTS["X10.percentile.training.presence.training.omission"])                  ## The most forgiving
+
+
+#########################################################################################################################
+## Turn the maxent results into lists :: we can use these to generate the consensus layers 
+thresh.max.train  = as.list(MAXENT.RESULTS["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"]) 
+thresh.max.train  = thresh.max.train$Maximum.training.sensitivity.plus.specificity.Logistic.threshold
+
+percent.10.log    = as.list(MAXENT.RESULTS["X10.percentile.training.presence.Logistic.threshold"])  
+percent.10.log    = percent.10.log$X10.percentile.training.presence.Logistic.threshold
+
+percent.10.om     = as.list(MAXENT.RESULTS["X10.percentile.training.presence.training.omission"])   
+percent.10.om     = percent.10.om$X10.percentile.training.presence.training.omission
+
+
 #########################################################################################################################
 ## For each species, use a function to create raster files and maps under all six GCMs at each time step
+shp           = AUS          
+x             = scen_2030[1]    
+species       = map_spp_list[6]
+threshold     = percent.10.log[6]
+maxent_path   = maxent_path  
+climate_path  = "./data/base/worldclim/aus/1km/bio" 
+grid_names    = grid.names   
+current_grids = aus.grids.current
+
 
 
 #########################################################################################################################
@@ -128,22 +156,6 @@ env.grids.2070 = tryCatch(project_maxent_grids(shp           = AUS,
 ## guidance about this and you can really get away with either).
 
 
-## How do the differnt thresholds compare for the set of species modelled?
-summary(MAXENT.RESULTS["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"])    ## The strictest threshold
-summary(MAXENT.RESULTS["X10.percentile.training.presence.Logistic.threshold"])                 ## The next strictest
-summary(MAXENT.RESULTS["X10.percentile.training.presence.training.omission"])                  ## The most forgiving
-
-
-#########################################################################################################################
-## Turn the maxent results into lists :: we can use these to generate the consensus layers 
-thresh.max.train  = as.list(MAXENT.RESULTS["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"]) 
-thresh.max.train  = thresh.max.train$Maximum.training.sensitivity.plus.specificity.Logistic.threshold
-
-percent.10.log    = as.list(MAXENT.RESULTS["X10.percentile.training.presence.Logistic.threshold"])  
-percent.10.log    = percent.10.log$X10.percentile.training.presence.Logistic.threshold
-
-percent.10.om     = as.list(MAXENT.RESULTS["X10.percentile.training.presence.training.omission"])   
-percent.10.om     = percent.10.om$X10.percentile.training.presence.training.omission
 
 
 #########################################################################################################################
@@ -169,13 +181,20 @@ names(current_grids)
 
 
 ###########################################################################################################################
-## If processing in parralel, could run mess maps for every species, They are not very big, but how do you use them?
-## We need a recipie or rule-book for dealing with bad species. How do you use  the information in a mess map?
-create_maxent_mess(poly           = AUS,
-                   species_list   = map_spp,                ## List of species' directories
-                   threshold_list = percent.10.log,         ## List of species' maxent thresholds
-                   maxent_path    = maxent_path,            ## Maxent output directory
-                   current_grids  = current_grids)          ## Stack of the current environmental rasters
+## Run MESS maps for current models
+current_MESS = create_maxent_mess(poly           = AUS,
+                                  species_list   = map_spp,                ## List of species' directories
+                                  threshold_list = percent.10.log,         ## List of species' maxent thresholds
+                                  maxent_path    = maxent_path,            ## Maxent output directory
+                                  current_grids  = current_grids)          ## Stack of the current environmental rasters
+
+###########################################################################################################################
+## Run MESS maps for future models
+Future_MESS = create_maxent_mess(poly           = AUS,
+                                 species_list   = map_spp,                ## List of species' directories
+                                 threshold_list = percent.10.log,         ## List of species' maxent thresholds
+                                 maxent_path    = maxent_path,            ## Maxent output directory
+                                 current_grids  = current_grids)          ## Stack of the current environmental rasters
 
 
 ## Next step would be to use the mess maps to mask the species with bad maps - or do the same for every species.
@@ -198,20 +217,16 @@ create_maxent_mess(poly           = AUS,
 
 
 ## Test problematic species by entering the values and running the function manually
-# DIR        = SDM.RESULTS.DIR[1]
-# species    = map_spp[1]
-# thresh     = percent.10.log[1]
-# percent    = percent.10.om[1]
-# time_slice = 30
-# shp           = SUA_2016
-# vec           = SUA_2016_vec
-# DIR           = SDM.RESULTS.DIR[1]
-# species       = map_spp[1]
-# maxent_path   = maxent_path
-# thresh        = percent.10.log[1]
-# percent       = percent.10.om[1]
-# time_slice    = 30
-# write_rasters = FALSE
+unit_path     = "./data/base/CONTEXTUAL/SUA/"   ## Data path for the spatial unit of analysis 
+unit_file     = "SUA_2016_AUST.rds"             ## Spatial unit of analysis - E.G. SUAs
+unit_vec      = "SUA_2016_VEC.rds"              ## Vector of rasterized unit cells
+#MESS_mask     = "TRUE"                          ## Use a MESS mask?
+DIR           = SDM.RESULTS.DIR[1]              ## List of directories with rasters
+species       = map_spp[1]                      ## List of species' directories
+maxent_path   = maxent_path                     ## Directory of maxent results
+thresh        = percent.10.log[1]               ## List of maxent thresholds
+time_slice    = 30                              ## Time period, eg 2030
+write_rasters = "TRUE"                          ## Save the rasters?
 
 
 
@@ -239,7 +254,6 @@ suitability.2030 = tryCatch(mapply(SUA_cell_count,                              
                                    species_list  = map_spp,                         ## List of species' directories
                                    maxent_path   = maxent_path,                     ## Directory of maxent results
                                    thresholds    = percent.10.log,                  ## List of maxent thresholds
-                                   percentiles   = percent.10.om,                   ## 2nd List of maxent thresholds
                                    time_slice    = 30,                              ## Time period, eg 2030
                                    write_rasters = TRUE),                           ## Save the combined rasters?
                             
