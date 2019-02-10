@@ -17,23 +17,6 @@
 ## under each projection (2030, 2050 and 2070) is also be calculated. 
 
 
-## Print the species run to the screen
-message('Creating habitat suitability maps for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
-
-
-## Read in niche data
-if(read_data == "TRUE") {
-  
-  ## Load GBIF and ALA data
-  COMBO.NICHE.CONTEXT = readRDS(paste0(DATA_path, 'COMBO_NICHE_CONTEXT_',  save_run, '.rds'))
-
-} else {
-  
-  message(' skip file reading, running species in parallel')   ##
-  
-}
-
-
 
 
 
@@ -48,25 +31,6 @@ if(read_data == "TRUE") {
 ## This facilitates efficient exploration of climate projections for Australia.
 ## https://www.climatechangeinaustralia.gov.au/en/support-and-guidance/faqs/eight-climate-models-data/
 head(gcms.50) ; head(gcms.70) ; head(gcms.30)
-
-
-
-## How do the differnt thresholds compare for the set of species modelled?
-summary(MAXENT.RESULTS["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"])    ## The strictest threshold
-summary(MAXENT.RESULTS["X10.percentile.training.presence.Logistic.threshold"])                 ## The next strictest
-summary(MAXENT.RESULTS["X10.percentile.training.presence.training.omission"])                  ## The most forgiving
-
-
-#########################################################################################################################
-## Turn the maxent results into lists :: we can use these to generate the consensus layers 
-thresh.max.train  = as.list(MAXENT.RESULTS["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"]) 
-thresh.max.train  = thresh.max.train$Maximum.training.sensitivity.plus.specificity.Logistic.threshold
-
-percent.10.log    = as.list(MAXENT.RESULTS["X10.percentile.training.presence.Logistic.threshold"])  
-percent.10.log    = percent.10.log$X10.percentile.training.presence.Logistic.threshold
-
-percent.10.om     = as.list(MAXENT.RESULTS["X10.percentile.training.presence.training.omission"])   
-percent.10.om     = percent.10.om$X10.percentile.training.presence.training.omission
 
 
 #########################################################################################################################
@@ -188,14 +152,6 @@ current_MESS = create_maxent_mess(poly           = AUS,
                                   maxent_path    = maxent_path,            ## Maxent output directory
                                   current_grids  = current_grids)          ## Stack of the current environmental rasters
 
-###########################################################################################################################
-## Run MESS maps for future models
-Future_MESS = create_maxent_mess(poly           = AUS,
-                                 species_list   = map_spp,                ## List of species' directories
-                                 threshold_list = percent.10.log,         ## List of species' maxent thresholds
-                                 maxent_path    = maxent_path,            ## Maxent output directory
-                                 current_grids  = current_grids)          ## Stack of the current environmental rasters
-
 
 ## Next step would be to use the mess maps to mask the species with bad maps - or do the same for every species.
 ## Are most of the novel environments outside the cities anyway? MESS would come before mapping and sua analysis
@@ -220,7 +176,6 @@ Future_MESS = create_maxent_mess(poly           = AUS,
 unit_path     = "./data/base/CONTEXTUAL/SUA/"   ## Data path for the spatial unit of analysis 
 unit_file     = "SUA_2016_AUST.rds"             ## Spatial unit of analysis - E.G. SUAs
 unit_vec      = "SUA_2016_VEC.rds"              ## Vector of rasterized unit cells
-#MESS_mask     = "TRUE"                          ## Use a MESS mask?
 DIR           = SDM.RESULTS.DIR[1]              ## List of directories with rasters
 species       = map_spp[1]                      ## List of species' directories
 maxent_path   = maxent_path                     ## Directory of maxent results

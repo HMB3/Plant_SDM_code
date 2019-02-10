@@ -133,6 +133,23 @@ lapply(GBIF.spp, function(spp){
 #########################################################################################################################
 
 
+## Print the species run to the screen
+message('Creating summary stats for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
+
+
+## Read in niche data
+if(calc_niches == "TRUE") {
+  
+  ## Load GBIF and ALA data
+  message('Reading niche data for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
+  COMBO.NICHE.CONTEXT = readRDS( paste0(DATA_path, 'COMBO_NICHE_CONTEXT_',  OCC_SOURCE, '_RECORDS_', save_run, '.rds'))
+  
+} else {
+  
+  message(' skip file reading, running species in parallel')   ##
+  
+}
+
 #########################################################################################################################
 ## Create a file list for each model run: Try crunching this into just the species required
 maxent.tables = list.files(maxent_path)                 
@@ -352,8 +369,28 @@ MAXENT.SUMMARY.NICHE <- SDM.TAXA %>%
 length(intersect(MAXENT.SUMMARY.NICHE$searchTaxon, GBIF.spp))
 
 
+
 #########################################################################################################################
-## Create a plot of number of records vs. maxent rating, Boxplot with no. occurrences on y, and maxent rating on x
+## How do the differnt thresholds compare for the set of species modelled?
+summary(MAXENT.RESULTS["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"])    ## The strictest threshold
+summary(MAXENT.RESULTS["X10.percentile.training.presence.Logistic.threshold"])                 ## The next strictest
+summary(MAXENT.RESULTS["X10.percentile.training.presence.training.omission"])                  ## The most forgiving
+
+
+#########################################################################################################################
+## Now turn the maxent results into lists :: we can use these to generate the consensus layers 
+thresh.max.train  = as.list(MAXENT.RESULTS["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"]) 
+thresh.max.train  = thresh.max.train$Maximum.training.sensitivity.plus.specificity.Logistic.threshold
+
+percent.10.log    = as.list(MAXENT.RESULTS["X10.percentile.training.presence.Logistic.threshold"])  
+percent.10.log    = percent.10.log$X10.percentile.training.presence.Logistic.threshold
+
+percent.10.om     = as.list(MAXENT.RESULTS["X10.percentile.training.presence.training.omission"])   
+percent.10.om     = percent.10.om$X10.percentile.training.presence.training.omission
+
+
+#########################################################################################################################
+## Could create a plot of number of records vs. maxent rating, Boxplot with no. occurrences on y, and maxent rating on x
 # plot(MAXENT.SUMMARY.NICHE$GLOBAL_RECORDS, MAXENT.SUMMARY.NICHE$check.map, pch = 19, col  = "blue",
 #      xlab = "AUC", ylab = "TSS", 
 #      abline(lm(MAXENT.SUMMARY.NICHE$check.map ~ MAXENT.SUMMARY.NICHE$GLOBAL_RECORDS)))
