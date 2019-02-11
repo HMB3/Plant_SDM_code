@@ -150,6 +150,7 @@ if(read_data == "TRUE") {
   
 }
 
+
 #########################################################################################################################
 ## Create a file list for each model run: Try crunching this into just the species required
 maxent.tables = list.files(maxent_path)                 
@@ -177,7 +178,6 @@ MAXENT.RESULTS <- maxent.tables[c(1:length(maxent.tables))] %>%
     
     ## Get variable importance
     m.vars    = ENMeval::var.importance(m)
-    
     var.pcont = m.vars[rev(order(m.vars[["percent.contribution"]])),][["variable"]][1]
     pcont     = m.vars[rev(order(m.vars[["percent.contribution"]])),][["percent.contribution"]][1]
     
@@ -370,6 +370,13 @@ length(intersect(MAXENT.SUMMARY.NICHE$searchTaxon, GBIF.spp))
 
 
 
+
+
+#########################################################################################################################
+## 3). CREATE LISTS OF MAXENT THRESHOLDS FOR MAPPING
+#########################################################################################################################
+
+
 #########################################################################################################################
 ## How do the differnt thresholds compare for the set of species modelled?
 summary(MAXENT.RESULTS["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"])    ## The strictest threshold
@@ -419,7 +426,11 @@ if(save_data == "TRUE") {
 
 
 
-## 1). Create list of species with bad models
+## 1). Model species in parallel 
+
+## 2). Harvest folders once they have been run in Katana
+
+## 3). Rate as many new species as possible :: this is the step that is not manual, and could be priortised
 
 
 

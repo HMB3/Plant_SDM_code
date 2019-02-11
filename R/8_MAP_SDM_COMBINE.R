@@ -35,7 +35,8 @@ head(gcms.50) ; head(gcms.70) ; head(gcms.30)
 
 #########################################################################################################################
 ## For each species, use a function to create raster files and maps under all six GCMs at each time step
-shp           = AUS          
+## EG arguments to run function manually
+poly          = AUS          
 x             = scen_2030[1]    
 species       = map_spp_list[6]
 threshold     = percent.10.log[6]
@@ -43,19 +44,22 @@ maxent_path   = maxent_path
 climate_path  = "./data/base/worldclim/aus/1km/bio" 
 grid_names    = grid.names   
 current_grids = aus.grids.current
-
+time_slice    = 30
+create_mess   = "TRUE"
+MESS_folder   = "MESS_output"
 
 
 #########################################################################################################################
 ## Create 2030 maps
-env.grids.2030 = tryCatch(project_maxent_grids(shp           = AUS,          ## A shapefile, e.g. Australia
-                                               scen_list     = scen_2030,    ## A list of climate scenarios
-                                               species_list  = map_spp_list, ## A list of species folders with maxent models
-                                               maxent_path   = maxent_path,  ## the output folder
-                                               climate_path  = "./data/base/worldclim/aus/1km/bio", ## climate data
-                                               grid_names    = grid.names,   ## names of the predictor grids
-                                               time_slice    = 30,           ## Time period
-                                               current_grids = aus.grids.current),  ## predictor grids
+env.grids.2030 = tryCatch(project_maxent_grids_mess(poly          = AUS,          ## A shapefile, e.g. Australia
+                                                    scen_list     = scen_2030,    ## A list of climate scenarios
+                                                    species_list  = map_spp_list, ## A list of species folders with maxent models
+                                                    maxent_path   = maxent_path,  ## the output folder
+                                                    climate_path  = "./data/base/worldclim/aus/1km/bio", ## climate data
+                                                    grid_names    = grid.names,   ## names of the predictor grids
+                                                    time_slice    = 30,           ## Time period
+                                                    current_grids = aus.grids.current,
+                                                    create_mess   = "TRUE"),  ## predictor grids
                           
                           ## Skip species
                           error = function(cond) {
