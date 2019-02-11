@@ -47,8 +47,8 @@ if(read_data == "TRUE") {
 #########################################################################################################################
 ## Check the SDM table
 dim(SDM.SPAT.ALL)
-length(intersect(unique(SDM.SPAT.ALL$searchTaxon), GBIF.spp))  ## should be same as the number of species
-unique(SDM.SPAT.ALL$SOURCE)
+length(intersect(unique(SDM.SPAT.ALL$searchTaxon), GBIF.spp))  ## Should be same as the number of species
+unique(SDM.SPAT.ALL$SOURCE)                                    ## Can change for different sources
 
 
 #########################################################################################################################
@@ -138,7 +138,7 @@ message('Creating summary stats for ', length(GBIF.spp), ' species in the set ',
 
 
 ## Read in niche data
-if(calc_niches == "TRUE") {
+if(read_data == "TRUE") {
   
   ## Load GBIF and ALA data
   message('Reading niche data for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
@@ -245,7 +245,7 @@ head(MAXENT.RESULTS$max_tss)
 ## Also which species have AUC < 0.7?
 dim(MAXENT.RESULTS)
 head(MAXENT.RESULTS, 20)[1:5]
-dim(subset(MAXENT.RESULTS, Training.AUC < 0.7))  ## all models should be above 0.7
+dim(subset(MAXENT.RESULTS, Training.AUC > 0.7))  ## all models should be above 0.7
 
 
 #########################################################################################################################

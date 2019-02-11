@@ -26,7 +26,7 @@ on_windows = switch(Sys.info()[['sysname']], Windows = TRUE, FALSE)
 #source('./R/HIA_TREE_LIST.R')
 if (on_windows) {
   
-    load("H:/green_cities_sdm/TEST_RUN.RData")
+    load("TEST_RUN.RData")
   
 } else {
   
@@ -128,8 +128,8 @@ PET             = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
 #########################################################################################################################
 ## Now set global analysis variables :: these assume you are using an R project folder structure
 ## Replace any non - UTF8 character in the string with UTF
-Sys.setenv("PBS_ARRAYID" = 1)
-GBIF.spp      = WPW.spp
+#Sys.setenv("PBS_ARRAYID" = 1)
+GBIF.spp      = WPW.spp ## your list of species
 
 #  subset for PBS array jobs
 if (length(Sys.getenv("PBS_ARRAYID"))) {
@@ -137,7 +137,7 @@ if (length(Sys.getenv("PBS_ARRAYID"))) {
     GBIF.spp = GBIF.spp[1:length(GBIF.spp) %% 200 == i]
 }
 
-GBIF.spp      = as_utf8(GBIF.spp, normalize = TRUE)
+GBIF.spp      = as_utf8(GBIF.spp, normalize = TRUE)              ## your list of species
 GBIF.spp.rev  = sort(GBIF.spp,   decreasing = TRUE)              ## The list reversed - only needed for a big list
 
 save_run      = "WPW_TEST"                                       ## a variable to append the run name to the output file
@@ -157,7 +157,7 @@ maxent_path   = './output/maxent/SUA_TREES_ANALYSIS/'            ## The director
 maxent_dir    = 'output/maxent/SUA_TREES_ANALYSIS'               ## Another version of the path needed to run maxent loop
 save_data     = 'FALSE'                                          ## Arguments for saving the intermediary output - i.e. niches
 read_data     = 'FALSE'                                          ## Leave these the same - saves data, but doesn't read back in
-calc_niches   = 'TRUE'                                           ## Calculate niches?
+calc_niche    = 'TRUE'                                           ## Calculate niches?
 OCC_SOURCE    = 'ALL'                                            ## Create niches using ALA, GBIF and inventory data 
 
 
