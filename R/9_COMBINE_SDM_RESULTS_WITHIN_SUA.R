@@ -13,9 +13,9 @@
 
 
 ## Read in the table of species in SUAs and their niches.
-SUA.SPP.COUNT       = readRDS(paste0('data/base/HIA_LIST/COMBO/SUA_SPP_COUNT_',        save_run, '.rds'))
-COMBO.NICHE.CONTEXT = readRDS(paste0('data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_',  save_run, '.rds'))
-length(unique(SUA.SPP.COUNT$SPECIES))
+SUA.SPP.COUNT       = readRDS(paste0(DATA_path, 'SUA_SPP_COUNT_',       save_run, '.rds'))
+COMBO.NICHE.CONTEXT = readRDS(paste0(DATA_path, 'COMBO_NICHE_CONTEXT_', save_run, '.rds'))
+length(unique(SUA.SPP.COUNT$SPECIES));length(unique(COMBO.NICHE.CONTEXT$searchTaxon))
 
 
 #########################################################################################################################
@@ -308,6 +308,11 @@ SUA.BIO1.current.stats[["CURRENT_MAT"]] = SUA.BIO1.current.stats[["CURRENT_MAT"]
 SUA.AI[["CURRENT_AI"]] = SUA.AI[["CURRENT_AI"]]/10000
 
 
+## How much does temperature vary in each SUA?
+SUA.BIO1.current.stats[["RANGE"]] = SUA.BIO1.current.stats[["RANGE"]]/10
+
+
+
 #########################################################################################################################
 ## Create Koppen climate zone for centroid of each SUA
 writeSpatialShape(SUA.16, "SUA.16")
@@ -373,9 +378,8 @@ if(save_data == "TRUE") {
   write.csv(GAIN.LOSS.TABLE,  paste0('output/tables/OVERALL_GAIN_LOSS_TABLE_',    save_run, '.csv'), row.names = FALSE)
   write.csv(SUA.PREDICT,      paste0('output/tables/MAXENT_SUA_PRESENCE_KOPPEN_', save_run, '.csv'), row.names = FALSE)
   
-  saveRDS(GAIN.LOSS.TABLE,    paste0('output/tables/OVERALL_GAIN_LOSS_TABLE_',      save_run, '.rds'))
-  saveRDS(SUA.PREDICT,        paste0('output/tables/MAXENT_SUA_PRESENCE_KOPPEN_',   save_run, '.rds'))
-  
+  saveRDS(GAIN.LOSS.TABLE,    paste0('output/tables/OVERALL_GAIN_LOSS_TABLE_',    save_run, '.rds'))
+  saveRDS(SUA.PREDICT,        paste0('output/tables/MAXENT_SUA_PRESENCE_KOPPEN_', save_run, '.rds'))
   
 } else {
   

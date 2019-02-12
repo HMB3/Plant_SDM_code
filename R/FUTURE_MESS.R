@@ -1,5 +1,4 @@
-## One function for all time periods
-## Do we want to run the mess maps at the same time as the map creation?
+## Try to run the mess maps at the same time as the map creation?
 project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path, climate_path, 
                                      grid_names, time_slice, current_grids, create_mess) {
   
@@ -47,10 +46,9 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
           
           ########################################################################
           ## Now read in the SDM model, calibrated on current conditions
-          m   <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, species))
-          m   <- m$me_full  ## 
-          swd <- readRDS(sprintf('%s%s/swd.rds',                maxent_path, species, species))
-          occ <- readRDS(sprintf('%s/%s/%s_occ.rds', maxent_path, species, save_name)) %>%
+          m   <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, species))$me_full 
+          swd <- readRDS(sprintf('%s%s/swd.rds',                 maxent_path, species, species))
+          occ <- readRDS(sprintf('%s/%s/%s_occ.rds',             maxent_path, species, save_name)) %>%
             spTransform(ALB.CONICAL)  
           
           ## Create a file path for the current raster prediction
@@ -74,6 +72,8 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
           
           #####################################################################
           ## Report current mess map in progress
+          MESS_dir = sprintf('%s%s/full/%s/', 
+                             maxent_path, species, MESS_folder)
           f_mess_current = sprintf('%s%s%s.tif', MESS_dir, species, "_current_mess_map")
           
           if(create_mess == "TRUE" & !file.exists(f_mess_current)) {
@@ -92,9 +92,6 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
             ##################################################################
             ## Write out the current mess maps - 
             ## create a new folder for the mess output - we are going to print it to the maps
-            MESS_dir = sprintf('%s%s/full/%s/', 
-                               maxent_path, species, MESS_folder)
-            
             if(!dir.exists(MESS_dir)) {
               dir.create(MESS_dir)
               
@@ -180,8 +177,8 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
             if(create_mess == "TRUE" & !file.exists(f_mess_future)) {
               message('Running current mess map for ', species)
               
-              grid_names          = sdm.predictors
-              future_grids        = s
+              grid_names          = sdm.predictors   ## same grid names
+              future_grids        = s                ## the stack of 8 rasters for scenario x
               names(future_grids) = grid_names 
               future_grids        = subset(future_grids, intersect(names(future_grids), sdm.select))
               
@@ -210,7 +207,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
                   latticeExtra::layer(sp.polygons(poly), data = list(poly = poly))   ## Use this in previous functions
                 
                 p <- diverge0(p, 'RdBu')
-                f <- sprintf('%s%s%s%s%s%s.png', MESS_dir, species, "_mess_", name, "_", x)
+                f <- sprintf('%s%s%s%s%s%s.png', MESS_dir, species, "_future_mess_", name, "_", x)
                 
                 png(f, 8, 8, units = 'in', res = 300, type = 'cairo')
                 print(p)
@@ -230,11 +227,10 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
               # is.na(novel_future) is a binary layer showing 
               # not novel [=1] vs novel [=0], 
               # so multiplying this with hs_future will mask out novel
-              hs_future_notNovel <- hs_future * is.na(novel_future) 
+              hs_future_notNovel <- pred.future * is.na(novel_future) 
               
               ## Write out not-novel raster
               message('Writing maps of un- novel environments to file for', species) 
-              
               writeRaster(hs_future_notNovel, sub('\\.tif', '_notNovel.tif', hs_future@file@name), 
                           overwrite = TRUE, datatype = 'INT2S')
               
@@ -251,45 +247,85 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
             ## Check exents :: one of the species combinations failed this test
             projection(poly);projection(occ);projection(empty_ras)
             projection(pred.current);projection(pred.future)
-            
             identical(extent(pred.current), extent(pred.future))
             
             ########################################################################################################################
             ## Use the levelplot function to make a multipanel output: occurrence points, current raster and future raster
-            png(sprintf('%s/%s/full/%s_%s.png', maxent_path, species, species, x),      
-                11, 4, units = 'in', res = 300)
-            
-            
-            
-            ## If possible, add a hatched section to each current and future panel, which shows the novel environments
-            ## That would be the objects :: 
-            ## novel_current & novel_future 
-            ## .....................................................................................................................
-            
-            ## Need an empty frame
-            ## Here can we add the novel_current & novel_future layers as a hatching?
-            print(levelplot(stack(empty_ras,
-                                  pred.current, 
-                                  pred.future, quick = TRUE), margin = FALSE,
-                            
-                            ## Create a colour scheme using colbrewer: 100 is to make it continuos
-                            ## Also, make it a one-directional colour scheme
-                            scales      = list(draw = FALSE), 
-                            at = seq(0, 1, length = 100),
-                            col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
-                            
-                            ## Give each plot a name: the third panel is the GCM
-                            names.attr = c('Australian records', 'Current', sprintf('%s, 20%s, RCP8.5', scen_name, time_slice)),
-                            colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
-                            main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
-                    
-                    ## Plot the Aus shapefile with the occurrence points for reference
-                    ## Can the points be made more legible for both poorly and well recorded species?
-                    ## layer(sp.polygons(aus_albers), data = list(aus_albers = aus_albers))
-                    latticeExtra::layer(sp.polygons(poly), data = list(poly = poly)) +
-                    latticeExtra::layer(sp.points(occ, pch = 19, cex = 0.15, 
-                                                  col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
-            dev.off()
+            if(create_mess == "TRUE") {
+              message('Running current mess map for ', species)
+              
+              ############################################################
+              ## Create level plot including MESS maps                        
+              png(sprintf('%s/%s/full/%s_%s.png', maxent_path, species, species, x),      
+                  11, 4, units = 'in', res = 300)
+              
+              ## If possible, add a hatched section to each current and future panel, which shows the novel environments
+              ## That would be the objects :: 
+              ## novel_current & novel_future 
+              ## .....................................................................................................................
+              
+              ## Need an empty frame
+              ## Here can we add the novel_current & novel_future layers as a hatching?
+              print(levelplot(stack(empty_ras,
+                                    pred.current, 
+                                    pred.future, quick = TRUE), margin = FALSE,
+                              
+                              ## Create a colour scheme using colbrewer: 100 is to make it continuos
+                              ## Also, make it a one-directional colour scheme
+                              scales      = list(draw = FALSE), 
+                              at = seq(0, 1, length = 100),
+                              col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
+                              
+                              ## Give each plot a name: the third panel is the GCM
+                              names.attr = c('Australian records', 'Current', sprintf('%s, 20%s, RCP8.5', scen_name, time_slice)),
+                              colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
+                              main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
+                      
+                      ## Plot the Aus shapefile with the occurrence points for reference
+                      ## Can the points be made more legible for both poorly and well recorded species?
+                      ## layer(sp.polygons(aus_albers), data = list(aus_albers = aus_albers))
+                      
+                                     
+                      ## Try adding novel maps as vectors.....................................               
+                      latticeExtra::layer(sp.polygons(poly), data = list(poly = poly)) +
+                      latticeExtra::layer(sp.points(occ, pch = 19, cex = 0.15, 
+                                                    col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
+              dev.off()
+              
+            } else {
+              
+              ############################################################
+              ## OR Create level plot without MESS maps                        
+              png(sprintf('%s/%s/full/%s_%s.png', maxent_path, species, species, x),      
+                  11, 4, units = 'in', res = 300)
+              
+              ## Create levelplot without MESS maps
+              print(levelplot(stack(empty_ras,
+                                    pred.current, 
+                                    pred.future, quick = TRUE), margin = FALSE,
+                              
+                              ## Create a colour scheme using colbrewer: 100 is to make it continuos
+                              ## Also, make it a one-directional colour scheme
+                              scales      = list(draw = FALSE), 
+                              at = seq(0, 1, length = 100),
+                              col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
+                              
+                              ## Give each plot a name: the third panel is the GCM
+                              names.attr = c('Australian records', 'Current', sprintf('%s, 20%s, RCP8.5', scen_name, time_slice)),
+                              colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
+                              main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
+                      
+                      ## Plot the Aus shapefile with the occurrence points for reference
+                      ## Can the points be made more legible for both poorly and well recorded species?
+                      ## layer(sp.polygons(aus_albers), data = list(aus_albers = aus_albers))
+                      latticeExtra::layer(sp.polygons(poly), data = list(poly = poly)) +
+                      latticeExtra::layer(sp.points(occ, pch = 19, cex = 0.15, 
+                                                    col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
+              dev.off()                     
+              
+              message('Dont run MESS maps for ', species) 
+              
+            }
             
           }
           

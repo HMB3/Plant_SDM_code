@@ -39,7 +39,6 @@ head(gcms.50) ; head(gcms.70) ; head(gcms.30)
 poly          = AUS          
 x             = scen_2030[1]    
 species       = map_spp_list[6]
-threshold     = percent.10.log[6]
 maxent_path   = maxent_path  
 climate_path  = "./data/base/worldclim/aus/1km/bio" 
 grid_names    = grid.names   
@@ -47,6 +46,20 @@ current_grids = aus.grids.current
 time_slice    = 30
 create_mess   = "TRUE"
 MESS_folder   = "MESS_output"
+
+
+## Jonh on MESS :
+# MESS describes whether/how novel the predictors' values at a grid cell are, relative to the environmental 
+# space captured by the model-fitting (background and occurrence locations) data. You can't use the current 
+# climate MESS mask to describe future novelty - you really need to recalculate MESS for each climate you're 
+# projecting to (or ensemble thereof). 
+
+# Instead, I think the model predictions should be shown, but with an indication of where these predictions
+# are uncertain due to extrapolation to novel climates. Essentially, we're just less confident about model
+# behaviour when one or more predictors' values are novel, and that means we're uncertain about both suitability
+# and unsuitability. If we just label it as unsuitable, it kind of implies that we're as confident that it's
+# unsuitable as we are for non-novel areas that are predicted to be unsuitable. One way to present it is to
+# make a map of model predictions and overlay a pattern (e.g. hatching) that indicates where climate is novel.
 
 
 #########################################################################################################################
@@ -291,12 +304,12 @@ suitability.2070 = tryCatch(mapply(SUA_cell_count,
 
 
 # ## Create a list of folders for this run of species:EG hollow bearing species 
-# run_path         <- "./output/maxent/HOLLOW_SPP"
-# run_pat          <- map_spp
-# run_pat          <- paste(run_pat, sep = "", collapse = "|")
-# maxent_run_list  <- list.files(maxent_path, pattern = run_pat, full.names = TRUE)
-# 
-# 
+run_path         <- "./output/maxent/HOLLOW_SPP"
+run_pat          <- map_spp
+run_pat          <- paste(run_pat, sep = "", collapse = "|")
+maxent_run_list  <- list.files(maxent_path, pattern = run_pat, full.names = TRUE)
+
+
 # ## Save the list of maxent directories to file
 # lapply(maxent_run_list, write, sprintf("%s%s_maxent_folders.txt", maxent_path, save_run), append = TRUE)
 # maxent_file_list = sprintf("%s_maxent_folders.txt", save_run)

@@ -54,7 +54,8 @@ p <- c('ff',    'things',    'raster',        'dismo',        'sp',           'l
        'tidyr', 'readr',     'rnaturalearth', 'rasterVis',    'RColorBrewer', 'latticeExtra', 'parallel',
        'ALA4R', 'stringr',   'Taxonstand',    'CoordinateCleaner', 'gsubfn',  'PerformanceAnalytics',
        'rvest', 'magrittr',  'devtools',      'ggplot2',      'reshape2',     'rmarkdown', 'flexdashboard', 'shiny', 'rgbif',
-       'ENMeval', 'tibble',  'ncdf4',         'Cairo', 'taxonlookup', 'kgc', 'maptools', 'DataCombine', 'mgcv', 'rsq', 'utf8')
+       'ENMeval', 'tibble',  'ncdf4',         'Cairo', 'taxonlookup', 'kgc', 'maptools', 'DataCombine', 'mgcv', 'rsq', 'utf8',
+       'betareg')
 
 
 ## Require packages
@@ -161,7 +162,11 @@ calc_niche    = 'TRUE'                                           ## Calculate ni
 OCC_SOURCE    = 'ALL'                                            ## Create niches using ALA, GBIF and inventory data 
 
 
+## Use all global data.
+## Does including the global data improve the bad species?
 
+
+## Hollow bearing species :: Linda need the data     
 
 
 #########################################################################################################################
@@ -294,15 +299,19 @@ source('./R/8_MAP_SDM_COMBINE.R', echo = TRUE)
 #########################################################################################################################
 
 
-## Figure out how to make the whole process parallel - help from Shawn
 
-## Find points that make the code not reproducible - look for all hard coded paths
 
-## Can we use the mess maps to create the maps and sua steps?
+## 1) Figure out how to make the whole process parallel - help from Shawn
 
-## Flatten the structure for an example species
+## 2) Find points that make the code not reproducible - look for all hard coded paths
 
-## Improve the raster extract step
+## 3) Clean up all the gunk in the HIA_TREE_LIST FILE
+
+## 3) Can we use the mess maps to create the maps?
+
+## 4). Flatten the structure for an example species
+
+## 5). Improve the raster extract step
 
 
 #########################################################################################################################

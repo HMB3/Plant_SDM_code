@@ -71,9 +71,8 @@ project_maxent_grids = function(shp, scen_list, species_list, maxent_path,
           
           ########################################################################################################################
           ## Now read in the SDM model calibrated on current conditions
-          m <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, species)) 
-          m <- m$me_full  ##
-          
+          m <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, species))$me_full 
+
           ## Read in the occurrence points used to create the SDM :: need the transform to plot later
           occ <- readRDS(sprintf('%s/%s/%s_occ.rds', maxent_path, species, save_name)) %>%
             spTransform(ALB.CONICAL)  
@@ -504,7 +503,46 @@ SUA_cell_count = function(unit_path, unit_file, unit_vec,
 
 
 
+#########################################################################################################################
+## PLOTTING FUNCTIONS
+#########################################################################################################################
 
+
+#########################################################################################################################
+### Create a function to combine the subplots created in Fig.3
+grid_arrange_shared_legend <- function(..., ncol = length(list(...)), nrow = 1, position = c("top", "right")) {
+  
+  ## Create a list of plots
+  plots <- list(...)
+  
+  ## Postion stuff
+  position <- match.arg(position)
+  g <- ggplotGrob(plots[[1]] + theme(legend.position = position))$grobs
+  
+  ## Create a legend
+  legend <- g[[which(sapply(g, function(x) x$name) == "guide-box")]]
+  lheight <- sum(legend$height)
+  
+  ## Not sure
+  lwidth <- sum(legend$width)
+  gl <- lapply(plots, function(x) x + theme(legend.position="none"))
+  gl <- c(gl, ncol = ncol, nrow = nrow)
+  
+  ## Combine the panels? 
+  combined <- switch(position, 
+                     "top" = arrangeGrob(do.call(arrangeGrob, gl), legend, ncol = 1,
+                                         heights = unit.c(unit(1, "npc") - lheight, lheight)),
+                     
+                     "right" = arrangeGrob(do.call(arrangeGrob, gl), legend, ncol = 2,
+                                           widths = unit.c(unit(1, "npc") - lwidth, lwidth)))
+  ## 
+  grid.newpage()
+  grid.draw(combined)
+  
+  ## return gtable invisibly
+  invisible(combined)
+  
+}
 
 
 

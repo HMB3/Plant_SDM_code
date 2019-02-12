@@ -373,6 +373,7 @@ APNI                = readRDS("./data/base/HIA_LIST/ALA/APNI_LIST.rds")
 RISK.LIST           = read.csv("./data/base/HIA_LIST/HIA/RISK_LIST.csv",                         stringsAsFactors = FALSE)
 RISK.BINOMIAL.CLEAN = read.csv("./data/base/HIA_LIST/HIA/RISK_BINOMIAL_DF.csv",                  stringsAsFactors = FALSE)
 MAXENT.RATING       = read.csv("./output/maxent/MAXENT_RATING_26_2018.csv",                      stringsAsFactors = FALSE)
+MAXENT.RATING.LAT   = read.csv("./output/maxent/MAXENT_CHECK_RATING_FEB2019.csv",                stringsAsFactors = FALSE)
 #MXT.CHECK           = read.csv("./output/maxent/CHECK_SPP_MAPS_BIAS_0310_2018.csv",              stringsAsFactors = FALSE)
 MXT.CHECK           = read.csv("./output/maxent/MAXNET_ORIGIN_RESULTS.csv",                      stringsAsFactors = FALSE)
 native.good.models  = subset(MXT.CHECK, Origin == "Native" & Check.map <=2)$searchTaxon
@@ -909,7 +910,11 @@ head(TI.COUNT.NAT)
 length(intersect(MAXENT.CHECK$searchTaxon, TI.LUT$searchTaxon))
 
 
-
+## How many species have been run in total?
+length(unique(c(camp.spp, HOLLOW.SPP, TREE.EVERGREEN$searchTaxon)))
+round(with(MAXENT.RATING.LAT, table(CHECK_MAP)/sum(table(CHECK_MAP))*100), 1)
+round(with(TREE.EVERGREEN, table(Origin)/sum(table(Origin))*100), 1)
+round(with(MXT.CHECK, table(Plant.type)/sum(table(Plant.type))*100), 1)
 
 
 #########################################################################################################################
