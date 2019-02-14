@@ -153,6 +153,7 @@ if(read_data == "TRUE") {
 
 #########################################################################################################################
 ## Create a file list for each model run: Try crunching this into just the species required
+map_spp_list  = gsub(" ", "_", GBIF.spp)
 maxent.tables = list.files(maxent_path)                 
 maxent.tables = intersect(maxent.tables, map_spp_list)   
 maxent_path   = maxent_path                             

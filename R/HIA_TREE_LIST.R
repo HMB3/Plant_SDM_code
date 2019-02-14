@@ -356,7 +356,8 @@ background          = readRDS("./data/base/HIA_LIST/COMBO/SDM_DATA_CLEAN_052018.
 ## up the data and cross-linked to growth form and exotic/native status and derived a list of ~1000 species that are the 
 ## Most commonly sold, covering the right ratio of growth forms, regional representation and native/exotic
 WPW.list            = read.csv("./data/base/HIA_LIST/GBIF/WPW_GBIF_NAMES.csv",                   stringsAsFactors = FALSE)
-WPW.spp             = WPW.list$species
+WPW.spp             = sort(WPW.list$species)
+WPW.spp             = WPW.spp[lapply(WPW.spp,length)>0]
 #saveRDS(WPW.spp, file = paste("./data/base/HIA_LIST/GBIF/WPW_GBIF_NAMES.rds"))
 
 

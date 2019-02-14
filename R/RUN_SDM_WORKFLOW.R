@@ -3,8 +3,17 @@
 #########################################################################################################################
 
 
+#########################################################################################################################
 ## Shawn's advice is to make the code more modular, rather than monolithic.
 ## Small examples of how to do this could be applied across the different steps 
+
+
+#########################################################################################################################
+## Michelle's advice :: use all the global data.
+## Does including the global data improve the bad species?
+
+
+## Hollow bearing species :: supply the data to Linda's student for those species
 
 
 #########################################################################################################################
@@ -16,7 +25,7 @@
 
 
 ## This code runs the whole SDM workflow for the HIA project, for a subset of species (e.g. whichever you supply)
-## In order to run this from katana, we need to use only the necessary packages. Update git
+## In order to run this from katana, we need to use only the necessary packages.
 ## save.image("TEST_RUN.RData") 
 on_windows = switch(Sys.info()[['sysname']], Windows = TRUE, FALSE)
 
@@ -55,7 +64,7 @@ p <- c('ff',    'things',    'raster',        'dismo',        'sp',           'l
        'ALA4R', 'stringr',   'Taxonstand',    'CoordinateCleaner', 'gsubfn',  'PerformanceAnalytics',
        'rvest', 'magrittr',  'devtools',      'ggplot2',      'reshape2',     'rmarkdown', 'flexdashboard', 'shiny', 'rgbif',
        'ENMeval', 'tibble',  'ncdf4',         'Cairo', 'taxonlookup', 'kgc', 'maptools', 'DataCombine', 'mgcv', 'rsq', 'utf8',
-       'betareg')
+       'betareg', 'hydroTSM', 'bomrang')
 
 
 ## Require packages
@@ -132,27 +141,22 @@ PET             = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
 #Sys.setenv("PBS_ARRAYID" = 1)
 GBIF.spp      = WPW.spp ## your list of species
 
-#  subset for PBS array jobs
+
+##  Subset for PBS array jobs
 if (length(Sys.getenv("PBS_ARRAYID"))) {
+  
     i = as.integer (Sys.getenv("PBS_ARRAYID"))
     GBIF.spp = GBIF.spp[1:length(GBIF.spp) %% 200 == i]
+    
 }
 
-GBIF.spp      = as_utf8(GBIF.spp, normalize = TRUE)              ## your list of species
-GBIF.spp.rev  = sort(GBIF.spp,   decreasing = TRUE)              ## The list reversed - only needed for a big list
 
+GBIF.spp      = as_utf8(GBIF.spp, normalize = TRUE)              ## Your list of species
 save_run      = "WPW_TEST"                                       ## a variable to append the run name to the output file
-map_spp_list  = gsub(" ", "_", GBIF.spp)                         ## species list with "_" for mapping
-map_spp_rev   = sort(map_spp_list, decreasing = TRUE)            ## reversed, so we can run two at once
 
 GBIF_path     = "./data/base/HIA_LIST/GBIF/"                     ## The path where GBIF data is stored
 ALA_path      = "./data/base/HIA_LIST/ALA/"                      ## The path where ALA data is stored place
 DATA_path     = "./data/ANALYSIS/"                               ## The path where the final data for analyses are stored 
-SHP_path      = "./data/ANALYSIS"                                ## The data path for readOGR dsn  
-unit_path     = "./data/base/CONTEXTUAL/SUA/"                    ## The data path for the spatial unti of analysis 
-unit_file     = "SUA_2016_AUST.rds"                              ## The spatial untit of analysis - E.G. SUAs
-unit_vec      = "SUA_2016_VEC.rds"                               ## A vector of the spatial units
-
 
 maxent_path   = './output/maxent/SUA_TREES_ANALYSIS/'            ## The directory where files are saved               
 maxent_dir    = 'output/maxent/SUA_TREES_ANALYSIS'               ## Another version of the path needed to run maxent loop
@@ -162,11 +166,7 @@ calc_niche    = 'TRUE'                                           ## Calculate ni
 OCC_SOURCE    = 'ALL'                                            ## Create niches using ALA, GBIF and inventory data 
 
 
-## Use all global data.
-## Does including the global data improve the bad species?
-
-
-## Hollow bearing species :: Linda need the data     
+   
 
 
 #########################################################################################################################
@@ -175,6 +175,8 @@ OCC_SOURCE    = 'ALL'                                            ## Create niche
 
 
 ## Run the SDM workflow for the species set.
+## Steps 1 - 5 are hard to complete across a huges set og binomials. So try just using the data I created locally to run
+## only steps 7 and 8.
 
 
 #########################################################################################################################
@@ -223,73 +225,75 @@ source('./R/8_MAP_SDM_COMBINE.R', echo = TRUE)
 
 
 ## Create a list of all dataframes with the extension from this run
-# COMBO.NICHE.list  = list.files(DATA_path, pattern = 'COMBO_NICHE_CONTEXT_EVERGREEN',  full.names = TRUE, recursive = TRUE)
-# COMBO.RASTER.list = list.files(DATA_path, pattern = 'COMBO_RASTER_CONTEXT_EVERGREEN', full.names = TRUE, recursive = TRUE)
-# 
-# 
-# #########################################################################################################################
-# ## Now combine the niche tables for each species into one table
-# COMBO.NICHE.ALL <- COMBO.NICHE.list[1:8] %>%
-# 
-#   ## pipe the list into lapply
-#   lapply(function(x) {
-# 
-#     ## create the character string
-#     f <- paste0(x)
-# 
-#     ## load each .csv file
-#     d <- readRDS(f)
-#     d
-# 
-#   }) %>%
-# 
-#   ## finally, bind all the rows together
-#   bind_rows
-# 
-# 
-# ## Update this
-# str(COMBO.NICHE.ALL)
-# dim(COMBO.NICHE.ALL)
-# 
-# 
-# ## Make sure the Species are unique
-# COMBO.NICHE.ALL = COMBO.NICHE.ALL[!duplicated(COMBO.NICHE.ALL[,c('searchTaxon')]),]
-# dim(COMBO.NICHE.ALL)
-# length(unique(COMBO.NICHE.ALL$searchTaxon))
-# length(setdiff(Manuel$Species, COMBO.NICHE.ALL$searchTaxon))
-# length(intersect(DIANA.SPP$Name, COMBO.NICHE.ALL$searchTaxon))
-# 
-# 
-# 
-# #########################################################################################################################
-# ## Now combine the raster tables for each species into one table
-# COMBO.RASTER.ALL <- COMBO.RASTER.list %>%
-# 
-#   ## pipe the list into lapply
-#   lapply(function(x) {
-# 
-#     ## create the character string
-#     f <- paste0(x)
-# 
-#     ## load each .csv file
-#     d <- readRDS(f)
-#     d
-# 
-#   }) %>%
-# 
-#   ## finally, bind all the rows together
-#   bind_rows
-# 
-# 
-# ## This is a summary of maxent output for current conditions
-# dim(COMBO.RASTER.ALL)
-# names(COMBO.RASTER.ALL)[1:10]
-# 
-# 
-# #########################################################################################################################
-# ## Save the niche and raster data
-# saveRDS(COMBO.NICHE.ALL,  paste0(DATA_path, 'COMBO_NICHE_ALL_',  save_run, '.rds'))
-# saveRDS(COMBO.RASTER.ALL, paste0(DATA_path, 'COMBO_RASTER_ALL_', save_run, '.rds'))
+COMBO.NICHE.list  = list.files(DATA_path, pattern = 'COMBO_NICHE_CONTEXT_EVERGREEN',  full.names = TRUE, recursive = TRUE)
+COMBO.RASTER.list = list.files(DATA_path, pattern = 'COMBO_RASTER_CONTEXT_EVERGREEN', full.names = TRUE, recursive = TRUE)
+ 
+
+#########################################################################################################################
+## Now combine the niche tables for each species into one table
+COMBO.NICHE.ALL <- COMBO.NICHE.list[1:8] %>%
+
+  ## pipe the list into lapply
+  lapply(function(x) {
+
+    ## create the character string
+    f <- paste0(x)
+
+    ## load each .csv file
+    d <- readRDS(f)
+    d
+
+  }) %>%
+
+  ## finally, bind all the rows together
+  bind_rows
+
+
+## Update this
+str(COMBO.NICHE.ALL)
+dim(COMBO.NICHE.ALL)
+
+
+## Make sure the Species are unique
+COMBO.NICHE.ALL = COMBO.NICHE.ALL[!duplicated(COMBO.NICHE.ALL[,c('searchTaxon')]),]
+dim(COMBO.NICHE.ALL)
+length(unique(COMBO.NICHE.ALL$searchTaxon))
+
+
+#########################################################################################################################
+## Now combine the raster tables for each species into one table
+COMBO.RASTER.ALL <- COMBO.RASTER.list %>%
+
+  ## pipe the list into lapply
+  lapply(function(x) {
+
+    ## create the character string
+    f <- paste0(x)
+
+    ## load each .csv file
+    d <- readRDS(f)
+    d
+
+  }) %>%
+
+  ## finally, bind all the rows together
+  bind_rows
+
+
+## This is a summary of maxent output for current conditions
+dim(COMBO.RASTER.ALL)
+names(COMBO.RASTER.ALL)[1:10]
+
+
+##
+length(unique(COMBO.RASTER.ALL$searchTaxon))
+
+
+
+#########################################################################################################################
+## Save the niche and raster data
+saveRDS(COMBO.NICHE.ALL,  paste0(DATA_path, 'COMBO_NICHE_ALL_',  save_run, '.rds'))
+saveRDS(COMBO.RASTER.ALL, paste0(DATA_path, 'COMBO_RASTER_ALL_', save_run, '.rds'))
 
 
 

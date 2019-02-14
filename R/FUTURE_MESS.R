@@ -1,3 +1,21 @@
+# env.grids.2030 = tryCatch(project_maxent_grids_mess(poly          = AUS,          ## A shapefile, e.g. Australia
+#                                                     scen_list     = scen_2030,    ## A list of climate scenarios
+#                                                     species_list  = map_spp_list, ## A list of species folders with maxent models
+#                                                     maxent_path   = maxent_path,  ## the output folder
+#                                                     climate_path  = "./data/base/worldclim/aus/1km/bio", ## climate data
+#                                                     grid_names    = grid.names,   ## names of the predictor grids
+#                                                     time_slice    = 30,           ## Time period
+#                                                     current_grids = aus.grids.current,
+#                                                     create_mess   = "TRUE"),  ## predictor grids
+#                           
+#                           ## Skip species
+#                           error = function(cond) {
+#                             
+#                             message(paste('Species skipped - check', spp))
+#                             
+#                           })
+                                     
+
 ## Try to run the mess maps at the same time as the map creation?
 project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path, climate_path, 
                                      grid_names, time_slice, current_grids, create_mess) {
@@ -5,6 +23,23 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
   ## Read in Australia
   poly = poly %>%
     spTransform(ALB.CONICAL)
+  
+  # Parallelising stuff #####################
+  cl <- makeCluster(6)
+  clusterExport(cl, c(
+    'poly', 'scen_list', 'maxent_path', 'climate_path', 
+    'grid_names', 'time_slice', 'current_grids', 'create_mess',
+    'hatch', 'polygonizer', 'sdm.predictors', 'aus.grids.current', 
+    'sdm.select', 'diverge0'))
+  clusterEvalQ(cl, {
+    library(rmaxent)
+    library(sp)
+    library(raster)
+    library(rasterVis)
+    library(latticeExtra)
+  })
+  ###########################################
+  
   
   ## First, run a loop over each scenario:    
   lapply(scen_list, function(x) {
@@ -32,7 +67,13 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
     ## First, check if the maxent model exists
     ## Can we skip the species before dividing the rasters?................................................................
     ## Then apply each GCM to each species
-    lapply(species_list, function(species) {
+    
+    #lapply(species_list, function(species) {
+    
+    # Parallelising stuff #####################
+    clusterExport(cl, c('x', 's'))
+    parLapply(cl, species_list, function(species) {
+    ###########################################
       
       save_name = gsub(' ', '_', species)
       if(file.exists(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, species))) {
@@ -73,7 +114,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
           #####################################################################
           ## Report current mess map in progress
           MESS_dir = sprintf('%s%s/full/%s/', 
-                             maxent_path, species, MESS_folder)
+                             maxent_path, species, 'MESS_output')
           f_mess_current = sprintf('%s%s%s.tif', MESS_dir, species, "_current_mess_map")
           
           if(create_mess == "TRUE" & !file.exists(f_mess_current)) {
@@ -103,7 +144,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
             
             ## Then write the mess output to a directory inside the 'full' maxent folder
             writeRaster(mess_current$similarity_min, sprintf('%s%s%s.tif', MESS_dir, species, "_current_mess_map"), 
-                        overwrite = TRUE, datatype = 'INT2S')
+                        overwrite = TRUE) ## datatype = 'INT2S' for integer 
             
             ##################################################################
             ## Create a PNG file of all the CURRENT MESS output
@@ -115,7 +156,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
               ## Create a level plot for each species
               p <- levelplot(r, margin = FALSE, scales = list(draw = FALSE),
                              at = seq(minValue(r), maxValue(r), len = 100),
-                             colokey = list(height = 0.6), 
+                             colorkey = list(height = 0.6), 
                              main = gsub('_', ' ', sprintf('Current_mess_for_%s (%s)', name, species))) +
                 
                 latticeExtra::layer(sp.polygons(poly), data = list(poly = poly))  ## need list() for polygon
@@ -133,7 +174,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
             ## The "full" directory is getting full, could create a sub dir for MESS maps
             message('Writing maps of novel environments to file for', species) 
             writeRaster(novel_current, sprintf('%s%s%s.tif', MESS_dir, species, "_current_novel_map"), 
-                        overwrite = TRUE, datatype = 'INT2S')
+                        overwrite = TRUE, )
             
             ##################################################################
             # Now mask out novel environments.................................
@@ -147,7 +188,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
             ## Write out not-novel raster :: this can go to the main directory
             message('Writing maps of un - novel environments to file for', species) 
             writeRaster(hs_current_notNovel, sub('\\.tif', '_notNovel.tif', hs_current@file@name), 
-                        overwrite = TRUE, datatype = 'INT2S')
+                        overwrite = TRUE)
             
           } else {
             
@@ -190,7 +231,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
               ##################################################################
               ## Write out the future mess maps, for all variables
               writeRaster(mess_future$similarity_min, sprintf('%s%s%s%s.tif', MESS_dir, species, "_future_mess_", x), 
-                          overwrite = TRUE, datatype = 'INT2S')
+                          overwrite = TRUE)
               
               ##################################################################
               ## Create a PNG file of all the future MESS output: 
@@ -201,7 +242,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
                 
                 p <- levelplot(r, margin = FALSE, scales = list(draw = FALSE),
                                at = seq(minValue(r), maxValue(r), len = 100),
-                               colokey = list(height = 0.6), 
+                               colorkey = list(height = 0.6), 
                                main = gsub('_', ' ', sprintf('Future_mess_for_%s_%s (%s)', name, x, species, x))) +
                   
                   latticeExtra::layer(sp.polygons(poly), data = list(poly = poly))   ## Use this in previous functions
@@ -220,7 +261,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
               message('Writing maps of novel environments to file for', species) 
               writeRaster(novel_future, sprintf('%s%s/full/%s_%s.tif', 
                                                 maxent_path, species, species, "future_novel_map"), 
-                          overwrite = TRUE, datatype = 'INT2S')
+                          overwrite = TRUE)
               
               ##################################################################
               # mask out novel environments 
@@ -232,13 +273,25 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
               ## Write out not-novel raster
               message('Writing maps of un- novel environments to file for', species) 
               writeRaster(hs_future_notNovel, sub('\\.tif', '_notNovel.tif', hs_future@file@name), 
-                          overwrite = TRUE, datatype = 'INT2S')
+                          overwrite = TRUE)
               
             } else {
               
               message('Dont run MESS maps for ', species) 
               
             }
+            
+            #####
+            ## Convert binary rasters of novel climate to polygons
+            novel_current_poly <- polygonizer('output/maxent/SUA_TREES_ANALYSIS/Abelia_grandiflora/full/Abelia_grandiflora_current_novel_map.tif')
+            novel_future_poly <- polygonizer('output/maxent/SUA_TREES_ANALYSIS/Abelia_grandiflora/full/Abelia_grandiflora_future_novel_map.tif')
+            
+            ## Create a SpatialLines object that indicates novel areas (this will be overlaid)            
+            # (Below we create a dummy polygon as the first list element (which is the extent
+            # of the raster, expanded by 10%), to plot on panel 1)
+            novel_hatch <- list(as(extent(pred.current)*1.1, 'SpatialPolygons'),  
+                                hatch(novel_current_poly, 50), hatch(novel_future_poly, 50)) # 50 = approx 50 lines across the extent of the poly
+            
             
             ########################################################################################################################
             ## Now create the empty panel just before plotting
@@ -289,7 +342,8 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
                       ## Try adding novel maps as vectors.....................................               
                       latticeExtra::layer(sp.polygons(poly), data = list(poly = poly)) +
                       latticeExtra::layer(sp.points(occ, pch = 19, cex = 0.15, 
-                                                    col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
+                                                    col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)) +
+                      latticeExtra::layer(sp.polygons(h[[panel.number()]]), data = list(h = novel_hatch)))
               dev.off()
               
             } else {

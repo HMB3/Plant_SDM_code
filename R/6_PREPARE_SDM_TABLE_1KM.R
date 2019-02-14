@@ -28,8 +28,12 @@ if(read_data == "TRUE") {
 }
 
 
-##  some proj libs do not like the ESRI string code
+#########################################################################################################################
+##  some proj libs do not like the 'ESRI' string code - set this here
 sp_epsg54009 = "+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0"
+
+
+
 
 
 #########################################################################################################################
@@ -39,6 +43,8 @@ sp_epsg54009 = "+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +uni
 
 #########################################################################################################################
 ## Create a table with all the variables needed for SDM analysis
+## CLEAN.TRUE = readRDS(paste0(DATA_path, 'COMBO_RASTER_ALL_WPW_TEST', '.rds'))
+## CLEAN.TRUE = CLEAN.TRUE[CLEAN.TRUE$searchTaxon %in% GBIF.spp, ]
 dim(CLEAN.TRUE)
 length(unique(CLEAN.TRUE$searchTaxon))
 length(unique(CLEAN.TRUE$OBS))
@@ -95,6 +101,10 @@ xres(template.raster);yres(template.raster)
 #########################################################################################################################
 ## 1). TRY CLEANING FILTERED DATA FOR SPATIAL OUTLIERS
 #########################################################################################################################
+
+
+## The cc_outl function is a bottleneck. I hoped to make the code run for one species at a time - this works locally,
+## but can't get it working easily on katana for all the species....................................................
 
 
 ## Check dimensions
@@ -190,6 +200,8 @@ SPAT.OUT <- LUT.100K  %>%
   
   ## Finally, bind all the rows together
   bind_rows
+
+gc()
 
 
 ## These settings produce too few outliers. Try changing the settings..................................................
@@ -316,7 +328,7 @@ if(save_data == "TRUE") {
   
   ## save .shp for future refrence 
   writeOGR(obj    = SPAT.OUT.SPDF, 
-           dsn    = SHP_path, 
+           dsn    = DATA_path, 
            layer  = paste0('SPAT_OUT_CHECK_', save_run),
            driver = "ESRI Shapefile", overwrite_layer = TRUE)
   

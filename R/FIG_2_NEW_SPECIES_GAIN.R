@@ -14,6 +14,15 @@
 ## https://ggplot2.tidyverse.org/reference/geom_smooth.html
 
 
+## EG
+# ALL.GAIN.2070.GAM = gam(Species.gain/100 ~ s (CURRENT_MAT, k = 3), 
+#                         data = allSUAs2070, 
+#                         method = "REML", family = betar(link = "logit"))
+# summary(ALL.GAIN.2070.GAM)[["dev.expl"]][1]
+
+
+
+
 #########################################################################################################################
 ## 1). READ DATA
 #########################################################################################################################
@@ -40,13 +49,8 @@ bigSUAs2030 <- subset(bigSUAs, PERIOD=="2030")
 #########################################################################################################################
 
 
-####### Figure 2 #####
-### make subpolots ###
-SUA.plot.cols = brewer.pal(12, "Paired")
-
-
 #########################################################################################################################
-### Fig 2A 
+## Fig 2A 
 ## Run GAMs of species gains vs MAT for 2070, ALL SUA
 ALL.GAIN.2070.GAM = gam(Species.gain ~ s (CURRENT_MAT, k = 3), 
                         data = allSUAs2070, 
@@ -58,7 +62,7 @@ summary(ALL.GAIN.2070.GAM)[["dev.expl"]][1]
 ## Run GAMs of species gains vs MAT for 2030, ALL SUA
 ALL.GAIN.2030.GAM = gam(Species.gain ~ s (CURRENT_MAT, k = 3), 
                         data = allSUAs2030, 
-                        method = "REML", family = betar(link = "logit"))
+                        method = "REML")
 summary(ALL.GAIN.2030.GAM)[["dev.expl"]][1]  
 
 
@@ -92,10 +96,7 @@ ggsave(filename="C:/Users/MQ20174608/Desktop/fig2A.pdf", width=10, height=10, pl
 
 
 #########################################################################################################################
-### Fig 2B 
-
-
-#####################################################
+## Fig 2B 
 ## Run GAMs of species gains vs MAT for 2070, BIG SUA
 BIG.GAIN.2070.GAM = gam(Species.gain ~ s (CURRENT_MAT, k = 3), 
                         data = bigSUAs2070, 
@@ -129,6 +130,7 @@ fig2B<-ggplot(bigSUAs, aes(x=CURRENT_MAT, y=Species.gain, color=factor(PERIOD)))
   annotate(geom="text", size=8, x=20, y=65, label=paste("Deviance (2030) =", signif(summary(BIG.GAIN.2030.GAM)[["dev.expl"]][1]*100, digits = 3),"%")) +
   annotate(geom="text", size=8, x=20, y=62, label=paste("Deviance (2070) =", signif(summary(BIG.GAIN.2070.GAM)[["dev.expl"]][1]*100, digits = 3),"%")) 
 #theme(legend.position="none")  #this remove legend on the right
+
 fig2B
 ggsave(filename="C:/Users/MQ20174608/Desktop/fig2B.pdf", width=10, height=10, plot=fig2B, dpi=300)
 
@@ -137,7 +139,7 @@ ggsave(filename="C:/Users/MQ20174608/Desktop/fig2B.pdf", width=10, height=10, pl
 
 
 #########################################################################################################################
-### Fig 2C 
+## Fig 2C 
 ## Run GAMs of species losses vs MAT for 2070, ALL SUA
 ALL.LOSS.2070.GAM = gam(Species.loss ~ s (CURRENT_MAT, k = 3), 
                         data = allSUAs2070, 
@@ -154,7 +156,7 @@ summary(ALL.LOSS.2030.GAM)[["dev.expl"]][1]
 
 
 #########################################################################################################################
-
+## 
 dev.new(width=17, height=13)
 fig2C<-ggplot(allSUAs, aes(x=CURRENT_MAT, y=Species.loss, color=factor(PERIOD))) +
   
@@ -195,7 +197,7 @@ summary(BIG.LOSS.2030.GAM)[["dev.expl"]][1]
 
 
 #########################################################################################################################
-######################################################
+##
 dev.new(width=17, height=13)
 
 fig2D<-ggplot(bigSUAs, aes(x=CURRENT_MAT, y=Species.loss, color=factor(PERIOD))) +
@@ -225,12 +227,13 @@ ggsave(filename="C:/Users/MQ20174608/Desktop/fig2D.pdf", width=10, height=10, pl
 #########################################################################################################################
 
 
-###########################################
+#########################################################################################################################
+## Use a function Alessandro created to stack the GPPLOTs
 dev.new(width = 40, height = 30)
 fig2 <- grid_arrange_shared_legend(fig2A, fig2B, fig2C, fig2D, ncol = 2, nrow = 2, position="right")
 fig2
 
-ggsave(filename="C:/Users/MQ20174608/Desktop/fig2.pdf", width=20, height=18, plot=fig2, dpi=300)
+ggsave(filename = "./output/figures/FIG_2/FIG_2_NEW_SUA_SPECIES.png", width = 20, height = 18, plot = fig2, dpi = 300)
 
 
 

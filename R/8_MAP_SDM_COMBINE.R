@@ -64,15 +64,14 @@ MESS_folder   = "MESS_output"
 
 #########################################################################################################################
 ## Create 2030 maps
-env.grids.2030 = tryCatch(project_maxent_grids_mess(poly          = AUS,          ## A shapefile, e.g. Australia
-                                                    scen_list     = scen_2030,    ## A list of climate scenarios
-                                                    species_list  = map_spp_list, ## A list of species folders with maxent models
-                                                    maxent_path   = maxent_path,  ## the output folder
-                                                    climate_path  = "./data/base/worldclim/aus/1km/bio", ## climate data
-                                                    grid_names    = grid.names,   ## names of the predictor grids
-                                                    time_slice    = 30,           ## Time period
-                                                    current_grids = aus.grids.current,
-                                                    create_mess   = "TRUE"),  ## predictor grids
+env.grids.2030 = tryCatch(project_maxent_grids(shp           = AUS,          ## A shapefile, e.g. Australia
+                                               scen_list     = scen_2030,    ## A list of climate scenarios
+                                               species_list  = map_spp_list, ## A list of species folders with maxent models
+                                               maxent_path   = maxent_path,  ## the output folder
+                                               climate_path  = "./data/base/worldclim/aus/1km/bio", ## climate data
+                                               grid_names    = grid.names,   ## names of the predictor grids
+                                               time_slice    = 30,           ## Time period
+                                               current_grids = aus.grids.current),  ## predictor grids
                           
                           ## Skip species
                           error = function(cond) {
@@ -154,20 +153,20 @@ env.grids.2070 = tryCatch(project_maxent_grids(shp           = AUS,
 
 #########################################################################################################################
 ## Subset the current worldclim grids to just those eight grids that were used for the maxent models
-grid_names           = sdm.predictors
-current_grids        = aus.grids.current
-names(current_grids) = grid_names 
-current_grids        = subset(current_grids, intersect(names(current_grids), sdm.select))
-names(current_grids)
+# grid_names           = sdm.predictors
+# current_grids        = aus.grids.current
+# names(current_grids) = grid_names 
+# current_grids        = subset(current_grids, intersect(names(current_grids), sdm.select))
+# names(current_grids)
 
 
 ###########################################################################################################################
 ## Run MESS maps for current models
-current_MESS = create_maxent_mess(poly           = AUS,
-                                  species_list   = map_spp,                ## List of species' directories
-                                  threshold_list = percent.10.log,         ## List of species' maxent thresholds
-                                  maxent_path    = maxent_path,            ## Maxent output directory
-                                  current_grids  = current_grids)          ## Stack of the current environmental rasters
+# current_MESS = create_maxent_mess(poly           = AUS,
+#                                   species_list   = map_spp,                ## List of species' directories
+#                                   threshold_list = percent.10.log,         ## List of species' maxent thresholds
+#                                   maxent_path    = maxent_path,            ## Maxent output directory
+#                                   current_grids  = current_grids)          ## Stack of the current environmental rasters
 
 
 ## Next step would be to use the mess maps to mask the species with bad maps - or do the same for every species.
@@ -190,15 +189,15 @@ current_MESS = create_maxent_mess(poly           = AUS,
 
 
 ## Test problematic species by entering the values and running the function manually
-unit_path     = "./data/base/CONTEXTUAL/SUA/"   ## Data path for the spatial unit of analysis 
-unit_file     = "SUA_2016_AUST.rds"             ## Spatial unit of analysis - E.G. SUAs
-unit_vec      = "SUA_2016_VEC.rds"              ## Vector of rasterized unit cells
-DIR           = SDM.RESULTS.DIR[1]              ## List of directories with rasters
-species       = map_spp[1]                      ## List of species' directories
-maxent_path   = maxent_path                     ## Directory of maxent results
-thresh        = percent.10.log[1]               ## List of maxent thresholds
-time_slice    = 30                              ## Time period, eg 2030
-write_rasters = "TRUE"                          ## Save the rasters?
+# unit_path     = "./data/base/CONTEXTUAL/SUA/"   ## Data path for the spatial unit of analysis 
+# unit_file     = "SUA_2016_AUST.rds"             ## Spatial unit of analysis - E.G. SUAs
+# unit_vec      = "SUA_2016_VEC.rds"              ## Vector of rasterized unit cells
+# DIR           = SDM.RESULTS.DIR[1]              ## List of directories with rasters
+# species       = map_spp[1]                      ## List of species' directories
+# maxent_path   = maxent_path                     ## Directory of maxent results
+# thresh        = percent.10.log[1]               ## List of maxent thresholds
+# time_slice    = 30                              ## Time period, eg 2030
+# write_rasters = "TRUE"                          ## Save the rasters?
 
 
 
@@ -304,10 +303,10 @@ suitability.2070 = tryCatch(mapply(SUA_cell_count,
 
 
 # ## Create a list of folders for this run of species:EG hollow bearing species 
-run_path         <- "./output/maxent/HOLLOW_SPP"
-run_pat          <- map_spp
-run_pat          <- paste(run_pat, sep = "", collapse = "|")
-maxent_run_list  <- list.files(maxent_path, pattern = run_pat, full.names = TRUE)
+# run_path         <- "./output/maxent/HOLLOW_SPP"
+# run_pat          <- map_spp
+# run_pat          <- paste(run_pat, sep = "", collapse = "|")
+# maxent_run_list  <- list.files(maxent_path, pattern = run_pat, full.names = TRUE)
 
 
 # ## Save the list of maxent directories to file

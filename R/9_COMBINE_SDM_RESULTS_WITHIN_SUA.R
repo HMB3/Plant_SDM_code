@@ -172,7 +172,7 @@ setdiff(TOP.SUA.POP$SUA, SUA.DENS$SUA)
 
 
 ## Make the SUA field character not factor
-setnames(SUA.PRESENCE, old = c("SUA_NAME16", "n_cells"), new = c("SUA", "CELL_COUNT"))
+#setnames(SUA.PRESENCE, old = c("SUA_NAME16", "n_cells"), new = c("SUA", "CELL_COUNT"))
 class(SUA.PRESENCE$SUA)
 class(SUA.DEN$SUA)
 
@@ -299,7 +299,7 @@ names(SUA.KOP)[names(SUA.KOP) == "MAJORITY"] <- "MAJOR_KOP"
 
 
 ## Divide temperature by 10
-SUA.BIO1.2030.stats[["PERIOD"]]  <- 30
+SUA.BIO1.2030.stats[["PERIOD"]]  <- 2030
 colnames(SUA.BIO1.2030.stats)[1] <- "SUA"
 SUA.BIO1.current.stats[["CURRENT_MAT"]] = SUA.BIO1.current.stats[["CURRENT_MAT"]]/10
 
@@ -426,9 +426,9 @@ SUA.PLOT.70.M        = melt(SUA.PLOT.70)
 names(SUA.PLOT.30.M) = c("SUA", "AREA_CHANGE", "SPECIES_COUNT")
 names(SUA.PLOT.50.M) = c("SUA", "AREA_CHANGE", "SPECIES_COUNT")
 names(SUA.PLOT.70.M) = c("SUA", "AREA_CHANGE", "SPECIES_COUNT")
-SUA.PLOT.30.M$PERIOD = 30 
-SUA.PLOT.50.M$PERIOD = 50 
-SUA.PLOT.70.M$PERIOD = 70 
+SUA.PLOT.30.M$PERIOD = 2030 
+SUA.PLOT.50.M$PERIOD = 2050 
+SUA.PLOT.70.M$PERIOD = 2070 
 
 
 SUA.PLOT.30.M        = subset(SUA.PLOT.30.M, AREA_CHANGE != "NEVER")# & AREA_CHANGE != "STABLE")
@@ -498,6 +498,100 @@ SUA.70.M.STABLE = join(SUA.70.M.STABLE, SUA.CLIM)
 
 
 
+
+
+#########################################################################################################################
+## 5). CREATE GAIN/LOSS
+#########################################################################################################################
+
+
+#########################################################################################################################
+## Create the gain and loss variables for plotting.
+SUA.GAIN.2070                   = subset(SUA.PLOT.70.M, AREA_CHANGE %in% c("GAIN"))
+SUA.LOSS.2070                   = subset(SUA.PLOT.70.M, AREA_CHANGE %in% c("LOSS"))
+SUA.STABLE.2070                 = subset(SUA.PLOT.70.M, AREA_CHANGE %in% c("STABLE"))
+
+SUA.GAIN.2070.CAP               = subset(SUA.GAIN.2070,   AREASQKM16 > 200 & POP_2017 > 80000)
+SUA.LOSS.2070.CAP               = subset(SUA.LOSS.2070,   AREASQKM16 > 200 & POP_2017 > 80000)
+SUA.STABLE.2070.CAP             = subset(SUA.STABLE.2070, AREASQKM16 > 200 & POP_2017 > 80000)
+
+
+## How many SUA's are temperate
+length(unique(SUA.GAIN.2070$SUA))
+
+
+#########################################################################################################################
+## All SUAs
+SUA.GAIN.2070$SPECIES_GAIN      = SUA.GAIN.2070$SPECIES_COUNT/(SUA.LOSS.2070$SPECIES_COUNT + 
+                                                                 SUA.STABLE.2070$SPECIES_COUNT + 
+                                                                 SUA.GAIN.2070$SPECIES_COUNT)
+SUA.GAIN.2070$SPECIES_GAIN      = SUA.GAIN.2070$SPECIES_GAIN*100
+
+SUA.LOSS.2070$SPECIES_LOSS      = SUA.LOSS.2070$SPECIES_COUNT/(SUA.LOSS.2070$SPECIES_COUNT + 
+                                                                 SUA.STABLE.2070$SPECIES_COUNT + 
+                                                                 SUA.GAIN.2070$SPECIES_COUNT)
+SUA.LOSS.2070$SPECIES_LOSS      = SUA.LOSS.2070$SPECIES_LOSS*100
+
+
+#########################################################################################################################
+## Big SUAs
+SUA.GAIN.2070.CAP$SPECIES_GAIN  = SUA.GAIN.2070.CAP$SPECIES_COUNT/(SUA.LOSS.2070.CAP$SPECIES_COUNT + 
+                                                                     SUA.STABLE.2070.CAP$SPECIES_COUNT + 
+                                                                     SUA.GAIN.2070.CAP$SPECIES_COUNT)
+SUA.GAIN.2070.CAP$SPECIES_GAIN  = SUA.GAIN.2070.CAP$SPECIES_GAIN*100
+
+SUA.LOSS.2070.CAP$SPECIES_LOSS  = SUA.LOSS.2070.CAP$SPECIES_COUNT/(SUA.LOSS.2070.CAP$SPECIES_COUNT + 
+                                                                     SUA.STABLE.2070.CAP$SPECIES_COUNT + 
+                                                                     SUA.GAIN.2070.CAP$SPECIES_COUNT)
+SUA.LOSS.2070.CAP$SPECIES_LOSS   = SUA.LOSS.2070.CAP$SPECIES_LOSS*100
+
+
+#########################################################################################################################
+## Create the gain and loss variables for plotting.
+SUA.GAIN.2030                   = subset(SUA.PLOT.30.M, AREA_CHANGE %in% c("GAIN"))
+SUA.LOSS.2030                   = subset(SUA.PLOT.30.M, AREA_CHANGE %in% c("LOSS"))
+SUA.STABLE.2030                 = subset(SUA.PLOT.30.M, AREA_CHANGE %in% c("STABLE"))
+
+SUA.GAIN.2030.CAP               = subset(SUA.GAIN.2030,   AREASQKM16 > 200 & POP_2017 > 80000)
+SUA.LOSS.2030.CAP               = subset(SUA.LOSS.2030,   AREASQKM16 > 200 & POP_2017 > 80000)
+SUA.STABLE.2030.CAP             = subset(SUA.STABLE.2030, AREASQKM16 > 200 & POP_2017 > 80000)
+
+
+## How many SUA's are temperate
+length(unique(SUA.GAIN.2030$SUA))
+
+
+#########################################################################################################################
+## All SUAs
+SUA.GAIN.2030$SPECIES_GAIN      = SUA.GAIN.2030$SPECIES_COUNT/(SUA.LOSS.2030$SPECIES_COUNT + 
+                                                                 SUA.STABLE.2030$SPECIES_COUNT + 
+                                                                 SUA.GAIN.2030$SPECIES_COUNT)
+SUA.GAIN.2030$SPECIES_GAIN      = SUA.GAIN.2030$SPECIES_GAIN*100
+
+SUA.LOSS.2030$SPECIES_LOSS      = SUA.LOSS.2030$SPECIES_COUNT/(SUA.LOSS.2030$SPECIES_COUNT + 
+                                                                 SUA.STABLE.2030$SPECIES_COUNT + 
+                                                                 SUA.GAIN.2030$SPECIES_COUNT)
+SUA.LOSS.2030$SPECIES_LOSS      = SUA.LOSS.2030$SPECIES_LOSS*100
+
+
+#########################################################################################################################
+## Big SUAs
+SUA.GAIN.2030.CAP$SPECIES_GAIN  = SUA.GAIN.2030.CAP$SPECIES_COUNT/(SUA.LOSS.2030.CAP$SPECIES_COUNT + 
+                                                                     SUA.STABLE.2030.CAP$SPECIES_COUNT + 
+                                                                     SUA.GAIN.2030.CAP$SPECIES_COUNT)
+SUA.GAIN.2030.CAP$SPECIES_GAIN  = SUA.GAIN.2030.CAP$SPECIES_GAIN*100
+
+SUA.LOSS.2030.CAP$SPECIES_LOSS  = SUA.LOSS.2030.CAP$SPECIES_COUNT/(SUA.LOSS.2030.CAP$SPECIES_COUNT + 
+                                                                     SUA.STABLE.2030.CAP$SPECIES_COUNT + 
+                                                                     SUA.GAIN.2030.CAP$SPECIES_COUNT)
+SUA.LOSS.2030.CAP$SPECIES_LOSS   = SUA.LOSS.2030.CAP$SPECIES_LOSS*100
+
+
+#########################################################################################################################
+## Combine all the data
+SUA.PLOT = bind_rows(SUA.GAIN.2030, SUA.LOSS.2030, SUA.GAIN.2070, SUA.LOSS.2070)
+dim(SUA.PLOT)
+table(SUA.PLOT$PERIOD, SUA.PLOT$AREA_CHANGE)
 
 
 #########################################################################################################################
