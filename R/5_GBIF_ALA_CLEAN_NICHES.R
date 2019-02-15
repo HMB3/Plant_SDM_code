@@ -564,8 +564,9 @@ if(calc_niche == "TRUE") {
   #########################################################################################################################
   ## save .rds file for the next session
   message('Writing niche and raster data for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
-  saveRDS(COMBO.NICHE.CONTEXT,   paste0(DATA_path, 'COMBO_NICHE_CONTEXT_',  OCC_SOURCE, '_RECORDS_', save_run, '.rds'))
-  saveRDS(COMBO.RASTER.CONTEXT,  paste0(DATA_path, 'COMBO_RASTER_CONTEXT_', OCC_SOURCE, '_RECORDS_', save_run, '.rds'))
+  saveRDS(COMBO.NICHE.CONTEXT,    paste0(DATA_path, 'COMBO_NICHE_CONTEXT_',  OCC_SOURCE, '_RECORDS_', save_run, '.rds'))
+  saveRDS(COMBO.RASTER.CONTEXT,   paste0(DATA_path, 'COMBO_RASTER_CONTEXT_', OCC_SOURCE, '_RECORDS_', save_run, '.rds'))
+  write.csv(COMBO.NICHE.CONTEXT,  paste0(DATA_path, 'COMBO_NICHE_CONTEXT_',  OCC_SOURCE, '_RECORDS_', save_run, '.csv'), row.names = FALSE)
   
   
 } else {

@@ -16,29 +16,30 @@
 project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path, climate_path, 
                                      grid_names, time_slice, current_grids, create_mess) {
   
-  ## Read in Australia
-  poly = poly %>%
-    spTransform(ALB.CONICAL)
-  
   ## Parallelising stuff #####################
-  cl <- makeCluster(6)
-  clusterExport(cl, c(
-    'poly', 'scen_list', 'maxent_path', 'climate_path', 
-    'grid_names', 'time_slice', 'current_grids', 'create_mess',
-    'hatch', 'polygonizer', 'sdm.predictors', 'aus.grids.current', 
-    'sdm.select', 'diverge0'))
-  
-  clusterEvalQ(cl, {
-    library(rmaxent)
-    library(sp)
-    library(raster)
-    library(rasterVis)
-    library(latticeExtra)
-  })
+  # if(run_parallel == "TRUE") {
+  #   message('Run parallel mapping for using ', nclust, ' local cores for ', species)
+  #   
+  # cl <- makeCluster(nclust)
+  # clusterExport(cl, c(
+  #   'poly', 'scen_list', 'species_list', 'maxent_path', 'climate_path', 
+  #   'grid_names', 'time_slice', 'current_grids', 'create_mess',
+  #   'hatch', 'polygonizer', 'sdm.predictors', 'aus.grids.current', 
+  #   'sdm.select', 'diverge0'))
+  # 
+  # clusterEvalQ(cl, {
+  #   library(rmaxent)
+  #   library(sp)
+  #   library(raster)
+  #   library(rasterVis)
+  #   library(latticeExtra)
+  # })
+  # 
+  # } else {
+  #   message('Run mapping using one core for ', species)
+  # }
   
   ###########################################
-  
-  
   ## First, run a loop over each scenario:    
   lapply(scen_list, function(x) {
     
@@ -54,24 +55,20 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
     ## s[[1:11]] <- s[[1:11]]/10 ## That code doesn't work
     message('20', time_slice, ' rasters / 10 ', x)
     for(i in 1:11) {
-      
       ## Simple loop
       message(i)
       s[[i]] <- s[[ i]]/10
-      
     }
     
     ## Then apply each GCM to each species.
     ## First, check if the maxent model exists
-    ## Can we skip the species before dividing the rasters?................................................................
     ## Then apply each GCM to each species
+    lapply(species_list, function(species) {
     
-    #lapply(species_list, function(species) {
-    
-    # Parallelising stuff #####################
-    clusterExport(cl, c('x', 's'))
-    parLapply(cl, species_list, function(species) {
-      ###########################################
+    ######## Parallelising stuff ################
+    # clusterExport(cl, c('scen_list', 'x', 's'))
+    # parLapply(cl, species_list, function(species) {
+    #############################################
       
       save_name = gsub(' ', '_', species)
       if(file.exists(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, species))) {
@@ -110,7 +107,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
           
           #####################################################################
           ## Report current mess map in progress
-          MESS_dir = sprintf('%s%s/full/%s/', 
+          MESS_dir = sprintf('%s%s/full/%s', 
                              maxent_path, species, 'MESS_output')
           f_mess_current = sprintf('%s%s%s.tif', MESS_dir, species, "_current_mess_map")
           
@@ -131,6 +128,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
             ## Write out the current mess maps - 
             ## create a new folder for the mess output - we are going to print it to the maps
             if(!dir.exists(MESS_dir)) {
+              message('Creating MESS directory for ', species) 
               dir.create(MESS_dir)
               
             } else {
@@ -172,17 +170,15 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
                         overwrite = TRUE)
             
             ##################################################################
-            # Now mask out novel environments.................................
-            # John suggested we might not use the MESS in this way
-            
-            # is.na(novel_current) is a binary layer showing 
-            # not novel [=1] vs novel [=0], 
-            # so multiplying this with hs_current will mask out novel
+            ## Now mask out novel environments
+            ## is.na(novel_current) is a binary layer showing 
+            ## not novel [=1] vs novel [=0], 
+            ## so multiplying this with hs_current will mask out novel
             hs_current_notNovel <- pred.current * is.na(novel_current) 
             
             ## Write out not-novel raster :: this can go to the main directory
             message('Writing maps of un - novel environments to file for', species) 
-            writeRaster(hs_current_notNovel, sprintf('%s%s%s.tif', MESS_dir, species, "_Current_notNovel"),
+            writeRaster(hs_current_notNovel, sprintf('%s%s%s.tif', MESS_dir, species, "_current_notNovel"),
                         overwrite = TRUE)
             
           } else {
@@ -252,8 +248,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
               ## Write the raster of novel environments to the maxent directory 
               ## The "full" directory is getting full, could create a sub dir for MESS maps
               message('Writing maps of novel environments to file for', species) 
-              writeRaster(novel_future, sprintf('%s%s/full/%s_%s.tif', 
-                                                maxent_path, species, species, "future_novel_map"), 
+              writeRaster(novel_future, sprintf('%s%s%s%s.tif', MESS_dir, species, "_future_novel_map_", x), 
                           overwrite = TRUE)
               
               ##################################################################
@@ -264,8 +259,8 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
               hs_future_notNovel <- pred.future * is.na(novel_future) 
               
               ## Write out not-novel raster
-              message('Writing maps of un- novel environments to file for', species) 
-              writeRaster(hs_future_notNovel, sprintf('%s%s%s.tif', MESS_dir, species, "_Furrent_notNovel"), 
+              message('Writing maps of un-novel environments to file for', species) 
+              writeRaster(hs_future_notNovel, sprintf('%s%s%s.tif', MESS_dir, species, "_future_notNovel"), 
                           overwrite = TRUE)
               
             } else {
@@ -274,22 +269,47 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
             
             ###################################################################
             ## Convert binary rasters of novel climate to polygons
-            novel_current_poly <- polygonizer('output/maxent/SUA_TREES_ANALYSIS/Abelia_grandiflora/full/Abelia_grandiflora_current_novel_map.tif')
-            novel_future_poly  <- polygonizer('output/maxent/SUA_TREES_ANALYSIS/Abelia_grandiflora/full/Abelia_grandiflora_future_novel_map.tif')
+            ## Need to save the polygons to file ::  
+            message('Converting raster MESS maps to polygons for ', species) 
+            novel_current_poly <- polygonizer(sprintf('%s%s%s.tif',   MESS_dir, species, "_current_novel_map"))
+            novel_future_poly  <- polygonizer(sprintf('%s%s%s%s.tif', MESS_dir, species, "_future_novel_map_", x))
+            
+            ## re-project the shapefiles
+            novel_current_poly = novel_current_poly %>%
+              spTransform(ALB.CONICAL)
+            
+            novel_future_poly = novel_future_poly %>%
+              spTransform(ALB.CONICAL)
+            
+            ## Now save the shapefile
+            MESS_shp = sprintf('%s%s/full/%s', 
+                               maxent_path, species, 'MESS_output')
+            
+            writeOGR(obj    = novel_current_poly, 
+                     dsn    = sprintf('%s',  MESS_shp), 
+                     layer  = paste0(species, "_current_novel_polygon"),
+                     driver = "ESRI Shapefile", overwrite_layer = TRUE)
+            
+            writeOGR(obj    = novel_future_poly, 
+                     dsn    = sprintf('%s',  MESS_shp), 
+                     layer  = paste0(species, "_future_novel_polygon_", x),
+                     driver = "ESRI Shapefile", overwrite_layer = TRUE)
             
             ## Create a SpatialLines object that indicates novel areas (this will be overlaid)            
-            # (Below we create a dummy polygon as the first list element (which is the extent
-            # of the raster, expanded by 10%), to plot on panel 1)
+            ## (Below we create a dummy polygon as the first list element (which is the extent
+            ## of the raster, expanded by 10%), to plot on panel 1)
+            ## 50 = approx 50 lines across the extent of the poly
+            message('Creating polygon list for ', species) 
             novel_hatch <- list(as(extent(pred.current)*1.1, 'SpatialPolygons'),  
-                                hatch(novel_current_poly, 50), hatch(novel_future_poly, 50)) # 50 = approx 50 lines across the extent of the poly
-            
+                                hatch(novel_current_poly, 50), hatch(novel_future_poly, 50)) 
             
             ########################################################################################################################
             ## Now create the empty panel just before plotting
             empty_ras <- init(pred.current, function(x) NA) 
+
             
             ## Check exents :: one of the species combinations failed this test
-            projection(poly);projection(occ);projection(empty_ras)
+            projection(novel_current_poly);projection(occ);projection(empty_ras)
             projection(pred.current);projection(pred.future)
             identical(extent(pred.current), extent(pred.future))
             

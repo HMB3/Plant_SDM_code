@@ -19,10 +19,22 @@
 #########################################################################################################################
 ## Read in all data to run the SDM code :: species lists, shapefile, rasters & tables
 #source('./R/HIA_LIST_MATCHING.R')
-rasterTmpFile()
+## Print the species run to the screen
+message('Extracting AWAP data for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
 
-GBIF.LAND = readRDS(paste0('data/base/HIA_LIST/GBIF/GBIF_TREES_LAND_', save_run, '.rds'))
-ALA.TREES.LAND = readRDS(paste0('data/base/HIA_LIST/ALA/ALA_TREES_LAND_', save_run, '.rds'))
+
+if(read_data == "TRUE") {
+  
+  ## Load GBIF and ALA data
+  GBIF.LAND = readRDS(paste0(GBIF_path, 'GBIF_LAND_', save_run, '.rds'))
+  ALA.LAND  = readRDS(paste0(ALA_path,  'ALA_LAND_',  save_run, '.rds'))
+  
+} else {
+  
+  message(' skip file reading, not many species analysed')   ##
+  
+}
+
 
 
 
@@ -185,7 +197,8 @@ plot(awap.extreme[["Drought_mean_rel_int_extr"]])
 
 # Indices calculated for a 5 month summer (nov-mar inclusive)
 # 
-# Heatwaves are 3 or more consecutive days where the maximum temperature is above the 90th percentile for that calendar day. Calendar day percentiles use a 7-day window either side, and are for the period 1961-1990.
+# Heatwaves are 3 or more consecutive days where the maximum temperature is above the 90th percentile for that 
+# calendar day. Calendar day percentiles use a 7-day window either side, and are for the period 1961-1990.
 # 
 # HWF = number of heatwave days in a season #
 # HWA = hottest day of hottest heatwave     #

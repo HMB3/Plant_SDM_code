@@ -89,7 +89,6 @@ fig2A<-ggplot(allSUAs, aes(x=CURRENT_MAT, y=Species.gain, color=factor(PERIOD)))
 
 fig2A
 
-ggsave(filename="C:/Users/MQ20174608/Desktop/fig2A.pdf", width=10, height=10, plot=fig2A, dpi=300)
 
 
 
@@ -132,7 +131,7 @@ fig2B<-ggplot(bigSUAs, aes(x=CURRENT_MAT, y=Species.gain, color=factor(PERIOD)))
 #theme(legend.position="none")  #this remove legend on the right
 
 fig2B
-ggsave(filename="C:/Users/MQ20174608/Desktop/fig2B.pdf", width=10, height=10, plot=fig2B, dpi=300)
+
 
 
 
@@ -173,7 +172,6 @@ fig2C<-ggplot(allSUAs, aes(x=CURRENT_MAT, y=Species.loss, color=factor(PERIOD)))
   theme(legend.position="none")  #this remove legend on the right
 
 fig2C
-ggsave(filename="C:/Users/MQ20174608/Desktop/fig2C.pdf", width=10, height=10, plot=fig2C, dpi=300)
 
 
 
@@ -214,9 +212,9 @@ fig2D<-ggplot(bigSUAs, aes(x=CURRENT_MAT, y=Species.loss, color=factor(PERIOD)))
   annotate(geom="text", size=8, x=20, y=7, label=paste("Deviance (2030) =", signif(summary(BIG.LOSS.2030.GAM)[["dev.expl"]][1]*100, digits = 3),"%")) +
   annotate(geom="text", size=8, x=20, y=4, label=paste("Deviance (2070) =", signif(summary(BIG.LOSS.2070.GAM)[["dev.expl"]][1]*100, digits = 3),"%")) + 
   theme(legend.position="none")  #this remove legend on the right
+
 fig2D
 
-ggsave(filename="C:/Users/MQ20174608/Desktop/fig2D.pdf", width=10, height=10, plot=fig2D, dpi=300)
 
 
 
@@ -230,7 +228,7 @@ ggsave(filename="C:/Users/MQ20174608/Desktop/fig2D.pdf", width=10, height=10, pl
 #########################################################################################################################
 ## Use a function Alessandro created to stack the GPPLOTs
 dev.new(width = 40, height = 30)
-fig2 <- grid_arrange_shared_legend(fig2A, fig2B, fig2C, fig2D, ncol = 2, nrow = 2, position="right")
+fig2 <- grid_arrange_shared_legend(fig2A, fig2B, fig2C, fig2D, ncol = 2, nrow = 2, position = "right")
 fig2
 
 ggsave(filename = "./output/figures/FIG_2/FIG_2_NEW_SUA_SPECIES.png", width = 20, height = 18, plot = fig2, dpi = 300)

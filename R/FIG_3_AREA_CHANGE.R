@@ -83,7 +83,6 @@ fig3A<-ggplot(allSUAsGAIN, aes(x=CURRENT_MAT, y=SPECIES_GAIN, color=factor(PERIO
        theme(legend.position="none")  #this remove legend on the right
 
 fig3A
-ggsave(filename="C:/Users/MQ20174608/Desktop/fig3A.pdf", width=10, height=10, plot=fig3A, dpi=300)
 
 
 
@@ -124,7 +123,6 @@ fig3B<-ggplot(bigSUAsGAIN, aes(x=CURRENT_MAT, y=SPECIES_GAIN, color=factor(PERIO
        #theme(legend.position="none")  #this remove legend on the right
        #
 fig3B
-ggsave(filename="C:/Users/MQ20174608/Desktop/fig3B.pdf", width=10, height=10, plot=fig3B, dpi=300)
 
 
 
@@ -164,7 +162,6 @@ fig3C<-ggplot(allSUAsLOSS, aes(x=CURRENT_MAT, y=SPECIES_LOSS, color=factor(PERIO
        theme(legend.position="none")  #this remove legend on the right
 
 fig3C
-ggsave(filename="C:/Users/MQ20174608/Desktop/fig3C.pdf", width=10, height=10, plot=fig3C, dpi=300)
 
 
 
@@ -205,7 +202,6 @@ fig3D<-ggplot(bigSUAsLOSS, aes(x=CURRENT_MAT, y=SPECIES_LOSS, color=factor(PERIO
        theme(legend.position="none")  #this remove legend on the right
 
 fig3D
-ggsave(filename="C:/Users/MQ20174608/Desktop/fig3D.pdf", width=10, height=10, plot=fig3D, dpi=300)
 
 
 
@@ -223,7 +219,7 @@ fig3
 
 
 ## 
-ggsave(filename = "./output/figures/FIG_2/FIG_3_PERCENT_SUA_SPECIES.png", width = 20, height = 18, plot = fig2, dpi = 300)
+ggsave(filename = "./output/figures/FIG_3/FIG_3_PERCENT_SUA_SPECIES.png", width = 20, height = 18, plot = fig2, dpi = 300)
 
 
 

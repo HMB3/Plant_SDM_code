@@ -172,7 +172,7 @@ setdiff(TOP.SUA.POP$SUA, SUA.DENS$SUA)
 
 
 ## Make the SUA field character not factor
-#setnames(SUA.PRESENCE, old = c("SUA_NAME16", "n_cells"), new = c("SUA", "CELL_COUNT"))
+setnames(SUA.PRESENCE, old = c("SUA_NAME16", "n_cells"), new = c("SUA", "CELL_COUNT"))
 class(SUA.PRESENCE$SUA)
 class(SUA.DEN$SUA)
 

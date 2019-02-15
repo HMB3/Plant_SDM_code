@@ -142,7 +142,7 @@ if(read_data == "TRUE") {
   
   ## Load GBIF and ALA data
   message('Reading niche data for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
-  COMBO.NICHE.CONTEXT = readRDS( paste0(DATA_path, 'COMBO_NICHE_CONTEXT_',  OCC_SOURCE, '_RECORDS_', save_run, '.rds'))
+  COMBO.NICHE.CONTEXT = readRDS(paste0(DATA_path, 'COMBO_NICHE_CONTEXT_',  OCC_SOURCE, '_RECORDS_', save_run, '.rds'))
   
 } else {
   
@@ -412,7 +412,8 @@ percent.10.om     = percent.10.om$X10.percentile.training.presence.training.omis
 if(save_data == "TRUE") {
   
   ## save .rds file for the next session
-  saveRDS(MAXENT.SUMMARY.NICHE, paste0(DATA_path, 'MAXENT_SUMMARY_',  save_run, '.rds'))
+  saveRDS(MAXENT.SUMMARY.NICHE,   paste0(DATA_path, 'MAXENT_SUMMARY_',  save_run, '.rds'))
+  write.csv(MAXENT.SUMMARY.NICHE, paste0(DATA_path, 'MAXENT_SUMMARY_',  save_run, '.csv'), row.names = FALSE)
   
 } else {
   

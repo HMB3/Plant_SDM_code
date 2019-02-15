@@ -6,9 +6,7 @@
 ## This code takes the raw list of plants with 25 or more growers supplied by Matt Plumber and Anthony Manea, and
 ## then cleans the list as best as possible in R to use the species binomial as the unit for downloading and analysis.
 
-## All the cleaining methods will throw up some anomalies, which need to be tracked, and checked with the team for how
-## each case is treated (see outstanding tasks at the bottom).
-
+## All the cleaining methods will throw up some anomalies.
 
 #########################################################################################################################
 ## Setup for project 
@@ -48,17 +46,17 @@ rasterOptions(tmpdir = file.path('./RTEMP'))
 
 #########################################################################################################################
 ## Set coordinate system definitions :: best to minimise the number of projection used in this project
-## Also get rid of the '+init=ESRI", which are not compatible with some systems 
+## Also get rid of the '+init=ESRI", which are not compatible with some systems (e.g. libraries on linux)
 CRS.MOL      <- CRS('+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +units=m +no_defs')
-CRS.MOL.SDM  <- CRS('+init=ESRI:54009 +proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0')
+CRS.MOL.SDM  <- CRS('+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0')
 CRS.WGS.84   <- CRS("+init=epsg:4326")
 CRS.AUS.ALB  <- CRS("+init=EPSG:3577")
 ALB.CONICAL  <- CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs')
+sp_epsg54009 <- "+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0"
 
 
 #########################################################################################################################
 ## Read in spatial data once, rather than in each script
-aus           = readRDS("./data/base/CONTEXTUAL/aus_states.rds")
 LAND          = readRDS("./data/base/CONTEXTUAL/LAND_world.rds")
 SUA_2016      = readRDS("./data/base/CONTEXTUAL/SUA/SUA_2016_AUST.rds")
 SUA_2016      = SUA_2016[order(SUA_2016$SUA_NAME16),]
@@ -80,34 +78,6 @@ AUS           = readRDS("./data/base/CONTEXTUAL/aus_states.rds")
 ALL.SUA.POP   = read.csv("./data/base/CONTEXTUAL/ABS_SUA_POP.csv", stringsAsFactors = FALSE)
 URB.POP       = read.csv("./data/base/CONTEXTUAL/ABS_URBAN_CENTRE_POP.csv", stringsAsFactors = FALSE)
 
-
-## Create centroids for SUAs
-# class(SUA.16)
-# plot(SUA.16)
-# writeSpatialShape(SUA.16, "SUA.16")
-# cents <- coordinates(SUA.16)
-# cents <- SpatialPointsDataFrame(coords = cents, data = SUA.16@data, 
-#                                 proj4string = CRS("+proj=longlat +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +no_defs"))
-# points(cents, col = "Blue")
-# writeSpatialShape(cents, "cents")
-# 
-# SUA_centroids <- coordinates(SUA.16)
-# SUA_location  = data.frame(SUA_centroids)
-# SUA_location  = cbind(SUA.16$SUA_NAME16, SUA_location)
-# names(SUA_location)   = c("SUA","rndCoord.lon", "rndCoord.lat")
-# SUA_location$rndCoord.lon = RoundCoordinates(SUA_location$rndCoord.lon)
-# SUA_location$rndCoord.lat = RoundCoordinates(SUA_location$rndCoord.lat)
-# 
-# 
-# points(centroids, pch = 3, col = "Red")
-# Kop.loc <- data.frame(SUA_location, ClimateZ = LookupCZ(SUA_location))
-# Kop.loc = Kop.loc[c("SUA", "ClimateZ")]
-
-
-## Load template rasters
-template.raster = raster("./data/template_hasData.tif")
-template.cells  = readRDS("./data/hasData_cells.rds")
-load("./data/base/CONTEXTUAL/urbanareas.rda")
 
 
 
@@ -231,26 +201,35 @@ inventory.grids.current = stack(
   file.path('./data/base/worldclim/aus/1km/bio/current/WGS/', 
             sprintf('bio_%02d.tif', 1:19))) 
 
+#########################################################################################################################
+## Create a raster stack of current Australian environmental conditions, and divide the current environmental grids by 10
+aus.grids.current <- stack(
+  file.path('./data/base/worldclim/aus/1km/bio/current',   ## ./data/base/worldclim/aus/1km/bio
+            sprintf('bio_%02d.tif', 1:19)))
 
+for(i in 1:11) {
+  
+  ## simple loop
+  message(i)
+  aus.grids.current[[i]] <- aus.grids.current[[i]]/10
+  
+}  
+
+
+#########################################################################################################################
 ## Also get the PET raster
 PET               = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
 
 
-## Create a velox raster of the world raster stack
-# vx.world <- velox(world.grids.current)
-# writeRaster(vx.world, './data/base/worldclim/world/0.5/bio/current/vx_world.tif')
-# vx.world  = raster('./data/base/worldclim/world/0.5/bio/current/vx_world.tif')
-# i  <- match(sdm.predictors, sdm.predictors)
-# ff <- file.path('./data/base/worldclim/world/0.5/bio/current',
-#                 sprintf('bio_%02d.tif', i))
-# env.grids.current = stack(sub('0.5', '1km', ff))
+
+## Load template rasters
+template.raster = raster("./data/template_hasData.tif")
+template.cells  = readRDS("./data/hasData_cells.rds")
+PET             = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
 
 
-## Name the grids :: these should be indentical
-# names(world.grids.current) <- sdm.predictors
-# identical(names(world.grids.current),sdm.predictors)
-
-
+#########################################################################################################################
+## Create the names for teh GCMs
 h <- read_html('http://www.worldclim.org/cmip5_30s') 
 gcms <- h %>% 
   html_node('table') %>% 
@@ -297,26 +276,6 @@ scen_2050 = c("mc85bi50", "no85bi50", "ac85bi50", "cc85bi50", "gf85bi50", "hg85b
 scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cc85bi70", "gf85bi70", "hg85bi70")
 
 
-## Then create a stack of current environmental conditions outside the function, and an Australia shapefile for the mapping later...
-# aus <- ne_states(country = 'Australia') %>% 
-#   subset(!grepl('Island', name))
-# 
-# shapefile = aus
-
-
-#########################################################################################################################
-## Create a raster stack of current Australian environmental conditions, and divide the current environmental grids by 10
-aus.grids.current <- stack(
-  file.path('./data/base/worldclim/aus/1km/bio/current',   ## ./data/base/worldclim/aus/1km/bio
-            sprintf('bio_%02d.tif', 1:19)))
-
-for(i in 1:11) {
-  
-  ## simple loop
-  message(i)
-  aus.grids.current[[i]] <- aus.grids.current[[i]]/10
-  
-}   
 
 
 
