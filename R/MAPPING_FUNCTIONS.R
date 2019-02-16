@@ -11,6 +11,9 @@
 ## flag isses with.......................................................................................................
 
 
+## Fix comments for each section - current, future, etc..................................................................
+
+
 #########################################################################################################################
 ## Try to run the mess maps at the same time as the map creation?
 project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path, climate_path, 
@@ -53,7 +56,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
     ########################################################################################################################
     ## Divide the 11 temperature rasters by 10: NA values are the ocean
     ## s[[1:11]] <- s[[1:11]]/10 ## That code doesn't work
-    message('20', time_slice, ' rasters / 10 ', x)
+    message('First, divide the raster stack for ', x, ' by 10 ')
     for(i in 1:11) {
       ## Simple loop
       message(i)
@@ -72,7 +75,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
       
       save_name = gsub(' ', '_', species)
       if(file.exists(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, species))) {
-        message('Doing ', species)
+        message('Then run maxent projections for ', species, ' under ', x, ' scenario')
         
         ## Then, check if the species projection has already been run...
         if(!file.exists(sprintf('%s/%s/full/%s_%s.tif', maxent_path, species, species, x))) {
@@ -101,6 +104,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
             writeRaster(pred.current, f_current, overwrite = TRUE)
             
           } else {
+            message('Use existing prediction for ', species) 
             pred.current = raster(sprintf('%s/%s/full/%s_current.tif',
                                           maxent_path, species, species))
           }
@@ -128,7 +132,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
             ## Write out the current mess maps - 
             ## create a new folder for the mess output - we are going to print it to the maps
             if(!dir.exists(MESS_dir)) {
-              message('Creating MESS directory for ', species) 
+              #message('Creating MESS directory for ', species) 
               dir.create(MESS_dir)
               
             } else {
@@ -143,7 +147,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
             ## Create a PNG file of all the CURRENT MESS output
             ## r    = unstack(mess_current$similarity) :: list of environmental rasters
             ## name = names(mess_current$similarity)   :: names of the rasters
-            message('Creating mess maps for each current environmental predictor for', species)
+            message('Creating mess maps of each current environmental predictor for ', species)
             mapply(function(r, name) {
               
               ## Create a level plot for each species
@@ -165,7 +169,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
             
             ## Write the raster of novel environments to the maxent directory 
             ## The "full" directory is getting full, could create a sub dir for MESS maps
-            message('Writing maps of novel environments to file for', species) 
+            message('Writing currently novel environments to file for ', species) 
             writeRaster(novel_current, sprintf('%s%s%s.tif', MESS_dir, species, "_current_novel_map"), 
                         overwrite = TRUE)
             
@@ -177,7 +181,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
             hs_current_notNovel <- pred.current * is.na(novel_current) 
             
             ## Write out not-novel raster :: this can go to the main directory
-            message('Writing maps of un - novel environments to file for', species) 
+            message('Writing currently un-novel environments to file for ', species) 
             writeRaster(hs_current_notNovel, sprintf('%s%s%s.tif', MESS_dir, species, "_current_notNovel"),
                         overwrite = TRUE)
             
@@ -193,7 +197,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
           if(!file.exists(f_future)) {
             
             ## Report which prediction is in progress
-            message('Running future prediction for ', species, ' ', x) 
+            message('Running future maxent prediction for ', species, ' under ', x) 
             
             ## Create the future raster
             pred.future <- rmaxent::project(
@@ -205,7 +209,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
             f_mess_future = sprintf('%s%s%s%s.tif', MESS_dir, species, "_future_mess_", x)
             
             if(create_mess == "TRUE" & !file.exists(f_mess_future)) {
-              message('Running current mess map for ', species)
+              message('Running future mess map for ', species, ' under ', x)
               
               grid_names          = sdm.predictors   ## same grid names
               future_grids        = s                ## the stack of 8 rasters for scenario x
@@ -226,7 +230,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
               ## Create a PNG file of all the future MESS output: 
               ## r    = unstack(mess_current$similarity) :: list of environmental rasters
               ## name = names(mess_current$similarity)   :: names of the rasters
-              message('Creating mess maps of each future environmental predictor for ', x, ' scenario for ', species)
+              message('Creating mess maps of each future environmental predictor under ', x, ' scenario for ', species)
               mapply(function(r, name) {
                 
                 p <- levelplot(r, margin = FALSE, scales = list(draw = FALSE),
@@ -247,7 +251,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
               
               ## Write the raster of novel environments to the maxent directory 
               ## The "full" directory is getting full, could create a sub dir for MESS maps
-              message('Writing maps of novel environments to file for', species) 
+              message('Writing future novel environments to file under ', x, ' scenario for ', species) 
               writeRaster(novel_future, sprintf('%s%s%s%s.tif', MESS_dir, species, "_future_novel_map_", x), 
                           overwrite = TRUE)
               
@@ -259,7 +263,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
               hs_future_notNovel <- pred.future * is.na(novel_future) 
               
               ## Write out not-novel raster
-              message('Writing maps of un-novel environments to file for', species) 
+              message('Writing un-novel environments to file under ', x, ' scenario for ', species) 
               writeRaster(hs_future_notNovel, sprintf('%s%s%s.tif', MESS_dir, species, "_future_notNovel"), 
                           overwrite = TRUE)
               
@@ -270,7 +274,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
             ###################################################################
             ## Convert binary rasters of novel climate to polygons
             ## Need to save the polygons to file ::  
-            message('Converting raster MESS maps to polygons for ', species) 
+            message('Converting raster MESS maps to polygons under ', x, ' scenario for ', species) 
             novel_current_poly <- polygonizer(sprintf('%s%s%s.tif',   MESS_dir, species, "_current_novel_map"))
             novel_future_poly  <- polygonizer(sprintf('%s%s%s%s.tif', MESS_dir, species, "_future_novel_map_", x))
             
@@ -299,7 +303,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
             ## (Below we create a dummy polygon as the first list element (which is the extent
             ## of the raster, expanded by 10%), to plot on panel 1)
             ## 50 = approx 50 lines across the extent of the poly
-            message('Creating polygon list for ', species) 
+            message('Creating polygon list under ', x, ' scenario for ', species) 
             novel_hatch <- list(as(extent(pred.current)*1.1, 'SpatialPolygons'),  
                                 hatch(novel_current_poly, 50), hatch(novel_future_poly, 50)) 
             
@@ -316,7 +320,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
             ########################################################################################################################
             ## Use the levelplot function to make a multipanel output: occurrence points, current raster and future raster
             if(create_mess == "TRUE") {
-              message('Running current mess map for ', species)
+              message('Create MESS panel maps for ', species, ' under ', x, ' scenario')
               
               ############################################################
               ## Create level plot including MESS maps                        
@@ -361,6 +365,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
               
               ############################################################
               ## OR Create level plot without MESS maps                        
+              message('Create panel maps for ', species, ' under ', x, ' scenario')
               png(sprintf('%s/%s/full/%s_%s.png', maxent_path, species, species, x),      
                   11, 4, units = 'in', res = 300)
               

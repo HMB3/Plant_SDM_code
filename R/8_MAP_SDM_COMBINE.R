@@ -38,7 +38,7 @@ head(gcms.50) ; head(gcms.70) ; head(gcms.30)
 ## EG arguments to run function manually
 poly          = AUS          
 x             = scen_2030[1]    
-species       = map_spp_list[6]
+species       = map_spp_list[5]
 maxent_path   = maxent_path  
 climate_path  = "./data/base/worldclim/aus/1km/bio" 
 grid_names    = grid.names   
