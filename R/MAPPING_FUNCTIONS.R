@@ -429,7 +429,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
 
 #########################################################################################################################
 ## Loop over directories, species and one threshold for each, also taking a time_slice argument
-SUA_cell_count = function(poly, unit_path, unit_file, unit_vec,
+SUA_cell_count = function(aus_poly, world_poly, unit_path, unit_file, unit_vec,
                           DIR_list, species_list, 
                           maxent_path, thresholds, 
                           time_slice, write_rasters) {
@@ -442,9 +442,9 @@ SUA_cell_count = function(poly, unit_path, unit_file, unit_vec,
   
   areal_unit_vec  = readRDS(paste0(unit_path, unit_vec))
   
-  aus = poly %>%
-    spTransform(ALB.CONICAL) 
-  
+  aus_poly = aus_poly %>%
+    spTransform(ALB.CONICAL)
+
   ###################################################################################################################
   ## Loop over each directory
   lapply(DIR_list, function(DIR) { 
@@ -453,7 +453,7 @@ SUA_cell_count = function(poly, unit_path, unit_file, unit_vec,
     lapply(species_list, function(species) {
       
       ###################################################################################################################
-      ## Create a list of the rasters in each directory, then take the mean. Tidy this up with %, etc
+      ## Create a list of the rasters in each species directory for each time period, then take the mean
       message('Running summary of SDM predictions within SUAs for ', species, ' using ', names(areal_unit)[1], " shapefile")
       message('Calcualting mean of 20', time_slice, ' GCMs for ', species)
       
@@ -667,41 +667,107 @@ SUA_cell_count = function(poly, unit_path, unit_file, unit_vec,
                       overwrite = TRUE)
           
           #########################################################################################################################
+          #########################################################################################################################
+          ## Create a color scheme for the gain_loss plot
+          SUA.plot.cols = brewer.pal(12, "Paired")
+          ## Create dataframe of colors that match the categories :;
+          # 1 <- "LOST"        SUA.plot.cols[8]
+          # 2 <- "GAINED"      SUA.plot.cols[4]
+          # 3 <- "STABLE"      SUA.plot.cols[1]
+          # 4 <- "NEVER_SUIT"  SUA.plot.cols[9]
+          ## 1 = STABLE, 4 = GAIN, 8 = LOSS, 9 = NEVER
+          lc_id = c(1, 2, 3, 4)
+          cover_palette <- c(SUA.plot.cols[8], SUA.plot.cols[4], SUA.plot.cols[1], SUA.plot.cols[11])
+        
+          colors        <- data.frame(id = lc_id, color = cover_palette, stringsAsFactors = FALSE)
+          csort         <- colors[order(colors$id),] 
+          
+          ## Create Labels for the 
+          gain_plot <- ratify(gain_loss)
+          rat <- levels(gain_plot)[[1]]
+          
+          rat[["CHANGE"]] <- c("LOST", "GAINED", "STABLE", "NEVER")
+          levels(gain_plot) <- rat
+          
+          #########################################################################################################################
           ## Write gain/loss PNG too
           save_name = gsub(' ', '_', species)
           empty_ras <- init(current_suit_thresh, function(x) NA)
-          occ       <- readRDS(sprintf('%s/%s/%s_occ.rds', maxent_path, species, save_name)) %>%
+          occ.aus   <- readRDS(sprintf('%s/%s/%s_occ.rds', maxent_path, species, save_name)) %>%
             spTransform(ALB.CONICAL)
           
-          message('writing thresholded map for ', 'species')
-          png(sprintf('%s/%s/full/%s_%s.png', maxent_path, save_name, save_name, "current_suit"),
-              11, 4, units = 'in', res = 300)
+          occ.world <- readRDS(sprintf('%s/%s/%s_occ.rds', maxent_path, species, save_name)) %>%
+            spTransform(projection(world_poly)) %>%
+            coordinates() %>%
+            as.data.frame()
           
-          ## Need an empty frame ::
-          print(levelplot(stack(empty_ras,
-                                combo_suit_4GCM, 
-                                gain_loss, quick = TRUE), margin = FALSE,
-                          
-                          ## Create a colour scheme using colbrewer: 100 is to make it continuos
-                          ## Also, make it a one-directional colour scheme
-                          scales      = list(draw = FALSE), 
-                          at = seq(0, 1, length = 100),
-                          col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
-                          
-                          ## Give each plot a name: the third panel is the GCM
-                          names.attr = c('Australian records', paste0('+4 GCMS > ', thresh), 'Gain loss map'),
-                          colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
-                          main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
-                  
-                  ## Try adding novel maps as vectors.....................................               
-                  latticeExtra::layer(sp.polygons(aus), data = list(aus = aus)) +
-                  latticeExtra::layer(sp.points(occ, pch = 19, cex = 0.15, 
-                                                col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
-          dev.off()
+          aus_poly = aus_poly %>%
+            spTransform(ALB.CONICAL)
+
+          projection(aus_poly);projection(occ.aus);projection(gain_plot)
+
+          # message('writing thresholded map for ', 'species')
+          # png(sprintf('%s/%s/full/%s_%s_%s.png', maxent_path, save_name, save_name, "consensus_suit", thresh),
+          #     11, 4, units = 'in', res = 300)
+          # 
+          # ## Need an empty frame ::
+          # print(levelplot(stack(empty_ras,
+          #                       combo_suit_4GCM, 
+          #                       gain_plot, quick = TRUE), margin = FALSE,
+          #                 
+          #                 # Create a colour scheme using colbrewer: 100 is to make it continuos
+          #                 # Also, make it a one-directional colour scheme
+          #                 scales      = list(draw = FALSE),
+          #                 at = seq(0, 1, length = 4),
+          #                 col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
+          #                 
+          #                 ## Give each plot a name: the third panel is the GCM
+          #                 names.attr = c('Australian records', paste0('+4 GCMS > ', thresh), 'Gain loss map'),
+          #                 colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
+          #                 main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
+          #         
+          #         ## Try adding novel maps as vectors.....................................               
+          #         latticeExtra::layer(sp.polygons(aus), data = list(aus = aus)) +
+          #         latticeExtra::layer(sp.points(occ, pch = 19, cex = 0.15, 
+          #                                       col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
+          # dev.off()
           
           
           #########################################################################################################################
-          ##  Write PNG files too
+          ## Save the gain/loss raster to PNG
+          message('writing gain/loss png for ', 'species')
+          png(sprintf('%s/%s/full/%s_%s_%s_20%s.png', maxent_path, save_name, save_name, "gain_loss", thresh, time_slice),
+              16, 10, units = 'in', res = 500)
+          
+          ## We can do better than this but it'll do for now
+          print(levelplot(gain_plot, 
+                          col.regions = csort$color, 
+                          xlab = NULL, ylab = NULL,
+                          main       = list(paste0(gsub('_', ' ', species), ' :: ',  20, 
+                                                   time_slice, ' 4GCMs > ',  thresh), font = 4, cex = 2)) +
+                  latticeExtra::layer(sp.polygons(aus_poly), data = list(aus = aus_poly)))
+          
+          dev.off()
+          
+          #########################################################################################################################
+          ## Save the global records to PNG
+          message('writing map of global records for ', 'species')
+          png(sprintf('%s/%s/full/%s_%s.png', maxent_path, save_name, save_name, "global_records"),
+              16, 10, units = 'in', res = 500)
+        
+          ## Add land
+          plot(LAND, #add = TRUE, 
+               lwd = 0.01, asp = 1, col = 'grey', bg = 'sky blue')
+          
+          ## Add points
+          points(occ.world[, c("lon", "lat")], 
+                 pch = ".", cex = 3.3, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2, 
+                 xlab = "", ylab = "", asp = 1)
+        
+          title(main = list(paste0(gsub('_', ' ', species), ' global SDM records'), font = 4, cex = 2),
+                cex.main = 4,   font.main = 4, col.main = "black")
+          
+          dev.off()
           
         } else {
           

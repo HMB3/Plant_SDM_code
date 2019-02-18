@@ -164,7 +164,8 @@ env.grids.2070 = tryCatch(project_maxent_grids(shp           = AUS,
 
 
 ## Test problematic species by entering the values and running the function manually
-poly          = AUS                             ## Shapefile of Australia
+aus_poly = AUS                                 ## Polygon for Australia
+world_poly = LAND
 unit_path     = "./data/base/CONTEXTUAL/SUA/"   ## Data path for the spatial unit of analysis
 unit_file     = "SUA_2016_AUST.rds"             ## Spatial unit of analysis - E.G. SUAs
 unit_vec      = "SUA_2016_VEC.rds"              ## Vector of rasterized unit cells
@@ -194,6 +195,8 @@ length(SDM.DIR.REV);length(map_spp_rev);length(percent.log.rev);length(percent.o
 ## Combine GCM predictions and calculate gain and loss for 2030
 ## Here we can add the mask of novel environments to SUA aggregation
 suitability.2030 = tryCatch(mapply(SUA_cell_count,                                  ## Function aggreagating GCM predictions by a spatial unit
+                                   aus_poly = AUS,                                  ## Polygon for Australia
+                                   world_poly = LAND,                               ## Polygon for the world
                                    unit_path     = "./data/base/CONTEXTUAL/SUA/",   ## Data path for the spatial unit of analysis 
                                    unit_file     = "SUA_2016_AUST.rds",             ## Spatial unit of analysis - E.G. SUAs
                                    unit_vec      = "SUA_2016_VEC.rds",              ## Vector of rasterized unit cells

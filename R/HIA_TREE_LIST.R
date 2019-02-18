@@ -176,6 +176,39 @@ env.variables = c("Annual_mean_temp",
                   "Precip_col_qu",
                   "PET")
 
+## The AWAP variables
+awap.variables = c("Annual_mean_temp",
+                   "Mean_diurnal_range",
+                   "Isothermality",
+                   "Temp_seasonality",
+                   "Max_temp_warm_month",
+                   "Min_temp_cold_month",
+                   "Temp_annual_range",
+                   "Mean_temp_wet_qu",
+                   "Mean_temp_dry_qu",
+                   "Mean_temp_warm_qu",
+                   "Mean_temp_cold_qu",
+                   
+                   "Annual_precip",
+                   "Precip_wet_month",
+                   "Precip_dry_month",
+                   "Precip_seasonality",
+                   "Precip_wet_qu",
+                   "Precip_dry_qu",
+                   "Precip_warm_qu",
+                   "Precip_col_qu",
+                   "PET", 
+                   
+                   "Drought_freq_extr", 
+                   "Drought_max_dur_extr", 
+                   "Drought_max_int_extr", 
+                   "Drought_max_rel_int_extr",
+                   "Drought_mean_dur_extr", 
+                   "Drought_mean_int_extr", 
+                   "Drought_mean_rel_int_extr",
+                   "HWF", "HWA", "HWM", "HWD", "HWN",
+                   "HW_CUM_ALL", "HW_CUM_AV",  "HW_CUM_HOT")
+
 ## A-priori worldclim predictors
 sdm.select     <- c("Annual_mean_temp", "Temp_seasonality",    "Max_temp_warm_month", "Min_temp_cold_month",
                     "Annual_precip",    "Precip_seasonality",  

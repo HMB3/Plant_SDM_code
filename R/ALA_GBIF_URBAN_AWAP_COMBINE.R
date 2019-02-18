@@ -47,14 +47,14 @@ if(read_data == "TRUE") {
 ## Merge on the ALA data. Consider that GBIF has data for both sources. We are topping up the native ranges with the AVH. 
 ## So there could be duplicates between both sources.
 length(unique(GBIF.LAND$searchTaxon)) 
-length(unique(ALA.TREES.LAND$searchTaxon)) 
+length(unique(ALA.LAND$searchTaxon)) 
 unique(GBIF.LAND$SOURCE)
-unique(ALA.TREES.LAND$SOURCE)
-sort(intersect(sort(names(GBIF.LAND)), sort(names(ALA.TREES.LAND))))
+unique(ALA.LAND$SOURCE)
+sort(intersect(sort(names(GBIF.LAND)), sort(names(ALA.LAND))))
 
 
-dim(GBIF.LAND);dim(ALA.TREES.LAND)
-setdiff(names(GBIF.LAND), names(ALA.TREES.LAND))
+dim(GBIF.LAND);dim(ALA.LAND)
+setdiff(names(GBIF.LAND), names(ALA.LAND))
 
 
 ## Rename a few fields
@@ -65,15 +65,15 @@ GBIF.LAND     = dplyr::rename(GBIF.LAND,
 
 #########################################################################################################################
 ## Bind the rows together
-common.cols = intersect(names(GBIF.LAND), names(ALA.TREES.LAND))
-GBIF.ALA.COMBO = bind_rows(GBIF.LAND, ALA.TREES.LAND)
+common.cols = intersect(names(GBIF.LAND), names(ALA.LAND))
+GBIF.ALA.COMBO = bind_rows(GBIF.LAND, ALA.LAND)
 GBIF.ALA.COMBO = GBIF.ALA.COMBO %>% 
   select(one_of(common.cols))
 
 
 names(GBIF.ALA.COMBO)
 unique(GBIF.ALA.COMBO$SOURCE)
-identical((dim(GBIF.LAND)[1]+dim(ALA.TREES.LAND)[1]),dim(GBIF.ALA.COMBO)[1])      ## Only adding the ovelap...
+identical((dim(GBIF.LAND)[1]+dim(ALA.LAND)[1]),dim(GBIF.ALA.COMBO)[1])      ## Only adding the ovelap...
 
 head(GBIF.ALA.COMBO)
 length(unique(GBIF.ALA.COMBO$searchTaxon))
@@ -152,13 +152,13 @@ names(COMBO.POINTS)
 #########################################################################################################################
 ## Create a stack of rasters to sample: get all the Worldclim variables just for good measure
 ## Use the Mollweide projection for the points and rasters 
-env.grids.current = stack(
-  file.path('./data/base/worldclim/world/0.5/bio/current',
-            sprintf('bio_%02d', 1:19)))
-
-
-## Also get the PET raster
-PET               = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
+# env.grids.current = stack(
+#   file.path('./data/base/worldclim/world/0.5/bio/current',
+#             sprintf('bio_%02d', 1:19)))
+# 
+# 
+# ## Also get the PET raster
+# PET               = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
 
 
 #########################################################################################################################
@@ -171,6 +171,8 @@ names(awap.extreme)
 names(awap.severe)
 names(awap.moderate)
 
+
+## Rename the drought rasters
 names(awap.extreme) = c("Drought_freq_extr", "Drought_max_dur_extr", "Drought_max_int_extr", "Drought_max_rel_int_extr",
                         "Drought_mean_dur_extr", "Drought_mean_int_extr", "Drought_mean_rel_int_extr")
 
@@ -181,7 +183,7 @@ names(awap.moderate) = c("Drought_freq_extr", "Drought_max_dur_extr", "Drought_m
                          "Drought_mean_dur_extr", "Drought_mean_int_extr", "Drought_mean_rel_int_extr")
 
 
-
+## Check a few of the drought rasters
 names(awap.extreme)
 projection(awap.extreme)
 plot(awap.extreme[["Drought_max_dur_extr"]])
@@ -210,6 +212,9 @@ plot(awap.extreme[["Drought_mean_rel_int_extr"]])
 # Cum_hottest = the cumulative heat during the hottest heatwave.
 
 
+
+#########################################################################################################################
+## Read and re-name the heatwave rasters
 HWF = raster('./data/base/AWAP/AWAP_HWF.nc')  #number of heatwave days in a season
 names(HWF) = "HWF"
 
@@ -235,7 +240,7 @@ cum_hot = raster('./data/base/AWAP/AWAP_HW_cum_hottest.nc') #the cumulative heat
 names(cum_hot) = "HW_CUM_HOT"
 
 
-## rename
+## Combine them all
 awap.heatwave = stack(HWF, HWA, HWM, HWD, HWN, cum_all, cum_av, cum_hot)
 names(awap.heatwave)
 plot(HWF)
@@ -244,10 +249,10 @@ plot(cum_hot)
 
 #########################################################################################################################
 ## Extract worldclim data
-projection(COMBO.POINTS);projection(env.grids.current)
+projection(COMBO.POINTS);projection(world.grids.current)
 dim(COMBO.POINTS);dim(GBIF.ALA.COMBO)
 
-COMBO.RASTER <- raster::extract(env.grids.current, COMBO.POINTS) %>% 
+COMBO.RASTER <- raster::extract(world.grids.current, COMBO.POINTS) %>% 
   
   cbind(GBIF.ALA.COMBO, .) %>% 
   
@@ -315,6 +320,8 @@ summary(COMBO.AWAP$Drought_max_int_ext)        ## 45089 NA values for heatwave
 
 summary(COMBO.AWAP$HWA)
 summary(COMBO.AWAP$HW_CUM_HOT)
+
+
 
 
 

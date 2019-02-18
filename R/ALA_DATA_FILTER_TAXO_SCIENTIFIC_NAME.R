@@ -112,7 +112,7 @@ ALA.ALL <- ala.download %>%
   ## Finally, bind all the rows together
   bind_rows
 
-#  a spot of paranoia
+## Clear the garbage
 gc()
 
 #########################################################################################################################
