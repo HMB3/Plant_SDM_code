@@ -37,8 +37,8 @@ head(gcms.50) ; head(gcms.70) ; head(gcms.30)
 ## For each species, use a function to create raster files and maps under all six GCMs at each time step
 ## EG arguments to run function manually
 poly          = AUS          
-x             = scen_2030[1]    
-species       = map_spp_list[5]
+x             = scen_2030[3]    
+species       = map_spp_list[1]
 maxent_path   = maxent_path  
 climate_path  = "./data/base/worldclim/aus/1km/bio" 
 grid_names    = grid.names   
@@ -48,7 +48,18 @@ create_mess   = "TRUE"
 MESS_folder   = "MESS_output"
 
 
+
+## MESS maps measure the similarity between the new environments and those in the training sample.
+## When model predictions are projected into regions, times or spatial resolutions not analysed in the training data, 
+## it may be important to measure the similarity between the new environments and those in the training sample 
+## (Elith et al. 2010), as models are not so reliable when predicting outside their domain (Barbosa et al. 2009). 
+## The Multivariate Environmental Similarity Surfaces (MESS) analysis measures the similarity in the analysed variables 
+## between any given locality in the projection dataset and the localities in the reference (training) dataset 
+## (Elith et al. 2010).
+
+
 ## Jonh on MESS :
+
 # MESS describes whether/how novel the predictors' values at a grid cell are, relative to the environmental 
 # space captured by the model-fitting (background and occurrence locations) data. You can't use the current 
 # climate MESS mask to describe future novelty - you really need to recalculate MESS for each climate you're 
@@ -72,7 +83,7 @@ env.grids.2030 = tryCatch(project_maxent_grids_mess(poly          = AUS,        
                                                     grid_names    = grid.names,   ## names of the predictor grids
                                                     time_slice    = 30,           ## Time period
                                                     current_grids = aus.grids.current,
-                                                    create_mess   = "TRUE"),  ## predictor grids
+                                                    create_mess   = "TRUE"),      ## predictor grids
                           
                           ## Skip species
                           error = function(cond) {
@@ -141,63 +152,7 @@ env.grids.2070 = tryCatch(project_maxent_grids(shp           = AUS,
 
 
 #########################################################################################################################
-## 2). RUN MULTIVARIATE ENVIRONMENTAL SIMILARITY (MESS) MAPS FOR SELECTED SPECIES
-#########################################################################################################################
-
-
-#########################################################################################################################
-## Maxent produces a presence threshold for each species (i.e. the columns in MAXENT.RESULTS). 
-## The trouble here is that we might need to change the threshold for different species, rather than using the same one 
-## for all of them. That changes the order of lists, which is a problem for looping over them.
-
-
-## John : for AUC, you can report the cross-validated test AUC (if your code currently runs a cross-validated model as well), 
-## and for the model threshold (for binarising) you can just use the training value (or the crossval one...there's little 
-## guidance about this and you can really get away with either).
-
-
-
-
-#########################################################################################################################
-## MESS MAPS FOR EACH SPECIES
-
-
-## Mess maps measure the similarity between the new environments and those in the training sample.
-## When model predictions are projected into regions, times or spatial resolutions not analysed in the training data, 
-## it may be important to measure the similarity between the new environments and those in the training sample 
-## (Elith et al. 2010), as models are not so reliable when predicting outside their domain (Barbosa et al. 2009). 
-## The Multivariate Environmental Similarity Surfaces (MESS) analysis measures the similarity in the analysed variables 
-## between any given locality in the projection dataset and the localities in the reference (training) dataset 
-## (Elith et al. 2010).
-
-
-#########################################################################################################################
-## Subset the current worldclim grids to just those eight grids that were used for the maxent models
-# grid_names           = sdm.predictors
-# current_grids        = aus.grids.current
-# names(current_grids) = grid_names 
-# current_grids        = subset(current_grids, intersect(names(current_grids), sdm.select))
-# names(current_grids)
-
-
-###########################################################################################################################
-## Run MESS maps for current models
-# current_MESS = create_maxent_mess(poly           = AUS,
-#                                   species_list   = map_spp,                ## List of species' directories
-#                                   threshold_list = percent.10.log,         ## List of species' maxent thresholds
-#                                   maxent_path    = maxent_path,            ## Maxent output directory
-#                                   current_grids  = current_grids)          ## Stack of the current environmental rasters
-
-
-## Next step would be to use the mess maps to mask the species with bad maps - or do the same for every species.
-## Are most of the novel environments outside the cities anyway? MESS would come before mapping and sua analysis
-
-
-
-
-
-#########################################################################################################################
-## 4). SUMARIZE MAXENT RESULTS FOR EACH SPECIES ACROSS MULTIPLE GCMs, INSIDE SIGNIFCANT URBAN AREAS
+## 2). SUMARIZE MAXENT RESULTS FOR EACH SPECIES ACROSS MULTIPLE GCMs, INSIDE SIGNIFCANT URBAN AREAS
 #########################################################################################################################
 
 
@@ -209,15 +164,16 @@ env.grids.2070 = tryCatch(project_maxent_grids(shp           = AUS,
 
 
 ## Test problematic species by entering the values and running the function manually
-# unit_path     = "./data/base/CONTEXTUAL/SUA/"   ## Data path for the spatial unit of analysis 
-# unit_file     = "SUA_2016_AUST.rds"             ## Spatial unit of analysis - E.G. SUAs
-# unit_vec      = "SUA_2016_VEC.rds"              ## Vector of rasterized unit cells
-# DIR           = SDM.RESULTS.DIR[1]              ## List of directories with rasters
-# species       = map_spp[1]                      ## List of species' directories
-# maxent_path   = maxent_path                     ## Directory of maxent results
-# thresh        = percent.10.log[1]               ## List of maxent thresholds
-# time_slice    = 30                              ## Time period, eg 2030
-# write_rasters = "TRUE"                          ## Save the rasters?
+poly          = AUS                             ## Shapefile of Australia
+unit_path     = "./data/base/CONTEXTUAL/SUA/"   ## Data path for the spatial unit of analysis
+unit_file     = "SUA_2016_AUST.rds"             ## Spatial unit of analysis - E.G. SUAs
+unit_vec      = "SUA_2016_VEC.rds"              ## Vector of rasterized unit cells
+DIR           = SDM.RESULTS.DIR[1]              ## List of directories with rasters
+species       = map_spp[1]                      ## List of species' directories
+maxent_path   = maxent_path                     ## Directory of maxent results
+thresh        = percent.10.log[1]               ## List of maxent thresholds
+time_slice    = 30                              ## Time period, eg 2030
+write_rasters = "TRUE"                          ## Save the rasters?
 
 
 
@@ -318,7 +274,7 @@ suitability.2070 = tryCatch(mapply(SUA_cell_count,
 
 
 #########################################################################################################################
-## 7). MOVE MAXENT FOLDERS TO NEW LOCATION FOR EACH RUN
+## 3). MOVE MAXENT FOLDERS TO NEW LOCATION FOR EACH RUN
 #########################################################################################################################
 
 

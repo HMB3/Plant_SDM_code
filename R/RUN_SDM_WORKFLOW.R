@@ -8,12 +8,14 @@
 ## Small examples of how to do this could be applied across the different steps 
 
 
-#########################################################################################################################
-## Michelle's advice :: use all the global data.
-## Does including the global data improve the bad species?
 
+## 1). Check that the paralled approach will work for a few species, using the MESS approach
 
-## Hollow bearing species :: supply the data to Linda's student for those species
+## 2). Check the file output is ok for rapid assessment of species suitability. Could add Novel shapefile to step 3.
+##     Run the final format past Linda, John an Alessandro. Panel for one species model, plus gain/loss rasters, 
+##     plus maybe global points.
+
+## 3). Check the spatial outlier step can be improved, before re-running all the species through these steps
 
 
 #########################################################################################################################
@@ -305,11 +307,11 @@ saveRDS(COMBO.RASTER.ALL, paste0(DATA_path, 'COMBO_RASTER_ALL_', save_run, '.rds
 
 
 
-## 1) Figure out how to make the whole process parallel - help from Shawn
+## 1) Figure out how to make the whole process parallel - help from Shawn.
 
 ## 2) Find points that make the code not reproducible - look for all hard coded paths
 
-## 3) Clean up all the gunk in the HIA_TREE_LIST FILE
+## 3) Clean up all the gunk in the HIA_TREE_LIST FILE.............................................................
 
 ## 3) Can we use the mess maps to create the maps?
 

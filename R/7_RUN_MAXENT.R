@@ -379,6 +379,17 @@ length(intersect(MAXENT.SUMMARY.NICHE$searchTaxon, GBIF.spp))
 
 
 #########################################################################################################################
+## Maxent produces a presence threshold for each species (i.e. the columns in MAXENT.RESULTS). 
+## The trouble here is that we might need to change the threshold for different species, rather than using the same one 
+## for all of them. That changes the order of lists, which is a problem for looping over them.
+
+
+## John : for AUC, you can report the cross-validated test AUC (if your code currently runs a cross-validated model as well), 
+## and for the model threshold (for binarising) you can just use the training value (or the crossval one...there's little 
+## guidance about this and you can really get away with either).
+
+
+#########################################################################################################################
 ## How do the differnt thresholds compare for the set of species modelled?
 summary(MAXENT.RESULTS["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"])    ## The strictest threshold
 summary(MAXENT.RESULTS["X10.percentile.training.presence.Logistic.threshold"])                 ## The next strictest

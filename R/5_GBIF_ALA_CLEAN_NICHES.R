@@ -1,8 +1,9 @@
-########################################################################################################################
+#########################################################################################################################
 ################################################# FLAG SPATIAL OUTLIERS #################################################
 #########################################################################################################################
 
 
+#########################################################################################################################
 ## This code uses the CoordinateCleaner package to Automatcially screen out the dodgy spatial records. See ::
 ## https://github.com/azizka/CoordinateCleaner
 
@@ -13,6 +14,13 @@
 
 ## These tables are subsequently used to estimate the current global realised niche/climatic tolerance using the best 
 ## available data, and susequently model the niches using the maxent algorithm.
+
+
+
+#########################################################################################################################
+## Michelle's advice :: use all the global data.
+## Does including the global data improve the bad species?
+## Re-import Alessandro's inventory data and re-run the models...........................................................
 
 
 ## Print the species run to the screen
