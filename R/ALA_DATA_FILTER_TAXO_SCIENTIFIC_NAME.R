@@ -44,6 +44,7 @@ message('downloaded species ', length(ala.download), ' analyzed species ', lengt
 #  a spot of paranoia
 gc()
 
+
 #########################################################################################################################
 ## Combine all the taxa into a single dataframe at once
 ALA.ALL <- ala.download %>% 
@@ -114,6 +115,7 @@ ALA.ALL <- ala.download %>%
 
 ## Clear the garbage
 gc()
+
 
 #########################################################################################################################
 ## Just get the newly downloaded species

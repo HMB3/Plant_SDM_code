@@ -55,97 +55,6 @@ TRAIT.POINTS   = SpatialPointsDataFrame(coords      = TRAIT.RASTER.CONTEXT [c("l
 TRAIT.POINTS  <- spTransform(TRAIT.POINTS, CRS("+init=epsg:4326 +proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
 
 
-#########################################################################################################################
-## 2). PLOT OCCURRENCE DATA
-#########################################################################################################################
-
-
-## Combine Australian and global maps with histograms of GBIF and AWAP data
-
-
-#########################################################################################################################
-## Loop over the species list and plot the occurrence data for each to check the data bias
-OCC.TAXA = as.list(unique(TRAIT.RASTER.CONTEXT$searchTaxon))
-
-for (i in 1:length(OCC.TAXA)) {
-
-  ## Create points for each species
-  spp.points <- TRAIT.POINTS[TRAIT.POINTS$searchTaxon == OCC.TAXA[i], ] #%>%
-    #spTransform(CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'))
-
-  ## Print to file
-  # save_name = gsub(' ', '_', TAXA[i])
-  # save_dir  = "data/base/HIA_LIST/RENEE"
-  # png(sprintf('%s/%s_%s.png', save_dir,
-  #             save_name, "Australian_points"),
-  #     3236, 2000, units = 'px', res = 300)
-
-  ## set margins
-  # par(mar   = c(3, 3, 5, 3),  ## b, l, t, r
-  #     #mgp   = c(9.8, 2.5, 0),
-  #     oma   = c(1.5, 1.5, 1.5, 1.5))
-
-  ## Plot just the Australian points
-  plot(LAND, main = OCC.TAXA[i])
-  points(spp.points, col = "red", cex = .5, pch = 19)
-  
-  
-  ## Then plot the GBIF histogram?
-  
-  
-  ## Plot just the Australian points
-  plot(aus, main = OCC.TAXA[i])
-  points(spp.points, col = "red", cex = .5, pch = 19)
-  
-  
-  ## Then plot the AWAP histogram
-
-  
-  ## Finish the device
-  # dev.off()
-
-}
-
-
-#########################################################################################################################
-## Now save the points as shapefile to map in Arc
-TRAIT.SPDF   = TRAIT.POINTS[c("searchTaxon", "lon", "lat")]
-projection(TRAIT.SPDF );names(TRAIT.SPDF)
-
-
-## Save the shapefile, to be subsampled in ArcMap
-writeOGR(obj = TRAIT.SPDF , dsn = "./data/base/HIA_LIST/COMBO", layer = "GLASSHOUSE_TRAIT_SPDF ", driver = "ESRI Shapefile")
-
-
-
-
-#########################################################################################################################
-## 3). CREATE HISTOGRAMS
-#########################################################################################################################
-
-
-##############################################################################################
-## histograms of temperature and rainfall
-HIST.TAXA = as.list(unique(TRAIT.RASTER.CONTEXT$searchTaxon))
-names(TRAIT.RASTER.CONTEXT)
-
-
-## Print the histograms to screen
-Print_global_histogram(taxa.list    = HIST.TAXA, 
-                       DF           = TRAIT.RASTER.CONTEXT,  ## 33 is a problem: Cupianopsis anacardiodes
-                       env.var.1    = "Max_temp_warm_month",   
-                       env.col.1    = "orange",  
-                       env.units.1  = "°C",
-                       env.var.2    = "Max_tmax",   
-                       env.col.2    = "red",     
-                       env.units.2  = "°C")
-
-
-## Save the histograms to file?
-histogram_GBIF_records(taxa.list = HIST.TAXA[1:2], DF = MAX.TMAX.RASTER,
-                       env.var.1 = "Max_temp_warm_month",   env.col.1 = "orange",     env.units.1 = "°C",
-                       env.var.2 = "Max_tmax",              env.col.2 = "firebrick1", env.units.2 = "°C")
-
 
 
 #########################################################################################################################
@@ -156,7 +65,7 @@ histogram_GBIF_records(taxa.list = HIST.TAXA[1:2], DF = MAX.TMAX.RASTER,
 #########################################################################################################################
 ## merge the full niche df with the heatwave niche df
 TRAIT.NICHE.RISK = merge(TRAIT.NICHE.WOODY ,   TRAIT.NICHE.CONTEXT,  by = "searchTaxon")
-TRAIT.NICHE.AUS = merge(TRAIT.NICHE.AUS,   TRAIT.NICHE.CONTEXT,  by = "searchTaxon")
+TRAIT.NICHE.AUS = merge(TRAIT.NICHE.AUS,       TRAIT.NICHE.CONTEXT,  by = "searchTaxon")
 dim(TRAIT.NICHE.RISK)[1]
 names(TRAIT.NICHE.RISK)
 
@@ -169,22 +78,22 @@ plot(TRAIT.NICHE.RISK$Annual_mean_temp_median, TRAIT.NICHE.RISK$Tcrit_C)
 TRAIT.NICHE.RISK$searchTaxon
 length(TRAIT.NICHE.RISK$searchTaxon)
 TCRIT.HWN    = TRAIT.NICHE.RISK[, c("Tcrit_C", 
-                                     "HWN_q95",
-                                     "HWN_max", 
-                                     "HWN_median",
-                                     "HWN_mode")] 
+                                    "HWN_q95",
+                                    "HWN_max", 
+                                    "HWN_median",
+                                    "HWN_mode")] 
 
 TCRIT.HWA    = TRAIT.NICHE.RISK[, c("Tcrit_C", 
-                                         "HWA_q95",
-                                         "HWA_max", 
-                                         "HWA_median",
-                                         "HWA_mode")] 
+                                    "HWA_q95",
+                                    "HWA_max", 
+                                    "HWA_median",
+                                    "HWA_mode")] 
 
 TCRIT.HWF    = TRAIT.NICHE.RISK[, c("Tcrit_C", 
-                                           "HWF_q95",
-                                           "HWF_max", 
-                                           "HWF_median",
-                                           "HWF_mode")]
+                                    "HWF_q95",
+                                    "HWF_max", 
+                                    "HWF_median",
+                                    "HWF_mode")]
 
 TCRIT.HCH    = TRAIT.NICHE.RISK[, c("Tcrit_C", 
                                     "HW_CUM_HOT_q95",
@@ -195,8 +104,8 @@ TCRIT.HCH    = TRAIT.NICHE.RISK[, c("Tcrit_C",
 ## Rename
 names(TCRIT.HWN)     = c("TLP",   "95%",  "MAX",  "MEDIAN", "MODE")
 names(TCRIT.HWA)     = c("TLP",   "95%",  "MAX",  "MEDIAN", "MODE")
-names(TCRIT.HWF)     = c("Tcrit",   "95%",  "MAX",  "MEDIAN", "MODE")
-names(TCRIT.HCH)     = c("Tcrit",   "95%",  "MAX",  "MEDIAN", "MODE")
+names(TCRIT.HWF)     = c("Tcrit", "95%",  "MAX",  "MEDIAN", "MODE")
+names(TCRIT.HCH)     = c("Tcrit", "95%",  "MAX",  "MEDIAN", "MODE")
 summary(TCRIT.HWN)
 
 
@@ -214,8 +123,8 @@ summary(TCRIT.HWN)
 
 
 #########################################################################################################################
-## Plot leaf turgor loss point vs the AUS Max drought intesntiy - MAT (1950-2000)
-plot(awap.heatwave[["HWN"]],        main = "No. heatwave days in a season (AWAP, 1961-19901)")
+## Plot TCRIT vs the average heatwave intensity
+plot(awap.heatwave[["HWN"]],        main = "No. indiv heatwaves in a season (AWAP, 1961-19901)")
 
 # CairoPNG(width = 8090, height = 8090, 
 #          file = "./output/figures/Glasshouse_niches/TLP_v_AWAP_DROUGHT_INTENSITY.png", 
@@ -231,7 +140,7 @@ pairs(TCRIT.HWN,
       #diag.panel  = panel.hist,
       upper.panel = panel.smooth, #function(...) smoothScatter(..., nrpoints = 0, add = TRUE))
       cex.labels  = 1.5, cex.axis = 2, font.labels = 2,
-      main = "Leaf critical temperature (Tcrit) vs No.indiv heatwaves (AWAP 1961-1990)")
+      main = "Tcrit vs No. indiv heatwaves (AWAP 1961-1990)")
 
 
 #########################################################################################################################
@@ -243,39 +152,32 @@ pairs(TCRIT.HWA,
       #diag.panel  = panel.hist,
       upper.panel = panel.smooth, #function(...) smoothScatter(..., nrpoints = 0, add = TRUE))
       cex.labels  = 1.5, cex.axis = 2, font.labels = 2,
-      main = "Leaf critical temperature (Tcrit) vs Hottest day of hottest heatwave (AWAP 1961-1990)")
+      main = "Tcrit vs Hottest day of hottest heatwave (AWAP 1961-1990)")
 
 
 #########################################################################################################################
 ## Plot Tcrit vs number of heatwave days in a season (1961-1990)
 plot(awap.heatwave[["HWF"]], main = "Number of heatwave days in a season (AWAP 1961-1990)")
 
-
 pairs(TCRIT.HWF,  
       lower.panel = panel.cor,
       #diag.panel  = panel.hist,
       upper.panel = panel.smooth, #function(...) smoothScatter(..., nrpoints = 0, add = TRUE))
       cex.labels  = 1.5, cex.axis = 2, font.labels = 2,
-      main = "Leaf critical temperature (Tcrit) vs No. heatw days season (AWAP 1961-1990)")
-
-## finish the device
-dev.off()
+      main = "Tcrit vs No. heatwave days in season (AWAP 1961-1990)")
 
 
 #########################################################################################################################
 ## Plot Tcrit vs number of heatwave days in a season (1961-1990)
 plot(awap.heatwave[["HW_CUM_HOT"]], main = "Cumulative heat during the hottest heatwave (AWAP 1961-1990)")
 
-
 pairs(TCRIT.HCH,  
       lower.panel = panel.cor,
       #diag.panel  = panel.hist,
       upper.panel = panel.smooth, #function(...) smoothScatter(..., nrpoints = 0, add = TRUE))
       cex.labels  = 1.5, cex.axis = 2, font.labels = 2,
-      main = "Cumulative heat during the hottest heatwave (AWAP 1961-1990)")
+      main = "Tcrit vs Cumulative heat during the hottest heatwave (AWAP 1961-1990)")
 
-## finish the device
-dev.off()
 
 
 

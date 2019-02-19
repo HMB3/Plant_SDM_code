@@ -150,18 +150,6 @@ names(COMBO.POINTS)
 
 
 #########################################################################################################################
-## Create a stack of rasters to sample: get all the Worldclim variables just for good measure
-## Use the Mollweide projection for the points and rasters 
-# env.grids.current = stack(
-#   file.path('./data/base/worldclim/world/0.5/bio/current',
-#             sprintf('bio_%02d', 1:19)))
-# 
-# 
-# ## Also get the PET raster
-# PET               = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
-
-
-#########################################################################################################################
 ## Also extract the netCDF AWAP drought rasters
 awap.extreme  = stack(list.files(as.character('./data/base/AWAP'), pattern = 'extreme_droughts.nc$',  full.names = TRUE))
 awap.severe   = stack(list.files(as.character('./data/base/AWAP'), pattern = 'severe_droughts.nc$',   full.names = TRUE))
@@ -331,31 +319,6 @@ summary(COMBO.AWAP$HW_CUM_HOT)
 
 
 #########################################################################################################################
-## Now summarise the niches. But figure out a cleaner way of doing this
-env.variables = c("Annual_mean_temp",
-                  "Mean_diurnal_range",
-                  "Isothermality",
-                  "Temp_seasonality",
-                  "Max_temp_warm_month",
-                  "Min_temp_cold_month",
-                  "Temp_annual_range",
-                  "Mean_temp_wet_qu",
-                  "Mean_temp_dry_qu",
-                  "Mean_temp_warm_qu",
-                  "Mean_temp_cold_qu",
-                  
-                  "Annual_precip",
-                  "Precip_wet_month",
-                  "Precip_dry_month",
-                  "Precip_seasonality",
-                  "Precip_wet_qu",
-                  "Precip_dry_qu",
-                  "Precip_warm_qu",
-                  "Precip_col_qu",
-                  "PET")
-
-
-#########################################################################################################################
 ## Change the raster values here: See http://worldclim.org/formats1 for description of the interger conversion. 
 ## All temperature variables were multiplied by 10, so divide by 10 to reverse it.
 COMBO.AWAP.CONVERT = as.data.table(COMBO.AWAP)                           ## Check this works, also inefficient
@@ -370,7 +333,6 @@ summary(COMBO.AWAP$Annual_mean_temp)
 
 summary(COMBO.AWAP.CONVERT$Isothermality)
 summary(COMBO.AWAP$Isothermality)
-
 summary(COMBO.AWAP.CONVERT$PET)
 
 
@@ -388,23 +350,22 @@ length(unique(COMBO.AWAP.CONVERT$searchTaxon));length(GBIF.spp)
 
 
 #########################################################################################################################
-## Save the summary datasets
-saveRDS(COMBO.AWAP.CONVERT, paste0('data/base/HIA_LIST/COMBO/COMBO_AWAP_CONVERT_', save_run, '.rds'))
+## save data
+if(save_data == "TRUE") {
+  
+  ## save .rds file for the next session
+  saveRDS(COMBO.RASTER.CONVERT, paste0(DATA_path, 'COMBO_RASTER_CONVERT_',  save_run, '.rds'))
+  
+} else {
+  
+  message(' skip file saving, not many species analysed')   ##
+  
+}
+
+## get rid of some memory
+gc()
 
 
-## Now save .RData file for the next session...
-## save.image("TRAITS_RASTER.RData")
-
-
-
-
-
-#########################################################################################################################
-## OUTSTANDING NICHE TASKS:
-#########################################################################################################################
-
-
-## Use better ALA data when available
 
 
 

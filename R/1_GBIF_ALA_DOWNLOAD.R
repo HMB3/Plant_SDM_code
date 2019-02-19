@@ -35,15 +35,27 @@ all.taxa.rev =  all.taxa[rev(order(all.taxa))]
 ## will return NULL. Saves each spp as .Rdata file, returning list of skipped spp
 # TEMP DISABLE for katana - we have all the records so no need to check again
 if (FALSE) {
-    GBIF.taxa    = download_GBIF_all_species(species_list = all.taxa, 
-                                            path         = GBIF_path) ## insert path 
-
-
-    ALA.taxa        = download_ALA_all_species(species_list = all.taxa.rev, 
-                                           path         = ALA_path)
+  GBIF.taxa    = download_GBIF_all_species(species_list = all.taxa, 
+                                           path         = GBIF_path) ## insert path 
+  
+  
+  ALA.taxa        = download_ALA_all_species(species_list = all.taxa.rev, 
+                                             path         = ALA_path)
 
 }
 
+
+
+#########################################################################################################################
+## 2). READ IN DODGY SPECIES
+#########################################################################################################################
+
+
+##
+Eremophila.bignoniiflora = read.csv("./data/base/HIA_LIST/ALA/Eremophila_bignoniiflora .csv", stringsAsFactors = FALSE)
+Eucalyptus.populnea      = read.csv("./data/base/HIA_LIST/ALA/Eucalyptus_populnea.csv",       stringsAsFactors = FALSE)
+save(Eremophila.bignoniiflora,  file = paste0(ALA_path, 'Eremophila bignoniiflora_ALA_records.RData'))
+save(Eucalyptus.populnea,       file = paste0(ALA_path, 'Eucalyptus populnea_ALA_records.RData'))
 
 
 #########################################################################################################################

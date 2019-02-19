@@ -8,15 +8,40 @@
 ## values in the glasshouse. Extremes are thought to be more closely related than average values...
 
 
+## 1). Renee's work - physiology data
+
+## 2). Hybrid manuscript: Tcrit = f range size + MAT + extreme climate + GLS (HIE + MQ) + ecology traits
+
+## 3). Renee's multivariate analysis? 
+
+## 4). Diana's tcrit vs. lat, temp, radiation etc.
+
+
+## Calculate AOO for all species
+## Send Alessandro a shapefile of Diana's species
+
+## Build the table ::
+## Email Anna and Sarah
+## Get the list of species with provenances and calculate the niches separately for this  
+
+
+
+
+
 #########################################################################################################################
 ## 1). COMBINE NICHE DATA WITH GLASSHOUSE DATA
 #########################################################################################################################
 
+## Try reading in diana's species too
+DIANA.NICHE.CONTEXT  = readRDS(paste0(DATA_path, 'COMBO_NICHE_CONTEXT_',  OCC_SOURCE, '_RECORDS_', 'DIANA_SPP', '.rds'))
+DIAN.RASTER.CONTEXT  = readRDS(paste0(DATA_path, 'COMBO_RASTER_CONTEXT_', OCC_SOURCE, '_RECORDS_', 'DIANA_SPP', '.rds'))
 
 #########################################################################################################################
 ## Read in niche data
-TRAIT.NICHE.CONTEXT  = readRDS("./data/base/HIA_LIST/COMBO/COMBO_NICHE_CONTEXT_TRAIT_SPP.rds")
-TRAIT.RASTER.CONTEXT = readRDS("./data/base/HIA_LIST/COMBO/COMBO_AWAP_CONVERT_TRAIT_SPP.rds")
+## TRAIT.NICHE.CONTEXT  = COMBO.NICHE.CONTEXT
+## TRAIT.RASTER.CONTEXT = COMBO.RASTER.CONTEXT
+TRAIT.NICHE.CONTEXT  = readRDS(paste0(DATA_path, 'COMBO_NICHE_CONTEXT_',  OCC_SOURCE, '_RECORDS_', save_run, '.rds'))
+TRAIT.RASTER.CONTEXT = readRDS(paste0(DATA_path, 'COMBO_RASTER_CONTEXT_', OCC_SOURCE, '_RECORDS_', save_run, '.rds'))
 
 
 ##
@@ -25,9 +50,7 @@ dim(TRAIT.RASTER.CONTEXT)
 
 
 ## Now find the match between the trait species and the trait species... 
-length(intersect(TRAIT.SPP$searchTaxon,    TRAIT.NICHE.CONTEXT$searchTaxon))
-losers %in% TRAIT.NICHE.CONTEXT$searchTaxon
-winners %in% TRAIT.NICHE.CONTEXT$searchTaxon
+length(intersect(TRAIT.SPP$searchTaxon, TRAIT.NICHE.CONTEXT$searchTaxon))
 
 
 #########################################################################################################################
@@ -54,15 +77,16 @@ TRAIT.POINTS   = SpatialPointsDataFrame(coords      = TRAIT.RASTER.CONTEXT [c("l
 TRAIT.POINTS  <- spTransform(TRAIT.POINTS, CRS("+init=epsg:4326 +proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
 
 
+
+
+
 #########################################################################################################################
 ## 2). PLOT OCCURRENCE DATA
 #########################################################################################################################
 
 
-## Combine Australian and global maps with histograms of GBIF and AWAP data
-
-
 #########################################################################################################################
+## Combine Australian and global maps with histograms of GBIF and AWAP data
 ## Loop over the species list and plot the occurrence data for each to check the data bias
 OCC.TAXA = as.list(unique(TRAIT.RASTER.CONTEXT$searchTaxon))
 
@@ -85,9 +109,9 @@ for (i in 1:length(OCC.TAXA)) {
   #     oma   = c(1.5, 1.5, 1.5, 1.5))
 
   ## Plot just the Australian points
-  plot(LAND, main = OCC.TAXA[i])
-  points(spp.points, col = "red", cex = .5, pch = 19)
-  
+  # plot(LAND, main = OCC.TAXA[i])
+  # points(spp.points, col = "red", cex = .5, pch = 19)
+  # 
   ## Then plot the GBIF histogram?
   
   ## Plot just the Australian points
@@ -116,6 +140,7 @@ writeOGR(obj = TRAIT.SPDF , dsn = "./data/base/HIA_LIST/COMBO", layer = "GLASSHO
 
 
 
+
 #########################################################################################################################
 ## 3). CREATE HISTOGRAMS
 #########################################################################################################################
@@ -139,13 +164,11 @@ Print_global_histogram(taxa.list    = HIST.TAXA,
                        env.units.2  = "°C")
 
 
-## Save the histograms to file?
-
-
-
 Boxplot_GBIF_records(taxa.list = HIST.TAXA,       DF = TRAIT.RASTER.CONTEXT,
                      env.1 = "Max_temp_warm_month",   env.col.1 = "orange",     env.units.1 = "°C",
                      env.2 = "Annual_precip",         env.col.2 = "blue",       env.units.2 = "°mm")
+
+
 
 
 
@@ -157,13 +180,14 @@ Boxplot_GBIF_records(taxa.list = HIST.TAXA,       DF = TRAIT.RASTER.CONTEXT,
 #########################################################################################################################
 ## merge the full niche df with the heatwave niche df
 TRAIT.NICHE.RISK = merge(TRAIT.NICHE.WOODY ,   TRAIT.NICHE.CONTEXT,  by = "searchTaxon")
-TRAIT.NICHE.AUS = merge(TRAIT.NICHE.AUS,   TRAIT.NICHE.CONTEXT,  by = "searchTaxon")
+TRAIT.NICHE.AUS  = merge(TRAIT.NICHE.AUS,      TRAIT.NICHE.CONTEXT,  by = "searchTaxon")
 dim(TRAIT.NICHE.RISK)[1]
 names(TRAIT.NICHE.RISK)
 
 
 ## Check Diana's calculation
 plot(TRAIT.NICHE.RISK$Annual_mean_temp_median, TRAIT.NICHE.RISK$Tcrit_C)
+
 
 #########################################################################################################################
 ## TLP vs drought
@@ -186,8 +210,8 @@ TCRIT.DR.REL.INT    = TRAIT.NICHE.RISK[, c("Tcrit_C",
                                            "Drought_max_rel_int_extr_mode")] 
 
 ## Rename
-names(TLP.DR.INT)         = c("TLP",   "95%",  "MAX",  "MEDIAN", "MODE")
-names(TLP.DR.REL.INT)     = c("TLP",   "95%",  "MAX",  "MEDIAN", "MODE")
+names(TLP.DR.INT)         = c("TLP",     "95%",  "MAX",  "MEDIAN", "MODE")
+names(TLP.DR.REL.INT)     = c("TLP",     "95%",  "MAX",  "MEDIAN", "MODE")
 names(TCRIT.DR.REL.INT )  = c("Tcrit",   "95%",  "MAX",  "MEDIAN", "MODE")
 summary(TLP.DR.REL.INT)
 
@@ -236,7 +260,7 @@ pairs(TLP.DR.REL.INT,
       #diag.panel  = panel.hist,
       upper.panel = panel.smooth, #function(...) smoothScatter(..., nrpoints = 0, add = TRUE))
       cex.labels  = 1.5, cex.axis = 2, font.labels = 2,
-      main = "Leaf turgor loss point (TLP) vs Max drought relative intensity (AWAP 1900-2011)")
+      main = "TLP vs Max relative drought intensity (AWAP 1900-2011)")
 
 
 pairs(TCRIT.DR.REL.INT,  
@@ -244,10 +268,10 @@ pairs(TCRIT.DR.REL.INT,
       #diag.panel  = panel.hist,
       upper.panel = panel.smooth, #function(...) smoothScatter(..., nrpoints = 0, add = TRUE))
       cex.labels  = 1.5, cex.axis = 2, font.labels = 2,
-      main = "Leaf critical temp (Tcrit) vs Max relative drought intensity (AWAP 1900-2011)")
+      main = "Tcrit vs Max relative drought intensity (AWAP 1900-2011)")
 
 ## finish the device
-dev.off()
+#dev.off()
 
 
 
@@ -275,14 +299,14 @@ PRED.TLP.MAX = predict(TLP.MAX.GAM, newdata = TLP.MAX.TEST, type ='response')
 
 ########################################################
 ## RAIN
-CairoPNG(width = 10000, height = 16180, 
-         file = "./output/figures/figure_3/CHAP2_FIG4_UPDATE_TRANSPARENT.png", 
-         canvas = "white", bg = "white", units = "px", dpi = 600)
-
-par(mfrow = c(4, 2),
-    mar   = c(13.5, 16, 4, 4.8), 
-    mgp   = c(11.8, 3, 0),
-    oma   = c(1, 1, 1, 1))
+# CairoPNG(width = 10000, height = 16180, 
+#          file = "./output/figures/figure_3/CHAP2_FIG4_UPDATE_TRANSPARENT.png", 
+#          canvas = "white", bg = "white", units = "px", dpi = 600)
+# 
+# par(mfrow = c(4, 2),
+#     mar   = c(13.5, 16, 4, 4.8), 
+#     mgp   = c(11.8, 3, 0),
+#     oma   = c(1, 1, 1, 1))
 
 
 ## PANEL 1
@@ -299,17 +323,6 @@ lines(TLP.MAX.TEST$MAX, PRED.TLP.MAX, col = "orange",  lwd = 8)
 
 legend("bottomright", bty = "n", cex = 2, pt.cex = 2, 
        text.col = "orange", legend = paste("DE =", format(summary(TLP.MAX.GAM)$dev.expl, digits = 3)))
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -354,10 +367,6 @@ legend("bottomright", bty = "n", cex = 2, pt.cex = 2,
 # }
 
 
-
-#########################################################################################################################
-## Save the R object
-save.image("GLASS_HOUSE_VS_NICHE.RData")
 
 
 #########################################################################################################################
