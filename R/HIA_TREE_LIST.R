@@ -540,12 +540,14 @@ TOT.GROW        = TOT.GROW[!duplicated(TOT.GROW[,c('searchTaxon')]),]
 
 #########################################################################################################################
 ## Now sum the number of growers across multiple varieties
-## Just get the count for each unique binomial
 n.spp <- tapply(CLEAN.list$Number.of.growers, CLEAN.list$Binomial, sum, na.rm = TRUE)
 CLEAN.list$Number.of.growers.total <- n.spp[CLEAN.list$Binomial]
 CLEAN.GROW = CLEAN.list[c("Binomial",
-                         "Number.of.growers.total")]
-names(CLEAN.GROW ) = c("searchTaxon", "Total.growers")
+                          "Plant.type",
+                          "Origin",
+                          "Number.of.growers.total",
+                          "Number.of.States")]
+names(CLEAN.GROW ) = c("searchTaxon", "Plant.type", "Origin", "Total.growers", "Number.of.States")
 CLEAN.GROW         = CLEAN.GROW [!duplicated(CLEAN.GROW [,c('searchTaxon')]),] 
 
 

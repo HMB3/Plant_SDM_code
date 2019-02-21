@@ -17,18 +17,23 @@
 ## Merge the species native in the SUA with the clean records from ALA.
 
 
+## Ultimately, we need a table of all the species modelled, with the data for 
+
+
 #########################################################################################################################
 ## This list derives from all species and varieties sold anywhere in Australia in the last 5 years. Anthony Manea cleaned 
 ## up the data and cross-linked to growth form and exotic/native status and derived a list of ~1300 species that are the 
 ## Most commonly sold, covering the right ratio of growth forms, regional representation and native/exotic
 CLEAN.list = read.csv("./data/base/HIA_LIST/HIA/HIA.CLEAN.csv",                               stringsAsFactors = FALSE)
+HIA.list   = read.csv("./data/base/HIA_LIST/HIA/GREEN_CITIES_DRAFT_LIST_2709_2017.csv",       stringsAsFactors = FALSE)
 GROW.list  = read.csv("./data/base/HIA_LIST/HIA/planted_and_growing_database_0910_2017.csv",  stringsAsFactors = FALSE)
 top.200    = read.csv("./data/base/HIA_LIST/HIA/HIA_TOP_200_1309_2017.csv",                   stringsAsFactors = FALSE)
 
 
 #########################################################################################################################
 ## Dim
-dim(CLEAN.list)
+dim(CLEAN.list);dim(HIA.list)
+setdiff(names(CLEAN.list), names(HIA.list))
 
 
 ## Create a list of the raw HIA list, but removing the weird characters...
@@ -92,7 +97,7 @@ CLEAN.UNIQUE = as.character(unique(DRAFT.HIA.TAXA$Species))
 CLEAN.LOOKUP = lookup_table(CLEAN.UNIQUE, by_species = TRUE, missing_action = "NA") ## convert rows to column and merge
 CLEAN.LOOKUP = setDT(CLEAN.LOOKUP, keep.rownames = TRUE)[]
 CLEAN.LOOKUP = dplyr::rename(CLEAN.LOOKUP, Binomial = rn)
-head(CLEAN.LOOKUP)
+head(CLEAN.LOOKUP);dim(CLEAN.LOOKUP)
 
 
 ## Just get the NA rows
@@ -120,6 +125,8 @@ HIA.VARIETY <-
 HIA.VARIETY %>% 
   filter(Binomial==Species)
 
+dim(HIA.VARIETY);head(HIA.VARIETY)
+
 
 
 
@@ -136,18 +143,18 @@ grep('^\\S+ [A-Z]', HIA.VARIETY$Species, val = TRUE)
 ## Now for GBIF, just get the unique species...
 CLEAN.SPP = HIA.VARIETY[!duplicated(HIA.VARIETY["Binomial"]),]
 CLEAN.SPP = dplyr::rename(CLEAN.SPP, HIA.Taxa = Species)
-
+dim(CLEAN.SPP);head(CLEAN.SPP)
 
 #########################################################################################################################
 ## Now sum the number of growers across multiple varieties
 ## Just get the count for each unique binomial
-# n.clean <- tapply(CLEAN.SPP$Number.of.growers, CLEAN.SPP$HIA.Taxa, sum, na.rm = TRUE)
-# CLEAN.SPP$Number.of.growers.total <- n.clean[CLEAN.SPP$Binomial]
-# TOT.GROW = CLEAN.SPP[c("Binomial",
-#                         "Number.of.growers.total")]
-# names(TOT.GROW) = c("searchTaxon", "Total.growers")
-# TOT.GROW        = TOT.GROW[!duplicated(TOT.GROW[,c('searchTaxon')]),]
-# CLEAN.GROW      = join(CLEAN.SPP, TOT.GROW)
+n.clean <- tapply(CLEAN.SPP$Number.of.growers, CLEAN.SPP$Binomial, sum, na.rm = TRUE)
+
+CLEAN.SPP$Number.of.growers.total <- n.clean[CLEAN.SPP$Binomial]
+TOT.GROW = CLEAN.SPP[c("Binomial", "Number.of.growers.total")]
+names(TOT.GROW) = c("searchTaxon", "Total.growers")
+TOT.GROW        = TOT.GROW[!duplicated(TOT.GROW[,c('searchTaxon')]),]
+CLEAN.GROW      = join(CLEAN.SPP, TOT.GROW)
 
 
 
@@ -209,6 +216,9 @@ length(intersect(spp.grow, spp.clean))
 
 
 
+## How many species need the data to be filled in?
+round(with(CLEAN.SPP,   table(Origin)/sum(table(Origin))*100), 1)
+round(with(CLEAN.SPP,   table(Plant.type)/sum(table(Plant.type))*100), 1)
 
 
 

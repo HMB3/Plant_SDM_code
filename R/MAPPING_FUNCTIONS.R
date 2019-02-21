@@ -132,7 +132,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
             ## Write out the current mess maps - 
             ## create a new folder for the mess output - we are going to print it to the maps
             if(!dir.exists(MESS_dir)) {
-              #message('Creating MESS directory for ', species) 
+              message('Creating MESS directory for ', species) 
               dir.create(MESS_dir)
               
             } else {
@@ -148,6 +148,11 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
             ## r    = unstack(mess_current$similarity) :: list of environmental rasters
             ## name = names(mess_current$similarity)   :: names of the rasters
             message('Creating mess maps of each current environmental predictor for ', species)
+            
+            ## Create 
+            aus = poly %>%
+              spTransform(ALB.CONICAL)
+            
             mapply(function(r, name) {
               
               ## Create a level plot for each species
@@ -283,9 +288,6 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
               spTransform(ALB.CONICAL)
             
             novel_future_poly = novel_future_poly %>%
-              spTransform(ALB.CONICAL)
-            
-            aus = poly %>%
               spTransform(ALB.CONICAL)
             
             ## Now save the novel areas as shapefiles

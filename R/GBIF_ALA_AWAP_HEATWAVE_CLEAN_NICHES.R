@@ -17,9 +17,17 @@
 
 #########################################################################################################################
 ## Read in the three data tables
-COMBO.AWAP.CONVERT = readRDS(paste0(DATA_path, 'COMBO_RASTER_CONVERT_',  save_run, '.rds'))
-rasterTmpFile()
-
+if(read_data == "TRUE") {
+  
+  ## Load GBIF and ALA data
+  COMBO.AWAP.CONVERT = readRDS( paste0(DATA_path, 'COMBO_RASTER_CONVERT_',  save_run, '.rds'))
+  
+  
+} else {
+  
+  message(' skip file reading, not many species analysed')   ##
+  
+}
 
 ## Check dimensions of the occurrence and inventory data tables.
 length(unique(COMBO.AWAP.CONVERT$searchTaxon))

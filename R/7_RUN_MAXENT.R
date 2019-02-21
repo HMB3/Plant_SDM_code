@@ -350,6 +350,7 @@ MAXENT.SUMMARY.NICHE   = MAXENT.SUMMARY.NICHE[, c("searchTaxon",
 
 #########################################################################################################################
 ## Create a taxonomic lookup table
+## This needs checking after the HIA_READ_DATA............................................................................
 length(intersect(MAXENT.SUMMARY.NICHE$searchTaxon, APNI$searchTaxon))
 
 

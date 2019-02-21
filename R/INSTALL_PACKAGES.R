@@ -21,8 +21,8 @@ save(installedpkgs, file="installed_old.rda")
 
 ## 2). Update R here too: https://cran.r-project.org/web/packages/installr/index.html
 # installing/loading the package:
-# if(!require(installr)) {
-#   install.packages("installr"); require(installr)} ## load / install+load installr
+if(!require(installr)) {
+  install.packages("installr"); require(installr)} ## load / install+load installr
 
 ## 3. Once you’ve got the new version up and running, reload the saved packages and re-install them from CRAN.
 tmp <- installed.packages()

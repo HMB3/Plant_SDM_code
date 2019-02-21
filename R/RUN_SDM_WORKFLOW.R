@@ -11,20 +11,22 @@
 
 ## 1). Check that the paralled approach will work for a few species, using the MESS approach - EG for 10 species.
 
-## 2). Check the file output is ok for rapid assessment of species suitability. Could add Novel shapefile to step 3.
+## 2). Check the file output is ok, for rapid assessment of species suitability. Could add Novel shapefile to step 3.
 ##     Run the final format past Linda, John an Alessandro. Panel for one species model, plus gain/loss rasters, 
 ##     plus maybe global points.
 
 ## 3). Check the spatial outlier step can be improved, before re-running all the species through these steps.
 ##     Use Alex Ziska's example to calcualte
-##     Check the Area of occupancy calculations work
+##     
+##     Check the Area of occupancy calculations work - could be causing problems.
 ## 
 ## 4). Check how we will re-run the species. Can MAXENT.SUMMARY.NICHE be filled in for all the species? 
 ##     Check all the fields are needed. Sort list by total growers, then for species without growers, is there
 ##     another field they can be sorted by?
 
 
-## 5). Clean up all the gunk in HIA_TREE LIST - this relates to step 4. Need a clean list!
+## 5). Clean up all the gunk in HIA_TREE LIST - this relates to step 4. All the stuff that's not needed 
+##     for the workflow should be deleted.
 
 
 #########################################################################################################################
@@ -91,7 +93,7 @@ source('./R/GREEN_CITIES_FUNCTIONS.R')
 source('./R/MAXENT_FUNCTIONS.R')
 source('./R/MAPPING_FUNCTIONS.R')
 source('./R/HIA_CLEAN_MATCHING.R')
-rasterOptions(tmpdir = file.path('./RTEMP'))
+rasterOptions(tmpdir = './RTEMP')
 
 
 #########################################################################################################################
