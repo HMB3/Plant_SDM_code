@@ -69,7 +69,8 @@ p <- c('ff',    'things',    'raster',        'dismo',        'sp',           'l
        'tidyr', 'readr',     'rnaturalearth', 'rasterVis',    'RColorBrewer', 'latticeExtra', 'parallel',
        'ALA4R', 'stringr',   'Taxonstand',    'CoordinateCleaner', 'gsubfn',  'PerformanceAnalytics',
        'rvest', 'magrittr',  'devtools',      'ggplot2',      'reshape2',     'rmarkdown', 'flexdashboard', 'shiny', 'rgbif',
-       'ENMeval', 'tibble',  'ncdf4',         'Cairo', 'taxonlookup', 'kgc', 'maptools', 'DataCombine', 'mgcv', 'rsq')
+       'ENMeval', 'tibble',  'ncdf4',         'Cairo', 'taxonlookup', 'kgc', 'maptools', 'DataCombine', 'mgcv', 'rsq', 'utf8',
+       'betareg', 'hydroTSM', 'bomrang', 'gridExtra', 'grid', 'lattice', 'ConR')
 
 
 #########################################################################################################################
@@ -91,6 +92,12 @@ ipak <- function(pkg){
 ipak(p)
 
 
+
+## list all packages where an update is available
+old.package = old.packages()
+
+## update all available packages
+update.packages(old.package, ask = FALSE)
 
 
 

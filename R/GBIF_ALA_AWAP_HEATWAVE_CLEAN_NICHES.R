@@ -190,57 +190,58 @@ message(round(dim(CLEAN.TRUE)[1]/dim(TEST.GEO)[1]*100, 2), " % records retained"
 
 
 ## Select columns
-# GBIF.ALA.CHECK  = select(CLEAN.TRUE,     OBS, searchTaxon, scientificName, lat, lon, SOURCE, INVENTORY, year, 
-#                          #coordinateUncertaintyInMetres, #geodeticDatum,  
-#                          country, locality, basisOfRecord, institutionCode, 
-#                          #rank, 
-#                          Taxonomic.status, New.Taxonomic.status)
-# 
-# 
-# ## Rename the fields so that ArcMap can handle them
-# GBIF.ALA.CHECK     = dplyr::rename(GBIF.ALA.CHECK, 
-#                                    TAXON     = searchTaxon,
-#                                    LAT       = lat,
-#                                    LON       = lon,
-#                                    SC_NAME   = scientificName,
-#                                    #RANK      = rank,
-#                                    BASIS     = basisOfRecord,                
-#                                    LOCAL     = locality,                      
-#                                    INSTIT    = institutionCode,                
-#                                    COUNTRY   = country,                
-#                                    #COORD_UN  = coordinateUncertaintyInMetres,
-#                                    #DATUM     = geodeticDatum,                 
-#                                    YEAR      = year,
-#                                    TAX_STAT  = Taxonomic.status,
-#                                    NEW_STA   = New.Taxonomic.status)
-# names(GBIF.ALA.CHECK)
-# 
-# 
-# #########################################################################################################################
-# ## Then create SPDF
-# GBIF.ALA.SPDF    = SpatialPointsDataFrame(coords      = GBIF.ALA.CHECK[c("LON", "LAT")],
-#                                           data        = GBIF.ALA.CHECK,
-#                                           proj4string = CRS.WGS.84)
-# 
-# 
-# ## Create list of species 
-# TAXA <- unique(GBIF.ALA.SPDF$TAXON)
+GBIF.ALA.CHECK  = select(CLEAN.TRUE,     OBS, searchTaxon, scientificName, lat, lon, SOURCE, INVENTORY, year,
+                         #coordinateUncertaintyInMetres, #geodeticDatum,
+                         country, locality, basisOfRecord, institutionCode,
+                         #rank,
+                         Taxonomic.status, New.Taxonomic.status)
+
+
+## Rename the fields so that ArcMap can handle them
+GBIF.ALA.CHECK     = dplyr::rename(GBIF.ALA.CHECK,
+                                   TAXON     = searchTaxon,
+                                   LAT       = lat,
+                                   LON       = lon,
+                                   SC_NAME   = scientificName,
+                                   #RANK      = rank,
+                                   BASIS     = basisOfRecord,
+                                   LOCAL     = locality,
+                                   INSTIT    = institutionCode,
+                                   COUNTRY   = country,
+                                   #COORD_UN  = coordinateUncertaintyInMetres,
+                                   #DATUM     = geodeticDatum,
+                                   YEAR      = year,
+                                   TAX_STAT  = Taxonomic.status,
+                                   NEW_STA   = New.Taxonomic.status)
+names(GBIF.ALA.CHECK)
+
+
+#########################################################################################################################
+## Then create SPDF
+GBIF.ALA.SPDF    = SpatialPointsDataFrame(coords      = GBIF.ALA.CHECK[c("LON", "LAT")],
+                                          data        = GBIF.ALA.CHECK,
+                                          proj4string = CRS.WGS.84)
+
+
+## Create list of species
+TAXA <- unique(GBIF.ALA.SPDF$TAXON)
 
 
 #########################################################################################################################
 ## Then, loop over the species list and create a shapefile for each 
 # for (i in 1:length(TAXA)) {
-#   
+# 
 #   ## Need to check the OBS column matches up - or do we not need this again?
 #   message("Writing shapefile for ", TAXA[i])
-#   tmp <- GBIF.ALA.SPDF[GBIF.ALA.SPDF$TAXON == TAXA[i], ] 
-#   writeOGR(tmp, dsn = "./data/base/HIA_LIST/COMBO/CLEAN_GBIF", TAXA[i], driver = "ESRI Shapefile", overwrite_layer = TRUE)
-#   
+#   tmp <- GBIF.ALA.SPDF[GBIF.ALA.SPDF$TAXON == TAXA[i], ]
+#   writeOGR(tmp, dsn = "./data/ANALYSIS/CLEAN_GBIF", TAXA[i], driver = "ESRI Shapefile", overwrite_layer = TRUE)
+# 
 # }
 
 
-## Write the shapefile out just in case
-# writeOGR(obj = GBIF.ALA.SPDF, dsn = "./data/base/HIA_LIST/COMBO", layer = paste0("CLEAN_SPDF_", save_run), driver = "ESRI Shapefile")
+## Write the whole shapefile out just in case
+writeOGR(obj = GBIF.ALA.SPDF, dsn = "./data/base/HIA_LIST/COMBO", 
+         layer = paste0("CLEAN_SPDF_", save_run), driver = "ESRI Shapefile")
 
 
 
@@ -344,32 +345,29 @@ if(calc_niche == "TRUE") {
   ## These numbers don't look that accurate: Try convert into a sp data frame and projecting into a projected system?
   ## Create a species list to estimate the ranges for
   spp.geo = as.character(unique(COMBO.RASTER$searchTaxon))
-  AOO.DAT = COMBO.RASTER.SP
+  AOO.DAT = COMBO.RASTER
   
   
   #########################################################################################################################
   ## AREA OF OCCUPANCY (AOO)
   ## For every species in the list: calculate the AOO
+  ## The extent of occurrence function is causing problems.................................................................
+  ## x = spp.geo[1]
   GBIF.AOO <- spp.geo %>%
-
+    
     ## Pipe the list into lapply
     lapply(function(x) {
-
-      ## Subset the the data frame
-      DF.IC = subset(AOO.DAT, searchTaxon == x)[, c("searchTaxon", "lon", "lat")]
-      DF.IC = DF[,c("lat", "lon", "searchTaxon")]
-      DF.RE = DF[,c("lon", "lat")]
-
-      ## Calculate area of occupancy according the the "red" package
-      #test = aoo (DF.RE)
-      test = IUCN.eval(DF.IC, Cell_size_AOO = 10, parallel = TRUE, NbeCores = 6)
-
-      ## Warning messages: Ask John if this is a problem
-      ## In rgdal::project(longlat, paste("+proj=utm +zone=", zone,  ... :
-      ## 3644 projected point(s) not finite
+      
+      ## Subset the the data frame Calculate area of occupancy according the the "red" package
+      ## IUCN.eval
+      AOO = subset(AOO.DAT, searchTaxon == x)[, c("lat", "lon", "searchTaxon")] %>%
+        calc_EOO_AOO(., Cell_size_AOO = 10, DrawMap = FALSE, country_map = land, SubPop = FALSE) %>%
+        .[,c("taxa", "EOO", "AOO", "Category_CriteriaB")]
+      rownames(AOO) = NULL
+      names(AOO) = c("searchTaxon",  "EOO", "AOO", "ICUN_catb")
 
     }) %>%
-
+    
     ## Finally, create one dataframe for all niches
     as.data.frame
   
@@ -394,7 +392,7 @@ if(calc_niche == "TRUE") {
   dim(LGA.AGG)
 
 
-  COMBO.LGA = join(COMBO.NICHE, LGA.AGG)                            ## The tapply needs to go where the niche summaries are
+  COMBO.LGA = join(COMBO.NICHE, LGA.AGG)                        ## The tapply needs to go where the niche summaries are
   names(COMBO.LGA)
 
   dim(COMBO.LGA)

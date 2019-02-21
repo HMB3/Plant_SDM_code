@@ -24,6 +24,10 @@
 ## 1). PROJECT MAXENT MODELS FOR MULTIPLE CLIMATE SCEANARIOS AT 2030, 2050 AND 2070
 #########################################################################################################################
 
+## Detach the  ConR package
+detach(package:ConR)
+
+
 
 #########################################################################################################################
 ## Use a list of GCM scenarios to create maps of habitat suitability 
@@ -35,20 +39,9 @@ head(gcms.50) ; head(gcms.70) ; head(gcms.30)
 
 #########################################################################################################################
 ## For each species, use a function to create raster files and maps under all six GCMs at each time step
-## EG arguments to run function manually
-poly          = AUS          
-x             = scen_2030[3]    
-species       = map_spp_list[1]
-maxent_path   = maxent_path  
-climate_path  = "./data/base/worldclim/aus/1km/bio" 
-grid_names    = grid.names   
-current_grids = aus.grids.current
-time_slice    = 30
-create_mess   = "TRUE"
-MESS_folder   = "MESS_output"
 
 
-
+#########################################################################################################################
 ## MESS maps measure the similarity between the new environments and those in the training sample.
 ## When model predictions are projected into regions, times or spatial resolutions not analysed in the training data, 
 ## it may be important to measure the similarity between the new environments and those in the training sample 
@@ -73,6 +66,19 @@ MESS_folder   = "MESS_output"
 # make a map of model predictions and overlay a pattern (e.g. hatching) that indicates where climate is novel.
 
 
+## EG arguments to run function manually
+poly          = AUS          
+x             = scen_2030[3]    
+species       = map_spp_list[1]
+maxent_path   = maxent_path  
+climate_path  = "./data/base/worldclim/aus/1km/bio" 
+grid_names    = grid.names   
+current_grids = aus.grids.current
+time_slice    = 30
+create_mess   = "TRUE"
+MESS_folder   = "MESS_output"
+
+
 #########################################################################################################################
 ## Create 2030 maps
 env.grids.2030 = tryCatch(project_maxent_grids_mess(poly          = AUS,          ## A shapefile, e.g. Australia
@@ -91,6 +97,8 @@ env.grids.2030 = tryCatch(project_maxent_grids_mess(poly          = AUS,        
                             message(paste('Species skipped - check', spp))
                             
                           })
+
+## Error in readOGR(dirname(outshape), layer = basename(outshape), verbose = !quietish) :
 
 
 #########################################################################################################################
@@ -164,8 +172,8 @@ env.grids.2070 = tryCatch(project_maxent_grids(shp           = AUS,
 
 
 ## Test problematic species by entering the values and running the function manually
-aus_poly = AUS                                 ## Polygon for Australia
-world_poly = LAND
+aus_poly      = AUS                                 ## Polygon for Australia
+world_poly    = LAND
 unit_path     = "./data/base/CONTEXTUAL/SUA/"   ## Data path for the spatial unit of analysis
 unit_file     = "SUA_2016_AUST.rds"             ## Spatial unit of analysis - E.G. SUAs
 unit_vec      = "SUA_2016_VEC.rds"              ## Vector of rasterized unit cells
@@ -194,9 +202,9 @@ length(SDM.DIR.REV);length(map_spp_rev);length(percent.log.rev);length(percent.o
 #########################################################################################################################
 ## Combine GCM predictions and calculate gain and loss for 2030
 ## Here we can add the mask of novel environments to SUA aggregation
-suitability.2030 = tryCatch(mapply(SUA_cell_count,                                  ## Function aggreagating GCM predictions by a spatial unit
-                                   aus_poly = AUS,                                  ## Polygon for Australia
-                                   world_poly = LAND,                               ## Polygon for the world
+suitability.2030 = tryCatch(mapply(SUA_cell_count,                                  ## Function aggreagating GCM predictions by spatial unit
+                                   aus_poly      = AUS,                             ## Polygon for Australia
+                                   world_poly    = LAND,                            ## Polygon for the world
                                    unit_path     = "./data/base/CONTEXTUAL/SUA/",   ## Data path for the spatial unit of analysis 
                                    unit_file     = "SUA_2016_AUST.rds",             ## Spatial unit of analysis - E.G. SUAs
                                    unit_vec      = "SUA_2016_VEC.rds",              ## Vector of rasterized unit cells

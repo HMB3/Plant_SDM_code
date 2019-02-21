@@ -88,20 +88,20 @@ lapply(GBIF.spp, function(spp){
     
     ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
     tryCatch(
-      FIT_MAXENT_TARG_BG(occ                     = occurrence, 
-                         bg                      = background, 
-                         sdm.predictors          = sdm.select, 
-                         name                    = spp, 
-                         outdir, 
-                         template.raster,
-                         min_n                   = 20,            ## This should be higher...
-                         max_bg_size             = 70000,         ## could be 50k or lower, it just depends on the biogeography
-                         Koppen                  = Koppen_1975,
-                         background_buffer_width = 200000,
-                         shapefiles              = TRUE,
-                         features                = 'lpq',
-                         replicates              = 5,
-                         responsecurves          = TRUE),
+      fit_maxent_targ_bg_kopp(occ                     = occurrence, 
+                              bg                      = background, 
+                              sdm.predictors          = sdm.select, 
+                              name                    = spp, 
+                              outdir, 
+                              template.raster,
+                              min_n                   = 20,            ## This should be higher...
+                              max_bg_size             = 70000,         ## could be 50k or lower, it just depends on the biogeography
+                              Koppen                  = Koppen_1975,
+                              background_buffer_width = 200000,
+                              shapefiles              = TRUE,
+                              features                = 'lpq',
+                              replicates              = 5,
+                              responsecurves          = TRUE),
       
       ## https://stackoverflow.com/questions/19394886/trycatch-in-r-not-working-properly
       #function(e) message('Species skipped ', spp)) ## skip any species for which the function fails

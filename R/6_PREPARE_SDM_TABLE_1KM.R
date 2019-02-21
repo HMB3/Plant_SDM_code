@@ -8,6 +8,8 @@
 ## saving the output as spatial points data frame - the format required by the dismo fucntion
 
 
+## The current cc_outl settings are not getting enough spatial outliers...................................................
+
 ## Print the species run to the screen
 message('Preparing SDM table for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
 

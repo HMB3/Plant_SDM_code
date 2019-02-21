@@ -52,8 +52,13 @@ if (FALSE) {
 
 
 ##
-Eremophila.bignoniiflora = read.csv("./data/base/HIA_LIST/ALA/Eremophila_bignoniiflora .csv", stringsAsFactors = FALSE)
-Eucalyptus.populnea      = read.csv("./data/base/HIA_LIST/ALA/Eucalyptus_populnea.csv",       stringsAsFactors = FALSE)
+Eremophila.bignoniiflora = read.csv("./data/base/HIA_LIST/ALA/Eremophila_bignoniiflora .csv", stringsAsFactors = FALSE, check.names=FALSE)
+Eucalyptus.populnea      = read.csv("./data/base/HIA_LIST/ALA/Eucalyptus_populnea.csv",       stringsAsFactors = FALSE, check.names=FALSE)
+
+Eremophila.bignoniiflora = convert_ala_cols_no_space(Eremophila.bignoniiflora)
+Eucalyptus.populnea      = convert_ala_cols_no_space(Eucalyptus.populnea)
+
+
 save(Eremophila.bignoniiflora,  file = paste0(ALA_path, 'Eremophila bignoniiflora_ALA_records.RData'))
 save(Eucalyptus.populnea,       file = paste0(ALA_path, 'Eucalyptus populnea_ALA_records.RData'))
 

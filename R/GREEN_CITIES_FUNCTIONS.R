@@ -59,7 +59,65 @@ string_fun_first_word <- function(x) {
 completeFun <- function(data, desiredCols) {
   completeVec <- complete.cases(data[, desiredCols])
   return(data[completeVec, ])
+  
 }
+
+
+# ## Make the first letter of a string lower case
+# firs_lett_lower <- function(x) {
+#   substr(x, 1, 1) <- tolower(substr(x, 1, 1))
+#   x
+# }
+
+
+convert_ALA_columns <- function(ds) {
+  
+  
+  ## Make the first letter lowercase
+  firs_lett_lower <- function(x) {
+    substr(x, 1, 1) <- tolower(substr(x, 1, 1))
+    x
+  }
+  
+  ## 
+  names(ds) <- firs_lett_lower(names(ds))
+  
+  ## Convert any number of consecutive dots to a single space.
+  names(ds) <- gsub(x = names(ds),
+                    pattern = "(\\.)+",
+                    replacement = "")
+  
+  ## Drop the trailing spaces.
+  names(ds) <- gsub(x = names(ds),
+                    pattern = "( )+$",
+                    replacement = "")
+  
+  ## Remove dash
+  names(ds) <- gsub(x = names(ds),
+                    pattern = " - ",
+                    replacement = "")
+  
+  ## Remove parsed 
+  names(ds) <- gsub(x = names(ds),
+                    pattern = " - parsed",
+                    replacement = "")
+  
+  ## Remove white space.
+  names(ds) <- gsub(x = names(ds),
+                    pattern = " ",
+                    replacement = "")
+  
+  # ## for loop solution
+  # for(i in myobject){
+  #   mycolumns[grepl(i, mycolumns)] <- i
+  # }
+  
+  ds
+}
+
+
+
+
 
 
 
@@ -443,150 +501,6 @@ download_ALA_all_species = function (species_list, path) {
 
 
 
-
-# ## remaining species
-# download_GBIF_setdiff_species = function (list) {
-#   
-#   ## create variables
-#   skip.spp.list       = list()
-#   GBIF.download.limit = 200000
-#   
-#   ## for every species in the list
-#   for(sp.n in list){
-#     
-#     ## 1). First, check if the f*&%$*# file exists
-#     file = paste0("./data/base/HIA_LIST/GBIF/SETDIFF/", sp.n, "_GBIF_records.RData")
-#     
-#     ## If it's already downloaded, skip
-#     if (file.exists (file)) {
-#       
-#       print (paste ("file exists for species", sp.n, "skipping"))
-#       next
-#       
-#     }
-#     
-#     ## 2). Then check the spelling...incorrect nomenclature will return NULL result
-#     if (is.null(occ_search(scientificName = sp.n, limit = 1)$meta$count) == TRUE) {
-#       
-#       ## now append the species which had incorrect nomenclature to the skipped list
-#       ## this is slow, but it works for now
-#       print (paste ("Possible incorrect nomenclature", sp.n, "skipping"))
-#       nomenclature = paste ("Possible incorrect nomenclature |", sp.n)
-#       skip.spp.list <- c(skip.spp.list, nomenclature)
-#       next
-#       
-#     }
-#     
-#     ## 3). Skip species with no records
-#     if (occ_search(scientificName = sp.n)$meta$count == 0) {
-#       
-#       ## now append the species which had no records to the skipped list
-#       print (paste ("No GBIF records for", sp.n, "skipping"))
-#       records = paste ("No GBIF records |", sp.n)
-#       skip.spp.list <- c(skip.spp.list, records)
-#       next
-#       
-#     }
-#     
-#     ## 4). Check how many records there are, and skip if there are over 200k
-#     if (occ_search(scientificName = sp.n, limit = 1)$meta$count > GBIF.download.limit) {
-#       
-#       ## now append the species which had > 200k records to the skipped list
-#       print (paste ("Number of records > max for GBIF download via R (200,000)", sp.n, "skipping"))
-#       max =  paste ("Number of records > 200,000 |", sp.n)
-#       skip.spp.list <- c(skip.spp.list, max)
-#       next
-#       
-#     }
-#     
-#     ## 5). Download ALL records from GBIF
-#     ## ala = occurrences(taxon = sp.n, download_reason_id = 7)
-#     print (paste (sp.n))
-#     GBIF = gbif(sp.n, download = TRUE)   ## could use more arguments here, download_reason_id = 7, etc.
-#     
-#     ## 6). save records to .Rdata file, note that using .csv files seemed to cause problems...
-#     save(GBIF, file = paste("./data/base/HIA_LIST/GBIF/SETDIFF/", sp.n, "_GBIF_records.RData", sep = ""))
-#     #return(skip.spp.list)
-#     
-#   }
-#   
-# }
-# 
-# 
-# 
-# 
-# 
-# ## remaining species
-# download_GBIF_Renee_species = function (list) {
-#   
-#   ## create variables
-#   skip.spp.list       = list()
-#   GBIF.download.limit = 200000
-#   
-#   ## for every species in the list
-#   for(sp.n in list){
-#     
-#     ## 1). First, check if the f*&%$*# file exists
-#     file = paste0("./data/base/HIA_LIST/GBIF/RENEE/", sp.n, "_GBIF_records.RData")
-#     
-#     ## If it's already downloaded, skip
-#     if (file.exists (file)) {
-#       
-#       print (paste ("file exists for species", sp.n, "skipping"))
-#       next
-#       
-#     }
-#     
-#     ## 2). Then check the spelling...incorrect nomenclature will return NULL result
-#     if (is.null(occ_search(scientificName = sp.n, limit = 1)$meta$count) == TRUE) {
-#       
-#       ## now append the species which had incorrect nomenclature to the skipped list
-#       ## this is slow, but it works for now
-#       print (paste ("Possible incorrect nomenclature", sp.n, "skipping"))
-#       nomenclature = paste ("Possible incorrect nomenclature |", sp.n)
-#       skip.spp.list <- c(skip.spp.list, nomenclature)
-#       next
-#       
-#     }
-#     
-#     ## 3). Skip species with no records
-#     if (occ_search(scientificName = sp.n)$meta$count == 0) {
-#       
-#       ## now append the species which had no records to the skipped list
-#       print (paste ("No GBIF records for", sp.n, "skipping"))
-#       records = paste ("No GBIF records |", sp.n)
-#       skip.spp.list <- c(skip.spp.list, records)
-#       next
-#       
-#     }
-#     
-#     ## 4). Check how many records there are, and skip if there are over 200k
-#     if (occ_search(scientificName = sp.n, limit = 1)$meta$count > GBIF.download.limit) {
-#       
-#       ## now append the species which had > 200k records to the skipped list
-#       print (paste ("Number of records > max for GBIF download via R (200,000)", sp.n, "skipping"))
-#       max =  paste ("Number of records > 200,000 |", sp.n)
-#       skip.spp.list <- c(skip.spp.list, max)
-#       next
-#       
-#     }
-#     
-#     ## 5). Download ALL records from GBIF
-#     ## ala = occurrences(taxon = sp.n, download_reason_id = 7)
-#     print (paste (sp.n))
-#     GBIF = gbif(sp.n, download = TRUE)   ## could use more arguments here, download_reason_id = 7, etc.
-#     
-#     ## 6). save records to .Rdata file, note that using .csv files seemed to cause problems...
-#     save(GBIF, file = paste("./data/base/HIA_LIST/GBIF/RENEE/", sp.n, "_GBIF_records.RData", sep = ""))
-#     #return(skip.spp.list)
-#     
-#   }
-#   
-# }
-
-
-
-
 #########################################################################################################################
 ## GENERA
 #########################################################################################################################
@@ -752,60 +666,6 @@ read_bind_maxent = function (table.list, path) {
   
 }
 
-
-# dfl <- list(df1,df2)
-# 
-# # This would generate your error
-# # df <- bind_rows(dfl)
-# 
-# # This would solve it while keeping the factors
-# df <- dfl %>%
-#   lapply(function(x) mutate_each(x, funs('as.character'))) %>%
-#   bind_rows() %>% 
-#   mutate_each(funs('as.factor'))
-
-# for(i in LGA.list){
-#   f <- paste0("./data/base/HIA_LIST/LGA/", i)
-#   assign(i, read.csv(f, stringsAsFactors = FALSE))
-#   
-# }
-
-
-# list = function (table.list, path) {
-#   
-#   for(i in LGA.list){
-#     f <- paste0("./data/base/HIA_LIST/LGA/", i)
-#     assign(i, read.csv(f, stringsAsFactors = FALSE))
-#     
-#   }
-#   
-#   return(list)
-# }  
-
-
-
-# ## Read in a list of tables, bind them together and output one dataframe
-# read_LGA_list = function (table.list, path) {
-#   
-#   READ.BIND.TABLE <- table.list[c(1:length(table.list))] %>% 
-#     
-#     ## pipe the list into lapply
-#     lapply(function(x) {
-#       
-#       ## create the character string
-#       f <- paste0(path, x)
-#       
-#       ## read each .csv file
-#       d <- read.csv(f, stringsAsFactors = FALSE)
-#       
-#       ## now drop the columns which we don't need
-#       assign(i, read.delim(filepath,
-#                            colClasses=c("character","factor",rep("numeric",4)),
-#                            sep = "\t"))
-#       
-#     })
-#   
-# }
 
 
 #########################################################################################################################
@@ -1164,6 +1024,147 @@ niche_estimate = function (DF,
   
 }
 
+
+
+
+#########################################################################################################################
+## CALCULATE AREA OF OCCURRENCE AND EXTENT OF OCCUPANCY
+#########################################################################################################################
+
+
+#########################################################################################################################
+## Diable the check for 180 degress
+calc_EOO_AOO = function (DATA, country_map = NULL, Cell_size_AOO = 2, Cell_size_locations = 10, 
+          Resol_sub_pop = 5, method_locations = "fixed_grid", Rel_cell_size = 0.05, 
+          DrawMap = TRUE, add.legend = TRUE, file_name = NULL, export_shp = FALSE, 
+          write_shp = FALSE, write_results = TRUE, protec.areas = NULL, 
+          map_pdf = FALSE, draw.poly.EOO = TRUE, exclude.area = FALSE, 
+          method_protected_area = "no_more_than_one", ID_shape_PA = "WDPA_PID", 
+          buff_width = 0.1, SubPop = TRUE, alpha = 1, buff.alpha = 0.1, 
+          method.range = "convex.hull", nbe.rep.rast.AOO = NULL, showWarnings = TRUE, 
+          write_file_option = "excel", parallel = F, NbeCores = 2) 
+{
+  if (class(DATA)[1] == "spgeoIN") {
+    DATA_2 <- cbind(DATA$species_coordinates, DATA$identifier)
+    DATA <- DATA_2[, c(2, 1, 3)]
+  }
+  colnames(DATA)[1:3] <- c("ddlat", "ddlon", "tax")
+  if (is_tibble(DATA)) 
+    DATA <- as.data.frame(DATA)
+  if (any(is.na(DATA[, 1:2]))) {
+    length(which(rowMeans(is.na(DATA[, 1:2])) > 0))
+    unique(DATA[which(rowMeans(is.na(DATA[, 1:2])) > 0), 
+                3])
+    print(paste("Skipping", length(which(rowMeans(is.na(DATA[, 
+                                                             1:2])) > 0)), "occurrences because of missing coordinates for", 
+                paste(as.character(unique(DATA[which(rowMeans(is.na(DATA[, 
+                                                                         1:2])) > 0), 3])), collapse = " AND ")))
+    DATA <- DATA[which(!is.na(DATA[, 1])), ]
+    DATA <- DATA[which(!is.na(DATA[, 2])), ]
+  }
+  if (is.factor(DATA[, "tax"])) 
+    DATA[, "tax"] <- as.character(DATA[, "tax"])
+  if (!is.numeric(DATA[, 1]) || !is.numeric(DATA[, 2])) {
+    if (!is.double(DATA[, 1]) || !is.double(DATA[, 2])) 
+      stop("coordinates in DATA should be numeric")
+  }
+  if (any(DATA[, 1] > 180) || any(DATA[, 1] < -180) || any(DATA[, 
+                                                                2] < -180) || any(DATA[, 2] > 180)) 
+    message("Coordinates are outside of expected range")
+  
+  if (!is.null(country_map)) 
+    if (!class(country_map) == "SpatialPolygonsDataFrame") 
+      stop("Country_map should be a spatialpolygondataframe")
+  if (!is.null(protec.areas)) {
+    if (!class(protec.areas) == "SpatialPolygonsDataFrame") 
+      stop("protec.areas should be a spatialpolygondataframe")
+    if (!any(colnames(protec.areas@data) %in% ID_shape_PA)) 
+      stop("Check argument ID_shape_PA because selected ID field in the protected area shapefile does not exist")
+  }
+  if (is.null(country_map)) {
+    data("land", package = "ConR", envir = environment())
+    land <- get("land", envir = environment())
+    country_map <- land
+  }
+  if (!is.null(protec.areas)) {
+    if (!identicalCRS(protec.areas, land)) 
+      crs(protec.areas) <- crs(land)
+  }
+  if (length(grep("[?]", DATA[, 3])) > 0) 
+    DATA[, 3] <- gsub("[?]", "_", DATA[, 3])
+  if (length(grep("[/]", DATA[, 3])) > 0) 
+    DATA[, 3] <- gsub("[/]", "_", DATA[, 3])
+  list_data <- split(DATA, f = DATA$tax)
+  if (map_pdf) {
+    if (!is.null(file_name)) {
+      NAME_FILE <- file_name
+    }
+    else {
+      NAME_FILE <- "IUCN_"
+    }
+    FILE_NAME <- ifelse(!is.null(file_name), file_name, 
+                        "IUCN_")
+    dir.create(file.path(paste(getwd(), paste("/", FILE_NAME, 
+                                              "_results_map", sep = ""), sep = "")), showWarnings = FALSE)
+    pdf(paste(paste(getwd(), paste("/", FILE_NAME, "_results_map", 
+                                   sep = ""), sep = ""), "/", "results.pdf", sep = ""), 
+        width = 25, height = 25)
+  }
+  if (parallel) 
+    registerDoParallel(NbeCores)
+  Results <- llply(list_data, .fun = function(x) {
+    .IUCN.comp(x, NamesSp = as.character(unique(x$tax)), 
+               DrawMap = DrawMap, exclude.area = exclude.area, 
+               write_shp = write_shp, poly_borders = country_map, 
+               method_protected_area = method_protected_area, Cell_size_AOO = Cell_size_AOO, 
+               Cell_size_locations = Cell_size_locations, Resol_sub_pop = Resol_sub_pop, 
+               method_locations = method_locations, file_name = file_name, 
+               buff_width = buff_width, map_pdf = map_pdf, ID_shape_PA = ID_shape_PA, 
+               SubPop = SubPop, protec.areas = protec.areas, 
+               MinMax = c(min(DATA[, 2]), max(DATA[, 2]), min(DATA[, 1]), max(DATA[,1])), 
+               alpha = alpha, buff.alpha = buff.alpha, 
+               method.range = method.range, nbe.rep.rast.AOO = nbe.rep.rast.AOO, 
+               showWarnings = showWarnings, draw.poly.EOO = draw.poly.EOO)
+  }, .progress = "text", .parallel = parallel)
+  if (parallel) 
+    stopImplicitCluster()
+  if (map_pdf) 
+    dev.off()
+  Results_short <- lapply(Results, `[`, 1)
+  Results_short <- lapply(Results_short, FUN = function(x) t(x[[1]]))
+  Results_short <- as.data.frame(do.call(rbind, Results_short), 
+                                 stringsAsFactors = FALSE)
+  Results_short[, 1:4] <- apply(Results_short[, 1:4], MARGIN = 2, 
+                                as.numeric)
+  if (write_results) {
+    if (!is.null(file_name)) {
+      NAME_FILE <- file_name
+    }
+    else {
+      NAME_FILE <- "IUCN_results"
+    }
+    if (write_file_option == "csv") 
+      write.csv(Results_short, paste(getwd(), "/", NAME_FILE, 
+                                     ".csv", sep = ""))
+    if (write_file_option == "excel") {
+      Results_short <- data.frame(taxa = rownames(Results_short), 
+                                  Results_short)
+      write_xlsx(Results_short, path = paste(getwd(), 
+                                             "/", NAME_FILE, ".xlsx", sep = ""))
+    }
+  }
+  if (!export_shp) {
+    Results <- Results_short
+    if (length(list_data) > 5) {
+      print("Number of species per category")
+      print(table(Results[, "Category_CriteriaB"]))
+      print("Ratio of species per category")
+      print(round(table(Results[, "Category_CriteriaB"])/nrow(Results) * 
+                    100, 1))
+    }
+  }
+  Results
+}
 
 
 

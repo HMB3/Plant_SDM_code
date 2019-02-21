@@ -53,39 +53,53 @@ ALA.ALL <- ala.download %>%
   lapply(function(x) {
     
     ## Create a character string of each .RData file
+    message("Reading ALA data for ", x)
     f <- sprintf(paste0(ALA_path, "%s"), x)
     
     ## Load each file - check if some are already dataframes 
     d <- get(load(f))
     if (length(class(d)) > 1) {
+      
       d <- d[["data"]]
+      
     } else {
+      
       d = d #data.frame("searchTaxon" = c())
+      
     }
-
+    
     #  type standardisation    
     names(d)[names(d) == 'latitude']  <- 'lat'
     names(d)[names(d) == 'longitude'] <- 'lon'
+    
     #  standardi[sz]e catnum colname 
     if("catalogueNumber" %in% colnames(d)) {
-      #message ("Renaming catalogueNumber column to catalogNumber")
+      message ("Renaming catalogueNumber column to catalogNumber")
       names(d)[names(d) == 'catalogueNumber'] <- 'catalogNumber'
+      
     }
+    
     if (!is.character(d$catalogNumber)) {
-        d$catalogNumber = as.character(d$catalogNumber)
-    }
-    
-    ## Check if the dataframes have data
-    if (nrow(d) <= 2) {
-      
-      ## If the species has < 2 records, escape the loop
-      print (paste ("No ALA records for ", x, " skipping "))
-      return (d)
+      d$catalogNumber = as.character(d$catalogNumber)
       
     }
     
+    #  standardi[sz]e catnum colname 
+    if('coordinateUncertaintyinMetres' %in% colnames(d)) {
+      message ("Renaming recordID column to id")
+      names(d)[names(d) == 'coordinateUncertaintyinMetres'] <- 'coordinateUncertaintyInMetres'
+      
+    }
+    
+    #  standardi[sz]e catnum colname 
+    if('recordID' %in% colnames(d)) {
+      message ("Renaming recordID column to id")
+      names(d)[names(d) == 'recordID'] <- 'id'
+      
+    }
+  
     ## Create the searchTaxon column
-    message ('Reading ALA data for ', x)
+    message ('Formatting ALA data for ', x)
     d[,"searchTaxon"] = x
     d[,"searchTaxon"] = gsub("_ALA_records.RData", "", d[,"searchTaxon"])
     
@@ -101,11 +115,12 @@ ALA.ALL <- ala.download %>%
     warnings()
     
     ## This is a list of columns in different ALA files which have weird characters
+    message ('Formatting numeric ALA data for ', x)
     d[,"coordinateUncertaintyInMetres"] = as.numeric(unlist(d["coordinateUncertaintyInMetres"]))
     d["year"]  = as.numeric(unlist(d["year"]))
     d["month"] = as.numeric(unlist(d["month"]))
     d["id"]    = as.character(unlist(d["id"]))
-    
+
     return(d)
     
   }) %>%
@@ -233,7 +248,7 @@ onland = z %>% is.na %>%  `!` # %>% xy[.,]  cells on land or not
 ## Finally, filter the cleaned ALA data to only those points on land. 
 ## This is achieved with the final [onland]
 ALA.LAND = filter(ALA.CLEAN, cellFromXY(world.grids.current, ALA.CLEAN[c("lon", "lat")]) %in% 
-                          unique(cellFromXY(world.grids.current, ALA.CLEAN[c("lon", "lat")]))[onland])
+                    unique(cellFromXY(world.grids.current, ALA.CLEAN[c("lon", "lat")]))[onland])
 
 
 ## how many records were on land?
@@ -263,16 +278,16 @@ length(unique(ALA.LAND$searchTaxon))
 
 #########################################################################################################################
 ## save data
-if(save_data == "TRUE") {
-  
-  ## save .rds file for the next session
-  saveRDS(ALA.LAND, paste0(ALA_path, 'ALA_LAND_', save_run, '.rds'))
-  
-} else {
-  
-  message(' skip file saving, not many species analysed')   ##
-  
-}
+# if(save_data == "TRUE") {
+#   
+#   ## save .rds file for the next session
+#   saveRDS(ALA.LAND, paste0(ALA_path, 'ALA_LAND_', save_run, '.rds'))
+#   
+# } else {
+#   
+#   message(' skip file saving, not many species analysed')   ##
+#   
+# }
 
 ## get rid of some memory
 gc()

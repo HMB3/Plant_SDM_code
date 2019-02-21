@@ -402,29 +402,29 @@
 
 
 ##
-FIT_MAXENT_TARG_BG <- function(occ,
-                               bg, # A Spatial points data frame (SPDF) of candidate background points
-                               sdm.predictors,
-                               # sdm.predictors is a vector of enviro conditions that you want to include
-                               name,
-                               outdir,
-                               template.raster,
-                               # template.raster is an empty raster with extent, res and projection
-                               # of final output rasters. It is used to reduce
-                               # occurrences to a single point per cell.
-                               min_n,
-                               # min_n is the minimum number of records (unique cells)
-                               # required for a model to be fit
-                               max_bg_size,
-                               background_buffer_width, # ignored if background_method='random'
-                               #background_method, # 'random' or 'targetgroup'
-                               Koppen,
-                               shapefiles,
-                               features,
-                               replicates, # number of cross-validation replicates
-                               responsecurves,
-                               rep_args,
-                               full_args) {
+fit_maxent_targ_bg_kopp <- function(occ,
+                                    bg, # A Spatial points data frame (SPDF) of candidate background points
+                                    sdm.predictors,
+                                    # sdm.predictors is a vector of enviro conditions that you want to include
+                                    name,
+                                    outdir,
+                                    template.raster,
+                                    # template.raster is an empty raster with extent, res and projection
+                                    # of final output rasters. It is used to reduce
+                                    # occurrences to a single point per cell.
+                                    min_n,
+                                    # min_n is the minimum number of records (unique cells)
+                                    # required for a model to be fit
+                                    max_bg_size,
+                                    background_buffer_width, # ignored if background_method='random'
+                                    #background_method, # 'random' or 'targetgroup'
+                                    Koppen,
+                                    shapefiles,
+                                    features,
+                                    replicates, # number of cross-validation replicates
+                                    responsecurves,
+                                    rep_args,
+                                    full_args) {
   
   ########################################################################
   ## First, stop if the outdir file exists,

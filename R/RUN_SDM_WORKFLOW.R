@@ -9,13 +9,22 @@
 
 
 
-## 1). Check that the paralled approach will work for a few species, using the MESS approach
+## 1). Check that the paralled approach will work for a few species, using the MESS approach - EG for 10 species.
 
 ## 2). Check the file output is ok for rapid assessment of species suitability. Could add Novel shapefile to step 3.
 ##     Run the final format past Linda, John an Alessandro. Panel for one species model, plus gain/loss rasters, 
 ##     plus maybe global points.
 
-## 3). Check the spatial outlier step can be improved, before re-running all the species through these steps
+## 3). Check the spatial outlier step can be improved, before re-running all the species through these steps.
+##     Use Alex Ziska's example to calcualte
+##     Check the Area of occupancy calculations work
+## 
+## 4). Check how we will re-run the species. Can MAXENT.SUMMARY.NICHE be filled in for all the species? 
+##     Check all the fields are needed. Sort list by total growers, then for species without growers, is there
+##     another field they can be sorted by?
+
+
+## 5). Clean up all the gunk in HIA_TREE LIST - this relates to step 4. Need a clean list!
 
 
 #########################################################################################################################
@@ -60,13 +69,14 @@ if (on_windows) {
 
 #########################################################################################################################
 ## Load only the packages needed for the analysis
+## lapply(paste('package:',names(sessionInfo()$otherPkgs),sep=""),detach,character.only=TRUE,unload=TRUE)
 p <- c('ff',    'things',    'raster',        'dismo',        'sp',           'latticeExtra', 'data.table',
        'rgdal', 'rgeos',     'gdalUtils',     'rmaxent',      'readr',        'plyr',         'dplyr',
        'tidyr', 'readr',     'rnaturalearth', 'rasterVis',    'RColorBrewer', 'latticeExtra', 'parallel',
        'ALA4R', 'stringr',   'Taxonstand',    'CoordinateCleaner', 'gsubfn',  'PerformanceAnalytics',
        'rvest', 'magrittr',  'devtools',      'ggplot2',      'reshape2',     'rmarkdown', 'flexdashboard', 'shiny', 'rgbif',
        'ENMeval', 'tibble',  'ncdf4',         'Cairo', 'taxonlookup', 'kgc', 'maptools', 'DataCombine', 'mgcv', 'rsq', 'utf8',
-       'betareg', 'hydroTSM', 'bomrang', 'gridExtra', 'grid', 'lattice', 'ConR', 'red')
+       'betareg', 'hydroTSM', 'bomrang', 'gridExtra', 'grid', 'lattice', 'ConR')
 
 
 ## Require packages

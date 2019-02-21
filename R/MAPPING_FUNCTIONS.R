@@ -435,11 +435,11 @@ SUA_cell_count = function(aus_poly, world_poly, unit_path, unit_file, unit_vec,
                           time_slice, write_rasters) {
   
   ###################################################################################################################
-  ## Read in shapefiles: clunky, but how else will can you read in shapefiles as arguments  
+  ## Read in shapefiles: clunky, but how else will can you read in shapefiles as arguments?  
   areal_unit = readRDS(paste0(unit_path, unit_file)) %>%
     spTransform(ALB.CONICAL)
-  areal_unit = areal_unit[order(areal_unit$SUA_NAME16),] 
   
+  areal_unit      = areal_unit[order(areal_unit$SUA_NAME16),] 
   areal_unit_vec  = readRDS(paste0(unit_path, unit_vec))
   
   aus_poly = aus_poly %>%
@@ -700,9 +700,6 @@ SUA_cell_count = function(aus_poly, world_poly, unit_path, unit_file, unit_vec,
             spTransform(projection(world_poly)) %>%
             coordinates() %>%
             as.data.frame()
-          
-          aus_poly = aus_poly %>%
-            spTransform(ALB.CONICAL)
 
           projection(aus_poly);projection(occ.aus);projection(gain_plot)
 

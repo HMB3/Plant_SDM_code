@@ -17,7 +17,7 @@
 ## 4). Diana's tcrit vs. lat, temp, radiation etc.
 
 
-## Calculate AOO for all species
+## Calculate AOO for all species - check what's going wrong
 ## Send Alessandro a shapefile of Diana's species
 
 ## Build the table ::
