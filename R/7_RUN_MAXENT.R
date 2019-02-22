@@ -18,6 +18,10 @@
 ## requirements.
 
 
+## This section needs checking after the HIA_READ_DATA............................................................................
+## length(intersect(MAXENT.SUMMARY.NICHE$searchTaxon, APNI$searchTaxon))
+
+
 ## Print the species run to the screen
 message('Running maxent models for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
 
@@ -40,19 +44,19 @@ if(read_data == "TRUE") {
 
 
 #########################################################################################################################
-## 1). RUN SDMs USING A-PRIORI VARIABLES FOR ALL SPECIES
+## 1). RUN SDMs USING ALL A-PRIORI VARIABLES FOR ALL SPECIES
 #########################################################################################################################
 
 
 #########################################################################################################################
 ## Check the SDM table
 dim(SDM.SPAT.ALL)
-length(intersect(unique(SDM.SPAT.ALL$searchTaxon), GBIF.spp))  ## Should be same as the number of species
-unique(SDM.SPAT.ALL$SOURCE)                                    ## Can change for different sources
+length(intersect(unique(SDM.SPAT.ALL$searchTaxon), GBIF.spp))  ## This should be same as the number of species
+unique(SDM.SPAT.ALL$SOURCE)                                    ## Could subset by source
 
 
 #########################################################################################################################
-## Run Maxent using a random selection of background points. 
+## Run Maxent using a random selection of background points. Ideally make these projections exactly the same
 projection(template.raster);projection(SDM.SPAT.ALL);projection(Koppen_1975)
 
 
@@ -119,6 +123,97 @@ lapply(GBIF.spp, function(spp){
     
   }  
 
+  ## now add a file to the dir to denote that it has completed
+  write.csv(data.frame(), file.path(dir_name, "completed.txt"))
+  
+})
+
+
+
+
+
+#########################################################################################################################
+## 2). RUN SDMs USING BACKWARDS SELECTION OF VARIABLES FOR ALL SPECIES
+#########################################################################################################################
+
+
+#########################################################################################################################
+## Check the SDM table
+dim(SDM.SPAT.ALL)
+length(intersect(unique(SDM.SPAT.ALL$searchTaxon), GBIF.spp))  ## This should be same as the number of species
+unique(SDM.SPAT.ALL$SOURCE)                                    ## Could subset by source
+
+
+#########################################################################################################################
+## Run Maxent using a random selection of background points. Ideally make these projections exactly the same
+projection(template.raster);projection(SDM.SPAT.ALL);projection(Koppen_1975)
+
+
+#########################################################################################################################
+## Loop over all the species spp = GBIF.spp[1]
+lapply(GBIF.spp, function(spp){ 
+  
+  ## Skip the species if the directory already exists, before the loop
+  outdir <- maxent_dir
+  
+  dir_name = file.path(maxent_path, gsub(' ', '_', spp))
+  if(dir.exists(dir_name)) {
+    message('Skipping ', spp, ' - already run.')
+    invisible(return(NULL))
+    
+  }
+  
+  #  create the directory so other parallel runs don't try to do it
+  dir.create(dir_name)
+  write.csv(data.frame(), file.path(dir_name, "in_progress.txt"))
+  
+  
+  ## Print the taxa being processed to screen
+  if(spp %in% SDM.SPAT.ALL$searchTaxon) {
+    message('Doing ', spp) 
+    
+    ## Subset the records to only the taxa being processed
+    #occurrence <- subset(SDM.SPAT.ALL, searchTaxon == spp)
+    occurrence <- subset(SDM.SPAT.ALL, searchTaxon == spp)# & SOURCE != "INVENTORY")
+    
+    ## Now get the background points. These can come from any spp, other than the modelled species.
+    background <- subset(SDM.SPAT.ALL, searchTaxon != spp)
+    
+    ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
+    tryCatch(
+      fit_maxent_targ_bg_kopp_bs(occ                     = occurrence, 
+                                 bg                      = background, 
+                                 sdm.predictors          = sdm.select, 
+                                 name                    = spp, 
+                                 outdir, 
+                                 template.raster,
+                                 min_n                   = 20,            ## This should be higher...
+                                 max_bg_size             = 70000,         ## could be 50k or lower, it just depends on the biogeography
+                                 background_buffer_width = 200000,
+                                 shapefiles              = TRUE,
+                                 features                = 'lpq',
+                                 replicates              = 5,
+                                 cor_thr                 = 0.5, 
+                                 pct_thr                 = 5, 
+                                 k_thr                   = 5, 
+                                 responsecurves          = TRUE),
+      
+      ## https://stackoverflow.com/questions/19394886/trycatch-in-r-not-working-properly
+      #function(e) message('Species skipped ', spp)) ## skip any species for which the function fails
+      error = function(cond) {
+        
+        message(paste('Species skipped ', spp))
+        write.csv(data.frame(), file.path(dir_name, "failed.txt"))
+        
+      })
+    
+  } else {
+    
+    message(spp, ' skipped - no data.')         ## This condition ignores species which have no data...
+    write.csv(data.frame(), file.path(dir_name, "completed.txt"))
+    
+  }  
+  
   ## now add a file to the dir to denote that it has completed
   write.csv(data.frame(), file.path(dir_name, "completed.txt"))
   
@@ -381,10 +476,6 @@ length(intersect(MAXENT.SUMMARY.NICHE$searchTaxon, GBIF.spp))
 
 #########################################################################################################################
 ## Maxent produces a presence threshold for each species (i.e. the columns in MAXENT.RESULTS). 
-## The trouble here is that we might need to change the threshold for different species, rather than using the same one 
-## for all of them. That changes the order of lists, which is a problem for looping over them.
-
-
 ## John : for AUC, you can report the cross-validated test AUC (if your code currently runs a cross-validated model as well), 
 ## and for the model threshold (for binarising) you can just use the training value (or the crossval one...there's little 
 ## guidance about this and you can really get away with either).
@@ -398,7 +489,8 @@ summary(MAXENT.RESULTS["X10.percentile.training.presence.training.omission"])   
 
 
 #########################################################################################################################
-## Now turn the maxent results into lists :: we can use these to generate the consensus layers 
+## Now turn the maxent results into lists :: we can use these to generate the consensus layers, whereby habitat suitablity
+## is contrained below the threshold. This number is created by the current model, and used for all the future models. 
 thresh.max.train  = as.list(MAXENT.RESULTS["Maximum.training.sensitivity.plus.specificity.Logistic.threshold"]) 
 thresh.max.train  = thresh.max.train$Maximum.training.sensitivity.plus.specificity.Logistic.threshold
 
@@ -442,9 +534,9 @@ if(save_data == "TRUE") {
 
 ## 1). Model species in parallel 
 
-## 2). Harvest folders once they have been run in Katana
+## 2). Harvest folders once they have been run in Katana :: 7-zip
 
-## 3). Rate as many new species as possible :: this is the step that is not manual, and could be priortised
+## 3). Clean the joinging of horticultural data so it is clean for the new run of species
 
 
 

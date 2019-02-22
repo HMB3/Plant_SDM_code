@@ -16,8 +16,12 @@
 
 #########################################################################################################################
 ## Try to run the mess maps at the same time as the map creation?
-project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path, climate_path, 
+project_maxent_grids_mess = function(shp_path, shp, scen_list, species_list, maxent_path, climate_path, 
                                      grid_names, time_slice, current_grids, create_mess) {
+  
+  ## Read in the Australian shapefile at the top
+  poly = readRDS(paste0(shp_path, shp)) %>%
+    spTransform(ALB.CONICAL)
   
   ## Parallelising stuff #####################
   # if(run_parallel == "TRUE") {
@@ -113,7 +117,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
           ## Report current mess map in progress
           MESS_dir = sprintf('%s%s/full/%s', 
                              maxent_path, species, 'MESS_output')
-          f_mess_current = sprintf('%s%s%s.tif', MESS_dir, species, "_current_mess_map")
+          f_mess_current = sprintf('%s/%s%s.tif', MESS_dir, species, "_current_mess_map")
           
           if(create_mess == "TRUE" & !file.exists(f_mess_current)) {
             message('Running current mess map for ', species)
@@ -140,7 +144,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
             }
             
             ## Then write the mess output to a directory inside the 'full' maxent folder
-            writeRaster(mess_current$similarity_min, sprintf('%s%s%s.tif', MESS_dir, species, "_current_mess_map"), 
+            writeRaster(mess_current$similarity_min, sprintf('%s/%s%s.tif', MESS_dir, species, "_current_mess_map"), 
                         overwrite = TRUE)
             
             ##################################################################
@@ -148,11 +152,6 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
             ## r    = unstack(mess_current$similarity) :: list of environmental rasters
             ## name = names(mess_current$similarity)   :: names of the rasters
             message('Creating mess maps of each current environmental predictor for ', species)
-            
-            ## Create 
-            aus = poly %>%
-              spTransform(ALB.CONICAL)
-            
             mapply(function(r, name) {
               
               ## Create a level plot for each species
@@ -164,7 +163,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
                 latticeExtra::layer(sp.polygons(poly), data = list(poly = poly))  ## need list() for polygon
               
               p <- diverge0(p, 'RdBu')
-              f <- sprintf('%s%s%s%s.png', MESS_dir, species, "_current_mess_", name)
+              f <- sprintf('%s/%s%s%s.png', MESS_dir, species, "_current_mess_", name)
               
               png(f, 8, 8, units = 'in', res = 300, type = 'cairo')
               print(p)
@@ -175,7 +174,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
             ## Write the raster of novel environments to the maxent directory 
             ## The "full" directory is getting full, could create a sub dir for MESS maps
             message('Writing currently novel environments to file for ', species) 
-            writeRaster(novel_current, sprintf('%s%s%s.tif', MESS_dir, species, "_current_novel_map"), 
+            writeRaster(novel_current, sprintf('%s/%s%s.tif', MESS_dir, species, "_current_novel_map"), 
                         overwrite = TRUE)
             
             ##################################################################
@@ -187,7 +186,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
             
             ## Write out not-novel raster :: this can go to the main directory
             message('Writing currently un-novel environments to file for ', species) 
-            writeRaster(hs_current_notNovel, sprintf('%s%s%s.tif', MESS_dir, species, "_current_notNovel"),
+            writeRaster(hs_current_notNovel, sprintf('%s/%s%s.tif', MESS_dir, species, "_current_notNovel"),
                         overwrite = TRUE)
             
           } else {
@@ -211,7 +210,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
             
             #####################################################################
             ## Report future mess map in progress
-            f_mess_future = sprintf('%s%s%s%s.tif', MESS_dir, species, "_future_mess_", x)
+            f_mess_future = sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_mess_", x)
             
             if(create_mess == "TRUE" & !file.exists(f_mess_future)) {
               message('Running future mess map for ', species, ' under ', x)
@@ -228,7 +227,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
               
               ##################################################################
               ## Write out the future mess maps, for all variables
-              writeRaster(mess_future$similarity_min, sprintf('%s%s%s%s.tif', MESS_dir, species, "_future_mess_", x), 
+              writeRaster(mess_future$similarity_min, sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_mess_", x), 
                           overwrite = TRUE)
               
               ##################################################################
@@ -246,7 +245,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
                   latticeExtra::layer(sp.polygons(poly), data = list(poly = poly))   ## Use this in previous functions
                 
                 p <- diverge0(p, 'RdBu')
-                f <- sprintf('%s%s%s%s%s%s.png', MESS_dir, species, "_future_mess_", name, "_", x)
+                f <- sprintf('%s/%s%s%s%s%s.png', MESS_dir, species, "_future_mess_", name, "_", x)
                 
                 png(f, 8, 8, units = 'in', res = 300, type = 'cairo')
                 print(p)
@@ -257,7 +256,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
               ## Write the raster of novel environments to the maxent directory 
               ## The "full" directory is getting full, could create a sub dir for MESS maps
               message('Writing future novel environments to file under ', x, ' scenario for ', species) 
-              writeRaster(novel_future, sprintf('%s%s%s%s.tif', MESS_dir, species, "_future_novel_map_", x), 
+              writeRaster(novel_future, sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_novel_map_", x), 
                           overwrite = TRUE)
               
               ##################################################################
@@ -269,7 +268,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
               
               ## Write out not-novel raster
               message('Writing un-novel environments to file under ', x, ' scenario for ', species) 
-              writeRaster(hs_future_notNovel, sprintf('%s%s%s.tif', MESS_dir, species, "_future_notNovel"), 
+              writeRaster(hs_future_notNovel, sprintf('%s/%s%s.tif', MESS_dir, species, "_future_notNovel"), 
                           overwrite = TRUE)
               
             } else {
@@ -280,8 +279,8 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
             ## Convert binary rasters of novel climate to polygons
             ## Need to save the polygons to file ::  
             message('Converting raster MESS maps to polygons under ', x, ' scenario for ', species) 
-            novel_current_poly <- polygonizer(sprintf('%s%s%s.tif',   MESS_dir, species, "_current_novel_map"))
-            novel_future_poly  <- polygonizer(sprintf('%s%s%s%s.tif', MESS_dir, species, "_future_novel_map_", x))
+            novel_current_poly <- polygonizer(sprintf('%s/%s%s.tif',   MESS_dir, species, "_current_novel_map"))
+            novel_future_poly  <- polygonizer(sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_novel_map_", x))
             
             ## re-project the shapefiles
             novel_current_poly = novel_current_poly %>%
@@ -431,7 +430,7 @@ project_maxent_grids_mess = function(poly, scen_list, species_list, maxent_path,
 
 #########################################################################################################################
 ## Loop over directories, species and one threshold for each, also taking a time_slice argument
-SUA_cell_count = function(aus_poly, world_poly, unit_path, unit_file, unit_vec,
+SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
                           DIR_list, species_list, 
                           maxent_path, thresholds, 
                           time_slice, write_rasters) {
@@ -444,8 +443,11 @@ SUA_cell_count = function(aus_poly, world_poly, unit_path, unit_file, unit_vec,
   areal_unit      = areal_unit[order(areal_unit$SUA_NAME16),] 
   areal_unit_vec  = readRDS(paste0(unit_path, unit_vec))
   
-  aus_poly = aus_poly %>%
+  aus_poly = readRDS(paste0(unit_path, aus_shp)) %>%
     spTransform(ALB.CONICAL)
+  
+  world_poly = readRDS(paste0(unit_path, world_shp)) %>%
+    spTransform(CRS.WGS.84)
 
   ###################################################################################################################
   ## Loop over each directory
@@ -631,6 +633,7 @@ SUA_cell_count = function(aus_poly, world_poly, unit_path, unit_file, unit_vec,
         
         #########################################################################################################################
         ## Save the continental gain/loss table
+        message('Writing ', species, ' gain_loss tables for 20', time_slice)
         write.csv(gain_loss_df, sprintf('%s/%s/full/%s_20%s_%s%s.csv', maxent_path,
                                         species, species, time_slice, "gain_loss_table_", thresh), row.names = FALSE)
         
@@ -699,10 +702,10 @@ SUA_cell_count = function(aus_poly, world_poly, unit_path, unit_file, unit_vec,
             spTransform(ALB.CONICAL)
           
           occ.world <- readRDS(sprintf('%s/%s/%s_occ.rds', maxent_path, species, save_name)) %>%
-            spTransform(projection(world_poly)) %>%
-            coordinates() %>%
+            spTransform(CRS.WGS.84)
+          occ.world.xy = coordinates(occ.world) %>%
             as.data.frame()
-
+          
           projection(aus_poly);projection(occ.aus);projection(gain_plot)
 
           # message('writing thresholded map for ', 'species')
@@ -749,7 +752,7 @@ SUA_cell_count = function(aus_poly, world_poly, unit_path, unit_file, unit_vec,
           dev.off()
           
           #########################################################################################################################
-          ## Save the global records to PNG
+          ## Save the global records to PNG :: try to code the colors for ALA/GBIF/INVENTORY 
           message('writing map of global records for ', 'species')
           png(sprintf('%s/%s/full/%s_%s.png', maxent_path, save_name, save_name, "global_records"),
               16, 10, units = 'in', res = 500)
@@ -759,9 +762,23 @@ SUA_cell_count = function(aus_poly, world_poly, unit_path, unit_file, unit_vec,
                lwd = 0.01, asp = 1, col = 'grey', bg = 'sky blue')
           
           ## Add points
-          points(occ.world[, c("lon", "lat")], 
-                 pch = ".", cex = 3.3, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2, 
-                 xlab = "", ylab = "", asp = 1)
+          points(subset(occ.world, SOURCE == "GBIF"), 
+                 pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2, 
+                 xlab = "", ylab = "", asp = 1,
+                 col = "orange", 
+                 legend(7,4.3, unique(occ.world$SOURCE), col = "orange", pch = 1))
+          
+          points(subset(occ.world, SOURCE == "ALA"), 
+                 pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2, 
+                 xlab = "", ylab = "", asp = 1,
+                 col = "blue", 
+                 legend(7,4.3, unique(occ.world$SOURCE), col = "blue", pch = 1))
+          
+          points(subset(occ.world, SOURCE == "INVENTORY"), 
+                 pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2, 
+                 xlab = "", ylab = "", asp = 1,
+                 col = "red", 
+                 legend(7,4.3, unique(occ.world$SOURCE), col = "red", pch = 1))
         
           title(main = list(paste0(gsub('_', ' ', species), ' global SDM records'), font = 4, cex = 2),
                 cex.main = 4,   font.main = 4, col.main = "black")

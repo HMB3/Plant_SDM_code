@@ -5,27 +5,23 @@
 
 #########################################################################################################################
 ## This code takes the output of the Maxent species distribution models (i.e. using current conditions), and generates 
-## a prediction of habitat suitability for current and future environmental conditions. The input data table is in the 
-## format of all species occurrences (rows) and environmental variables (columns).
+## a prediction of habitat suitability for current and future environmental conditions. 
 
 
-## The predictions from all 6 GCMs are then combined into a single habitat suitability layer.
-## And the total area of habitat gained, lost or remaining stable is calculated (i.e. for AUS). 
+## The predictions from all 6 GCMs are then combined into a single habitat suitability layer, and the total area of habitat 
+## gained, lost or remaining stable is calculated (i.e. for AUS). 
 
 
-## Using this combined layer, the % of area occupied by species within areal units (significant urban areas or SUAs), 
-## under each projection (2030, 2050 and 2070) is also be calculated. 
+## Using this combined layer, the area occupied by species within areal units (e.g. significant urban areas or SUAs), 
+## under each projection (2030, 2050 and 2070) is also calculated. 
 
 
 
 
 
 #########################################################################################################################
-## 1). PROJECT MAXENT MODELS FOR MULTIPLE CLIMATE SCEANARIOS AT 2030, 2050 AND 2070
+## 1). PROJECT MAXENT MODELS UNDER MULTIPLE CLIMATE SCEANARIOS FOR 2030, 2050 AND 2070
 #########################################################################################################################
-
-## Detach the  ConR package
-detach(package:ConR)
 
 
 
@@ -66,10 +62,11 @@ head(gcms.50) ; head(gcms.70) ; head(gcms.30)
 # make a map of model predictions and overlay a pattern (e.g. hatching) that indicates where climate is novel.
 
 
-## EG arguments to run function manually
-poly          = AUS          
+## EG arguments to run the algorithm inside the function 
+shp_path      = "./data/base/CONTEXTUAL/"   
+shp           = "aus_states.rds"
 x             = scen_2030[3]    
-species       = map_spp_list[1]
+species       = map_spp[1]
 maxent_path   = maxent_path  
 climate_path  = "./data/base/worldclim/aus/1km/bio" 
 grid_names    = grid.names   
@@ -81,15 +78,16 @@ MESS_folder   = "MESS_output"
 
 #########################################################################################################################
 ## Create 2030 maps
-env.grids.2030 = tryCatch(project_maxent_grids_mess(poly          = AUS,          ## A shapefile, e.g. Australia
-                                                    scen_list     = scen_2030,    ## A list of climate scenarios
-                                                    species_list  = map_spp_list, ## A list of species folders with maxent models
-                                                    maxent_path   = maxent_path,  ## the output folder
+env.grids.2030 = tryCatch(project_maxent_grids_mess(shp_path      = "./data/base/CONTEXTUAL/", ## shapefile, e.g. Australia
+                                                    shp           = "aus_states.rds",          ## Australian states
+                                                    scen_list     = scen_2030,                 ## List of climate scenarios
+                                                    species_list  = map_spp,                   ## List of species folders with maxent models
+                                                    maxent_path   = maxent_path,               ## Output folder
                                                     climate_path  = "./data/base/worldclim/aus/1km/bio", ## climate data
-                                                    grid_names    = grid.names,   ## names of the predictor grids
-                                                    time_slice    = 30,           ## Time period
-                                                    current_grids = aus.grids.current,
-                                                    create_mess   = "TRUE"),      ## predictor grids
+                                                    grid_names    = grid.names,                ## names of the predictor grids
+                                                    time_slice    = 30,                        ## Time period
+                                                    current_grids = aus.grids.current,         ## predictor grids
+                                                    create_mess   = "TRUE"),  ## write mess maps?
                           
                           ## Skip species
                           error = function(cond) {
@@ -172,15 +170,16 @@ env.grids.2070 = tryCatch(project_maxent_grids(shp           = AUS,
 
 
 ## Test problematic species by entering the values and running the function manually
-aus_poly      = AUS                                 ## Polygon for Australia
-world_poly    = LAND
-unit_path     = "./data/base/CONTEXTUAL/SUA/"   ## Data path for the spatial unit of analysis
-unit_file     = "SUA_2016_AUST.rds"             ## Spatial unit of analysis - E.G. SUAs
-unit_vec      = "SUA_2016_VEC.rds"              ## Vector of rasterized unit cells
-DIR           = SDM.RESULTS.DIR[1]              ## List of directories with rasters
-species       = map_spp[1]                      ## List of species' directories
+unit_path     = "./data/base/CONTEXTUAL/"   ## Data path for the spatial unit of analysis
+unit_file     = "./SUA/SUA_2016_AUST.rds"   ## Spatial unit of analysis - E.G. SUAs
+unit_vec      = "./SUA/SUA_2016_VEC.rds"              ## Vector of rasterized unit cells
+world_shp     = "LAND_world.rds"                              
+aus_shp       = "aus_states.rds"
+
+DIR           = SDM.RESULTS.DIR[103]              ## List of directories with rasters
+species       = map_spp[103]                      ## List of species' directories
 maxent_path   = maxent_path                     ## Directory of maxent results
-thresh        = percent.10.log[1]               ## List of maxent thresholds
+thresh        = percent.10.log[103]               ## List of maxent thresholds
 time_slice    = 30                              ## Time period, eg 2030
 write_rasters = "TRUE"                          ## Save the rasters?
 
@@ -203,11 +202,12 @@ length(SDM.DIR.REV);length(map_spp_rev);length(percent.log.rev);length(percent.o
 ## Combine GCM predictions and calculate gain and loss for 2030
 ## Here we can add the mask of novel environments to SUA aggregation
 suitability.2030 = tryCatch(mapply(SUA_cell_count,                                  ## Function aggreagating GCM predictions by spatial unit
-                                   aus_poly      = AUS,                             ## Polygon for Australia
-                                   world_poly    = LAND,                            ## Polygon for the world
                                    unit_path     = "./data/base/CONTEXTUAL/SUA/",   ## Data path for the spatial unit of analysis 
-                                   unit_file     = "SUA_2016_AUST.rds",             ## Spatial unit of analysis - E.G. SUAs
+                                   unit_shp      = "SUA_2016_AUST.rds",             ## Spatial unit of analysis - E.G. SUAs
                                    unit_vec      = "SUA_2016_VEC.rds",              ## Vector of rasterized unit cells
+                                   world_shp     = "LAND_world.rds",                ## Polygon for AUS maps           
+                                   aus_shp       = "aus_states.rds",                ## Polygon for World maps  
+                                   
                                    DIR_list      = SDM.RESULTS.DIR,                 ## List of directories with rasters
                                    species_list  = map_spp,                         ## List of species' directories
                                    maxent_path   = maxent_path,                     ## Directory of maxent results
