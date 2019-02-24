@@ -140,7 +140,9 @@ project_maxent_grids_mess = function(shp_path, shp, scen_list, species_list, max
               dir.create(MESS_dir)
               
             } else {
+              
               message(species, ' MESS directory already created') 
+              
             }
             
             ## Then write the mess output to a directory inside the 'full' maxent folder
@@ -173,9 +175,18 @@ project_maxent_grids_mess = function(shp_path, shp, scen_list, species_list, max
             
             ## Write the raster of novel environments to the maxent directory 
             ## The "full" directory is getting full, could create a sub dir for MESS maps
-            message('Writing currently novel environments to file for ', species) 
-            writeRaster(novel_current, sprintf('%s/%s%s.tif', MESS_dir, species, "_current_novel_map"), 
-                        overwrite = TRUE)
+            ## Add condition to current..........
+            if(!file.exists(sprintf('%s/%s%s.tif', MESS_dir, species, "_current_novel_map")))  {
+              
+              message('Writing currently novel environments to file for ', species) 
+              writeRaster(novel_current, sprintf('%s/%s%s.tif', MESS_dir, species, "_current_novel_map"), 
+                          overwrite = TRUE)
+              
+            } else {
+              
+              message(species, 'Current MESS directory already created') 
+              
+            }
             
             ##################################################################
             ## Now mask out novel environments
@@ -190,7 +201,7 @@ project_maxent_grids_mess = function(shp_path, shp, scen_list, species_list, max
                         overwrite = TRUE)
             
           } else {
-            message('Dont run MESS maps for ', species) 
+            message('Dont run current MESS maps for ', species) 
           }
           
           ########################################################################################################################
@@ -272,12 +283,14 @@ project_maxent_grids_mess = function(shp_path, shp, scen_list, species_list, max
                           overwrite = TRUE)
               
             } else {
-              message('Dont run MESS maps for ', species) 
+              message('Dont run future MESS maps for ', species, ' under scenario ',  x ) 
             }
             
             ###################################################################
             ## Convert binary rasters of novel climate to polygons
             ## Need to save the polygons to file ::  
+            ## this can fail if no ebvironments are novel, e.g the red gum.
+            ## Can we add a condtiton in poluygonizer to check if the file has data?..............................
             message('Converting raster MESS maps to polygons under ', x, ' scenario for ', species) 
             novel_current_poly <- polygonizer(sprintf('%s/%s%s.tif',   MESS_dir, species, "_current_novel_map"))
             novel_future_poly  <- polygonizer(sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_novel_map_", x))
@@ -357,7 +370,7 @@ project_maxent_grids_mess = function(shp_path, shp, scen_list, species_list, max
                       
                       
                       ## Try adding novel maps as vectors.....................................               
-                      latticeExtra::layer(sp.polygons(aus), data = list(aus = aus)) +
+                      latticeExtra::layer(sp.polygons(poly), data = list(poly = poly)) +
                       latticeExtra::layer(sp.points(occ, pch = 19, cex = 0.15, 
                                                     col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)) +
                       latticeExtra::layer(sp.polygons(h[[panel.number()]]), data = list(h = novel_hatch)))

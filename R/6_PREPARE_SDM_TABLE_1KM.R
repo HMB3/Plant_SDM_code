@@ -271,6 +271,7 @@ length(unique(SDM.SPAT.ALL$searchTaxon))
 message(round(dim(SDM.SPAT.ALL)[1]/dim(SPAT.FLAG)[1]*100, 2), " % records retained")                                               
 
 
+#########################################################################################################################
 ## Convert back to format for SDMs
 SDM.SPAT.ALL    = SpatialPointsDataFrame(coords      = SDM.SPAT.ALL[c("lon", "lat")],
                                          data        = SDM.SPAT.ALL,
@@ -351,6 +352,7 @@ if(save_data == "TRUE") {
 #########################################################################################################################
 
 
+#########################################################################################################################
 ##  Dodgy, but need to make sure there are no ESRI: codes in the coord systems
 projection(background) = "+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0"
 
@@ -360,6 +362,11 @@ projection(background) = "+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=
 background = background [!background$searchTaxon %in% GBIF.spp, ]               ## Don't add records for other species
 length(unique(background$searchTaxon));dim(background)
 intersect(unique(background$searchTaxon), GBIF.spp)
+
+
+SDM.SPAT.ALL.DF = as.data.frame(SDM.SPAT.ALL)
+round(with(SDM.SPAT.ALL.DF, table(SOURCE)/sum(table(SOURCE))*100), 1)
+round(with(background, table(SOURCE)/sum(table(SOURCE))*100), 1)
 
 
 #########################################################################################################################
@@ -392,7 +399,6 @@ projection(background)
 ## And check what the
 unique(SDM.SPAT.ALL$SOURCE) 
 length(unique(SDM.SPAT.ALL$searchTaxon))
-
 
 
 #########################################################################################################################

@@ -49,10 +49,54 @@ if(read_data == "TRUE") {
 
 
 #########################################################################################################################
-## Check the SDM table
+## Check the SDM and background tables
 dim(SDM.SPAT.ALL)
+dim(background)
+
+names(SDM.SPAT.ALL)
+names(background)
+
+
+## The background data has data from about 6.7k species, created earlier in the project. This table is merged with the 
+## data for the species being analysed, and the inverse speices are taken so there is no overlap. The GB table hasn't strictly 
+## been created with the same processes as the latest SDM data, but it shouldn't matter too much.
+length(unique(background$searchTaxon))
 length(intersect(unique(SDM.SPAT.ALL$searchTaxon), GBIF.spp))  ## This should be same as the number of species
+
+
+## Currently, the background data doesn't have exactly the same bias as the analysis data. But if we re-run all the data 
+## creation with the new urban data, we could just include this in the background data? Then include the source column
+
+
+## Spatial pattern of BG data needs to match 
+## Binary raster, rasterize ALA and GBIF :: grid cell. Far more presences, due to spatial scale 
+## Which is less intensive computational?
+## Tree inventory data rarefy this too. But could -
+## Maybe thinning just the inventory data, not ALA.
+## Biases vs. 
+
+## Just how much difference does autocorrelation make?
+## IDW to occurrences and background
+
+## Add inventory data - rarefy to 5km, 10km
+## Run 5 species with BG using all data, vs rarefy inventory data.
+## Binary file for ALA/GBIF
+## 
+## Different data sources :: targetted background combines all the data together
+## Retain the true bias of occurrences.
+## Sensitivity analysis for this :: raregy 5km vs. 10km
+## estimate density surface across ALA and GBIF, use this to rarefy?
+## matching occ to inventory data loses info...
+## 
+## two different levels of bias - appy a single rarefaction factor across.
+## desnity balance shouldn't create too much leverage. How to combine datasets with varying biases.
+## Different proportions : take proportional bg points from sources.
+## Vary by species - calc prop from inventory (10%), take 10% from inventory. Calc on each species - what are the proportions?
+## Take 90% of records for 70k from GBIF, vs. 10% for inventory
 unique(SDM.SPAT.ALL$SOURCE)                                    ## Could subset by source
+SDM.SPAT.ALL.DF = as.data.frame(subset(SDM.SPAT.ALL, SOURCE != "BG"))
+round(with(SDM.SPAT.ALL.DF, table(SOURCE)/sum(table(SOURCE))*100), 1)
+unique(background$SOURCE)                                      ## Could subset by source
 
 
 #########################################################################################################################
@@ -133,99 +177,12 @@ lapply(GBIF.spp, function(spp){
 
 
 #########################################################################################################################
-## 2). RUN SDMs USING BACKWARDS SELECTION OF VARIABLES FOR ALL SPECIES
-#########################################################################################################################
-
-
-#########################################################################################################################
-## Check the SDM table
-dim(SDM.SPAT.ALL)
-length(intersect(unique(SDM.SPAT.ALL$searchTaxon), GBIF.spp))  ## This should be same as the number of species
-unique(SDM.SPAT.ALL$SOURCE)                                    ## Could subset by source
-
-
-#########################################################################################################################
-## Run Maxent using a random selection of background points. Ideally make these projections exactly the same
-projection(template.raster);projection(SDM.SPAT.ALL);projection(Koppen_1975)
-
-
-#########################################################################################################################
-## Loop over all the species spp = GBIF.spp[1]
-lapply(GBIF.spp, function(spp){ 
-  
-  ## Skip the species if the directory already exists, before the loop
-  outdir <- maxent_dir
-  
-  dir_name = file.path(maxent_path, gsub(' ', '_', spp))
-  if(dir.exists(dir_name)) {
-    message('Skipping ', spp, ' - already run.')
-    invisible(return(NULL))
-    
-  }
-  
-  #  create the directory so other parallel runs don't try to do it
-  dir.create(dir_name)
-  write.csv(data.frame(), file.path(dir_name, "in_progress.txt"))
-  
-  
-  ## Print the taxa being processed to screen
-  if(spp %in% SDM.SPAT.ALL$searchTaxon) {
-    message('Doing ', spp) 
-    
-    ## Subset the records to only the taxa being processed
-    #occurrence <- subset(SDM.SPAT.ALL, searchTaxon == spp)
-    occurrence <- subset(SDM.SPAT.ALL, searchTaxon == spp)# & SOURCE != "INVENTORY")
-    
-    ## Now get the background points. These can come from any spp, other than the modelled species.
-    background <- subset(SDM.SPAT.ALL, searchTaxon != spp)
-    
-    ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
-    tryCatch(
-      fit_maxent_targ_bg_kopp_bs(occ                     = occurrence, 
-                                 bg                      = background, 
-                                 sdm.predictors          = sdm.select, 
-                                 name                    = spp, 
-                                 outdir, 
-                                 template.raster,
-                                 min_n                   = 20,            ## This should be higher...
-                                 max_bg_size             = 70000,         ## could be 50k or lower, it just depends on the biogeography
-                                 background_buffer_width = 200000,
-                                 shapefiles              = TRUE,
-                                 features                = 'lpq',
-                                 replicates              = 5,
-                                 cor_thr                 = 0.5, 
-                                 pct_thr                 = 5, 
-                                 k_thr                   = 5, 
-                                 responsecurves          = TRUE),
-      
-      ## https://stackoverflow.com/questions/19394886/trycatch-in-r-not-working-properly
-      #function(e) message('Species skipped ', spp)) ## skip any species for which the function fails
-      error = function(cond) {
-        
-        message(paste('Species skipped ', spp))
-        write.csv(data.frame(), file.path(dir_name, "failed.txt"))
-        
-      })
-    
-  } else {
-    
-    message(spp, ' skipped - no data.')         ## This condition ignores species which have no data...
-    write.csv(data.frame(), file.path(dir_name, "completed.txt"))
-    
-  }  
-  
-  ## now add a file to the dir to denote that it has completed
-  write.csv(data.frame(), file.path(dir_name, "completed.txt"))
-  
-})
-
-
-
-
-
-#########################################################################################################################
 ## 2). TABULATE MAXENT STATISTICS
 #########################################################################################################################
+
+
+## This section needs additional tidy up.................................................................................
+## Everything that desn't get used needs to go..........................................................................
 
 
 ## Print the species run to the screen

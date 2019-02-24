@@ -66,7 +66,7 @@ head(gcms.50) ; head(gcms.70) ; head(gcms.30)
 shp_path      = "./data/base/CONTEXTUAL/"   
 shp           = "aus_states.rds"
 x             = scen_2030[3]    
-species       = map_spp[1]
+species       = "Eucalyptus_camaldulensis"
 maxent_path   = maxent_path  
 climate_path  = "./data/base/worldclim/aus/1km/bio" 
 grid_names    = grid.names   
@@ -74,6 +74,23 @@ current_grids = aus.grids.current
 time_slice    = 30
 create_mess   = "TRUE"
 MESS_folder   = "MESS_output"
+
+
+## reverse sort the list because it is very slow.........
+map_spp_rev     = sort(map_spp,         decreasing = TRUE) 
+
+
+# Creating polygon list under ac85bi70 scenario for Eucalyptus_viminalis
+# Creating polygon list under ac85bi30 scenario for Eucalyptus_socialis
+# Error in RGEOSBinTopoFunc(spgeom1, spgeom2, byid, id, drop_lower_td, unaryUnion_if_byid_false,  : 
+#                             TopologyException: Input geom 1 is invalid: Ring Self-intersection at or near point 
+#                           323091.36989912001 -1282934.1729915601 at 323091.36989912001 -1282934.1729915601
+                          
+
+# Converting raster MESS maps to polygons under ac85bi70 scenario for Eucalyptus_camaldulensis
+# H:\green_cities_sdm
+# Error in readOGR(dirname(outshape), layer = basename(outshape), verbose = !quietish) : 
+#   no features found                           
 
 
 #########################################################################################################################
@@ -96,19 +113,19 @@ env.grids.2030 = tryCatch(project_maxent_grids_mess(shp_path      = "./data/base
                             
                           })
 
-## Error in readOGR(dirname(outshape), layer = basename(outshape), verbose = !quietish) :
-
 
 #########################################################################################################################
-## Create 2030 maps
-env.grids.2030 = tryCatch(project_maxent_grids(shp           = AUS,          ## A shapefile, e.g. Australia
-                                               scen_list     = scen_2030,    ## A list of climate scenarios
-                                               species_list  = map_spp_list, ## A list of species folders with maxent models
-                                               maxent_path   = maxent_path,  ## the output folder
-                                               climate_path  = "./data/base/worldclim/aus/1km/bio", ## climate data
-                                               grid_names    = grid.names,   ## names of the predictor grids
-                                               time_slice    = 30,           ## Time period
-                                               current_grids = aus.grids.current),  ## predictor grids
+## Create 2050 maps
+env.grids.2050 = tryCatch(project_maxent_grids_mess(shp_path      = "./data/base/CONTEXTUAL/", ## shapefile, e.g. Australia
+                                                    shp           = "aus_states.rds",          ## Australian states
+                                                    scen_list     = scen_2050,                 ## List of climate scenarios
+                                                    species_list  = map_spp,                   ## List of species folders with maxent models
+                                                    maxent_path   = maxent_path,               ## Output folder
+                                                    climate_path  = "./data/base/worldclim/aus/1km/bio", ## climate data
+                                                    grid_names    = grid.names,                ## names of the predictor grids
+                                                    time_slice    = 50,                        ## Time period
+                                                    current_grids = aus.grids.current,         ## predictor grids
+                                                    create_mess   = "TRUE"),  ## write mess maps?
                           
                           ## Skip species
                           error = function(cond) {
@@ -118,40 +135,27 @@ env.grids.2030 = tryCatch(project_maxent_grids(shp           = AUS,          ## 
                           })
 
 
+
 #########################################################################################################################
-## Create 2050 maps
-env.grids.2050 = tryCatch(project_maxent_grids(shp           = AUS,
-                                               scen_list     = scen_2050,
-                                               species_list  = map_spp_list,
-                                               time_slice    = 50,
-                                               maxent_path   = maxent_path,
-                                               climate_path  = "./data/base/worldclim/aus/1km/bio",
-                                               grid_names    = grid.names,
-                                               current_grids = aus.grids.current),
+## Create 2070 maps
+env.grids.2070 = tryCatch(project_maxent_grids_mess(shp_path      = "./data/base/CONTEXTUAL/", ## shapefile, e.g. Australia
+                                                    shp           = "aus_states.rds",          ## Australian states
+                                                    scen_list     = scen_2070,                 ## List of climate scenarios
+                                                    species_list  = map_spp,                   ## List of species folders with maxent models
+                                                    maxent_path   = maxent_path,               ## Output folder
+                                                    climate_path  = "./data/base/worldclim/aus/1km/bio", ## climate data
+                                                    grid_names    = grid.names,                ## names of the predictor grids
+                                                    time_slice    = 70,                        ## Time period
+                                                    current_grids = aus.grids.current,         ## predictor grids
+                                                    create_mess   = "TRUE"),  ## write mess maps?
                           
+                          ## Skip species
                           error = function(cond) {
                             
                             message(paste('Species skipped - check', spp))
                             
                           })
 
-
-#########################################################################################################################
-## Create 2070 maps
-env.grids.2070 = tryCatch(project_maxent_grids(shp           = AUS,
-                                               scen_list     = scen_2070,
-                                               species_list  = map_spp_list,
-                                               time_slice    = 70,
-                                               maxent_path   = maxent_path,
-                                               climate_path  = "./data/base/worldclim/aus/1km/bio",
-                                               grid_names    = grid.names,
-                                               current_grids = aus.grids.current),
-                          
-                          error = function(cond) {
-                            
-                            message(paste('Species skipped - check inputs', spp))
-                            
-                          })
 
 
 
