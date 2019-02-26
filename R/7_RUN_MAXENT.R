@@ -78,19 +78,19 @@ length(intersect(unique(SDM.SPAT.ALL$searchTaxon), GBIF.spp))  ## This should be
 ## Just how much difference does autocorrelation make?
 ## IDW to occurrences and background
 
-## Add inventory data - rarefy to 5km, 10km
-## Run 5 species with BG using all data, vs rarefy inventory data.
+## Add inventory data to GB points - rarefy to 5km, 10km..................................................................
+## Run 5 species with BG using all data, vs rarefy inventory data.........................................................
 ## Binary file for ALA/GBIF
 ## 
 ## Different data sources :: targetted background combines all the data together
 ## Retain the true bias of occurrences.
-## Sensitivity analysis for this :: raregy 5km vs. 10km
+## Sensitivity analysis for this :: raregy 5km vs. 10km..................................................................
 ## estimate density surface across ALA and GBIF, use this to rarefy?
 ## matching occ to inventory data loses info...
 ## 
 ## two different levels of bias - appy a single rarefaction factor across.
 ## desnity balance shouldn't create too much leverage. How to combine datasets with varying biases.
-## Different proportions : take proportional bg points from sources.
+## Different proportions : take proportional bg points from each source..................................................
 ## Vary by species - calc prop from inventory (10%), take 10% from inventory. Calc on each species - what are the proportions?
 ## Take 90% of records for 70k from GBIF, vs. 10% for inventory
 unique(SDM.SPAT.ALL$SOURCE)                                    ## Could subset by source
@@ -136,8 +136,8 @@ lapply(GBIF.spp, function(spp){
     
     ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
     tryCatch(
-      fit_maxent_targ_bg_kopp(occ                     = occurrence, 
-                              bg                      = background, 
+      fit_maxent_targ_bg_kopp(occ                     = occurrence,    ## name from the .rmd CV doc 
+                              bg                      = background,    ## name from the .rmd CV doc  
                               sdm.predictors          = sdm.select, 
                               name                    = spp, 
                               outdir, 
@@ -177,12 +177,110 @@ lapply(GBIF.spp, function(spp){
 
 
 #########################################################################################################################
+## 2). RUN SDMs USING BACKWARDS SLECTION 
+#########################################################################################################################
+
+
+## Variables to run within the function
+sdm.predictors          = sdm.predictors
+name                    = spp
+maxent_path             = './output/maxent/SUA_TREES_ANALYSIS/'
+outdir                  = outdir
+template.raster         = template.raster
+min_n                   = 20       ## This should be higher...
+shapefiles              = FALSE    ## name this
+features                = 'lpq'    ## name 
+replicates              = 5
+cor_thr                 = 0.7      ## The maximum allowable pairwise correlation between predictor variables 
+pct_thr                 = 5        ## The minimum allowable percent variable contribution 
+k_thr                   = 3        ## The minimum number of variables to be kept in the model.
+responsecurves          = TRUE     ## Response curves
+
+
+## Update
+GBIF.spp.bs = c("Corymbia citriodora", "Eucalyptus baileyana",  "Eucalyptus baxteri",  "Eucalyptus decorticans", "Eucalyptus dumosa",
+                "Eucalyptus major",    "Eucalyptus megacarpa",  "Eucalyptus moluccana", "Eucalyptus ovata",      "Eucalyptus patens",
+                "Eucalyptus salmonophloia", "Eucalyptus tenuipes")
+
+
+#########################################################################################################################
+## Loop over all the species spp = GBIF.spp[1]
+lapply(GBIF.spp, function(spp){ 
+  
+  ## Skip the species if the directory already exists, before the loop
+  outdir <- bs_dir
+  
+  dir_name = file.path(maxent_path, gsub(' ', '_', spp))
+  if(dir.exists(dir_name)) {
+    message('Skipping ', spp, ' - already run.')
+    invisible(return(NULL))
+    
+  }
+  
+  #  create the directory so other parallel runs don't try to do it
+  dir.create(dir_name)
+  write.csv(data.frame(), file.path(dir_name, "in_progress.txt"))
+  
+  
+  ## Print the taxa being processed to screen
+  if(spp %in% SDM.SPAT.ALL$searchTaxon) {
+    message('Doing ', spp) 
+    
+    ## Subset the records to only the taxa being processed
+    #occurrence <- subset(SDM.SPAT.ALL, searchTaxon == spp)
+    occurrence <- subset(SDM.SPAT.ALL, searchTaxon == spp)# & SOURCE != "INVENTORY")
+    
+    ## Now get the background points. These can come from any spp, other than the modelled species.
+    background <- subset(SDM.SPAT.ALL, searchTaxon != spp)
+    
+    ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
+    tryCatch(
+      fit_maxent_targ_bs(sdm.predictors          = sdm.predictors, ## List of predictor variables
+                         name                    = spp,
+                         maxent_path             = './output/maxent/SUA_TREES_ANALYSIS/',
+                         outdir,                    ## Change the outdir on the new species 
+                         template.raster,
+                         min_n                   = 20,       ## This should be higher...
+                         shapefiles              = FALSE,    ## name this
+                         features                = 'lpq',    ## name 
+                         replicates              = 5,
+                         cor_thr                 = 0.7,
+                         pct_thr                 = 5,
+                         k_thr                   = 3,
+                         responsecurves          = TRUE),
+      
+      ## https://stackoverflow.com/questions/19394886/trycatch-in-r-not-working-properly
+      #function(e) message('Species skipped ', spp)) ## skip any species for which the function fails
+      error = function(cond) {
+        
+        message(paste('Species skipped ', spp))
+        write.csv(data.frame(), file.path(dir_name, "failed.txt"))
+        
+      })
+    
+  } else {
+    
+    message(spp, ' skipped - no data.')         ## This condition ignores species which have no data...
+    write.csv(data.frame(), file.path(dir_name, "completed.txt"))
+    
+  }  
+  
+  ## now add a file to the dir to denote that it has completed
+  write.csv(data.frame(), file.path(dir_name, "completed.txt"))
+  
+})
+
+
+
+
+
+#########################################################################################################################
 ## 2). TABULATE MAXENT STATISTICS
 #########################################################################################################################
 
 
-## This section needs additional tidy up.................................................................................
-## Everything that desn't get used needs to go..........................................................................
+## This section needs additional tidy up ................................................................................
+## Everything that doesn't get used needs to go .........................................................................
 
 
 ## Print the species run to the screen

@@ -641,28 +641,24 @@ fit_maxent_targ_bg_kopp <- function(occ,
 #########################################################################################################################
 
 
-fit_maxent_targ_bg_kopp_bs <- function(occ, 
-                                       bg, # A Spatial points data frame (SPDF) of candidate background points
-                                       sdm.predictors, 
-                                       # sdm.predictors is a vector of enviro conditions that you want to include
-                                       name  = spp, 
-                                       outdir, 
-                                       template.raster, 
-                                       # template.raster is an empty raster with extent, res and projection
-                                       # of final output rasters. It is used to reduce
-                                       # occurrences to a single point per cell.
-                                       min_n,
-                                       # min_n is the minimum number of records (unique cells)
-                                       # required for a model to be fit
-                                       max_bg_size, # 
-                                       background_buffer_width,
-                                       shapefiles, 
-                                       features, 
-                                       replicates, # number of cross-validation replicates
-                                       cor_thr, 
-                                       pct_thr, 
-                                       k_thr, 
-                                       responsecurves) {
+fit_maxent_targ_bs <- function(sdm.predictors, 
+                               # sdm.predictors is a vector of enviro conditions that you want to include
+                               name  = spp, 
+                               outdir, 
+                               template.raster, 
+                               # template.raster is an empty raster with extent, res and projection
+                               # of final output rasters. It is used to reduce
+                               # occurrences to a single point per cell.
+                               min_n,
+                               # min_n is the minimum number of records (unique cells)
+                               # required for a model to be fit
+                               shapefiles, 
+                               features, 
+                               replicates, # number of cross-validation replicates
+                               cor_thr, 
+                               pct_thr, 
+                               k_thr, 
+                               responsecurves) {
   
   ########################################################################
   ## First, stop if the outdir file exists, 
@@ -674,20 +670,27 @@ fit_maxent_targ_bg_kopp_bs <- function(occ,
   if(!file.exists(outdir_sp)) dir.create(outdir_sp)
   features <- unlist(strsplit(features, ''))
   
-  ## Select background records from within 200km of the target species occurrence records
-  b <- aggregate(gBuffer(occ, width = background_buffer_width, byid = TRUE))
+  #####################################################################
+  ## Read in the occ and bg points from the targetted SDM step
+  message('Reading previously created occurrence and background data from targetted SDM for ', spp)
+  save_spp = gsub(' ', '_', spp)
+  occ     <- readRDS(sprintf('%s%s/%s_occ.rds', maxent_path, save_spp, save_spp))
+  bg      <- readRDS(sprintf('%s%s/%s_bg.rds',  maxent_path, save_spp, save_spp))
+  
+  swd_occ <- readRDS(sprintf('%s%s/%s_occ_swd.rds', maxent_path, save_spp, save_spp))
+  swd_bg  <- readRDS(sprintf('%s%s/%s_bg_swd.rds',  maxent_path, save_spp, save_spp))
   
   
   #####################################################################
   ## Get unique cell numbers for species occurrences
-  cells <- cellFromXY(template.raster, occ)
-  
-  ## Clean out duplicate cells and NAs (including points outside extent of predictor data)
-  ## Note this will get rid of a lot of duplicate records not filtered out by GBIF columns, etc.
-  not_dupes <- which(!duplicated(cells) & !is.na(cells)) 
-  occ       <- occ[not_dupes, ]
-  cells     <- cells[not_dupes]
-  message(nrow(occ), ' occurrence records (unique cells).')
+  # cells <- cellFromXY(template.raster, occ)
+  # 
+  # ## Clean out duplicate cells and NAs (including points outside extent of predictor data)
+  # ## Note this will get rid of a lot of duplicate records not filtered out by GBIF columns, etc.
+  # not_dupes <- which(!duplicated(cells) & !is.na(cells)) 
+  # occ       <- occ[not_dupes, ]
+  # cells     <- cells[not_dupes]
+  # message(nrow(occ), ' occurrence records (unique cells).')
   
   ## Skip species that have less than a minimum number of records: eg 20 species
   if(nrow(occ) < min_n) {
@@ -700,87 +703,61 @@ fit_maxent_targ_bg_kopp_bs <- function(occ,
     
     #####################################################################
     ## Now subset bg to the buffer polygon
-    
-    ## Describe the background procedure here....................................................................
-    
     ## Within the 200km buffer around the occurrence records for each species, select up to 100k records from any
     ## species in the total dataset :: trying to create the same bias in both the occurrence and background data
-    system.time(o <- over(bg, b))
-    bg <- bg[which(!is.na(o)), ]
-    bg_cells <- cellFromXY(template.raster, bg)
-    
-    ## Clean out duplicates and NAs (including points outside extent of predictor data)
-    ## So we are using unique cells to select background records
-    bg_not_dupes <- which(!duplicated(bg_cells) & !is.na(bg_cells)) 
-    bg <- bg[bg_not_dupes, ]
-    bg_cells <- bg_cells[bg_not_dupes]
-    
-    ## Reduce background sample if it's larger than max_bg_size
-    if (nrow(bg) > max_bg_size) { 
-      
-      message(nrow(bg), ' target species background records, reduced to random ', 
-              max_bg_size, '.')
-      
-      bg <- bg[sample(nrow(bg), max_bg_size), ]
-      
-    } else {
-      
-      message(nrow(bg), ' target species background records.')
-      
-    }
-    
-    #####################################################################
-    ## Save objects for future reference
-    if(shapefiles) {
-      
-      suppressWarnings({
-        
-        writeOGR(SpatialPolygonsDataFrame(b, data.frame(ID = seq_len(length(b)))), 
-                 outdir_sp, 'bg_buffer', 'ESRI Shapefile', overwrite_layer = TRUE)  
-        writeOGR(bg,  outdir_sp, 'bg',   'ESRI Shapefile', overwrite_layer = TRUE)  
-        writeOGR(occ, outdir_sp, 'occ',  'ESRI Shapefile', overwrite_layer = TRUE) 
-        
-      })
-      
-    }
-    
-    ## Save the background and occurrence points as objects
-    saveRDS(bg,  file.path(outdir_sp, 'bg.rds'))
-    saveRDS(occ, file.path(outdir_sp, 'occ.rds'))
+    # system.time(o <- over(bg, b))
+    # bg <- bg[which(!is.na(o)), ]
+    # bg_cells <- cellFromXY(template.raster, bg)
+    # 
+    # ## Clean out duplicates and NAs (including points outside extent of predictor data)
+    # ## So we are using unique cells to select background records
+    # bg_not_dupes <- which(!duplicated(bg_cells) & !is.na(bg_cells)) 
+    # bg <- bg[bg_not_dupes, ]
+    # bg_cells <- bg_cells[bg_not_dupes]
+    # 
+    # ## Reduce background sample if it's larger than max_bg_size
+    # if (nrow(bg) > max_bg_size) { 
+    #   
+    #   message(nrow(bg), ' target species background records, reduced to random ', 
+    #           max_bg_size, '.')
+    #   
+    #   bg <- bg[sample(nrow(bg), max_bg_size), ]
+    #   
+    # } else {
+    #   
+    #   message(nrow(bg), ' target species background records.')
+    #   
+    # }
     
     #####################################################################
-    ## Now get the predictors at the occurrence and background points 
-    swd_occ <- occ[, sdm.predictors]
-    swd_occ$species <- name           
-    saveRDS(swd_occ, file.path(outdir_sp, 'occ_swd.rds'))
+    ## Save data for future use
+    saveRDS(bg,  file.path(outdir_sp, paste0('bg.rds')))
+    saveRDS(occ, file.path(outdir_sp, paste0(save_spp, '_occ.rds')))
     
-    swd_bg <- bg[, sdm.predictors]
-    swd_bg$species <- name
-    saveRDS(swd_bg, file.path(outdir_sp, 'bg_swd.rds'))
-    
-    ## Save shapefiles of the occurrence and background points
-    if(shapefiles) {
-      writeOGR(swd_occ, outdir_sp,  'occ_swd', 'ESRI Shapefile', overwrite_layer = TRUE)
-      writeOGR(swd_bg,  outdir_sp,  'bg_swd',  'ESRI Shapefile', overwrite_layer = TRUE)
-    }
+    saveRDS(swd_bg,  file.path(outdir_sp, paste0('bg.rds')))
+    saveRDS(swd_occ, file.path(outdir_sp, paste0('swd.rds')))
+
     
     #####################################################################
-    ## coerce to regular data.frames
-    swd_occ <- as.data.frame(swd_occ)
+    ## Coerce the "species with data" (SWD) files to regular data.frames
+    ## This is needed to use the simplify function 
+    swd_occ     <- as.data.frame(swd_occ)
     swd_occ$lon <- NULL
     swd_occ$lat <- NULL
-    swd_bg <- as.data.frame(swd_bg)
-    swd_bg$lon <- NULL
-    swd_bg$lat <- NULL
+    swd_bg      <- as.data.frame(swd_bg)
+    swd_bg$lon  <- NULL
+    swd_bg$lat  <- NULL
+    
+    swd_occ$searchTaxon <- spp
+    swd_bg$searchTaxon  <- spp
     
     #####################################################################
     ## Run simplify rmaxent::simplify
-    m <- rmaxent::simplify(
-      
+    m <- local_simplify(
       swd_occ, 
       swd_bg,
       path            = outdir, 
-      species_column  = "species",
+      species_column  = "searchTaxon",
       replicates      = replicates,
       response_curves = TRUE, 
       logistic_format = TRUE, 
@@ -797,116 +774,122 @@ fit_maxent_targ_bg_kopp_bs <- function(occ,
 
 
 
+#########################################################################################################################
+## RUN BACKWARDS SELECTION
+#########################################################################################################################
 
 
-
-##
-# We need to be able to flick through maps. So we want a three panelled page with 
-# a) occ points overlaid on Koppen zones, 
-# b) current continuous suitability, 
-# c) thresholded suitability.
-
-
-########################################################################################################################
-## Plot the models: can two plots be combined into one?
-## Make these unique names, and they can be searched in windows. Otherwise, we can just click into each subfolder. 
-## To sort, names would need to be: spp + unique_extension
-
-# TAXA = as.list(sort(unique(intersect(SDM.DATA.ALL$searchTaxon, spp.mile))))
-# 
-# for (i in 1:length(TAXA)) {
-# 
-#   ## Create points for each species
-#   spp.points <- SDM.DATA.ALL[SDM.DATA.ALL$searchTaxon == TAXA[i], ] %>%
-#     spTransform(CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'))
-# 
-#   ## Print to file
-#   save_name = gsub(' ', '_', TAXA[i])
-#   save_dir  = "output/maxent/CHECK_MAPS"
-#   
-#   m <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', outdir, save_name)) 
-#   m <- m$me_full
-#   
-#   png(sprintf('%s/%s/full/%s_current_%s.png', outdir,
-#               save_name, save_name, "variable_contribution"),
-#       3236, 2000, units = 'px', res = 300)
-#   
-#   ########################################################################################################################
-#   ## Plot models
-#   plot(m, col = "blue", pch = 19, cex.lab = 2, cex.axis = 5, cex.main = 2, 
-#        main   = paste0("Variables for ", name), 
-#        xlab   = "Maxent contribution (%)")
-#   
-#   ## Finish the device
-#   dev.off()
-#   
-#   ## Plot the response curves too
-#   png(sprintf('%s/%s/full/%s_%s.png', outdir,
-#               save_name, save_name, "response_curves"),
-#       3236, 2000, units = 'px', res = 300)
-#   
-#   ## Add detail to the response plot
-#   response(m, pch = 19, cex.lab = 2, cex.axis = 1.5, lwd = 2) 
-#   
-#   ## Finish the device
-#   dev.off()
-# 
-#   ## Finish the device
-#   dev.off()
-#   
-#   
-#   ########################################################################################################################
-#   ## Another .png for the global records: str(LAND$long)
-#   LAND       = readRDS("F:/green_cities_sdm/data/base/CONTEXTUAL/LAND_world.rds")
-#   occ_land   = occ %>% 
-#     spTransform(CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
-#   bg_land   = bg %>% 
-#     spTransform(CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
-#   
-#   png(sprintf('%s/%s/full/%s_%s.png', outdir,
-#               save_name, save_name, "global_records"),
-#       16180, 10000, units = 'px', res = 600)
-#   
-#   ## How do we locate bad records in the dataset after spotting them?
-#   plot(LAND, 
-#        lwd = 0.5, asp = 1, axes = TRUE, cex.axis = 3.5,
-#        col = 'darkolivegreen3', bg = 'lightblue', cex.lab = 3)
-#   
-#   points(occ_land, pch = ".", cex = 3.5, col = "red", cex.lab = 3, cex.main = 4, cex.axis = 2, 
-#          main = paste0("Global occurrences for ", name), 
-#          xlab = "", ylab = "", asp = 1)
-#   
-#   ## Title 
-#   title(paste0("Global points for ", name),
-#         cex.main = 4,   font.main = 4, col.main = "blue")
-#   
-#   ## Finsh the device
-#   dev.off()
-#   
-#   ########################################################################################################################
-#   ## Another PNG for the background points....
-#   #if(!file.exists(sprintf('%s/%s/full/%s_%s.png', maxent_path, name, name, "background_records"))) {
-#   png(sprintf('%s/%s/full/%s_%s.png', outdir,
-#               save_name, save_name, "background_records"),
-#       16180, 10000, units = 'px', res = 600)
-#   
-#   ## How do we locate bad records in the dataset after spotting them?
-#   plot(LAND,  
-#        lwd = 0.5, asp = 1, axes = TRUE, cex.axis = 3.5,
-#        col = 'darkolivegreen3', bg = 'lightblue', cex.lab = 3)
-#   
-#   points(bg_land , pch = ".", cex = 1.6, col = "blue", cex.lab = 3, cex.main = 4, cex.axis = 2, 
-#          main = paste0("Bacground points for ", name), 
-#          xlab = "", ylab = "", asp = 1)
-#   
-#   ## Title 
-#   title(paste0("Bacground points for ", name),
-#         cex.main = 4,   font.main = 4, col.main = "blue")
-#   
-#   ## Finish the device
-#   dev.off() 
-# 
-# }
+## Simplify the 
+local_simplify = function (occ, bg, path, species_column = "species", response_curves = TRUE, 
+                           logistic_format = TRUE, type = "PI", cor_thr, pct_thr, k_thr, 
+                           features = "lpq", replicates = 1, quiet = TRUE) 
+{
+  if (!species_column %in% colnames(occ)) 
+    stop(species_column, " is not a column of `occ`", call. = FALSE)
+  if (!species_column %in% colnames(bg)) 
+    stop(species_column, " is not a column of `bg`", call. = FALSE)
+  if (missing(path)) {
+    save <- FALSE
+    path <- tempdir()
+  }
+  else save <- TRUE
+  features <- unlist(strsplit(gsub("\\s", "", features), ""))
+  if (length(setdiff(features, c("l", "p", "q", "h", "t"))) > 
+      1) 
+    stop("features must be a vector of one or more of ',\n         'l', 'p', 'q', 'h', and 't'.")
+  off <- setdiff(c("l", "p", "q", "t", "h"), features)
+  if (length(off) > 0) {
+    off <- c(l = "linear=FALSE", p = "product=FALSE", q = "quadratic=FALSE", 
+             t = "threshold=FALSE", h = "hinge=FALSE")[off]
+  }
+  off <- unname(off)
+  occ_by_species <- split(occ, occ[[species_column]])
+  bg_by_species <- split(bg, bg[[species_column]])
+  if (!identical(sort(names(occ_by_species)), sort(names(bg_by_species)))) {
+    stop("The same set of species names must exist in occ and bg")
+  }
+  type <- switch(type, PI = "permutation.importance", PC = "contribution", 
+                 stop("type must be either \"PI\" or \"PC\".", call. = FALSE))
+  args <- off
+  if (replicates > 1) 
+    args <- c(args, paste0("replicates=", replicates))
+  if (isTRUE(response_curves)) 
+    args <- c(args, "responsecurves=TRUE")
+  if (isTRUE(logistic_format)) 
+    args <- c(args, "outputformat=logistic")
+  f <- function(name) {
+    if (!quiet) 
+      message("\n\nDoing ", name)
+    name_ <- gsub(" ", "_", name)
+    swd <- rbind(occ_by_species[[name]], bg_by_species[[name]])
+    swd <- swd[, -match(species_column, names(swd))]
+    if (ncol(swd) < k_thr) 
+      stop("Initial number of variables < k_thr", call. = FALSE)
+    pa <- rep(1:0, c(nrow(occ_by_species[[name]]), nrow(bg_by_species[[name]])))
+    vc <- usdm::vifcor(swd, maxobservations = nrow(swd), 
+                       th = cor_thr)
+    vif <- methods::slot(vc, "results")
+    k <- nrow(vif)
+    exclude <- methods::slot(vc, "excluded")
+    if (!isTRUE(quiet) & length(exclude) > 0) {
+      message("Dropped due to collinearity: ", paste0(exclude, 
+                                                      collapse = ", "))
+    }
+    if (k < k_thr) 
+      stop(sprintf("Number of uncorrelated variables (%s) < k_thr (%s). %s", 
+                   k, k_thr, "Reduce k_thr, increase cor_thr, or find alternative predictors."), 
+           call. = FALSE)
+    swd_uncor <- swd[, as.character(vif$Variables)]
+    d <- file.path(path, name_, if (replicates > 1) 
+      "xval"
+      else "full")
+    m <- dismo::maxent(swd_uncor, pa, args = args, path = d)
+    if (isTRUE(save)) 
+      saveRDS(m, file.path(d, "maxent_fitted.rds"))
+    pct <- m@results[grep(type, rownames(m@results)), , 
+                     drop = FALSE]
+    pct <- pct[, ncol(pct)]
+    pct <- sort(pct)
+    names(pct) <- sub(paste0("\\.", type), "", names(pct))
+    if (min(pct) >= pct_thr || length(pct) == k_thr) {
+      if (replicates > 1) {
+        d <- file.path(path, name_, "full")
+        m <- dismo::maxent(swd_uncor, pa, args = grep("replicates", 
+                                                      args, value = TRUE, invert = TRUE), path = d)
+      }
+      if (isTRUE(save)) {
+        saveRDS(m, file.path(d, "maxent_fitted.rds"))
+      }
+      return(m)
+    }
+    while (min(pct) < pct_thr && length(pct) > k_thr) {
+      candidates <- vif[vif$Variables %in% names(pct)[pct == 
+                                                        pct[1]], ]
+      drop <- as.character(candidates$Variables[which.max(candidates$VIF)])
+      message("Dropping ", drop)
+      swd_uncor <- swd_uncor[, -match(drop, colnames(swd_uncor))]
+      if (!quiet) 
+        message(sprintf("%s variables: %s", ncol(swd_uncor), 
+                        paste0(colnames(swd_uncor), collapse = ", ")))
+      m <- dismo::maxent(swd_uncor, pa, args = args, path = d)
+      pct <- m@results[grep(type, rownames(m@results)), 
+                       , drop = FALSE]
+      pct <- pct[, ncol(pct)]
+      pct <- sort(pct)
+      names(pct) <- sub(paste0("\\.", type), "", names(pct))
+    }
+    if (replicates > 1) {
+      d <- file.path(path, name_, "full")
+      m <- dismo::maxent(swd_uncor, pa, args = grep("replicates", 
+                                                    args, value = TRUE, invert = TRUE), path = d)
+    }
+    if (isTRUE(save)) {
+      saveRDS(m, file.path(d, "maxent_fitted.rds"))
+    }
+    return(m)
+  }
+  lapply(names(occ_by_species), f)
+}
 
 
 

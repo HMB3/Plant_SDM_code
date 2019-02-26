@@ -83,6 +83,7 @@ MESS_folder   = "MESS_output"
 map_spp_rev  = sort(map_spp, decreasing = TRUE) 
 
 
+## This error happens when the species polygons are being accessed at the same time by different R sessions
 # Creating polygon list under ac85bi70 scenario for Eucalyptus_viminalis
 # Creating polygon list under ac85bi30 scenario for Eucalyptus_socialis
 # Error in RGEOSBinTopoFunc(spgeom1, spgeom2, byid, id, drop_lower_td, unaryUnion_if_byid_false,  : 
@@ -90,6 +91,7 @@ map_spp_rev  = sort(map_spp, decreasing = TRUE)
 #                           323091.36989912001 -1282934.1729915601 at 323091.36989912001 -1282934.1729915601
                           
 
+## This error happens when the species has no novel areas : EG the red gum 
 # Converting raster MESS maps to polygons under ac85bi70 scenario for Eucalyptus_camaldulensis
 # H:\green_cities_sdm
 # Error in readOGR(dirname(outshape), layer = basename(outshape), verbose = !quietish) : 
@@ -103,7 +105,7 @@ env.grids.2030 = tryCatch(project_maxent_grids_mess(shp_path      = "./data/base
                                                     world_shp     = "LAND_world.rds",          ## Polygon for AUS maps           
 
                                                     scen_list     = scen_2030,                 ## List of climate scenarios
-                                                    species_list  = map_spp,                   ## List of species folders with maxent models
+                                                    species_list  = map_spp[1],                   ## List of species folders with maxent models
                                                     maxent_path   = maxent_path,               ## Output folder
                                                     climate_path  = "./data/base/worldclim/aus/1km/bio", ## climate data
                                                     grid_names    = grid.names,                ## names of the predictor grids
@@ -185,10 +187,10 @@ unit_vec      = "./SUA/SUA_2016_VEC.rds"    ## Vector of rasterized unit cells
 world_shp     = "LAND_world.rds"                              
 aus_shp       = "aus_states.rds"
 
-DIR           = SDM.RESULTS.DIR[103]              ## List of directories with rasters
-species       = map_spp[103]                      ## List of species' directories
+DIR           = SDM.RESULTS.DIR[1]              ## List of directories with rasters
+species       = map_spp[1]                      ## List of species' directories
 maxent_path   = maxent_path                     ## Directory of maxent results
-thresh        = percent.10.log[103]               ## List of maxent thresholds
+thresh        = percent.10.log[1]               ## List of maxent thresholds
 time_slice    = 30                              ## Time period, eg 2030
 write_rasters = "TRUE"                          ## Save the rasters?
 

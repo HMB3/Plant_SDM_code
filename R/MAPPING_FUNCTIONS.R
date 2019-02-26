@@ -91,11 +91,11 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list, sp
           ## Now read in the SDM model, calibrated on current conditions
           m   <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, species))$me_full 
           swd <- readRDS(sprintf('%s%s/swd.rds',                 maxent_path, species, species))
-          occ <- readRDS(sprintf('%s/%s/%s_occ.rds',             maxent_path, species, save_name)) %>%
+          occ <- readRDS(sprintf('%s%s/%s_occ.rds',              maxent_path, species, save_name)) %>%
             spTransform(ALB.CONICAL)  
           
           ## Create a file path for the current raster prediction
-          f_current  <- sprintf('%s/%s/full/%s_current.tif', maxent_path, species, species)
+          f_current  <- sprintf('%s%s/full/%s_current.tif', maxent_path, species, species)
           
           ## If the current raster prediction has not been run, run it
           if(!file.exists(f_current)) {
@@ -117,7 +117,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list, sp
           ## Report current mess map in progress
           MESS_dir = sprintf('%s%s/full/%s', 
                              maxent_path, species, 'MESS_output')
-          f_mess_current = sprintf('%s/%s%s.tif', MESS_dir, species, "_current_mess_map")
+          f_mess_current = sprintf('%s/%s%s.tif', MESS_dir, species, "_current_mess")
           
           if(create_mess == "TRUE" & !file.exists(f_mess_current)) {
             message('Running current mess map for ', species)
@@ -147,7 +147,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list, sp
             }
             
             ## Then write the mess output to a directory inside the 'full' maxent folder
-            writeRaster(mess_current$similarity_min, sprintf('%s/%s%s.tif', MESS_dir, species, "_current_mess_map"), 
+            writeRaster(mess_current$similarity_min, sprintf('%s/%s%s.tif', MESS_dir, species, "_current_mess"), 
                         overwrite = TRUE)
             
             ##################################################################
@@ -155,18 +155,18 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list, sp
             ## raster_list  = unstack(mess_current$similarity) :: list of environmental rasters
             ## raster_names = names(mess_current$similarity)   :: names of the rasters
             message('Creating mess maps of each current environmental predictor for ', species)
-            mapply(function(raster_list, raster_names) {
+            mapply(function(raster, raster_name) {
               
-              ## Create a level plot for each predictor variable for each species
-              p <- levelplot(r, margin = FALSE, scales = list(draw = FALSE),
-                             at = seq(minValue(r), maxValue(r), len = 100),
+              ## Create a level plot of MESS output for each predictor variable, for each species
+              p <- levelplot(raster, margin = FALSE, scales = list(draw = FALSE),
+                             at = seq(minValue(raster), maxValue(raster), len = 100),
                              colorkey = list(height = 0.6), 
-                             main = gsub('_', ' ', sprintf('Current_mess_for_%s (%s)', name, species))) +
+                             main = gsub('_', ' ', sprintf('Current_mess_for_%s (%s)', raster_name, species))) +
                 
                 latticeExtra::layer(sp.polygons(aus_poly), data = list(aus_poly = aus_poly))  ## need list() for polygon
               
               p <- diverge0(p, 'RdBu')
-              f <- sprintf('%s/%s%s%s.png', MESS_dir, species, "_current_mess_", name)
+              f <- sprintf('%s/%s%s%s.png', MESS_dir, species, "_current_mess_", raster_name)
               
               png(f, 8, 8, units = 'in', res = 300, type = 'cairo')
               print(p)
@@ -175,10 +175,10 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list, sp
             }, unstack(mess_current$similarity), names(mess_current$similarity))
             
             ## Write the raster of novel environments to the MESS sub-directory
-            if(!file.exists(sprintf('%s/%s%s.tif', MESS_dir, species, "_current_novel_map")))  {
+            if(!file.exists(sprintf('%s/%s%s.tif', MESS_dir, species, "_current_novel")))  {
               
               message('Writing currently novel environments to file for ', species) 
-              writeRaster(novel_current, sprintf('%s/%s%s.tif', MESS_dir, species, "_current_novel_map"), 
+              writeRaster(novel_current, sprintf('%s/%s%s.tif', MESS_dir, species, "_current_novel"), 
                           overwrite = TRUE)
               
             } else {
@@ -192,16 +192,16 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list, sp
             ## is.na(novel_current) is a binary layer showing 
             ## not novel [=1] vs novel [=0], 
             ## so multiplying this with hs_current will mask out novel
-            hs_current_notNovel <- pred.current * is.na(novel_current) 
-            
+            hs_current_not_novel <- pred.current * is.na(novel_current) 
             
             ## This layer of currently un-novel environments can be used 
             ## for the next algorithm step, where we combine the models
-            plot(pred.current);plot(hs_current_notNovel)
+            plot(pred.current);plot(hs_current_not_novel)
             
             ## Write out not-novel raster :: this can go to the main directory
             message('Writing currently un-novel environments to file for ', species) 
-            writeRaster(hs_current_notNovel, sprintf('%s/%s%s.tif', MESS_dir, species, "_current_not_novel"),
+            writeRaster(hs_current_not_novel, sprintf('%s%s/full/%s%s.tif', maxent_path, 
+                                                      species, species, "_current_not_novel"),
                         overwrite = TRUE)
             
           } else {
@@ -250,17 +250,17 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list, sp
               ## raster_list  = unstack(mess_current$similarity) :: list of environmental rasters
               ## raster_names = names(mess_current$similarity)   :: names of the rasters
               message('Creating mess maps of each future environmental predictor for ', species, ' under senario ', x)
-              mapply(function(raster_list, raster_names) {
+              mapply(function(raster, raster_name) {
                 
-                p <- levelplot(r, margin = FALSE, scales = list(draw = FALSE),
-                               at = seq(minValue(r), maxValue(r), len = 100),
+                p <- levelplot(raster, margin = FALSE, scales = list(draw = FALSE),
+                               at = seq(minValue(raster), maxValue(raster), len = 100),
                                colorkey = list(height = 0.6), 
-                               main = gsub('_', ' ', sprintf('Future_mess_for_%s_%s (%s)', name, x, species, x))) +
+                               main = gsub('_', ' ', sprintf('Future_mess_for_%s_%s (%s)', raster_name, x, species, x))) +
                   
                   latticeExtra::layer(sp.polygons(aus_poly), data = list(aus_poly = aus_poly))   ## Use this in previous functions
                 
                 p <- diverge0(p, 'RdBu')
-                f <- sprintf('%s/%s%s%s%s%s.png', MESS_dir, species, "_future_mess_", name, "_", x)
+                f <- sprintf('%s/%s%s%s%s%s.png', MESS_dir, species, "_future_mess_", raster_name, "_", x)
                 
                 png(f, 8, 8, units = 'in', res = 300, type = 'cairo')
                 print(p)
@@ -271,7 +271,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list, sp
               ## Write the raster of novel environments to the maxent directory 
               ## The "full" directory is getting full, could create a sub dir for MESS maps
               message('Writing future novel environments to file for ', species, ' under senario ', x) 
-              writeRaster(novel_future, sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_novel_map_", x), 
+              writeRaster(novel_future, sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_novel_", x), 
                           overwrite = TRUE)
               
               ##################################################################
@@ -279,17 +279,18 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list, sp
               # is.na(novel_future) is a binary layer showing 
               # not novel [=1] vs novel [=0], 
               # so multiplying this with hs_future will mask out novel
-              hs_future_notNovel <- pred.future * is.na(novel_future)
+              hs_future_not_novel <- pred.future * is.na(novel_future)
               
               ## This layer of future un-novel environments can be used 
               ## for the next algorithm step, where we combine the models
-              plot(pred.future);plot(hs_future_notNovel)
-              summary(pred.future,        maxsamp = 100000);
-              summary(hs_future_notNovel, maxsamp = 100000)
+              plot(pred.future);plot(hs_future_not_novel)
+              summary(pred.future,         maxsamp = 100000);
+              summary(hs_future_not_novel, maxsamp = 100000)
               
               ## Write out not-novel raster
               message('Writing un-novel environments to file under ', x, ' scenario for ', species) 
-              writeRaster(hs_future_notNovel, sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_not_novel_", x), 
+              writeRaster(hs_future_not_novel, sprintf('%s%s/full/%s%s%s.tif', maxent_path, 
+                                                      species, species, "_future_not_novel_", x), 
                           overwrite = TRUE)
               
             } else {
@@ -302,10 +303,10 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list, sp
             ## this can fail if no ebvironments are novel, e.g the red gum.
             ## Can we add a condtiton in poluygonizer to check if the file has data?..............................
             message('Converting raster MESS maps to polygons under ', x, ' scenario for ', species) 
-            novel_current_poly <- polygonizer(sprintf('%s/%s%s.tif',   MESS_dir, species, "_current_novel_map"))
-            novel_future_poly  <- polygonizer(sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_novel_map_", x))
+            novel_current_poly <- polygonizer(sprintf('%s/%s%s.tif',   MESS_dir, species, "_current_novel"))
+            novel_future_poly  <- polygonizer(sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_novel_", x))
             
-            ## re-project the shapefiles
+            ## Re-project the shapefiles
             novel_current_poly = novel_current_poly %>%
               spTransform(ALB.CONICAL)
             
@@ -552,7 +553,9 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
       ## The mean of the GCMs doesn't exist, create it
       if(!file.exists(f_mean)) { 
         
-        raster.list       = list.files(as.character(DIR), pattern = sprintf('bi%s.tif$', time_slice), full.names = TRUE)  
+        ## COuld change this to just search for the pattern 
+        #raster.list       = list.files(as.character(DIR), pattern = sprintf('bi%s.tif$', time_slice), full.names = TRUE)  
+        raster.list       = list.files(as.character(DIR), pattern = 'future_not_novel', full.names = TRUE) 
         suit              = stack(raster.list)
         suit.list         = unstack(suit)
         combo_suit_mean   = mean(suit)
@@ -955,129 +958,6 @@ polygonizer <- function(x, outshape=NULL, readpoly=TRUE,
              'ESRI Shapefile', overwrite=TRUE)
   }
   ifelse(isTRUE(readpoly), return(shp), return(NULL))
-}
-
-
-
-
-
-#########################################################################################################################
-## MESS MAP FUNCTIONS
-#########################################################################################################################
-
-
-# species   = map_spp[1]
-# threshold = percent.10.log[1]
-# maxent_path   = maxent_path
-# climate_path  = "./data/base/worldclim/aus/1km/bio"
-# grid_names    = grid.names
-# current_grids = aus.grids.current
-
-
-## Do we need to do mess maps for all the scenarios, or can we just create the masks for current and use these for 
-## future? How hard would it be to change the combine step to create another set of results, masked out using
-## novel environments?
-
-
-## One function for all time periods
-create_maxent_mess = function(poly, species_list, threshold_list, maxent_path, current_grids) {
-  
-  ## Read in Australia
-  poly = poly %>%
-    spTransform(ALB.CONICAL)
-  
-  # import gist that plots maps with diverging colour ramps
-  #devtools::source_gist('306e4b7e69c87b1826db', filename = 'diverge0.R') # plots a map with a diverging colour ramp
-  
-  ## First, run a loop over each species  
-  mapply(function(species, threshold) {
-    
-    #####################################################################
-    ## Now read in the model, swd file, occ data and extract the varaible names 
-    m    <- readRDS(sprintf('%s%s/full/maxent_fitted.rds', maxent_path, species))[["me_full"]]
-    swd  <- readRDS(sprintf('%s%s/swd.rds',                maxent_path, species, species))
-    #occ  <- readRDS(sprintf('%s%s/swd.rds',                maxent_path, species, species))
-    occ  <- readRDS(sprintf('%s%s/%s_occ.rds',             maxent_path, species, species)) %>%
-      spTransform(ALB.CONICAL) 
-    
-    ## Create a folder for the mess maps
-    #dir.create(sprintf('%s%s/full/MESS/', maxent_path, species))
-    
-    ## First, check if the mess map has already been run
-    if(!file.exists(sprintf('%s%s/full/%s_%s%s%s.tif', maxent_path, species, species, 
-                            "current_suit_above_", threshold, "_notNovel"))) {
-      
-      ## Then read in the current continuous raster, and the binary raster thresholded raster (0-1)
-      f_current  <- raster(sprintf('%s%s/full/%s_current.tif', maxent_path, species, species))
-      hs_current <- raster(sprintf('%s%s/full/%s_%s%s.tif',    maxent_path,
-                                   species, species, "current_suit_above_", threshold))
-      
-      #####################################################################
-      ## Report current mess map in progress
-      message('Running current mess map for ', species) 
-      
-      ## Create the current mess map :: check the variable names are the same
-      mess_current <- similarity(current_grids, swd[, names(current_grids)], full = TRUE)
-      novel_current <- mess_current$similarity_min   < 0  ##   All novel environments are < 0
-      novel_current[novel_current==0] <- NA               ##   0 values are NA
-      
-      ##################################################################
-      ## Write out the current mess maps 
-      writeRaster(mess_current$similarity_min, sprintf('%s%s/full/%s_%s.tif', 
-                                                       maxent_path, species, species, "current_mess_map"), 
-                  overwrite = TRUE, datatype = 'INT2S')
-      
-      ##################################################################
-      ## Create a PNG file of all the MESS output
-      message('Creating mess maps for each environmental predictor for', species)
-      
-      mapply(function(r, name) {
-        
-        p <- levelplot(r, margin = FALSE, scales = list(draw = FALSE),
-                       at = seq(minValue(r), maxValue(r), len = 100),
-                       colokey = list(height = 0.6), main = gsub('_', ' ', sprintf('%s (%s)', name, species))) +
-          
-          latticeExtra::layer(sp.polygons(poly), data = list(poly = poly))   ## Use this in previous functions
-        
-        p <- diverge0(p, 'RdBu')
-        f <- sprintf('%s%s/full/%s_messCurrent__%s.png', maxent_path, species, species, name)
-        
-        png(f, 8, 8, units = 'in', res = 300, type = 'cairo')
-        print(p)
-        dev.off()
-        
-        
-      }, unstack(mess_current$similarity), names(mess_current$similarity))
-      
-      ## Write the raster of novel environments to the maxent directory 
-      ## The "full" directory is getting full, could create a sub dir for MESS maps
-      message('Writing maps of novel environments to file for', species) 
-      
-      writeRaster(novel_current, sprintf('%s%s/full/%s_%s.tif', 
-                                         maxent_path, species, species, "current_novel_map"), 
-                  overwrite = TRUE, datatype = 'INT2S')
-      
-      ##################################################################
-      # mask out novel environments 
-      # is.na(novel_current) is a binary layer showing 
-      # not novel [=1] vs novel [=0], 
-      # so multiplying this with hs_current will mask out novel
-      hs_current_notNovel <- hs_current * is.na(novel_current) 
-      
-      ## Write out not-novel raster
-      message('Writing maps of un- novel environments to file for', species) 
-      
-      writeRaster(hs_current_notNovel, sub('\\.tif', '_notNovel.tif', hs_current@file@name), 
-                  overwrite = TRUE, datatype = 'INT2S')
-      
-    } else {
-      
-      message(species, ' skipped - MESS map already run') 
-      
-    }
-    
-  }, species_list, threshold_list, SIMPLIFY = FALSE)
-  
 }
 
 
