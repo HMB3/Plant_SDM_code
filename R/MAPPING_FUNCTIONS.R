@@ -16,12 +16,15 @@
 
 #########################################################################################################################
 ## Try to run the mess maps at the same time as the map creation?
-project_maxent_grids_mess = function(shp_path, shp, scen_list, species_list, maxent_path, climate_path, 
+project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list, species_list, maxent_path, climate_path, 
                                      grid_names, time_slice, current_grids, create_mess) {
   
   ## Read in the Australian shapefile at the top
-  poly = readRDS(paste0(shp_path, shp)) %>%
+  aus_poly = readRDS(paste0(shp_path, aus_shp)) %>%
     spTransform(ALB.CONICAL)
+  
+  world_poly = readRDS(paste0(shp_path, world_shp)) %>%
+    spTransform(CRS.WGS.84)
   
   ## Parallelising stuff #####################
   # if(run_parallel == "TRUE") {
@@ -52,7 +55,7 @@ project_maxent_grids_mess = function(shp_path, shp, scen_list, species_list, max
     
     ## Create a raster stack for each of the 6 GCMs, not for each species
     s <- stack(sprintf('%s/20%s/%s/%s%s.tif', climate_path, time_slice, x, x, 1:19))
-    identical(projection(s), projection(poly))
+    identical(projection(s), projection(aus_poly))
     
     ## Rename both the current and future environmental stack...
     names(s) <- names(current_grids) <- grid_names 
@@ -83,9 +86,6 @@ project_maxent_grids_mess = function(shp_path, shp, scen_list, species_list, max
         
         ## Then, check if the species projection has already been run...
         if(!file.exists(sprintf('%s/%s/full/%s_%s.tif', maxent_path, species, species, x))) {
-          
-          ## Assign the scenario name (to use later in the plot)
-          scen_name = eval(parse(text = sprintf('gcms.%s$GCM[gcms.%s$id == x]', time_slice, time_slice)))           
           
           ########################################################################
           ## Now read in the SDM model, calibrated on current conditions
@@ -127,7 +127,8 @@ project_maxent_grids_mess = function(shp_path, shp, scen_list, species_list, max
             names(current_grids) = grid_names 
             current_grids        = subset(current_grids, intersect(names(current_grids), sdm.select))
             
-            ## Create the current mess map :: check the variable names are the same
+            ## Create a map of novel environments for current conditions
+            ## This similarity function only uses variables (e.g. 8 bioclim), not features
             mess_current  <- similarity(current_grids, swd[, names(current_grids)], full = TRUE)
             novel_current <- mess_current$similarity_min   < 0  ##   All novel environments are < 0
             novel_current[novel_current==0] <- NA               ##   0 values are NA
@@ -150,19 +151,19 @@ project_maxent_grids_mess = function(shp_path, shp, scen_list, species_list, max
                         overwrite = TRUE)
             
             ##################################################################
-            ## Create a PNG file of all the CURRENT MESS output
-            ## r    = unstack(mess_current$similarity) :: list of environmental rasters
-            ## name = names(mess_current$similarity)   :: names of the rasters
+            ## Create a PNG file of MESS maps for each maxent variable
+            ## raster_list  = unstack(mess_current$similarity) :: list of environmental rasters
+            ## raster_names = names(mess_current$similarity)   :: names of the rasters
             message('Creating mess maps of each current environmental predictor for ', species)
-            mapply(function(r, name) {
+            mapply(function(raster_list, raster_names) {
               
-              ## Create a level plot for each species
+              ## Create a level plot for each predictor variable for each species
               p <- levelplot(r, margin = FALSE, scales = list(draw = FALSE),
                              at = seq(minValue(r), maxValue(r), len = 100),
                              colorkey = list(height = 0.6), 
                              main = gsub('_', ' ', sprintf('Current_mess_for_%s (%s)', name, species))) +
                 
-                latticeExtra::layer(sp.polygons(poly), data = list(poly = poly))  ## need list() for polygon
+                latticeExtra::layer(sp.polygons(aus_poly), data = list(aus_poly = aus_poly))  ## need list() for polygon
               
               p <- diverge0(p, 'RdBu')
               f <- sprintf('%s/%s%s%s.png', MESS_dir, species, "_current_mess_", name)
@@ -173,9 +174,7 @@ project_maxent_grids_mess = function(shp_path, shp, scen_list, species_list, max
               
             }, unstack(mess_current$similarity), names(mess_current$similarity))
             
-            ## Write the raster of novel environments to the maxent directory 
-            ## The "full" directory is getting full, could create a sub dir for MESS maps
-            ## Add condition to current..........
+            ## Write the raster of novel environments to the MESS sub-directory
             if(!file.exists(sprintf('%s/%s%s.tif', MESS_dir, species, "_current_novel_map")))  {
               
               message('Writing currently novel environments to file for ', species) 
@@ -195,9 +194,14 @@ project_maxent_grids_mess = function(shp_path, shp, scen_list, species_list, max
             ## so multiplying this with hs_current will mask out novel
             hs_current_notNovel <- pred.current * is.na(novel_current) 
             
+            
+            ## This layer of currently un-novel environments can be used 
+            ## for the next algorithm step, where we combine the models
+            plot(pred.current);plot(hs_current_notNovel)
+            
             ## Write out not-novel raster :: this can go to the main directory
             message('Writing currently un-novel environments to file for ', species) 
-            writeRaster(hs_current_notNovel, sprintf('%s/%s%s.tif', MESS_dir, species, "_current_notNovel"),
+            writeRaster(hs_current_notNovel, sprintf('%s/%s%s.tif', MESS_dir, species, "_current_not_novel"),
                         overwrite = TRUE)
             
           } else {
@@ -226,12 +230,12 @@ project_maxent_grids_mess = function(shp_path, shp, scen_list, species_list, max
             if(create_mess == "TRUE" & !file.exists(f_mess_future)) {
               message('Running future mess map for ', species, ' under ', x)
               
-              grid_names          = sdm.predictors   ## same grid names
+              grid_names          = sdm.predictors   ## same grid names as above
               future_grids        = s                ## the stack of 8 rasters for scenario x
               names(future_grids) = grid_names 
               future_grids        = subset(future_grids, intersect(names(future_grids), sdm.select))
               
-              ## Create the future mess map :: check the variable names are the same
+              ## Create the future mess map
               mess_future  <- similarity(future_grids, swd[, names(future_grids)], full = TRUE)
               novel_future <- mess_future$similarity_min   < 0  ##   All novel environments are < 0
               novel_future[novel_future==0] <- NA               ##   0 values are NA
@@ -243,17 +247,17 @@ project_maxent_grids_mess = function(shp_path, shp, scen_list, species_list, max
               
               ##################################################################
               ## Create a PNG file of all the future MESS output: 
-              ## r    = unstack(mess_current$similarity) :: list of environmental rasters
-              ## name = names(mess_current$similarity)   :: names of the rasters
-              message('Creating mess maps of each future environmental predictor under ', x, ' scenario for ', species)
-              mapply(function(r, name) {
+              ## raster_list  = unstack(mess_current$similarity) :: list of environmental rasters
+              ## raster_names = names(mess_current$similarity)   :: names of the rasters
+              message('Creating mess maps of each future environmental predictor for ', species, ' under senario ', x)
+              mapply(function(raster_list, raster_names) {
                 
                 p <- levelplot(r, margin = FALSE, scales = list(draw = FALSE),
                                at = seq(minValue(r), maxValue(r), len = 100),
                                colorkey = list(height = 0.6), 
                                main = gsub('_', ' ', sprintf('Future_mess_for_%s_%s (%s)', name, x, species, x))) +
                   
-                  latticeExtra::layer(sp.polygons(poly), data = list(poly = poly))   ## Use this in previous functions
+                  latticeExtra::layer(sp.polygons(aus_poly), data = list(aus_poly = aus_poly))   ## Use this in previous functions
                 
                 p <- diverge0(p, 'RdBu')
                 f <- sprintf('%s/%s%s%s%s%s.png', MESS_dir, species, "_future_mess_", name, "_", x)
@@ -266,20 +270,26 @@ project_maxent_grids_mess = function(shp_path, shp, scen_list, species_list, max
               
               ## Write the raster of novel environments to the maxent directory 
               ## The "full" directory is getting full, could create a sub dir for MESS maps
-              message('Writing future novel environments to file under ', x, ' scenario for ', species) 
+              message('Writing future novel environments to file for ', species, ' under senario ', x) 
               writeRaster(novel_future, sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_novel_map_", x), 
                           overwrite = TRUE)
               
               ##################################################################
-              # mask out novel environments 
+              # mask out future novel environments 
               # is.na(novel_future) is a binary layer showing 
               # not novel [=1] vs novel [=0], 
               # so multiplying this with hs_future will mask out novel
-              hs_future_notNovel <- pred.future * is.na(novel_future) 
+              hs_future_notNovel <- pred.future * is.na(novel_future)
+              
+              ## This layer of future un-novel environments can be used 
+              ## for the next algorithm step, where we combine the models
+              plot(pred.future);plot(hs_future_notNovel)
+              summary(pred.future,        maxsamp = 100000);
+              summary(hs_future_notNovel, maxsamp = 100000)
               
               ## Write out not-novel raster
               message('Writing un-novel environments to file under ', x, ' scenario for ', species) 
-              writeRaster(hs_future_notNovel, sprintf('%s/%s%s.tif', MESS_dir, species, "_future_notNovel"), 
+              writeRaster(hs_future_notNovel, sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_not_novel_", x), 
                           overwrite = TRUE)
               
             } else {
@@ -303,16 +313,16 @@ project_maxent_grids_mess = function(shp_path, shp, scen_list, species_list, max
               spTransform(ALB.CONICAL)
             
             ## Now save the novel areas as shapefiles
-            MESS_shp = sprintf('%s%s/full/%s', 
-                               maxent_path, species, 'MESS_output')
+            MESS_shp_path   = sprintf('%s%s/full/%s', 
+                                      maxent_path, species, 'MESS_output')
             
             writeOGR(obj    = novel_current_poly, 
-                     dsn    = sprintf('%s',  MESS_shp), 
+                     dsn    = sprintf('%s',  MESS_shp_path), 
                      layer  = paste0(species, "_current_novel_polygon"),
                      driver = "ESRI Shapefile", overwrite_layer = TRUE)
             
             writeOGR(obj    = novel_future_poly, 
-                     dsn    = sprintf('%s',  MESS_shp), 
+                     dsn    = sprintf('%s',  MESS_shp_path), 
                      layer  = paste0(species, "_future_novel_polygon_", x),
                      driver = "ESRI Shapefile", overwrite_layer = TRUE)
             
@@ -324,31 +334,96 @@ project_maxent_grids_mess = function(shp_path, shp, scen_list, species_list, max
                                 hatch(novel_current_poly, 50), hatch(novel_future_poly, 50)) 
             
             ########################################################################################################################
-            ## Now create the empty panel just before plotting
+            ## Now create a panel of PNG files for maxent projections and MESS maps
+            ## All the projections and extents need to match
             empty_ras <- init(pred.current, function(x) NA) 
-
-            ## Check exents :: one of the species combinations failed this test
-            projection(novel_current_poly);projection(occ);projection(empty_ras);projection(aus)
+            projection(novel_current_poly);projection(occ);projection(empty_ras);projection(poly)
             projection(pred.current);projection(pred.future)
             identical(extent(pred.current), extent(pred.future))
             
+            ## Assign the scenario name (to use in the plot below)
+            scen_name = eval(parse(text = sprintf('gcms.%s$GCM[gcms.%s$id == x]', time_slice, time_slice)))      
+            
             ########################################################################################################################
-            ## Use the levelplot function to make a multipanel output: occurrence points, current raster and future raster
+            ## Use the 'levelplot' function to make a multipanel output: occurrence points, current raster and future raster
             if(create_mess == "TRUE") {
               message('Create MESS panel maps for ', species, ' under ', x, ' scenario')
               
               ############################################################
-              ## Create level plot including MESS maps                        
-              png(sprintf('%s/%s/full/%s_%s.png', maxent_path, species, species, x),      
+              ## Create level plot of current conditions including MESS                        
+              png(sprintf('%s/%s/full/%s_%s.png', maxent_path, species, species, "mess_panel"),      
                   11, 4, units = 'in', res = 300)
               
-              ## If possible, add a hatched section to each current and future panel, which shows the novel environments
-              ## That would be the objects :: 
-              ## novel_current & novel_future 
-              ## .....................................................................................................................
+              print(levelplot(stack(empty_ras,
+                                    pred.current, quick = TRUE), margin = FALSE,
+                              
+                              ## Create a colour scheme using colbrewer: 100 is to make it continuos
+                              ## Also, make it a one-directional colour scheme
+                              scales      = list(draw = FALSE), 
+                              at = seq(0, 1, length = 100),
+                              col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
+                              
+                              ## Give each plot a name: the third panel is the GCM
+                              names.attr = c('Australian records', 'Current'),
+                              colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
+                              main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
+                      
+                      ## Plot the Aus shapefile with the occurrence points for reference
+                      ## Can the current layer be plotted on it's own?
+                      ## Add the novel maps as vectors.              
+                      latticeExtra::layer(sp.polygons(aus_poly), data = list(aus_poly = aus_poly)) +
+                      latticeExtra::layer(sp.points(occ, pch = 19, cex = 0.15, 
+                                                    col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)) +
+                      latticeExtra::layer(sp.polygons(h[[panel.number()]]), data = list(h = novel_hatch)))
+              dev.off()
               
-              ## Need an empty frame
-              ## Here can we add the novel_current & novel_future layers as a hatching?
+              
+              ##################################################################################
+              ## Save the global records to PNG :: try to code the colors for ALA/GBIF/INVENTORY
+              ## 
+              ## Come up with a better way of doing this using GGPLOT, etc.................................................................. 
+              occ.world <- readRDS(sprintf('%s/%s/%s_occ.rds', maxent_path, species, save_name)) %>%
+                spTransform(CRS.WGS.84)
+              
+              message('writing map of global records for ', species)
+              png(sprintf('%s/%s/full/%s_%s.png', maxent_path, save_name, save_name, "global_occ_records"),
+                  16, 10, units = 'in', res = 500)
+              
+              ## Add land
+              plot(LAND, #add = TRUE, 
+                   lwd = 0.01, asp = 1, col = 'grey', bg = 'sky blue')
+              
+              ## Add points
+              points(subset(occ.world, SOURCE == "GBIF"), 
+                     pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2, 
+                     xlab = "", ylab = "", asp = 1,
+                     col = "orange", 
+                     legend(7,4.3, unique(occ.world$SOURCE), col = "orange", pch = 1))
+              
+              points(subset(occ.world, SOURCE == "ALA"), 
+                     pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2, 
+                     xlab = "", ylab = "", asp = 1,
+                     col = "blue", 
+                     legend(7,4.3, unique(occ.world$SOURCE), col = "blue", pch = 1))
+              
+              points(subset(occ.world, SOURCE == "INVENTORY"), 
+                     pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2, 
+                     xlab = "", ylab = "", asp = 1,
+                     col = "red", 
+                     legend(7,4.3, unique(occ.world$SOURCE), col = "red", pch = 1))
+              
+              title(main = list(paste0(gsub('_', ' ', species), ' global SDM records'), font = 4, cex = 2),
+                    cex.main = 4,   font.main = 4, col.main = "black")
+              
+              dev.off()
+              
+              
+              ############################################################
+              ## Create level plot of scenario x including MESS                        
+              png(sprintf('%s/%s/full/%s_%s.png', maxent_path, species, species, x),      
+                  11, 4, units = 'in', res = 300)
+            
+              ## Create a panel of the Australian occurrences, the current layer and the future layer
               print(levelplot(stack(empty_ras,
                                     pred.current, 
                                     pred.future, quick = TRUE), margin = FALSE,
@@ -365,12 +440,9 @@ project_maxent_grids_mess = function(shp_path, shp, scen_list, species_list, max
                               main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
                       
                       ## Plot the Aus shapefile with the occurrence points for reference
-                      ## Can the points be made more legible for both poorly and well recorded species?
-                      ## layer(sp.polygons(aus_albers), data = list(aus_albers = aus_albers))
-                      
-                      
-                      ## Try adding novel maps as vectors.....................................               
-                      latticeExtra::layer(sp.polygons(poly), data = list(poly = poly)) +
+                      ## Can the current layer be plotted on it's own?
+                      ## Add the novel maps as vectors.              
+                      latticeExtra::layer(sp.polygons(aus_poly), data = list(aus_poly = aus_poly)) +
                       latticeExtra::layer(sp.points(occ, pch = 19, cex = 0.15, 
                                                     col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)) +
                       latticeExtra::layer(sp.polygons(h[[panel.number()]]), data = list(h = novel_hatch)))
@@ -403,7 +475,7 @@ project_maxent_grids_mess = function(shp_path, shp, scen_list, species_list, max
                       ## Plot the Aus shapefile with the occurrence points for reference
                       ## Can the points be made more legible for both poorly and well recorded species?
                       ## layer(sp.polygons(aus_albers), data = list(aus_albers = aus_albers))
-                      latticeExtra::layer(sp.polygons(poly), data = list(poly = poly)) +
+                      latticeExtra::layer(sp.polygons(aus_poly), data = list(aus_poly = aus_poly)) +
                       latticeExtra::layer(sp.points(occ, pch = 19, cex = 0.15, 
                                                     col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
               dev.off()                     
@@ -504,12 +576,7 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
         ## Check if the SUA summary table exists
         SUA_file =   sprintf('%s/%s/full/%s_20%s_%s%s.tif', maxent_path,
                              species, species, time_slice, "gain_loss_", thresh)
-        
-        ## Read in the raster of not novel areas for Australia.
-        ## Wher is the best place to use this raster as a mask?
-        # not_novel = sprintf('%s%s/full/%s_%s%s%s.tif', maxent_path, 
-        #                     species, species, "current_suit_above_", thresh, '_notNovel')
-        
+      
         ## If the gain/loss raster already exists, skip the calculation
         if(file.exists(SUA_file)) { 
           
@@ -560,7 +627,7 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
         #########################################################################################################################
         ## Now create a raster of the gain, loss and stable
         ## Create a raster stack of the current and future rasters
-        message ("Counting cells lost/gained/stable/never suitable per SUA")
+        message ("Counting cells lost/gained/stable/never suitable, both across AUS and per SUA")
         
         #########################################################################################################################
         ## Create a table of cell counts using a raster stack of current and future data
@@ -613,8 +680,8 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
         ## Now calculate the number of cells lost/gained/stable across Australia
         message ("Counting cells lost/gained/stable/never suitable across Australia")
         d5 <- stack(current_suit_thresh, combo_suit_4GCM)[]
-        r <- raster(current_suit_thresh)
-        z <- as.data.frame(d4)
+        r  <- raster(current_suit_thresh)                     ## rename, too cryptic.............................................
+        z  <- as.data.frame(d4)                               ## rename, too cryptic.............................................
         
         ## Then classify the raster stack to make each value (i.e. outcome) unique
         r[d5[, 1]==1 & d5[, 2]==0] <- 1  ## 1 in current raster and 0 in future = LOSS
@@ -645,13 +712,12 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
         head(gain_loss_df)
         
         #########################################################################################################################
-        ## Save the continental gain/loss table
+        ## Save the gain/loss table for the whole of Australia
         message('Writing ', species, ' gain_loss tables for 20', time_slice)
         write.csv(gain_loss_df, sprintf('%s/%s/full/%s_20%s_%s%s.csv', maxent_path,
                                         species, species, time_slice, "gain_loss_table_", thresh), row.names = FALSE)
         
-        #########################################################################################################################
-        ## Save the SUA gain/loss table
+        ## Save the gain/loss table
         write.csv(d4, sprintf('%s/%s/full/%s_20%s_%s%s.csv', maxent_path,
                               species, species, time_slice, "SUA_cell_count_", thresh), row.names = FALSE)
         
@@ -706,55 +772,16 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
           
           rat[["CHANGE"]] <- c("LOST", "GAINED", "STABLE", "NEVER")
           levels(gain_plot) <- rat
-          
-          #########################################################################################################################
-          ## Write gain/loss PNG too
-          save_name = gsub(' ', '_', species)
-          empty_ras <- init(current_suit_thresh, function(x) NA)
-          occ.aus   <- readRDS(sprintf('%s/%s/%s_occ.rds', maxent_path, species, save_name)) %>%
-            spTransform(ALB.CONICAL)
-          
-          occ.world <- readRDS(sprintf('%s/%s/%s_occ.rds', maxent_path, species, save_name)) %>%
-            spTransform(CRS.WGS.84)
-          occ.world.xy = coordinates(occ.world) %>%
-            as.data.frame()
-          
-          projection(aus_poly);projection(occ.aus);projection(gain_plot)
 
-          # message('writing thresholded map for ', 'species')
-          # png(sprintf('%s/%s/full/%s_%s_%s.png', maxent_path, save_name, save_name, "consensus_suit", thresh),
-          #     11, 4, units = 'in', res = 300)
-          # 
-          # ## Need an empty frame ::
-          # print(levelplot(stack(empty_ras,
-          #                       combo_suit_4GCM, 
-          #                       gain_plot, quick = TRUE), margin = FALSE,
-          #                 
-          #                 # Create a colour scheme using colbrewer: 100 is to make it continuos
-          #                 # Also, make it a one-directional colour scheme
-          #                 scales      = list(draw = FALSE),
-          #                 at = seq(0, 1, length = 4),
-          #                 col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
-          #                 
-          #                 ## Give each plot a name: the third panel is the GCM
-          #                 names.attr = c('Australian records', paste0('+4 GCMS > ', thresh), 'Gain loss map'),
-          #                 colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
-          #                 main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
-          #         
-          #         ## Try adding novel maps as vectors.....................................               
-          #         latticeExtra::layer(sp.polygons(aus), data = list(aus = aus)) +
-          #         latticeExtra::layer(sp.points(occ, pch = 19, cex = 0.15, 
-          #                                       col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
-          # dev.off()
-          
-          
           #########################################################################################################################
           ## Save the gain/loss raster to PNG
+          save_name = gsub(' ', '_', species)
           message('writing gain/loss png for ', 'species')
           png(sprintf('%s/%s/full/%s_%s_%s_20%s.png', maxent_path, save_name, save_name, "gain_loss", thresh, time_slice),
               16, 10, units = 'in', res = 500)
           
-          ## We can do better than this but it'll do for now
+          ## We can do better than this but it'll do for now.......................................................................
+          ## Could add the SUA polygons as well
           print(levelplot(gain_plot, 
                           col.regions = csort$color, 
                           xlab = NULL, ylab = NULL,
@@ -763,44 +790,10 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
                   latticeExtra::layer(sp.polygons(aus_poly), data = list(aus = aus_poly)))
           
           dev.off()
-          
-          #########################################################################################################################
-          ## Save the global records to PNG :: try to code the colors for ALA/GBIF/INVENTORY 
-          message('writing map of global records for ', 'species')
-          png(sprintf('%s/%s/full/%s_%s.png', maxent_path, save_name, save_name, "global_records"),
-              16, 10, units = 'in', res = 500)
-        
-          ## Add land
-          plot(LAND, #add = TRUE, 
-               lwd = 0.01, asp = 1, col = 'grey', bg = 'sky blue')
-          
-          ## Add points
-          points(subset(occ.world, SOURCE == "GBIF"), 
-                 pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2, 
-                 xlab = "", ylab = "", asp = 1,
-                 col = "orange", 
-                 legend(7,4.3, unique(occ.world$SOURCE), col = "orange", pch = 1))
-          
-          points(subset(occ.world, SOURCE == "ALA"), 
-                 pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2, 
-                 xlab = "", ylab = "", asp = 1,
-                 col = "blue", 
-                 legend(7,4.3, unique(occ.world$SOURCE), col = "blue", pch = 1))
-          
-          points(subset(occ.world, SOURCE == "INVENTORY"), 
-                 pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2, 
-                 xlab = "", ylab = "", asp = 1,
-                 col = "red", 
-                 legend(7,4.3, unique(occ.world$SOURCE), col = "red", pch = 1))
-        
-          title(main = list(paste0(gsub('_', ' ', species), ' global SDM records'), font = 4, cex = 2),
-                cex.main = 4,   font.main = 4, col.main = "black")
-          
-          dev.off()
-          
+
         } else {
           
-          message(' skip raster writing')   ##
+          message(' skip raster writing')
           
         }
         

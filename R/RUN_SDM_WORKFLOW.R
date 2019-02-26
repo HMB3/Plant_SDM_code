@@ -238,76 +238,76 @@ source('./R/8_MAP_SDM_COMBINE.R', echo = TRUE)
 #########################################################################################################################
 
 
-## Create a list of all dataframes with the extension from this run
-COMBO.NICHE.list  = list.files(DATA_path, pattern = 'COMBO_NICHE_CONTEXT_EVERGREEN',  full.names = TRUE, recursive = TRUE)
-COMBO.RASTER.list = list.files(DATA_path, pattern = 'COMBO_RASTER_CONTEXT_EVERGREEN', full.names = TRUE, recursive = TRUE)
- 
-
-#########################################################################################################################
-## Now combine the niche tables for each species into one table
-COMBO.NICHE.ALL <- COMBO.NICHE.list[1:8] %>%
-
-  ## pipe the list into lapply
-  lapply(function(x) {
-
-    ## create the character string
-    f <- paste0(x)
-
-    ## load each .csv file
-    d <- readRDS(f)
-    d
-
-  }) %>%
-
-  ## finally, bind all the rows together
-  bind_rows
-
-
-## Update this
-str(COMBO.NICHE.ALL)
-dim(COMBO.NICHE.ALL)
-
-
-## Make sure the Species are unique
-COMBO.NICHE.ALL = COMBO.NICHE.ALL[!duplicated(COMBO.NICHE.ALL[,c('searchTaxon')]),]
-dim(COMBO.NICHE.ALL)
-length(unique(COMBO.NICHE.ALL$searchTaxon))
-
-
-#########################################################################################################################
-## Now combine the raster tables for each species into one table
-COMBO.RASTER.ALL <- COMBO.RASTER.list %>%
-
-  ## pipe the list into lapply
-  lapply(function(x) {
-
-    ## create the character string
-    f <- paste0(x)
-
-    ## load each .csv file
-    d <- readRDS(f)
-    d
-
-  }) %>%
-
-  ## finally, bind all the rows together
-  bind_rows
-
-
-## This is a summary of maxent output for current conditions
-dim(COMBO.RASTER.ALL)
-names(COMBO.RASTER.ALL)[1:10]
-
-
-##
-length(unique(COMBO.RASTER.ALL$searchTaxon))
-
-
-
-#########################################################################################################################
-## Save the niche and raster data
-saveRDS(COMBO.NICHE.ALL,  paste0(DATA_path, 'COMBO_NICHE_ALL_',  save_run, '.rds'))
-saveRDS(COMBO.RASTER.ALL, paste0(DATA_path, 'COMBO_RASTER_ALL_', save_run, '.rds'))
+# ## Create a list of all dataframes with the extension from this run
+# COMBO.NICHE.list  = list.files(DATA_path, pattern = 'COMBO_NICHE_CONTEXT_EVERGREEN',  full.names = TRUE, recursive = TRUE)
+# COMBO.RASTER.list = list.files(DATA_path, pattern = 'COMBO_RASTER_CONTEXT_EVERGREEN', full.names = TRUE, recursive = TRUE)
+#  
+# 
+# #########################################################################################################################
+# ## Now combine the niche tables for each species into one table
+# COMBO.NICHE.ALL <- COMBO.NICHE.list[1:8] %>%
+# 
+#   ## pipe the list into lapply
+#   lapply(function(x) {
+# 
+#     ## create the character string
+#     f <- paste0(x)
+# 
+#     ## load each .csv file
+#     d <- readRDS(f)
+#     d
+# 
+#   }) %>%
+# 
+#   ## finally, bind all the rows together
+#   bind_rows
+# 
+# 
+# ## Update this
+# str(COMBO.NICHE.ALL)
+# dim(COMBO.NICHE.ALL)
+# 
+# 
+# ## Make sure the Species are unique
+# COMBO.NICHE.ALL = COMBO.NICHE.ALL[!duplicated(COMBO.NICHE.ALL[,c('searchTaxon')]),]
+# dim(COMBO.NICHE.ALL)
+# length(unique(COMBO.NICHE.ALL$searchTaxon))
+# 
+# 
+# #########################################################################################################################
+# ## Now combine the raster tables for each species into one table
+# COMBO.RASTER.ALL <- COMBO.RASTER.list %>%
+# 
+#   ## pipe the list into lapply
+#   lapply(function(x) {
+# 
+#     ## create the character string
+#     f <- paste0(x)
+# 
+#     ## load each .csv file
+#     d <- readRDS(f)
+#     d
+# 
+#   }) %>%
+# 
+#   ## finally, bind all the rows together
+#   bind_rows
+# 
+# 
+# ## This is a summary of maxent output for current conditions
+# dim(COMBO.RASTER.ALL)
+# names(COMBO.RASTER.ALL)[1:10]
+# 
+# 
+# ##
+# length(unique(COMBO.RASTER.ALL$searchTaxon))
+# 
+# 
+# 
+# #########################################################################################################################
+# ## Save the niche and raster data
+# saveRDS(COMBO.NICHE.ALL,  paste0(DATA_path, 'COMBO_NICHE_ALL_',  save_run, '.rds'))
+# saveRDS(COMBO.RASTER.ALL, paste0(DATA_path, 'COMBO_RASTER_ALL_', save_run, '.rds'))
 
 
 

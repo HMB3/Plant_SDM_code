@@ -62,11 +62,14 @@ head(gcms.50) ; head(gcms.70) ; head(gcms.30)
 # make a map of model predictions and overlay a pattern (e.g. hatching) that indicates where climate is novel.
 
 
-## EG arguments to run the algorithm inside the function 
+#########################################################################################################################
+## E.G. arguments to run the algorithm inside the function 
 shp_path      = "./data/base/CONTEXTUAL/"   
-shp           = "aus_states.rds"
+aus_shp       = "aus_states.rds"
+world_shp     = "LAND_world.rds"
+
 x             = scen_2030[3]    
-species       = "Eucalyptus_camaldulensis"
+species       = map_spp[1]   ## "Eucalyptus_camaldulensis" it breaks on Euc. camuldulensis
 maxent_path   = maxent_path  
 climate_path  = "./data/base/worldclim/aus/1km/bio" 
 grid_names    = grid.names   
@@ -76,8 +79,8 @@ create_mess   = "TRUE"
 MESS_folder   = "MESS_output"
 
 
-## reverse sort the list because it is very slow.........
-map_spp_rev     = sort(map_spp,         decreasing = TRUE) 
+## Reverse sort the list because it is very slow.........
+map_spp_rev  = sort(map_spp, decreasing = TRUE) 
 
 
 # Creating polygon list under ac85bi70 scenario for Eucalyptus_viminalis
@@ -95,8 +98,10 @@ map_spp_rev     = sort(map_spp,         decreasing = TRUE)
 
 #########################################################################################################################
 ## Create 2030 maps
-env.grids.2030 = tryCatch(project_maxent_grids_mess(shp_path      = "./data/base/CONTEXTUAL/", ## shapefile, e.g. Australia
-                                                    shp           = "aus_states.rds",          ## Australian states
+env.grids.2030 = tryCatch(project_maxent_grids_mess(shp_path      = "./data/base/CONTEXTUAL/", ## Path for shapefile
+                                                    aus_shp       = "aus_states.rds",          ## Shapefile, e.g. Australian states
+                                                    world_shp     = "LAND_world.rds",          ## Polygon for AUS maps           
+
                                                     scen_list     = scen_2030,                 ## List of climate scenarios
                                                     species_list  = map_spp,                   ## List of species folders with maxent models
                                                     maxent_path   = maxent_path,               ## Output folder
@@ -176,7 +181,7 @@ env.grids.2070 = tryCatch(project_maxent_grids_mess(shp_path      = "./data/base
 ## Test problematic species by entering the values and running the function manually
 unit_path     = "./data/base/CONTEXTUAL/"   ## Data path for the spatial unit of analysis
 unit_file     = "./SUA/SUA_2016_AUST.rds"   ## Spatial unit of analysis - E.G. SUAs
-unit_vec      = "./SUA/SUA_2016_VEC.rds"              ## Vector of rasterized unit cells
+unit_vec      = "./SUA/SUA_2016_VEC.rds"    ## Vector of rasterized unit cells
 world_shp     = "LAND_world.rds"                              
 aus_shp       = "aus_states.rds"
 

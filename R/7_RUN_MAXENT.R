@@ -323,7 +323,7 @@ if (nrow(MAXENT.RESULTS) > 2) {
 ## Now check the match between the species list, and the results list. 
 length(intersect(map_spp_list, MAXENT.RESULTS$searchTaxon)) 
 MAXENT.RESULTS  =  MAXENT.RESULTS[MAXENT.RESULTS$searchTaxon %in% map_spp_list , ] 
-map_spp = unique(MAXENT.RESULTS$searchTaxon)
+map_spp         = unique(MAXENT.RESULTS$searchTaxon)
 length(map_spp);setdiff(sort(map_spp_list), sort(map_spp))
 
 
@@ -410,7 +410,7 @@ SDM.TAXA <- MAXENT.SUMMARY.NICHE[["searchTaxon"]] %>%
   lookup_table(., by_species = TRUE) 
 SDM.TAXA <- setDT(SDM.TAXA, keep.rownames = TRUE)[]
 colnames(SDM.TAXA)[1] <- "searchTaxon"
-SDM.TAXA <- join(SDM.TAXA, APNI)
+SDM.TAXA <- join(SDM.TAXA, APNI)                     ## get rid of APNI
 
 
 ## Join on the native data and the APNI
@@ -418,7 +418,7 @@ MAXENT.SUMMARY.NICHE <- SDM.TAXA %>%
   
   join(., MAXENT.SUMMARY.NICHE) %>% 
   
-  join(., MAXENT.CHECK[c("searchTaxon", "check.map")]) 
+  join(., MAXENT.CHECK[c("searchTaxon", "check.map")])    ## get rid of check map
 
 length(intersect(MAXENT.SUMMARY.NICHE$searchTaxon, GBIF.spp))
 

@@ -408,6 +408,13 @@ if(save_data == "TRUE") {
   ## save .rds file for the next session
   saveRDS(SDM.SPAT.ALL, paste0(DATA_path, 'SDM_SPAT_ALL_',  save_run, '.rds'))
   
+  ## save .shp for future refrence 
+  writeOGR(obj    = SPAT.OUT.SPDF, 
+           dsn    = DATA_path, 
+           layer  = paste0('SPAT_OUT_CHECK_', save_run),
+           driver = "ESRI Shapefile", overwrite_layer = TRUE)
+  
+  
 } else {
   
   message(' skip file saving, not many species analysed')   ##
