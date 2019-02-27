@@ -1,0 +1,621 @@
+#########################################################################################################################
+########################################  CREATE PROJECT DATA ########################################################### 
+#########################################################################################################################
+
+
+## This code takes the raw list of plants with 25 or more growers supplied by Matt Plumber and Anthony Manea, and
+## then cleans the list as best as possible in R to use the species binomial as the unit for downloading and analysis.
+
+## All the cleaining methods will throw up some anomalies.
+
+#########################################################################################################################
+## Setup for project 
+
+
+## Load only the packages needed for the analysis
+# p <- c('ff',    'things',    'raster',        'dismo',        'sp',           'latticeExtra', 'data.table', 
+#        'rgdal', 'rgeos',     'gdalUtils',     'rmaxent',      'readr',        'plyr',         'dplyr',        
+#        'tidyr', 'readr',     'rnaturalearth', 'rasterVis',    'RColorBrewer', 'latticeExtra', 'parallel',     
+#        'ALA4R', 'stringr',   'Taxonstand',    'CoordinateCleaner', 'gsubfn',  'PerformanceAnalytics',
+#        'rvest', 'magrittr',  'devtools',      'ggplot2',      'reshape2',     'rmarkdown', 'flexdashboard', 'shiny', 'rgbif',
+#        'ENMeval', 'tibble',  'ncdf4',         'Cairo', 'velox', 'taxonlookup', 'kgc', 'maptools', 'DataCombine', 'mgcv', 'rsq')
+# 
+# 
+# ## Require packages
+# sapply(p, require, character.only = TRUE)
+# source_gist('26e8091f082f2b3dd279',             filename = 'polygonizer.R')
+# source_gist('c6a1cb61b8b6616143538950e6ec34aa', filename = 'hatch.R')
+# devtools::source_gist('306e4b7e69c87b1826db',   filename = 'diverge0.R')
+# 
+# 
+# ## Source functions, and set temporary directory (for both raster files and just generally)
+# source('./R/GREEN_CITIES_FUNCTIONS.R')
+# source('./R/MAXENT_FUNCTIONS.R')
+# source('./R/MAPPING_FUNCTIONS.R')
+# source('./R/HIA_CLEAN_MATCHING.R')
+# rasterOptions(tmpdir = file.path('./RTEMP')) 
+
+
+
+
+
+#########################################################################################################################
+## 1). READ IN SHAPEFILES
+#########################################################################################################################
+
+
+#########################################################################################################################
+## Set coordinate system definitions :: best to minimise the number of projection used in this project
+## Also get rid of the '+init=ESRI", which are not compatible with some systems (e.g. libraries on linux)
+CRS.MOL      <- CRS('+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +units=m +no_defs')
+CRS.MOL.SDM  <- CRS('+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0')
+CRS.WGS.84   <- CRS("+init=epsg:4326")
+CRS.AUS.ALB  <- CRS("+init=EPSG:3577")
+ALB.CONICAL  <- CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs')
+sp_epsg54009 <- "+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0"
+
+
+#########################################################################################################################
+## Read in spatial data once, rather than in each script
+LAND          = readRDS("./data/base/CONTEXTUAL/LAND_world.rds")
+SUA_2016      = readRDS("./data/base/CONTEXTUAL/SUA/SUA_2016_AUST.rds")
+SUA_2016      = SUA_2016[order(SUA_2016$SUA_NAME16),]
+SUA_2016      = SUA_2016 %>%
+  spTransform(ALB.CONICAL)
+
+Koppen        = readRDS('data/base/CONTEXTUAL/Koppen_1975.rds')
+Koppen_aus    = readRDS('data/base/CONTEXTUAL/KOPPEN_AUS.rds')
+Koppen_zones  = unique(readOGR('data/base/CONTEXTUAL/WC05_1975H_Koppen_Shapefile/WC05_1975H_Koppen_Kriticos_2012.shp')@data[, 1:2])
+Koppen_1975   = raster('data/Koppen_1000m_Mollweide54009.tif')
+AUS_RAIN      = readRDS('data/base/CONTEXTUAL/BOM/BOM_RAIN_AGG.rds')
+
+IN.SUA        = readRDS("./data/base/CONTEXTUAL/IN_SUA_AUS.rds")
+SUA.16        = readRDS("./data/base/CONTEXTUAL/SUA/SUA_2016_AUST.rds")
+LGA           = readRDS("./data/base/CONTEXTUAL/LGA.rds")
+AUS           = readRDS("./data/base/CONTEXTUAL/aus_states.rds")
+ALL.SUA.POP   = read.csv("./data/base/CONTEXTUAL/ABS_SUA_POP.csv", stringsAsFactors = FALSE)
+URB.POP       = read.csv("./data/base/CONTEXTUAL/ABS_URBAN_CENTRE_POP.csv", stringsAsFactors = FALSE)
+
+
+#########################################################################################################################
+## Read in the background data
+background    = readRDS("./data/ANALYSIS/SDM_SPAT_BG_WPW_TEST.rds")  %>%
+  spTransform(CRS.MOL.SDM)
+
+
+
+
+#########################################################################################################################
+## CREATE RASTER OF SIGNIFCANT URBAN AREAS
+#########################################################################################################################
+
+
+## THis has already been run by reading shapefiles and converting to RDS..................................................
+
+
+#########################################################################################################################
+## Read in SUA shapefile and convert columns to numeric and character
+# SUA_2016  = readOGR("./data/base/CONTEXTUAL/SUA/SUA_2016_AUST.shp",
+#                    layer = "SUA_2016_AUST", stringsAsFactors = FALSE)
+# SUA_2016$SUA_CODE16 <- as.numeric(as.character(SUA_2016$SUA_CODE16))
+# SUA_2016$SUA_NAME16 <- as.character(SUA_2016$SUA_NAME16)
+# class(SUA_2016$SUA_CODE16)
+# class(SUA_2016$SUA_NAME16)
+# head(SUA_2016)
+# 
+# 
+# unique(SUA_2016$SUA_NAME16)
+# saveRDS(SUA_2016 , file = paste("./data/base/CONTEXTUAL/SUA/SUA_2016_AUST.rds"))
+
+
+###################################################################################################################
+## Rasterize the SUA shapefile
+# areal_unit = readRDS("./data/base/CONTEXTUAL/SUA/SUA_2016_AUST.rds") %>%
+#   spTransform(ALB.CONICAL)
+# 
+# ##  Rasterize shapefile
+# message('rasterizing SUA shapefile')
+# areal_unit = areal_unit[order(areal_unit$SUA_NAME16),]
+# f <- tempfile()
+# 
+# writeOGR(areal_unit, tempdir(), basename(f), 'ESRI Shapefile')
+# template <- raster('./output/maxent/SUA_TREES_ANALYSIS/Acacia_retinodes/full/Acacia_retinodes_ac85bi30.tif')
+# 
+# areal_unit_rast <- gdal_rasterize(
+#   normalizePath(paste0(f, '.shp')), 
+#   
+#   'H:/green_cities_sdm/data/base/CONTEXTUAL/SUA/SUA_2016_AUST.tif', tr=res(template),
+#   te = c(bbox(template)), a = 'SUA_CODE16', a_nodata = 0, init = 0, ot = 'UInt16', output_Raster = TRUE)
+# 
+# areal_unit_vec <- c(areal_unit_rast[])
+# summary(areal_unit_vec)
+
+
+## Save RDS for areal_unit_rast and areal_unit_vec
+# saveRDS(areal_unit_rast, file = paste("./data/base/CONTEXTUAL/SUA/SUA_2016_RAST.rds"))
+# saveRDS(areal_unit_vec, file = paste("./data/base/CONTEXTUAL/SUA/SUA_2016_VEC.rds"))
+
+SUA_2016_rast = readRDS("./data/base/CONTEXTUAL/SUA/SUA_2016_RAST.rds")
+SUA_2016_vec  = readRDS("./data/base/CONTEXTUAL/SUA/SUA_2016_VEC.rds")
+summary(SUA_2016_vec)
+
+
+
+
+
+#########################################################################################################################
+## 2). READ IN RASTER COMPONENTS NEEDED FOR ANALYSIS
+#########################################################################################################################
+
+
+#########################################################################################################################
+## Now create the variables needed to access current environmental conditions + their names in the functions
+sdm.predictors <- c("Annual_mean_temp",    "Mean_diurnal_range",  "Isothermality",      "Temp_seasonality",  
+                    "Max_temp_warm_month", "Min_temp_cold_month", "Temp_annual_range",  
+                    "Mean_temp_wet_qu",    "Mean_temp_dry_qu",    
+                    "Mean_temp_warm_qu",   "Mean_temp_cold_qu",   
+                    
+                    "Annual_precip",       "Precip_wet_month",   "Precip_dry_month",    "Precip_seasonality",  
+                    "Precip_wet_qu",       "Precip_dry_qu",      
+                    "Precip_warm_qu",      "Precip_col_qu")
+
+env.variables = c("Annual_mean_temp",
+                  "Mean_diurnal_range",
+                  "Isothermality",
+                  "Temp_seasonality",
+                  "Max_temp_warm_month",
+                  "Min_temp_cold_month",
+                  "Temp_annual_range",
+                  "Mean_temp_wet_qu",
+                  "Mean_temp_dry_qu",
+                  "Mean_temp_warm_qu",
+                  "Mean_temp_cold_qu",
+                  
+                  "Annual_precip",
+                  "Precip_wet_month",
+                  "Precip_dry_month",
+                  "Precip_seasonality",
+                  "Precip_wet_qu",
+                  "Precip_dry_qu",
+                  "Precip_warm_qu",
+                  "Precip_col_qu",
+                  "PET")
+
+## The AWAP variables
+awap.variables = c("Annual_mean_temp",
+                   "Mean_diurnal_range",
+                   "Isothermality",
+                   "Temp_seasonality",
+                   "Max_temp_warm_month",
+                   "Min_temp_cold_month",
+                   "Temp_annual_range",
+                   "Mean_temp_wet_qu",
+                   "Mean_temp_dry_qu",
+                   "Mean_temp_warm_qu",
+                   "Mean_temp_cold_qu",
+                   
+                   "Annual_precip",
+                   "Precip_wet_month",
+                   "Precip_dry_month",
+                   "Precip_seasonality",
+                   "Precip_wet_qu",
+                   "Precip_dry_qu",
+                   "Precip_warm_qu",
+                   "Precip_col_qu",
+                   "PET", 
+                   
+                   "Drought_freq_extr", 
+                   "Drought_max_dur_extr", 
+                   "Drought_max_int_extr", 
+                   "Drought_max_rel_int_extr",
+                   "Drought_mean_dur_extr", 
+                   "Drought_mean_int_extr", 
+                   "Drought_mean_rel_int_extr",
+                   "HWF", "HWA", "HWM", "HWD", "HWN",
+                   "HW_CUM_ALL", "HW_CUM_AV",  "HW_CUM_HOT")
+
+
+## A-priori worldclim predictors :: these have been chosen carefully 
+sdm.select     <- c("Annual_mean_temp", "Temp_seasonality",    "Max_temp_warm_month", "Min_temp_cold_month",
+                    "Annual_precip",    "Precip_seasonality",  
+                    "Precip_wet_month", "Precip_dry_month")
+
+
+## All the worldclim predictors 
+grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',      'Temp_seasonality', 
+               'Max_temp_warm_month', 'Min_temp_cold_month', 'Temp_annual_range',  'Mean_temp_wet_qu',
+               'Mean_temp_dry_qu',    'Mean_temp_warm_qu',   'Mean_temp_cold_qu',  'Annual_precip',
+               'Precip_wet_month',    'Precip_dry_month',    'Precip_seasonality', 'Precip_wet_qu',
+               'Precip_dry_qu',       'Precip_warm_qu',      'Precip_col_qu')
+
+
+#########################################################################################################################
+## Create a raster stack of current global environmental conditions
+world.grids.current = stack(
+  file.path('./data/base/worldclim/world/0.5/bio/current',
+            sprintf('bio_%02d', 1:19)))
+
+
+## Create a raster stack of current Australian environmental conditions
+inventory.grids.current = stack(
+  file.path('./data/base/worldclim/aus/1km/bio/current/WGS/', 
+            sprintf('bio_%02d.tif', 1:19))) 
+
+#########################################################################################################################
+## Create a raster stack of current Australian environmental conditions, and divide the current environmental grids by 10
+aus.grids.current <- stack(
+  file.path('./data/base/worldclim/aus/1km/bio/current',   ## ./data/base/worldclim/aus/1km/bio
+            sprintf('bio_%02d.tif', 1:19)))
+
+for(i in 1:11) {
+  
+  ## simple loop
+  message(i)
+  aus.grids.current[[i]] <- aus.grids.current[[i]]/10
+  
+}  
+
+
+#########################################################################################################################
+## Also get the PET raster
+PET               = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
+
+
+
+
+
+#########################################################################################################################
+## PREPARE TEMPLATE RASTER GRIDS FOR SDM ANALYSIS
+#########################################################################################################################
+
+
+#########################################################################################################################
+## Use GDAL to create a raster which = 1 where bio_01 has data (i.e. land), and NA where there is no data
+## Also note that gdalwarp is much faster, and the trs ='+init=esri:54009' argument does not work here
+
+
+# ## 1km
+# template.raster.1km <- gdalwarp("data/base/worldclim/world/0.5/bio/current/bio_01",
+#                                 tempfile(fileext = '.tif'),
+#                                 t_srs = '+proj=moll +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs',
+#                                 output_Raster = TRUE,
+#                                 tr = c(1000, 1000),
+#                                 r = "near", dstnodata = '-9999')
+# 
+# 
+# ## 5km 
+# template.raster.5km <- gdalwarp("data/base/worldclim/world/0.5/bio/current/bio_01",
+#                                 tempfile(fileext = '.tif'),
+#                                 t_srs = '+proj=moll +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs',
+#                                 output_Raster = TRUE,
+#                                 tr = c(5000, 5000),
+#                                 r = "near", dstnodata = '-9999')
+# 
+# 
+# ## 10km
+# template.raster.10km <- gdalwarp("data/base/worldclim/world/0.5/bio/current/bio_01",
+#                                  tempfile(fileext = '.tif'),
+#                                  t_srs = '+proj=moll +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs',
+#                                  output_Raster = TRUE,
+#                                  tr = c(10000, 10000),
+#                                  r = "near", dstnodata = '-9999')
+# 
+# 
+# ## Asign all the cells to be NA
+# template.raster.1km  <- !is.na(template.raster.1km)
+# template.raster.5km  <- !is.na(template.raster.5km)
+# template.raster.10km <- !is.na(template.raster.10km)
+# 
+# 
+# writeRaster(template.raster.1km,  'data/template_has_data_1km.tif',   datatype = 'INT2S', overwrite = TRUE)
+# writeRaster(template.raster.5km,  'data/template_has_data_5km.tif',   datatype = 'INT2S', overwrite = TRUE)
+# writeRaster(template.raster.10km, 'data/template_has_data_10km.tif',  datatype = 'INT2S', overwrite = TRUE)
+# 
+# 
+# template.cells.1km  <- Which(template.raster.1km  == 1,  cells = TRUE)    ## Is this is incomplete, might be causing the error?
+# template.cells.5km  <- Which(template.raster.5km  == 1,  cells = TRUE)    ## ..................................................
+# template.cells.10km <- Which(template.raster.10km == 1,  cells = TRUE)
+# 
+# 
+# ## Save the cells to file
+saveRDS(template.cells.1km,  'data/has_data_cells_1km.rds')
+saveRDS(template.cells.5km,  'data/has_data_cells_5km.rds')
+saveRDS(template.cells.10km, 'data/has_data_cells_10km.rds')
+
+
+#########################################################################################################################
+## Load template rasters
+template.raster.1km  = raster("./data/template_has_data_1km.tif")
+template.raster.5km  = raster("./data/template_has_data_5km.tif")
+template.raster.10km = raster("./data/template_has_data_10km.tif")
+
+
+template.cells.1km   = readRDS("./data/has_data_cells_1km.rds")
+template.cells.5km   = readRDS("./data/has_data_cells_5km.rds")
+template.cells.10km  = readRDS("./data/has_data_cells_10km.rds")
+
+
+
+
+
+#########################################################################################################################
+## CREATE NAMES FOR THE GLOBAL CIRCULATION MODELS
+#########################################################################################################################
+
+
+#########################################################################################################################
+## Create the names for the GCMs
+h <- read_html('http://www.worldclim.org/cmip5_30s') 
+gcms <- h %>% 
+  html_node('table') %>% 
+  html_table(header = TRUE) %>% 
+  filter(rcp85 != '')
+
+id.50 <- h %>% 
+  html_nodes(xpath = "//a[text()='bi']/@href") %>% 
+  as.character %>% 
+  grep('85bi50', ., value = TRUE) %>% 
+  basename %>% 
+  sub('\\.zip.', '', .)
+
+id.70 <- h %>% 
+  html_nodes(xpath = "//a[text()='bi']/@href") %>% 
+  as.character %>% 
+  grep('85bi70', ., value = TRUE) %>% 
+  basename %>% 
+  sub('\\.zip.', '', .)
+
+
+#########################################################################################################################
+## Create the IDs : A work around because the 2030 data comes from CC in Aus, not worldclim
+id.30 = gsub("50", "30", id.50)
+
+
+## Create the IDs
+gcms.30 <- cbind(gcms, id.30)
+gcms.30$GCM = sub(" \\(#\\)", "", gcms$GCM)
+
+gcms.50 <- cbind(gcms, id.50)
+gcms.50$GCM = sub(" \\(#\\)", "", gcms$GCM)  ## sub replaces first instance in a string, gsub = global
+
+gcms.70 <- cbind(gcms, id.70)
+gcms.70$GCM = sub(" \\(#\\)", "", gcms$GCM) 
+
+
+## Now create the scenario lists across which to loop
+gcms.50 ; gcms.70 ; gcms.30
+
+
+## Just get the 6 models picked by CSIRO for Australia, for 2030, 2050 and 2070
+## See the publication for why we choose this
+scen_2030 = c("mc85bi30", "no85bi30", "ac85bi30", "cc85bi30", "gf85bi30", "hg85bi30")
+scen_2050 = c("mc85bi50", "no85bi50", "ac85bi50", "cc85bi50", "gf85bi50", "hg85bi50")
+scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cc85bi70", "gf85bi70", "hg85bi70")
+
+
+
+
+
+#########################################################################################################################
+## 4). READ IN SPECIES LISTS
+#########################################################################################################################
+
+
+#########################################################################################################################
+## Horticultural lists ::
+## This evergreen list (HIA.list) derives from all species and varieties sold anywhere in Australia in the last 5 years. Anthony Manea cleaned 
+## up the data and cross-linked to growth form and exotic/native status and derived a list of ~1000 species that are the 
+## Most commonly sold, covering the right ratio of growth forms, regional representation and native/exotic
+WPW.list            = read.csv("./data/base/HIA_LIST/GBIF/WPW_GBIF_NAMES.csv",                   stringsAsFactors = FALSE)
+WPW.spp             = sort(WPW.list$species)
+WPW.spp             = WPW.spp[lapply(WPW.spp,length)>0]
+#saveRDS(WPW.spp, file = paste("./data/base/HIA_LIST/GBIF/WPW_GBIF_NAMES.rds"))
+
+
+GBIF.spp.bs = c("Corymbia citriodora",      "Eucalyptus baileyana",  "Eucalyptus baxteri",  "Eucalyptus decorticans", "Eucalyptus dumosa",
+                "Eucalyptus major",         "Eucalyptus megacarpa",  "Eucalyptus moluccana", "Eucalyptus ovata",      "Eucalyptus patens",
+                "Eucalyptus salmonophloia", "Eucalyptus tenuipes")
+
+
+HIA.list            = read.csv("./data/base/HIA_LIST/HIA/GREEN_CITIES_DRAFT_LIST_2709_2017.csv", stringsAsFactors = FALSE)
+HIA.RAW             = read.csv("./data/base/HIA_LIST/HIA/HIA_ORIGINAL_RAW.csv",                  stringsAsFactors = FALSE)
+CLEAN.list          = read.csv("./data/base/HIA_LIST/HIA/HIA.CLEAN.csv",                         stringsAsFactors = FALSE)
+APNI                = readRDS("./data/base/HIA_LIST/ALA/APNI_LIST.rds")
+HOLLOW.SPP          = read.csv("./data/base/HIA_LIST/Tree_hollows/Hollow_species.csv", stringsAsFactors = FALSE)
+HOLLOW.SPP          = HOLLOW.SPP$Hollow_species
+
+MAXENT.RATING.LAT   = read.csv("./output/maxent/MAXENT_CHECK_RATING_FEB2019.csv",                stringsAsFactors = FALSE)
+#MXT.CHECK           = read.csv("./output/maxent/CHECK_SPP_MAPS_BIAS_0310_2018.csv",              stringsAsFactors = FALSE)
+MXT.CHECK           = read.csv("./output/maxent/MAXNET_ORIGIN_RESULTS.csv",                      stringsAsFactors = FALSE)
+native.good.models  = subset(MXT.CHECK, Origin == "Native" & Check.map <=2)$searchTaxon
+
+
+#########################################################################################################################
+## Read in Alessandro's species
+TI.LIST             = read.csv("./data/base/HIA_LIST/COMBO/ALE_TREE_SPP_LIST.csv",               stringsAsFactors = FALSE)
+TI.XY               = read.csv("./data/base/HIA_LIST/COMBO/ALE_TREE_SPP_XY.csv",                 stringsAsFactors = FALSE)
+
+
+## Check Ale's data
+TI.LIST = na.omit(TI.LIST)
+TI.LIST = TI.LIST[with(TI.LIST, rev(order(Plantings))), ]
+head(TI.LIST$searchTaxon, 10)
+
+
+## Rename tree inventory data
+TI.XY = TI.XY[c("searchTaxon", "POINT_X", "POINT_Y", "FILENAME")]
+names(TI.XY)[names(TI.XY) == 'FILENAME'] <- 'INVENTORY'
+names(TI.XY)[names(TI.XY) == 'POINT_X']  <- 'lon'
+names(TI.XY)[names(TI.XY) == 'POINT_Y']  <- 'lat'
+
+
+## Remove the gunk
+TI.XY$INVENTORY = gsub("_trees.shp",      "", TI.XY$INVENTORY)
+TI.XY$INVENTORY = gsub("_trees_.shp",     "", TI.XY$INVENTORY)
+TI.XY$INVENTORY = gsub("_trees_sign.shp", "", TI.XY$INVENTORY)
+unique(TI.XY$INVENTORY)
+TI.XY$SOURCE = 'INVENTORY'
+
+
+## Filter the XY tree inventory data to just the cleaned species
+TI.XY  = TI.XY[TI.XY$searchTaxon %in% unique(TI.LIST$searchTaxon), ]
+length(unique(TI.XY$searchTaxon))
+TI.XY = na.omit(TI.XY)
+
+## Replace the weird shapefile name for hobart
+TI.XY$INVENTORY = gsub("_trees_sign_.shp", "", TI.XY$INVENTORY)
+head(TI.XY)
+unique(TI.XY$INVENTORY)
+
+
+#########################################################################################################################
+## Experimental trait lists ::
+TRAIT.SPP  = read.csv("./data/base/HIA_LIST/RENEE/RankingTraits_ALL.csv",                     stringsAsFactors = FALSE)
+MOD.3.SPP  = read.csv("./data/base/HIA_LIST/RENEE/MOD3_OCT18.csv",                            stringsAsFactors = FALSE)
+DIANA.TC   = read.csv("./data/base/HIA_LIST/RENEE/Distribution_Species_Tcrit_Diana.csv",      stringsAsFactors = FALSE)
+MOD.3.CHK  = join(MOD.3.SPP, MXT.CHECK[c("searchTaxon", "Check.map", "Origin", "genus", "order", "group",
+                                         "Plant.type",  "Plantings", "COMBO.count", "AUS_RECORDS",
+                                         "Total.growers",  "Number.of.States")], type = "full") 
+MOD.3.CHK  = MOD.3.CHK [with(MOD.3.CHK , order(Check.map)), ]
+colnames(TRAIT.SPP)[colnames(TRAIT.SPP)=="Species"] <- "searchTaxon"
+trait.spp = unique(TRAIT.SPP$searchTaxon)
+trait_spp = gsub(" ", "_", trait.spp)
+
+
+#########################################################################################################################
+## Experimental lists :: the next round of experiments will be... 
+# NURSE.MATCH          = read.csv("./data/base/HIA_LIST/MANUEL/nurseries.csv",                stringsAsFactors = FALSE)
+# campbelltown         = read.csv("./data/base/HIA_LIST/HIA/campbelltown_species.csv",        stringsAsFactors = FALSE)
+# canberra             = read.csv("./data/base/HIA_LIST/canberra_wordcloud.csv",              stringsAsFactors = FALSE)
+
+
+
+
+
+
+#########################################################################################################################
+## 4). CLEAN THE HIA LIST
+#########################################################################################################################
+
+
+#########################################################################################################################
+## These are the columns we need for as many species as possible
+## They should come from the CLEAN dataset, not the HIA
+results.columns = c("searchTaxon",       ## From the download code 
+                    "Origin",            ## From Anthony Manea's spreadsheet, will be affected by taxonomy....
+                    "Plant.type",        ## From Anthony Manea's spreadsheet, will be affected by taxonomy....
+                    "GLOBAL_RECORDS",    ## From the workflow
+                    "AUS_RECORDS",       ## From the workflow
+                    "Plantings",         ## From Alessandro
+                    "SUA_COUNT",         ## From the workflow
+                    "Total.growers",     ## From Anthony Manea's spreadsheet.....    
+                    "Number.of.States",  ## From Anthony Manea's spreadsheet.....
+                    "Number_var",        ## From Maxent
+                    "Var_pcont",         ## From Maxent
+                    "Per_cont",          ## From Maxent
+                    "Var_pimp",          ## From Maxent
+                    "Perm_imp",          ## From Maxent
+                    "X.Training.samples", 
+                    "Iterations",                                                                             
+                    "Training.AUC",
+                    "max_tss",
+                    "X.Background.points",  
+                    "X10.percentile.training.presence.Logistic.threshold")
+
+
+#########################################################################################################################
+## Merge the ~1000 with the top 200
+## This merge won't get the ones that match to binomial
+HIA.list$Binomial <- sub('(^\\S+ \\S+).*', '\\1',   HIA.list$Species) # \\s = white space; \\S = not white space
+CLEAN.list$Binomial <- sub('(^\\S+ \\S+).*', '\\1', CLEAN.list$Species) # \\s = white space; \\S = not white space
+
+
+#########################################################################################################################
+## Create the contextual columns
+## Sum the number of growers and states across multiple varieties
+n.spp <- tapply(CLEAN.list$Number.of.growers, CLEAN.list$Binomial, sum, na.rm = TRUE)
+CLEAN.list$Number.of.growers.total <- n.spp[CLEAN.list$Binomial]
+CLEAN.GROW = CLEAN.list[c("Binomial",
+                          "Plant.type",
+                          "Origin",
+                          "Number.of.growers.total",
+                          "Number.of.States")]
+names(CLEAN.GROW ) = c("searchTaxon", "Plant.type", "Origin", "Total.growers", "Number.of.States")
+CLEAN.GROW         = CLEAN.GROW [!duplicated(CLEAN.GROW [,c('searchTaxon')]),] 
+
+
+
+
+
+#########################################################################################################################
+## 6). CHECK TAXONOMY FOR THE HORTICULTURAL SPECIES
+#########################################################################################################################
+
+
+## This is simply the number of native species with > 50 plantings and 1 grower, with good models
+## from the previous analyis :: 'native.good.models'
+length(intersect(subset(TI.LIST, Plantings > 50)$searchTaxon, CLEAN.SPP$Binomial))
+
+
+#########################################################################################################################
+## Get the intersection between the Australian planted list, and the indudstry list. All the species will come from here.
+
+
+## The remaining problems are the taxonomy of the Planted list, and the taxonomy of the HIA list.
+## Try harmonising this first, before joining the contextual column on later.
+
+## The problems is the mis-match between what we searched, and what GBIF returned. 
+
+## 1). Create the inital list by combing the planted trees with evergreen list
+##     TREE.HIA.SPP = intersect(subset(TI.LIST, Plantings > 50)$searchTaxon, CLEAN.SPP$Binomial) 
+##     This is about 400 species
+##     Origin
+##     NA     Exotic Native 
+##     20.5   25.8   53.8 
+
+## 2). Clean this list using the GBIF backbone taxonomy :: use the "species" column in from the GBIF "species lookup" tool
+##     https://www.gbif.org/tools/species-lookup
+
+## 3). Run the GBIF "species" list through the TPL taxonomy. Take "New" Species and Genus as the "searchTaxon"
+##     Make this column the "searchTaxon" in CLEAN.GROW
+
+
+
+
+
+#########################################################################################################################
+## 7). CREATE LIST OF INVENTORY SPECIES
+#########################################################################################################################
+
+
+#########################################################################################################################
+## Create a count of the horticultural species
+TI.LUT = as.data.frame(table(TI.XY$searchTaxon))
+names(TI.LUT) = c("searchTaxon", "FREQUENCY")
+TI.LUT = TI.LUT[with(TI.LUT, rev(order(FREQUENCY))), ] 
+head(TI.LUT);dim(TI.LUT)
+length(intersect(CLEAN.SPP$Binomial, TI.LUT $searchTaxon))
+
+
+#########################################################################################################################
+## Check the proportions of different categories
+round(with(MAXENT.RATING.LAT, table(CHECK_MAP)/sum(table(CHECK_MAP))*100), 1)
+
+
+
+#########################################################################################################################
+## OUTSTANDING LIST TASKS:
+#########################################################################################################################
+
+
+## Remove gunk from this file............................................................................................
+
+## Increase the taxonomic check to include all species on HIA list
+
+
+
+
+
+#########################################################################################################################
+############################################  END OF HIA LIST CODE ###################################################### 
+#########################################################################################################################

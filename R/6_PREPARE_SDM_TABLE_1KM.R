@@ -45,6 +45,7 @@ sp_epsg54009 = "+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +uni
 
 #########################################################################################################################
 ## Create a table with all the variables needed for SDM analysis
+## This is the step where an ad/hoc version comes in 
 ## CLEAN.TRUE = readRDS(paste0(DATA_path, 'COMBO_RASTER_ALL_WPW_TEST', '.rds'))
 ## CLEAN.TRUE = CLEAN.TRUE[CLEAN.TRUE$searchTaxon %in% GBIF.spp, ]
 dim(CLEAN.TRUE)
@@ -85,10 +86,12 @@ SDM.DATA.ALL <- mapply(function(x, cells) {
 
 
 ## Check to see we have 19 variables + the species for the standard predictors, and 19 for all predictors
+## create two more template.raster files: 5km amnd 10km
 ## Check data :: template, data table and species 
 dim(template.raster)
 dim(SDM.DATA.ALL)
 names(SDM.DATA.ALL)
+unique(SDM.DATA.ALL$SOURCE)
 length(unique(SDM.DATA.ALL$searchTaxon))
 class(Koppen_1975)
 
@@ -345,8 +348,6 @@ if(save_data == "TRUE") {
 
 
 
-
-
 #########################################################################################################################
 ## 3). CREATE BACKGROUND POINTS AND VARIBALE NAMES
 #########################################################################################################################
@@ -359,46 +360,37 @@ projection(background) = "+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=
 
 #########################################################################################################################
 ## Add in random records from previously saved runs
-background = background [!background$searchTaxon %in% GBIF.spp, ]               ## Don't add records for other species
+background = background[!background$searchTaxon %in% GBIF.spp, ]                  ## Don't add records for other species
 length(unique(background$searchTaxon));dim(background)
 intersect(unique(background$searchTaxon), GBIF.spp)
 
 
-SDM.SPAT.ALL.DF = as.data.frame(SDM.SPAT.ALL)
-round(with(SDM.SPAT.ALL.DF, table(SOURCE)/sum(table(SOURCE))*100), 1)
-round(with(background, table(SOURCE)/sum(table(SOURCE))*100), 1)
-
-
 #########################################################################################################################
-## Make the columns match......................................................
-names(background)
-names(SDM.SPAT.ALL)
+## Add a column for which source the data comes from :: Background or occurrence 
+background$TYPE   = "BG"
+SDM.SPAT.ALL$TYPE = "OCC"
 setdiff(names(SDM.SPAT.ALL), names(background))
-
-background$OBS      = "BG"
-background$SOURCE   = "BG"
-background$SPAT_OUT = "BG"
-background$index    = "BG"
-background$SPAT_SPP = "BG" 
-
-
-drops <- c("lon", "lat") # list of col names
-SDM.SPAT.ALL <- SDM.SPAT.ALL[,!(names(SDM.SPAT.ALL) %in% drops)]
-setdiff(names(SDM.SPAT.ALL), names(background))
+ 
+# drops <- c("OBS", "SPAT_SPP", "SPAT_OUT", "index") # list of col names
+# SDM.SPAT.ALL <- SDM.SPAT.ALL[,!(names(SDM.SPAT.ALL) %in% drops)]
+# setdiff(names(SDM.SPAT.ALL), names(background))
 
 
 #########################################################################################################################
 ## Now bind on the background points
-#browser()
-
-SDM.SPAT.ALL = rbind(SDM.SPAT.ALL, background)
 projection(SDM.SPAT.ALL);
 projection(background)
 
 
+SDM.SPAT.OCC.BG = rbind(SDM.SPAT.ALL, background)
+unique(SDM.SPAT.OCC.BG$SOURCE)
+unique(SDM.SPAT.OCC.BG$TYPE)
+
+
+
 ## And check what the
-unique(SDM.SPAT.ALL$SOURCE) 
-length(unique(SDM.SPAT.ALL$searchTaxon))
+unique(SDM.SPAT.OCC.BG$SOURCE) 
+length(unique(SDM.SPAT.OCC.BG$searchTaxon))
 
 
 #########################################################################################################################

@@ -59,41 +59,15 @@ names(background)
 
 ## The background data has data from about 6.7k species, created earlier in the project. This table is merged with the 
 ## data for the species being analysed, and the inverse speices are taken so there is no overlap. The GB table hasn't strictly 
-## been created with the same processes as the latest SDM data, but it shouldn't matter too much.
+## been created with the same processes as the latest SDM data. Re-create it with urban data
 length(unique(background$searchTaxon))
 length(intersect(unique(SDM.SPAT.ALL$searchTaxon), GBIF.spp))  ## This should be same as the number of species
 
 
-## Currently, the background data doesn't have exactly the same bias as the analysis data. But if we re-run all the data 
-## creation with the new urban data, we could just include this in the background data? Then include the source column
-
-
-## Spatial pattern of BG data needs to match 
-## Binary raster, rasterize ALA and GBIF :: grid cell. Far more presences, due to spatial scale 
-## Which is less intensive computational?
-## Tree inventory data rarefy this too. But could -
-## Maybe thinning just the inventory data, not ALA.
-## Biases vs. 
-
-## Just how much difference does autocorrelation make?
-## IDW to occurrences and background
-
-## Add inventory data to GB points - rarefy to 5km, 10km..................................................................
-## Run 5 species with BG using all data, vs rarefy inventory data.........................................................
-## Binary file for ALA/GBIF
-## 
-## Different data sources :: targetted background combines all the data together
-## Retain the true bias of occurrences.
-## Sensitivity analysis for this :: raregy 5km vs. 10km..................................................................
-## estimate density surface across ALA and GBIF, use this to rarefy?
-## matching occ to inventory data loses info...
-## 
-## two different levels of bias - appy a single rarefaction factor across.
-## desnity balance shouldn't create too much leverage. How to combine datasets with varying biases.
-## Different proportions : take proportional bg points from each source..................................................
-## Vary by species - calc prop from inventory (10%), take 10% from inventory. Calc on each species - what are the proportions?
-## Take 90% of records for 70k from GBIF, vs. 10% for inventory
-unique(SDM.SPAT.ALL$SOURCE)                                    ## Could subset by source
+## Sample the backround records in the same proportion as the sources for each species - E.G. 90% from ALA/GBIF, 10% urban
+## This would be created as variable from each occurrence file, the source column would need to be included.
+## In theory, we can do this with the existing tables for 3.5 species   
+unique(SDM.SPAT.ALL$SOURCE)
 SDM.SPAT.ALL.DF = as.data.frame(subset(SDM.SPAT.ALL, SOURCE != "BG"))
 round(with(SDM.SPAT.ALL.DF, table(SOURCE)/sum(table(SOURCE))*100), 1)
 unique(background$SOURCE)                                      ## Could subset by source
@@ -181,7 +155,7 @@ lapply(GBIF.spp, function(spp){
 #########################################################################################################################
 
 
-## Variables to run within the function
+## Variables to run an example within the function
 sdm.predictors          = sdm.predictors
 name                    = spp
 maxent_path             = './output/maxent/SUA_TREES_ANALYSIS/'
@@ -195,12 +169,6 @@ cor_thr                 = 0.7      ## The maximum allowable pairwise correlation
 pct_thr                 = 5        ## The minimum allowable percent variable contribution 
 k_thr                   = 3        ## The minimum number of variables to be kept in the model.
 responsecurves          = TRUE     ## Response curves
-
-
-## Update
-GBIF.spp.bs = c("Corymbia citriodora", "Eucalyptus baileyana",  "Eucalyptus baxteri",  "Eucalyptus decorticans", "Eucalyptus dumosa",
-                "Eucalyptus major",    "Eucalyptus megacarpa",  "Eucalyptus moluccana", "Eucalyptus ovata",      "Eucalyptus patens",
-                "Eucalyptus salmonophloia", "Eucalyptus tenuipes")
 
 
 #########################################################################################################################
