@@ -30,11 +30,6 @@ if(read_data == "TRUE") {
 }
 
 
-#########################################################################################################################
-##  some proj libs do not like the 'ESRI' string code - set this here
-sp_epsg54009 = "+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0"
-
-
 
 
 
@@ -50,6 +45,7 @@ sp_epsg54009 = "+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +uni
 ## CLEAN.TRUE = CLEAN.TRUE[CLEAN.TRUE$searchTaxon %in% GBIF.spp, ]
 dim(CLEAN.TRUE)
 length(unique(CLEAN.TRUE$searchTaxon))
+CLEAN.TRUE$searchTaxon = as_utf8(CLEAN.TRUE$searchTaxon, normalize = TRUE)
 length(unique(CLEAN.TRUE$OBS))
 unique(CLEAN.TRUE$SOURCE)
 
@@ -100,6 +96,10 @@ class(Koppen_1975)
 xres(template.raster);yres(template.raster)
 
 
+## Save BG points here
+#saveRDS(SDM.DATA.ALL, paste0(DATA_path, 'background_points.rds'))
+
+
 
 
 
@@ -110,6 +110,7 @@ xres(template.raster);yres(template.raster)
 
 ## The cc_outl function is a bottleneck. I hoped to make the code run for one species at a time - this works locally,
 ## but can't get it working easily on katana for all the species....................................................
+## So we will need to process all the species locally, then send them to Shawn.
 
 
 ## Check dimensions
@@ -157,7 +158,8 @@ COMBO.LUT <- SDM.COORDS %>%
   as.data.frame() 
 COMBO.LUT <- setDT(COMBO.LUT, keep.rownames = FALSE)[]
 names(COMBO.LUT) = c("species", "FREQUENCY")
-COMBO.LUT = COMBO.LUT[with(COMBO.LUT, rev(order(FREQUENCY))), ] 
+COMBO.LUT = COMBO.LUT[with(COMBO.LUT, rev(order(FREQUENCY))), ]
+View(COMBO.LUT)
 
 
 ## Watch out here - this sorting could cause problems for the order of the data frame once it's stitched back together
@@ -226,6 +228,7 @@ if(save_data == "TRUE") {
   
   ## save .rds file for the next session
   saveRDS(SPAT.OUT, paste0(DATA_path, 'ALA_GBIF_SPAT_OUT_', save_run, '.rds'))
+  #SPAT.OUT = readRDS(paste0(DATA_path, 'ALA_GBIF_SPAT_OUT_', save_run, '.rds'))
   
 } else {
   
@@ -354,42 +357,36 @@ if(save_data == "TRUE") {
 
 
 #########################################################################################################################
-##  Dodgy, but need to make sure there are no ESRI: codes in the coord systems
-projection(background) = "+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0"
-
-
-#########################################################################################################################
 ## Add in random records from previously saved runs
-background = background[!background$searchTaxon %in% GBIF.spp, ]                  ## Don't add records for other species
-length(unique(background$searchTaxon));dim(background)
-intersect(unique(background$searchTaxon), GBIF.spp)
+background.points = background.points[!background.points$searchTaxon %in% GBIF.spp, ]                  ## Don't add records for other species
+length(unique(background.points$searchTaxon));dim(background.points)
+intersect(unique(background.points$searchTaxon), GBIF.spp)
 
 
 #########################################################################################################################
 ## Add a column for which source the data comes from :: Background or occurrence 
-background$TYPE   = "BG"
-SDM.SPAT.ALL$TYPE = "OCC"
-setdiff(names(SDM.SPAT.ALL), names(background))
+background.points$TYPE = "BG"
+SDM.SPAT.ALL$TYPE      = "OCC"
+setdiff(names(SDM.SPAT.ALL), names(background.points))
+setdiff(names(background.points), names(SDM.SPAT.ALL))
  
-# drops <- c("OBS", "SPAT_SPP", "SPAT_OUT", "index") # list of col names
-# SDM.SPAT.ALL <- SDM.SPAT.ALL[,!(names(SDM.SPAT.ALL) %in% drops)]
-# setdiff(names(SDM.SPAT.ALL), names(background))
+drops <- c("OBS", "SPAT_SPP", "SPAT_OUT", "index", "lon", "lat") 
+SDM.SPAT.ALL      <- SDM.SPAT.ALL[,!(names(SDM.SPAT.ALL) %in% drops)]
+background.points <- background.points[,!(names(background.points) %in% drops)]
+setdiff(names(SDM.SPAT.ALL), names(background.points))
 
 
 #########################################################################################################################
 ## Now bind on the background points
 projection(SDM.SPAT.ALL);
-projection(background)
+projection(background.points)
+setdiff(names(SDM.SPAT.ALL), names(SDM.SPAT.ALL))
+identical(length(names(SDM.SPAT.ALL)), length(names(background.points)))
 
 
-SDM.SPAT.OCC.BG = rbind(SDM.SPAT.ALL, background)
+SDM.SPAT.OCC.BG = rbind(SDM.SPAT.ALL, background.points)
 unique(SDM.SPAT.OCC.BG$SOURCE)
 unique(SDM.SPAT.OCC.BG$TYPE)
-
-
-
-## And check what the
-unique(SDM.SPAT.OCC.BG$SOURCE) 
 length(unique(SDM.SPAT.OCC.BG$searchTaxon))
 
 
@@ -398,7 +395,7 @@ length(unique(SDM.SPAT.OCC.BG$searchTaxon))
 if(save_data == "TRUE") {
   
   ## save .rds file for the next session
-  saveRDS(SDM.SPAT.ALL, paste0(DATA_path, 'SDM_SPAT_ALL_',  save_run, '.rds'))
+  saveRDS(SDM.SPAT.OCC.BG, paste0(DATA_path, 'SDM_SPAT_OCC_BG',  save_run, '.rds'))
   
   ## save .shp for future refrence 
   writeOGR(obj    = SPAT.OUT.SPDF, 

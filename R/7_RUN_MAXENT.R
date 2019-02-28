@@ -31,7 +31,7 @@ message('Running maxent models for ', length(GBIF.spp), ' species in the set ', 
 if(read_data == "TRUE") {
   
   ## read in RDS files from previous step
-  SDM.SPAT.ALL = readRDS(paste0(DATA_path, 'SDM_SPAT_ALL_', save_run, '.rds'))
+  SDM.SPAT.OCC.BG = readRDS(paste0(DATA_path, 'SDM_SPAT_OCC_BG',  save_run, '.rds'))
   
 } else {
   
@@ -50,32 +50,46 @@ if(read_data == "TRUE") {
 
 #########################################################################################################################
 ## Check the SDM and background tables
-dim(SDM.SPAT.ALL)
-dim(background)
-
-names(SDM.SPAT.ALL)
-names(background)
+dim(SDM.SPAT.OCC.BG)
 
 
 ## The background data has data from about 6.7k species, created earlier in the project. This table is merged with the 
 ## data for the species being analysed, and the inverse speices are taken so there is no overlap. The GB table hasn't strictly 
 ## been created with the same processes as the latest SDM data. Re-create it with urban data
-length(unique(background$searchTaxon))
-length(intersect(unique(SDM.SPAT.ALL$searchTaxon), GBIF.spp))  ## This should be same as the number of species
+length(unique(background.points$searchTaxon))
+length(intersect(unique(SDM.SPAT.OCC.BG$searchTaxon), GBIF.spp))  ## This should be same as the number of species
 
 
 ## Sample the backround records in the same proportion as the sources for each species - E.G. 90% from ALA/GBIF, 10% urban
 ## This would be created as variable from each occurrence file, the source column would need to be included.
 ## In theory, we can do this with the existing tables for 3.5 species   
-unique(SDM.SPAT.ALL$SOURCE)
-SDM.SPAT.ALL.DF = as.data.frame(subset(SDM.SPAT.ALL, SOURCE != "BG"))
-round(with(SDM.SPAT.ALL.DF, table(SOURCE)/sum(table(SOURCE))*100), 1)
+unique(SDM.SPAT.OCC.BG$SOURCE)
+SDM.SPAT.DF = as.data.frame(subset(SDM.SPAT.OCC.BG, TYPE != "BG"))
+round(with(SDM.SPAT.DF, table(SOURCE)/sum(table(SOURCE))*100), 1)
 unique(background$SOURCE)                                      ## Could subset by source
 
 
 #########################################################################################################################
 ## Run Maxent using a random selection of background points. Ideally make these projections exactly the same
-projection(template.raster);projection(SDM.SPAT.ALL);projection(Koppen_1975)
+projection(template.raster);projection(SDM.SPAT.BG);projection(Koppen_1975)
+
+
+
+occ                     = occurrence    ## name from the .rmd CV doc 
+bg                      = background    ## name from the .rmd CV doc  
+sdm.predictors          = sdm.select 
+name                    = spp 
+outdir                  = outdir 
+template.raster         = template.raster
+min_n                   = 20            ## This should be higher...
+max_bg_size             = 70000         ## could be 50k or lower
+Koppen                  = Koppen_1975
+background_buffer_width = 200000
+shapefiles              = TRUE
+features                = 'lpq'
+replicates              = 5
+responsecurves          = TRUE
+
 
 
 #########################################################################################################################
@@ -98,15 +112,15 @@ lapply(GBIF.spp, function(spp){
   
   
   ## Print the taxa being processed to screen
-  if(spp %in% SDM.SPAT.ALL$searchTaxon) {
+  if(spp %in% SDM.SPAT.BG$searchTaxon) {
     message('Doing ', spp) 
     
     ## Subset the records to only the taxa being processed
-    #occurrence <- subset(SDM.SPAT.ALL, searchTaxon == spp)
-    occurrence <- subset(SDM.SPAT.ALL, searchTaxon == spp)# & SOURCE != "INVENTORY")
+    #occurrence <- subset(SDM.SPAT.OCC.BG, searchTaxon == spp)
+    occurrence <- subset(SDM.SPAT.OCC.BG, searchTaxon == spp)
     
     ## Now get the background points. These can come from any spp, other than the modelled species.
-    background <- subset(SDM.SPAT.ALL, searchTaxon != spp)
+    background <- subset(SDM.SPAT.OCC.BG, searchTaxon != spp)
     
     ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
     tryCatch(
@@ -191,15 +205,15 @@ lapply(GBIF.spp, function(spp){
   
   
   ## Print the taxa being processed to screen
-  if(spp %in% SDM.SPAT.ALL$searchTaxon) {
+  if(spp %in% SDM.SPAT.BG$searchTaxon) {
     message('Doing ', spp) 
     
     ## Subset the records to only the taxa being processed
-    #occurrence <- subset(SDM.SPAT.ALL, searchTaxon == spp)
-    occurrence <- subset(SDM.SPAT.ALL, searchTaxon == spp)# & SOURCE != "INVENTORY")
+    #occurrence <- subset(SDM.SPAT.OCC.BG, searchTaxon == spp)
+    occurrence <- subset(SDM.SPAT.OCC.BG, searchTaxon == spp)# & SOURCE != "INVENTORY")
     
     ## Now get the background points. These can come from any spp, other than the modelled species.
-    background <- subset(SDM.SPAT.ALL, searchTaxon != spp)
+    background <- subset(SDM.SPAT.OCC.BG, searchTaxon != spp)
     
     ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
     tryCatch(

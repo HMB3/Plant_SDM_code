@@ -451,12 +451,11 @@ fit_maxent_targ_bg_kopp <- function(occ,
     stop("features must be a vector of one or more of ',
          'l', 'p', 'q', 'h', and 't'.")
   
-  ## Aggregate
+  ## Create a buffer of xkm around the occurrence points
   b <- aggregate(gBuffer(occ, width = background_buffer_width, byid = TRUE))
   
   #####################################################################
   ## Get unique cell numbers for species occurrences
-  ## Can we make the template raster 10km?
   cells <- cellFromXY(template.raster, occ)
   
   ## Clean out duplicate cells and NAs (including points outside extent of predictor data)
@@ -465,7 +464,6 @@ fit_maxent_targ_bg_kopp <- function(occ,
   occ       <- occ[not_dupes, ]
   cells     <- cells[not_dupes]
   message(nrow(occ), ' occurrence records (unique cells).')
-  
   
   #####################################################################
   ## Skip species that have less than a minimum number of records: eg 20 species
@@ -477,10 +475,13 @@ fit_maxent_targ_bg_kopp <- function(occ,
     
   } else {
     
+    #####################################################################
     ## Subset the background records to the 200km buffered polygon
     message(name, ' creating background cells')
     system.time(o <- over(bg, b))
     bg <- bg[which(!is.na(o)), ]
+    
+    
     bg_cells <- cellFromXY(template.raster, bg)
     
     ## Clean out duplicates and NAs (including points outside extent of predictor data)
@@ -495,7 +496,8 @@ fit_maxent_targ_bg_kopp <- function(occ,
       message(name, ' intersecting background cells with Koppen zones')
       Koppen_crop <- crop(Koppen, occ, snap = 'out')
       
-      ## Only extract and match those cells that overlap between koppen_cropp, occ and bg 
+      ## Only extract and match those cells that overlap between the ::
+      ## cropped koppen zone, occurrences and background points 
       zones               <- raster::extract(Koppen_crop, occ)
       cells_in_zones_crop <- Which(Koppen_crop %in% zones, cells = TRUE)
       cells_in_zones      <- cellFromXY(Koppen, xyFromCell(Koppen_crop, cells_in_zones_crop))
@@ -505,8 +507,26 @@ fit_maxent_targ_bg_kopp <- function(occ,
       
     }
     
+    #####################################################################
+    ## Get the proportion of occurrence records from each source 
+    ## but just for this species
+    occ.df      = as.data.frame(occ) 
+    source.prop = round(with(occ.df, table(SOURCE)/sum(table(SOURCE))), 3)
+    ala.prop    = source.prop[1]+source.prop[2]
+    inv.prop    = source.prop[3]
+    
     ## Reduce background sample if it's larger than max_bg_size
     if (nrow(bg) > max_bg_size) {
+      
+      ## Sample n% of background records from ALA and GBIF
+      bg.ala  = spsample(subset(bg, SOURCE == "ALA" | SOURCE == "GBIF"), n = ala.prop*(nrow(bg)),  type = "random")
+      bg.inv  = spsample(subset(bg, SOURCE == "INV"),                    n =  inv.prop*(nrow(bg)), type = "random")
+
+      ## Combine the random samples
+      bg.prop.samp    = rbind(bg.ala, bg.inv)
+      bg.prop.samp.df = as.data.frame(bg.prop.samp)
+      round(with(bg.prop.samp.df, table(SOURCE)/sum(table(SOURCE))), 3)
+      
       
       message(nrow(bg), ' target species background records, reduced to random ',
               max_bg_size, '.')

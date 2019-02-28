@@ -135,10 +135,13 @@ for(i in 1:11) {
 
 #########################################################################################################################
 ##  Also include the template data
-template.raster = raster("./data/template_hasData.tif")
-template.cells  = readRDS("./data/hasData_cells.rds")
-Koppen_1975     = raster('data/Koppen_1000m_Mollweide54009.tif')
-PET             = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
+template.raster.1km  = raster("./data/template_has_data_1km.tif")
+template.raster.5km  = raster("./data/template_has_data_5km.tif")
+template.raster.10km = raster("./data/template_has_data_10km.tif")
+#template.cells       = readRDS("./data/hasData_cells.rds")
+
+Koppen_1975          = raster('data/Koppen_1000m_Mollweide54009.tif')
+PET                  = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
 
 
 ## If running locally on the windows machine, just use the data from the Rdata file
