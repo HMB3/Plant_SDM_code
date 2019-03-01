@@ -538,27 +538,24 @@ if(calc_niche == "TRUE") {
   names(COMBO.RASTER.CONTEXT)
   
   
+  #########################################################################################################################
   ## Now join hort context to all the niche
   names(CLEAN.SPP)
-  COMBO.NICHE.CONTEXT = join(COMBO.LGA, TOT.GROW)
+  COMBO.NICHE.CONTEXT = join(COMBO.LGA, CLEAN.GROW) 
+  COMBO.NICHE.CONTEXT = join(COMBO.NICHE.CONTEXT, TI.LIST)
   head(COMBO.NICHE.CONTEXT$AUS_RECORDS)
   head(COMBO.NICHE.CONTEXT$LGA_COUNT)
   
   
   #########################################################################################################################
   ## Now combine the SDM output with the niche context data 
-  ## this need to change...................................................................................................
-  TREE.PLANTINGS            = TREE.EVERGREEN[, c("searchTaxon",
-                                                 "Plantings")]
-  COMBO.NICHE.CONTEXT       = join(COMBO.LGA, TOT.GROW,  type = "left")                ## join does not support the sorting
-  COMBO.NICHE.CONTEXT       = join(COMBO.NICHE.CONTEXT, TREE.PLANTINGS, type = "left")  
-  COMBO.NICHE.CONTEXT       = COMBO.NICHE.CONTEXT [order(COMBO.NICHE.CONTEXT $searchTaxon),]
+  ## CLEAN.GROW needs to be put through GBIF and TPL........................................................................
+  COMBO.NICHE.CONTEXT = COMBO.NICHE.CONTEXT [order(COMBO.NICHE.CONTEXT $searchTaxon),]
   
   
   ## Set NA to blank, then sort by no. of growers
-  COMBO.NICHE.CONTEXT$Number.of.growers <- NULL
-  COMBO.NICHE.CONTEXT$Total.growers[is.na(COMBO.NICHE.CONTEXT$Total.growers)] <- 0
-  COMBO.NICHE.CONTEXT = COMBO.NICHE.CONTEXT[with(COMBO.NICHE.CONTEXT, rev(order(Total.growers))), ]
+  COMBO.NICHE.CONTEXT$Total_growers[is.na(COMBO.NICHE.CONTEXT$Total.growers)] <- 0
+  COMBO.NICHE.CONTEXT = COMBO.NICHE.CONTEXT[with(COMBO.NICHE.CONTEXT, rev(order(Total_growers))), ]
   
   
   ## View the data

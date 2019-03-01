@@ -30,7 +30,8 @@ message('Running maxent models for ', length(GBIF.spp), ' species in the set ', 
 ## Load SDM table
 if(read_data == "TRUE") {
   
-  ## read in RDS files from previous step
+  ## read in RDS files from previous step :: use the hollow species as a test
+  ## SDM.SPAT.OCC.BG <- readRDS("H:/green_cities_sdm/data/ANALYSIS/SDM_SPAT_OCC_BG_HOLLOW_SPP.rds")
   SDM.SPAT.OCC.BG = readRDS(paste0(DATA_path, 'SDM_SPAT_OCC_BG',  save_run, '.rds'))
   
 } else {
@@ -53,36 +54,31 @@ if(read_data == "TRUE") {
 dim(SDM.SPAT.OCC.BG)
 
 
-## The background data has data from about 6.7k species, created earlier in the project. This table is merged with the 
-## data for the species being analysed, and the inverse speices are taken so there is no overlap. The GB table hasn't strictly 
-## been created with the same processes as the latest SDM data. Re-create it with urban data
-length(unique(background.points$searchTaxon))
+## The background data is simply the records for all 3.8k species previously downloaded.
+## Three souces :: ALA, GBIF, INVENTORY
+## So we need to sample bg records from this file in the same proportions as they exist in the occurrence data for each species
+## However, some species have high proportions of inventory records in the occurrence data
+## But because of the way the background data is selected with 200km of occurrence points and inside the same koppen zone
+## That means that we can't choose enough records in proportion with the background?
 length(intersect(unique(SDM.SPAT.OCC.BG$searchTaxon), GBIF.spp))  ## This should be same as the number of species
-
-
-## Sample the backround records in the same proportion as the sources for each species - E.G. 90% from ALA/GBIF, 10% urban
-## This would be created as variable from each occurrence file, the source column would need to be included.
-## In theory, we can do this with the existing tables for 3.5 species   
-unique(SDM.SPAT.OCC.BG$SOURCE)
-SDM.SPAT.DF = as.data.frame(subset(SDM.SPAT.OCC.BG, TYPE != "BG"))
-round(with(SDM.SPAT.DF, table(SOURCE)/sum(table(SOURCE))*100), 1)
-unique(background$SOURCE)                                      ## Could subset by source
 
 
 #########################################################################################################################
 ## Run Maxent using a random selection of background points. Ideally make these projections exactly the same
-projection(template.raster);projection(SDM.SPAT.BG);projection(Koppen_1975)
+projection(template.raster.5km);projection(SDM.SPAT.OCC.BG);projection(Koppen_1975)
 
 
 
-occ                     = occurrence    ## name from the .rmd CV doc 
-bg                      = background    ## name from the .rmd CV doc  
+## Here are the argumetns needed to run the targetted background selection SDMs inside the function itself
+spp                     = GBIF.spp[1]
+occ                     = subset(SDM.SPAT.OCC.BG, searchTaxon == spp)
+bg                      = subset(SDM.SPAT.OCC.BG, searchTaxon != spp)
 sdm.predictors          = sdm.select 
 name                    = spp 
-outdir                  = outdir 
-template.raster         = template.raster
-min_n                   = 20            ## This should be higher...
-max_bg_size             = 70000         ## could be 50k or lower
+outdir                  = maxent_dir
+template.raster         = template.raster.5km   ## 1km, 5km, 10km
+min_n                   = 20            
+max_bg_size             = 70000         
 Koppen                  = Koppen_1975
 background_buffer_width = 200000
 shapefiles              = TRUE
@@ -90,6 +86,13 @@ features                = 'lpq'
 replicates              = 5
 responsecurves          = TRUE
 
+
+## The current code is failing after the background selection, but only for some species.
+## why?.................................................................................................................
+## Proportionally sampling background data for Corymbia citriodora, OCC + INV records total NA
+
+
+## First vary the resolution, then run the background selection.........................................................
 
 
 #########################################################################################################################
@@ -112,11 +115,10 @@ lapply(GBIF.spp, function(spp){
   
   
   ## Print the taxa being processed to screen
-  if(spp %in% SDM.SPAT.BG$searchTaxon) {
+  if(spp %in% SDM.SPAT.OCC.BG$searchTaxon) {
     message('Doing ', spp) 
     
     ## Subset the records to only the taxa being processed
-    #occurrence <- subset(SDM.SPAT.OCC.BG, searchTaxon == spp)
     occurrence <- subset(SDM.SPAT.OCC.BG, searchTaxon == spp)
     
     ## Now get the background points. These can come from any spp, other than the modelled species.
@@ -169,7 +171,7 @@ lapply(GBIF.spp, function(spp){
 #########################################################################################################################
 
 
-## Variables to run an example within the function
+## Variables to run an example within the backwards selection function
 sdm.predictors          = sdm.predictors
 name                    = spp
 maxent_path             = './output/maxent/SUA_TREES_ANALYSIS/'
@@ -209,7 +211,17 @@ lapply(GBIF.spp, function(spp){
     message('Doing ', spp) 
     
     ## Subset the records to only the taxa being processed
-    #occurrence <- subset(SDM.SPAT.OCC.BG, searchTaxon == spp)
+    ## This should just read in the BG and occ data from the previous function?.........................................
+    message('Reading previously created occurrence and background data from targetted SDM for ', spp)
+    save_spp = gsub(' ', '_', spp)
+    
+    # occ     <- readRDS(sprintf('%s%s/%s_occ.rds', maxent_path, save_spp, save_spp))
+    # bg      <- readRDS(sprintf('%s%s/%s_bg.rds',  maxent_path, save_spp, save_spp))
+    # 
+    # swd_occ <- readRDS(sprintf('%s%s/%s_occ_swd.rds', maxent_path, save_spp, save_spp))
+    # swd_bg  <- readRDS(sprintf('%s%s/%s_bg_swd.rds',  maxent_path, save_spp, save_spp)) 
+    
+    ##
     occurrence <- subset(SDM.SPAT.OCC.BG, searchTaxon == spp)# & SOURCE != "INVENTORY")
     
     ## Now get the background points. These can come from any spp, other than the modelled species.
@@ -292,8 +304,11 @@ maxent_path   = maxent_path
 length(maxent.tables) 
 
 
+#########################################################################################################################
+## This section illustrates how to index the maxent model object, which could be applied to other methods     #---------#
 ## Create a table of the results 
-MAXENT.RESULTS <- maxent.tables[c(1:length(maxent.tables))] %>%         
+## x = maxent.tables[1]
+MAXENT.RESULTS <- maxent.tables %>%         
   
   ## Pipe the list into lapply
   lapply(function(x) {
@@ -305,9 +320,9 @@ MAXENT.RESULTS <- maxent.tables[c(1:length(maxent.tables))] %>%
     d <- read.csv(f)
     
     ## load model
-    m <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, x))
-    m <- m$me_full
-    number_var = length(m@lambdas) - 4                                   ## (the last 4 slots of lambdas are not variables) 
+    m           = readRDS(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, x))$me_full
+    number.var  = length(m@lambdas) - 4   ## (the last 4 slots of the lambdas file are not variables)
+    mxt.records = length(m@presence$Annual_mean_temp)
     
     ## Get variable importance
     m.vars    = ENMeval::var.importance(m)
@@ -317,13 +332,22 @@ MAXENT.RESULTS <- maxent.tables[c(1:length(maxent.tables))] %>%
     var.pimp  = m.vars[rev(order(m.vars[["permutation.importance"]])),][["variable"]][1]
     pimp      = m.vars[rev(order(m.vars[["permutation.importance"]])),][["permutation.importance"]][1]
     
-    ## Now add a model column
-    d = cbind(searchTaxon = x, 
-              Number_var  = number_var, 
-              Var_pcont   = var.pcont,
-              Per_cont    = pcont,
-              Var_pimp    = var.pimp,
-              Perm_imp    = pimp,
+    ## Get maxent results columns to be used for model checking
+    Training_AUC             = m@results["Training.AUC",]
+    Number_background_points = m@results["X.Background.points",]
+    Logistic_threshold       = m@results["X10.percentile.training.presence.Logistic.threshold",] 
+    
+    ## Now rename the maxent columns that we will use in the results table
+    d = cbind(searchTaxon              = x, 
+              Maxent_records           = mxt.records,
+              Number_var               = number.var, 
+              Var_pcont                = var.pcont,
+              Per_cont                 = pcont,
+              Var_pimp                 = var.pimp,
+              Perm_imp                 = pimp,
+              Training_AUC,
+              Number_background_points,  
+              Logistic_threshold,
               d)  
     dim(d)
     
@@ -429,24 +453,24 @@ SDM.RESULTS.DIR = unlist(SDM.RESULTS.DIR)
 
 #########################################################################################################################
 ## Now combine the SDM output with the niche context data 
-NICHE.CONTEXT   = COMBO.NICHE.CONTEXT[, c("searchTaxon",     "Origin",      "Plant.type", 
-                                          "GLOBAL_RECORDS",  "AUS_RECORDS", "Plantings", "SUA_COUNT",
-                                          "Total.growers",   "Number.of.States")]
+NICHE.CONTEXT = COMBO.NICHE.CONTEXT[, c("searchTaxon",     "Origin",      "Plant_type", 
+                                        "GLOBAL_RECORDS",  "AUS_RECORDS", "Plantings", "SUA_COUNT",
+                                        "Total_growers",   "Number_states")]
 
 
 ## Which columns will help with model selection
 MAXENT.SUMMARY   = MAXENT.RESULTS[, c("searchTaxon",
+                                      "Maxent_records",
                                       "Number_var",
                                       "Var_pcont",
                                       "Per_cont",
                                       "Var_pimp",
                                       "Perm_imp",
-                                      "X.Training.samples",                                                                
                                       "Iterations",                                                                        
-                                      "Training.AUC",
+                                      "Training_AUC",
                                       "max_tss",
-                                      "X.Background.points",  
-                                      "X10.percentile.training.presence.Logistic.threshold")]
+                                      "Number_background_points",  
+                                      "Logistic_threshold")]
 
 
 ## Now remove the underscore and join data 
@@ -455,37 +479,35 @@ MAXENT.SUMMARY.NICHE       = join(MAXENT.SUMMARY,       NICHE.CONTEXT,  type = "
 MAXENT.SUMMARY.NICHE       = MAXENT.SUMMARY.NICHE[order(MAXENT.SUMMARY.NICHE$searchTaxon),]
 
 
-## Re-order table
-## What is the difference between SUA_count here and in the SUA table? Here it is the number of SUA's that species occurs in,
+## Re-order table into a logical order
+## What is the difference between SUA_count here, and in the SUA table? Here it is the number of SUA's that species occurs in,
 ## but in the SUA table, it is the number of records for each species in each SUA
-MAXENT.SUMMARY.NICHE   = MAXENT.SUMMARY.NICHE[, c("searchTaxon",
-                                                  "Origin",
-                                                  "Plant.type", 
-                                                  "GLOBAL_RECORDS",  
-                                                  "AUS_RECORDS", 
-                                                  "Plantings", 
-                                                  "SUA_COUNT", 
-                                                  "Total.growers",     
-                                                  "Number.of.States",
-                                                  "Number_var",
-                                                  "Var_pcont",
-                                                  "Per_cont",
-                                                  "Var_pimp",
-                                                  "Perm_imp",
-                                                  "X.Training.samples",  
-                                                  "Iterations",                                                                        
-                                                  "Training.AUC",
-                                                  "max_tss",
-                                                  "X.Background.points",  
-                                                  "X10.percentile.training.presence.Logistic.threshold")]
+MAXENT.SUMMARY.NICHE = MAXENT.SUMMARY.NICHE[, c("searchTaxon",     ## Evergreen list context columns
+                                                "Origin",
+                                                "Plant_type",
+                                                "Total_growers",     
+                                                "Number_states",
+                                                
+                                                "Plantings",       ## Columns for counts of records
+                                                "GLOBAL_RECORDS",  
+                                                "AUS_RECORDS",
+                                                "Maxent_records",
+                                                "SUA_COUNT",
+                                                
+                                                "Number_var",      ## Columns for maxent results
+                                                "Var_pcont",
+                                                "Per_cont",
+                                                "Var_pimp",
+                                                "Perm_imp",
+                                                "Iterations",                                                                        
+                                                "Training_AUC",
+                                                "max_tss",
+                                                "Number_background_points",  
+                                                "Logistic_threshold")]
 
 
 #########################################################################################################################
 ## Create a taxonomic lookup table
-## This needs checking after the HIA_READ_DATA............................................................................
-length(intersect(MAXENT.SUMMARY.NICHE$searchTaxon, APNI$searchTaxon))
-
-
 SDM.TAXA <- MAXENT.SUMMARY.NICHE[["searchTaxon"]] %>%  
   lookup_table(., by_species = TRUE) 
 SDM.TAXA <- setDT(SDM.TAXA, keep.rownames = TRUE)[]
@@ -496,13 +518,23 @@ SDM.TAXA <- join(SDM.TAXA, APNI)                     ## get rid of APNI
 ## Join on the native data and the APNI
 MAXENT.SUMMARY.NICHE <- SDM.TAXA %>% 
   
-  join(., MAXENT.SUMMARY.NICHE) %>% 
+  join(., MAXENT.SUMMARY.NICHE) #%>% 
   
-  join(., MAXENT.CHECK[c("searchTaxon", "check.map")])    ## get rid of check map
+  #join(., MAXENT.CHECK[c("searchTaxon", "check.map")])    ## get rid of check map, circualar.............................
 
 length(intersect(MAXENT.SUMMARY.NICHE$searchTaxon, GBIF.spp))
+View(MAXENT.SUMMARY.NICHE)
 
 
+#########################################################################################################################
+## The supplementary matieral table for the STOTEN MS has :: 
+## Species, Records	Plantings	Variable	AUC	TSS	Threshold
+## Save these columns as CSV file :: use this as quick check of model performance for different runs
+SUA.MS.TABLE              = select(MAXENT.SUMMARY.NICHE, searchTaxon, Maxent_records, Plantings, 
+                                   Var_pimp, Training_AUC, max_tss, Logistic_threshold)
+SUA.MS.TABLE$Training_AUC       = round(SUA.MS.TABLE$Training_AUC, 3)
+SUA.MS.TABLE$max_tss            = round(SUA.MS.TABLE$Training_AUC, 3)
+SUA.MS.TABLE$Logistic_threshold = round(SUA.MS.TABLE$Training_AUC, 3)
 
 
 
@@ -553,8 +585,9 @@ percent.10.om     = percent.10.om$X10.percentile.training.presence.training.omis
 if(save_data == "TRUE") {
   
   ## save .rds file for the next session
-  saveRDS(MAXENT.SUMMARY.NICHE,   paste0(DATA_path, 'MAXENT_SUMMARY_',  save_run, '.rds'))
-  write.csv(MAXENT.SUMMARY.NICHE, paste0(DATA_path, 'MAXENT_SUMMARY_',  save_run, '.csv'), row.names = FALSE)
+  saveRDS(MAXENT.SUMMARY.NICHE,   paste0(DATA_path, 'MAXENT_SUMMARY_',         save_run, '.rds'))
+  write.csv(MAXENT.SUMMARY.NICHE, paste0(DATA_path, 'MAXENT_SUMMARY_',         save_run, '.csv'), row.names = FALSE)
+  write.csv(SUA.MS.TABLE,         paste0(DATA_path, 'MAXENT_SUA_MS_SUPP_MAT_', save_run, '.csv'), row.names = FALSE)
   
 } else {
   

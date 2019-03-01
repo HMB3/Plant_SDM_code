@@ -62,6 +62,15 @@ completeFun <- function(data, desiredCols) {
   
 }
 
+round_df <- function(x, digits) {
+  # round all numeric variables
+  # x: data frame 
+  # digits: number of digits to round
+  numeric_columns <- sapply(x, mode) == 'numeric'
+  x[numeric_columns] <-  round(x[numeric_columns], digits)
+  x
+}
+
 
 # ## Make the first letter of a string lower case
 # firs_lett_lower <- function(x) {

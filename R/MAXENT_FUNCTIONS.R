@@ -497,7 +497,9 @@ fit_maxent_targ_bg_kopp <- function(occ,
       Koppen_crop <- crop(Koppen, occ, snap = 'out')
       
       ## Only extract and match those cells that overlap between the ::
-      ## cropped koppen zone, occurrences and background points 
+      ## 1). cropped koppen zone, 
+      ## 2). occurrences and 
+      ## 3). background points 
       zones               <- raster::extract(Koppen_crop, occ)
       cells_in_zones_crop <- Which(Koppen_crop %in% zones, cells = TRUE)
       cells_in_zones      <- cellFromXY(Koppen, xyFromCell(Koppen_crop, cells_in_zones_crop))
@@ -505,12 +507,20 @@ fit_maxent_targ_bg_kopp <- function(occ,
       i                   <- cellFromXY(template.raster, bg)
       bg                  <- bg[which(i %in% bg_cells), ]
       
+      ## For some species, we have the problem that the proportion of ALA/INV data is 
+      ## very different in the occurrence vs the bg records. 
+      ## This could be caused by the koppen restriction, etc.
+      dim(bg)
+      table(bg$SOURCE)
+      bg.df = as.data.frame(bg)
+      round(with(bg.df, table(SOURCE)/sum(table(SOURCE))), 3)
+      
     }
     
     #####################################################################
     ## Get the proportion of occurrence records from each source 
-    ## but just for this species
-    occ.df      = as.data.frame(occ) 
+    occ.df      = as.data.frame(occ)
+    table(occ$SOURCE)
     source.prop = round(with(occ.df, table(SOURCE)/sum(table(SOURCE))), 3)
     ala.prop    = source.prop[1]+source.prop[2]
     inv.prop    = source.prop[3]
@@ -518,24 +528,72 @@ fit_maxent_targ_bg_kopp <- function(occ,
     ## Reduce background sample if it's larger than max_bg_size
     if (nrow(bg) > max_bg_size) {
       
-      ## Sample n% of background records from ALA and GBIF
-      bg.ala  = spsample(subset(bg, SOURCE == "ALA" | SOURCE == "GBIF"), n = ala.prop*(nrow(bg)),  type = "random")
-      bg.inv  = spsample(subset(bg, SOURCE == "INV"),                    n =  inv.prop*(nrow(bg)), type = "random")
-
-      ## Combine the random samples
+      ## First, check how big the background points are
+      message(nrow(bg), ' target species background records, reduced to random ',
+              max_bg_size, '.')
+      
+      bg.max <- bg[sample(nrow(bg), max_bg_size), ]  ## Change this to use 
+      
+      ## Sample background records from ALA/GBIF and INVENTORY categories in proportion with 
+      ## the number of records from the occurrence file
+      message('ALA/GBIF/INV proportions ',  source.prop)
+      message('Proportionally sampling background data for ', spp, ', OCC + INV records total ', inv.prop*(nrow(bg.max))+ala.prop*(nrow(bg.max)))
+      
+      bg.ala  = bg.max[ sample( which(bg.max$SOURCE == "ALA" | bg.max$SOURCE == "GBIF"), 
+                                ala.prop*(nrow(subset(bg.max, SOURCE == "ALA" | SOURCE == "GBIF")))), ]
+      
+      ## If the proportion of inv records in the occ data * the nrow bg is > than the no. of 
+      ## inventory records in the background data, just get as many inventory records as possible
+      if(inv.prop*(nrow(bg.max)) > nrow(subset(bg.max, SOURCE == "INVENTORY"))) {
+        
+        bg.inv  = bg.max[ sample( which(bg.max$SOURCE == "INVENTORY"), 
+                                  inv.prop*(nrow(subset(bg.max, SOURCE == "INVENTORY")))), ]
+        
+      } else {
+        
+        ## Otherwise, get the inv.prop * the nrow bg
+        bg.inv  = bg.max[ sample( which(bg.max$SOURCE == "INVENTORY"), 
+                                  inv.prop*(nrow(bg.max))), ]
+        
+      }
+      
+      ## Then combine the samples from the ALA/GBIF and INV sources
       bg.prop.samp    = rbind(bg.ala, bg.inv)
       bg.prop.samp.df = as.data.frame(bg.prop.samp)
       round(with(bg.prop.samp.df, table(SOURCE)/sum(table(SOURCE))), 3)
       
-      
-      message(nrow(bg), ' target species background records, reduced to random ',
-              max_bg_size, '.')
-      
-      bg <- bg[sample(nrow(bg), max_bg_size), ]  ## Change this to use 
-      
     } else {
       
-      message(nrow(bg), ' target species background records.')
+      ## Need to subsample here too 
+      message('Using ', nrow(bg), ' target species background records')
+      
+      ## Sample background records from ALA/GBIF and INVENTORY categories in proportion with 
+      ## the number of records from the occurrence file
+      message('ALA/GBIF/INV proportions ',  source.prop)
+      message('Proportionally sampling background data for ', spp, ', OCC + INV records total ', inv.prop*(nrow(bg))+ala.prop*(nrow(bg)))
+      
+      bg.ala = bg[ sample( which(bg$SOURCE == "ALA" | bg$SOURCE == "GBIF"), 
+                           ala.prop*(nrow(subset(bg, SOURCE == "ALA" | SOURCE == "GBIF")))), ]
+      
+      ## If the proportion of inv records in the occ data * the nrow bg is > than the no. of 
+      ## inventory records in the background data, just get as many inventory records as possible
+      if(inv.prop*(nrow(bg)) > nrow(subset(bg, SOURCE == "INVENTORY"))) {
+        
+        bg.inv  = bg[ sample( which(bg$SOURCE == "INVENTORY"), 
+                                  inv.prop*(nrow(subset(bg, SOURCE == "INVENTORY")))), ]
+        
+      } else {
+        
+        ## Otherwise, get the inv.prop * the nrow bg
+        bg.inv  = bg[ sample( which(bg$SOURCE == "INVENTORY"), 
+                                  inv.prop*(nrow(bg))), ]
+        
+      }
+      
+      ## Then combine the samples from the ALA/GBIF and INV sources
+      bg.prop.samp    = rbind(bg.ala, bg.inv)
+      bg.prop.samp.df = as.data.frame(bg.prop.samp)
+      round(with(bg.prop.samp.df, table(SOURCE)/sum(table(SOURCE))), 3)
       
     }
     
@@ -549,16 +607,16 @@ fit_maxent_targ_bg_kopp <- function(occ,
         message(name, ' writing occ and bg shapefiles')
         writeOGR(SpatialPolygonsDataFrame(b, data.frame(ID = seq_len(length(b)))),
                  outdir_sp, paste0(save_name, '_bg_buffer'), 'ESRI Shapefile', overwrite_layer = TRUE)
-        writeOGR(bg,  outdir_sp, paste0(save_name, '_bg'),   'ESRI Shapefile', overwrite_layer = TRUE)
-        writeOGR(occ, outdir_sp, paste0(save_name, '_occ'),  'ESRI Shapefile', overwrite_layer = TRUE)
+        writeOGR(bg.prop.samp,  outdir_sp, paste0(save_name, '_bg'),   'ESRI Shapefile', overwrite_layer = TRUE)
+        writeOGR(occ,           outdir_sp, paste0(save_name, '_occ'),  'ESRI Shapefile', overwrite_layer = TRUE)
         
       })
       
     }
     
     ## Save the background and occurrence points as objects
-    saveRDS(bg,  file.path(outdir_sp, paste0(save_name, '_bg.rds')))
-    saveRDS(occ, file.path(outdir_sp, paste0(save_name, '_occ.rds')))
+    saveRDS(bg.prop.samp,  file.path(outdir_sp, paste0(save_name, '_bg.rds')))
+    saveRDS(occ,           file.path(outdir_sp, paste0(save_name, '_occ.rds')))
     
     #####################################################################
     ## sdm.predictors: the s_ff object containing sdm.predictors to use in the model
@@ -567,7 +625,7 @@ fit_maxent_targ_bg_kopp <- function(occ,
     swd_occ <- occ[, sdm.predictors]
     saveRDS(swd_occ, file.path(outdir_sp, paste0(save_name,'_occ_swd.rds')))
     
-    swd_bg <- bg[, sdm.predictors]
+    swd_bg <- bg.prop.samp[, sdm.predictors]
     saveRDS(swd_bg, file.path(outdir_sp, paste0(save_name, '_bg_swd.rds')))
     
     ## Save shapefiles of the occurrence and background points
@@ -584,10 +642,11 @@ fit_maxent_targ_bg_kopp <- function(occ,
     saveRDS(swd, file.path(outdir_sp, 'swd.rds'))
     pa <- rep(1:0, c(nrow(swd_occ), nrow(swd_bg)))
     
-    ## Now check the features arguments are correct
+    ## Now set the features to be used by maxent ::
+    ## Linear, product and quadratic
     off <- setdiff(c('l', 'p', 'q', 't', 'h'), features)
     
-    ## 
+    ## This sets threshold and hinge features to "off"
     if(length(off) > 0) {
       
       off <- c(l = 'linear=false',    p = 'product=false', q = 'quadratic=false',
@@ -602,7 +661,7 @@ fit_maxent_targ_bg_kopp <- function(occ,
       if(missing(rep_args)) rep_args <- NULL
       
       ## Run MAXENT for x cross validation data splits of swd : so 5 replicaes, 0-4
-      ## EG xval = cross validation : "OUT_DIR\Acacia_boormanii\xval\maxent_0.html"
+      ## first argument is the predictors, the second is the occurrence data
       message(name, ' running xval maxent')
       me_xval <- maxent(swd, pa, path = file.path(outdir_sp, 'xval'),
                         args = c(paste0('replicates=', replicates),
@@ -627,21 +686,19 @@ fit_maxent_targ_bg_kopp <- function(occ,
             file.path(outdir_sp, 'full', 'maxent_fitted.rds'))
     
     #####################################################################
-    ## Save the chart corrleation file too for the variable set
+    ## Save the chart corrleation file too for the training data set
+    ## 
     png(sprintf('%s/%s/full/%s_%s.png', outdir,
                 save_name, save_name, "predictor_correlation"),
         3236, 2000, units = 'px', res = 300)
     
     ## set margins
-    par(mar   = c(3, 3, 5, 3),  ## b, l, t, r
-        #mgp   = c(9.8, 2.5, 0),
+    par(mar   = c(3, 3, 5, 3),
         oma   = c(1.5, 1.5, 1.5, 1.5))
     
     ## Add detail to the response plot
     chart.Correlation(swd_occ@data,
                       histogram = TRUE, pch = 19) 
-    #cex.lab = 2, cex.axis = 1.5,
-    #main = paste0("Predictor corrleation matrix for ", spp))
     
     ## Finish the device
     dev.off()
@@ -756,7 +813,7 @@ fit_maxent_targ_bs <- function(sdm.predictors,
     
     saveRDS(swd_bg,  file.path(outdir_sp, paste0('bg.rds')))
     saveRDS(swd_occ, file.path(outdir_sp, paste0('swd.rds')))
-
+    
     
     #####################################################################
     ## Coerce the "species with data" (SWD) files to regular data.frames
