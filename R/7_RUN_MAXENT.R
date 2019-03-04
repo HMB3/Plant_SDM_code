@@ -70,7 +70,7 @@ projection(template.raster.5km);projection(SDM.SPAT.OCC.BG);projection(Koppen_19
 
 
 ## Here are the argumetns needed to run the targetted background selection SDMs inside the function itself
-spp                     = GBIF.spp[2]
+spp                     = GBIF.spp[3]
 occ                     = subset(SDM.SPAT.OCC.BG, searchTaxon == spp)
 bg                      = subset(SDM.SPAT.OCC.BG, searchTaxon != spp)
 sdm.predictors          = sdm.select 
@@ -93,6 +93,7 @@ responsecurves          = TRUE
 
 
 ## First vary the resolution, then run the background selection.........................................................
+## back to line 534.........................................
 
 
 #########################################################################################################################

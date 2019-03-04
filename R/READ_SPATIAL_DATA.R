@@ -32,9 +32,9 @@ devtools::source_gist('306e4b7e69c87b1826db',   filename = 'diverge0.R')
 
 
 ## Source functions, and set temporary directory (for both raster files and just generally)
-source('./R/GREEN_CITIES_FUNCTIONS.R')
-source('./R/MAXENT_FUNCTIONS.R')
-source('./R/MAPPING_FUNCTIONS.R')
+source('./R/WPW_GENERAL_FUNCTIONS.R')
+source('./R/WPW_MAXENT_FUNCTIONS.R')
+source('./R/WPW_MAPPING_FUNCTIONS.R')
 source('./R/HIA_CLEAN_MATCHING.R')
 rasterOptions(tmpdir = './RTEMP')
 
