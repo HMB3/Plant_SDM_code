@@ -445,8 +445,8 @@ fit_maxent_targ_bg_kopp <- function(occ,
   ## l: linear
   ## p: product
   ## q: quadratic
-  ## h: hinge
-  ## t:
+  ## h: hinge       ## disabled for this analysis
+  ## t: threshold   ## disabled for this analysis
   if(length(setdiff(features, c('l', 'p', 'q', 'h', 't'))) > 1)
     stop("features must be a vector of one or more of ',
          'l', 'p', 'q', 'h', and 't'.")
@@ -520,47 +520,53 @@ fit_maxent_targ_bg_kopp <- function(occ,
     #####################################################################
     ## Get the proportion of occurrence records from each source 
     occ.df      = as.data.frame(occ)
-    table(occ$SOURCE)
-    source.prop = round(with(occ.df, table(SOURCE)/sum(table(SOURCE))), 3)
-    ala.prop    = source.prop[1]+source.prop[2]
-    inv.prop    = source.prop[3]
     
-    ## Reduce background sample if it's larger than max_bg_size
-    if (nrow(bg) > max_bg_size) {
+    ## Reduce background sample, if it's larger than max_bg_size
+    if (nrow(bg) > max_bg_size ) {
       
-      ## First, check how big the background points are
-      message(nrow(bg), ' target species background records, reduced to random ',
-              max_bg_size, '.')
+      ## If there is only one source of occurrence data, use the random sampling
+      message(nrow(bg), ' target species background records for ', spp, 
+              ', reduced to random ', max_bg_size, ' using data source :: ', unique(occ$SOURCE))
+      bg.samp <- bg[sample(nrow(bg), max_bg_size), ]
       
-      bg.max <- bg[sample(nrow(bg), max_bg_size), ]  ## Change this to use 
+      
+    } else {
+      
+      bg.samp <- bg
+      
+    }
+    
+    
+    if (dim(table(occ$SOURCE)) == 3) {
       
       ## Sample background records from ALA/GBIF and INVENTORY categories in proportion with 
       ## the number of records from the occurrence file
       message('ALA/GBIF/INV proportions ',  source.prop)
-      message('Proportionally sampling background data for ', spp, ', OCC + INV records total ', inv.prop*(nrow(bg.max))+ala.prop*(nrow(bg.max)))
+      message('Proportionally sampling background data for ', spp, ', OCC + INV records total ', inv.prop*(nrow(bg.prop))+ala.prop*(nrow(bg.prop)))
       
-      bg.ala  = bg.max[ sample( which(bg.max$SOURCE == "ALA" | bg.max$SOURCE == "GBIF"), 
-                                ala.prop*(nrow(subset(bg.max, SOURCE == "ALA" | SOURCE == "GBIF")))), ]
+      ## Get the ALA
+      bg.ala  = bg.prop[ sample( which(bg.prop$SOURCE == "ALA" | bg.prop$SOURCE == "GBIF"), 
+                                 ala.prop*(nrow(subset(bg.prop, SOURCE == "ALA" | SOURCE == "GBIF")))), ]
       
       ## If the proportion of inv records in the occ data * the nrow bg is > than the no. of 
       ## inventory records in the background data, just get as many inventory records as possible
-      if(inv.prop*(nrow(bg.max)) > nrow(subset(bg.max, SOURCE == "INVENTORY"))) {
+      if(inv.prop*(nrow(bg.prop)) > nrow(subset(bg.prop, SOURCE == "INVENTORY"))) {
         
-        bg.inv  = bg.max[ sample( which(bg.max$SOURCE == "INVENTORY"), 
-                                  inv.prop*(nrow(subset(bg.max, SOURCE == "INVENTORY")))), ]
+        bg.inv  = bg.prop[ sample( which(bg.prop$SOURCE == "INVENTORY"), 
+                                   inv.prop*(nrow(subset(bg.prop, SOURCE == "INVENTORY")))), ]
         
       } else {
         
         ## Otherwise, get the inv.prop * the nrow bg
-        bg.inv  = bg.max[ sample( which(bg.max$SOURCE == "INVENTORY"), 
-                                  inv.prop*(nrow(bg.max))), ]
+        bg.inv  = bg.prop[ sample( which(bg.prop$SOURCE == "INVENTORY"), 
+                                   inv.prop*(nrow(bg.prop))), ]
         
       }
       
       ## Then combine the samples from the ALA/GBIF and INV sources
       bg.prop.samp    = rbind(bg.ala, bg.inv)
       bg.prop.samp.df = as.data.frame(bg.prop.samp)
-      round(with(bg.prop.samp.df, table(SOURCE)/sum(table(SOURCE))), 3)
+      round(with(bg.prop.samp.df , table(SOURCE)/sum(table(SOURCE))), 3)
       
     } else {
       
@@ -580,20 +586,20 @@ fit_maxent_targ_bg_kopp <- function(occ,
       if(inv.prop*(nrow(bg)) > nrow(subset(bg, SOURCE == "INVENTORY"))) {
         
         bg.inv  = bg[ sample( which(bg$SOURCE == "INVENTORY"), 
-                                  inv.prop*(nrow(subset(bg, SOURCE == "INVENTORY")))), ]
+                              inv.prop*(nrow(subset(bg, SOURCE == "INVENTORY")))), ]
         
       } else {
         
         ## Otherwise, get the inv.prop * the nrow bg
         bg.inv  = bg[ sample( which(bg$SOURCE == "INVENTORY"), 
-                                  inv.prop*(nrow(bg))), ]
+                              inv.prop*(nrow(bg))), ]
         
       }
       
       ## Then combine the samples from the ALA/GBIF and INV sources
       bg.prop.samp    = rbind(bg.ala, bg.inv)
       bg.prop.samp.df = as.data.frame(bg.prop.samp)
-      round(with(bg.prop.samp.df, table(SOURCE)/sum(table(SOURCE))), 3)
+      round(with(bg.samp.df, table(SOURCE)/sum(table(SOURCE))), 3)
       
     }
     

@@ -32,7 +32,7 @@ if(read_data == "TRUE") {
   
   ## read in RDS files from previous step :: use the hollow species as a test
   ## SDM.SPAT.OCC.BG <- readRDS("H:/green_cities_sdm/data/ANALYSIS/SDM_SPAT_OCC_BG_HOLLOW_SPP.rds")
-  SDM.SPAT.OCC.BG = readRDS(paste0(DATA_path, 'SDM_SPAT_OCC_BG',  save_run, '.rds'))
+  SDM.SPAT.OCC.BG = readRDS(paste0(DATA_path, 'SDM_SPAT_OCC_BG_',  save_run, '.rds'))
   
 } else {
   
@@ -70,13 +70,13 @@ projection(template.raster.5km);projection(SDM.SPAT.OCC.BG);projection(Koppen_19
 
 
 ## Here are the argumetns needed to run the targetted background selection SDMs inside the function itself
-spp                     = GBIF.spp[1]
+spp                     = GBIF.spp[2]
 occ                     = subset(SDM.SPAT.OCC.BG, searchTaxon == spp)
 bg                      = subset(SDM.SPAT.OCC.BG, searchTaxon != spp)
 sdm.predictors          = sdm.select 
 name                    = spp 
 outdir                  = maxent_dir
-template.raster         = template.raster.5km   ## 1km, 5km, 10km
+template.raster         = template.raster.1km   ## 1km, 5km, 10km
 min_n                   = 20            
 max_bg_size             = 70000         
 Koppen                  = Koppen_1975
@@ -482,7 +482,7 @@ MAXENT.SUMMARY.NICHE       = MAXENT.SUMMARY.NICHE[order(MAXENT.SUMMARY.NICHE$sea
 ## Re-order table into a logical order
 ## What is the difference between SUA_count here, and in the SUA table? Here it is the number of SUA's that species occurs in,
 ## but in the SUA table, it is the number of records for each species in each SUA
-MAXENT.SUMMARY.NICHE = MAXENT.SUMMARY.NICHE[, c("searchTaxon",     ## Evergreen list context columns
+MAXENT.SUMMARY.NICHE = MAXENT.SUMMARY.NICHE[, c("searchTaxon",     ## Columns of evergreen list 
                                                 "Origin",
                                                 "Plant_type",
                                                 "Total_growers",     
