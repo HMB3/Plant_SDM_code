@@ -35,7 +35,6 @@ devtools::source_gist('306e4b7e69c87b1826db',   filename = 'diverge0.R')
 source('./R/WPW_GENERAL_FUNCTIONS.R')
 source('./R/WPW_MAXENT_FUNCTIONS.R')
 source('./R/WPW_MAPPING_FUNCTIONS.R')
-source('./R/HIA_CLEAN_MATCHING.R')
 rasterOptions(tmpdir = './RTEMP')
 
 
@@ -68,15 +67,21 @@ SUA_2016      = SUA_2016 %>%
   spTransform(ALB.CONICAL)
 
 
-## Koppen zones were created
-Koppen_zones  = unique(readOGR('data/base/CONTEXTUAL/WC05_1975H_Koppen_Shapefile/WC05_1975H_Koppen_Kriticos_2012.shp')@data[, 1:2])
-Koppen_1975   = raster('data/Koppen_1000m_Mollweide54009.tif')
-#AUS_RAIN      = readRDS('data/base/CONTEXTUAL/BOM/BOM_RAIN_AGG.rds')
-
+## Read in the Local government areas
 LGA           = readRDS("./data/base/CONTEXTUAL/LGA.rds")
 AUS           = readRDS("./data/base/CONTEXTUAL/aus_states.rds")
 ALL.SUA.POP   = read.csv("./data/base/CONTEXTUAL/ABS_SUA_POP.csv", stringsAsFactors = FALSE)
 URB.POP       = read.csv("./data/base/CONTEXTUAL/ABS_URBAN_CENTRE_POP.csv", stringsAsFactors = FALSE)
+
+
+#########################################################################################################################
+## Check how the Koppen zones were calculated
+Koppen_zones     = unique(readOGR('data/base/CONTEXTUAL/WC05_1975H_Koppen_Shapefile/WC05_1975H_Koppen_Kriticos_2012.shp')@data[, 1:2])
+Koppen_1975_1km  = raster('data/Koppen_1000m_Mollweide54009.tif')
+Koppen_1975_5km  = raster('data/Koppen_5000m_Mollweide54009.tif')
+Koppen_1975_10km = raster('data/Koppen_10000m_Mollweide54009.tif')
+
+
 
 
 #########################################################################################################################
@@ -255,9 +260,20 @@ grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',   
 
 #########################################################################################################################
 ## Create a raster stack of current global environmental conditions
-world.grids.current = stack(
+world.grids.current.1km = stack(
   file.path('./data/base/worldclim/world/0.5/bio/current',
             sprintf('bio_%02d', 1:19)))
+
+
+# ## 5km
+# world.grids.current.5km = stack(
+#   file.path('./data/base/worldclim/world/0.5/bio/current/5km',
+#             sprintf('bio_%02d_10km.tif', 1:19)))
+# 
+# ## 10km
+# world.grids.current.10km = stack(
+#   file.path('./data/base/worldclim/world/0.5/bio/current/10km',
+#             sprintf('bio_%02d_10km.tif', 1:19)))
 
 
 ## Create a raster stack of current Australian environmental conditions
@@ -310,8 +326,16 @@ PET               = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
 #                                 tr = c(1000, 1000),
 #                                 r = "near", dstnodata = '-9999')
 # xres(template.raster.1km)
-# 
-# 
+
+## 5km
+# template.raster.3km <- gdalwarp("data/base/worldclim/world/0.5/bio/current/bio_01",
+#                                 tempfile(fileext = '.tif'),
+#                                 t_srs = '+proj=moll +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs',
+#                                 output_Raster = TRUE,
+#                                 tr = c(3000, 3000),
+#                                 r = "near", dstnodata = '-9999')
+
+
 # ## 5km
 # template.raster.5km <- gdalwarp("data/base/worldclim/world/0.5/bio/current/bio_01",
 #                                 tempfile(fileext = '.tif'),
@@ -334,11 +358,13 @@ PET               = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
 
 # ## Assign all the cells to be NA
 # template.raster.1km  <- !is.na(template.raster.1km)
+# template.raster.3km  <- !is.na(template.raster.3km)
 # template.raster.5km  <- !is.na(template.raster.5km)
 # template.raster.10km <- !is.na(template.raster.10km)
 
 
 # writeRaster(template.raster.1km,  'data/template_has_data_1km.tif',   datatype = 'INT2S', overwrite = TRUE)
+# writeRaster(template.raster.3km,  'data/template_has_data_3km.tif',   datatype = 'INT2S', overwrite = TRUE)
 # writeRaster(template.raster.5km,  'data/template_has_data_5km.tif',   datatype = 'INT2S', overwrite = TRUE)
 # writeRaster(template.raster.10km, 'data/template_has_data_10km.tif',  datatype = 'INT2S', overwrite = TRUE)
 
@@ -356,15 +382,11 @@ PET               = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
 
 #########################################################################################################################
 ## Load template rasters
-template.raster.1km  = raster("./data/template_has_data_1km.tif")
+template.raster.1km  = raster("./data/template_hasData.tif")
+template.raster.3km  = raster("./data/template_has_data_3km.tif")
 template.raster.5km  = raster("./data/template_has_data_5km.tif")
 template.raster.10km = raster("./data/template_has_data_10km.tif")
 xres(template.raster.1km);xres(template.raster.5km);xres(template.raster.10km)
-
-
-# template.cells.1km   = readRDS("./data/has_data_cells_1km.rds")
-# template.cells.5km   = readRDS("./data/has_data_cells_5km.rds")
-# template.cells.10km  = readRDS("./data/has_data_cells_10km.rds")
 
 
 

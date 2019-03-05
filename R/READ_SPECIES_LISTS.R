@@ -266,16 +266,18 @@ sum(is.na(HIA.TAXO$GBIF_taxon))
 #########################################################################################################################
 ## Run the TPL function on this list ::
 message('Running TPL taxonomy for ', length(CLEAN.GBIF.SPP), ' species in the HIA list')
-HIA.TAXO <- TPL(CLEAN.GBIF.SPP, infra = TRUE,
-                  corr = TRUE, repeats = 100)  ## to stop it timing out...
-HIA.TAXO$New_binomial = paste(HIA.TAXO$New.Genus, HIA.TAXO$New.Species, sep = " ")
-sum(is.na(HIA.TAXO$New_binomial))
-sum(is.na(HIA.TAXO$New.Taxonomic.status))
-
-
+# HIA.TAXO <- TPL(CLEAN.GBIF.SPP, infra = TRUE,
+#                   corr = TRUE, repeats = 100)  ## to stop it timing out...
+# HIA.TAXO$New_binomial = paste(HIA.TAXO$New.Genus, HIA.TAXO$New.Species, sep = " ")
+# sum(is.na(HIA.TAXO$New_binomial))
+# sum(is.na(HIA.TAXO$New.Taxonomic.status))
+# 
+# 
+# TPL.NA                = HIA.TAXO[(HIA.TAXO$New.Taxonomic.status == ""), ]$Taxon
+# names(HIA.TAXO)
+# saveRDS(HIA.TAXO, paste0(ALA_path, 'HIA_TPL_TAXO.rds'))
+HIA.TAXO = readRDS(paste0(ALA_path, 'HIA_TPL_TAXO.rds'))
 TPL.NA                = HIA.TAXO[(HIA.TAXO$New.Taxonomic.status == ""), ]$Taxon
-names(HIA.TAXO)
-saveRDS(HIA.TAXO, paste0(ALA_path, 'HIA_TPL_TAXO.rds'))
 
 
 #########################################################################################################################
@@ -285,7 +287,7 @@ saveRDS(HIA.TAXO, paste0(ALA_path, 'HIA_TPL_TAXO.rds'))
 CLEAN.TAXO = select(HIA.TAXO, Taxon, New_binomial, New.Taxonomic.status)
 
 
-## Only 220 species should be NA by this join?
+## Only 220 species should be NA by this join
 CLEAN.GROW <- CLEAN.GROW %>%
   left_join(., CLEAN.TAXO, by = c("GBIF_taxon" = "Taxon")) %>%
   select(., Evergreen_taxon, GBIF_taxon, New_binomial, New.Taxonomic.status, Origin, Plant_type, Total_growers, Number_states)
@@ -311,6 +313,11 @@ GBIF.GROW = join(CLEAN.GROW, CLEAN.CLASS) %>%
   select(., searchTaxon, Evergreen_taxon, GBIF_taxon, Taxo_status, genus, family, 
          order, group, Origin, Plant_type, Total_growers, Number_states)
 View(GBIF.GROW)
+
+
+#########################################################################################################################
+## Save the evergreen table out with botanical columns and context
+write.csv(GBIF.GROW, "./data/base/HIA_LIST/HIA/EVERGREEN_TPL_LIST_MARCH2019.csv", row.names = FALSE)
 
 
 #########################################################################################################################
@@ -347,7 +354,7 @@ hollow.test.spp = c("Corymbia citriodora",      "Eucalyptus baileyana",  "Eucaly
 
 
 #########################################################################################################################
-## Check the proportions of species with different model ratings from the previous run
+## Check the proportions of species with different maxdent model ratings from the previous run
 ## 1 = good, 2 = fair, 3 = poor.
 ## Current success rater is ~50-60%
 table(MAXENT.RATING.LAT$CHECK_MAP)
@@ -357,6 +364,8 @@ round(with(MAXENT.RATING.LAT, table(CHECK_MAP)/sum(table(CHECK_MAP))*100), 1)
 
 
 
+#########################################################################################################################
+#########################################################################################################################
 #########################################################################################################################
 ## Once the modelling is finished, these are the columns we can use to rate each species.
 ## The contextual data should come from the CLEAN taxa list above

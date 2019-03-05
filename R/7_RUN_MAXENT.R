@@ -50,7 +50,7 @@ if(read_data == "TRUE") {
 
 
 #########################################################################################################################
-## Check the SDM and background tables
+## This table has both occurrence and background points
 dim(SDM.SPAT.OCC.BG)
 
 
@@ -60,26 +60,28 @@ dim(SDM.SPAT.OCC.BG)
 ## However, some species have high proportions of inventory records in the occurrence data
 ## But because of the way the background data is selected with 200km of occurrence points and inside the same koppen zone
 ## That means that we can't choose enough records in proportion with the background?
-length(intersect(unique(SDM.SPAT.OCC.BG$searchTaxon), GBIF.spp))  ## This should be same as the number of species
+length(intersect(unique(SDM.SPAT.OCC.BG$searchTaxon), GBIF.spp))  ## Should be same length as GBIF.spp
 
 
 #########################################################################################################################
 ## Run Maxent using a random selection of background points. Ideally make these projections exactly the same
-projection(template.raster.5km);projection(SDM.SPAT.OCC.BG);projection(Koppen_1975)
+## The extent and resolution should be the same for the template raster and the koppen zones?
+projection(template.raster.5km);projection(SDM.SPAT.OCC.BG);projection(Koppen_1975_5km)
+identical(extent(template.raster.5km),extent(Koppen_1975_5km))
 
 
 
 ## Here are the argumetns needed to run the targetted background selection SDMs inside the function itself
-spp                     = GBIF.spp[3]
+spp                     = GBIF.spp[1]
 occ                     = subset(SDM.SPAT.OCC.BG, searchTaxon == spp)
 bg                      = subset(SDM.SPAT.OCC.BG, searchTaxon != spp)
 sdm.predictors          = sdm.select 
 name                    = spp 
 outdir                  = maxent_dir
-template.raster         = template.raster.1km   ## 1km, 5km, 10km
+template.raster         = template.raster.5km   ## 1km, 5km, 10km
 min_n                   = 20            
 max_bg_size             = 70000         
-Koppen                  = Koppen_1975
+Koppen                  = Koppen_1975_5km
 background_buffer_width = 200000
 shapefiles              = TRUE
 features                = 'lpq'
@@ -87,13 +89,8 @@ replicates              = 5
 responsecurves          = TRUE
 
 
-## The current code is failing after the background selection, but only for some species.
-## why?.................................................................................................................
-## Proportionally sampling background data for Corymbia citriodora, OCC + INV records total NA
-
-
-## First vary the resolution, then run the background selection.........................................................
-## back to line 534.........................................
+## First, vary the resolution. This causes the proportional sampling to fail........................................
+## Different resolution can be run inside the function, but not outside
 
 
 #########################################################################################################################
@@ -110,10 +107,10 @@ lapply(GBIF.spp, function(spp){
     
   }
 
-  #  create the directory so other parallel runs don't try to do it
+  ## Create the directory for the species in progress, 
+  ## so other parallel runs don't run the same species
   dir.create(dir_name)
   write.csv(data.frame(), file.path(dir_name, "in_progress.txt"))
-  
   
   ## Print the taxa being processed to screen
   if(spp %in% SDM.SPAT.OCC.BG$searchTaxon) {
@@ -132,21 +129,20 @@ lapply(GBIF.spp, function(spp){
                               sdm.predictors          = sdm.select, 
                               name                    = spp, 
                               outdir, 
-                              template.raster,
+                              template.raster         = template.raster.5km,
                               min_n                   = 20,            ## This should be higher...
                               max_bg_size             = 70000,         ## could be 50k or lower, it just depends on the biogeography
-                              Koppen                  = Koppen_1975,
+                              Koppen                  = Koppen_1975_5km,
                               background_buffer_width = 200000,
                               shapefiles              = TRUE,
                               features                = 'lpq',
                               replicates              = 5,
                               responsecurves          = TRUE),
       
-      ## https://stackoverflow.com/questions/19394886/trycatch-in-r-not-working-properly
-      #function(e) message('Species skipped ', spp)) ## skip any species for which the function fails
+      ## If the species fails, write a fail message to file. Can this be the fail message itself?
       error = function(cond) {
-
-        message(paste('Species skipped ', spp))
+        
+        message(spp, ' failed')  
         write.csv(data.frame(), file.path(dir_name, "failed.txt"))
 
       })
@@ -174,10 +170,12 @@ lapply(GBIF.spp, function(spp){
 
 ## Variables to run an example within the backwards selection function
 sdm.predictors          = sdm.predictors
-name                    = spp
-maxent_path             = './output/maxent/SUA_TREES_ANALYSIS/'
-outdir                  = outdir
-template.raster         = template.raster
+name                    = GBIF.spp[1]
+spp                     = name
+maxent_path             = './output/maxent/10_HOLLOW_SPP_1KM_PROP_SAMPLE/'            ## The directory where files are saved               
+bs_dir                  = 'output/maxent/10_HOLLOW_SPP_1KM_PROP_SAMPLE_BS' 
+outdir                  = bs_dir
+template.raster         = template.raster.1km
 min_n                   = 20       ## This should be higher...
 shapefiles              = FALSE    ## name this
 features                = 'lpq'    ## name 
@@ -603,7 +601,11 @@ if(save_data == "TRUE") {
 
 
 
-## 1). Model species in parallel 
+## 1). Check the resolution and backwards selection works.
+##     Check the model results can be compared
+
+
+## 2). Model species in parallel 
 
 ## 2). Harvest folders once they have been run in Katana :: 7-zip
 
