@@ -733,7 +733,6 @@ fit_maxent_targ_bs <- function(sdm.predictors,
   
   ########################################################################
   ## First, stop if the outdir file exists, 
-  #browser()
   if(!file.exists(outdir)) stop('outdir does not exist :(', call. = FALSE)
   outdir_sp <- file.path(outdir, gsub(' ', '_', name))
   
@@ -745,23 +744,13 @@ fit_maxent_targ_bs <- function(sdm.predictors,
   ## Read in the occ and bg points from the targetted SDM step
   message('Reading previously created occurrence and background data from targetted SDM for ', spp)
   save_spp = gsub(' ', '_', spp)
+  
   occ     <- readRDS(sprintf('%s%s/%s_occ.rds', maxent_path, save_spp, save_spp))
   bg      <- readRDS(sprintf('%s%s/%s_bg.rds',  maxent_path, save_spp, save_spp))
   
   swd_occ <- readRDS(sprintf('%s%s/%s_occ_swd.rds', maxent_path, save_spp, save_spp))
   swd_bg  <- readRDS(sprintf('%s%s/%s_bg_swd.rds',  maxent_path, save_spp, save_spp))
   
-  
-  #####################################################################
-  ## Get unique cell numbers for species occurrences
-  # cells <- cellFromXY(template.raster, occ)
-  # 
-  # ## Clean out duplicate cells and NAs (including points outside extent of predictor data)
-  # ## Note this will get rid of a lot of duplicate records not filtered out by GBIF columns, etc.
-  # not_dupes <- which(!duplicated(cells) & !is.na(cells)) 
-  # occ       <- occ[not_dupes, ]
-  # cells     <- cells[not_dupes]
-  # message(nrow(occ), ' occurrence records (unique cells).')
   
   ## Skip species that have less than a minimum number of records: eg 20 species
   if(nrow(occ) < min_n) {
@@ -773,40 +762,12 @@ fit_maxent_targ_bs <- function(sdm.predictors,
   } else {
     
     #####################################################################
-    ## Now subset bg to the buffer polygon
-    ## Within the 200km buffer around the occurrence records for each species, select up to 100k records from any
-    ## species in the total dataset :: trying to create the same bias in both the occurrence and background data
-    # system.time(o <- over(bg, b))
-    # bg <- bg[which(!is.na(o)), ]
-    # bg_cells <- cellFromXY(template.raster, bg)
-    # 
-    # ## Clean out duplicates and NAs (including points outside extent of predictor data)
-    # ## So we are using unique cells to select background records
-    # bg_not_dupes <- which(!duplicated(bg_cells) & !is.na(bg_cells)) 
-    # bg <- bg[bg_not_dupes, ]
-    # bg_cells <- bg_cells[bg_not_dupes]
-    # 
-    # ## Reduce background sample if it's larger than max_bg_size
-    # if (nrow(bg) > max_bg_size) { 
-    #   
-    #   message(nrow(bg), ' target species background records, reduced to random ', 
-    #           max_bg_size, '.')
-    #   
-    #   bg <- bg[sample(nrow(bg), max_bg_size), ]
-    #   
-    # } else {
-    #   
-    #   message(nrow(bg), ' target species background records.')
-    #   
-    # }
-    
-    #####################################################################
     ## Save data for future use
     saveRDS(bg,  file.path(outdir_sp, paste0('bg.rds')))
     saveRDS(occ, file.path(outdir_sp, paste0(save_spp, '_occ.rds')))
     
-    saveRDS(swd_bg,  file.path(outdir_sp, paste0('swd_bg.rds')))
-    saveRDS(swd_occ, file.path(outdir_sp, paste0('swd_occ.rds')))
+    # saveRDS(swd_bg,  file.path(outdir_sp, paste0('swd_bg.rds')))
+    # saveRDS(swd_occ, file.path(outdir_sp, paste0('swd_occ.rds')))
     
     
     #####################################################################
@@ -819,6 +780,8 @@ fit_maxent_targ_bs <- function(sdm.predictors,
     swd_bg$lon  <- NULL
     swd_bg$lat  <- NULL
     
+    
+    ## Need to create a species column here?
     swd_occ$searchTaxon <- spp
     swd_bg$searchTaxon  <- spp
     
@@ -828,9 +791,9 @@ fit_maxent_targ_bs <- function(sdm.predictors,
     ## Save the full model. Replicate this line in the backwards selection algortithm
     ## This is needed to project the models.........................................
     ## Also worth checking that the koppen zones can be used at any resolution
-    saveRDS(list(me_xval = me_xval, me_full = me_full, swd = swd, pa = pa, 
-                 koppen_gridcode=as.character(Koppen_zones$Koppen[match(unique(zones), Koppen_zones$GRIDCODE)])), 
-            file.path(outdir_sp, 'full', 'maxent_fitted.rds'))
+    # saveRDS(list(me_xval = me_xval, me_full = me_full, swd = swd, pa = pa, 
+    #              koppen_gridcode=as.character(Koppen_zones$Koppen[match(unique(zones), Koppen_zones$GRIDCODE)])), 
+    #         file.path(outdir_sp, 'full', 'maxent_fitted.rds'))
     
     m <- local_simplify(
       swd_occ, 
@@ -870,7 +833,9 @@ local_simplify = function (occ, bg, path, species_column = "species", response_c
   if (missing(path)) {
     save <- FALSE
     path <- tempdir()
+    
   }
+  
   else save <- TRUE
   features <- unlist(strsplit(gsub("\\s", "", features), ""))
   if (length(setdiff(features, c("l", "p", "q", "h", "t"))) > 
@@ -880,6 +845,7 @@ local_simplify = function (occ, bg, path, species_column = "species", response_c
   if (length(off) > 0) {
     off <- c(l = "linear=FALSE", p = "product=FALSE", q = "quadratic=FALSE", 
              t = "threshold=FALSE", h = "hinge=FALSE")[off]
+    
   }
   off <- unname(off)
   occ_by_species <- split(occ, occ[[species_column]])

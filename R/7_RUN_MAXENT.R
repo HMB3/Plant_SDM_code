@@ -30,7 +30,7 @@ message('Running maxent models for ', length(GBIF.spp), ' species in the set ', 
 ## Load SDM table
 if(read_data == "TRUE") {
   
-  ## read in RDS files from previous step :: use the hollow species as a test
+  ## Read in RDS files from previous step :: use the hollow species as a test
   ## SDM.SPAT.OCC.BG <- readRDS("H:/green_cities_sdm/data/ANALYSIS/SDM_SPAT_OCC_BG_HOLLOW_SPP.rds")
   SDM.SPAT.OCC.BG = readRDS(paste0(DATA_path, 'SDM_SPAT_OCC_BG_',  save_run, '.rds'))
   
@@ -68,7 +68,6 @@ length(intersect(unique(SDM.SPAT.OCC.BG$searchTaxon), GBIF.spp))  ## Should be s
 ## The extent and resolution should be the same for the template raster and the koppen zones?
 projection(template.raster.5km);projection(SDM.SPAT.OCC.BG);projection(Koppen_1975_5km)
 identical(extent(template.raster.5km),extent(Koppen_1975_5km))
-
 
 
 ## Here are the argumetns needed to run the targetted background selection SDMs inside the function itself
@@ -168,6 +167,10 @@ lapply(GBIF.spp, function(spp){
 #########################################################################################################################
 
 
+# Error in readRDS(sprintf("%s/%s/full/maxent_fitted.rds", maxent_path,  : 
+#                            $ operator not defined for this S4 class
+
+
 ## Variables to run an example within the backwards selection function
 sdm.predictors          = sdm.predictors
 name                    = GBIF.spp[1]
@@ -193,20 +196,20 @@ lapply(GBIF.spp, function(spp){
   ## Skip the species if the directory already exists, before the loop
   outdir <- bs_dir
   
-  dir_name = file.path(maxent_path, gsub(' ', '_', spp))
+  dir_name = file.path(outdir, gsub(' ', '_', spp))
   if(dir.exists(dir_name)) {
     message('Skipping ', spp, ' - already run.')
     invisible(return(NULL))
     
   }
   
-  #  create the directory so other parallel runs don't try to do it
+  ## create the directory so other parallel runs don't try to do it
   dir.create(dir_name)
   write.csv(data.frame(), file.path(dir_name, "in_progress.txt"))
   
   
   ## Print the taxa being processed to screen
-  if(spp %in% SDM.SPAT.BG$searchTaxon) {
+  if(spp %in% SDM.SPAT.OCC.BG$searchTaxon) {
     message('Doing ', spp) 
     
     ## Subset the records to only the taxa being processed
@@ -214,23 +217,20 @@ lapply(GBIF.spp, function(spp){
     message('Reading previously created occurrence and background data from targetted SDM for ', spp)
     save_spp = gsub(' ', '_', spp)
     
-    # occ     <- readRDS(sprintf('%s%s/%s_occ.rds', maxent_path, save_spp, save_spp))
-    # bg      <- readRDS(sprintf('%s%s/%s_bg.rds',  maxent_path, save_spp, save_spp))
+    # occurrence     <- readRDS(sprintf('%s%s/%s_occ.rds', maxent_path, save_spp, save_spp))
+    # background     <- readRDS(sprintf('%s%s/%s_bg.rds',  maxent_path, save_spp, save_spp))
     # 
-    # swd_occ <- readRDS(sprintf('%s%s/%s_occ_swd.rds', maxent_path, save_spp, save_spp))
-    # swd_bg  <- readRDS(sprintf('%s%s/%s_bg_swd.rds',  maxent_path, save_spp, save_spp)) 
-    
-    ##
-    occurrence <- subset(SDM.SPAT.OCC.BG, searchTaxon == spp)# & SOURCE != "INVENTORY")
-    
-    ## Now get the background points. These can come from any spp, other than the modelled species.
-    background <- subset(SDM.SPAT.OCC.BG, searchTaxon != spp)
-    
+    # bg.df  = as.data.frame(background)
+    # occ.df = as.data.frame(occurrence)
+    # 
+    # round(with(occ.df, table(SOURCE)/sum(table(SOURCE))), 3)
+    # round(with(bg.df, table(SOURCE)/sum(table(SOURCE))),  3)
+
     ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
-    tryCatch(
+    tryCatch( 
       fit_maxent_targ_bs(sdm.predictors          = sdm.predictors, ## List of predictor variables
                          name                    = spp,
-                         maxent_path             = './output/maxent/SUA_TREES_ANALYSIS/',
+                         maxent_path             = './output/maxent/10_HOLLOW_SPP_1KM_PROP_SAMPLE/',
                          outdir,                    ## Change the outdir on the new species 
                          template.raster,
                          min_n                   = 20,       ## This should be higher...

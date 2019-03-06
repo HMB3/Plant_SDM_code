@@ -76,6 +76,10 @@ length(occurrence_cells_all)   ## this is a list of dataframes, where the number
 
 #########################################################################################################################
 ## Now get just one record within each 10*10km cell.
+
+## Split the inventory data, and subsample inventory data to coarseer resoltion..........................................
+
+## INV data at 5km, ok GBIF data at 1km
 SDM.DATA.ALL <- mapply(function(x, cells) {
   x[!duplicated(cells), ]
 }, COMBO.RASTER.SPLIT.ALL, occurrence_cells_all, SIMPLIFY = FALSE) %>% do.call(rbind, .)

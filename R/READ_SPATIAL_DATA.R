@@ -78,8 +78,10 @@ URB.POP       = read.csv("./data/base/CONTEXTUAL/ABS_URBAN_CENTRE_POP.csv", stri
 ## Check how the Koppen zones were calculated
 Koppen_zones     = unique(readOGR('data/base/CONTEXTUAL/WC05_1975H_Koppen_Shapefile/WC05_1975H_Koppen_Kriticos_2012.shp')@data[, 1:2])
 Koppen_1975_1km  = raster('data/Koppen_1000m_Mollweide54009.tif')
-Koppen_1975_5km  = raster('data/Koppen_5000m_Mollweide54009.tif')
-Koppen_1975_10km = raster('data/Koppen_10000m_Mollweide54009.tif')
+# Koppen_1975_2km  = raster('data/Koppen_2000m_Mollweide54009.tif')
+# Koppen_1975_3km  = raster('data/Koppen_3000m_Mollweide54009.tif')
+# Koppen_1975_5km  = raster('data/Koppen_5000m_Mollweide54009.tif')
+# Koppen_1975_10km = raster('data/Koppen_10000m_Mollweide54009.tif')
 
 
 
@@ -327,6 +329,14 @@ PET               = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
 #                                 r = "near", dstnodata = '-9999')
 # xres(template.raster.1km)
 
+## 2km
+# template.raster.2km <- gdalwarp("data/base/worldclim/world/0.5/bio/current/bio_01",
+#                                 tempfile(fileext = '.tif'),
+#                                 t_srs = '+proj=moll +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs',
+#                                 output_Raster = TRUE,
+#                                 tr = c(2000, 2000),
+#                                 r = "near", dstnodata = '-9999')
+
 ## 5km
 # template.raster.3km <- gdalwarp("data/base/worldclim/world/0.5/bio/current/bio_01",
 #                                 tempfile(fileext = '.tif'),
@@ -358,12 +368,14 @@ PET               = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
 
 # ## Assign all the cells to be NA
 # template.raster.1km  <- !is.na(template.raster.1km)
+# template.raster.2km  <- !is.na(template.raster.2km)
 # template.raster.3km  <- !is.na(template.raster.3km)
 # template.raster.5km  <- !is.na(template.raster.5km)
 # template.raster.10km <- !is.na(template.raster.10km)
 
 
 # writeRaster(template.raster.1km,  'data/template_has_data_1km.tif',   datatype = 'INT2S', overwrite = TRUE)
+# writeRaster(template.raster.2km,  'data/template_has_data_2km.tif',   datatype = 'INT2S', overwrite = TRUE)
 # writeRaster(template.raster.3km,  'data/template_has_data_3km.tif',   datatype = 'INT2S', overwrite = TRUE)
 # writeRaster(template.raster.5km,  'data/template_has_data_5km.tif',   datatype = 'INT2S', overwrite = TRUE)
 # writeRaster(template.raster.10km, 'data/template_has_data_10km.tif',  datatype = 'INT2S', overwrite = TRUE)
@@ -383,10 +395,11 @@ PET               = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
 #########################################################################################################################
 ## Load template rasters
 template.raster.1km  = raster("./data/template_hasData.tif")
-template.raster.3km  = raster("./data/template_has_data_3km.tif")
-template.raster.5km  = raster("./data/template_has_data_5km.tif")
-template.raster.10km = raster("./data/template_has_data_10km.tif")
-xres(template.raster.1km);xres(template.raster.5km);xres(template.raster.10km)
+# template.raster.2km  = raster("./data/template_has_data_2km.tif")
+# template.raster.3km  = raster("./data/template_has_data_3km.tif")
+# template.raster.5km  = raster("./data/template_has_data_5km.tif")
+# template.raster.10km = raster("./data/template_has_data_10km.tif")
+# xres(template.raster.1km);xres(template.raster.5km);xres(template.raster.10km)
 
 
 
