@@ -12,6 +12,10 @@
 #########################################################################################################################
 
 
+## save.image("UPDATE_DATA.RData") 
+## load("UPDATE_DATA.RData") 
+
+
 #########################################################################################################################
 ## Load only the packages needed for the analysis
 ## lapply(paste('package:',names(sessionInfo()$otherPkgs),sep=""),detach,character.only=TRUE,unload=TRUE)
@@ -265,18 +269,6 @@ grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',   
 world.grids.current.1km = stack(
   file.path('./data/base/worldclim/world/0.5/bio/current',
             sprintf('bio_%02d', 1:19)))
-
-
-# ## 5km
-# world.grids.current.5km = stack(
-#   file.path('./data/base/worldclim/world/0.5/bio/current/5km',
-#             sprintf('bio_%02d_10km.tif', 1:19)))
-# 
-# ## 10km
-# world.grids.current.10km = stack(
-#   file.path('./data/base/worldclim/world/0.5/bio/current/10km',
-#             sprintf('bio_%02d_10km.tif', 1:19)))
-
 
 ## Create a raster stack of current Australian environmental conditions
 ## This is used to calculate the niches for the urban tree inventories

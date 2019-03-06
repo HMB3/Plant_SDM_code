@@ -16,7 +16,8 @@
 
 #########################################################################################################################
 ## Try to run the mess maps at the same time as the map creation?
-project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list, species_list, maxent_path, climate_path, 
+project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list, 
+                                     species_list, maxent_path, climate_path, 
                                      grid_names, time_slice, current_grids, create_mess) {
   
   ## Read in the Australian shapefile at the top
@@ -68,6 +69,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list, sp
       ## Simple loop
       message(i)
       s[[i]] <- s[[ i]]/10
+      
     }
     
     ## Then apply each GCM to each species.
@@ -79,7 +81,6 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list, sp
     # clusterExport(cl, c('scen_list', 'x', 's'))
     # parLapply(cl, species_list, function(species) {
     #############################################
-      
       save_name = gsub(' ', '_', species)
       if(file.exists(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, species))) {
         message('Then run maxent projections for ', species, ' under ', x, ' scenario')
@@ -89,9 +90,18 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list, sp
           
           ########################################################################
           ## Now read in the SDM model, calibrated on current conditions
-          m   <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, species))$me_full 
-          swd <- readRDS(sprintf('%s%s/swd.rds',                 maxent_path, species, species))
-          occ <- readRDS(sprintf('%s%s/%s_occ.rds',              maxent_path, species, save_name)) %>%
+          ## if it was run with backwards selection, just use the full model
+          if (grepl("BS", maxent_path)) {
+            m   <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, species)) 
+            
+          } else {
+            ## If it was run with targetted selection, index the full model
+            m   <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, species))$me_full
+            
+          }
+          
+          swd <- readRDS(sprintf('%s%s/swd.rds',    maxent_path, species, species))
+          occ <- readRDS(sprintf('%s%s/%s_occ.rds', maxent_path, species, save_name)) %>%
             spTransform(ALB.CONICAL)  
           
           ## Create a file path for the current raster prediction
@@ -119,13 +129,22 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list, sp
                              maxent_path, species, 'MESS_output')
           f_mess_current = sprintf('%s/%s%s.tif', MESS_dir, species, "_current_mess")
           
-          if(create_mess == "TRUE" & !file.exists(f_mess_current)) {
+          if(create_mess == "TRUE" && !file.exists(f_mess_current)) {
             message('Running current mess map for ', species)
             
+            sdm_vars             = names(m@presence)
             grid_names           = sdm.predictors
             current_grids        = aus.grids.current
             names(current_grids) = grid_names 
-            current_grids        = subset(current_grids, intersect(names(current_grids), sdm.select))
+            current_grids        = subset(current_grids, intersect(names(current_grids), sdm_vars))
+            
+            # Error in .local(x, i, j, ..., value) : 
+            #   dimensions of the matrix do not match the Raster* object
+            # In addition: Warning messages:
+            #   1: In mapply(function(x, ref) { :
+            #       longer argument not a multiple of length of shorter
+            #     2: In mapply(function(f, rng, p) { :
+            #         longer argument not a multiple of length of shorter
             
             ## Create a map of novel environments for current conditions
             ## This similarity function only uses variables (e.g. 8 bioclim), not features

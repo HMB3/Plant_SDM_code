@@ -105,7 +105,7 @@ lapply(GBIF.spp, function(spp){
     invisible(return(NULL))
     
   }
-
+  
   ## Create the directory for the species in progress, 
   ## so other parallel runs don't run the same species
   dir.create(dir_name)
@@ -143,7 +143,7 @@ lapply(GBIF.spp, function(spp){
         
         message(spp, ' failed')  
         write.csv(data.frame(), file.path(dir_name, "failed.txt"))
-
+        
       })
     
   } else {
@@ -152,7 +152,7 @@ lapply(GBIF.spp, function(spp){
     write.csv(data.frame(), file.path(dir_name, "completed.txt"))
     
   }  
-
+  
   ## now add a file to the dir to denote that it has completed
   write.csv(data.frame(), file.path(dir_name, "completed.txt"))
   
@@ -167,8 +167,10 @@ lapply(GBIF.spp, function(spp){
 #########################################################################################################################
 
 
-# Error in readRDS(sprintf("%s/%s/full/maxent_fitted.rds", maxent_path,  : 
-#                            $ operator not defined for this S4 class
+# Doing Eucalyptus moluccana
+# Dropped due to collinearity: 
+# Annual_mean_temp, Precip_wet_month, Max_temp_warm_month, Precip_seasonality, Min_temp_cold_month, Annual_precip
+# Error: Number of uncorrelated variables (2) < k_thr (3). Reduce k_thr, increase cor_thr, or find alternative predictors.
 
 
 ## Variables to run an example within the backwards selection function
@@ -207,27 +209,21 @@ lapply(GBIF.spp, function(spp){
   dir.create(dir_name)
   write.csv(data.frame(), file.path(dir_name, "in_progress.txt"))
   
-  
   ## Print the taxa being processed to screen
   if(spp %in% SDM.SPAT.OCC.BG$searchTaxon) {
-    message('Doing ', spp) 
     
-    ## Subset the records to only the taxa being processed
-    ## This should just read in the BG and occ data from the previous function?.........................................
-    message('Reading previously created occurrence and background data from targetted SDM for ', spp)
-    save_spp = gsub(' ', '_', spp)
-    
+    ## Check what the targetted function has done with the proportions
     # occurrence     <- readRDS(sprintf('%s%s/%s_occ.rds', maxent_path, save_spp, save_spp))
     # background     <- readRDS(sprintf('%s%s/%s_bg.rds',  maxent_path, save_spp, save_spp))
-    # 
+    
     # bg.df  = as.data.frame(background)
     # occ.df = as.data.frame(occurrence)
-    # 
+    
     # round(with(occ.df, table(SOURCE)/sum(table(SOURCE))), 3)
     # round(with(bg.df, table(SOURCE)/sum(table(SOURCE))),  3)
-
+    
     ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
-    tryCatch( 
+    tryCatch(
       fit_maxent_targ_bs(sdm.predictors          = sdm.predictors, ## List of predictor variables
                          name                    = spp,
                          maxent_path             = './output/maxent/10_HOLLOW_SPP_1KM_PROP_SAMPLE/',
@@ -237,16 +233,16 @@ lapply(GBIF.spp, function(spp){
                          shapefiles              = FALSE,    ## name this
                          features                = 'lpq',    ## name 
                          replicates              = 5,
-                         cor_thr                 = 0.7,
+                         cor_thr                 = 0.8,
                          pct_thr                 = 5,
-                         k_thr                   = 3,
+                         k_thr                   = 2,
                          responsecurves          = TRUE),
       
-      ## https://stackoverflow.com/questions/19394886/trycatch-in-r-not-working-properly
-      #function(e) message('Species skipped ', spp)) ## skip any species for which the function fails
+      
+      ## Figure out how to out error into the fail file
       error = function(cond) {
         
-        message(paste('Species skipped ', spp))
+        message(spp, ' failed')  
         write.csv(data.frame(), file.path(dir_name, "failed.txt"))
         
       })
@@ -318,8 +314,17 @@ MAXENT.RESULTS <- maxent.tables %>%
     ## Load each .RData file
     d <- read.csv(f)
     
+    #############################################################
     ## load model
-    m           = readRDS(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, x))$me_full
+    if (grepl("BS", maxent_path)) {
+      m = readRDS(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, x))
+      
+    } else {
+      ## Get the background records from any source
+      m = readRDS(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, x))$me_full
+      
+    }
+    
     number.var  = length(m@lambdas) - 4   ## (the last 4 slots of the lambdas file are not variables)
     mxt.records = length(m@presence$Annual_mean_temp)
     
@@ -518,8 +523,8 @@ SDM.TAXA <- join(SDM.TAXA, APNI)                     ## get rid of APNI
 MAXENT.SUMMARY.NICHE <- SDM.TAXA %>% 
   
   join(., MAXENT.SUMMARY.NICHE) #%>% 
-  
-  #join(., MAXENT.CHECK[c("searchTaxon", "check.map")])    ## get rid of check map, circualar.............................
+
+#join(., MAXENT.CHECK[c("searchTaxon", "check.map")])    ## get rid of check map, circualar.............................
 
 length(intersect(MAXENT.SUMMARY.NICHE$searchTaxon, GBIF.spp))
 View(MAXENT.SUMMARY.NICHE)
@@ -535,6 +540,8 @@ SUA.MS.TABLE$Training_AUC       = round(SUA.MS.TABLE$Training_AUC, 3)
 SUA.MS.TABLE$max_tss            = round(SUA.MS.TABLE$Training_AUC, 3)
 SUA.MS.TABLE$Logistic_threshold = round(SUA.MS.TABLE$Training_AUC, 3)
 
+
+## Write to CSV here....................................................................................................
 
 
 #########################################################################################################################

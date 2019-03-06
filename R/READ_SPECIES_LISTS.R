@@ -125,7 +125,7 @@ TI.LUT = as.data.frame(table(TI.XY$searchTaxon))
 names(TI.LUT) = c("searchTaxon", "FREQUENCY")
 TI.LUT = TI.LUT[with(TI.LUT, rev(order(FREQUENCY))), ] 
 head(TI.LUT);dim(TI.LUT)
-length(intersect(CLEAN.SPP$Binomial, TI.LUT $searchTaxon))
+
 
 
 
@@ -276,8 +276,9 @@ message('Running TPL taxonomy for ', length(CLEAN.GBIF.SPP), ' species in the HI
 # TPL.NA                = HIA.TAXO[(HIA.TAXO$New.Taxonomic.status == ""), ]$Taxon
 # names(HIA.TAXO)
 # saveRDS(HIA.TAXO, paste0(ALA_path, 'HIA_TPL_TAXO.rds'))
+ALA_path = "./data/base/HIA_LIST/ALA/" 
 HIA.TAXO = readRDS(paste0(ALA_path, 'HIA_TPL_TAXO.rds'))
-TPL.NA                = HIA.TAXO[(HIA.TAXO$New.Taxonomic.status == ""), ]$Taxon
+TPL.NA   = HIA.TAXO[(HIA.TAXO$New.Taxonomic.status == ""), ]$Taxon
 
 
 #########################################################################################################################
@@ -389,7 +390,7 @@ results.columns = c("searchTaxon",       ## From the ALA/ GBIF download code
                     "Iterations",               ## No. iterations                                                                    
                     "Training_AUC",             ## training AUC
                     "max_tss",                  ## Maximium True skill statistic
-                    "Number_background_points", ## NO. background points
+                    "Number_background_points", ## No. background points
                     "Logistic_threshold"        ## Maxent threshold)
 )
 
