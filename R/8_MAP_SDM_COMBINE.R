@@ -67,7 +67,6 @@ head(gcms.50) ; head(gcms.70) ; head(gcms.30)
 shp_path      = "./data/base/CONTEXTUAL/"   
 aus_shp       = "aus_states.rds"
 world_shp     = "LAND_world.rds"
-
 x             = scen_2030[3]    
 species       = map_spp[1]   ## "Eucalyptus_camaldulensis" it breaks on Euc. camuldulensis
 maxent_path   = maxent_path  
@@ -104,8 +103,8 @@ env.grids.2030 = tryCatch(project_maxent_grids_mess(shp_path      = "./data/base
                                                     aus_shp       = "aus_states.rds",          ## Shapefile, e.g. Australian states
                                                     world_shp     = "LAND_world.rds",          ## Polygon for AUS maps           
 
-                                                    scen_list     = scen_2030,                 ## List of climate scenarios
-                                                    species_list  = map_spp[1],                   ## List of species folders with maxent models
+                                                    scen_list     = scen_2030[1],                 ## List of climate scenarios
+                                                    species_list  = map_spp,                   ## List of species folders with maxent models
                                                     maxent_path   = maxent_path,               ## Output folder
                                                     climate_path  = "./data/base/worldclim/aus/1km/bio", ## climate data
                                                     grid_names    = grid.names,                ## names of the predictor grids

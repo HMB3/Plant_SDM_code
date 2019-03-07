@@ -175,7 +175,7 @@ lapply(GBIF.spp, function(spp){
 
 ## Variables to run an example within the backwards selection function
 sdm.predictors          = sdm.predictors
-name                    = GBIF.spp[1]
+name                    = GBIF.spp[2]
 spp                     = name
 maxent_path             = './output/maxent/10_HOLLOW_SPP_1KM_PROP_SAMPLE/'            ## The directory where files are saved               
 bs_dir                  = 'output/maxent/10_HOLLOW_SPP_1KM_PROP_SAMPLE_BS' 
@@ -192,7 +192,9 @@ responsecurves          = TRUE     ## Response curves
 
 
 #########################################################################################################################
-## Loop over all the species spp = GBIF.spp[1]
+## Loop over all the species 
+## spp    = GBIF.spp[1]
+## bs_dir = 'output/maxent/10_HOLLOW_SPP_1KM_PROP_SAMPLE_BS' 
 lapply(GBIF.spp, function(spp){ 
   
   ## Skip the species if the directory already exists, before the loop
@@ -224,20 +226,19 @@ lapply(GBIF.spp, function(spp){
     
     ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
     tryCatch(
-      fit_maxent_targ_bs(sdm.predictors          = sdm.predictors, ## List of predictor variables
+      fit_maxent_targ_bs(sdm.predictors          = sdm.predictors, ## Should this be all the variables?
                          name                    = spp,
                          maxent_path             = './output/maxent/10_HOLLOW_SPP_1KM_PROP_SAMPLE/',
-                         outdir,                    ## Change the outdir on the new species 
+                         outdir,
                          template.raster,
-                         min_n                   = 20,       ## This should be higher...
-                         shapefiles              = FALSE,    ## name this
-                         features                = 'lpq',    ## name 
-                         replicates              = 5,
-                         cor_thr                 = 0.8,
-                         pct_thr                 = 5,
-                         k_thr                   = 2,
+                         min_n                   = 20,     ## This should be higher...
+                         shapefiles              = FALSE,  ## name this
+                         features                = 'lpq',  ## name 
+                         replicates              = 5,      ## replicates as above
+                         cor_thr                 = 0.8,    ## max pairwise correlation between vars
+                         pct_thr                 = 5,      ## min allowable % var contribution
+                         k_thr                   = 2,      ## Min number of variables to keep
                          responsecurves          = TRUE),
-      
       
       ## Figure out how to out error into the fail file
       error = function(cond) {
@@ -413,14 +414,30 @@ dim(subset(MAXENT.RESULTS, Training.AUC > 0.7))  ## all models should be above 0
 ## Plot AUC vs. TSS
 if (nrow(MAXENT.RESULTS) > 2) {
   
-  lm.auc = lm(MAXENT.RESULTS$max_tss ~ MAXENT.RESULTS$Training.AUC)
-  hist(MAXENT.RESULTS$max_tss)
+  ## Save this to file
+  png(paste0('./output/maxent/', 'Maxent_run_summary_', save_run, '.png'), 16, 12, units = 'in', res = 500)
+  
+  layout(matrix(c(1,1,2,3), 2, 2, byrow = TRUE))
+  
   plot(MAXENT.RESULTS$Training.AUC, MAXENT.RESULTS$max_tss, pch = 19, col  = "blue",
        xlab = "AUC", ylab = "TSS", 
-       abline(lm(MAXENT.RESULTS$max_tss ~ MAXENT.RESULTS$Training.AUC)))
-  legend("topleft", bty="n", legend=paste("R2 is", format(summary(lm.auc)$adj.r.squared, digits = 4)))
+       abline(lm(MAXENT.RESULTS$max_tss ~ MAXENT.RESULTS$Training.AUC)), 
+       main = save_run, cex = 3)
   
-  ## If the species has < 2 records, don't plot
+  legend("topleft", bty = "n", 
+         legend = paste("R2 is", format(summary(lm.auc)$adj.r.squared, digits = 4)))
+  
+  hist(MAXENT.RESULTS$Training.AUC, breaks = 10, col = "blue",   border = FALSE,
+       ylab = "Frequency",
+       xlab = "Training AUC", main = "AUC", cex = 3)
+  hist(MAXENT.RESULTS$max_tss,      breaks = 10, col = "orange", border = FALSE,
+       ylab = "Frequency",
+       xlab = "Maximum True Skill Statistic", main = "TSS", cex = 3)
+
+  ## Finsish the device
+  dev.off()
+  
+  ## If the species list is < 2 records, don't plot
 } else {
   
   message('Dont plot, only ', length(GBIF.spp), ' species analysed')

@@ -100,7 +100,9 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
             
           }
           
-          swd <- readRDS(sprintf('%s%s/swd.rds',    maxent_path, species, species))
+          ## Note that the backwards selection and targetted algorithms output slightly different 
+          ## swd objects, df and spdf. best to make these the same
+          swd <- as.data.frame(readRDS(sprintf('%s%s/swd.rds',    maxent_path, species, species)))
           occ <- readRDS(sprintf('%s%s/%s_occ.rds', maxent_path, species, save_name)) %>%
             spTransform(ALB.CONICAL)  
           
@@ -132,24 +134,20 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
           if(create_mess == "TRUE" && !file.exists(f_mess_current)) {
             message('Running current mess map for ', species)
             
+            ## Set the names of the rasters to match the occ data, and subset both
+            ## Watch the creation of objects in each run
             sdm_vars             = names(m@presence)
             grid_names           = sdm.predictors
             current_grids        = aus.grids.current
             names(current_grids) = grid_names 
-            current_grids        = subset(current_grids, intersect(names(current_grids), sdm_vars))
-            
-            # Error in .local(x, i, j, ..., value) : 
-            #   dimensions of the matrix do not match the Raster* object
-            # In addition: Warning messages:
-            #   1: In mapply(function(x, ref) { :
-            #       longer argument not a multiple of length of shorter
-            #     2: In mapply(function(f, rng, p) { :
-            #         longer argument not a multiple of length of shorter
+            current_grids        = subset(current_grids, sdm_vars)
+            swd                  = swd [,sdm_vars]
+            identical(names(swd), names(current_grids))
             
             ## Create a map of novel environments for current conditions
-            ## This similarity function only uses variables (e.g. 8 bioclim), not features
-            mess_current  <- similarity(current_grids, swd[, names(current_grids)], full = TRUE)
-            novel_current <- mess_current$similarity_min   < 0  ##   All novel environments are < 0
+            ## This similarity function only uses variables (e.g. n bioclim), not features
+            mess_current  <- similarity(current_grids, swd, full = TRUE)
+            novel_current <- mess_current$similarity_min < 0  ##   All novel environments are < 0
             novel_current[novel_current==0] <- NA               ##   0 values are NA
             
             ##################################################################
@@ -249,16 +247,16 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
             if(create_mess == "TRUE" & !file.exists(f_mess_future)) {
               message('Running future mess map for ', species, ' under ', x)
               
-              grid_names          = sdm.predictors   ## same grid names as above
               future_grids        = s                ## the stack of 8 rasters for scenario x
               names(future_grids) = grid_names 
-              future_grids        = subset(future_grids, intersect(names(future_grids), sdm.select))
-              
+              future_grids        = subset(future_grids, sdm_vars)
+              identical(names(swd), names(future_grids))
+    
               ## Create the future mess map
-              mess_future  <- similarity(future_grids, swd[, names(future_grids)], full = TRUE)
+              mess_future  <- similarity(future_grids, swd, full = TRUE)
               novel_future <- mess_future$similarity_min   < 0  ##   All novel environments are < 0
               novel_future[novel_future==0] <- NA               ##   0 values are NA
-              
+
               ##################################################################
               ## Write out the future mess maps, for all variables
               writeRaster(mess_future$similarity_min, sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_mess_", x), 

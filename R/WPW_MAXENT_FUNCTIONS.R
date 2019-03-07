@@ -433,26 +433,27 @@ fit_maxent_targ_bs <- function(sdm.predictors,
     
     #####################################################################
     ## Run simplify rmaxent::simplify
-    
-    ## Save the full model. Replicate this line in the backwards selection algortithm
-    ## This is needed to project the models.........................................
-    ## Also worth checking that the koppen zones can be used at any resolution
-    # saveRDS(list(me_xval = me_xval, me_full = me_full, swd = swd, pa = pa, 
-    #              koppen_gridcode=as.character(Koppen_zones$Koppen[match(unique(zones), Koppen_zones$GRIDCODE)])), 
-    #         file.path(outdir_sp, 'full', 'maxent_fitted.rds'))
-    
-    m <- local_simplify(
+
+    # Given a candidate set of predictor variables, this function identifies 
+    # a subset that meets specified multicollinearity criteria. Subsequently, 
+    # backward stepwise variable selection is used to iteratively drop the variable 
+    # that contributes least to the model, until the contribution of each variable 
+    # meets a specified minimum, or until a predetermined minimum number of 
+    # predictors remains. It returns a model object for the full model, rather 
+    # than a list of models as does the previous function
+    m <- rmaxent::simplify(
+      
       swd_occ, 
       swd_bg,
       path            = outdir, 
       species_column  = "searchTaxon",
-      replicates      = replicates,
+      replicates      = replicates,  ## 5 as above
       response_curves = TRUE, 
       logistic_format = TRUE, 
       cor_thr         = cor_thr, 
       pct_thr         = pct_thr, 
       k_thr           = k_thr, 
-      features        = features,  ## change these as necessary (or cor_thr = cor_thr, etc from FIT_MAXENT_SIMP)
+      features        = features,  ## LPQ
       quiet           = FALSE)
     
   }
