@@ -66,8 +66,7 @@ length(intersect(unique(SDM.SPAT.OCC.BG$searchTaxon), GBIF.spp))  ## Should be s
 #########################################################################################################################
 ## Run Maxent using a random selection of background points. Ideally make these projections exactly the same
 ## The extent and resolution should be the same for the template raster and the koppen zones?
-projection(template.raster.5km);projection(SDM.SPAT.OCC.BG);projection(Koppen_1975_5km)
-identical(extent(template.raster.5km),extent(Koppen_1975_5km))
+projection(template.raster.1km);projection(SDM.SPAT.OCC.BG);projection(Koppen_1975_1km)
 
 
 ## Here are the argumetns needed to run the targetted background selection SDMs inside the function itself
@@ -128,10 +127,10 @@ lapply(GBIF.spp, function(spp){
                               sdm.predictors          = sdm.select, 
                               name                    = spp, 
                               outdir, 
-                              template.raster         = template.raster.5km,
+                              template.raster         = template.raster.1km,
                               min_n                   = 20,            ## This should be higher...
                               max_bg_size             = 70000,         ## could be 50k or lower, it just depends on the biogeography
-                              Koppen                  = Koppen_1975_5km,
+                              Koppen                  = Koppen_1975_1km,
                               background_buffer_width = 200000,
                               shapefiles              = TRUE,
                               features                = 'lpq',

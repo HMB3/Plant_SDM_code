@@ -1042,16 +1042,16 @@ niche_estimate = function (DF,
 
 
 #########################################################################################################################
-## Diable the check for 180 degress
-calc_EOO_AOO = function (DATA, country_map = NULL, Cell_size_AOO = 2, Cell_size_locations = 10, 
-          Resol_sub_pop = 5, method_locations = "fixed_grid", Rel_cell_size = 0.05, 
-          DrawMap = TRUE, add.legend = TRUE, file_name = NULL, export_shp = FALSE, 
-          write_shp = FALSE, write_results = TRUE, protec.areas = NULL, 
-          map_pdf = FALSE, draw.poly.EOO = TRUE, exclude.area = FALSE, 
-          method_protected_area = "no_more_than_one", ID_shape_PA = "WDPA_PID", 
-          buff_width = 0.1, SubPop = TRUE, alpha = 1, buff.alpha = 0.1, 
-          method.range = "convex.hull", nbe.rep.rast.AOO = NULL, showWarnings = TRUE, 
-          write_file_option = "excel", parallel = F, NbeCores = 2) 
+## Local version of iucn.EVAL
+calc_EOO_AOO = function (DATA, country_map = NULL, Cell_size_AOO = 10, Cell_size_locations = 10, 
+                         Resol_sub_pop = 5, method_locations = "fixed_grid", Rel_cell_size = 0.05, 
+                         DrawMap = FALSE, add.legend = FALSE, file_name = NULL, export_shp = FALSE, 
+                         write_shp = FALSE, write_results = FALSE, protec.areas = NULL, 
+                         map_pdf = FALSE, draw.poly.EOO = FALSE, exclude.area = TRUE, 
+                         method_protected_area = "no_more_than_one", ID_shape_PA = "WDPA_PID", 
+                         buff_width = 0.1, SubPop = TRUE, alpha = 1, buff.alpha = 0.1, 
+                         method.range = "convex.hull", nbe.rep.rast.AOO = NULL, showWarnings = TRUE, 
+                         write_file_option = "excel", parallel = FALSE, NbeCores = 2) 
 {
   if (class(DATA)[1] == "spgeoIN") {
     DATA_2 <- cbind(DATA$species_coordinates, DATA$identifier)
@@ -1077,9 +1077,9 @@ calc_EOO_AOO = function (DATA, country_map = NULL, Cell_size_AOO = 2, Cell_size_
     if (!is.double(DATA[, 1]) || !is.double(DATA[, 2])) 
       stop("coordinates in DATA should be numeric")
   }
-  if (any(DATA[, 1] > 180) || any(DATA[, 1] < -180) || any(DATA[, 
-                                                                2] < -180) || any(DATA[, 2] > 180)) 
-    message("Coordinates are outside of expected range")
+  # if (any(DATA[, 1] > 180) || any(DATA[, 1] < -180) || any(DATA[,
+  #                                                               2] < -180) || any(DATA[, 2] > 180))
+  #   message("Coordinates are outside of expected range")
   
   if (!is.null(country_map)) 
     if (!class(country_map) == "SpatialPolygonsDataFrame") 
@@ -1174,6 +1174,114 @@ calc_EOO_AOO = function (DATA, country_map = NULL, Cell_size_AOO = 2, Cell_size_
   }
   Results
 }
+
+
+
+
+
+#########################################################################################################################
+## Local version of iucn.EVAL
+EOO.computing =  function (XY, exclude.area = FALSE, country_map = NULL, export_shp = FALSE, 
+                           write_shp = FALSE, alpha = 1, buff.alpha = 0.1, method.range = "convex.hull", 
+                           Name_Sp = "Species1", buff_width = 0.1, method.less.than3 = "not comp", 
+                           write_results = FALSE, file.name = "EOO.results", parallel = F, 
+                           NbeCores = 2, show_progress = F) {
+  
+  if (any(is.na(XY[, c(1:2)]))) {
+    length(which(rowMeans(is.na(XY[, 1:2])) > 0))
+    unique(XY[which(rowMeans(is.na(XY[, 1:2])) > 0), 3])
+    print(paste("Skipping", length(which(rowMeans(is.na(XY[, 
+                                                           1:2])) > 0)), "occurrences because of missing coordinates for", 
+                paste(as.character(unique(XY[which(rowMeans(is.na(XY[, 
+                                                                     1:2])) > 0), 3])), collapse = " AND ")))
+    XY <- XY[which(!is.na(XY[, 1])), ]
+    XY <- XY[which(!is.na(XY[, 2])), ]
+  }
+  XY <- as.data.frame(XY)
+  if (exclude.area & is.null(country_map)) 
+    stop("exclude.area is TRUE but no country_map is provided")
+  if (buff_width > 80) 
+    stop("buff_width has unrealistic value")
+  # if (any(XY[, 2] > 250) || any(XY[, 2] < -250) || any(XY[, 
+  #                                                         1] < -250) || any(XY[, 1] > 250)) 
+  #   stop("coordinates are outside of expected range")
+  if (method.range == "convex.hull") {
+    convex.hull = TRUE
+    alpha.hull = FALSE
+  }
+  if (method.range == "alpha.hull") {
+    convex.hull = FALSE
+    alpha.hull = TRUE
+  }
+  if (ncol(XY) > 2) {
+    colnames(XY)[1:3] <- c("ddlat", "ddlon", "tax")
+    XY$tax <- as.character(XY$tax)
+    list_data <- split(XY, f = XY$tax)
+  }
+  else {
+    colnames(XY)[1:2] <- c("ddlat", "ddlon")
+    list_data <- list(XY)
+  }
+  if (show_progress) 
+    prog. <- "text"
+  if (!show_progress) 
+    prog. <- "none"
+  if (parallel) 
+    registerDoParallel(NbeCores)
+  OUTPUT <- "NO_EOO_COMPUTED"
+    # llply(list_data, .fun = function(x) {
+    #   .EOO.comp(x, Name_Sp = ifelse(ncol(XY) > 2, as.character(unique(x$tax)), 
+    #                                 Name_Sp), exclude.area = exclude.area, buff_width = buff_width, 
+    #             country_map = country_map, alpha = alpha, buff.alpha = buff.alpha, 
+    #             alpha.hull = alpha.hull, convex.hull = convex.hull, 
+    #             method.less.than3 = method.less.than3)
+    # }, .progress = prog., .parallel = parallel)
+  if (parallel) 
+    stopImplicitCluster()
+  if (length(OUTPUT) == 1) 
+    names(OUTPUT) <- Name_Sp
+  # if (write_shp) {
+  #   dir.create(file.path(paste(getwd(), "/shapesIUCN", sep = "")), 
+  #              showWarnings = FALSE)
+  #   for (i in 1:length(OUTPUT)) {
+  #     if (!is.na(OUTPUT[[i]][[1]])) {
+  #       if (length(list.files(paste(getwd(), "/shapesIUCN", 
+  #                                   sep = ""))) > 0) {
+  #         if (length(grep(paste(names(OUTPUT)[i], "_EOO_poly", 
+  #                               sep = ""), unique(sub("....$", "", list.files(paste(getwd(), 
+  #                                                                                   "/shapesIUCN", sep = "")))))) > 0) {
+  #           FILES <- list.files(paste(getwd(), "/shapesIUCN", 
+  #                                     sep = ""), full.names = TRUE)
+  #           file.remove(FILES[grep(paste(names(OUTPUT)[i], 
+  #                                        "_EOO_poly", sep = ""), FILES)])
+  #         }
+  #       }
+  #       NAME <- names(OUTPUT[[i]][[2]])
+  #       OUTPUT[[i]][[2]]@polygons[[1]]@ID <- "1"
+  #       ConvexHulls_poly_dataframe <- SpatialPolygonsDataFrame(OUTPUT[[i]][[2]], 
+  #                                                              data = as.data.frame(names(OUTPUT[[i]][[2]])))
+  #       colnames(ConvexHulls_poly_dataframe@data) <- paste(substr(unlist(strsplit(names(OUTPUT)[i], 
+  #                                                                                 "[ ]")), 0, 3), collapse = "")
+  #       writeOGR(ConvexHulls_poly_dataframe, "shapesIUCN", 
+  #                paste(names(OUTPUT)[i], "_EOO_poly", sep = ""), 
+  #                driver = "ESRI Shapefile")
+  #     }
+  #   }
+  # }
+  Results_short <- lapply(OUTPUT, `[`, 1)
+  Results_short <- as.data.frame(matrix(unlist(Results_short), 
+                                        nrow = 1))
+  colnames(Results_short) <- names(OUTPUT)
+  Results_short <- as.data.frame(t(Results_short))
+  colnames(Results_short) <- "EOO"
+  # if (write_results) 
+  #   write.csv(Results_short, paste(getwd(), "/", file.name, 
+  #                                  ".csv", sep = ""))
+  if (!export_shp) 
+    OUTPUT <- Results_short
+  OUTPUT
+}
+
 
 
 

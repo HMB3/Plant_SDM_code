@@ -25,7 +25,7 @@ p <- c('ff',    'things',    'raster',        'dismo',        'sp',           'l
        'ALA4R', 'stringr',   'Taxonstand',    'CoordinateCleaner', 'gsubfn',  'PerformanceAnalytics',
        'rvest', 'magrittr',  'devtools',      'ggplot2',      'reshape2',     'rmarkdown', 'flexdashboard', 'shiny', 'rgbif',
        'ENMeval', 'tibble',  'ncdf4',         'Cairo', 'taxonlookup', 'kgc', 'maptools', 'DataCombine', 'mgcv', 'rsq', 'utf8',
-       'betareg', 'hydroTSM', 'bomrang', 'gridExtra', 'grid', 'lattice', 'ConR')
+       'betareg', 'hydroTSM', 'bomrang', 'gridExtra', 'grid', 'lattice', 'ConR', 'writexl')
 
 
 ## Require packages
@@ -266,7 +266,7 @@ grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',   
 
 #########################################################################################################################
 ## Create a raster stack of current global environmental conditions
-world.grids.current.1km = stack(
+world.grids.current = stack(
   file.path('./data/base/worldclim/world/0.5/bio/current',
             sprintf('bio_%02d', 1:19)))
 

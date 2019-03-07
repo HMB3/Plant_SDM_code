@@ -198,11 +198,8 @@ message(round(dim(CLEAN.TRUE)[1]/dim(TEST.GEO)[1]*100, 2), " % records retained"
 
 
 ## Select columns
-GBIF.ALA.CHECK  = select(CLEAN.TRUE,     OBS, searchTaxon, scientificName, lat, lon, SOURCE, INVENTORY, year,
-                         #coordinateUncertaintyInMetres, #geodeticDatum,
-                         country, locality, basisOfRecord, institutionCode,
-                         #rank,
-                         Taxonomic.status, New.Taxonomic.status)
+GBIF.ALA.CHECK  = select(CLEAN.TRUE, searchTaxon, scientificName, lat, lon, SOURCE, year,
+                         country, locality, basisOfRecord, institutionCode)
 
 
 ## Rename the fields so that ArcMap can handle them
@@ -211,16 +208,11 @@ GBIF.ALA.CHECK     = dplyr::rename(GBIF.ALA.CHECK,
                                    LAT       = lat,
                                    LON       = lon,
                                    SC_NAME   = scientificName,
-                                   #RANK      = rank,
                                    BASIS     = basisOfRecord,
                                    LOCAL     = locality,
                                    INSTIT    = institutionCode,
                                    COUNTRY   = country,
-                                   #COORD_UN  = coordinateUncertaintyInMetres,
-                                   #DATUM     = geodeticDatum,
-                                   YEAR      = year,
-                                   TAX_STAT  = Taxonomic.status,
-                                   NEW_STA   = New.Taxonomic.status)
+                                   YEAR      = year)
 names(GBIF.ALA.CHECK)
 
 
@@ -248,7 +240,7 @@ TAXA <- unique(GBIF.ALA.SPDF$TAXON)
 
 
 ## Write the whole shapefile out just in case
-writeOGR(obj = GBIF.ALA.SPDF, dsn = "./data/base/HIA_LIST/COMBO", 
+writeOGR(obj = GBIF.ALA.SPDF, dsn = "./data/ANALYSIS/CLEAN_GBIF", 
          layer = paste0("CLEAN_SPDF_", save_run), driver = "ESRI Shapefile")
 
 
@@ -266,7 +258,7 @@ if(calc_niche == "TRUE") {
   
   ## We want to know the count of species that occur in 'n' LGAs, across a range of climates. Read in LGA and SUA
   length(unique(CLEAN.TRUE$searchTaxon))
-  projection(LGA);projection(AUS);projection(SUA.16)
+  projection(LGA);projection(AUS);projection(SUA_2016 )
   
   
   ## Convert the raster data back into a spdf
@@ -276,9 +268,10 @@ if(calc_niche == "TRUE") {
   
   
   ## Project using a projected rather than geographic coordinate system
-  LGA.WGS  = spTransform(LGA,    CRS.WGS.84)
-  SUA.WGS  = spTransform(SUA.16, CRS.WGS.84)
-  AUS.WGS  = spTransform(AUS,    CRS.WGS.84)
+  ## Not sure why, but this is needed for the extraction step
+  LGA.WGS  = spTransform(LGA,       CRS.WGS.84)
+  SUA.WGS  = spTransform(SUA_2016 , CRS.WGS.84)
+  AUS.WGS  = spTransform(AUS,       CRS.WGS.84)
   
   
   ## Remove the columns we don't need
@@ -307,7 +300,7 @@ if(calc_niche == "TRUE") {
   ## AGGREGATE THE NUMBER OF SUAs EACH SPECIES IS FOUND IN. NA LGAs ARE OUTSIDE AUS
   SUA.AGG   = tapply(COMBO.SUA.LGA$SUA_NAME16, COMBO.SUA.LGA$searchTaxon, function(x) length(unique(x))) ## group SUA by species name
   SUA.AGG   = as.data.frame(SUA.AGG)
-  AUS.AGG   = aggregate(SUA_NAME16 ~ searchTaxon, data = COMBO.SUA.LGA, function(x) {sum(!is.na(x))}, na.action = NULL)
+  AUS.AGG   = aggregate(SUA_NAME16 ~ searchTaxon, data = COMBO.SUA.LGA,   function(x) {sum(!is.na(x))}, na.action = NULL)
   SUA.AGG   = cbind.data.frame(AUS.AGG, SUA.AGG)
   names(SUA.AGG) = c("searchTaxon", "AUS_RECORDS", "SUA_COUNT")
   
@@ -335,80 +328,8 @@ if(calc_niche == "TRUE") {
   str(unique(COMBO.SUA.LGA$searchTaxon))
   unique(COMBO.SUA.LGA$SOURCE)
   
-  
-  #########################################################################################################################
-  ## 6). CALCULATE AREA OF OCCUPANCY
-  #########################################################################################################################
-  
-  
-  ## Given a dataframe of georeferenced occurrences of one, or more, taxa, this function provide statistics values 
-  ## (Extent of Occurrence, Area of Occupancy, number of locations, number of subpopulations) and provide a preliminary 
-  ## conservation status following Criterion B of IUCN. A graphical map output is also available.
-  
-  #########################################################################################################################
-  ## 7). CALCULATE AREA OF OCCUPANCY RANGES 
-  #########################################################################################################################
-  
-  
-  ## These numbers don't look that accurate: Try convert into a sp data frame and projecting into a projected system?
-  ## Create a species list to estimate the ranges for
-  spp.geo = as.character(unique(COMBO.RASTER$searchTaxon))
-  AOO.DAT = COMBO.RASTER
-  
-  
-  #########################################################################################################################
-  ## AREA OF OCCUPANCY (AOO)
-  ## For every species in the list: calculate the AOO
-  ## The extent of occurrence function is causing problems.................................................................
-  ## x = spp.geo[1]
-  GBIF.AOO <- spp.geo %>%
-    
-    ## Pipe the list into lapply
-    lapply(function(x) {
-      
-      ## Subset the the data frame Calculate area of occupancy according the the "red" package
-      ## IUCN.eval
-      AOO = subset(AOO.DAT, searchTaxon == x)[, c("lat", "lon", "searchTaxon")] %>%
-        calc_EOO_AOO(., Cell_size_AOO = 10, DrawMap = FALSE, country_map = land, SubPop = FALSE) %>%
-        .[,c("taxa", "EOO", "AOO", "Category_CriteriaB")]
-      rownames(AOO) = NULL
-      names(AOO) = c("searchTaxon",  "EOO", "AOO", "ICUN_catb")
 
-    }) %>%
-    
-    ## Finally, create one dataframe for all niches
-    as.data.frame
   
-  #########################################################################################################################
-  ## Clean it up :: the order of species should be preserved
-  GBIF.AOO = gather(GBIF.AOO)
-  str(GBIF.AOO)
-  str(unique(GBIF.ALA.COMBO.HIA$searchTaxon))                     ## same number of species...
-
-  ## Now join on the GEOGRAPHIC RANGE
-  COMBO.NICHE$AREA_OCCUPANCY = GBIF.AOO$value                     ## vectors same length so don't need to match
-  
-  
-  ## AOO is calculated as the area of all known or predicted cells for the species. The resolution will be 2x2km as 
-  ## required by IUCN. A single value in km2.
-  
-  #########################################################################################################################
-  ## Add the counts of Australian records for each species to the niche database
-  names(COMBO.NICHE)
-  names(LGA.AGG)
-  dim(COMBO.NICHE)
-  dim(LGA.AGG)
-
-
-  COMBO.LGA = join(COMBO.NICHE, LGA.AGG)                        ## The tapply needs to go where the niche summaries are
-  names(COMBO.LGA)
-
-  dim(COMBO.LGA)
-  head(COMBO.LGA$AUS_RECORDS)
-  head(COMBO.LGA$LGA_COUNT)
-  
-  
-  MyResults <- IUCN.eval(MyData, Cell_size_AOO = 20)
   
   
   #########################################################################################################################
@@ -503,6 +424,74 @@ if(calc_niche == "TRUE") {
   dim(COMBO.LGA)
   head(COMBO.LGA$AUS_RECORDS)
   head(COMBO.LGA$SUA_COUNT)
+  
+  
+  #########################################################################################################################
+  ## 7). CALCULATE AREA OF OCCUPANCY
+  #########################################################################################################################
+  
+  
+  ## Given a dataframe of georeferenced occurrences of one, or more, taxa, this function provide statistics values 
+  ## (Extent of Occurrence, Area of Occupancy, number of locations, number of subpopulations) and provide a preliminary 
+  ## conservation status following Criterion B of IUCN. A graphical map output is also available.
+  
+  ## Create a species list to estimate the ranges for. Currently we can't estimate ranges for widely distributed species
+  ## A workaround for the trait species is to just use the ALA records. But for the full list of species, we will need to 
+  ## change this. Otherwise, we could report the global niche, but the Australian range only. This will mean that 
+  spp.geo = as.character(unique(COMBO.RASTER$searchTaxon))
+  AOO.DAT = COMBO.RASTER %>%
+    subset(., SOURCE == "ALA")
+  
+  
+  #########################################################################################################################
+  ## AREA OF OCCUPANCY (AOO)
+  ## For every species in the list: calculate the AOO
+  ## The extent of occurrence function is causing problems.................................................................
+  ## x = spp.geo[1]
+  source('./R/WPW_GENERAL_FUNCTIONS.R')
+  GBIF.AOO <- spp.geo %>%
+    
+    ## Pipe the list into lapply
+    lapply(function(x) {
+      
+      ## Subset the the data frame to calculate area of occupancy according the IUCN.eval
+      DF = subset(AOO.DAT, searchTaxon == x)[, c("lat", "lon", "searchTaxon")]
+      calc_EOO_AOO(DF, Cell_size_AOO = 10, DrawMap = FALSE, country_map = land, SubPop = FALSE) 
+      
+      
+    }) %>%
+    
+    ## Finally, create one dataframe for all niches
+    bind_rows
+  
+  GBIF.AOO$searchTaxon = spp.geo[1:2]
+  GBIF.AOO             = select(GBIF.AOO, searchTaxon, EOO, AOO, Category_CriteriaB)
+  names(GBIF.AOO)      = c("searchTaxon",  "EOO", "AOO", "ICUN_catb")
+  rownames(GBIF.AOO)   = NULL
+  
+  #########################################################################################################################
+  ## Now join on the GEOGRAPHIC RANGE
+  identical(length(GBIF.AOO$AOO), length(GBIF.spp))
+  COMBO.NICHE$AREA_OCCUPANCY = GBIF.AOO$value                     ## vectors same length so don't need to match
+  
+  
+  ## AOO is calculated as the area of all known or predicted cells for the species. The resolution will be 2x2km as 
+  ## required by IUCN. A single value in km2.
+  
+  #########################################################################################################################
+  ## Add the counts of Australian records for each species to the niche database
+  names(COMBO.NICHE)
+  names(LGA.AGG)
+  dim(COMBO.NICHE)
+  dim(LGA.AGG)
+  
+  
+  COMBO.LGA = join(COMBO.NICHE, LGA.AGG)                        ## The tapply needs to go where the niche summaries are
+  names(COMBO.LGA)
+  
+  dim(COMBO.LGA)
+  head(COMBO.LGA$AUS_RECORDS)
+  head(COMBO.LGA$LGA_COUNT)
   
   
   
