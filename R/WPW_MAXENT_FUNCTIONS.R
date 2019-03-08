@@ -104,6 +104,13 @@ fit_maxent_targ_bg_kopp <- function(occ,
   ## Create a buffer of xkm around the occurrence points
   b <- aggregate(gBuffer(occ, width = background_buffer_width, byid = TRUE))
   
+  ## Plot the buffer and the occurrence points
+  aus.mol <- AUS %>%
+    spTransform(CRS(sp_epsg54009))
+  plot(aus.mol)
+  plot(buffer, add = TRUE, col = "red")
+  plot(occ,    add = TRUE, col = "blue")
+  
   #####################################################################
   ## Get unique cell numbers for species occurrences
   cells <- cellFromXY(template.raster, occ)
@@ -160,11 +167,14 @@ fit_maxent_targ_bg_kopp <- function(occ,
       
       ## For some species, we have the problem that the proportion of ALA/INV data is 
       ## very different in the occurrence vs the bg records. 
-      ## This could be caused by the koppen restriction, etc.
+      ## This should be caused by the 200km / koppen restriction, etc.
       message(dim(bg), ' Initial background points')
       table(bg$SOURCE)
       bg.df = as.data.frame(bg)
       round(with(bg.df, table(SOURCE)/sum(table(SOURCE))), 3)
+      
+      ## Create an index of 
+      bg$index <- 1:nrow(bg)
       
     }
     
@@ -183,9 +193,9 @@ fit_maxent_targ_bg_kopp <- function(occ,
               ', reduced to random ', max_bg_size, ' using random points from :: ', unique(bg$SOURCE))
       bg.samp <- bg[sample(nrow(bg), max_bg_size), ]
       
-      ## To be extra thorough, we might need to sample this one proportionally too.....
-      bg.samp.df = as.data.frame(bg.samp)
-      round(with(bg.samp.df, table(SOURCE)/sum(table(SOURCE))), 3)
+      # ## To be extra thorough, we might need to sample this one proportionally too.....
+      # bg.samp.df = as.data.frame(bg.samp)
+      # round(with(bg.samp.df, table(SOURCE)/sum(table(SOURCE))), 3)
       
     } else {
       
@@ -211,39 +221,88 @@ fit_maxent_targ_bg_kopp <- function(occ,
       
       ## Get the ALA
       bg.ala = bg.samp[ sample( which(bg.samp$SOURCE == "ALA" | bg.samp$SOURCE == "GBIF"), 
-                                ala.prop*(nrow(subset(bg.samp, SOURCE == "ALA" | SOURCE == "GBIF")))), ]
+                                ala.prop * max_bg_size), ]
       
       ## If the proportion of inv records in the occ data * the number of background records 
       ## is < than the no. of inventory records in the background data, 
       ## get the proportion of occ inv records * the no. of inv bg records
-      if(inv.prop*(nrow(bg.samp)) > nrow(subset(bg.samp, SOURCE == "INVENTORY"))) {
+      if(inv.prop*(max_bg_size) < nrow(subset(bg, SOURCE == "INVENTORY"))) {
         
-        bg.inv  = bg.samp[ sample( which(bg.samp$SOURCE == "INVENTORY"), 
-                                   inv.prop*(nrow(subset(bg.samp, SOURCE == "INVENTORY")))), ]
+        ## But, try adding an additional constraint that we are not choosing from xk BG points already choseen
+        ## Thes problems will be easier with a bigger background sample - 
+        bg.inv  = bg[ sample( which(bg$SOURCE == "INVENTORY"), 
+                              inv.prop * max_bg_size), ]
         
       } else {
         
-        ## Otherwise, get the inv.prop * the number of background points
-        bg.inv  = bg.samp[ sample( which(bg.samp$SOURCE == "INVENTORY"), 
-                                   inv.prop*(nrow(bg.samp))), ]
+        ## Otherwise, get all the inventory records possible
+        ## These don't overlap with
+        bg.inv  = bg[ sample(which(bg$SOURCE == "INVENTORY")), ]
         
       }
       
       ## Then, combine the samples from the ALA/GBIF and INV sources
-      bg.samp    = rbind(bg.ala, bg.inv)
-      bg.samp.df = as.data.frame(bg.samp)
-      round(with(bg.samp.df , table(SOURCE)/sum(table(SOURCE))), 3)
+      bg.comb    = rbind(bg.ala, bg.inv)
+      bg.samp.df = as.data.frame(bg.comb)
+      round(with(bg.comb.df , table(SOURCE)/sum(table(SOURCE))), 3)
+      round(with(bg.comb.df , table(SOURCE)/sum(table(SOURCE))), 3)
       
     } else {
       ## Get the background records from any source
       message(nrow(bg.samp), ' target species background records for ', spp, 
               ' using random sample from :: ', unique(bg$SOURCE))
+      bg.comb = bg.samp
       
     }
     
+    
+    #####################################################################
+    ## print the proportions to screen
+    
+    
+    
+    #####################################################################
+    ## Now save an image of the background points 
+    save_name = gsub(' ', '_', name)
+    
+    aus.mol <- AUS %>%
+      spTransform(crs(buffer))
+    aus.kop = crop(Koppen_crop, aus.mol)
+    
+    occ.mol <- occ %>%
+      spTransform(crs(buffer))
+    ala.mol <- bg.ala  %>%
+      spTransform(crs(buffer))
+    inv.mol <- bg.inv  %>%
+      spTransform(crs(buffer))
+    
+    png(sprintf('%s/%s/full/%s_%s.png', maxent_path, save_name, save_name, "buffer_occ"),      
+        11, 4, units = 'in', res = 300)
+
+    plot(aus.kop, legend = FALSE)
+    plot(aus.mol, add = TRUE)
+    plot(buffer,  add = TRUE, col = "red")
+    plot(occ.mol, add = TRUE, col = "blue")
+    
+    dev.off()
+    
+    # plot(aus.kop, legend = FALSE)
+    # plot(aus.mol, add = TRUE)
+    # plot(buffer,  add = TRUE, col = "red")
+    # plot(ala.mol, add = TRUE, col = "grey")
+    png(sprintf('%s/%s/full/%s_%s.png', maxent_path, save_name, save_name, "buffer_inv"),      
+        11, 4, units = 'in', res = 300)
+    
+    plot(aus.kop, legend = FALSE)
+    plot(aus.mol, add = TRUE)
+    plot(buffer,  add = TRUE, col = "red")
+    plot(inv.mol, add = TRUE, col = "black")
+    
+    dev.off()
+    
+    
     #####################################################################
     ## Now Save occurrence and backgroudn points as shapefiles
-    save_name = gsub(' ', '_', name)
     if(shapefiles) {
       
       suppressWarnings({
@@ -251,7 +310,7 @@ fit_maxent_targ_bg_kopp <- function(occ,
         message(name, ' writing occ and bg shapefiles')
         writeOGR(SpatialPolygonsDataFrame(b, data.frame(ID = seq_len(length(b)))),
                  outdir_sp, paste0(save_name, '_bg_buffer'), 'ESRI Shapefile', overwrite_layer = TRUE)
-        writeOGR(bg.samp,  outdir_sp, paste0(save_name, '_bg'),   'ESRI Shapefile', overwrite_layer = TRUE)
+        writeOGR(bg.comb,  outdir_sp, paste0(save_name, '_bg'),   'ESRI Shapefile', overwrite_layer = TRUE)
         writeOGR(occ,           outdir_sp, paste0(save_name, '_occ'),  'ESRI Shapefile', overwrite_layer = TRUE)
         
       })
@@ -259,7 +318,7 @@ fit_maxent_targ_bg_kopp <- function(occ,
     }
     
     ## Also save the background and occurrence points as .rds files
-    saveRDS(bg.samp,  file.path(outdir_sp, paste0(save_name, '_bg.rds')))
+    saveRDS(bg.comb,  file.path(outdir_sp, paste0(save_name, '_bg.rds')))
     saveRDS(occ,      file.path(outdir_sp, paste0(save_name, '_occ.rds')))
     
     #####################################################################
@@ -268,7 +327,7 @@ fit_maxent_targ_bg_kopp <- function(occ,
     swd_occ <- occ[, sdm.predictors]
     saveRDS(swd_occ, file.path(outdir_sp, paste0(save_name,'_occ_swd.rds')))
     
-    swd_bg <- bg.samp[, sdm.predictors]
+    swd_bg <- bg.comb[, sdm.predictors]
     saveRDS(swd_bg, file.path(outdir_sp, paste0(save_name, '_bg_swd.rds')))
     
     ## Save the SWD tables as shapefiles

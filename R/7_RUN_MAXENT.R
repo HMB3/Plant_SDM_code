@@ -76,10 +76,10 @@ bg                      = subset(SDM.SPAT.OCC.BG, searchTaxon != spp)
 sdm.predictors          = sdm.select 
 name                    = spp 
 outdir                  = maxent_dir
-template.raster         = template.raster.5km   ## 1km, 5km, 10km
+template.raster         = template.raster.1km   ## 1km, 5km, 10km
 min_n                   = 20            
 max_bg_size             = 70000         
-Koppen                  = Koppen_1975_5km
+Koppen                  = Koppen_1975_1km
 background_buffer_width = 200000
 shapefiles              = TRUE
 features                = 'lpq'
