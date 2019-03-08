@@ -73,12 +73,12 @@ projection(template.raster.1km);projection(SDM.SPAT.OCC.BG);projection(Koppen_19
 spp                     = GBIF.spp[1]
 occ                     = subset(SDM.SPAT.OCC.BG, searchTaxon == spp)
 bg                      = subset(SDM.SPAT.OCC.BG, searchTaxon != spp)
-sdm.predictors          = sdm.select 
-name                    = spp 
+sdm.predictors          = sdm.select
+name                    = spp
 outdir                  = maxent_dir
 template.raster         = template.raster.1km   ## 1km, 5km, 10km
-min_n                   = 20            
-max_bg_size             = 70000         
+min_n                   = 20
+max_bg_size             = 70000
 Koppen                  = Koppen_1975_1km
 background_buffer_width = 200000
 shapefiles              = TRUE
@@ -87,8 +87,7 @@ replicates              = 5
 responsecurves          = TRUE
 
 
-## First, vary the resolution. This causes the proportional sampling to fail........................................
-## Different resolution can be run inside the function, but not outside
+## Save error message to the text file.................................................................................
 
 
 #########################################################################################################################
@@ -135,7 +134,9 @@ lapply(GBIF.spp, function(spp){
                               shapefiles              = TRUE,
                               features                = 'lpq',
                               replicates              = 5,
-                              responsecurves          = TRUE),
+                              responsecurves          = TRUE,
+                              shp_path                = "./data/base/CONTEXTUAL/", 
+                              aus_shp                 = "aus_states.rds"),
       
       ## If the species fails, write a fail message to file. Can this be the fail message itself?
       error = function(cond) {
