@@ -182,7 +182,7 @@ fit_maxent_targ_bg_kopp <- function(occ,
       message(nrow(bg), ' target species background records for ', name, 
               ', reduced to random ', max_bg_size, ' using random points from :: ', unique(bg$SOURCE))
       bg.samp <- bg[sample(nrow(bg), max_bg_size), ]
-    
+      
     } else {
       
       ## If the bg points are smaller that the max_bg_size, just get all the points
@@ -204,16 +204,26 @@ fit_maxent_targ_bg_kopp <- function(occ,
               ', using proportional samples from :: ', unique(bg$SOURCE))
       
       ## Get the ALA
-      bg.ala = bg.samp[ sample( which(bg.samp$SOURCE == "ALA" | bg.samp$SOURCE == "GBIF"), 
-                                ala.prop * max_bg_size), ]
-      
+      if(ala.prop*(nrow(bg.samp)) < nrow(subset(bg.samp, SOURCE == "ALA" | SOURCE == "GBIF"))) {
+        
+        ## These bg records don't overlap with the ala bg records
+        bg.ala = bg.samp[ sample( which(bg.samp$SOURCE == "ALA" | bg.samp$SOURCE == "GBIF"), 
+                                  ala.prop * nrow(bg.samp)), ]
+        
+      } else {
+        
+        ## Otherwise, get as many inventory records as possible
+        bg.ala  = bg.samp[ sample(which(bg.samp$SOURCE == "ALA" | bg.samp$SOURCE == "GBIF")), ]
+        
+      }
+
       ## If the proportion of inv records in the occ data * the number of background records 
       ## is < than the no. of inventory records in the background data, 
       ## get the proportion of occ inv records * the max bg size
-      if(inv.prop*(max_bg_size) < nrow(subset(bg, SOURCE == "INVENTORY"))) {
+      if(inv.prop*(nrow(bg.samp)) < nrow(subset(bg.samp, SOURCE == "INVENTORY"))) {
         
         ## These bg records don't overlap with the ala bg records
-        bg.inv  = bg[ sample( which(bg$SOURCE == "INVENTORY"), inv.prop * max_bg_size), ]
+        bg.inv  = bg.samp[ sample( which(bg.samp$SOURCE == "INVENTORY"), inv.prop * nrow(bg.samp)), ]
         
       } else {
         
@@ -243,33 +253,40 @@ fit_maxent_targ_bg_kopp <- function(occ,
     aus.mol = readRDS(paste0(shp_path, aus_shp)) %>%
       spTransform(projection(buffer))
     aus.kop = crop(Koppen_crop, aus.mol)
-
+    
     occ.mol <- occ %>%
       spTransform(projection(buffer))
-    ala.mol <- bg.ala  %>%
-      spTransform(projection(buffer))
-    inv.mol <- bg.inv  %>%
-      spTransform(projection(buffer))
-
+    
     png(sprintf('%s/%s/%s_%s.png', maxent_path, save_name, save_name, "buffer_occ"),
         16, 10, units = 'in', res = 300)
-
+    
     plot(aus.kop, legend = FALSE)
     plot(aus.mol, add = TRUE)
     plot(buffer,  add = TRUE, col = "red")
     plot(occ.mol, add = TRUE, col = "blue")
-
+    
     dev.off()
-
-    png(sprintf('%s/%s/%s_%s.png', maxent_path, save_name, save_name, "buffer_inv"),
-        16, 10, units = 'in', res = 300)
-
-    plot(aus.kop, legend = FALSE)
-    plot(aus.mol, add = TRUE)
-    plot(buffer,  add = TRUE, col = "red")
-    plot(inv.mol, add = TRUE, col = "black")
-
-    dev.off()
+    
+    if ("INVENTORY" %in% unique(bg$SOURCE) == "TRUE") {
+      
+      inv.mol <- bg.inv  %>%
+        spTransform(projection(buffer))  
+      
+      png(sprintf('%s/%s/%s_%s.png', maxent_path, save_name, save_name, "buffer_inv"),
+          16, 10, units = 'in', res = 300)
+      
+      plot(aus.kop, legend = FALSE)
+      plot(aus.mol, add = TRUE)
+      plot(buffer,  add = TRUE, col = "red")
+      plot(inv.mol, add = TRUE, col = "black")
+      
+      dev.off()
+      
+    } else {
+      
+      message('No inventory data, dont make bg map')
+      
+    }
     
     #####################################################################
     ## Now save occurrence and backgroudn points as shapefiles
@@ -278,7 +295,7 @@ fit_maxent_targ_bg_kopp <- function(occ,
       suppressWarnings({
         
         message(name, ' writing occ and bg shapefiles')
-        writeOGR(SpatialPolygonsDataFrame(b, data.frame(ID = seq_len(length(b)))),
+        writeOGR(SpatialPolygonsDataFrame(buffer, data.frame(ID = seq_len(length(buffer)))),
                  outdir_sp, paste0(save_name, '_bg_buffer'),          'ESRI Shapefile', overwrite_layer = TRUE)
         writeOGR(bg.comb,  outdir_sp, paste0(save_name, '_bg'),       'ESRI Shapefile', overwrite_layer = TRUE)
         writeOGR(occ,           outdir_sp, paste0(save_name, '_occ'), 'ESRI Shapefile', overwrite_layer = TRUE)
@@ -445,7 +462,7 @@ fit_maxent_targ_bs <- function(sdm.predictors,
     ## Save data for the mapping function...............................
     saveRDS(occ,     file.path(outdir_sp, paste0(save_spp, '_occ.rds')))
     saveRDS(swd_occ, file.path(outdir_sp, paste0('swd.rds')))
- 
+    
     #####################################################################
     ## Coerce the "species with data" (SWD) files to regular data.frames
     ## This is needed to use the simplify function 
@@ -462,7 +479,7 @@ fit_maxent_targ_bs <- function(sdm.predictors,
     
     #####################################################################
     ## Run simplify rmaxent::simplify
-
+    
     # Given a candidate set of predictor variables, this function identifies 
     # a subset that meets specified multicollinearity criteria. Subsequently, 
     # backward stepwise variable selection is used to iteratively drop the variable 

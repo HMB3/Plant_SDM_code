@@ -215,20 +215,20 @@ lapply(GBIF.spp, function(spp){
   if(spp %in% SDM.SPAT.OCC.BG$searchTaxon) {
     
     ## Check what the targetted function has done with the proportions
-    # occurrence     <- readRDS(sprintf('%s%s/%s_occ.rds', maxent_path, save_spp, save_spp))
-    # background     <- readRDS(sprintf('%s%s/%s_bg.rds',  maxent_path, save_spp, save_spp))
+    save_spp = gsub(' ', '_', spp)
+    occ    <- readRDS(sprintf('%s%s/%s_occ.rds', maxent_path, save_spp, save_spp))
+    bg     <- readRDS(sprintf('%s%s/%s_bg.rds',  maxent_path, save_spp, save_spp))
+
+    message('Occurrence data proportions ', round(with(as.data.frame(occ.df), 
+                                                       table(SOURCE)/sum(table(SOURCE))), 3))
+    message('Background data proportions ', round(with(as.data.frame(bg.df), 
+                                                       table(SOURCE)/sum(table(SOURCE))),  3))
     
-    # bg.df  = as.data.frame(background)
-    # occ.df = as.data.frame(occurrence)
-    
-    # round(with(occ.df, table(SOURCE)/sum(table(SOURCE))), 3)
-    # round(with(bg.df, table(SOURCE)/sum(table(SOURCE))),  3)
-    
-    ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
+    ## Fit background selection
     tryCatch(
       fit_maxent_targ_bs(sdm.predictors          = sdm.predictors, ## Should this be all the variables?
                          name                    = spp,
-                         maxent_path             = './output/maxent/10_HOLLOW_SPP_1KM_PROP_SAMPLE/',
+                         maxent_path             = './output/maxent/HOLLOW_SPP_PROP_SAMPLE/',
                          outdir,
                          template.raster,
                          min_n                   = 20,     ## This should be higher...

@@ -82,42 +82,65 @@ MESS_folder   = "MESS_output"
 map_spp_rev  = sort(map_spp, decreasing = TRUE) 
 
 
-## This error happens when the species polygons are being accessed at the same time by different R sessions
-# Creating polygon list under ac85bi70 scenario for Eucalyptus_viminalis
-# Creating polygon list under ac85bi30 scenario for Eucalyptus_socialis
-# Error in RGEOSBinTopoFunc(spgeom1, spgeom2, byid, id, drop_lower_td, unaryUnion_if_byid_false,  : 
-#                             TopologyException: Input geom 1 is invalid: Ring Self-intersection at or near point 
-#                           323091.36989912001 -1282934.1729915601 at 323091.36989912001 -1282934.1729915601
-                          
-
-## This error happens when the species has no novel areas : EG the red gum 
-# Converting raster MESS maps to polygons under ac85bi70 scenario for Eucalyptus_camaldulensis
-# H:\green_cities_sdm
-# Error in readOGR(dirname(outshape), layer = basename(outshape), verbose = !quietish) : 
-#   no features found                           
+## The MESS map function needs to be modified so that it can handle species with no novel areas..........................
+## 
+## Also add a try catch which writes a failed file as per step 7.........................................................
 
 
 #########################################################################################################################
 ## Create 2030 maps
-env.grids.2030 = tryCatch(project_maxent_grids_mess(shp_path      = "./data/base/CONTEXTUAL/", ## Path for shapefile
-                                                    aus_shp       = "aus_states.rds",          ## Shapefile, e.g. Australian states
-                                                    world_shp     = "LAND_world.rds",          ## Polygon for AUS maps           
-
-                                                    scen_list     = scen_2030[1],                 ## List of climate scenarios
-                                                    species_list  = map_spp,                   ## List of species folders with maxent models
-                                                    maxent_path   = maxent_path,               ## Output folder
-                                                    climate_path  = "./data/base/worldclim/aus/1km/bio", ## climate data
-                                                    grid_names    = grid.names,                ## names of the predictor grids
-                                                    time_slice    = 30,                        ## Time period
-                                                    current_grids = aus.grids.current,         ## predictor grids
-                                                    create_mess   = "TRUE"),  ## write mess maps?
-                          
-                          ## Skip species
-                          error = function(cond) {
-                            
-                            message(paste('Species skipped - check', spp))
-                            
-                          })
+lapply(GBIF.spp, function(spp){ 
+  
+  ## Skip the species if the directory already exists, before the loop
+  outdir <- maxent_dir
+  
+  dir_name = file.path(maxent_path, gsub(' ', '_', spp))
+  if(dir.exists(dir_name)) {
+    message('Skipping ', spp, ' - already run.')
+    invisible(return(NULL))
+    
+  }
+  
+  ## Create the directory for the species in progress, 
+  ## so other parallel runs don't run the same species
+  dir.create(dir_name)
+  write.csv(data.frame(), file.path(dir_name, "in_progress.txt"))
+  
+  ## Print the taxa being processed to screen
+  if(spp %in% SDM.SPAT.OCC.BG$searchTaxon) {
+    message('Doing ', spp) 
+    
+    env.grids.2030 = tryCatch(project_maxent_grids_mess(shp_path      = "./data/base/CONTEXTUAL/", ## Path for shapefile
+                                                        aus_shp       = "aus_states.rds",          ## Shapefile, e.g. Australian states
+                                                        world_shp     = "LAND_world.rds",          ## Polygon for AUS maps           
+                                                        
+                                                        scen_list     = scen_2030[1],                 ## List of climate scenarios
+                                                        species_list  = map_spp,                   ## List of species folders with maxent models
+                                                        maxent_path   = maxent_path,               ## Output folder
+                                                        climate_path  = "./data/base/worldclim/aus/1km/bio", ## climate data
+                                                        grid_names    = grid.names,                ## names of the predictor grids
+                                                        time_slice    = 30,                        ## Time period
+                                                        current_grids = aus.grids.current,         ## predictor grids
+                                                        create_mess   = "TRUE"),  ## write mess maps?
+                              
+                              error = function(cond) {
+                                
+                                message(spp, ' failed')  
+                                write.csv(data.frame(), file.path(dir_name, "failed.txt"))
+                                
+                              })
+    
+  } else {
+    
+    message(spp, ' skipped - no data.')         ## This condition ignores species which have no data...
+    write.csv(data.frame(), file.path(dir_name, "completed.txt"))
+    
+  }  
+  
+  ## now add a file to the dir to denote that it has completed
+  write.csv(data.frame(), file.path(dir_name, "completed.txt"))
+  
+})
 
 
 #########################################################################################################################
@@ -207,7 +230,7 @@ percent.om.rev  = percent.10.om[sort(order(percent.10.om),   decreasing = TRUE)]
 length(SDM.RESULTS.DIR);length(map_spp);length(percent.10.log);length(percent.10.om)
 length(SDM.DIR.REV);length(map_spp_rev);length(percent.log.rev);length(percent.om.rev)
 
-  
+
 #########################################################################################################################
 ## Combine GCM predictions and calculate gain and loss for 2030
 ## Here we can add the mask of novel environments to SUA aggregation
