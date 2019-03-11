@@ -89,22 +89,12 @@ map_spp_rev  = sort(map_spp, decreasing = TRUE)
 
 #########################################################################################################################
 ## Create 2030 maps
-lapply(GBIF.spp, function(spp){ 
+lapply(map_spp, function(spp){ 
   
-  ## Skip the species if the directory already exists, before the loop
-  outdir <- maxent_dir
-  
+  ## Create a file for the species being mapped
+  outdir <- maxent_path
   dir_name = file.path(maxent_path, gsub(' ', '_', spp))
-  if(dir.exists(dir_name)) {
-    message('Skipping ', spp, ' - already run.')
-    invisible(return(NULL))
-    
-  }
-  
-  ## Create the directory for the species in progress, 
-  ## so other parallel runs don't run the same species
-  dir.create(dir_name)
-  write.csv(data.frame(), file.path(dir_name, "in_progress.txt"))
+  write.csv(data.frame(), file.path(dir_name, "map_in_progress.txt"))
   
   ## Print the taxa being processed to screen
   if(spp %in% SDM.SPAT.OCC.BG$searchTaxon) {
