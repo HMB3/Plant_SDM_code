@@ -176,7 +176,6 @@ TEST.GEO   = cbind(COMBO.AWAP.CONVERT, FLAGS)
 identical(TEST.GEO$searchTaxon, TEST.GEO$coord_spp)                                                     ## order matches
 
 
-
 ## Keep records which passed the GBIF and spatial test
 dim(subset(TEST.GEO, summary == "TRUE")) 
 CLEAN.TRUE = subset(TEST.GEO, summary == "TRUE")
@@ -320,7 +319,7 @@ if(calc_niche == "TRUE") {
   head(SUA.AGG)
   
   
-  ## 
+  ## Remove coordinates
   names(COMBO.SUA.LGA)
   COMBO.SUA.LGA = subset(COMBO.SUA.LGA, select = -c(lon.1, lat.1))
   names(COMBO.SUA.LGA)
@@ -359,7 +358,8 @@ if(calc_niche == "TRUE") {
   
   #########################################################################################################################
   ## Create niche summaries for each environmental condition like this...
-  ## Here's what the function will produce :
+  ## Using only complete cases for the Ukola and Fitzpatrick data will make the dataset smaller
+  ## Consider adding NA condition to the niche_estimate function...........................................................
   NICHE.DF = completeFun(COMBO.SUA.LGA, c("PET", "Drought_freq_extr", "Drought_mean_int_extr", "HWM", "HW_CUM_HOT"))
   dim(NICHE.DF)
   head(niche_estimate (DF = NICHE.DF, colname = "Annual_mean_temp"))  ## including the q05 and q95
@@ -402,11 +402,12 @@ if(calc_niche == "TRUE") {
   #########################################################################################################################
   ## Add counts for each species, and record the total number of taxa processed
   ## dim(COMBO.RASTER.CONVERT);dim(CLEAN.TRUE)
-  GLOBAL_RECORDS = as.data.frame(table(COMBO.SUA.LGA$searchTaxon))$Freq
-  identical(length(GLOBAL_RECORDS), dim(COMBO.NICHE)[1])
+  GLOBAL_RECORDS = as.data.frame(table(COMBO.SUA.LGA$searchTaxon))
+  names(GLOBAL_RECORDS) = c("searchTaxon", "GLOBAL_RECORDS")
+  identical(dim(GLOBAL_RECORDS)[1], dim(COMBO.NICHE)[1])
   
   Total.taxa.processed = dim(COMBO.NICHE)[1]
-  COMBO.NICHE  = cbind(GLOBAL_RECORDS, COMBO.NICHE)
+  COMBO.NICHE  = join(GLOBAL_RECORDS, COMBO.NICHE)
   names(COMBO.NICHE)
   dim(COMBO.NICHE)
   
@@ -438,8 +439,8 @@ if(calc_niche == "TRUE") {
   ## Create a species list to estimate the ranges for. Currently we can't estimate ranges for widely distributed species
   ## A workaround for the trait species is to just use the ALA records. But for the full list of species, we will need to 
   ## change this. Otherwise, we could report the global niche, but the Australian range only. This will mean that 
-  spp.geo = as.character(unique(COMBO.RASTER$searchTaxon))
-  AOO.DAT = COMBO.RASTER %>%
+  spp.geo = as.character(unique(COMBO.SUA.LGA$searchTaxon))
+  AOO.DAT = COMBO.SUA.LGA %>%
     subset(., SOURCE == "ALA")
   
   
@@ -448,7 +449,6 @@ if(calc_niche == "TRUE") {
   ## For every species in the list: calculate the AOO
   ## The extent of occurrence function is causing problems.................................................................
   ## x = spp.geo[1]
-  source('./R/WPW_GENERAL_FUNCTIONS.R')
   GBIF.AOO <- spp.geo %>%
     
     ## Pipe the list into lapply
@@ -456,7 +456,7 @@ if(calc_niche == "TRUE") {
       
       ## Subset the the data frame to calculate area of occupancy according the IUCN.eval
       DF = subset(AOO.DAT, searchTaxon == x)[, c("lat", "lon", "searchTaxon")]
-      calc_EOO_AOO(DF, Cell_size_AOO = 10, DrawMap = FALSE, country_map = land, SubPop = FALSE) 
+      IUCN.eval(DF, Cell_size_AOO = 10, DrawMap = FALSE, country_map = land, SubPop = FALSE) 
       
       
     }) %>%
@@ -464,100 +464,45 @@ if(calc_niche == "TRUE") {
     ## Finally, create one dataframe for all niches
     bind_rows
   
-  GBIF.AOO$searchTaxon = spp.geo[1:2]
+  names(GBIF.AOO)[names(GBIF.AOO) == 'taxa'] <- 'searchTaxon'
   GBIF.AOO             = select(GBIF.AOO, searchTaxon, EOO, AOO, Category_CriteriaB)
   names(GBIF.AOO)      = c("searchTaxon",  "EOO", "AOO", "ICUN_catb")
-  rownames(GBIF.AOO)   = NULL
+  head(GBIF.AOO)
   
   #########################################################################################################################
-  ## Now join on the GEOGRAPHIC RANGE
+  ## Now join on the geographic range and glasshouse data
   identical(length(GBIF.AOO$AOO), length(GBIF.spp))
-  COMBO.NICHE$AREA_OCCUPANCY = GBIF.AOO$value                     ## vectors same length so don't need to match
+  COMBO.NICHE       = join(GBIF.AOO, COMBO.NICHE)
+  COMBO.NICHE.TRAIT = join(TCRIT, COMBO.NICHE)
+
   
-  
-  ## AOO is calculated as the area of all known or predicted cells for the species. The resolution will be 2x2km as 
+  ## AOO is calculated as the area of all known or predicted cells for the species. The resolution will be 10x10km as 
   ## required by IUCN. A single value in km2.
   
-  #########################################################################################################################
-  ## Add the counts of Australian records for each species to the niche database
-  names(COMBO.NICHE)
-  names(LGA.AGG)
-  dim(COMBO.NICHE)
-  dim(LGA.AGG)
-  
-  
-  COMBO.LGA = join(COMBO.NICHE, LGA.AGG)                        ## The tapply needs to go where the niche summaries are
-  names(COMBO.LGA)
-  
-  dim(COMBO.LGA)
-  head(COMBO.LGA$AUS_RECORDS)
-  head(COMBO.LGA$LGA_COUNT)
-  
-  
-  
-  
   
   #########################################################################################################################
-  ## 8). JOIN ON CONTEXTUAL DATA
+  ## 8). JOIN ON GLASSHOUSE DATA
   #########################################################################################################################
   
   
   #########################################################################################################################
   ## Now join the horticultural contextual data onto one or both tables ()
   message('Joining contextual data for raster and niche files', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
-  COMBO.RASTER.CONTEXT = CLEAN.TRUE
-  names(COMBO.RASTER.CONTEXT)
+
   
-  
+  #########################################################################################################################
   ## Now join hort context to all the niche
-  names(CLEAN.SPP)
-  COMBO.NICHE.CONTEXT = join(COMBO.LGA, TOT.GROW)
-  head(COMBO.NICHE.CONTEXT$AUS_RECORDS)
-  head(COMBO.NICHE.CONTEXT$LGA_COUNT)
-  
-  
-  #########################################################################################################################
-  ## Now combine the SDM output with the niche context data 
-  TREE.PLANTINGS            = TREE.EVERGREEN[, c("searchTaxon",
-                                                 "Plantings")]
-  COMBO.NICHE.CONTEXT       = join(COMBO.LGA, TOT.GROW,  type = "left")                ## join does not support the sorting
-  COMBO.NICHE.CONTEXT       = join(COMBO.NICHE.CONTEXT, TREE.PLANTINGS, type = "left")  
-  COMBO.NICHE.CONTEXT       = COMBO.NICHE.CONTEXT [order(COMBO.NICHE.CONTEXT $searchTaxon),]
-  
-  
-  ## Set NA to blank, then sort by no. of growers
-  COMBO.NICHE.CONTEXT$Number.of.growers <- NULL
-  COMBO.NICHE.CONTEXT$Total.growers[is.na(COMBO.NICHE.CONTEXT$Total.growers)] <- 0
-  COMBO.NICHE.CONTEXT = COMBO.NICHE.CONTEXT[with(COMBO.NICHE.CONTEXT, rev(order(Total.growers))), ]
-  
-  
-  ## View the data
-  dim(COMBO.RASTER.CONTEXT)
-  dim(COMBO.NICHE.CONTEXT)
-  #View(COMBO.NICHE.CONTEXT)
-  
-  
-  #########################################################################################################################
-  ## Check the dataframe
-  dim(CLEAN.TRUE)
-  dim(COMBO.NICHE.CONTEXT)
-  dim(COMBO.RASTER.CONTEXT)
-  
-  length(unique(CLEAN.TRUE$searchTaxon))
-  length(COMBO.NICHE.CONTEXT$searchTaxon)
-  length(unique(COMBO.RASTER.CONTEXT$searchTaxon))
-  unique(COMBO.RASTER.CONTEXT$SOURCE)
+  # TCRIT = select(DIANA.TC, Names, Tcrit, ster)
+  # names(TCRIT)[names(TCRIT) == 'Names'] <- 'searchTaxon'
+
+
   
   
   #########################################################################################################################
   ## save .rds file for the next session
   message('Writing niche and raster data for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
-  saveRDS(COMBO.NICHE.CONTEXT,    paste0(DATA_path, 'COMBO_NICHE_CONTEXT_',  OCC_SOURCE, '_RECORDS_', save_run, '.rds'))
-  write.csv(COMBO.NICHE.CONTEXT,  paste0(DATA_path, 'COMBO_NICHE_CONTEXT_',  OCC_SOURCE, '_RECORDS_', save_run, '.csv'), row.names = FALSE)
-  
-  saveRDS(COMBO.RASTER.CONTEXT,   paste0(DATA_path, 'COMBO_RASTER_CONTEXT_', OCC_SOURCE, '_RECORDS_', save_run, '.rds'))
-  write.csv(COMBO.RASTER.CONTEXT, paste0(DATA_path, 'COMBO_RASTER_CONTEXT_', OCC_SOURCE, '_RECORDS_', save_run, '.csv'), row.names = FALSE)
-  
+  saveRDS(COMBO.NICHE,    paste0(DATA_path, 'COMBO_NICHE_CONTEXT_',  OCC_SOURCE, '_RECORDS_', save_run, '.rds'))
+  write.csv(COMBO.NICHE.TRAIT,  paste0(DATA_path, 'COMBO_NICHE_CONTEXT_',  OCC_SOURCE, '_RECORDS_', save_run, '.csv'), row.names = FALSE)
   
 } else {
   

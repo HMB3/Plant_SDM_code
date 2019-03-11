@@ -266,7 +266,7 @@ sum(is.na(HIA.TAXO$GBIF_taxon))
 #########################################################################################################################
 ## Run the TPL function on this list ::
 message('Running TPL taxonomy for ', length(CLEAN.GBIF.SPP), ' species in the HIA list')
-# HIA.TAXO <- TPL(CLEAN.GBIF.SPP, infra = TRUE,
+# HIA.TAXO <- Taxonstand::TPL(CLEAN.GBIF.SPP, infra = TRUE,
 #                   corr = TRUE, repeats = 100)  ## to stop it timing out...
 # HIA.TAXO$New_binomial = paste(HIA.TAXO$New.Genus, HIA.TAXO$New.Species, sep = " ")
 # sum(is.na(HIA.TAXO$New_binomial))
@@ -318,7 +318,7 @@ View(GBIF.GROW)
 
 #########################################################################################################################
 ## Save the evergreen table out with botanical columns and context
-write.csv(GBIF.GROW, "./data/base/HIA_LIST/HIA/EVERGREEN_TPL_LIST_MARCH2019.csv", row.names = FALSE)
+#write.csv(GBIF.GROW, "./data/base/HIA_LIST/HIA/EVERGREEN_TPL_LIST_MARCH2019.csv", row.names = FALSE)
 
 
 #########################################################################################################################

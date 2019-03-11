@@ -356,7 +356,7 @@ summary(COMBO.RASTER$PET)
 
 
 #########################################################################################################################
-## Now summarise the niches. But figure out a cleaner way of doing this
+## This doubles up with other the other variable
 env.variables = c("Annual_mean_temp",
                   "Mean_diurnal_range",
                   "Isothermality",

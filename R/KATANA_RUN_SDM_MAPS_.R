@@ -32,7 +32,7 @@ on_windows = switch(Sys.info()[['sysname']], Windows = TRUE, FALSE)
 #source('./R/HIA_TREE_LIST.R')
 if (on_windows) {
   
-    load("TEST_RUN.RData")
+    load("UPDATE_DATA.RData")
   
 } else {
   
@@ -55,14 +55,13 @@ if (on_windows) {
 
 #########################################################################################################################
 ## Load only the packages needed for the analysis
-## lapply(paste('package:',names(sessionInfo()$otherPkgs),sep=""),detach,character.only=TRUE,unload=TRUE)
-p <- c('ff',    'things',    'raster',        'dismo',        'sp',           'latticeExtra', 'data.table',
-       'rgdal', 'rgeos',     'gdalUtils',     'rmaxent',      'readr',        'plyr',         'dplyr',
-       'tidyr', 'readr',     'rnaturalearth', 'rasterVis',    'RColorBrewer', 'latticeExtra', 'parallel',
-       'ALA4R', 'stringr',   'Taxonstand',    'CoordinateCleaner', 'gsubfn',  'PerformanceAnalytics',
-       'rvest', 'magrittr',  'devtools',      'ggplot2',      'reshape2',     'rmarkdown', 'flexdashboard', 'shiny', 'rgbif',
-       'ENMeval', 'tibble',  'ncdf4',         'Cairo', 'taxonlookup', 'kgc', 'maptools', 'DataCombine', 'mgcv', 'rsq', 'utf8',
-       'betareg', 'hydroTSM', 'bomrang', 'gridExtra', 'grid', 'lattice', 'ConR', 'writexl')
+p <- c('ff',      'things',    'raster',        'dismo',             'sp',           'latticeExtra',          'data.table',
+       'rgdal',   'rgeos',     'gdalUtils',     'rmaxent',           'readr',        'plyr',                  'dplyr',
+       'tidyr',   'readr',     'rnaturalearth', 'rasterVis',         'RColorBrewer', 'latticeExtra',          'parallel',
+       'ALA4R',   'stringr',   'Taxonstand',    'CoordinateCleaner', 'gsubfn',       'PerformanceAnalytics',
+       'rvest',   'magrittr',  'devtools',      'ggplot2',           'reshape2',     'rmarkdown',             'flexdashboard', 'shiny', 'rgbif',
+       'ENMeval', 'tibble',    'ncdf4',         'Cairo',             'taxonlookup',  'kgc',        'maptools', 'DataCombine', 'mgcv', 'rsq', 'utf8',
+       'betareg', 'hydroTSM',  'bomrang',       'gridExtra',         'grid',         'lattice', 'ConR', 'writexl')
 
 
 ## Require packages
@@ -72,7 +71,7 @@ source_gist('c6a1cb61b8b6616143538950e6ec34aa', filename = 'hatch.R')
 devtools::source_gist('306e4b7e69c87b1826db',   filename = 'diverge0.R')
 
 
-## Source functions, and set temporary directory (for both raster files and just generally)
+## Source functions, and set temporary directory (for both raster files and generally)
 source('./R/WPW_GENERAL_FUNCTIONS.R')
 source('./R/WPW_MAXENT_FUNCTIONS.R')
 source('./R/WPW_MAPPING_FUNCTIONS.R')
@@ -119,7 +118,7 @@ for(i in 1:11) {
 #########################################################################################################################
 ##  Also include the template data
 template.raster.1km  = raster("./data/template_hasData.tif")
-Koppen_1975          = raster('data/Koppen_1000m_Mollweide54009.tif')
+Koppen_1975_1km      = raster('data/Koppen_1000m_Mollweide54009.tif')
 PET                  = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
 
 
@@ -134,8 +133,8 @@ PET                  = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
 #########################################################################################################################
 ## Now set global analysis variables :: these assume you are using an R project folder structure
 ## Replace any non - UTF8 character in the string with UTF
-#Sys.setenv("PBS_ARRAYID" = 1)
-GBIF.spp      = WPW.spp[1:10] ## your list of species
+Sys.setenv("PBS_ARRAYID" = 1)
+GBIF.spp      = HOLLOW.SPP[10:20] ## your list of species
 
 
 ##  Subset for PBS array jobs
@@ -146,25 +145,26 @@ if (length(Sys.getenv("PBS_ARRAYID"))) {
     
 }
 
+#########################################################################################################################
+## These folders must be created on katana, or uploaded
+GBIF.spp      = as_utf8(GBIF.spp, normalize = TRUE)  ## Check the species names have the right characters
+save_run      = "WPW_TEST"                           ## a variable to append the run name to the output files
+read_data     = "TRUE"                               ## only needed to load the SDM table in
 
-GBIF.spp      = as_utf8(GBIF.spp, normalize = TRUE)
-save_run      = "WPW_TEST"                       ## a variable to append the run name to the output files
+GBIF_path     = "./data/base/HIA_LIST/GBIF/"  ## The path where GBIF data is stored
+ALA_path      = "./data/base/HIA_LIST/ALA/"   ## The path where ALA data is stored place
+DATA_path     = "./data/ANALYSIS/"            ## The path where the final data for analyses are stored 
 
-
-GBIF_path     = "./data/base/HIA_LIST/GBIF/"                     ## The path where GBIF data is stored
-ALA_path      = "./data/base/HIA_LIST/ALA/"                      ## The path where ALA data is stored place
-DATA_path     = "./data/ANALYSIS/"                               ## The path where the final data for analyses are stored 
-
-maxent_path   = './output/maxent/HOLLOW_SPP_PROP_SAMPLE/'            ## The directory where files are saved               
-maxent_dir    = 'output/maxent/HOLLOW_SPP_PROP_SAMPLE'               ## Another version of the path needed to run maxent loop
-bs_dir        = 'output/maxent/HOLLOW_SPP_PROP_SAMPLE_BS'  
-read_data     = 'FALSE'  
+maxent_path   = './output/maxent/HOLLOW_SPP_PROP_SAMPLE_ALL_VARS/'  ## The directory where files are saved               
+maxent_dir    = 'output/maxent/HOLLOW_SPP_PROP_SAMPLE_ALL_VARS'     ## Another version of the path needed to run maxent loop
+bs_dir        = 'output/maxent/HOLLOW_SPP_PROP_SAMPLE_ALL_VARS_BS'  ## Another version of the path needed to run maxent loop
 
    
 
 
+
 #########################################################################################################################
-## 2). RUN SDM WORKFLOW
+## 2). RUN SDMS, MAPS and COMBINE
 #########################################################################################################################
 
 
@@ -178,7 +178,7 @@ read_data     = 'FALSE'
 message('Running SDMs and maps for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
 
 
-## Step 7 :: Run maxent on a table of all species
+## Step 7 :: Run maxent on a table of all species, using targetted background selection, then backwards selection
 source('./R/7_RUN_MAXENT.R', echo = TRUE)
 
 

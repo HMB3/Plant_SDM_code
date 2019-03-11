@@ -19,13 +19,13 @@
 #########################################################################################################################
 ## Load only the packages needed for the analysis
 ## lapply(paste('package:',names(sessionInfo()$otherPkgs),sep=""),detach,character.only=TRUE,unload=TRUE)
-p <- c('ff',    'things',    'raster',        'dismo',        'sp',           'latticeExtra', 'data.table',
-       'rgdal', 'rgeos',     'gdalUtils',     'rmaxent',      'readr',        'plyr',         'dplyr',
-       'tidyr', 'readr',     'rnaturalearth', 'rasterVis',    'RColorBrewer', 'latticeExtra', 'parallel',
-       'ALA4R', 'stringr',   'Taxonstand',    'CoordinateCleaner', 'gsubfn',  'PerformanceAnalytics',
-       'rvest', 'magrittr',  'devtools',      'ggplot2',      'reshape2',     'rmarkdown', 'flexdashboard', 'shiny', 'rgbif',
-       'ENMeval', 'tibble',  'ncdf4',         'Cairo', 'taxonlookup', 'kgc', 'maptools', 'DataCombine', 'mgcv', 'rsq', 'utf8',
-       'betareg', 'hydroTSM', 'bomrang', 'gridExtra', 'grid', 'lattice', 'ConR', 'writexl')
+p <- c('ff',      'things',    'raster',        'dismo',             'sp',           'latticeExtra',          'data.table',
+       'rgdal',   'rgeos',     'gdalUtils',     'rmaxent',           'readr',        'plyr',                  'dplyr',
+       'tidyr',   'readr',     'rnaturalearth', 'rasterVis',         'RColorBrewer', 'latticeExtra',          'parallel',
+       'ALA4R',   'stringr',   'Taxonstand',    'CoordinateCleaner', 'gsubfn',       'PerformanceAnalytics',
+       'rvest',   'magrittr',  'devtools',      'ggplot2',           'reshape2',     'rmarkdown',             'flexdashboard', 'shiny', 'rgbif',
+       'ENMeval', 'tibble',    'ncdf4',         'Cairo',             'taxonlookup',  'kgc',        'maptools', 'DataCombine', 'mgcv', 'rsq', 'utf8',
+       'betareg', 'hydroTSM',  'bomrang',       'gridExtra',         'grid',         'lattice', 'ConR', 'writexl')
 
 
 ## Require packages
@@ -35,7 +35,7 @@ source_gist('c6a1cb61b8b6616143538950e6ec34aa', filename = 'hatch.R')
 devtools::source_gist('306e4b7e69c87b1826db',   filename = 'diverge0.R')
 
 
-## Source functions, and set temporary directory (for both raster files and just generally)
+## Source functions, and set temporary directory (for both raster files and generally)
 source('./R/WPW_GENERAL_FUNCTIONS.R')
 source('./R/WPW_MAXENT_FUNCTIONS.R')
 source('./R/WPW_MAPPING_FUNCTIONS.R')
@@ -214,6 +214,13 @@ sdm.predictors <- c("Annual_mean_temp",    "Mean_diurnal_range",  "Isothermality
                     "Annual_precip",       "Precip_wet_month",   "Precip_dry_month",    "Precip_seasonality",  
                     "Precip_wet_qu",       "Precip_dry_qu",      
                     "Precip_warm_qu",      "Precip_col_qu")
+
+bs.predictors <- c("Annual_mean_temp",    "Mean_diurnal_range",  "Isothermality",      "Temp_seasonality",  
+                    "Max_temp_warm_month", "Min_temp_cold_month", "Temp_annual_range",  
+                    "Mean_temp_warm_qu",   "Mean_temp_cold_qu",   
+                    
+                    "Annual_precip",       "Precip_wet_month",   "Precip_dry_month",    "Precip_seasonality",  
+                    "Precip_wet_qu",       "Precip_dry_qu")
 
 
 ## Names of the AWAP variables :: used to create niches for extreme weather events

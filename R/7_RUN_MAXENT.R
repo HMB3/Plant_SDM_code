@@ -50,44 +50,34 @@ if(read_data == "TRUE") {
 
 
 #########################################################################################################################
-## This table has both occurrence and background points
+## Run Maxent using a targetted selection of background points. 
+## within 200km of existing points
+## Within the same Koppen zone as the existing points
+## Try to sample bg points from the three sources (ALA/GBIF/INV in the same proportions as the occurrece data).
 dim(SDM.SPAT.OCC.BG)
-
-
-## The background data is simply the records for all 3.8k species previously downloaded.
-## Three souces :: ALA, GBIF, INVENTORY
-## So we need to sample bg records from this file in the same proportions as they exist in the occurrence data for each species
-## However, some species have high proportions of inventory records in the occurrence data
-## But because of the way the background data is selected with 200km of occurrence points and inside the same koppen zone
-## That means that we can't choose enough records in proportion with the background?
 length(intersect(unique(SDM.SPAT.OCC.BG$searchTaxon), GBIF.spp))  ## Should be same length as GBIF.spp
-
-
-#########################################################################################################################
-## Run Maxent using a random selection of background points. Ideally make these projections exactly the same
-## The extent and resolution should be the same for the template raster and the koppen zones?
 projection(template.raster.1km);projection(SDM.SPAT.OCC.BG);projection(Koppen_1975_1km)
 
 
 ## Here are the argumetns needed to run the targetted background selection SDMs inside the function itself
-spp                     = GBIF.spp[1]
-occ                     = subset(SDM.SPAT.OCC.BG, searchTaxon == spp)
-bg                      = subset(SDM.SPAT.OCC.BG, searchTaxon != spp)
-sdm.predictors          = sdm.select
-name                    = spp
-outdir                  = maxent_dir
-template.raster         = template.raster.1km   ## 1km, 5km, 10km
-min_n                   = 20
-max_bg_size             = 70000
-Koppen                  = Koppen_1975_1km
-background_buffer_width = 200000
-shapefiles              = TRUE
-features                = 'lpq'
-replicates              = 5
-responsecurves          = TRUE
+# spp                     = GBIF.spp[1]
+# occ                     = subset(SDM.SPAT.OCC.BG, searchTaxon == spp)
+# bg                      = subset(SDM.SPAT.OCC.BG, searchTaxon != spp)
+# sdm.predictors          = sdm.select
+# name                    = spp
+# outdir                  = maxent_dir
+# template.raster         = template.raster.1km   ## 1km, 5km, 10km
+# min_n                   = 20
+# max_bg_size             = 70000
+# Koppen                  = Koppen_1975_1km
+# background_buffer_width = 200000
+# shapefiles              = TRUE
+# features                = 'lpq'
+# replicates              = 5
+# responsecurves          = TRUE
 
 
-## Save error message to the text file.................................................................................
+## Can error messages be saved inside the text file......................................................................
 
 
 #########################################################################################################################
@@ -123,7 +113,7 @@ lapply(GBIF.spp, function(spp){
     tryCatch(
       fit_maxent_targ_bg_kopp(occ                     = occurrence,    ## name from the .rmd CV doc 
                               bg                      = background,    ## name from the .rmd CV doc  
-                              sdm.predictors          = sdm.select, 
+                              sdm.predictors          = bs.predictors, 
                               name                    = spp, 
                               outdir, 
                               template.raster         = template.raster.1km,
@@ -167,34 +157,32 @@ lapply(GBIF.spp, function(spp){
 #########################################################################################################################
 
 
-# Doing Eucalyptus moluccana
-# Dropped due to collinearity: 
-# Annual_mean_temp, Precip_wet_month, Max_temp_warm_month, Precip_seasonality, Min_temp_cold_month, Annual_precip
-# Error: Number of uncorrelated variables (2) < k_thr (3). Reduce k_thr, increase cor_thr, or find alternative predictors.
+#########################################################################################################################
+## This function uses the output from the previous targetted selection function, and runs backwards selection using the
+## occurrence and background points :: 
 
 
 ## Variables to run an example within the backwards selection function
-sdm.predictors          = sdm.predictors
-name                    = GBIF.spp[2]
-spp                     = name
-maxent_path             = './output/maxent/10_HOLLOW_SPP_1KM_PROP_SAMPLE/'            ## The directory where files are saved               
-bs_dir                  = 'output/maxent/10_HOLLOW_SPP_1KM_PROP_SAMPLE_BS' 
-outdir                  = bs_dir
-template.raster         = template.raster.1km
-min_n                   = 20       ## This should be higher...
-shapefiles              = FALSE    ## name this
-features                = 'lpq'    ## name 
-replicates              = 5
-cor_thr                 = 0.7      ## The maximum allowable pairwise correlation between predictor variables 
-pct_thr                 = 5        ## The minimum allowable percent variable contribution 
-k_thr                   = 3        ## The minimum number of variables to be kept in the model.
-responsecurves          = TRUE     ## Response curves
+# sdm.predictors          = sdm.predictors
+# name                    = GBIF.spp[2]
+# spp                     = name
+# maxent_path             = './output/maxent/10_HOLLOW_SPP_1KM_PROP_SAMPLE/'            ## The directory where files are saved               
+# bs_dir                  = 'output/maxent/10_HOLLOW_SPP_1KM_PROP_SAMPLE_BS' 
+# outdir                  = bs_dir
+# template.raster         = template.raster.1km
+# min_n                   = 20       ## This should be higher...
+# shapefiles              = FALSE    ## name this
+# features                = 'lpq'    ## name 
+# replicates              = 5
+# cor_thr                 = 0.7      ## The maximum allowable pairwise correlation between predictor variables 
+# pct_thr                 = 5        ## The minimum allowable percent variable contribution 
+# k_thr                   = 3        ## The minimum number of variables to be kept in the model.
+# responsecurves          = TRUE     ## Response curves
 
 
 #########################################################################################################################
 ## Loop over all the species 
 ## spp    = GBIF.spp[1]
-## bs_dir = 'output/maxent/10_HOLLOW_SPP_1KM_PROP_SAMPLE_BS' 
 lapply(GBIF.spp, function(spp){ 
   
   ## Skip the species if the directory already exists, before the loop
@@ -207,7 +195,7 @@ lapply(GBIF.spp, function(spp){
     
   }
   
-  ## create the directory so other parallel runs don't try to do it
+  ## Create the directory so other parallel runs don't try to do it
   dir.create(dir_name)
   write.csv(data.frame(), file.path(dir_name, "in_progress.txt"))
   
@@ -216,8 +204,8 @@ lapply(GBIF.spp, function(spp){
     
     ## Check what the targetted function has done with the proportions
     save_spp = gsub(' ', '_', spp)
-    occ    <- readRDS(sprintf('%s%s/%s_occ.rds', maxent_path, save_spp, save_spp))
-    bg     <- readRDS(sprintf('%s%s/%s_bg.rds',  maxent_path, save_spp, save_spp))
+    occ      <- readRDS(sprintf('%s%s/%s_occ.rds', maxent_path, save_spp, save_spp))
+    bg       <- readRDS(sprintf('%s%s/%s_bg.rds',  maxent_path, save_spp, save_spp))
 
     message('Occurrence data proportions ', round(with(as.data.frame(occ.df), 
                                                        table(SOURCE)/sum(table(SOURCE))), 3))

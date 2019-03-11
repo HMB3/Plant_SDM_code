@@ -432,6 +432,9 @@ TRAIT.SPP  = read.csv("./data/base/HIA_LIST/RENEE/RankingTraits_ALL.csv",       
 MOD.3.SPP  = read.csv("./data/base/HIA_LIST/RENEE/MOD3_OCT18.csv",                            stringsAsFactors = FALSE)
 DIANA.SPP  = read.csv("./data/base/HIA_LIST/RENEE/DIANA_SPP.csv",                             stringsAsFactors = FALSE)
 DIANA.TC   = read.csv("./data/base/HIA_LIST/RENEE/Distribution_Species_Tcrit_Diana.csv",      stringsAsFactors = FALSE)
+TCRIT = select(DIANA.TC, Names, Tcrit, ster)
+names(TCRIT)[names(TCRIT) == 'Names'] <- 'searchTaxon'
+
 MOD.3.CHK  = join(MOD.3.SPP, MXT.CHECK[c("searchTaxon", "Check.map", "Origin", "genus", "order", "group",
                                          "Plant.type",  "Plantings", "COMBO.count", "AUS_RECORDS",
                                          "Total.growers",  "Number.of.States")], type = "full") 

@@ -354,7 +354,8 @@ length(unique(COMBO.AWAP.CONVERT$searchTaxon));length(GBIF.spp)
 if(save_data == "TRUE") {
   
   ## save .rds file for the next session
-  saveRDS(COMBO.AWAP.CONVERT, paste0(DATA_path, 'COMBO_RASTER_CONVERT_',  save_run, '.rds'))
+  saveRDS(COMBO.AWAP.CONVERT,   paste0(DATA_path, 'COMBO_RASTER_CONVERT_',  save_run, '.rds'))
+  write.csv(COMBO.AWAP.CONVERT, paste0(DATA_path, 'COMBO_RASTER_CONTEXT_',  save_run, '.csv'), row.names = FALSE)
   
 } else {
   
