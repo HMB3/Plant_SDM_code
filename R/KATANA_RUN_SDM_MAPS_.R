@@ -150,6 +150,7 @@ if (length(Sys.getenv("PBS_ARRAYID"))) {
 GBIF.spp      = as_utf8(GBIF.spp, normalize = TRUE)  ## Check the species names have the right characters
 save_run      = "WPW_TEST"                           ## a variable to append the run name to the output files
 read_data     = "TRUE"                               ## only needed to load the SDM table in
+save_data     = "FALSE"                               ## only needed to load the SDM table in
 
 GBIF_path     = "./data/base/HIA_LIST/GBIF/"  ## The path where GBIF data is stored
 ALA_path      = "./data/base/HIA_LIST/ALA/"   ## The path where ALA data is stored place

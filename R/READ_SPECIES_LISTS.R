@@ -258,11 +258,6 @@ CLEAN.GROW <- CLEAN.GROW %>%
 names(CLEAN.GROW)[names(CLEAN.GROW) == 'species'] <- 'GBIF_taxon'
 
 
-## None of the evergreen or HA taxa are NA
-sum(is.na(CLEAN.GROW$Evergreen_taxon))
-sum(is.na(HIA.TAXO$GBIF_taxon))
-
-
 #########################################################################################################################
 ## Run the TPL function on this list ::
 message('Running TPL taxonomy for ', length(CLEAN.GBIF.SPP), ' species in the HIA list')
@@ -279,6 +274,12 @@ message('Running TPL taxonomy for ', length(CLEAN.GBIF.SPP), ' species in the HI
 ALA_path = "./data/base/HIA_LIST/ALA/" 
 HIA.TAXO = readRDS(paste0(ALA_path, 'HIA_TPL_TAXO.rds'))
 TPL.NA   = HIA.TAXO[(HIA.TAXO$New.Taxonomic.status == ""), ]$Taxon
+
+
+## None of the evergreen or HA taxa are NA
+sum(is.na(CLEAN.GROW$Evergreen_taxon))
+sum(is.na(HIA.TAXO$GBIF_taxon))
+
 
 
 #########################################################################################################################
@@ -327,7 +328,7 @@ round(with(GBIF.GROW, table(Plant_type)/sum(table(Plant_type))*100), 1)
 round(with(GBIF.GROW, table(Origin)/sum(table(Origin))*100), 1)
 
 
-## Not much overlap between the global tree list and the species without life form
+## Not much overlap between the global tree list, and the species without life form
 no.type   = subset(GBIF.GROW, Plant_type == "")$searchTaxon  ## 600 taxa without life form
 no.origin = subset(GBIF.GROW, Origin == "")$searchTaxon      ## 2740 taxa without origin
 length(intersect(no.type, TREE.list$Tree_taxa))

@@ -100,7 +100,7 @@ lapply(map_spp, function(spp){
   if(spp %in% SDM.SPAT.OCC.BG$searchTaxon) {
     message('Doing ', spp) 
     
-    env.grids.2030 = tryCatch(project_maxent_grids_mess(shp_path      = "./data/base/CONTEXTUAL/", ## Path for shapefile
+    tryCatch(project_maxent_grids_mess(shp_path      = "./data/base/CONTEXTUAL/", ## Path for shapefile
                                                         aus_shp       = "aus_states.rds",          ## Shapefile, e.g. Australian states
                                                         world_shp     = "LAND_world.rds",          ## Polygon for AUS maps           
                                                         

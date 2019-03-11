@@ -216,7 +216,7 @@ fit_maxent_targ_bg_kopp <- function(occ,
         bg.ala  = bg.samp[ sample(which(bg.samp$SOURCE == "ALA" | bg.samp$SOURCE == "GBIF")), ]
         
       }
-
+      
       ## If the proportion of inv records in the occ data * the number of background records 
       ## is < than the no. of inventory records in the background data, 
       ## get the proportion of occ inv records * the max bg size
@@ -257,6 +257,13 @@ fit_maxent_targ_bg_kopp <- function(occ,
     occ.mol <- occ %>%
       spTransform(projection(buffer))
     
+    ## Print the koppen zones, occurrences and points to screen
+    plot(aus.kop, legend = FALSE)
+    plot(aus.mol, add = TRUE)
+    plot(buffer,  add = TRUE, col = "red")
+    plot(occ.mol, add = TRUE, col = "blue")
+    
+    ## Then save the occurrence points
     png(sprintf('%s/%s/%s_%s.png', maxent_path, save_name, save_name, "buffer_occ"),
         16, 10, units = 'in', res = 300)
     
@@ -379,7 +386,7 @@ fit_maxent_targ_bg_kopp <- function(occ,
     #####################################################################
     ## Save the chart corrleation file too for the training data set
     png(sprintf('%s/%s/full/%s_%s.png', outdir,
-                save_name, save_name, "predictor_correlation"),
+                save_name, save_name, "all_vars_predictor_correlation"),
         3236, 2000, units = 'px', res = 300)
     
     ## set margins
@@ -408,19 +415,9 @@ fit_maxent_targ_bg_kopp <- function(occ,
 #########################################################################################################################
 
 
-fit_maxent_targ_bs <- function(sdm.predictors, 
-                               # sdm.predictors is a vector of enviro conditions that you want to include
-                               name,
+fit_maxent_targ_bs <- function(name,
                                maxent_path, ## location of the data
                                outdir, 
-                               template.raster, 
-                               # template.raster is an empty raster with extent, res and projection
-                               # of final output rasters. It is used to reduce
-                               # occurrences to a single point per cell.
-                               min_n,
-                               # min_n is the minimum number of records (unique cells)
-                               # required for a model to be fit
-                               shapefiles, 
                                features, 
                                replicates, # number of cross-validation replicates
                                cor_thr, 
@@ -440,69 +437,81 @@ fit_maxent_targ_bs <- function(sdm.predictors,
   #####################################################################
   ## Read in the occ and bg points from the targetted SDM step
   message('Reading previously created occurrence and background data from targetted SDM for ', name)
-  save_spp = gsub(' ', '_', name)
+  save_name = gsub(' ', '_', name)
   
-  occ     <- readRDS(sprintf('%s%s/%s_occ.rds', maxent_path, save_spp, save_spp))
-  bg      <- readRDS(sprintf('%s%s/%s_bg.rds',  maxent_path, save_spp, save_spp))
+  occ     <- readRDS(sprintf('%s%s/%s_occ.rds', maxent_path, save_name, save_name))
+  bg      <- readRDS(sprintf('%s%s/%s_bg.rds',  maxent_path, save_name, save_name))
   
-  swd_occ <- readRDS(sprintf('%s%s/%s_occ_swd.rds', maxent_path, save_spp, save_spp))
-  swd_bg  <- readRDS(sprintf('%s%s/%s_bg_swd.rds',  maxent_path, save_spp, save_spp))
+  swd_occ <- readRDS(sprintf('%s%s/%s_occ_swd.rds', maxent_path, save_name, save_name))
+  swd_bg  <- readRDS(sprintf('%s%s/%s_bg_swd.rds',  maxent_path, save_name, save_name))
   
+  #####################################################################
+  ## Save data for the mapping function...............................
+  saveRDS(occ,     file.path(outdir, paste0(save_name, '_occ.rds')))
+  saveRDS(swd_occ, file.path(outdir, paste0('swd.rds')))
   
-  ## Skip species that have less than a minimum number of records: eg 20 species
-  if(nrow(occ) < min_n) {
+  #####################################################################
+  ## Coerce the "species with data" (SWD) files to regular data.frames
+  ## This is needed to use the simplify function 
+  swd_occ     <- as.data.frame(swd_occ)
+  swd_occ$lon <- NULL
+  swd_occ$lat <- NULL
+  swd_bg      <- as.data.frame(swd_bg)
+  swd_bg$lon  <- NULL
+  swd_bg$lat  <- NULL
+  
+  ## Need to create a species column here?
+  swd_occ$searchTaxon <- name
+  swd_bg$searchTaxon  <- name
+  
+  #####################################################################
+  ## Run simplify rmaxent::simplify
+  
+  # Given a candidate set of predictor variables, this function identifies 
+  # a subset that meets specified multicollinearity criteria. Subsequently, 
+  # backward stepwise variable selection is used to iteratively drop the variable 
+  # that contributes least to the model, until the contribution of each variable 
+  # meets a specified minimum, or until a predetermined minimum number of 
+  # predictors remains. It returns a model object for the full model, rather 
+  # than a list of models as does the previous function
+  m <- rmaxent::simplify(
     
-    print (paste ('Fewer occurrence records than the number of cross-validation ',
-                  'replicates for species ', name, 
-                  ' Model not fit for this species'))
-    
-  } else {
-    
-    #####################################################################
-    ## Save data for the mapping function...............................
-    saveRDS(occ,     file.path(outdir_sp, paste0(save_spp, '_occ.rds')))
-    saveRDS(swd_occ, file.path(outdir_sp, paste0('swd.rds')))
-    
-    #####################################################################
-    ## Coerce the "species with data" (SWD) files to regular data.frames
-    ## This is needed to use the simplify function 
-    swd_occ     <- as.data.frame(swd_occ)
-    swd_occ$lon <- NULL
-    swd_occ$lat <- NULL
-    swd_bg      <- as.data.frame(swd_bg)
-    swd_bg$lon  <- NULL
-    swd_bg$lat  <- NULL
-    
-    ## Need to create a species column here?
-    swd_occ$searchTaxon <- name
-    swd_bg$searchTaxon  <- name
-    
-    #####################################################################
-    ## Run simplify rmaxent::simplify
-    
-    # Given a candidate set of predictor variables, this function identifies 
-    # a subset that meets specified multicollinearity criteria. Subsequently, 
-    # backward stepwise variable selection is used to iteratively drop the variable 
-    # that contributes least to the model, until the contribution of each variable 
-    # meets a specified minimum, or until a predetermined minimum number of 
-    # predictors remains. It returns a model object for the full model, rather 
-    # than a list of models as does the previous function
-    m <- rmaxent::simplify(
-      
-      swd_occ, 
-      swd_bg,
-      path            = outdir, 
-      species_column  = "searchTaxon",
-      replicates      = replicates,  ## 5 as above
-      response_curves = TRUE, 
-      logistic_format = TRUE, 
-      cor_thr         = cor_thr, 
-      pct_thr         = pct_thr, 
-      k_thr           = k_thr, 
-      features        = features,  ## LPQ
-      quiet           = FALSE)
-    
-  }
+    swd_occ, 
+    swd_bg,
+    path            = outdir, 
+    species_column  = "searchTaxon",
+    replicates      = replicates,  ## 5 as above
+    response_curves = TRUE, 
+    logistic_format = TRUE, 
+    cor_thr         = cor_thr, 
+    pct_thr         = pct_thr, 
+    k_thr           = k_thr, 
+    features        = features,  ## LPQ
+    quiet           = FALSE)
+  
+  ## Read the model in because it's tricky to index
+  bs.model <- readRDS(sprintf('%s/%s/full/model.rds', outdir,  save_name)) 
+  
+  #####################################################################
+  ## Save the chart corrleation file too for the training data set
+  par(mar   = c(3, 3, 5, 3),
+      oma   = c(1.5, 1.5, 1.5, 1.5))
+  
+  ## Add detail to the response plot
+  chart.Correlation(bs.model@presence,
+                    histogram = TRUE, pch = 19) 
+  
+  png(sprintf('%s/%s/full/%s_%s.png', outdir,
+              save_name, save_name, "bs_predictor_correlation"),
+      3236, 2000, units = 'px', res = 300)
+  
+  ## set margins
+  par(mar   = c(3, 3, 5, 3),
+      oma   = c(1.5, 1.5, 1.5, 1.5))
+  
+  ## Add detail to the response plot
+  chart.Correlation(m@presence,
+                    histogram = TRUE, pch = 19) 
   
 }
 

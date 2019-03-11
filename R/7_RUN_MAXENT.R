@@ -163,20 +163,17 @@ lapply(GBIF.spp, function(spp){
 
 
 ## Variables to run an example within the backwards selection function
-# sdm.predictors          = sdm.predictors
-# name                    = GBIF.spp[2]
+# name                    = GBIF.spp[5]
 # spp                     = name
-# maxent_path             = './output/maxent/10_HOLLOW_SPP_1KM_PROP_SAMPLE/'            ## The directory where files are saved               
-# bs_dir                  = 'output/maxent/10_HOLLOW_SPP_1KM_PROP_SAMPLE_BS' 
+# maxent_path   = './output/maxent/HOLLOW_SPP_PROP_SAMPLE_ALL_VARS/'            ## The directory where files are saved               
+# maxent_dir    = 'output/maxent/HOLLOW_SPP_PROP_SAMPLE_ALL_VARS'               ## Another version of the path needed to run maxent loop
+# bs_dir        = 'output/maxent/HOLLOW_SPP_PROP_SAMPLE_ALL_VARS_BS' 
 # outdir                  = bs_dir
-# template.raster         = template.raster.1km
-# min_n                   = 20       ## This should be higher...
-# shapefiles              = FALSE    ## name this
-# features                = 'lpq'    ## name 
+# features                = 'lpq'    ## name
 # replicates              = 5
-# cor_thr                 = 0.7      ## The maximum allowable pairwise correlation between predictor variables 
-# pct_thr                 = 5        ## The minimum allowable percent variable contribution 
-# k_thr                   = 3        ## The minimum number of variables to be kept in the model.
+# cor_thr                 = 0.8      ## The maximum allowable pairwise correlation between predictor variables
+# pct_thr                 = 5        ## The minimum allowable percent variable contribution
+# k_thr                   = 4        ## The minimum number of variables to be kept in the model.
 # responsecurves          = TRUE     ## Response curves
 
 
@@ -202,30 +199,16 @@ lapply(GBIF.spp, function(spp){
   ## Print the taxa being processed to screen
   if(spp %in% SDM.SPAT.OCC.BG$searchTaxon) {
     
-    ## Check what the targetted function has done with the proportions
-    save_spp = gsub(' ', '_', spp)
-    occ      <- readRDS(sprintf('%s%s/%s_occ.rds', maxent_path, save_spp, save_spp))
-    bg       <- readRDS(sprintf('%s%s/%s_bg.rds',  maxent_path, save_spp, save_spp))
-
-    message('Occurrence data proportions ', round(with(as.data.frame(occ.df), 
-                                                       table(SOURCE)/sum(table(SOURCE))), 3))
-    message('Background data proportions ', round(with(as.data.frame(bg.df), 
-                                                       table(SOURCE)/sum(table(SOURCE))),  3))
-    
-    ## Fit background selection
+    ## Fit SDMs using backwards selection
     tryCatch(
-      fit_maxent_targ_bs(sdm.predictors          = sdm.predictors, ## Should this be all the variables?
-                         name                    = spp,
-                         maxent_path             = './output/maxent/HOLLOW_SPP_PROP_SAMPLE/',
+      fit_maxent_targ_bs(name                    = spp,
+                         maxent_path,
                          outdir,
-                         template.raster,
-                         min_n                   = 20,     ## This should be higher...
-                         shapefiles              = FALSE,  ## name this
                          features                = 'lpq',  ## name 
                          replicates              = 5,      ## replicates as above
                          cor_thr                 = 0.8,    ## max pairwise correlation between vars
                          pct_thr                 = 5,      ## min allowable % var contribution
-                         k_thr                   = 2,      ## Min number of variables to keep
+                         k_thr                   = 4,      ## Min number of variables to keep
                          responsecurves          = TRUE),
       
       ## Figure out how to out error into the fail file
@@ -257,9 +240,10 @@ lapply(GBIF.spp, function(spp){
 #########################################################################################################################
 
 
-## This section needs additional tidy up ................................................................................
-## Everything that doesn't get used needs to go .........................................................................
-
+## How can this be modified to work either on Katana or locally?
+## 1). Re-run all the species, 1000 species at a time. 
+## 2). Then combine them.
+## 3). 
 
 ## Print the species run to the screen
 message('Creating summary stats for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
@@ -268,7 +252,8 @@ message('Creating summary stats for ', length(GBIF.spp), ' species in the set ',
 ## Read in niche data
 if(read_data == "TRUE") {
   
-  ## Load GBIF and ALA data
+  ## Load GBIF and ALA data :: this would ideally be for all species, not just for those run
+  ## On katana, this will be done for just one species. So 
   message('Reading niche data for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
   COMBO.NICHE.CONTEXT = readRDS(paste0(DATA_path, 'COMBO_NICHE_CONTEXT_',  OCC_SOURCE, '_RECORDS_', save_run, '.rds'))
   
@@ -521,12 +506,10 @@ SDM.TAXA <- MAXENT.SUMMARY.NICHE[["searchTaxon"]] %>%
   lookup_table(., by_species = TRUE) 
 SDM.TAXA <- setDT(SDM.TAXA, keep.rownames = TRUE)[]
 colnames(SDM.TAXA)[1] <- "searchTaxon"
-SDM.TAXA <- join(SDM.TAXA, APNI)                     ## get rid of APNI
 
 
 ## Join on the native data and the APNI
 MAXENT.SUMMARY.NICHE <- SDM.TAXA %>% 
-  
   join(., MAXENT.SUMMARY.NICHE) #%>% 
 
 #join(., MAXENT.CHECK[c("searchTaxon", "check.map")])    ## get rid of check map, circualar.............................
