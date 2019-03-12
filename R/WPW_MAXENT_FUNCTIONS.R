@@ -11,39 +11,22 @@
 #########################################################################################################################
 
 
-## Arguments to run maxent line by line
-# occ                     = occurrence
-# bg                      = background
-# name                    = spp
-# outdir                  = 'output/maxent/SET_VAR_KOPPEN'
+## Here are the argumetns needed to run the targetted background selection SDMs inside the function itself
+# spp                     = GBIF.spp[1]
+# occ                     = subset(SDM.SPAT.OCC.BG, searchTaxon == spp)
+# bg                      = subset(SDM.SPAT.OCC.BG, searchTaxon != spp)
 # sdm.predictors          = sdm.select
-# env.grids               = env.grids.current
-# template.raster         = template.raster
-# template.cells          = template.cells
-# min_n                   = 20               ## This should be higher...
-# max_bg_size             = 100000           ## need a min bg size?
+# name                    = spp
+# outdir                  = maxent_dir
+# template.raster         = template.raster.1km   ## 1km, 5km, 10km
+# min_n                   = 20
+# max_bg_size             = 70000
+# Koppen                  = Koppen_1975_1km
 # background_buffer_width = 200000
 # shapefiles              = TRUE
 # features                = 'lpq'
 # replicates              = 5
 # responsecurves          = TRUE
-# Koppen                  = Koppen_1975
-
-
-## Selection line by line 
-# occ             = swd_occ
-# bg              = swd_bg
-# path            = outdir
-# species_column  = "species"
-# replicates      = replicates
-# response_curves = TRUE
-# logistic_format = TRUE
-# cor_thr         = 0.85
-# pct_thr         = 5
-# k_thr           = 5
-# features        ='lpq'  # change these as necessary (or cor_thr = cor_thr, etc from FIT_MAXENT_SIMP)
-# quiet           = FALSE
-# type            = "PI"
 
 
 #########################################################################################################################
@@ -415,6 +398,22 @@ fit_maxent_targ_bg_kopp <- function(occ,
 #########################################################################################################################
 
 
+## Variables to run an example within the backwards selection function
+# name            = GBIF.spp[1]
+# spp             = name
+# maxent_path     = './output/maxent/HOLLOW_SPP_PROP_SAMPLE_ALL_VARS/'    ## The directory where files are saved
+# maxent_dir      = 'output/maxent/HOLLOW_SPP_PROP_SAMPLE_ALL_VARS'       ## Another version of the path needed to run maxent loop
+# bs_dir          = 'output/maxent/HOLLOW_SPP_PROP_SAMPLE_ALL_VARS_BS'
+# outdir          = bs_dir
+# features        = 'lpq'    ## name
+# replicates      = 5
+# cor_thr         = 0.8      ## The maximum allowable pairwise correlation between predictor variables
+# pct_thr         = 5        ## The minimum allowable percent variable contribution
+# k_thr           = 4        ## The minimum number of variables to be kept in the model.
+# responsecurves  = TRUE     ## Response curves
+
+
+## 
 fit_maxent_targ_bs <- function(name,
                                maxent_path, ## location of the data
                                outdir, 
@@ -444,12 +443,7 @@ fit_maxent_targ_bs <- function(name,
   
   swd_occ <- readRDS(sprintf('%s%s/%s_occ_swd.rds', maxent_path, save_name, save_name))
   swd_bg  <- readRDS(sprintf('%s%s/%s_bg_swd.rds',  maxent_path, save_name, save_name))
-  
-  #####################################################################
-  ## Save data for the mapping function...............................
-  saveRDS(occ,     file.path(outdir, paste0(save_name, '_occ.rds')))
-  saveRDS(swd_occ, file.path(outdir, paste0('swd.rds')))
-  
+
   #####################################################################
   ## Coerce the "species with data" (SWD) files to regular data.frames
   ## This is needed to use the simplify function 
@@ -491,6 +485,7 @@ fit_maxent_targ_bs <- function(name,
   
   ## Read the model in because it's tricky to index
   bs.model <- readRDS(sprintf('%s/%s/full/model.rds', outdir,  save_name)) 
+  # bs.model <- as.data.frame(bs.model@presence)
   
   #####################################################################
   ## Save the chart corrleation file too for the training data set
@@ -510,8 +505,10 @@ fit_maxent_targ_bs <- function(name,
       oma   = c(1.5, 1.5, 1.5, 1.5))
   
   ## Add detail to the response plot
-  chart.Correlation(m@presence,
-                    histogram = TRUE, pch = 19) 
+  chart.Correlation(bs.model@presence,
+                    histogram = TRUE, pch = 19)
+  
+  dev.off()
   
 }
 

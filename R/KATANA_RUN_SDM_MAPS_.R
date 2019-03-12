@@ -38,7 +38,7 @@ if (on_windows) {
   
     cmd_args <- commandArgs(TRUE)
     rdata_file = cmd_args[1]
-    if (is.na(rdata_file)) {rdata_file = "../TEST_RUN.RData"}
+    if (is.na(rdata_file)) {rdata_file = "../UPDATE_DATA.RData"}
     message (rdata_file)
     load(rdata_file)
     
@@ -134,7 +134,7 @@ PET                  = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
 ## Now set global analysis variables :: these assume you are using an R project folder structure
 ## Replace any non - UTF8 character in the string with UTF
 Sys.setenv("PBS_ARRAYID" = 1)
-GBIF.spp      = HOLLOW.SPP[10:20] ## your list of species
+GBIF.spp = HOLLOW.SPP[4:5] ## your list of species
 
 
 ##  Subset for PBS array jobs
@@ -156,11 +156,12 @@ GBIF_path     = "./data/base/HIA_LIST/GBIF/"  ## The path where GBIF data is sto
 ALA_path      = "./data/base/HIA_LIST/ALA/"   ## The path where ALA data is stored place
 DATA_path     = "./data/ANALYSIS/"            ## The path where the final data for analyses are stored 
 
-maxent_path   = './output/maxent/HOLLOW_SPP_PROP_SAMPLE_ALL_VARS/'  ## The directory where files are saved               
-maxent_dir    = 'output/maxent/HOLLOW_SPP_PROP_SAMPLE_ALL_VARS'     ## Another version of the path needed to run maxent loop
-bs_dir        = 'output/maxent/HOLLOW_SPP_PROP_SAMPLE_ALL_VARS_BS'  ## Another version of the path needed to run maxent loop
-
+maxent_path   = './output/maxent/HOLLOW_SPP_PROP_SAMPLE_ALL_VARS/'    ## The directory where files are saved               
+maxent_dir    = 'output/maxent/HOLLOW_SPP_PROP_SAMPLE_ALL_VARS'       ## Another version of the path needed to run maxent loop
+bs_dir        = 'output/maxent/HOLLOW_SPP_PROP_SAMPLE_ALL_VARS_BS'    ## the backwards selection directory
+results_dir   = bs_dir ## the directory to harvest results : BS dir?
    
+
 
 
 

@@ -11,7 +11,20 @@
 ## flag isses with.......................................................................................................
 
 
-## Fix comments for each section - current, future, etc..................................................................
+#########################################################################################################################
+## E.G. arguments to run the algorithm inside the function 
+# shp_path      = "./data/base/CONTEXTUAL/"
+# aus_shp       = "aus_states.rds"
+# world_shp     = "LAND_world.rds"
+# x             = scen_2030[3]
+# species       = map_spp[1]   ## "Eucalyptus_camaldulensis" it breaks on Euc. camuldulensis
+# maxent_path   = maxent_path
+# climate_path  = "./data/base/worldclim/aus/1km/bio"
+# grid_names    = grid.names
+# current_grids = aus.grids.current
+# time_slice    = 30
+# create_mess   = "TRUE"
+# MESS_folder   = "MESS_output"
 
 
 #########################################################################################################################
@@ -144,7 +157,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
             swd                  = swd [,sdm_vars]
             identical(names(swd), names(current_grids))
             
-            ## Create a map of novel environments for current conditions
+            ## Create a map of novel environments for current conditions.
             ## This similarity function only uses variables (e.g. n bioclim), not features
             mess_current  <- similarity(current_grids, swd, full = TRUE)
             novel_current <- mess_current$similarity_min < 0  ##   All novel environments are < 0
@@ -317,7 +330,9 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
                           overwrite = TRUE)
               
             } else {
+              
               message('Dont run future MESS maps for ', species, ' under scenario ',  x ) 
+              
             }
             
             ###################################################################
@@ -404,8 +419,6 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
               
               ##################################################################################
               ## Save the global records to PNG :: try to code the colors for ALA/GBIF/INVENTORY
-              ## 
-              ## Come up with a better way of doing this using GGPLOT, etc.................................................................. 
               occ.world <- readRDS(sprintf('%s/%s/%s_occ.rds', maxent_path, species, save_name)) %>%
                 spTransform(CRS.WGS.84)
               
@@ -414,7 +427,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
                   16, 10, units = 'in', res = 500)
               
               ## Add land
-              plot(LAND, #add = TRUE, 
+              plot(world_poly, #add = TRUE, 
                    lwd = 0.01, asp = 1, col = 'grey', bg = 'sky blue')
               
               ## Add points
@@ -443,7 +456,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
               
               
               ############################################################
-              ## Create level plot of scenario x including MESS                        
+              ## Create level plot of scenario x, including MESS                        
               png(sprintf('%s/%s/full/%s_%s.png', maxent_path, species, species, x),      
                   11, 4, units = 'in', res = 300)
             
@@ -537,6 +550,21 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
 #########################################################################################################################
 
 
+## Arguments needed to run the function manually
+# unit_path     = "./data/base/CONTEXTUAL/SUA/"   ## Data path for the spatial unit of analysis 
+# unit_shp      = "SUA_2016_AUST.rds"             ## Spatial unit of analysis - E.G. SUAs
+# unit_vec      = "SUA_2016_VEC.rds"              ## Vector of rasterized unit cells
+# world_shp     = "LAND_world.rds"                ## Polygon for AUS maps           
+# aus_shp       = "aus_states.rds"                ## Polygon for World maps  
+# 
+# DIR_list      = SDM.RESULTS.DIR                 ## List of directories with rasters
+# species_list  = map_spp                         ## List of species' directories
+# maxent_path   = maxent_path                     ## Directory of maxent results
+# thresholds    = percent.10.log                  ## List of maxent thresholds
+# time_slice    = 30                              ## Time period, eg 2030
+# write_rasters = TRUE
+
+
 #########################################################################################################################
 ## Loop over directories, species and one threshold for each, also taking a time_slice argument
 SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
@@ -546,7 +574,7 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
   
   ###################################################################################################################
   ## Read in shapefiles: clunky, but how else will can you read in shapefiles as arguments?  
-  areal_unit = readRDS(paste0(unit_path, unit_file)) %>%
+  areal_unit = readRDS(paste0(unit_path,  unit_shp)) %>%
     spTransform(ALB.CONICAL)
   
   areal_unit      = areal_unit[order(areal_unit$SUA_NAME16),] 
@@ -576,7 +604,7 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
       ## The mean of the GCMs doesn't exist, create it
       if(!file.exists(f_mean)) { 
         
-        ## COuld change this to just search for the pattern 
+        ## Read in all the habitat suitability rasters for each time period which are _not_ novel
         #raster.list       = list.files(as.character(DIR), pattern = sprintf('bi%s.tif$', time_slice), full.names = TRUE)  
         raster.list       = list.files(as.character(DIR), pattern = 'future_not_novel', full.names = TRUE) 
         suit              = stack(raster.list)
@@ -588,7 +616,7 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
         
       } else {
         
-        ## Create another level without the mean calculation
+        ## Create another level, without the mean calculation
         raster.list = list.files(as.character(DIR), pattern = sprintf('bi%s.tif$', time_slice), full.names = TRUE)  
         suit        = stack(raster.list)
         suit.list   = unstack(suit)
@@ -614,14 +642,12 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
         ## Print the species being analysed
         message('doing ', species, ' | Logistic > ', thresh, ' for 20', time_slice)
         
-        ## Read in the current suitability raster
-        f_current <- raster(sprintf('%s/%s/full/%s_current.tif', 
+        ## Read in the current suitability raster :: get the current_not_novel raster
+        f_current <- raster(sprintf('%s/%s/full/%s_current_not_novel.tif', 
                                     maxent_path, species, species))
         
-        ## First, create a simple function to threshold each of the rasters in raster.list
-        ## Then apply this to just the current suitability raster. These functions use the : 
-        ## Maximum training sensitivity plus specificity Logistic threshold
-        ## 10th percentile training presence training omission
+        ## First, create a simple function to threshold each of the rasters in raster.list,
+        ## Then apply this to just the current suitability raster. 
         thresh_greater       = function (x) {x > thresh}
         current_suit_thresh  = thresh_greater(f_current)
 
@@ -756,17 +782,17 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
           ## sensitivity plus specificity Logistic threshold
           message('Writing ', species, ' current', ' max train > ', thresh)
           writeRaster(current_suit_thresh, sprintf('%s/%s/full/%s_%s%s.tif', maxent_path,
-                                                   species, species, "current_suit_above_", thresh), 
+                                                   species, species, "current_suit_not_novel_above_", thresh), 
                       overwrite = TRUE)
           
           ## Write the combined suitability raster, thresholded using the maximum training value
           message('Writing ', species, ' | 20', time_slice, ' max train > ', thresh)
           writeRaster(combo_suit_thresh, sprintf('%s/%s/full/%s_20%s%s%s.tif', maxent_path,
-                                                 species, species, time_slice, "_Max_train_sensit_above_", thresh), 
+                                                 species, species, time_slice, "_log_thresh_above_", thresh), 
                       overwrite = TRUE)
 
           ## Write the combined future raster with > 4 GCMs above the maximum training value
-          message('Writing ', species, ' | 20', time_slice, ' 4 GCMs > ', percent)
+          message('Writing ', species, ' | 20', time_slice, ' 4 GCMs > ', thresh)
           writeRaster(combo_suit_4GCM, sprintf('%s/%s/full/%s_20%s%s%s.tif', maxent_path,
                                                species, species, time_slice, "_4GCMs_above_", thresh), 
                       overwrite = TRUE)
@@ -802,11 +828,12 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
           #########################################################################################################################
           ## Save the gain/loss raster to PNG
           save_name = gsub(' ', '_', species)
+          identical(projection(aus_poly), projection(gain_plot))
+          
           message('writing gain/loss png for ', 'species')
           png(sprintf('%s/%s/full/%s_%s_%s_20%s.png', maxent_path, save_name, save_name, "gain_loss", thresh, time_slice),
               16, 10, units = 'in', res = 500)
           
-          ## We can do better than this but it'll do for now.......................................................................
           ## Could add the SUA polygons as well
           print(levelplot(gain_plot, 
                           col.regions = csort$color, 
