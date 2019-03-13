@@ -33,7 +33,7 @@ message('Cleaning outliers and creating niches for ', length(GBIF.spp), ' specie
 ## Read in the global data
 if(read_data == "TRUE") {
   
-  ## read in RDS files from previous step
+  ## Read in RDS files from previous step
   COMBO.RASTER.CONVERT = readRDS(paste0(DATA_path, 'COMBO_RASTER_CONVERT_',  save_run, '.rds'))
   
 } else {
@@ -119,90 +119,20 @@ message(round(summary(FLAGS)[8]/dim(FLAGS)[1]*100, 2), " % records removed")
 
 
 
-#########################################################################################################################
-## 2). FLAG SPATIAL OUTLIERS
-#########################################################################################################################
-
-
-## Alex Zizka ::
-## The outlier function is limited in the amount of records it can process. It uses a distance matrix of all records per 
-## species, which means that a species with 200k records will result in a 200,000x200,000 cells matrix, which will 
-## probably choke your computer. The latest version of cc_outl includes a subsampling heuristic to address this problem. 
-## I think this will work for you case, but it might run for a while
-
-
-## Check the frequency table first, to see if any species are likely to hit this threshold ::
-## So there are a few species with +100k records, this will be hard for the computer 
-## Could split them up into species under 200k or not?
-# COMBO.LUT = as.data.frame(table(TIB.GBIF$species))
-# names(COMBO.LUT) = c("species", "FREQUENCY")
-# COMBO.LUT = COMBO.LUT[with(COMBO.LUT, rev(order(FREQUENCY))), ] 
-# head(COMBO.LUT);summary(COMBO.LUT$FREQUENCY)  ## Quercus robur, 214, and Fraxinus excelsior, 156
-# LUT.100K = as.character(subset(COMBO.LUT, FREQUENCY < 100000)$species)
-# LUT.100K = LUT.100K [order(LUT.100K)]
-
-
-## Unfortunately, the cc_outl function can't handle vectors of a certain size - over 40 GB at least.
-## So we are problably better off moving this code to after the data has been thinned by the SDM
-## step 
-
-
-# ## Create a data frame of species name and spatial outlier
-# SPAT.OUT <- unique(TIB.GBIF$species) %>%  ## LUT.100K
-#   
-#   ## pipe the list of species into lapply
-#   lapply(function(x) {
-#     
-#     ## Create the species df by subsetting by species
-#     f <- subset(TIB.GBIF, species == x)
-#     
-#     ## Run the spatial outlier detection
-#     message("Running spatial outlier detection for ", x)
-#     message(dim(f)[1], " records for ", x)
-#     sp.flag <- cc_outl(f,
-#                        lon     = "decimallongitude",
-#                        lat     = "decimallatitude",
-#                        species = "species",
-#                        method  = "distance",
-#                        #mltpl   = 5,
-#                        tdi     = 300,
-#                        value   = "flags")
-#     
-#     ## Now add attache column for species, and the flag for each record
-#     #d = data.frame(searchTaxon = x, SPAT_OUT = sp.flag)
-#     d = cbind(species = x,
-#               SPAT_OUT = sp.flag, f)[c("species", "SPAT_OUT", "CC.OBS")]
-#     
-#   }) %>%
-#   
-#   ## Finally, bind all the rows together
-#   bind_rows
-
-
-## Save data
-# identical(dim(SPAT.OUT)[1], dim(TIB.GBIF)[1])
-# unique(SPAT.OUT$species)
-# summary(SPAT.OUT$SPAT_OUT)
-# head(SPAT.OUT)
-# saveRDS(SPAT.OUT, paste0('data/base/HIA_LIST/COMBO/ALA_GBIF_SPAT_OUT_', save_run, '.rds'))
-
-
-
 
 
 #########################################################################################################################
-## 3). FILTER DATA TO THE CLEAN RECORDS
+## 2). FILTER DATA TO THE CLEAN RECORDS
 #########################################################################################################################
 
 
 #########################################################################################################################
-## Join data :: exclude the decimal lat/long, check the length 
-identical(dim(TIB.GBIF)[1],dim(FLAGS)[1])#;length(GBIF.SPAT.OUT)
+## Check the order still matches
+identical(dim(TIB.GBIF)[1],dim(FLAGS)[1])
 names(FLAGS)[1]    = c("coord_spp")
 identical(COMBO.RASTER.CONVERT$searchTaxon, FLAGS$coord_spp)                                            ## order matches
 
 
-#########################################################################################################################
 ## Is the species column the same as the searchTaxon column?
 TEST.GEO   = cbind(COMBO.RASTER.CONVERT, FLAGS)
 identical(TEST.GEO$searchTaxon, TEST.GEO$coord_spp)                                                     ## order matches
@@ -212,7 +142,6 @@ identical(TEST.GEO$searchTaxon, TEST.GEO$coord_spp)                             
 dim(subset(TEST.GEO, summary == "TRUE"))
 CLEAN.TRUE = subset(TEST.GEO, summary == "TRUE")
 unique(CLEAN.TRUE$summary)   
-#unique(CLEAN.TRUE$SPAT_OUT)   
 
 
 ## What percentage of records are retained?
@@ -222,17 +151,7 @@ message(round(dim(CLEAN.TRUE)[1]/dim(TEST.GEO)[1]*100, 2), " % records retained"
 
 
 #########################################################################################################################
-## Record how many points were removed, just from the analysis species
-## GBIF, ALA 1144726 + 1257152
-length(native.sua)
-CLEAN.NATIVE = CLEAN.TRUE[CLEAN.TRUE$searchTaxon %in% native.sua, ]
-length(unique(CLEAN.NATIVE$searchTaxon))
-message(round(dim(CLEAN.NATIVE)[1]/2401878*100, 2), " % records retained")
-
-
-#########################################################################################################################
 ## Now bind on the urban tree inventory data. We are assuming this data is clean, after we manually fix the taxonomy
-## Check the NAs
 if(dim(TI.XY.SPP)[1] > 0) {
   
   message('Combining Australian inventory data with occurrence data') 
@@ -248,9 +167,15 @@ if(dim(TI.XY.SPP)[1] > 0) {
 }
 
 
+## How many local municipalities have data for the species analysed
 names(CLEAN.TRUE)
 unique(CLEAN.TRUE$SOURCE) 
+unique(CLEAN.TRUE$INVENTORY)
+length(unique(CLEAN.TRUE$INVENTORY))
+
+
 length(unique(CLEAN.TRUE$searchTaxon))
+summary(CLEAN.TRUE$Annual_mean_temp)
 summary(CLEAN.TRUE$Annual_mean_temp)
 
 
@@ -260,7 +185,7 @@ dim(CLEAN.TRUE)[1];length(CLEAN.TRUE$OBS)
 identical(dim(CLEAN.TRUE)[1], length(CLEAN.TRUE$OBS))
 
 
-## How many records are added by including the tree inventories?
+## By how many % does including tree inventories increase the overal number of records?
 message("Tree inventory data increases records by ", round(dim(CLEAN.TRUE)[1]/dim(TEST.GEO)[1]*100, 2), " % ")   
 
 
@@ -284,35 +209,30 @@ if(save_data == "TRUE") {
 #########################################################################################################################
 
 
+## This code could be used to manually clean outlying records, using the OBS column......................................
 ## Select columns
 GBIF.ALA.CHECK  = select(CLEAN.TRUE,     OBS, searchTaxon, scientificName, lat, lon, SOURCE, INVENTORY, year, 
-                         #coordinateUncertaintyInMetres, #geodeticDatum,  
                          country, locality, basisOfRecord, institutionCode, 
-                         #rank, 
                          Taxonomic.status, New.Taxonomic.status)
 
 
 ## Rename the fields so that ArcMap can handle them
-GBIF.ALA.CHECK     = dplyr::rename(GBIF.ALA.CHECK, 
-                                   TAXON     = searchTaxon,
-                                   LAT       = lat,
-                                   LON       = lon,
-                                   SC_NAME   = scientificName,
-                                   #RANK      = rank,
-                                   BASIS     = basisOfRecord,                
-                                   LOCAL     = locality,                      
-                                   INSTIT    = institutionCode,                
-                                   COUNTRY   = country,                
-                                   #COORD_UN  = coordinateUncertaintyInMetres,
-                                   #DATUM     = geodeticDatum,                 
-                                   YEAR      = year,
-                                   TAX_STAT  = Taxonomic.status,
-                                   NEW_STA   = New.Taxonomic.status)
+GBIF.ALA.CHECK  = dplyr::rename(GBIF.ALA.CHECK, 
+                                TAXON     = searchTaxon,
+                                LAT       = lat,
+                                LON       = lon,
+                                SC_NAME   = scientificName,
+                                BASIS     = basisOfRecord,                
+                                LOCAL     = locality,                      
+                                INSTIT    = institutionCode,                
+                                COUNTRY   = country,                
+                                YEAR      = year,
+                                TAX_STAT  = Taxonomic.status,
+                                NEW_STA   = New.Taxonomic.status)
 names(GBIF.ALA.CHECK)
 
 
-#########################################################################################################################
-## Then create SPDF
+## Then create a SPDF
 GBIF.ALA.SPDF    = SpatialPointsDataFrame(coords      = GBIF.ALA.CHECK[c("LON", "LAT")],
                                           data        = GBIF.ALA.CHECK,
                                           proj4string = CRS.WGS.84)
@@ -324,18 +244,20 @@ TAXA <- unique(GBIF.ALA.SPDF$TAXON)
 
 #########################################################################################################################
 ## Then, loop over the species list and create a shapefile for each 
+## For lots of taxa, this would be needed to 
 # for (i in 1:length(TAXA)) {
 #   
 #   ## Need to check the OBS column matches up - or do we not need this again?
 #   message("Writing shapefile for ", TAXA[i])
 #   tmp <- GBIF.ALA.SPDF[GBIF.ALA.SPDF$TAXON == TAXA[i], ] 
-#   writeOGR(tmp, dsn = "./data/base/HIA_LIST/COMBO/CLEAN_GBIF", TAXA[i], driver = "ESRI Shapefile", overwrite_layer = TRUE)
+#   writeOGR(tmp, dsn = "./data/ANALYSIS/CLEAN_GBIF", TAXA[i], driver = "ESRI Shapefile", overwrite_layer = TRUE)
 #   
 # }
 
 
-## Write the shapefile out just in case
-# writeOGR(obj = GBIF.ALA.SPDF, dsn = "./data/base/HIA_LIST/COMBO", layer = paste0("CLEAN_SPDF_", save_run), driver = "ESRI Shapefile")
+## Then write the shapefile out just in case
+# writeOGR(obj = GBIF.ALA.SPDF, dsn = "./data/ANALYSIS/CLEAN_GBIF", 
+#          layer = paste0("CLEAN_SPDF_", save_run), driver = "ESRI Shapefile")
 
 
 
@@ -352,7 +274,7 @@ if(calc_niche == "TRUE") {
   
   ## We want to know the count of species that occur in 'n' LGAs, across a range of climates. Read in LGA and SUA
   length(unique(CLEAN.TRUE$searchTaxon))
-  projection(LGA);projection(AUS);projection(SUA.16)
+  projection(LGA);projection(AUS);projection(SUA_2016 )
   
   
   ## Convert the raster data back into a spdf
@@ -362,9 +284,10 @@ if(calc_niche == "TRUE") {
   
   
   ## Project using a projected rather than geographic coordinate system
-  LGA.WGS  = spTransform(LGA,    CRS.WGS.84)
-  SUA.WGS  = spTransform(SUA.16, CRS.WGS.84)
-  AUS.WGS  = spTransform(AUS,    CRS.WGS.84)
+  ## Not sure why, but this is needed for the extraction step
+  LGA.WGS  = spTransform(LGA,       CRS.WGS.84)
+  SUA.WGS  = spTransform(SUA_2016 , CRS.WGS.84)
+  AUS.WGS  = spTransform(AUS,       CRS.WGS.84)
   
   
   ## Remove the columns we don't need
@@ -383,18 +306,15 @@ if(calc_niche == "TRUE") {
   SUA.JOIN      = over(COMBO.RASTER.SP,   SUA.WGS)
   COMBO.SUA.LGA = cbind.data.frame(COMBO.RASTER.SP, SUA.JOIN) 
   
-  
-  #########################################################################################################################
   ## save .rds file for the next session
-  saveRDS(COMBO.SUA.LGA, file = paste0(DATA_path, 'COMBO_SUA_OVER_', save_run, '.rds'))
+  #saveRDS(COMBO.SUA.LGA, file = paste0(DATA_path, 'COMBO_SUA_OVER_', save_run, '.rds'))
   
   
   #########################################################################################################################
   ## AGGREGATE THE NUMBER OF SUAs EACH SPECIES IS FOUND IN. NA LGAs ARE OUTSIDE AUS
   SUA.AGG   = tapply(COMBO.SUA.LGA$SUA_NAME16, COMBO.SUA.LGA$searchTaxon, function(x) length(unique(x))) ## group SUA by species name
   SUA.AGG   = as.data.frame(SUA.AGG)
-  AUS.AGG   = aggregate(SUA_NAME16 ~ searchTaxon, data = COMBO.SUA.LGA, function(x) {sum(!is.na(x))}, na.action = NULL)
-  
+  AUS.AGG   = aggregate(SUA_NAME16 ~ searchTaxon, data = COMBO.SUA.LGA,   function(x) {sum(!is.na(x))}, na.action = NULL)
   SUA.AGG   = cbind.data.frame(AUS.AGG, SUA.AGG)
   names(SUA.AGG) = c("searchTaxon", "AUS_RECORDS", "SUA_COUNT")
   
@@ -404,7 +324,6 @@ if(calc_niche == "TRUE") {
   names(SUA.SPP.COUNT) = c("SUA", "SPECIES", "SUA_RECORDS")
   
   
-  #########################################################################################################################
   ## Save .rds file for the next session
   saveRDS(SUA.SPP.COUNT, paste0(DATA_path, 'SUA_SPP_COUNT_', save_run, '.rds'))
   
@@ -414,7 +333,7 @@ if(calc_niche == "TRUE") {
   head(SUA.AGG)
   
   
-  ## 
+  ## Remove coordinates
   names(COMBO.SUA.LGA)
   COMBO.SUA.LGA = subset(COMBO.SUA.LGA, select = -c(lon.1, lat.1))
   names(COMBO.SUA.LGA)
@@ -467,12 +386,12 @@ if(calc_niche == "TRUE") {
     ## Pipe the list into lapply
     lapply(function(x) {
       
-      ## Now use the niche width function on each colname (so 8 environmental variables)
+      ## Now, use the niche width function on each colname
       ## Also, need to figure out how to make the aggregating column generic (species, genus, etc.)
-      ## currently it only works hard-wired
+      ## currently it only works hard-wired..............................................................................
       niche_estimate (DF = NICHE.DF, colname = x)
       
-      ## would be good to remove the duplicate columns here
+      ## would be good to remove the duplicate columns here..............................................................
       
     }) %>% 
     
@@ -492,37 +411,88 @@ if(calc_niche == "TRUE") {
   #########################################################################################################################
   ## Add counts for each species, and record the total number of taxa processed
   ## dim(COMBO.RASTER.CONVERT);dim(CLEAN.TRUE)
-  GLOBAL_RECORDS = as.data.frame(table(COMBO.SUA.LGA$searchTaxon))$Freq
-  identical(length(GLOBAL_RECORDS), dim(COMBO.NICHE)[1])
+  GLOBAL_RECORDS = as.data.frame(table(COMBO.SUA.LGA$searchTaxon))
+  names(GLOBAL_RECORDS) = c("searchTaxon", "GLOBAL_RECORDS")
+  identical(dim(GLOBAL_RECORDS)[1], dim(COMBO.NICHE)[1])
   
+  
+  #########################################################################################################################
+  ## Add the counts of Australian records for each species to the niche database
   Total.taxa.processed = dim(COMBO.NICHE)[1]
-  COMBO.NICHE  = cbind(GLOBAL_RECORDS, COMBO.NICHE)
+  COMBO.NICHE  = join(GLOBAL_RECORDS, COMBO.NICHE)
+  COMBO.NICHE  = join(SUA.AGG, COMBO.NICHE)
+  
+  head(COMBO.LGA$AUS_RECORDS)
+  head(COMBO.LGA$SUA_COUNT)
+  
   names(COMBO.NICHE)
   dim(COMBO.NICHE)
   
   
   #########################################################################################################################
   ## Add the counts of Australian records for each species to the niche database
-  names(COMBO.NICHE)
-  names(SUA.AGG)
-  dim(COMBO.NICHE)
-  dim(SUA.AGG)
-  
-  COMBO.LGA = join(COMBO.NICHE, SUA.AGG)                            ## The tapply needs to go where the niche summaries are
-  names(COMBO.LGA)
-  
-  dim(COMBO.LGA)
-  head(COMBO.LGA$AUS_RECORDS)
-  head(COMBO.LGA$SUA_COUNT)
-  
+  # names(COMBO.NICHE)
+  # names(SUA.AGG)
+  # dim(COMBO.NICHE)
+  # dim(SUA.AGG)
+  # 
+  # COMBO.LGA = join(COMBO.NICHE, SUA.AGG)
+  # names(COMBO.LGA)
+  # 
+  # dim(COMBO.LGA)
+  # head(COMBO.LGA$AUS_RECORDS)
+  # head(COMBO.LGA$SUA_COUNT)
   
   
   #########################################################################################################################
   ## 7). CALCULATE AREA OF OCCUPANCY
   #########################################################################################################################
-
   
-  ## Add an area calc in here............................................................................................... 
+  
+  ## Given a dataframe of georeferenced occurrences of one, or more, taxa, this function provide statistics values 
+  ## (Extent of Occurrence, Area of Occupancy, number of locations, number of subpopulations) and provide a preliminary 
+  ## conservation status following Criterion B of IUCN. A graphical map output is also available.
+  
+  
+  ## Create a species list to estimate the ranges for. Currently we can't estimate ranges for widely distributed species
+  ## A workaround for the trait species is to just use the ALA records. But for the full list of species, we will need to 
+  ## change this. Otherwise, we could report the global niche, but the Australian range only. This will mean that 
+  spp.geo = as.character(unique(COMBO.SUA.LGA$searchTaxon))
+  AOO.DAT = COMBO.SUA.LGA %>%
+    subset(., SOURCE == "ALA")
+  
+  
+  #########################################################################################################################
+  ## AREA OF OCCUPANCY (AOO)
+  ## For every species in the list: calculate the AOO
+  ## The extent of occurrence function is causing problems.................................................................
+  ## Change this once Giles Dauby updates..................................................................................
+  ## x = spp.geo[1]
+  GBIF.AOO <- spp.geo %>%
+    
+    ## Pipe the list into lapply
+    lapply(function(x) {
+      
+      ## Subset the the data frame to calculate area of occupancy according the IUCN.eval
+      DF = subset(AOO.DAT, searchTaxon == x)[, c("lat", "lon", "searchTaxon")]
+      IUCN.eval(DF, Cell_size_AOO = 10, DrawMap = FALSE, country_map = land, SubPop = FALSE) 
+      
+    }) %>%
+    
+    ## Finally, create one dataframe for all niches
+    bind_rows
+  
+  
+  names(GBIF.AOO)[names(GBIF.AOO) == 'taxa'] <- 'searchTaxon'
+  GBIF.AOO             = select(GBIF.AOO, searchTaxon, EOO, AOO, Category_CriteriaB)
+  names(GBIF.AOO)      = c("searchTaxon",  "EOO", "AOO", "ICUN_catb")
+  head(GBIF.AOO)
+  
+  
+  #########################################################################################################################
+  ## Now join on the geographic range and glasshouse data
+  identical(length(GBIF.AOO$AOO), length(GBIF.spp))
+  COMBO.NICHE = join(GBIF.AOO, COMBO.NICHE)
 
   
   
@@ -539,10 +509,9 @@ if(calc_niche == "TRUE") {
   
   
   #########################################################################################################################
-  ## Now join hort context to all the niche
-  names(CLEAN.SPP)
-  COMBO.NICHE.CONTEXT = join(COMBO.LGA, CLEAN.GROW) 
-  COMBO.NICHE.CONTEXT = join(COMBO.NICHE.CONTEXT, TI.LIST)
+  ## Now join the hort context data and the tree inventory plantings to the niche
+  COMBO.NICHE.CONTEXT = join(CLEAN.GROW, COMBO.NICHE) 
+  COMBO.NICHE.CONTEXT = join(TI.LIST, COMBO.NICHE.CONTEXT)
   head(COMBO.NICHE.CONTEXT$AUS_RECORDS)
   head(COMBO.NICHE.CONTEXT$LGA_COUNT)
   

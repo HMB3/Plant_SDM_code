@@ -277,11 +277,13 @@ world.grids.current = stack(
   file.path('./data/base/worldclim/world/0.5/bio/current',
             sprintf('bio_%02d', 1:19)))
 
+
 ## Create a raster stack of current Australian environmental conditions
 ## This is used to calculate the niches for the urban tree inventories
 inventory.grids.current = stack(
   file.path('./data/base/worldclim/aus/1km/bio/current/WGS/', 
             sprintf('bio_%02d.tif', 1:19))) 
+
 
 #########################################################################################################################
 ## Create a raster stack of current Australian environmental conditions, and divide the current environmental grids by 10
@@ -299,8 +301,11 @@ for(i in 1:11) {
 
 
 #########################################################################################################################
-## Also get the PET raster
-PET               = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
+## Also get the the soil rasters
+PET  = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
+twi  = raster("./data/base/ACLEP/TWI.tif")
+tpi  = raster("./data/base/ACLEP/TPI.tif")
+soil = stack(file.path('./data/base/ACLEP', sprintf('PC%d.tif', 1:3)))
 
 
 

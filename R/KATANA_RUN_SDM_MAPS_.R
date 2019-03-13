@@ -134,7 +134,7 @@ PET                  = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
 ## Now set global analysis variables :: these assume you are using an R project folder structure
 ## Replace any non - UTF8 character in the string with UTF
 Sys.setenv("PBS_ARRAYID" = 1)
-GBIF.spp = HOLLOW.SPP[4:5] ## your list of species
+GBIF.spp = HOLLOW.SPP[4] ## your list of species
 
 
 ##  Subset for PBS array jobs
@@ -145,12 +145,13 @@ if (length(Sys.getenv("PBS_ARRAYID"))) {
     
 }
 
+
 #########################################################################################################################
 ## These folders must be created on katana, or uploaded
 GBIF.spp      = as_utf8(GBIF.spp, normalize = TRUE)  ## Check the species names have the right characters
 save_run      = "WPW_TEST"                           ## a variable to append the run name to the output files
-read_data     = "TRUE"                               ## only needed to load the SDM table in
-save_data     = "FALSE"                               ## only needed to load the SDM table in
+read_data     = "FALSE"                              ## only needed to load the SDM table in
+save_data     = "FALSE"                              ## only needed to load the SDM table in
 
 GBIF_path     = "./data/base/HIA_LIST/GBIF/"  ## The path where GBIF data is stored
 ALA_path      = "./data/base/HIA_LIST/ALA/"   ## The path where ALA data is stored place
@@ -158,8 +159,10 @@ DATA_path     = "./data/ANALYSIS/"            ## The path where the final data f
 
 maxent_path   = './output/maxent/HOLLOW_SPP_PROP_SAMPLE_ALL_VARS/'    ## The directory where files are saved               
 maxent_dir    = 'output/maxent/HOLLOW_SPP_PROP_SAMPLE_ALL_VARS'       ## Another version of the path needed to run maxent loop
-bs_dir        = 'output/maxent/HOLLOW_SPP_PROP_SAMPLE_ALL_VARS_BS'    ## the backwards selection directory
-results_dir   = bs_dir ## the directory to harvest results : BS dir?
+
+bs_path       = './output/maxent/HOLLOW_SPP_PROP_SAMPLE_ALL_VARS_BS/'
+bs_dir        = 'output/maxent/HOLLOW_SPP_PROP_SAMPLE_ALL_VARS_BS'    ## Backwards selection directory
+results_dir   = bs_dir                                                ## the directory to harvest results : BS dir?
    
 
 
@@ -178,6 +181,29 @@ results_dir   = bs_dir ## the directory to harvest results : BS dir?
 #########################################################################################################################
 ## Now source each step in the workflow. 
 message('Running SDMs and maps for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
+
+
+## Step 3 :: combine GBIF occurrence data with ALA data and filter to records > 1950
+source('./R/1_GBIF_ALA_DOWNLOAD.R', echo = TRUE)
+
+
+## Step 3 :: combine GBIF occurrence data with ALA data and filter to records > 1950
+source('./R/ALA_DATA_FILTER_TAXO_SCIENTIFIC_NAME.R', echo = TRUE)
+source('./R/3_GBIF_DATA_TAXO_SCIENTIFIC_NAME.R',     echo = TRUE)
+
+
+## Step 4 :: combine GBIF, ALA and tree inventory data into a single table, extract environmental condtions
+source('./R/4_ALA_GBIF_URBAN_COMBINE.R',  echo = TRUE)
+source('./R/INVENTORY_RASTER.R',          echo = TRUE)
+
+
+## Step 5 :: clean the occurrence data using the 'CleanCoordinates' function in the CoordinateCleaner package, to remove
+## records near herbaria, duplicates, etc. & add contextual info for each record (taxonomic and horticultural). 
+## Then prepare the SDM table
+## Then clean the spatial outliers
+source('./R/5_GBIF_ALA_CLEAN_NICHES.R',  echo = TRUE)
+source('./R/6_PREPARE_SDM_TABLE_1KM.R',  echo = TRUE)
+
 
 
 ## Step 7 :: Run maxent on a table of all species, using targetted background selection, then backwards selection

@@ -4,7 +4,7 @@
 
 
 #########################################################################################################################
-## This code takes the output of the Maxent species distribution models (i.e. using current conditions), and generates 
+## This code takes the output of the Maxent species distribution models using current conditions, and generates 
 ## a prediction of habitat suitability for current and future environmental conditions. 
 
 
@@ -26,19 +26,16 @@
 
 
 #########################################################################################################################
-## Use a list of GCM scenarios to create maps of habitat suitability 
-## Eight of the 40 CMIP5 models assessed in this project have been selected for use in provision of application-ready data. 
-## This facilitates efficient exploration of climate projections for Australia.
+## Use a list of GCM scenarios to create maps of habitat suitability. See CSIRO for details ::
 ## https://www.climatechangeinaustralia.gov.au/en/support-and-guidance/faqs/eight-climate-models-data/
 head(gcms.50) ; head(gcms.70) ; head(gcms.30)
 
 
-#########################################################################################################################
-## For each species, use a function to create raster files and maps under all six GCMs at each time step
+## This function uses MESS maps to constrain the climate suitability surface
 
 
 #########################################################################################################################
-## MESS maps measure the similarity between the new environments and those in the training sample.
+## MESS maps measure the similarity between the new environments, and those in the training sample.
 ## When model predictions are projected into regions, times or spatial resolutions not analysed in the training data, 
 ## it may be important to measure the similarity between the new environments and those in the training sample 
 ## (Elith et al. 2010), as models are not so reliable when predicting outside their domain (Barbosa et al. 2009). 
@@ -63,17 +60,19 @@ head(gcms.50) ; head(gcms.70) ; head(gcms.30)
 
 
 ## The MESS map function needs to be modified so that it can handle species with no novel areas..........................
+## Also, how can we handle to problem of the directories (full modles and backwards selection)?
+## Should just use the backwards sele
 
 
 #########################################################################################################################
 ## Create 2030 maps
 project_maxent_grids_mess(shp_path      = "./data/base/CONTEXTUAL/", ## Path for shapefile
                           aus_shp       = "aus_states.rds",          ## Shapefile, e.g. Australian states
-                          world_shp     = "LAND_world.rds",          ## Polygon for AUS maps           
+                          world_shp     = "LAND_world.rds",          ## World shapefile          
                           
                           scen_list     = scen_2030,                 ## List of climate scenarios
                           species_list  = map_spp,                   ## List of species folders with maxent models
-                          maxent_path   = maxent_path,               ## Output folder
+                          maxent_path   = bs_path,                   ## Output folder
                           climate_path  = "./data/base/worldclim/aus/1km/bio", ## climate data
                           grid_names    = grid.names,                ## names of the predictor grids
                           time_slice    = 30,                        ## Time period
@@ -141,7 +140,7 @@ suitability.2030 = mapply(SUA_cell_count,                                  ## Fu
                           
                           DIR_list      = SDM.RESULTS.DIR,                 ## List of directories with rasters
                           species_list  = map_spp,                         ## List of species' directories
-                          maxent_path   = maxent_path,                     ## Directory of maxent results
+                          maxent_path   = bs_path,                     ## Directory of maxent results
                           thresholds    = percent.10.log,                  ## List of maxent thresholds
                           time_slice    = 30,                              ## Time period, eg 2030
                           write_rasters = TRUE)

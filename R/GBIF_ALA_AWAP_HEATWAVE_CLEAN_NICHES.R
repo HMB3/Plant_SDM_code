@@ -419,7 +419,7 @@ if(calc_niche == "TRUE") {
   dim(COMBO.NICHE)
   dim(SUA.AGG)
   
-  COMBO.LGA = join(COMBO.NICHE, SUA.AGG)                            ## The tapply needs to go where the niche summaries are
+  COMBO.LGA = join(COMBO.NICHE, SUA.AGG)
   names(COMBO.LGA)
   
   dim(COMBO.LGA)
@@ -469,6 +469,7 @@ if(calc_niche == "TRUE") {
   names(GBIF.AOO)      = c("searchTaxon",  "EOO", "AOO", "ICUN_catb")
   head(GBIF.AOO)
   
+  
   #########################################################################################################################
   ## Now join on the geographic range and glasshouse data
   identical(length(GBIF.AOO$AOO), length(GBIF.spp))
@@ -478,26 +479,14 @@ if(calc_niche == "TRUE") {
   
   ## AOO is calculated as the area of all known or predicted cells for the species. The resolution will be 10x10km as 
   ## required by IUCN. A single value in km2.
-  
-  
-  #########################################################################################################################
-  ## 8). JOIN ON GLASSHOUSE DATA
-  #########################################################################################################################
-  
-  
-  #########################################################################################################################
-  ## Now join the horticultural contextual data onto one or both tables ()
-  message('Joining contextual data for raster and niche files', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
 
-  
+
   #########################################################################################################################
   ## Now join hort context to all the niche
   # TCRIT = select(DIANA.TC, Names, Tcrit, ster)
   # names(TCRIT)[names(TCRIT) == 'Names'] <- 'searchTaxon'
 
 
-  
-  
   #########################################################################################################################
   ## save .rds file for the next session
   message('Writing niche and raster data for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")

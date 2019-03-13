@@ -321,7 +321,7 @@ fit_maxent_targ_bg_kopp <- function(occ,
     saveRDS(swd, file.path(outdir_sp, 'swd.rds'))
     pa  <- rep(1:0, c(nrow(swd_occ), nrow(swd_bg)))
     
-    ## Now set the features to be used by maxent ::
+    ## Now, set the features to be used by maxent ::
     ## Linear, product and quadratic
     off <- setdiff(c('l', 'p', 'q', 't', 'h'), features)
     
@@ -438,11 +438,14 @@ fit_maxent_targ_bs <- function(name,
   message('Reading previously created occurrence and background data from targetted SDM for ', name)
   save_name = gsub(' ', '_', name)
   
-  occ     <- readRDS(sprintf('%s%s/%s_occ.rds', maxent_path, save_name, save_name))
-  bg      <- readRDS(sprintf('%s%s/%s_bg.rds',  maxent_path, save_name, save_name))
+  occ     <- readRDS(sprintf('%s%s/%s_occ.rds',   maxent_path, save_name, save_name))
+  bg      <- readRDS(sprintf('%s%s/%s_bg.rds',    maxent_path, save_name, save_name))
+  swd     <- readRDS(sprintf('%s%s/swd.rds',      maxent_path, save_name))
   
-  swd_occ <- readRDS(sprintf('%s%s/%s_occ_swd.rds', maxent_path, save_name, save_name))
-  swd_bg  <- readRDS(sprintf('%s%s/%s_bg_swd.rds',  maxent_path, save_name, save_name))
+  ## Then save the occ and bg data to the backwards selection directory
+  saveRDS(occ, sprintf('%s/%s/%s_occ.rds',        outdir, save_name, save_name))
+  saveRDS(bg,  sprintf('%s/%s/%s_bg.rds',         outdir, save_name, save_name))
+  saveRDS(swd, sprintf('%s/%s/swd.rds',           outdir, save_name))
 
   #####################################################################
   ## Coerce the "species with data" (SWD) files to regular data.frames
@@ -468,7 +471,7 @@ fit_maxent_targ_bs <- function(name,
   # meets a specified minimum, or until a predetermined minimum number of 
   # predictors remains. It returns a model object for the full model, rather 
   # than a list of models as does the previous function
-  m <- rmaxent::simplify(
+  m <- local_simplify(
     
     swd_occ, 
     swd_bg,
@@ -484,9 +487,8 @@ fit_maxent_targ_bs <- function(name,
     quiet           = FALSE)
   
   ## Read the model in because it's tricky to index
-  bs.model <- readRDS(sprintf('%s/%s/full/model.rds', outdir,  save_name)) 
-  # bs.model <- as.data.frame(bs.model@presence)
-  
+  bs.model <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', outdir,  save_name)) 
+
   #####################################################################
   ## Save the chart corrleation file too for the training data set
   par(mar   = c(3, 3, 5, 3),

@@ -51,11 +51,12 @@ if(read_data == "TRUE") {
 ## Merge on the ALA data. Consider that GBIF has data for both sources. We are topping up the native ranges with the AVH. 
 ## So there could be duplicates between both sources.
 length(unique(GBIF.LAND$searchTaxon)) 
-length(unique(ALA.LAND$searchTaxon)) 
+length(unique(ALA.LAND$searchTaxon))
+dim(GBIF.LAND);dim(ALA.LAND)
+
 unique(GBIF.LAND$SOURCE)
 unique(ALA.LAND$SOURCE)
 sort(intersect(sort(names(GBIF.LAND)), sort(names(ALA.LAND))))
-
 
 dim(GBIF.LAND);dim(ALA.LAND)
 setdiff(names(GBIF.LAND), names(ALA.LAND))
@@ -159,7 +160,7 @@ message('Running TPL taxonomy for ', length(GBIF.spp), ' species in the set ', "
 COMBO.TAXO <- TPL(unique(GBIF.ALA.COMBO$scientificName), infra = TRUE,
                 corr = TRUE, repeats = 100)  ## to stop it timing out...
 sort(names(COMBO.TAXO))
-saveRDS(COMBO.TAXO, paste0(ALA_path, 'ALA_TAXO_', save_run, '.rds'))
+#saveRDS(COMBO.TAXO, paste0(ALA_path, 'ALA_TAXO_', save_run, '.rds'))
 
 
 ## Check the taxonomy by running scientificName through TPL. Then join the GBIF data to the taxonomic check, using 

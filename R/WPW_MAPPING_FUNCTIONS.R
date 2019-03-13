@@ -105,7 +105,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
           ## Now read in the SDM model, calibrated on current conditions
           ## if it was run with backwards selection, just use the full model
           if (grepl("BS", maxent_path)) {
-            m   <- readRDS(sprintf('%s/%s/full/model.rds', maxent_path, species)) 
+            m   <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, species)) 
             
           } else {
             ## If it was run with targetted selection, index the full model
@@ -115,6 +115,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
           
           ## Note that the backwards selection and targetted algorithms output slightly different 
           ## swd objects, df and spdf. best to make these the same
+          ## .....................................................................................
           swd <- as.data.frame(readRDS(sprintf('%s%s/swd.rds',    maxent_path, species, species)))
           occ <- readRDS(sprintf('%s%s/%s_occ.rds', maxent_path, species, save_name)) %>%
             spTransform(ALB.CONICAL)  
