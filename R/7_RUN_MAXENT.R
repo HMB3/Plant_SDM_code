@@ -83,22 +83,24 @@ lapply(GBIF.spp, function(spp){
     
     ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
     tryCatch(
-      fit_maxent_targ_bg_kopp(occ                     = occurrence,    ## name from the .rmd CV doc 
-                              bg                      = background,    ## name from the .rmd CV doc  
-                              sdm.predictors          = bs.predictors, 
-                              name                    = spp, 
-                              outdir, 
-                              template.raster         = template.raster.1km,
-                              min_n                   = 20,            ## This should be higher...
-                              max_bg_size             = 70000,         ## could be 50k or lower, it just depends on the biogeography
-                              Koppen                  = Koppen_1975_1km,
-                              background_buffer_width = 200000,
-                              shapefiles              = TRUE,
-                              features                = 'lpq',
-                              replicates              = 5,
-                              responsecurves          = TRUE,
-                              shp_path                = "./data/base/CONTEXTUAL/", 
-                              aus_shp                 = "aus_states.rds"),
+      fit_maxent_targ_back_back_sel(occ                     = occurrence,    ## name from the .rmd CV doc 
+                                    bg                      = background,    ## name from the .rmd CV doc  
+                                    sdm.predictors          = bs.predictors, 
+                                    name                    = spp, 
+                                    outdir                  = maxent_dir,
+                                    bsdir                   = bs_dir,
+                                    
+                                    template.raster         = template.raster.1km,
+                                    min_n                   = 20,            ## This should be higher...
+                                    max_bg_size             = 70000,         ## could be 50k or lower, it just depends on the biogeography
+                                    Koppen                  = Koppen_1975_1km,
+                                    background_buffer_width = 200000,
+                                    shapefiles              = TRUE,
+                                    features                = 'lpq',
+                                    replicates              = 5,
+                                    responsecurves          = TRUE,
+                                    shp_path                = "./data/base/CONTEXTUAL/", 
+                                    aus_shp                 = "aus_states.rds"),
       
       ## If the species fails, write a fail message to file. Can this be the fail message itself?
       error = function(cond) {
@@ -134,59 +136,59 @@ lapply(GBIF.spp, function(spp){
 ## occurrence and background points :: 
 
 
-#########################################################################################################################
-## Loop over all the species 
-## spp    = GBIF.spp[1]
-lapply(GBIF.spp, function(spp){ 
-  
-  ## Skip the species if the directory already exists, before the loop
-  outdir <- bs_dir
-  
-  dir_name = file.path(outdir, gsub(' ', '_', spp))
-  if(dir.exists(dir_name)) {
-    message('Skipping ', spp, ' - already run.')
-    invisible(return(NULL))
-    
-  }
-  
-  ## Create the directory so other parallel runs don't try to do it
-  dir.create(dir_name)
-  write.csv(data.frame(), file.path(dir_name, "in_progress.txt"))
-  
-  ## Print the taxa being processed to screen
-  if(spp %in% SDM.SPAT.OCC.BG$searchTaxon) {
-    
-    ## Fit SDMs using backwards selection
-    tryCatch(
-      fit_maxent_targ_bs(name                    = spp,
-                         maxent_path,
-                         outdir,
-                         features                = 'lpq',  ## name 
-                         replicates              = 5,      ## replicates as above
-                         cor_thr                 = 0.8,    ## max pairwise correlation between vars
-                         pct_thr                 = 5,      ## min allowable % var contribution
-                         k_thr                   = 4,      ## Min number of variables to keep
-                         responsecurves          = TRUE),
-      
-      ## Figure out how to out error into the fail file
-      error = function(cond) {
-        
-        message(spp, ' failed')  
-        write.csv(data.frame(), file.path(dir_name, "failed.txt"))
-        
-      })
-    
-  } else {
-    
-    message(spp, ' skipped - no data.')         ## This condition ignores species which have no data...
-    write.csv(data.frame(), file.path(dir_name, "completed.txt"))
-    
-  }  
-  
-  ## now add a file to the dir to denote that it has completed
-  write.csv(data.frame(), file.path(dir_name, "completed.txt"))
-  
-})
+# #########################################################################################################################
+# ## Loop over all the species 
+# ## spp    = GBIF.spp[1]
+# lapply(GBIF.spp, function(spp){ 
+#   
+#   ## Skip the species if the directory already exists, before the loop
+#   outdir <- bs_dir
+#   
+#   dir_name = file.path(outdir, gsub(' ', '_', spp))
+#   if(dir.exists(dir_name)) {
+#     message('Skipping ', spp, ' - already run.')
+#     invisible(return(NULL))
+#     
+#   }
+#   
+#   ## Create the directory so other parallel runs don't try to do it
+#   dir.create(dir_name)
+#   write.csv(data.frame(), file.path(dir_name, "in_progress.txt"))
+#   
+#   ## Print the taxa being processed to screen
+#   if(spp %in% SDM.SPAT.OCC.BG$searchTaxon) {
+#     
+#     ## Fit SDMs using backwards selection
+#     tryCatch(
+#       fit_maxent_targ_bs(name                    = spp,
+#                          maxent_path,
+#                          outdir,
+#                          features                = 'lpq',  ## name 
+#                          replicates              = 5,      ## replicates as above
+#                          cor_thr                 = 0.8,    ## max pairwise correlation between vars
+#                          pct_thr                 = 5,      ## min allowable % var contribution
+#                          k_thr                   = 4,      ## Min number of variables to keep
+#                          responsecurves          = TRUE),
+#       
+#       ## Figure out how to out error into the fail file
+#       error = function(cond) {
+#         
+#         message(spp, ' failed')  
+#         write.csv(data.frame(), file.path(dir_name, "failed.txt"))
+#         
+#       })
+#     
+#   } else {
+#     
+#     message(spp, ' skipped - no data.')         ## This condition ignores species which have no data...
+#     write.csv(data.frame(), file.path(dir_name, "completed.txt"))
+#     
+#   }  
+#   
+#   ## now add a file to the dir to denote that it has completed
+#   write.csv(data.frame(), file.path(dir_name, "completed.txt"))
+#   
+# })
 
 
 
@@ -240,7 +242,7 @@ MAXENT.RESULTS <- maxent.tables %>%
     
     ## Get the number of Variables
     number.var  = length(m@lambdas) - 4   ## (the last 4 slots of the lambdas file are not variables)
-    mxt.records = length(m@presence$Annual_mean_temp)
+    mxt.records = nrow(m@presence)
     
     ## Get variable importance
     m.vars    = ENMeval::var.importance(m)
@@ -270,7 +272,8 @@ MAXENT.RESULTS <- maxent.tables %>%
     dim(d)
     
     ## Remove path gunk, and species
-    d$Species    = NULL
+    d$Species     = NULL
+    #d$searchTaxon = gsub("_", " ", d$searchTaxon)
     return(d)
     
   }) %>%
@@ -332,11 +335,13 @@ names(omission_rate)[names(omission_rate) == 'rn'] <- 'searchTaxon'
 max_tss$searchTaxon = gsub("//",         "/", max_tss$searchTaxon)
 max_tss$searchTaxon = gsub(results_dir,   "", max_tss$searchTaxon)
 max_tss$searchTaxon = gsub("/full/species_omission.csv.max_tss", "", max_tss$searchTaxon)
+max_tss$searchTaxon = gsub("/", "",  max_tss$searchTaxon)
 head(max_tss)
 
 omission_rate$searchTaxon = gsub("//",         "/", omission_rate$searchTaxon)
 omission_rate$searchTaxon = gsub(results_dir,   "", omission_rate$searchTaxon)
 omission_rate$searchTaxon = gsub("/full/species_omission.csv", "", omission_rate$searchTaxon)
+omission_rate$searchTaxon = gsub("/", "",  omission_rate$searchTaxon)
 head(omission_rate)
 
 

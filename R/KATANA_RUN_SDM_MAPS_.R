@@ -15,7 +15,7 @@
 ## 2). Check the spatial outlier step can be improved, before re-running all the species through these steps.
 ##     Use Alex Ziska's example to calcualte
 ##     
-##     Check the Area of occupancy calculations work - could be causing problems.
+##     Check the Area of occupancy calculations work 
 
 
 
@@ -134,7 +134,7 @@ PET                  = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
 ## Now set global analysis variables :: these assume you are using an R project folder structure
 ## Replace any non - UTF8 character in the string with UTF
 Sys.setenv("PBS_ARRAYID" = 1)
-GBIF.spp = HOLLOW.SPP[4] ## your list of species
+GBIF.spp = HOLLOW.SPP[50] ## your list of species
 
 
 ##  Subset for PBS array jobs

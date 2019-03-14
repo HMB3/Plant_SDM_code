@@ -3,7 +3,7 @@
 #########################################################################################################################
 
 
-## flag issues with ..........................................................................
+## flag issues with .........................................................................
 
 
 #########################################################################################################################
@@ -12,59 +12,64 @@
 
 
 ## Here are the argumetns needed to run the targetted background selection SDMs inside the function itself
-# spp                     = GBIF.spp[1]
-# occ                     = subset(SDM.SPAT.OCC.BG, searchTaxon == spp)
-# bg                      = subset(SDM.SPAT.OCC.BG, searchTaxon != spp)
-# sdm.predictors          = sdm.select
-# name                    = spp
-# outdir                  = maxent_dir
-# template.raster         = template.raster.1km   ## 1km, 5km, 10km
-# min_n                   = 20
-# max_bg_size             = 70000
-# Koppen                  = Koppen_1975_1km
-# background_buffer_width = 200000
-# shapefiles              = TRUE
-# features                = 'lpq'
-# replicates              = 5
-# responsecurves          = TRUE
+spp                     = "Eucalyptus resinifera"
+occ                     = subset(SDM.SPAT.OCC.BG, searchTaxon == spp)
+bg                      = subset(SDM.SPAT.OCC.BG, searchTaxon != spp)
+sdm.predictors          = bs.predictors
+name                    = spp
+outdir                  = maxent_dir
+bsdir                   = bs_dir
+
+template.raster         = template.raster.1km   ## 1km, 5km, 10km
+min_n                   = 20
+max_bg_size             = 70000
+Koppen                  = Koppen_1975_1km
+background_buffer_width = 200000
+shapefiles              = TRUE
+features                = 'lpq'
+replicates              = 5
+responsecurves          = TRUE
+shp_path                = "./data/base/CONTEXTUAL/"
+aus_shp                 = "aus_states.rds"
 
 
 #########################################################################################################################
 ## GET TARGETTED BACKGROUND POINTS AND THEN FIT MAXENT WITH STANDARD VARIABLES
 #########################################################################################################################
 
-
 ##
-fit_maxent_targ_bg_kopp <- function(occ,
-                                    bg, # A Spatial points data frame (SPDF) of candidate background points
-                                    sdm.predictors,
-                                    # sdm.predictors is a vector of enviro conditions that you want to include
-                                    name,
-                                    outdir,
-                                    template.raster,
-                                    # template.raster is an empty raster with extent, res and projection
-                                    # of final output rasters. It is used to reduce
-                                    # occurrences to a single point per cell.
-                                    min_n,
-                                    # min_n is the minimum number of records (unique cells)
-                                    # required for a model to be fit
-                                    max_bg_size,
-                                    background_buffer_width, # ignored if background_method='random'
-                                    #background_method, # 'random' or 'targetgroup'
-                                    Koppen,
-                                    shapefiles,
-                                    features,
-                                    replicates, # number of cross-validation replicates
-                                    responsecurves,
-                                    rep_args,
-                                    full_args,
-                                    shp_path, 
-                                    aus_shp) {
+fit_maxent_targ_back_back_sel <- function(occ,
+                                          bg, # A Spatial points data frame (SPDF) of candidate background points
+                                          sdm.predictors,
+                                          # sdm.predictors is a vector of enviro conditions that you want to include
+                                          name,
+                                          outdir,
+                                          bsdir,
+                                          template.raster,
+                                          # template.raster is an empty raster with extent, res and projection
+                                          # of final output rasters. It is used to reduce
+                                          # occurrences to a single point per cell.
+                                          min_n,
+                                          # min_n is the minimum number of records (unique cells)
+                                          # required for a model to be fit
+                                          max_bg_size,
+                                          background_buffer_width, # ignored if background_method='random'
+                                          #background_method, # 'random' or 'targetgroup'
+                                          Koppen,
+                                          shapefiles,
+                                          features,
+                                          replicates, # number of cross-validation replicates
+                                          responsecurves,
+                                          rep_args,
+                                          full_args,
+                                          shp_path, 
+                                          aus_shp) {
   
   ########################################################################
   ## First, stop if the outdir file exists,
   if(!file.exists(outdir)) stop('outdir does not exist :(', call. = FALSE)
   outdir_sp <- file.path(outdir, gsub(' ', '_', name))
+  bsdir_sp  <- file.path(bsdir,  gsub(' ', '_', name))
   
   if(!missing('Koppen')) {
     if(!is(Koppen, 'RasterLayer'))
@@ -123,35 +128,27 @@ fit_maxent_targ_bg_kopp <- function(occ,
     bg_cells     <- bg_cells[bg_not_dupes]
     
     ## Find which of these cells fall within the Koppen-Geiger zones that the species occupies
-    if(!missing('Koppen')) {
-      
-      ## Crop the Kopppen raster to the extent of the occurrences, and snap it
-      message(name, ' intersecting background cells with Koppen zones')
-      Koppen_crop <- crop(Koppen, occ, snap = 'out')
-      
-      ## Only extract and match those cells that overlap between the ::
-      ## 1). cropped koppen zone, 
-      ## 2). occurrences and 
-      ## 3). background points 
-      ## This section is not working at 5km or 10km resolution for template.raster
-      message(xres(template.raster), ' metre cell size for template raster')
-      message(xres(Koppen), ' metre cell size for Koppen raster')
-      zones               <- raster::extract(Koppen_crop, occ)
-      cells_in_zones_crop <- Which(Koppen_crop %in% zones, cells = TRUE)
-      cells_in_zones      <- cellFromXY(Koppen, xyFromCell(Koppen_crop, cells_in_zones_crop))
-      bg_cells            <- intersect(bg_cells, cells_in_zones)  ## this is 0 for 5km 
-      i                   <- cellFromXY(template.raster, bg)
-      bg                  <- bg[which(i %in% bg_cells), ]
-      
-      ## For some species, we have the problem that the proportion of ALA/INV data is 
-      ## very different in the occurrence vs the bg records. 
-      ## This should be caused by the 200km / koppen restriction, etc.
-      message(dim(bg), ' Initial background points')
-      
-      ## Create an index of bg points? Don't need them
-      # bg$index <- 1:nrow(bg)
-      
-    }
+    ## Crop the Kopppen raster to the extent of the occurrences, and snap it
+    message(name, ' intersecting background cells with Koppen zones')
+    Koppen_crop <- crop(Koppen, occ, snap = 'out')
+    
+    ## Only extract and match those cells that overlap between the ::
+    ## 1). cropped koppen zone, 
+    ## 2). occurrences and 
+    ## 3). background points 
+    ## This section is not working at 5km or 10km resolution for template.raster
+    message(xres(template.raster), ' metre cell size for template raster')
+    message(xres(Koppen), ' metre cell size for Koppen raster')
+    zones               <- raster::extract(Koppen_crop, occ)
+    cells_in_zones_crop <- Which(Koppen_crop %in% zones, cells = TRUE)
+    cells_in_zones      <- cellFromXY(Koppen, xyFromCell(Koppen_crop, cells_in_zones_crop))
+    bg_cells            <- intersect(bg_cells, cells_in_zones)  ## this is 0 for 5km 
+    i                   <- cellFromXY(template.raster, bg)
+    bg                  <- bg[which(i %in% bg_cells), ]
+    
+    ## For some species, we have the problem that the proportion of ALA/INV data is 
+    ## very different in the occurrence vs the bg records. 
+    ## This should be caused by the 200km / koppen restriction, etc.
     
     #####################################################################
     ## Get the proportion of occurrence records from each source 
@@ -175,7 +172,7 @@ fit_maxent_targ_bg_kopp <- function(occ,
       
     }
     
-    ## Only if the occ and bg sources > 2, inc inv, do we need the proportional sampling
+    ## Only if the occ and bg sources > 2, and include inv, do we need the proportional sampling
     if (unique(occ$SOURCE) >= 2 && 
         unique(bg$SOURCE)  >= 2 &&
         "INVENTORY" %in% unique(occ$SOURCE) &&
@@ -189,7 +186,7 @@ fit_maxent_targ_bg_kopp <- function(occ,
       ## Get the ALA
       if(ala.prop*(nrow(bg.samp)) < nrow(subset(bg.samp, SOURCE == "ALA" | SOURCE == "GBIF"))) {
         
-        ## These bg records don't overlap with the ala bg records
+        ## These bg records don't overlap with the inventory bg records
         bg.ala = bg.samp[ sample( which(bg.samp$SOURCE == "ALA" | bg.samp$SOURCE == "GBIF"), 
                                   ala.prop * nrow(bg.samp)), ]
         
@@ -210,19 +207,21 @@ fit_maxent_targ_bg_kopp <- function(occ,
         
       } else {
         
-        ## Otherwise, get as many inventory records as possible
+        ## Otherwise, get as many inventory records as possible from the greater pool of records
+        ## This line is why the inventory proportion is sometimes greater. It could be changed to 
+        ## bg.samp with Alessandro's data, if there are a lot more records. 
         bg.inv  = bg[ sample(which(bg$SOURCE == "INVENTORY")), ]
         
       }
       
-      ## Then, combine the samples from the ALA/GBIF and INV sources
+      ## Then, combine the samples from the ALA/GBIF and INV sources.
       ## ALA/GBIF is almost always bigger, so this is the most sensible option
       bg.comb    = rbind(bg.ala, bg.inv)
       message('Occurrence data proportions ', round(with(as.data.frame(occ),     table(SOURCE)/sum(table(SOURCE))), 3))
       message('Background data proportions ', round(with(as.data.frame(bg.comb), table(SOURCE)/sum(table(SOURCE))), 3))
       
     } else {
-      ## Get the background records from any source
+      ## If inventory is not in the set, get the background records from any source
       message(nrow(bg.samp), ' target species background records for ', name, 
               ' using random sample from :: ', unique(bg$SOURCE))
       bg.comb = bg.samp
@@ -235,22 +234,33 @@ fit_maxent_targ_bg_kopp <- function(occ,
     
     aus.mol = readRDS(paste0(shp_path, aus_shp)) %>%
       spTransform(projection(buffer))
+    
+    aus.alb = readRDS(paste0(shp_path, aus_shp)) %>%
+      spTransform(projection(ALB.CONICAL))
+    
     aus.kop = crop(Koppen_crop, aus.mol)
     
     occ.mol <- occ %>%
       spTransform(projection(buffer))
     
+    occ.alb <- occ %>%
+      spTransform(projection(ALB.CONICAL))
+    
     ## Print the koppen zones, occurrences and points to screen
-    plot(aus.kop, legend = FALSE)
-    plot(aus.mol, add = TRUE)
-    plot(buffer,  add = TRUE, col = "red")
-    plot(occ.mol, add = TRUE, col = "blue")
+    plot(aus.kop, legend = FALSE,
+         main = paste0('Occurence SDM records for ', name))
+    
+    # plot(aus.mol, add = TRUE)
+    # plot(buffer,  add = TRUE, col = "red")
+    # plot(occ.mol, add = TRUE, col = "blue")
     
     ## Then save the occurrence points
     png(sprintf('%s/%s/%s_%s.png', maxent_path, save_name, save_name, "buffer_occ"),
         16, 10, units = 'in', res = 300)
     
-    plot(aus.kop, legend = FALSE)
+    plot(aus.kop, legend = FALSE,
+         main = paste0('Occurence SDM records for ', name))
+    
     plot(aus.mol, add = TRUE)
     plot(buffer,  add = TRUE, col = "red")
     plot(occ.mol, add = TRUE, col = "blue")
@@ -265,7 +275,8 @@ fit_maxent_targ_bg_kopp <- function(occ,
       png(sprintf('%s/%s/%s_%s.png', maxent_path, save_name, save_name, "buffer_inv"),
           16, 10, units = 'in', res = 300)
       
-      plot(aus.kop, legend = FALSE)
+      plot(aus.kop, legend = FALSE, 
+           main = paste0('Inventory sdm records for ', save_name))
       plot(aus.mol, add = TRUE)
       plot(buffer,  add = TRUE, col = "red")
       plot(inv.mol, add = TRUE, col = "black")
@@ -279,7 +290,7 @@ fit_maxent_targ_bg_kopp <- function(occ,
     }
     
     #####################################################################
-    ## Now save occurrence and backgroudn points as shapefiles
+    ## Now save the buffer, the occ and bg points as shapefiles
     if(shapefiles) {
       
       suppressWarnings({
@@ -299,7 +310,7 @@ fit_maxent_targ_bg_kopp <- function(occ,
     saveRDS(occ,      file.path(outdir_sp, paste0(save_name, '_occ.rds')))
     
     #####################################################################
-    ## SWD = species with data. This line samples the environmental 
+    ## SWD = species with data. Now sample the environmental 
     ## variables used in the model at all the occ and bg points
     swd_occ <- occ[, sdm.predictors]
     saveRDS(swd_occ, file.path(outdir_sp, paste0(save_name,'_occ_swd.rds')))
@@ -378,14 +389,95 @@ fit_maxent_targ_bg_kopp <- function(occ,
     
     ## Add detail to the response plot
     chart.Correlation(swd_occ@data,
-                      histogram = TRUE, pch = 19) 
+                      histogram = TRUE, pch = 19,
+                      main = paste0('Full variable correlations for ', save_name)) 
     
     ## Finish the device
+    dev.off()
+    
+    #####################################################################
+    ## Coerce the "species with data" (SWD) files to regular data.frames
+    ## This is needed to use the simplify function 
+    swd_occ     <- as.data.frame(swd_occ)
+    swd_occ$lon <- NULL
+    swd_occ$lat <- NULL
+    swd_bg      <- as.data.frame(swd_bg)
+    swd_bg$lon  <- NULL
+    swd_bg$lat  <- NULL
+    
+    ## Need to create a species column here
+    swd_occ$searchTaxon <- name
+    swd_bg$searchTaxon  <- name
+    
+    #####################################################################
+    ## Run simplify rmaxent::simplify
+    
+    # Given a candidate set of predictor variables, this function identifies 
+    # a subset that meets specified multicollinearity criteria. Subsequently, 
+    # backward stepwise variable selection (VIF) is used to iteratively drop 
+    # the variable that contributes least to the model, until the contribution 
+    # of each variable meets a specified minimum, or until a predetermined 
+    # minimum number of predictors remains. It returns a model object for the 
+    # full model, rather than a list of models as does the previous function
+    
+    ## Using a modified versionof rmaxent::simplify, so that the name of the
+    ## maxent model object "maxent_fitted.rds" is the same in both models.
+    ## This is needed to run the mapping step over either the full or BS folder
+    m <- local_simplify(
+      
+      swd_occ, 
+      swd_bg,
+      path            = bsdir, 
+      species_column  = "searchTaxon",
+      replicates      = replicates,  ## 5 as above
+      response_curves = TRUE, 
+      logistic_format = TRUE, 
+      cor_thr         = cor_thr, 
+      pct_thr         = pct_thr, 
+      k_thr           = k_thr, 
+      features        = features,  ## LPQ
+      quiet           = FALSE)
+    
+    ## Save the bg, occ and swd files into the backwards selection folder too
+    saveRDS(bg.comb,  file.path(bsdir_sp, paste0(save_name, '_bg.rds')))
+    saveRDS(occ,      file.path(bsdir_sp, paste0(save_name, '_occ.rds')))
+    saveRDS(swd,      file.path(bsdir_sp, paste0('swd.rds')))
+    
+    ## Read the model in, because it's tricky to index
+    bs.model <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', bsdir,  save_name))
+    identical(length(bs.model@presence$Annual_mean_temp), nrow(occ))
+    
+    #####################################################################
+    ## Save the chart corrleation file too for the training data set
+    par(mar   = c(3, 3, 5, 3),
+        oma   = c(1.5, 1.5, 1.5, 1.5))
+    
+    ## Add detail to the response plot
+    chart.Correlation(bs.model@presence,
+                      histogram = TRUE, pch = 19,
+                      title = paste0('Reduced variable correlations for ', save_name)) 
+
+    png(sprintf('%s/%s/full/%s_%s.png', bsdir,
+                save_name, save_name, "bs_predictor_correlation"),
+        3236, 2000, units = 'px', res = 300)
+    
+    ## set margins
+    par(mar   = c(3, 3, 5, 3),
+        oma   = c(1.5, 1.5, 1.5, 1.5))
+    
+    ## Add detail to the response plot
+    chart.Correlation(bs.model@presence,
+                      histogram = TRUE, pch = 19,
+                      title = paste0('Reduced variable correlations for ', save_name))
+    
     dev.off()
     
   }
   
 }
+
+
+
 
 
 
@@ -399,18 +491,18 @@ fit_maxent_targ_bg_kopp <- function(occ,
 
 
 ## Variables to run an example within the backwards selection function
-# name            = GBIF.spp[1]
-# spp             = name
-# maxent_path     = './output/maxent/HOLLOW_SPP_PROP_SAMPLE_ALL_VARS/'    ## The directory where files are saved
-# maxent_dir      = 'output/maxent/HOLLOW_SPP_PROP_SAMPLE_ALL_VARS'       ## Another version of the path needed to run maxent loop
-# bs_dir          = 'output/maxent/HOLLOW_SPP_PROP_SAMPLE_ALL_VARS_BS'
-# outdir          = bs_dir
-# features        = 'lpq'    ## name
-# replicates      = 5
-# cor_thr         = 0.8      ## The maximum allowable pairwise correlation between predictor variables
-# pct_thr         = 5        ## The minimum allowable percent variable contribution
-# k_thr           = 4        ## The minimum number of variables to be kept in the model.
-# responsecurves  = TRUE     ## Response curves
+name            = GBIF.spp[1]
+spp             = name
+maxent_path     = './output/maxent/HOLLOW_SPP_PROP_SAMPLE_ALL_VARS/'    ## The directory where files are saved
+maxent_dir      = 'output/maxent/HOLLOW_SPP_PROP_SAMPLE_ALL_VARS'       ## Another version of the path needed to run maxent loop
+bs_dir          = 'output/maxent/HOLLOW_SPP_PROP_SAMPLE_ALL_VARS_BS'
+outdir          = bs_dir
+features        = 'lpq'    ## name
+replicates      = 5
+cor_thr         = 0.8      ## The maximum allowable pairwise correlation between predictor variables
+pct_thr         = 5        ## The minimum allowable percent variable contribution
+k_thr           = 4        ## The minimum number of variables to be kept in the model.
+responsecurves  = TRUE     ## Response curves
 
 
 ## 
