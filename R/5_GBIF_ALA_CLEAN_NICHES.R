@@ -333,8 +333,7 @@ if(calc_niche == "TRUE") {
   head(SUA.AGG)
   
   
-  ## Remove coordinates
-  names(COMBO.SUA.LGA)
+  ## Remove duplicate coordinates
   COMBO.SUA.LGA = subset(COMBO.SUA.LGA, select = -c(lon.1, lat.1))
   names(COMBO.SUA.LGA)
   dim(COMBO.SUA.LGA)
@@ -419,11 +418,11 @@ if(calc_niche == "TRUE") {
   #########################################################################################################################
   ## Add the counts of Australian records for each species to the niche database
   Total.taxa.processed = dim(COMBO.NICHE)[1]
-  COMBO.NICHE  = join(GLOBAL_RECORDS, COMBO.NICHE)
-  COMBO.NICHE  = join(SUA.AGG, COMBO.NICHE)
+  COMBO.NICHE  = join(GLOBAL_RECORDS, COMBO.NICHE, type = "right")
+  COMBO.NICHE  = join(SUA.AGG, COMBO.NICHE, type = "right")
   
-  head(COMBO.LGA$AUS_RECORDS)
-  head(COMBO.LGA$SUA_COUNT)
+  head(COMBO.NICHE$AUS_RECORDS)
+  head(COMBO.NICHE$SUA_COUNT)
   
   names(COMBO.NICHE)
   dim(COMBO.NICHE)
@@ -456,7 +455,8 @@ if(calc_niche == "TRUE") {
   
   ## Create a species list to estimate the ranges for. Currently we can't estimate ranges for widely distributed species
   ## A workaround for the trait species is to just use the ALA records. But for the full list of species, we will need to 
-  ## change this. Otherwise, we could report the global niche, but the Australian range only. This will mean that 
+  ## change this. Otherwise, we could report the global niche, but the Australian range only. 
+  ## Change when Gilles Dauby updates......................................................................................
   spp.geo = as.character(unique(COMBO.SUA.LGA$searchTaxon))
   AOO.DAT = COMBO.SUA.LGA %>%
     subset(., SOURCE == "ALA")
@@ -492,7 +492,7 @@ if(calc_niche == "TRUE") {
   #########################################################################################################################
   ## Now join on the geographic range and glasshouse data
   identical(length(GBIF.AOO$AOO), length(GBIF.spp))
-  COMBO.NICHE = join(GBIF.AOO, COMBO.NICHE)
+  COMBO.NICHE = join(GBIF.AOO, COMBO.NICHE, type = "right")
 
   
   
@@ -510,10 +510,10 @@ if(calc_niche == "TRUE") {
   
   #########################################################################################################################
   ## Now join the hort context data and the tree inventory plantings to the niche
-  COMBO.NICHE.CONTEXT = join(CLEAN.GROW, COMBO.NICHE) 
-  COMBO.NICHE.CONTEXT = join(TI.LIST, COMBO.NICHE.CONTEXT)
+  COMBO.NICHE.CONTEXT = join(CLEAN.GROW, COMBO.NICHE, type = "right") 
+  COMBO.NICHE.CONTEXT = join(TI.LIST, COMBO.NICHE.CONTEXT, type = "right")
   head(COMBO.NICHE.CONTEXT$AUS_RECORDS)
-  head(COMBO.NICHE.CONTEXT$LGA_COUNT)
+  head(COMBO.NICHE.CONTEXT$SUA_COUNT)
   
   
   #########################################################################################################################

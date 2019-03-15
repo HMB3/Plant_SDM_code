@@ -70,7 +70,7 @@ COMBO.RASTER.ALL                 <- spTransform(COMBO.RASTER.ALL, CRS(sp_epsg540
 
 ## Now split using the data using the species column, and get the unique occurrence cells
 COMBO.RASTER.SPLIT.ALL <- split(COMBO.RASTER.ALL, COMBO.RASTER.ALL$searchTaxon)
-occurrence_cells_all   <- lapply(COMBO.RASTER.SPLIT.ALL, function(x) cellFromXY(template.raster, x))
+occurrence_cells_all   <- lapply(COMBO.RASTER.SPLIT.ALL, function(x) cellFromXY(template.raster.1km, x))
 length(occurrence_cells_all)   ## this is a list of dataframes, where the number of rows for each being the species table
 
 
@@ -88,16 +88,16 @@ SDM.DATA.ALL <- mapply(function(x, cells) {
 ## Check to see we have 19 variables + the species for the standard predictors, and 19 for all predictors
 ## create two more template.raster files: 5km amnd 10km
 ## Check data :: template, data table and species 
-dim(template.raster)
+dim(template.raster.1km)
 dim(SDM.DATA.ALL)
 names(SDM.DATA.ALL)
 unique(SDM.DATA.ALL$SOURCE)
 length(unique(SDM.DATA.ALL$searchTaxon))
-class(Koppen_1975)
+class(Koppen_1975_1km)
 
 
 ## What resolution is the template raster at?
-xres(template.raster);yres(template.raster)
+xres(template.raster.1km);yres(template.raster.1km)
 
 
 ## Save BG points here

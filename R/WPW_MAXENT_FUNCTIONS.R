@@ -12,25 +12,25 @@
 
 
 ## Here are the argumetns needed to run the targetted background selection SDMs inside the function itself
-spp                     = "Eucalyptus resinifera"
-occ                     = subset(SDM.SPAT.OCC.BG, searchTaxon == spp)
-bg                      = subset(SDM.SPAT.OCC.BG, searchTaxon != spp)
-sdm.predictors          = bs.predictors
-name                    = spp
-outdir                  = maxent_dir
-bsdir                   = bs_dir
-
-template.raster         = template.raster.1km   ## 1km, 5km, 10km
-min_n                   = 20
-max_bg_size             = 70000
-Koppen                  = Koppen_1975_1km
-background_buffer_width = 200000
-shapefiles              = TRUE
-features                = 'lpq'
-replicates              = 5
-responsecurves          = TRUE
-shp_path                = "./data/base/CONTEXTUAL/"
-aus_shp                 = "aus_states.rds"
+# spp                     = "Eucalyptus resinifera"
+# occ                     = subset(SDM.SPAT.OCC.BG, searchTaxon == spp)
+# bg                      = subset(SDM.SPAT.OCC.BG, searchTaxon != spp)
+# sdm.predictors          = bs.predictors
+# name                    = spp
+# outdir                  = maxent_dir
+# bsdir                   = bs_dir
+# 
+# template.raster         = template.raster.1km   ## 1km, 5km, 10km
+# min_n                   = 20
+# max_bg_size             = 70000
+# Koppen                  = Koppen_1975_1km
+# background_buffer_width = 200000
+# shapefiles              = TRUE
+# features                = 'lpq'
+# replicates              = 5
+# responsecurves          = TRUE
+# shp_path                = "./data/base/CONTEXTUAL/"
+# aus_shp                 = "aus_states.rds"
 
 
 #########################################################################################################################
@@ -38,32 +38,32 @@ aus_shp                 = "aus_states.rds"
 #########################################################################################################################
 
 ##
-fit_maxent_targ_back_back_sel <- function(occ,
-                                          bg, # A Spatial points data frame (SPDF) of candidate background points
-                                          sdm.predictors,
-                                          # sdm.predictors is a vector of enviro conditions that you want to include
-                                          name,
-                                          outdir,
-                                          bsdir,
-                                          template.raster,
-                                          # template.raster is an empty raster with extent, res and projection
-                                          # of final output rasters. It is used to reduce
-                                          # occurrences to a single point per cell.
-                                          min_n,
-                                          # min_n is the minimum number of records (unique cells)
-                                          # required for a model to be fit
-                                          max_bg_size,
-                                          background_buffer_width, # ignored if background_method='random'
-                                          #background_method, # 'random' or 'targetgroup'
-                                          Koppen,
-                                          shapefiles,
-                                          features,
-                                          replicates, # number of cross-validation replicates
-                                          responsecurves,
-                                          rep_args,
-                                          full_args,
-                                          shp_path, 
-                                          aus_shp) {
+fit_maxent_targ_bg_back_sel <- function(occ,
+                                        bg, # A Spatial points data frame (SPDF) of candidate background points
+                                        sdm.predictors,
+                                        # sdm.predictors is a vector of enviro conditions that you want to include
+                                        name,
+                                        outdir,
+                                        bsdir,
+                                        template.raster,
+                                        # template.raster is an empty raster with extent, res and projection
+                                        # of final output rasters. It is used to reduce
+                                        # occurrences to a single point per cell.
+                                        min_n,
+                                        # min_n is the minimum number of records (unique cells)
+                                        # required for a model to be fit
+                                        max_bg_size,
+                                        background_buffer_width, # ignored if background_method='random'
+                                        #background_method, # 'random' or 'targetgroup'
+                                        Koppen,
+                                        shapefiles,
+                                        features,
+                                        replicates, # number of cross-validation replicates
+                                        responsecurves,
+                                        rep_args,
+                                        full_args,
+                                        shp_path, 
+                                        aus_shp) {
   
   ########################################################################
   ## First, stop if the outdir file exists,
@@ -234,25 +234,19 @@ fit_maxent_targ_back_back_sel <- function(occ,
     
     aus.mol = readRDS(paste0(shp_path, aus_shp)) %>%
       spTransform(projection(buffer))
-    
-    aus.alb = readRDS(paste0(shp_path, aus_shp)) %>%
-      spTransform(projection(ALB.CONICAL))
-    
+
     aus.kop = crop(Koppen_crop, aus.mol)
     
     occ.mol <- occ %>%
       spTransform(projection(buffer))
-    
-    occ.alb <- occ %>%
-      spTransform(projection(ALB.CONICAL))
-    
+
     ## Print the koppen zones, occurrences and points to screen
     plot(aus.kop, legend = FALSE,
          main = paste0('Occurence SDM records for ', name))
     
-    # plot(aus.mol, add = TRUE)
-    # plot(buffer,  add = TRUE, col = "red")
-    # plot(occ.mol, add = TRUE, col = "blue")
+    plot(aus.mol, add = TRUE)
+    plot(buffer,  add = TRUE, col = "red")
+    plot(occ.mol, add = TRUE, col = "blue")
     
     ## Then save the occurrence points
     png(sprintf('%s/%s/%s_%s.png', maxent_path, save_name, save_name, "buffer_occ"),
@@ -435,7 +429,7 @@ fit_maxent_targ_back_back_sel <- function(occ,
       cor_thr         = cor_thr, 
       pct_thr         = pct_thr, 
       k_thr           = k_thr, 
-      features        = features,  ## LPQ
+      features        = features,    ## LPQ as above
       quiet           = FALSE)
     
     ## Save the bg, occ and swd files into the backwards selection folder too
@@ -456,7 +450,7 @@ fit_maxent_targ_back_back_sel <- function(occ,
     chart.Correlation(bs.model@presence,
                       histogram = TRUE, pch = 19,
                       title = paste0('Reduced variable correlations for ', save_name)) 
-
+    
     png(sprintf('%s/%s/full/%s_%s.png', bsdir,
                 save_name, save_name, "bs_predictor_correlation"),
         3236, 2000, units = 'px', res = 300)
@@ -491,18 +485,18 @@ fit_maxent_targ_back_back_sel <- function(occ,
 
 
 ## Variables to run an example within the backwards selection function
-name            = GBIF.spp[1]
-spp             = name
-maxent_path     = './output/maxent/HOLLOW_SPP_PROP_SAMPLE_ALL_VARS/'    ## The directory where files are saved
-maxent_dir      = 'output/maxent/HOLLOW_SPP_PROP_SAMPLE_ALL_VARS'       ## Another version of the path needed to run maxent loop
-bs_dir          = 'output/maxent/HOLLOW_SPP_PROP_SAMPLE_ALL_VARS_BS'
-outdir          = bs_dir
-features        = 'lpq'    ## name
-replicates      = 5
-cor_thr         = 0.8      ## The maximum allowable pairwise correlation between predictor variables
-pct_thr         = 5        ## The minimum allowable percent variable contribution
-k_thr           = 4        ## The minimum number of variables to be kept in the model.
-responsecurves  = TRUE     ## Response curves
+# name            = GBIF.spp[1]
+# spp             = name
+# maxent_path     = './output/maxent/HOLLOW_SPP_PROP_SAMPLE_ALL_VARS/'    ## The directory where files are saved
+# maxent_dir      = 'output/maxent/HOLLOW_SPP_PROP_SAMPLE_ALL_VARS'       ## Another version of the path needed to run maxent loop
+# bs_dir          = 'output/maxent/HOLLOW_SPP_PROP_SAMPLE_ALL_VARS_BS'
+# outdir          = bs_dir
+# features        = 'lpq'    ## name
+# replicates      = 5
+# cor_thr         = 0.8      ## The maximum allowable pairwise correlation between predictor variables
+# pct_thr         = 5        ## The minimum allowable percent variable contribution
+# k_thr           = 4        ## The minimum number of variables to be kept in the model.
+# responsecurves  = TRUE     ## Response curves
 
 
 ## 
@@ -538,7 +532,7 @@ fit_maxent_targ_bs <- function(name,
   saveRDS(occ, sprintf('%s/%s/%s_occ.rds',        outdir, save_name, save_name))
   saveRDS(bg,  sprintf('%s/%s/%s_bg.rds',         outdir, save_name, save_name))
   saveRDS(swd, sprintf('%s/%s/swd.rds',           outdir, save_name))
-
+  
   #####################################################################
   ## Coerce the "species with data" (SWD) files to regular data.frames
   ## This is needed to use the simplify function 
@@ -580,7 +574,7 @@ fit_maxent_targ_bs <- function(name,
   
   ## Read the model in because it's tricky to index
   bs.model <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', outdir,  save_name)) 
-
+  
   #####################################################################
   ## Save the chart corrleation file too for the training data set
   par(mar   = c(3, 3, 5, 3),
