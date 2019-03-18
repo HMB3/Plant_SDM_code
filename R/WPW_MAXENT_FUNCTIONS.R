@@ -184,9 +184,9 @@ fit_maxent_targ_bg_back_sel <- function(occ,
     }
     
     ## Only if the occ and bg sources > 2, and include inv, do we need the proportional sampling
-    ## otherwise, ditch it
-    if (unique(occ$SOURCE) >= 2 &&
-        unique(bg$SOURCE)  >= 2 && 
+    ## otherwise, ditch it.
+    if (length(unique(occ$SOURCE)) >= 2 &&
+        length(unique(bg$SOURCE))  >= 2 && 
         "INVENTORY" %in% unique(occ$SOURCE) &&
         "INVENTORY" %in% unique(bg$SOURCE)) { 
       
@@ -228,19 +228,7 @@ fit_maxent_targ_bg_back_sel <- function(occ,
       
       ## Then, combine the samples from the ALA/GBIF and INV sources.
       ## ALA/GBIF is almost always bigger, so this is the most sensible option
-      if(exists("bg.inv")){
       bg.comb    = rbind(bg.ala, bg.inv)
-      message('Occurrence data proportions ', round(with(as.data.frame(occ),     table(SOURCE)/sum(table(SOURCE))), 3))
-      message('Background data proportions ', round(with(as.data.frame(bg.comb), table(SOURCE)/sum(table(SOURCE))), 3))
-      
-      ## Hack around because earlier condition not working for species with no INV data in occ
-      ## Only observed for Eucalyptus peperita
-      } else {
-        message('Occurrence data proportions ', round(with(as.data.frame(occ),     table(SOURCE)/sum(table(SOURCE))), 3))
-        message('Background data proportions ', round(with(as.data.frame(bg.ala),  table(SOURCE)/sum(table(SOURCE))), 3))
-        bg.comb    = bg.ala 
-        
-      }
       
     } else {
       ## If inventory is not in the set, get the background records from any source
@@ -283,7 +271,8 @@ fit_maxent_targ_bg_back_sel <- function(occ,
     
     dev.off()
     
-    if ("INVENTORY" %in% unique(bg$SOURCE) == "TRUE") {
+    ## Only save inventory data if it exists in occ
+    if ("INVENTORY" %in% unique(occ$SOURCE) == "TRUE") {
       
       inv.mol <- bg.inv  %>%
         spTransform(projection(buffer))  

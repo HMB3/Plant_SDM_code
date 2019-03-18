@@ -135,7 +135,7 @@ if (length(Sys.getenv("PBS_ARRAYID"))) {
 #########################################################################################################################
 ## These folders must be created on katana, or uploaded
 GBIF.spp      = as_utf8(GBIF.spp, normalize = TRUE)  ## Check the species names have the right characters
-save_run      = "WPW_TEST"                           ## a variable to append the run name to the output files
+save_run      = "HOLLOW_TEST"                           ## a variable to append the run name to the output files
 read_data     = "FALSE"                              ## only needed to load the SDM table in
 save_data     = "FALSE"                              ## only needed to load the SDM table in
 
