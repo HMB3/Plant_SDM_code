@@ -89,6 +89,10 @@ lapply(GBIF.spp, function(spp){
                                   name                    = spp, 
                                   outdir                  = maxent_dir,
                                   bsdir                   = bs_dir,
+                                  backwards_sel           = "TRUE",
+                                  cor_thr                 = 0.8,      ## The maximum allowable pairwise correlation between predictor variables
+                                  pct_thr                 = 5,        ## The minimum allowable percent variable contribution
+                                  k_thr                   = 4,        ## The minimum number of variables to be kept in the model.
                                   
                                   template.raster         = template.raster.1km,
                                   min_n                   = 20,            ## This should be higher...

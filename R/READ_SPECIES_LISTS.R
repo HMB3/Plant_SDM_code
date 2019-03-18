@@ -81,41 +81,26 @@ native.good.models  = subset(MXT.CHECK, Origin == "Native" & Check.map <=2)$sear
 
 #########################################################################################################################
 ## Now read in the list of species Alessandro created by generating global tree inventories
-TI.LIST             = read.csv("./data/base/HIA_LIST/COMBO/ALE_TREE_SPP_LIST.csv",               stringsAsFactors = FALSE)
-TI.XY               = read.csv("./data/base/HIA_LIST/COMBO/ALE_TREE_SPP_XY.csv",                 stringsAsFactors = FALSE)
+TI.XY = readRDS("./data/base/Global_tree_inventories/Global_Inventory_CLEAN_18.03.2019.rds")
+TI.XY = select(TI.XY, New_binomial, Lat, Long, Country, City)
 
 
-## Check Ale's data
-TI.LIST = na.omit(TI.LIST)
-TI.LIST = TI.LIST[with(TI.LIST, rev(order(Plantings))), ]
-head(TI.LIST$searchTaxon, 10)
-
-
-## Rename tree inventory data
-TI.XY = TI.XY[c("searchTaxon", "POINT_X", "POINT_Y", "FILENAME")]
-names(TI.XY)[names(TI.XY) == 'FILENAME'] <- 'INVENTORY'
-names(TI.XY)[names(TI.XY) == 'POINT_X']  <- 'lon'
-names(TI.XY)[names(TI.XY) == 'POINT_Y']  <- 'lat'
-
-
-## Remove the gunk
-TI.XY$INVENTORY = gsub("_trees.shp",      "", TI.XY$INVENTORY)
-TI.XY$INVENTORY = gsub("_trees_.shp",     "", TI.XY$INVENTORY)
-TI.XY$INVENTORY = gsub("_trees_sign.shp", "", TI.XY$INVENTORY)
-unique(TI.XY$INVENTORY)
+## Rename data
+names(TI.XY)[names(TI.XY) == 'New_binomial'] <- 'searchTaxon'
+names(TI.XY)[names(TI.XY) == 'City'] <-  'INVENTORY'
+names(TI.XY)[names(TI.XY) == 'Lat']  <-  'lat'
+names(TI.XY)[names(TI.XY) == 'Long'] <-  'lon'
 TI.XY$SOURCE = 'INVENTORY'
 
 
-## Filter the XY tree inventory data to just the cleaned species
-TI.XY  = TI.XY[TI.XY$searchTaxon %in% unique(TI.LIST$searchTaxon), ]
-length(unique(TI.XY$searchTaxon))
-TI.XY = na.omit(TI.XY)
 
-
-## Replace the weird shapefile name for hobart
-TI.XY$INVENTORY = gsub("_trees_sign_.shp", "", TI.XY$INVENTORY)
+## Check Ale's data :: why are some councils producing NA lat/lon?
+names(TI.XY)
 head(TI.XY)
-unique(TI.XY$INVENTORY)
+summary(TI.XY)
+TI.XY.NA <- TI.XY[rowSums(is.na(TI.XY)) > 0,]
+unique(TI.XY.NA$INVENTORY)
+TI.XY = na.omit(TI.XY)
 
 
 #########################################################################################################################
@@ -127,6 +112,10 @@ TI.LUT = TI.LUT[with(TI.LUT, rev(order(FREQUENCY))), ]
 head(TI.LUT);dim(TI.LUT)
 
 
+## What are the unique binomials?
+TI.LIST     = unique(TI.XY$searchTaxon)
+TI.SPP      = TI.XY[!duplicated(TI.XY[,c("searchTaxon")]),][c("searchTaxon")]
+TI.SPP$Tree = "Tree"
 
 
 
@@ -209,7 +198,7 @@ write.csv(CLEAN.GROW, "./data/base/HIA_LIST/HIA/EVERGREEN_LIST_MARCH2019.csv", r
 
 ## This species list for the Stoten publication is simply the number of native species with > 50 plantings and 1 grower, 
 ## with good modelsfrom the previous analyis :: 'native.good.models'
-length(intersect(subset(TI.LIST, Plantings > 50)$searchTaxon, CLEAN.GROW$Evergreen_taxon))
+length(intersect(subset(TI.LUT, FREQUENCY > 50)$searchTaxon, CLEAN.GROW$Evergreen_taxon))
 
 
 #########################################################################################################################
@@ -291,8 +280,11 @@ CLEAN.TAXO = select(HIA.TAXO, Taxon, New_binomial, New.Taxonomic.status)
 
 ## Only 220 species should be NA by this join
 CLEAN.GROW <- CLEAN.GROW %>%
-  left_join(., CLEAN.TAXO, by = c("GBIF_taxon" = "Taxon")) %>%
-  select(., Evergreen_taxon, GBIF_taxon, New_binomial, New.Taxonomic.status, Origin, Plant_type, Total_growers, Number_states)
+  left_join(., CLEAN.TAXO, by = c("GBIF_taxon" = "Taxon"))
+
+CLEAN.GROW <- select(CLEAN.GROW, Evergreen_taxon, GBIF_taxon, New_binomial, 
+                     New.Taxonomic.status, Origin, Plant_type, Total_growers, Number_states)
+
 names(CLEAN.GROW)[names(CLEAN.GROW) == 'New_binomial'] <- 'searchTaxon'
 names(CLEAN.GROW)[names(CLEAN.GROW) == 'New.Taxonomic.status'] <- 'Taxo_status'
 View(CLEAN.GROW)
@@ -311,10 +303,12 @@ colnames(CLEAN.CLASS)[1] <- "searchTaxon"
 
 
 ## Use table later to join ::
-GBIF.GROW = join(CLEAN.GROW, CLEAN.CLASS) %>%
-  select(., searchTaxon, Evergreen_taxon, GBIF_taxon, Taxo_status, genus, family, 
-         order, group, Origin, Plant_type, Total_growers, Number_states)
+GBIF.GROW = join(CLEAN.GROW, CLEAN.CLASS)
+  #join(., TI.SPP, type = "right")
+GBIF.GROW =  select(GBIF.GROW, searchTaxon, Evergreen_taxon, GBIF_taxon, Taxo_status, genus, family, 
+                    order, group, Origin, Plant_type, Total_growers, Number_states)
 View(GBIF.GROW)
+GBIF.GROW.NA <- GBIF.GROW[rowSums(is.na(GBIF.GROW)) > 0,]
 
 
 #########################################################################################################################
@@ -345,7 +339,9 @@ WPW.NA              = unique(c(TPL.NA, GBIF.NA))                  ## These taxa 
 
 
 #########################################################################################################################
-## Now we need a list of all the trees, and non trees. Native info not as important.L 
+## Now we need a list of all the trees, and non trees. Native info not as important.
+## How much over lap is there between the inventory list and the HIA list? 
+length(intersect(TI.LIST, WPW.spp))
 
 
 ## Here is a sample of 10 species on the "Hollow_spp" list that have bad models.

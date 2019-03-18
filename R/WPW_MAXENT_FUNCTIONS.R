@@ -12,13 +12,18 @@
 
 
 ## Here are the argumetns needed to run the targetted background selection SDMs inside the function itself
-# spp                     = "Eucalyptus resinifera"
+# spp                     = GBIF.spp[1]
 # occ                     = subset(SDM.SPAT.OCC.BG, searchTaxon == spp)
 # bg                      = subset(SDM.SPAT.OCC.BG, searchTaxon != spp)
-# sdm.predictors          = bs.predictors
 # name                    = spp
 # outdir                  = maxent_dir
 # bsdir                   = bs_dir
+# 
+# backwards_sel           = "TRUE"
+# cor_thr                 = 0.8      ## The maximum allowable pairwise correlation between predictor variables
+# pct_thr                 = 5        ## The minimum allowable percent variable contribution
+# k_thr                   = 4
+# 
 # 
 # template.raster         = template.raster.1km   ## 1km, 5km, 10km
 # min_n                   = 20
@@ -30,7 +35,8 @@
 # replicates              = 5
 # responsecurves          = TRUE
 # shp_path                = "./data/base/CONTEXTUAL/"
-# aus_shp                 = "aus_states.rds"
+# aus_shp                 = "aus_states.rds"# sdm.predictors          = bs.predictors
+
 
 
 #########################################################################################################################
@@ -45,6 +51,11 @@ fit_maxent_targ_bg_back_sel <- function(occ,
                                         name,
                                         outdir,
                                         bsdir,
+                                        cor_thr,                 
+                                        pct_thr, 
+                                        k_thr,
+                                        
+                                        backwards_sel,
                                         template.raster,
                                         # template.raster is an empty raster with extent, res and projection
                                         # of final output rasters. It is used to reduce
@@ -173,10 +184,11 @@ fit_maxent_targ_bg_back_sel <- function(occ,
     }
     
     ## Only if the occ and bg sources > 2, and include inv, do we need the proportional sampling
-    if (unique(occ$SOURCE) >= 2 && 
-        unique(bg$SOURCE)  >= 2 &&
+    ## otherwise, ditch it
+    if (unique(occ$SOURCE) >= 2 &&
+        unique(bg$SOURCE)  >= 2 && 
         "INVENTORY" %in% unique(occ$SOURCE) &&
-        "INVENTORY" %in% unique(bg$SOURCE) == "TRUE") {
+        "INVENTORY" %in% unique(bg$SOURCE)) { 
       
       ## Sample background records from ALA/GBIF and INVENTORY categories in proportion with 
       ## the number of records from each category in the occ data
@@ -216,9 +228,19 @@ fit_maxent_targ_bg_back_sel <- function(occ,
       
       ## Then, combine the samples from the ALA/GBIF and INV sources.
       ## ALA/GBIF is almost always bigger, so this is the most sensible option
+      if(exists("bg.inv")){
       bg.comb    = rbind(bg.ala, bg.inv)
       message('Occurrence data proportions ', round(with(as.data.frame(occ),     table(SOURCE)/sum(table(SOURCE))), 3))
       message('Background data proportions ', round(with(as.data.frame(bg.comb), table(SOURCE)/sum(table(SOURCE))), 3))
+      
+      ## Hack around because earlier condition not working for species with no INV data in occ
+      ## Only observed for Eucalyptus peperita
+      } else {
+        message('Occurrence data proportions ', round(with(as.data.frame(occ),     table(SOURCE)/sum(table(SOURCE))), 3))
+        message('Background data proportions ', round(with(as.data.frame(bg.ala),  table(SOURCE)/sum(table(SOURCE))), 3))
+        bg.comb    = bg.ala 
+        
+      }
       
     } else {
       ## If inventory is not in the set, get the background records from any source
@@ -234,12 +256,12 @@ fit_maxent_targ_bg_back_sel <- function(occ,
     
     aus.mol = readRDS(paste0(shp_path, aus_shp)) %>%
       spTransform(projection(buffer))
-
+    
     aus.kop = crop(Koppen_crop, aus.mol)
     
     occ.mol <- occ %>%
       spTransform(projection(buffer))
-
+    
     ## Print the koppen zones, occurrences and points to screen
     plot(aus.kop, legend = FALSE,
          main = paste0('Occurence SDM records for ', name))
@@ -373,98 +395,107 @@ fit_maxent_targ_bg_back_sel <- function(occ,
     
     #####################################################################
     ## Save the chart corrleation file too for the training data set
-    png(sprintf('%s/%s/full/%s_%s.png', outdir,
-                save_name, save_name, "all_vars_predictor_correlation"),
-        3236, 2000, units = 'px', res = 300)
+    # png(sprintf('%s/%s/full/%s_%s.png', outdir,
+    #             save_name, save_name, "all_vars_predictor_correlation"),
+    #     3236, 2000, units = 'px', res = 300)
+    # 
+    # ## set margins
+    # par(mar   = c(3, 3, 5, 3),
+    #     oma   = c(1.5, 1.5, 1.5, 1.5))
+    # 
+    # ## Add detail to the response plot
+    # chart.Correlation(swd_occ@data,
+    #                   histogram = TRUE, pch = 19,
+    #                   main = paste0('Full variable correlations for ', save_name)) 
+    # 
+    # ## Finish the device
+    # dev.off()
     
-    ## set margins
-    par(mar   = c(3, 3, 5, 3),
-        oma   = c(1.5, 1.5, 1.5, 1.5))
     
-    ## Add detail to the response plot
-    chart.Correlation(swd_occ@data,
-                      histogram = TRUE, pch = 19,
-                      main = paste0('Full variable correlations for ', save_name)) 
-    
-    ## Finish the device
-    dev.off()
-    
-    #####################################################################
-    ## Coerce the "species with data" (SWD) files to regular data.frames
-    ## This is needed to use the simplify function 
-    swd_occ     <- as.data.frame(swd_occ)
-    swd_occ$lon <- NULL
-    swd_occ$lat <- NULL
-    swd_bg      <- as.data.frame(swd_bg)
-    swd_bg$lon  <- NULL
-    swd_bg$lat  <- NULL
-    
-    ## Need to create a species column here
-    swd_occ$searchTaxon <- name
-    swd_bg$searchTaxon  <- name
-    
-    #####################################################################
-    ## Run simplify rmaxent::simplify
-    
-    # Given a candidate set of predictor variables, this function identifies 
-    # a subset that meets specified multicollinearity criteria. Subsequently, 
-    # backward stepwise variable selection (VIF) is used to iteratively drop 
-    # the variable that contributes least to the model, until the contribution 
-    # of each variable meets a specified minimum, or until a predetermined 
-    # minimum number of predictors remains. It returns a model object for the 
-    # full model, rather than a list of models as does the previous function
-    
-    ## Using a modified versionof rmaxent::simplify, so that the name of the
-    ## maxent model object "maxent_fitted.rds" is the same in both models.
-    ## This is needed to run the mapping step over either the full or BS folder
-    m <- local_simplify(
+    if (backwards_sel == "TRUE") {
       
-      swd_occ, 
-      swd_bg,
-      path            = bsdir, 
-      species_column  = "searchTaxon",
-      replicates      = replicates,  ## 5 as above
-      response_curves = TRUE, 
-      logistic_format = TRUE, 
-      cor_thr         = cor_thr, 
-      pct_thr         = pct_thr, 
-      k_thr           = k_thr, 
-      features        = features,    ## LPQ as above
-      quiet           = FALSE)
-    
-    ## Save the bg, occ and swd files into the backwards selection folder too
-    saveRDS(bg.comb,  file.path(bsdir_sp, paste0(save_name, '_bg.rds')))
-    saveRDS(occ,      file.path(bsdir_sp, paste0(save_name, '_occ.rds')))
-    saveRDS(swd,      file.path(bsdir_sp, paste0('swd.rds')))
-    
-    ## Read the model in, because it's tricky to index
-    bs.model <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', bsdir,  save_name))
-    identical(length(bs.model@presence$Annual_mean_temp), nrow(occ))
-    
-    #####################################################################
-    ## Save the chart corrleation file too for the training data set
-    par(mar   = c(3, 3, 5, 3),
-        oma   = c(1.5, 1.5, 1.5, 1.5))
-    
-    ## Add detail to the response plot
-    chart.Correlation(bs.model@presence,
-                      histogram = TRUE, pch = 19,
-                      title = paste0('Reduced variable correlations for ', save_name)) 
-    
-    png(sprintf('%s/%s/full/%s_%s.png', bsdir,
-                save_name, save_name, "bs_predictor_correlation"),
-        3236, 2000, units = 'px', res = 300)
-    
-    ## set margins
-    par(mar   = c(3, 3, 5, 3),
-        oma   = c(1.5, 1.5, 1.5, 1.5))
-    
-    ## Add detail to the response plot
-    chart.Correlation(bs.model@presence,
-                      histogram = TRUE, pch = 19,
-                      title = paste0('Reduced variable correlations for ', save_name))
-    
-    dev.off()
+      #####################################################################
+      ## Coerce the "species with data" (SWD) files to regular data.frames
+      ## This is needed to use the simplify function 
+      swd_occ     <- as.data.frame(swd_occ)
+      swd_occ$lon <- NULL
+      swd_occ$lat <- NULL
+      swd_bg      <- as.data.frame(swd_bg)
+      swd_bg$lon  <- NULL
+      swd_bg$lat  <- NULL
+      
+      ## Need to create a species column here
+      swd_occ$searchTaxon <- name
+      swd_bg$searchTaxon  <- name
+      
+      #####################################################################
+      ## Run simplify rmaxent::simplify
+      
+      # Given a candidate set of predictor variables, this function identifies 
+      # a subset that meets specified multicollinearity criteria. Subsequently, 
+      # backward stepwise variable selection (VIF) is used to iteratively drop 
+      # the variable that contributes least to the model, until the contribution 
+      # of each variable meets a specified minimum, or until a predetermined 
+      # minimum number of predictors remains. It returns a model object for the 
+      # full model, rather than a list of models as does the previous function
+      
+      ## Using a modified versionof rmaxent::simplify, so that the name of the
+      ## maxent model object "maxent_fitted.rds" is the same in both models.
+      ## This is needed to run the mapping step over either the full or BS folder
+      m <- local_simplify(
+        
+        swd_occ, 
+        swd_bg,
+        path            = bsdir, 
+        species_column  = "searchTaxon",
+        replicates      = replicates,  ## 5 as above
+        response_curves = TRUE, 
+        logistic_format = TRUE, 
+        cor_thr         = cor_thr, 
+        pct_thr         = pct_thr, 
+        k_thr           = k_thr, 
+        features        = features,    ## LPQ as above
+        quiet           = FALSE)
+      
+      ## Save the bg, occ and swd files into the backwards selection folder too
+      saveRDS(bg.comb,  file.path(bsdir_sp, paste0(save_name, '_bg.rds')))
+      saveRDS(occ,      file.path(bsdir_sp, paste0(save_name, '_occ.rds')))
+      saveRDS(swd,      file.path(bsdir_sp, paste0('swd.rds')))
+      
+      ## Read the model in, because it's tricky to index
+      bs.model <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', bsdir,  save_name))
+      identical(length(bs.model@presence$Annual_mean_temp), nrow(occ))
+      
+      #####################################################################
+      ## Save the chart corrleation file too for the training data set
+      par(mar   = c(3, 3, 5, 3),
+          oma   = c(1.5, 1.5, 1.5, 1.5))
+      
+      ## Add detail to the response plot
+      # chart.Correlation(bs.model@presence,
+      #                   histogram = TRUE, pch = 19,
+      #                   title = paste0('Reduced variable correlations for ', save_name)) 
+      
+      png(sprintf('%s/%s/full/%s_%s.png', bsdir,
+                  save_name, save_name, "bs_predictor_correlation"),
+          3236, 2000, units = 'px', res = 300)
+      
+      ## set margins
+      par(mar   = c(3, 3, 5, 3),
+          oma   = c(1.5, 1.5, 1.5, 1.5))
+      
+      ## Add detail to the response plot
+      chart.Correlation(bs.model@presence,
+                        histogram = TRUE, pch = 19,
+                        title = paste0('Reduced variable correlations for ', save_name))
+      
+      dev.off()
+      
+    } else {
+      
+      message("Don't run backwards selection")
+      
+    }
     
   }
   

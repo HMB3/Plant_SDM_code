@@ -5,20 +5,6 @@
 
 #########################################################################################################################
 ## Shawn's advice is to make the code more modular, rather than monolithic.
-## Small examples of how to do this could be applied across the different steps 
-
-
-
-## 1). Check that the paralled approach will work for a few species, using the MESS approach - EG for 10 species.
-
-
-## 2). Check the spatial outlier step can be improved, before re-running all the species through these steps.
-##     Use Alex Ziska's example to calcualte
-##     
-##     Check the Area of occupancy calculations work 
-
-
-
 
 
 ## This code runs the whole SDM workflow for the HIA project, for a subset of species (e.g. whichever you supply)
@@ -207,12 +193,8 @@ source('./R/6_PREPARE_SDM_TABLE_1KM.R',  echo = TRUE)
 
 
 ## Step 7 :: Run maxent on a table of all species, using targetted background selection, then backwards selection
-source('./R/7_RUN_MAXENT.R', echo = TRUE)
-
-
 ## Step 8 :: Create habitat suitability maps for each species using six GCMs and three time slices (2030/50/70). 
-## Then summarise maxent results and estimate species presences in significant urban areas under climate change
-## Then run MESS maps. Or, the MESS maps could be run before the combination step
+source('./R/7_RUN_MAXENT.R',      echo = TRUE)
 source('./R/8_MAP_SDM_COMBINE.R', echo = TRUE)
 
 

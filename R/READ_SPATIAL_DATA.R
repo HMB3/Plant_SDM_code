@@ -333,6 +333,7 @@ soil = stack(file.path('./data/base/ACLEP', sprintf('PC%d.tif', 1:3)))
 #                                 r = "near", dstnodata = '-9999')
 # xres(template.raster.1km)
 
+
 ## 2km
 # template.raster.2km <- gdalwarp("data/base/worldclim/world/0.5/bio/current/bio_01",
 #                                 tempfile(fileext = '.tif'),
@@ -341,59 +342,14 @@ soil = stack(file.path('./data/base/ACLEP', sprintf('PC%d.tif', 1:3)))
 #                                 tr = c(2000, 2000),
 #                                 r = "near", dstnodata = '-9999')
 
-## 5km
-# template.raster.3km <- gdalwarp("data/base/worldclim/world/0.5/bio/current/bio_01",
-#                                 tempfile(fileext = '.tif'),
-#                                 t_srs = '+proj=moll +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs',
-#                                 output_Raster = TRUE,
-#                                 tr = c(3000, 3000),
-#                                 r = "near", dstnodata = '-9999')
-
-
-# ## 5km
-# template.raster.5km <- gdalwarp("data/base/worldclim/world/0.5/bio/current/bio_01",
-#                                 tempfile(fileext = '.tif'),
-#                                 t_srs = '+proj=moll +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs',
-#                                 output_Raster = TRUE,
-#                                 tr = c(5000, 5000),
-#                                 r = "near", dstnodata = '-9999')
-# xres(template.raster.5km)
-# 
-# 
-# ## 10km
-# template.raster.10km <- gdalwarp("data/base/worldclim/world/0.5/bio/current/bio_01",
-#                                  tempfile(fileext = '.tif'),
-#                                  t_srs = '+proj=moll +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs',
-#                                  output_Raster = TRUE,
-#                                  tr = c(10000, 10000),
-#                                  r = "near", dstnodata = '-9999')
-# xres(template.raster.10km)
-
 
 # ## Assign all the cells to be NA
 # template.raster.1km  <- !is.na(template.raster.1km)
-# template.raster.2km  <- !is.na(template.raster.2km)
-# template.raster.3km  <- !is.na(template.raster.3km)
-# template.raster.5km  <- !is.na(template.raster.5km)
-# template.raster.10km <- !is.na(template.raster.10km)
-
-
 # writeRaster(template.raster.1km,  'data/template_has_data_1km.tif',   datatype = 'INT2S', overwrite = TRUE)
-# writeRaster(template.raster.2km,  'data/template_has_data_2km.tif',   datatype = 'INT2S', overwrite = TRUE)
-# writeRaster(template.raster.3km,  'data/template_has_data_3km.tif',   datatype = 'INT2S', overwrite = TRUE)
-# writeRaster(template.raster.5km,  'data/template_has_data_5km.tif',   datatype = 'INT2S', overwrite = TRUE)
-# writeRaster(template.raster.10km, 'data/template_has_data_10km.tif',  datatype = 'INT2S', overwrite = TRUE)
-
 
 # template.cells.1km  <- Which(template.raster.1km  == 1, cells = TRUE, na.rm=TRUE)    ## Is this is incomplete, might be causing the error?
-# template.cells.5km  <- Which(template.raster.5km  == 1, cells = TRUE, na.rm=TRUE)    ## ..................................................
-# template.cells.10km <- Which(template.raster.10km == 1, cells = TRUE, na.rm=TRUE)
-
-
-## Save the cells to file
 # saveRDS(template.cells.1km,  'data/has_data_cells_1km.rds')
-# saveRDS(template.cells.5km,  'data/has_data_cells_5km.rds')
-# saveRDS(template.cells.10km, 'data/has_data_cells_10km.rds')
+
 
 
 #########################################################################################################################

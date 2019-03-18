@@ -155,7 +155,8 @@ if(save_data == "TRUE") {
 
 
 #########################################################################################################################
-## Use "Taxonstand" to check the taxonomy :: which field to use?
+## Use "Taxonstand" to check the taxonomy.
+## Could use a 
 message('Running TPL taxonomy for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
 COMBO.TAXO <- TPL(unique(GBIF.ALA.COMBO$scientificName), infra = TRUE,
                 corr = TRUE, repeats = 100)  ## to stop it timing out...
