@@ -56,11 +56,19 @@ string_fun_first_word <- function(x) {
 }
 
 
+##
+make.true.NA <- function(x) if(is.character(x)||is.factor(x)){
+  is.na(x) <- x=="NA"; x} else {
+    x}
+
+
+## Get a complete df
 completeFun <- function(data, desiredCols) {
   completeVec <- complete.cases(data[, desiredCols])
   return(data[completeVec, ])
   
 }
+
 
 round_df <- function(x, digits) {
   # round all numeric variables

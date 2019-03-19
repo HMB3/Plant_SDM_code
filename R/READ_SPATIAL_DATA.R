@@ -308,11 +308,47 @@ tpi  = raster("./data/base/ACLEP/TPI.tif")
 soil = stack(file.path('./data/base/ACLEP', sprintf('PC%d.tif', 1:3)))
 
 
+z <- file.path('./data/base/ACLEP', sprintf('PC%d.tif', 1:3))
+system.time(z2 <- gdalUtils::gdalwarp(z[1], f <- tempfile(fileext = '.tif'), 
+                                      te=c(bbox(aus.grids.current)), tr=c(1000, 1000),
+                                      t_srs=proj4string(aus.grids.current),
+                                      r='near', multi=TRUE, output_Raster=TRUE))
+
+# system.time(z3 <- gdalUtils::gdalwarp(z[1], f <- tempfile(fileext = '.tif'), 
+#                                       te=c(bbox(aus.grids.current)), tr=c(1000, 1000),
+#                                       t_srs=proj4string(aus.grids.current),
+#                                       r='cubic', multi=TRUE, output_Raster=TRUE))
+
+system.time(gdalUtils::gdalwarp(z[1], file.path('./data/base/ACLEP', sprintf('PC%d_aea.tif', 1:3)), 
+                                te=c(bbox(aus.grids.current)), tr=c(1000, 1000),
+                                t_srs=proj4string(aus.grids.current),
+                                r='bilinear', multi=TRUE))
+
+cellStats(raster(file.path('./data/base/ACLEP', sprintf('PC%d.tif', 1))), 'range', na.rm=TRUE)
+
 
 
 
 #########################################################################################################################
-## 4). PREPARE TEMPLATE RASTER GRIDS FOR SDM ANALYSIS
+## 4). DOWNLOAD RASTER DATA FROM NCIS
+#########################################################################################################################
+
+
+## Download raster data from NCIS
+data_path <- 'my_data/pan'
+s <-lapply(1:12, function(m) {
+  f <- sprintf('http://dapds00.nci.org.au/thredds/fileServer/rr9/ANUClimate/ANUClimate_v1-0_pan-evaporation_monthly-mean_0-01deg_1976-2005/00000000/ANUClimate_v1-0_pan-evaporation_monthly-mean_0-01deg_1976-2005_00000000_%02d.nc', m)
+  f_out <- file.path(data_path, basename(f))
+  download.file(f, f_out, mode='wb')
+  raster(f_out)
+}) %>% stack
+
+
+
+
+
+#########################################################################################################################
+## 5). PREPARE TEMPLATE RASTER GRIDS FOR SDM ANALYSIS
 #########################################################################################################################
 
 

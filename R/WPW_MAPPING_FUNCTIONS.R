@@ -68,10 +68,11 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
   lapply(scen_list, function(x) {
     
     ## Create a raster stack for each of the 6 GCMs, not for each species
-    s <- stack(sprintf('%s/20%s/%s/%s%s.tif', climate_path, time_slice, x, x, 1:19))
+    s <- stack(c(sprintf('%s/20%s/%s/%s%s.tif', climate_path, time_slice, x, x, 1:19)))
     identical(projection(s), projection(aus_poly))
     
     ## Rename both the current and future environmental stack...
+    ## critically important that the order of the name.....................................................................
     names(s) <- names(current_grids) <- grid_names 
     
     ########################################################################################################################
@@ -272,9 +273,12 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
               identical(names(swd), names(future_grids))
               
               ## Create a map of novel environments for future conditions
-              ## This similarity function only uses variables (e.g. n bioclim), not features
-              mess_future  <- similarity(future_grids, swd, full = TRUE)
-              novel_future <- mess_future$similarity_min < 0  ##   All novel environments are < 0
+              ## This similarity function only uses variables (e.g. n bioclim), not features.
+              ## We don't need to repeat the static layer MESS each time - just
+              ## include their results here
+              mess_future  <- similarity(future_grids[, colnames(future_grids)], 
+                                         swd[, colnames(swd)], full = TRUE)
+              novel_future <- (mess_future$similarity_min < 0) | (mess_soil_min < 0)  ##   All novel environments are < 0
               novel_future[novel_future==0] <- NA             ##   0 values are NA
 
               ##################################################################
@@ -307,8 +311,8 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
               
               ## Write the raster of novel environments to the maxent directory 
               ## The "full" directory is getting full, could create a sub dir for MESS maps
-              message('Writing future novel environments to file for ', species, ' under senario ', x) 
-              writeRaster(novel_future, sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_novel_", x), 
+              message('Writing future novel environments to file for ',    species, ' under senario ', x) 
+              writeRaster(novel_future, sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_novel_",  x), 
                           overwrite = TRUE)
               
               ##################################################################
@@ -841,8 +845,8 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
                           xlab = NULL, ylab = NULL,
                           main       = list(paste0(gsub('_', ' ', species), ' :: ',  20, 
                                                    time_slice, ' 4GCMs > ',  thresh), font = 4, cex = 2)) +
-                  latticeExtra::layer(sp.polygons(aus_poly), data = list(aus = aus_poly)))
-          
+                  latticeExtra::layer(sp.polygons(aus_poly), data = list(aus_poly = aus_poly)))
+        
           dev.off()
 
         } else {

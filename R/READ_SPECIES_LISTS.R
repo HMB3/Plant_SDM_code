@@ -99,8 +99,12 @@ names(TI.XY)
 head(TI.XY)
 summary(TI.XY)
 TI.XY.NA <- TI.XY[rowSums(is.na(TI.XY)) > 0,]
-unique(TI.XY.NA$INVENTORY)
+length(unique(TI.XY.NA$INVENTORY))
+length(unique(TI.XY.NA$searchTaxon))
+
 TI.XY = na.omit(TI.XY)
+length(unique(TI.XY$INVENTORY))
+length(unique(TI.XY$searchTaxon))
 
 
 #########################################################################################################################
@@ -115,7 +119,8 @@ head(TI.LUT);dim(TI.LUT)
 ## What are the unique binomials?
 TI.LIST     = unique(TI.XY$searchTaxon)
 TI.SPP      = TI.XY[!duplicated(TI.XY[,c("searchTaxon")]),][c("searchTaxon")]
-TI.SPP$Tree = "Tree"
+TI.SPP$Plant_type = "Tree"
+
 
 
 
@@ -303,12 +308,11 @@ colnames(CLEAN.CLASS)[1] <- "searchTaxon"
 
 
 ## Use table later to join ::
-GBIF.GROW = join(CLEAN.GROW, CLEAN.CLASS)
+GBIF.GROW = join(CLEAN.GROW, CLEAN.CLASS, type = "left")
   #join(., TI.SPP, type = "right")
 GBIF.GROW =  select(GBIF.GROW, searchTaxon, Evergreen_taxon, GBIF_taxon, Taxo_status, genus, family, 
                     order, group, Origin, Plant_type, Total_growers, Number_states)
 View(GBIF.GROW)
-GBIF.GROW.NA <- GBIF.GROW[rowSums(is.na(GBIF.GROW)) > 0,]
 
 
 #########################################################################################################################
@@ -316,26 +320,47 @@ GBIF.GROW.NA <- GBIF.GROW[rowSums(is.na(GBIF.GROW)) > 0,]
 #write.csv(GBIF.GROW, "./data/base/HIA_LIST/HIA/EVERGREEN_TPL_LIST_MARCH2019.csv", row.names = FALSE)
 
 
+## Try filling in the trees using Alessandro's data
+GBIF.GROW$Plant_type[GBIF.GROW$Plant_type==""]  <- NA 
+GBIF.GROW = FillIn(GBIF.GROW, TI.SPP, "Plant_type", "Plant_type", 
+                   KeyVar = c("searchTaxon"), allow.cartesian = FALSE, KeepD2Vars = FALSE)
+
+GBIF.GROW.NA <- GBIF.GROW[rowSums(is.na(GBIF.GROW)) > 0,]
+
+
 #########################################################################################################################
-## 14% of all evergreen plants lack life form attribution, and 64% lack native/exotic data 
+## All the evergreen plants lack life form attribution, and 64% lack native/exotic data 
 round(with(GBIF.GROW, table(Plant_type)/sum(table(Plant_type))*100), 1)
 round(with(GBIF.GROW, table(Origin)/sum(table(Origin))*100), 1)
 
 
-## Not much overlap between the global tree list, and the species without life form
-no.type   = subset(GBIF.GROW, Plant_type == "")$searchTaxon  ## 600 taxa without life form
-no.origin = subset(GBIF.GROW, Origin == "")$searchTaxon      ## 2740 taxa without origin
-length(intersect(no.type, TREE.list$Tree_taxa))
 
+## How much overlap is there between Alessandro's inventory data, and the HIA list?
+length(subset(GBIF.GROW, Plant_type == "")$searchTaxon)              ## No    taxa without life form
+length(subset(GBIF.GROW, Origin == "")$searchTaxon)                  ## 2740  taxa without origin
+length(intersect(GBIF.GROW$searchTaxon, unique(TI.XY$searchTaxon)))  ## 1,111 taxa on HIA and Inventory list
+summary(GBIF.GROW)
 
 #########################################################################################################################
 ## The result of this manual search is listed below
 WPW.spp             = sort(GBIF.GROW$searchTaxon)
 WPW.tree            = subset(GBIF.GROW, Plant_type == "Tree")$searchTaxon
-WPW.non.tree        = subset(GBIF.GROW, Plant_type != "Tree")$searchTaxon
+WPW.non.tree        = as.character(GBIF.GROW$searchTaxon[!GBIF.GROW$searchTaxon %in% WPW.tree ])
 
 WPW.spp             = WPW.spp[lapply(WPW.spp,length)>0]
-WPW.NA              = unique(c(TPL.NA, GBIF.NA))                  ## These taxa did not match either GBIF or ALA
+WPW.NA              = unique(c(TPL.NA, GBIF.NA))          ## These taxa did not match either GBIF or ALA
+
+
+## Save the list to file
+GBIF.GROW$Binomial = gsub("NA NA", "NA", CLEAN.list$Binomial, perl = TRUE)
+
+
+
+GBIF.GROW.VALID = GBIF.GROW %>%
+  lapply(., make.true.NA) %>%
+  completeFun(., "searchTaxon")
+
+write.csv(GBIF.GROW.VALID, "./data/base/HIA_LIST/HIA/WPW_MODELLING_LIST_MARCH2019.csv", row.names = FALSE)
 
 
 #########################################################################################################################

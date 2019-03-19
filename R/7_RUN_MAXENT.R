@@ -77,9 +77,18 @@ lapply(GBIF.spp, function(spp){
     
     ## Subset the records to only the taxa being processed
     occurrence <- subset(SDM.SPAT.OCC.BG, searchTaxon == spp)
+    temp <- things::gdallocationinfo(file.path('./data/base/ACLEP', sprintf('PC%d.tif', 1:3)), 
+                                     spTransform(occurrence, CRS('+init=epsg:3577')))
+    names(temp) <- c('PC1', 'PC2', 'PC3')
+    occurrence <- cbind(occurrence, temp)
+    rm(temp)
     
     ## Now get the background points. These can come from any spp, other than the modelled species.
     background <- subset(SDM.SPAT.OCC.BG, searchTaxon != spp)
+    temp <- things::gdallocationinfo(file.path('./data/base/ACLEP', sprintf('PC%d.tif', 1:3)), 
+                                     spTransform(background, CRS('+init=epsg:3577')))
+    names(temp) <- c('PC1', 'PC2', 'PC3')
+    occurrence <- cbind(occurrence, temp)
     
     ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
     tryCatch(
