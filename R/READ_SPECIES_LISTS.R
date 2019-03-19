@@ -309,7 +309,6 @@ colnames(CLEAN.CLASS)[1] <- "searchTaxon"
 
 ## Use table later to join ::
 GBIF.GROW = join(CLEAN.GROW, CLEAN.CLASS, type = "left")
-  #join(., TI.SPP, type = "right")
 GBIF.GROW =  select(GBIF.GROW, searchTaxon, Evergreen_taxon, GBIF_taxon, Taxo_status, genus, family, 
                     order, group, Origin, Plant_type, Total_growers, Number_states)
 View(GBIF.GROW)
@@ -324,49 +323,43 @@ View(GBIF.GROW)
 GBIF.GROW$Plant_type[GBIF.GROW$Plant_type==""]  <- NA 
 GBIF.GROW = FillIn(GBIF.GROW, TI.SPP, "Plant_type", "Plant_type", 
                    KeyVar = c("searchTaxon"), allow.cartesian = FALSE, KeepD2Vars = FALSE)
-
 GBIF.GROW.NA <- GBIF.GROW[rowSums(is.na(GBIF.GROW)) > 0,]
+
+
+## Save the list to file
+GBIF.GROW$searchTaxon = gsub("NA NA", "NA", GBIF.GROW$searchTaxon, perl = TRUE)
+GBIF.GROW.VALID       = GBIF.GROW[!(GBIF.GROW$searchTaxon == "NA"),]
+dim(GBIF.GROW.VALID)
 
 
 #########################################################################################################################
 ## All the evergreen plants lack life form attribution, and 64% lack native/exotic data 
-round(with(GBIF.GROW, table(Plant_type)/sum(table(Plant_type))*100), 1)
-round(with(GBIF.GROW, table(Origin)/sum(table(Origin))*100), 1)
-
+round(with(GBIF.GROW.VALID, table(Plant_type)/sum(table(Plant_type))*100), 1)
+round(with(GBIF.GROW.VALID, table(Origin)/sum(table(Origin))*100), 1)
 
 
 ## How much overlap is there between Alessandro's inventory data, and the HIA list?
-length(subset(GBIF.GROW, Plant_type == "")$searchTaxon)              ## No    taxa without life form
-length(subset(GBIF.GROW, Origin == "")$searchTaxon)                  ## 2740  taxa without origin
-length(intersect(GBIF.GROW$searchTaxon, unique(TI.XY$searchTaxon)))  ## 1,111 taxa on HIA and Inventory list
-summary(GBIF.GROW)
+length(subset(GBIF.GROW.VALID , Plant_type == "")$searchTaxon)              ## No    taxa without life form
+length(subset(GBIF.GROW.VALID , Origin == "")$searchTaxon)                  ## 2582  taxa without origin
+length(intersect(GBIF.GROW.VALID$searchTaxon, unique(TI.XY$searchTaxon)))   ## 1,111 taxa on HIA and Inventory list
+summary(GBIF.GROW.VALID)
+
 
 #########################################################################################################################
-## The result of this manual search is listed below
-WPW.spp             = sort(GBIF.GROW$searchTaxon)
-WPW.tree            = subset(GBIF.GROW, Plant_type == "Tree")$searchTaxon
-WPW.non.tree        = as.character(GBIF.GROW$searchTaxon[!GBIF.GROW$searchTaxon %in% WPW.tree ])
+## These are the lists of trees and non-trees to model
+WPW.spp         = sort(GBIF.GROW.VALID$searchTaxon)
+WPW.tree        = subset(GBIF.GROW.VALID, Plant_type == "Tree")$searchTaxon
+WPW.non.tree    = as.character(GBIF.GROW.VALID$searchTaxon[!GBIF.GROW.VALID$searchTaxon %in% WPW.tree ])
+TI.spp          = unique(TI.XY$searchTaxon)
 
-WPW.spp             = WPW.spp[lapply(WPW.spp,length)>0]
-WPW.NA              = unique(c(TPL.NA, GBIF.NA))          ## These taxa did not match either GBIF or ALA
-
-
-## Save the list to file
-GBIF.GROW$Binomial = gsub("NA NA", "NA", CLEAN.list$Binomial, perl = TRUE)
-
-
-
-GBIF.GROW.VALID = GBIF.GROW %>%
-  lapply(., make.true.NA) %>%
-  completeFun(., "searchTaxon")
-
-write.csv(GBIF.GROW.VALID, "./data/base/HIA_LIST/HIA/WPW_MODELLING_LIST_MARCH2019.csv", row.names = FALSE)
+WPW.spp         = WPW.spp[lapply(WPW.spp,length)>0]
+WPW.NA          = unique(c(TPL.NA, GBIF.NA))          ## These taxa did not match either GBIF or ALA
 
 
 #########################################################################################################################
 ## Now we need a list of all the trees, and non trees. Native info not as important.
-## How much over lap is there between the inventory list and the HIA list? 
-length(intersect(TI.LIST, WPW.spp))
+write.csv(GBIF.GROW.VALID, "./data/base/HIA_LIST/HIA/WPW_MODELLING_LIST_MARCH2019.csv", row.names = FALSE)
+
 
 
 ## Here is a sample of 10 species on the "Hollow_spp" list that have bad models.

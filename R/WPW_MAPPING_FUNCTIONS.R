@@ -90,11 +90,11 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
     ## First, check if the maxent model exists
     ## Then apply each GCM to each species
     lapply(species_list, function(species) {
-    
-    ######## Parallelising stuff ################
-    # clusterExport(cl, c('scen_list', 'x', 's'))
-    # parLapply(cl, species_list, function(species) {
-    #############################################
+      
+      ######## Parallelising stuff ################
+      # clusterExport(cl, c('scen_list', 'x', 's'))
+      # parLapply(cl, species_list, function(species) {
+      #############################################
       save_name = gsub(' ', '_', species)
       if(file.exists(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, species))) {
         message('Then run maxent projections for ', species, ' under ', x, ' scenario')
@@ -276,11 +276,10 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
               ## This similarity function only uses variables (e.g. n bioclim), not features.
               ## We don't need to repeat the static layer MESS each time - just
               ## include their results here
-              mess_future  <- similarity(future_grids[, colnames(future_grids)], 
-                                         swd[, colnames(swd)], full = TRUE)
-              novel_future <- (mess_future$similarity_min < 0) | (mess_soil_min < 0)  ##   All novel environments are < 0
+              mess_future  <- similarity(future_grids, swd, full = TRUE)
+              novel_future <- mess_future$similarity_min < 0  ##   All novel environments are < 0
               novel_future[novel_future==0] <- NA             ##   0 values are NA
-
+              
               ##################################################################
               ## Write out the future mess maps, for all variables
               writeRaster(mess_future$similarity_min, sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_mess_", x), 
@@ -331,7 +330,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
               ## Write out not-novel raster
               message('Writing un-novel environments to file under ', x, ' scenario for ', species) 
               writeRaster(hs_future_not_novel, sprintf('%s%s/full/%s%s%s.tif', maxent_path, 
-                                                      species, species, "_future_not_novel_", x), 
+                                                       species, species, "_future_not_novel_", x), 
                           overwrite = TRUE)
               
             } else {
@@ -464,7 +463,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
               ## Create level plot of scenario x, including MESS                        
               png(sprintf('%s/%s/full/%s_%s.png', maxent_path, species, species, x),      
                   11, 4, units = 'in', res = 300)
-            
+              
               ## Create a panel of the Australian occurrences, the current layer and the future layer
               print(levelplot(stack(empty_ras,
                                     pred.current, 
@@ -556,18 +555,18 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
 
 
 ## Arguments needed to run the function manually
-# unit_path     = "./data/base/CONTEXTUAL/SUA/"   ## Data path for the spatial unit of analysis
-# unit_shp      = "SUA_2016_AUST.rds"             ## Spatial unit of analysis - E.G. SUAs
-# unit_vec      = "SUA_2016_VEC.rds"              ## Vector of rasterized unit cells
-# world_shp     = "LAND_world.rds"                ## Polygon for AUS maps
-# aus_shp       = "aus_states.rds"                ## Polygon for World maps
-# 
-# DIR           = SDM.RESULTS.DIR[1]                 ## List of directories with rasters
-# species       = map_spp[1]                         ## List of species' directories
-# maxent_path   = maxent_path                     ## Directory of maxent results
-# threshold     = percent.10.log                  ## List of maxent thresholds
-# time_slice    = 30                              ## Time period, eg 2030
-# write_rasters = TRUE
+unit_path     = "./data/base/CONTEXTUAL/SUA/"   ## Data path for the spatial unit of analysis
+unit_shp      = "SUA_2016_AUST.rds"             ## Spatial unit of analysis - E.G. SUAs
+unit_vec      = "SUA_2016_VEC.rds"              ## Vector of rasterized unit cells
+world_shp     = "LAND_world.rds"                ## Polygon for AUS maps
+aus_shp       = "aus_states.rds"                ## Polygon for World maps
+
+DIR           = SDM.RESULTS.DIR[9]                 ## List of directories with rasters
+species       = map_spp[9]                         ## List of species' directories
+maxent_path   = bs_path                     ## Directory of maxent results
+thresh        = percent.10.log[9]                  ## List of maxent thresholds
+time_slice    = 30                              ## Time period, eg 2030
+write_rasters = TRUE
 
 
 #########################################################################################################################
@@ -590,7 +589,7 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
   
   world_poly = readRDS(paste0(unit_path, world_shp)) %>%
     spTransform(CRS.WGS.84)
-
+  
   ###################################################################################################################
   ## Loop over each directory
   lapply(DIR_list, function(DIR) { 
@@ -635,7 +634,7 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
         ## Check if the SUA summary table exists
         SUA_file =   sprintf('%s/%s/full/%s_20%s_%s%s.tif', maxent_path,
                              species, species, time_slice, "gain_loss_", thresh)
-      
+        
         ## If the gain/loss raster already exists, skip the calculation
         if(file.exists(SUA_file)) { 
           
@@ -655,7 +654,7 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
         ## Then apply this to just the current suitability raster. 
         thresh_greater       = function (x) {x > thresh}
         current_suit_thresh  = thresh_greater(f_current)
-
+        
         #########################################################################################################################
         ## First, calculate the cells which are greater that the: 
         ## Maximum training sensitivity plus specificity Logistic threshold
@@ -732,7 +731,7 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
           add_column(., SPECIES = species,    .after = "AREASQKM16") %>%
           add_column(., PERIOD  = time_slice, .after = "SPECIES")    %>%
           add_column(., THRESH  = thresh,     .after = "PERIOD")
-
+        
         #########################################################################################################################
         ## Now calculate the number of cells lost/gained/stable across Australia
         message ("Counting cells lost/gained/stable/never suitable across Australia")
@@ -745,6 +744,11 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
         r[d5[, 1]==0 & d5[, 2]==1] <- 2  ## 0 in current raster and 1 in future = GAIN
         r[d5[, 1]==1 & d5[, 2]==1] <- 3  ## 1 in current raster and 1 in future = STABLE
         r[d5[, 1]==0 & d5[, 2]==0] <- 4  ## 0 in current raster and 0 in future = NEVER_SUIT
+        
+        ## Create a table of these values, to merge with the levels later. This avoids the problem that not all the categories will
+        ## be present for all species
+        change_values = data.frame("ID" = 1:4, "CHANGE" = c("LOST", "GAINED", "STABLE", "NEVER"))
+        
         
         ## Now convert the raster to a factor and assign lables to the levels
         gain_loss <- as.factor(r)
@@ -795,7 +799,7 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
           writeRaster(combo_suit_thresh, sprintf('%s/%s/full/%s_20%s%s%s.tif', maxent_path,
                                                  species, species, time_slice, "_log_thresh_above_", thresh), 
                       overwrite = TRUE)
-
+          
           ## Write the combined future raster with > 4 GCMs above the maximum training value
           message('Writing ', species, ' | 20', time_slice, ' 4 GCMs > ', thresh)
           writeRaster(combo_suit_4GCM, sprintf('%s/%s/full/%s_20%s%s%s.tif', maxent_path,
@@ -819,17 +823,20 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
           ## 1 = STABLE, 4 = GAIN, 8 = LOSS, 9 = NEVER
           lc_id = c(1, 2, 3, 4)
           cover_palette <- c(SUA.plot.cols[8], SUA.plot.cols[4], SUA.plot.cols[1], SUA.plot.cols[11])
-        
+          
           colors        <- data.frame(id = lc_id, color = cover_palette, stringsAsFactors = FALSE)
           csort         <- colors[order(colors$id),] 
           
-          ## Create Labels for the 
+          ## Create Labels for the gain_loss plots 
           gain_plot <- ratify(gain_loss)
           rat <- levels(gain_plot)[[1]]
           
-          rat[["CHANGE"]] <- c("LOST", "GAINED", "STABLE", "NEVER")
+          ## Use an inner join, to accomodate the different categories. EG sometimes, there are 
+          ## no cells which are gained for each species, etc.
+          rat[["CHANGE"]]   <- join(rat, change_values, type = "inner")$CHANGE 
           levels(gain_plot) <- rat
-
+          
+          
           #########################################################################################################################
           ## Save the gain/loss raster to PNG
           save_name = gsub(' ', '_', species)
@@ -846,9 +853,9 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
                           main       = list(paste0(gsub('_', ' ', species), ' :: ',  20, 
                                                    time_slice, ' 4GCMs > ',  thresh), font = 4, cex = 2)) +
                   latticeExtra::layer(sp.polygons(aus_poly), data = list(aus_poly = aus_poly)))
-        
+          
           dev.off()
-
+          
         } else {
           
           message(' skip raster writing')
