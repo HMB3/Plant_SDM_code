@@ -4,9 +4,7 @@
 
 
 #########################################################################################################################
-## This code combines the GBIF records for all species with the ALA data into a single table, extracts environmental 
-## values and final adds contextual info for each record (taxonomic and horticultural) 
-
+## This code take the table of inventory data for the species list, extracts environmental values 
 
 ## It creates two tables:
 
@@ -159,6 +157,9 @@ if(dim(TI.XY.SPP)[1] > 0) {
   ## Check the raster values here..........................................................................................
   summary(TI.RASTER$Annual_mean_temp)
   
+  
+  
+  
   #########################################################################################################################
   ## 2). CONVERT RASTER VALUES
   #########################################################################################################################
@@ -205,75 +206,6 @@ if(dim(TI.XY.SPP)[1] > 0) {
   summary(TI.RASTER.CONVERT$Isothermality)
   summary(TI.RASTER$Isothermality)
   
-  
-  #########################################################################################################################
-  ## Which records are NA?
-  # TI.NA      = TI.RASTER.CONVERT[is.na(TI.RASTER.CONVERT$Annual_mean_temp),]
-  # NA.POINTS  = SpatialPointsDataFrame(coords      = TI.NA[c("lon", "lat")], 
-  #                                     data        = TI.NA[c("lon", "lat")],
-  #                                     proj4string = CRS.WGS.84)
-  # dim(NA.POINTS)
-  
-  
-  #########################################################################################################################
-  ## Now extract raster data, but only for the NA points
-  # projection(NA.POINTS);projection(inventory.grids.current);projection(PET)
-  # NA.RASTER <- raster::extract(inventory.grids.current, NA.POINTS, buffer=1000) %>% 
-  #   cbind(TI.NA[c("lon", "lat", "SOURCE", "INVENTORY")], .)
-  # saveRDS(NA.RASTER, 'data/base/HIA_LIST/COMBO/TI_NA_RASTER.rds')
-  # 
-  # NA.PET <- raster::extract(PET, NA.POINTS, buffer=1000)
-  # NA.RASTER = cbind(NA.RASTER, NA.PET)
-  # summary(NA.RASTER)
-  # class(NA.RASTER)
-  # names(NA.RASTER)
-  
-  
-  # #########################################################################################################################
-  # ## Now try to extract the nearest values for the NA rasters. This is just too slow to bother for only 112 points
-  # # TI.NA  = TI.RASTER[is.na(TI.RASTER$bio_01),]
-  # NA.XY  = TI.NA[c("lon", "lat")]
-  # TI.NA  <- names(inventory.grids.current) %>%
-  # 
-  #   ## pipe the list of raster names into lapply
-  #   lapply(function(x) {
-  # 
-  #     ## Create the raster values
-  #     r = inventory.grids.current[[x]]
-  #     r@data@values = values(r)
-  #     str(r@data@values)
-  #     xy = NA.XY
-  #     dim(xy)
-  # 
-  #     ## The sample the nearest non-NA raster values
-  #     message("sampling ", dim(xy)[1], " points from raster")
-  #     sampled = apply(X = xy, MARGIN = 1, FUN = function(xy) r@data@values[which.min(replace(distanceFromPoints(r, xy), is.na(r), NA))])
-  # 
-  #     ## Check the data
-  #     sampled
-  # 
-  #   }) %>%
-  # 
-  #   ## Finally, bind all the rows together
-  #   cbind
-  # 
-  # 
-  # ## Save data
-  # saveRDS(TI.NA, 'data/base/HIA_LIST/COMBO/SPAT_OUT/TREE_INV_NA_RASTER.rds')
-  # TI.ALL = cbind(TI.XY.SPP, TI.RASTER, TI.NA)
-  # indentical(dim(TI.ALL)[1], dim(TI.RASTER)[1])
-  
-  
-  # saveRDS(TI.ALL, 'data/base/HIA_LIST/COMBO/SPAT_OUT/TREE_INV_ALL_POINTS.rds')
-  # TI.NA.DF   = SpatialPointsDataFrame(coords      = TI.NA[c("lon", "lat")],
-  #                                     data        = TI.NA,
-  #                                     proj4string = CRS.WGS.84)
-  # 
-  # aus.mol <- aus %>%
-  #   spTransform(CRS.WGS.84)
-  # 
-  # plot(aus.mol, main = "NA Tree inventory records")
-  # points(TI.NA.DF, col = "red", cex = .15, pch = 19)
   
   #########################################################################################################################
   ## Save the raster datasets

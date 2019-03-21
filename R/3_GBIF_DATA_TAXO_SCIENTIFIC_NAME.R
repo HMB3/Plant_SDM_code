@@ -33,7 +33,7 @@ gbif.download = list.files(GBIF_path, pattern = ".RData")
 length(gbif.download)
 
 
-## Now these lists are getting too long for the combine step. Restrict to just the matching strings for each run?
+## Now these lists are getting too long for the combine step. Restrict them to just the matching strings for each run
 gbif.spp.download <- paste(GBIF.spp, "_GBIF_records.RData", sep = "")
 gbif.download     = gbif.download[gbif.download %in% gbif.spp.download ] 
 message('downloaded species ', length(gbif.download), ' analyzed species ', length(GBIF.spp))
@@ -98,7 +98,7 @@ formatC(dim(GBIF.ALL)[1], format = "e", digits = 2)
 
 ## Now get just the columns we want to keep.
 GBIF.TRIM <- GBIF.ALL %>% 
-  select(one_of(gbif.keep))
+  dplyr::select(one_of(gbif.keep))
 names(GBIF.TRIM)
 gc()
 

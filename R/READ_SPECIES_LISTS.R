@@ -36,8 +36,8 @@
 ## Ultimately we juset need binomials................................................................
 
 
-## HIA   = 1k taxa with <25 growers
-## RAW   = X uncleaned taxa  
+## HIA   = 1k  taxa with <25 growers
+## RAW   = 20k uncleaned taxa  
 ## CLEAN = 13k taxa cleaned by Anthony Manea
 HIA.list            = read.csv("./data/base/HIA_LIST/HIA/GREEN_CITIES_DRAFT_LIST_2709_2017.csv", stringsAsFactors = FALSE)
 HIA.RAW             = read.csv("./data/base/HIA_LIST/HIA/HIA_ORIGINAL_RAW.csv",                  stringsAsFactors = FALSE)
@@ -82,7 +82,7 @@ native.good.models  = subset(MXT.CHECK, Origin == "Native" & Check.map <=2)$sear
 #########################################################################################################################
 ## Now read in the list of species Alessandro created by generating global tree inventories
 TI.XY = readRDS("./data/base/Global_tree_inventories/Global_Inventory_CLEAN_18.03.2019.rds")
-TI.XY = select(TI.XY, New_binomial, Lat, Long, Country, City)
+TI.XY = dplyr::select(TI.XY, New_binomial, Lat, Long, Country, City)
 
 
 ## Rename data
@@ -176,7 +176,7 @@ CLEAN.list$Number.of.states.total  <- number.state[CLEAN.list$Binomial]
 ## Create a table of the contextual HIA columns, using the unique binomials
 ## The "searchTaxon" column is used here, because we will be using this
 ## to search ALA and GBIF. That variable will be used throughout the analysis
-CLEAN.GROW = select(CLEAN.list, Binomial, Plant.type, Origin, Number.of.growers.total, Number.of.states.total)
+CLEAN.GROW = dplyr::select(CLEAN.list, Binomial, Plant.type, Origin, Number.of.growers.total, Number.of.states.total)
 names(CLEAN.GROW) = c("Evergreen_taxon", "Plant_type", "Origin", "Total_growers", "Number_states")
 CLEAN.GROW        = CLEAN.GROW [!duplicated(CLEAN.GROW [,c('Evergreen_taxon')]),]
 View(CLEAN.GROW)
@@ -245,10 +245,10 @@ GBIF.NA        = CLEAN.GBIF[(CLEAN.GBIF$species == ""), ]$verbatimScientificName
 
 
 ## Now join the Evergreen taxonomy to the GBIF taxonomy
-CLEAN.GBIF = select(CLEAN.GBIF, verbatimScientificName, species)
+CLEAN.GBIF = dplyr::select(CLEAN.GBIF, verbatimScientificName, species)
 CLEAN.GROW <- CLEAN.GROW %>%
-  left_join(., CLEAN.GBIF, by = c("Evergreen_taxon" = "verbatimScientificName")) %>%
-  select(., Evergreen_taxon, species, Origin, Plant_type, Total_growers, Number_states)
+  dplyr::left_join(., CLEAN.GBIF, by = c("Evergreen_taxon" = "verbatimScientificName")) %>%
+  dplyr::select(., Evergreen_taxon, species, Origin, Plant_type, Total_growers, Number_states)
 names(CLEAN.GROW)[names(CLEAN.GROW) == 'species'] <- 'GBIF_taxon'
 
 
@@ -280,15 +280,15 @@ sum(is.na(HIA.TAXO$GBIF_taxon))
 ## Create a New_binomial field from the TPL check. This becomes the "SearchTaxon" column for ALA and GBIF
 ## There is another list of plants that don't match either GBIF or TPL taxonomy. 
 ## Some are varieites, some are probably Australian-only taxonomy
-CLEAN.TAXO = select(HIA.TAXO, Taxon, New_binomial, New.Taxonomic.status)
+CLEAN.TAXO = dplyr::select(HIA.TAXO, Taxon, New_binomial, New.Taxonomic.status)
 
 
 ## Only 220 species should be NA by this join
 CLEAN.GROW <- CLEAN.GROW %>%
-  left_join(., CLEAN.TAXO, by = c("GBIF_taxon" = "Taxon"))
+  dplyr::left_join(., CLEAN.TAXO, by = c("GBIF_taxon" = "Taxon"))
 
-CLEAN.GROW <- select(CLEAN.GROW, Evergreen_taxon, GBIF_taxon, New_binomial, 
-                     New.Taxonomic.status, Origin, Plant_type, Total_growers, Number_states)
+CLEAN.GROW <- dplyr::select(CLEAN.GROW, Evergreen_taxon, GBIF_taxon, New_binomial, 
+                            New.Taxonomic.status, Origin, Plant_type, Total_growers, Number_states)
 
 names(CLEAN.GROW)[names(CLEAN.GROW) == 'New_binomial'] <- 'searchTaxon'
 names(CLEAN.GROW)[names(CLEAN.GROW) == 'New.Taxonomic.status'] <- 'Taxo_status'
@@ -309,8 +309,8 @@ colnames(CLEAN.CLASS)[1] <- "searchTaxon"
 
 ## Use table later to join ::
 GBIF.GROW = join(CLEAN.GROW, CLEAN.CLASS, type = "left")
-GBIF.GROW =  select(GBIF.GROW, searchTaxon, Evergreen_taxon, GBIF_taxon, Taxo_status, genus, family, 
-                    order, group, Origin, Plant_type, Total_growers, Number_states)
+GBIF.GROW =  dplyr::select(GBIF.GROW, searchTaxon, Evergreen_taxon, GBIF_taxon, Taxo_status, genus, family, 
+                           order, group, Origin, Plant_type, Total_growers, Number_states)
 View(GBIF.GROW)
 
 
@@ -361,18 +361,9 @@ WPW.NA          = unique(c(TPL.NA, GBIF.NA))          ## These taxa did not matc
 write.csv(GBIF.GROW.VALID, "./data/base/HIA_LIST/HIA/WPW_MODELLING_LIST_MARCH2019.csv", row.names = FALSE)
 
 
-
-## Here is a sample of 10 species on the "Hollow_spp" list that have bad models.
-## These can be used as a test bed for different analysis settings
-hollow.test.spp = c("Corymbia citriodora",      "Eucalyptus baileyana",  "Eucalyptus baxteri",  "Eucalyptus decorticans", "Eucalyptus dumosa",
-                    "Eucalyptus major",         "Eucalyptus megacarpa",  "Eucalyptus moluccana", "Eucalyptus ovata",      "Eucalyptus patens",
-                    "Eucalyptus salmonophloia", "Eucalyptus tenuipes")
-
-
 #########################################################################################################################
 ## Check the proportions of species with different maxdent model ratings from the previous run
-## 1 = good, 2 = fair, 3 = poor.
-## Current success rater is ~50-60%
+## 1 = good, 2 = fair, 3 = poor. Current success rate is ~50-60%
 table(MAXENT.RATING.LAT$CHECK_MAP)
 round(with(MAXENT.RATING.LAT, table(CHECK_MAP)/sum(table(CHECK_MAP))*100), 1)
 

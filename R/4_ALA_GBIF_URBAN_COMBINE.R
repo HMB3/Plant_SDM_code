@@ -181,7 +181,7 @@ names(COMBO.TAXO)
 ## currently using 'str_detect'
 Match.SN = COMBO.TAXO  %>%
   mutate(Match.SN.ST = 
-           str_detect(searchTaxon, New_binomial)) %>%  ## Match the searched species with the latest TPL binomial
+           str_detect(scientificName, New_binomial)) %>%  ## Match the searched species with the latest TPL binomial
   
   select(one_of(c("scientificName",
                   "searchTaxon",
@@ -208,18 +208,20 @@ unique(Match.SN$New.Taxonomic.status)
 ## Also include records where the "scientificName" and the "searchTaxon" don't match, but status is synonym
 ## Also, the ALA taxonomy is right for some species - catch this with status = "accepted"
 ## This is the same as the subset of species which are accpeted, but not on our list
-match.true  = unique(subset(Match.SN, Match.SN.ST == "TRUE")$scientificName)
-match.false = unique(subset(Match.SN, Match.SN.ST == "FALSE" &
+match.true  = unique(subset(Match.SN, Match.SN.ST == "TRUE" |
                               Taxonomic.status == "Synonym" |
-                              Taxonomic.status == "Accepted" )$scientificName)  
+                              Taxonomic.status == "Accepted")$scientificName)
+
+match.false = unique(subset(Match.SN, Match.SN.ST == "FALSE")$scientificName)
+
 keep.SN     = unique(c(match.true, match.false))
-length(keep.SN)
+length(keep.SN);length(match.false)
 
 
 #########################################################################################################################
 ## Now remove these from the ALA dataset
-GBIF.ALA.COMBO  = COMBO.TAXO[COMBO.TAXO$scientificName %in% keep.SN, ]
-Match.record    = Match.SN[Match.SN$scientificName %in% keep.SN, ]
+GBIF.ALA.COMBO = COMBO.TAXO[COMBO.TAXO$scientificName %in% keep.SN, ]
+Match.record   = Match.SN[Match.SN$scientificName %in% keep.SN, ]
 
 
 ## Check the taxonomic status
@@ -229,8 +231,8 @@ round(with(Match.record, table(New.Taxonomic.status)/sum(table(New.Taxonomic.sta
 
 
 ## How many records were removed by taxonomic filtering?
-message(dim(COMBO.TAXO)[1] - dim(GBIF.ALA.COMBO)[1], " records removed")
-message(round((dim(GBIF.ALA.COMBO)[1])/dim(COMBO.TAXO)[1]*100, 2), 
+message(nrow(COMBO.TAXO) - nrow(GBIF.ALA.COMBO), " records removed")
+message(round((nrow(GBIF.ALA.COMBO))/nrow(COMBO.TAXO)*100, 2), 
         " % records retained using TPL mismatch")
 
 
@@ -243,7 +245,9 @@ round(with(GBIF.ALA.COMBO, table(New.Taxonomic.status)/sum(table(New.Taxonomic.s
 
 
 ## Check NAs again
-(sum(is.na(GBIF.ALA.COMBO$scientificName)) + dim(subset(GBIF.ALA.COMBO, scientificName == ""))[1])/dim(GBIF.ALA.COMBO)[1]*100
+(sum(is.na(GBIF.ALA.COMBO$scientificName)) + 
+    dim(subset(GBIF.ALA.COMBO, scientificName == ""))[1])/
+  nrow(GBIF.ALA.COMBO)*100
 
 
 

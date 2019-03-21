@@ -6,6 +6,7 @@
 ## This code installs a list of packages. On this computer, they currently sit here ::
 ## .libPaths() 
 ## C:\Users\user\Documents\R\win-library
+## lib.loc = "C:/Program Files/R/R-3.5.2/library"
 
 
 #########################################################################################################################

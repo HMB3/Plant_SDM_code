@@ -155,7 +155,7 @@ dim(ALA.ALL)
 ## What names get returned?
 sort(names(ALA.ALL))
 ALA.TRIM <- ALA.ALL%>% 
-  select(one_of(ALA.keep))
+  dplyr::select(dplyr::one_of(ALA.keep))
 
 dim(ALA.TRIM)
 sort(names(ALA.TRIM))

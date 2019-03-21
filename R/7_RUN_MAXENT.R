@@ -215,7 +215,7 @@ MAXENT.RESULTS <- maxent.tables %>%
   }) %>%
   
   ## Finally, bind all the rows together
-  bind_rows
+  dplyr::bind_rows
 
 
 #########################################################################################################################

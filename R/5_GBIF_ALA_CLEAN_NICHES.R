@@ -78,76 +78,146 @@ COMBO.RASTER.CONVERT$CC.OBS <- 1:nrow(COMBO.RASTER.CONVERT)
 
 #########################################################################################################################
 ## Rename the columns to fit the CleanCoordinates format and create a tibble. 
-## A Tibble is needed for running the spatial outlier cleaning
 TIB.GBIF <- COMBO.RASTER.CONVERT %>% dplyr::rename(species          = searchTaxon,
                                                    decimallongitude = lon, 
                                                    decimallatitude  = lat) %>%
-  timetk::tk_tbl()
+  
+  ## The create a tibble for running the spatial outlier cleaning
+  timetk::tk_tbl() %>% 
+  
+  ## Consider the arguments. We've already stripped out the records that fall outside
+  ## the worldclim raster boundaries, so the sea test is probably not the most important
+  ## Study area is the globe, but we are only projecting models onto Australia
+  clean_coordinates(.,
+                    verbose         = TRUE,
+                    tests = c("capitals",     "centroids", "equal", "gbif", 
+                              "institutions", "outliers",  "zeros"),
+                    
+                    capitals_rad    = 5000,  ## remove records within 5km  of capitals
+                    centroids_rad   = 500,   ## remove records within 500m of country centroids
+                    outliers_method = "quantile", ## remove records > 100km from other records
+                    outliers_mtp    = 5) %>%
+  
+  ## The select the relevant columns and rename
+  select(., species, CC.OBS, .val, .equ, .zer,  .cap,   
+            .cen,   .otl, .gbf, .inst, .summary) 
+
+## Then rename
+summary(TIB.GBIF)
+names(TIB.GBIF) = c("searchTaxon", "CC.OBS",    "coord_val",  "coord_equ",  "coord_zer",  "coord_cap", 
+                    "coord_cen", "coord_outl", "coord_gbf", "coord_inst", "coord_summary")
 
 
-## Add a column for unique observation so we can check the records match up after joining
-#TIB.GBIF$CC.OBS <- 1:nrow(TIB.GBIF)
-identical(length(TIB.GBIF$CC.OBS), dim(TIB.GBIF)[1])
-
-
-## We've already stripped out the records that fall outside
-## the worldclim raster boundaries, so the sea test is probably not the most important
-## Study area is the globe, but we are only projecting models onto Australia
-
-
-#########################################################################################################################
-## Don't run the outliers test here, it is slower. Also, can't run cleaning on the urban tree inventory data, because this
-## removes all the records near capital cities 
-message('Flagging GBIF outliers for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
-FLAGS  <- CleanCoordinates(TIB.GBIF,
-                           #countries        = "country",    ## too many flagged here...
-                           capitals.rad     = 0.12,
-                           countrycheck     = TRUE,
-                           duplicates       = TRUE,
-                           seas             = FALSE,
-                           verbose          = FALSE)
-
-
-## save/load the flags
-identical(dim(FLAGS)[1], dim(TIB.GBIF)[1])
-
-
-## Flagging ~ 1.64%, excluding the spatial outliers. Seems reasonable?
-summary(FLAGS)
-FLAGS = FLAGS[ ,!(colnames(FLAGS) == "decimallongitude" | colnames(FLAGS) == "decimallatitude")]
-message(round(summary(FLAGS)[8]/dim(FLAGS)[1]*100, 2), " % records removed")
-
-
-
-
-
-#########################################################################################################################
-## 2). FILTER DATA TO THE CLEAN RECORDS
-#########################################################################################################################
+## Flagging ~ x%, excluding the spatial outliers. Seems reasonable?
+message(round(with(TIB.GBIF, table(coord_summary)/sum(table(coord_summary))*100), 1), " % records removed")
 
 
 #########################################################################################################################
 ## Check the order still matches
-identical(dim(TIB.GBIF)[1],dim(FLAGS)[1])
-names(FLAGS)[1]    = c("coord_spp")
-identical(COMBO.RASTER.CONVERT$searchTaxon, FLAGS$coord_spp)                                            ## order matches
+identical(COMBO.RASTER.CONVERT$CC.OBS, TIB.GBIF$CC.OBS)                                                 ## order matches
+identical(COMBO.RASTER.CONVERT$searchTaxon, TIB.GBIF$searchTaxon)                                       ## order matches
 
 
 ## Is the species column the same as the searchTaxon column?
-TEST.GEO   = cbind(COMBO.RASTER.CONVERT, FLAGS)
-identical(TEST.GEO$searchTaxon, TEST.GEO$coord_spp)                                                     ## order matches
+TEST.GEO   = join(COMBO.RASTER.CONVERT, TIB.GBIF)
+identical(COMBO.RASTER.CONVERT$searchTaxon, TEST.GEO$coord_spp)                                         ## order matches
+identical(COMBO.RASTER.CONVERT$CC.OBS,      TEST.GEO$CC.OBS)
 
 
-## Not sure why the inverse did not work :: get only the records which were not flagged as being dodgy.
-dim(subset(TEST.GEO, summary == "TRUE"))
-CLEAN.TRUE = subset(TEST.GEO, summary == "TRUE")
-unique(CLEAN.TRUE$summary)   
+## Now subset to records that are flagged as outliers
+CLEAN.TRUE  = subset(TEST.GEO, coord_summary == "TRUE")
+CLEAN.FALSE = subset(TEST.GEO, coord_summary == "FALSE")
+unique(CLEAN.TRUE$coord_summary)   
+
+
+
+
+
+#########################################################################################################################
+## 2). PLOT GBIF OUTLIERS
+#########################################################################################################################
+
+
+#########################################################################################################################
+## Try plotting the points which are outliers for a subset of species and label them
+CLEAN.FALSE.PLOT = SpatialPointsDataFrame(coords      = CLEAN.FALSE[c("lon", "lat")],
+                                          data        = CLEAN.FALSE,
+                                          proj4string = CRS.WGS.84)
+
+
+CLEAN.TRUE.PLOT = SpatialPointsDataFrame(coords      = CLEAN.TRUE[c("lon", "lat")],
+                                         data        = CLEAN.TRUE,
+                                         proj4string = CRS.WGS.84)
+
+
+## Add land
+LAND = LAND %>%
+  spTransform(CRS.WGS.84)
+AUS = AUS %>%
+  spTransform(CRS.WGS.84)
+
+
+#########################################################################################################################
+## Get the first 10 species
+## species = plot.taxa[9]
+plot.taxa <- as.character(unique(CLEAN.TRUE$searchTaxon))
+for (species in plot.taxa) {
+
+  ## Plot a subset of taxa
+  CLEAN.TRUE.P.I  = subset(CLEAN.TRUE.PLOT,  searchTaxon == species)
+  unique(CLEAN.TRUE.P.I$searchTaxon)
+  CLEAN.TRUE.AUS  = subset(CLEAN.TRUE.P.I ,  country     == "Australia")
+  unique(CLEAN.TRUE.AUS$country)
+  CLEAN.FALSE.P.I = subset(CLEAN.FALSE.PLOT, searchTaxon == species & coord_outl == "FALSE")
+  
+  message("plotting occ data for ", species, ", ", 
+          nrow(CLEAN.TRUE.P.I), " clean records")
+  
+  #############################################################
+  ## Plot true and false points for the world
+  message('Writing map of global coordlean records for ', species)
+  png(sprintf("./data/ANALYSIS/CLEAN_GBIF/%s_%s", species, "global_coord.png"),
+      16, 10, units = 'in', res = 500)
+  
+  par(mfrow = c(1,2))
+  plot(LAND, main = paste0("Global points for ", species),
+       lwd = 0.01, asp = 1, col = 'grey', bg = 'sky blue')
+  
+  points(CLEAN.TRUE.P.I,
+         pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2, 
+         xlab = "", ylab = "", asp = 1,
+         col = "blue")
+  
+  points(CLEAN.FALSE.P.I,
+         pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2, 
+         xlab = "", ylab = "", asp = 1,
+         col = "red")
+  
+  #############################################################
+  ## Plot true and false points for the world
+  plot(AUS, main = paste0("Australian points for ", species),
+       lwd = 0.01, asp = 1, bg = 'sky blue', col = 'grey')
+  
+  points(CLEAN.TRUE.P.I,
+         pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2, 
+         xlab = "", ylab = "", asp = 1,
+         col = "blue")
+  
+  points(CLEAN.FALSE.P.I,
+         pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2, 
+         xlab = "", ylab = "", asp = 1,
+         col = "red")
+  
+  dev.off()
+  
+
+}
 
 
 ## What percentage of records are retained?
 identical(dim(CLEAN.TRUE)[1], (dim(COMBO.RASTER.CONVERT)[1] - dim(subset(TEST.GEO, summary == "FALSE"))[1]))
 length(unique(CLEAN.TRUE$searchTaxon))
-message(round(dim(CLEAN.TRUE)[1]/dim(TEST.GEO)[1]*100, 2), " % records retained")                                               
+message(round(nrow(CLEAN.TRUE)/nrow(TEST.GEO)*100, 2), " % records retained")                                               
 
 
 #########################################################################################################################
@@ -204,20 +274,23 @@ if(save_data == "TRUE") {
 
 
 
+
+
 #########################################################################################################################
-## 4). CREATE SHAPEFILES TO CHECK OUTLIERS ARCMAP
+## 2). CREATE SHAPEFILES TO CHECK OUTLIERS ARCMAP
 #########################################################################################################################
 
 
 ## This code could be used to manually clean outlying records, using the OBS column......................................
 ## Select columns
-GBIF.ALA.CHECK  = select(CLEAN.TRUE,     OBS, searchTaxon, scientificName, lat, lon, SOURCE, INVENTORY, year, 
-                         country, locality, basisOfRecord, institutionCode, 
-                         Taxonomic.status, New.Taxonomic.status)
+GBIF.ALA.CHECK  = dplyr::select(CLEAN.TRUE,     CC.OBS, searchTaxon, scientificName, lat, lon, SOURCE, INVENTORY, year, 
+                                country, locality, basisOfRecord, institutionCode, 
+                                Taxonomic.status, New.Taxonomic.status)
 
 
 ## Rename the fields so that ArcMap can handle them
 GBIF.ALA.CHECK  = dplyr::rename(GBIF.ALA.CHECK, 
+                                OBS       = CC.OBS,
                                 TAXON     = searchTaxon,
                                 LAT       = lat,
                                 LON       = lon,
@@ -264,7 +337,7 @@ TAXA <- unique(GBIF.ALA.SPDF$TAXON)
 
 
 #########################################################################################################################
-## 5). INTERSECT SPECIES RECORDS WITH LOCAL GOV AREAS AND SIGNIFICANT URBAN AREAS
+## 3). INTERSECT SPECIES RECORDS WITH LOCAL GOV AREAS AND SIGNIFICANT URBAN AREAS
 #########################################################################################################################
 
 
@@ -306,9 +379,6 @@ if(calc_niche == "TRUE") {
   SUA.JOIN      = over(COMBO.RASTER.SP,   SUA.WGS)
   COMBO.SUA.LGA = cbind.data.frame(COMBO.RASTER.SP, SUA.JOIN) 
   
-  ## save .rds file for the next session
-  #saveRDS(COMBO.SUA.LGA, file = paste0(DATA_path, 'COMBO_SUA_OVER_', save_run, '.rds'))
-  
   
   #########################################################################################################################
   ## AGGREGATE THE NUMBER OF SUAs EACH SPECIES IS FOUND IN. NA LGAs ARE OUTSIDE AUS
@@ -334,7 +404,7 @@ if(calc_niche == "TRUE") {
   
   
   ## Remove duplicate coordinates
-  COMBO.SUA.LGA = subset(COMBO.SUA.LGA, select = -c(lon.1, lat.1))
+  COMBO.SUA.LGA = subset(COMBO.SUA.LGA, dplyr::select = -c(lon.1, lat.1))
   names(COMBO.SUA.LGA)
   dim(COMBO.SUA.LGA)
   str(unique(COMBO.SUA.LGA$searchTaxon))
@@ -345,12 +415,12 @@ if(calc_niche == "TRUE") {
   
   
   #########################################################################################################################
-  ## 6). CREATE NICHES FOR SELECTED TAXA
+  ## 4). CREATE NICHES FOR SELECTED TAXA
   #########################################################################################################################
   
   
   #########################################################################################################################
-  ## Now summarise the niches. But figure out a cleaner way of doing this
+  ## Now summarise the niches. But, figure out a cleaner way of doing this
   message('Estimating global niches for ', length(GBIF.spp), ' species across ', length(env.variables), ' climate variables')
   
   
@@ -400,11 +470,11 @@ if(calc_niche == "TRUE") {
   
   ## Remove duplicate Taxon columns and check the output :: would be great to skip these columns when running the function
   names(COMBO.NICHE)
-  COMBO.NICHE = subset(COMBO.NICHE, select = -c(searchTaxon.1,  searchTaxon.2,  searchTaxon.3,  searchTaxon.4,
-                                                searchTaxon.5,  searchTaxon.6,  searchTaxon.7,  searchTaxon.7,
-                                                searchTaxon.8,  searchTaxon.9,  searchTaxon.10, searchTaxon.11,
-                                                searchTaxon.12, searchTaxon.13, searchTaxon.14, searchTaxon.15,
-                                                searchTaxon.16, searchTaxon.17, searchTaxon.18, searchTaxon.19))
+  COMBO.NICHE = subset(COMBO.NICHE, dplyr::select = -c(searchTaxon.1,  searchTaxon.2,  searchTaxon.3,  searchTaxon.4,
+                                                       searchTaxon.5,  searchTaxon.6,  searchTaxon.7,  searchTaxon.7,
+                                                       searchTaxon.8,  searchTaxon.9,  searchTaxon.10, searchTaxon.11,
+                                                       searchTaxon.12, searchTaxon.13, searchTaxon.14, searchTaxon.15,
+                                                       searchTaxon.16, searchTaxon.17, searchTaxon.18, searchTaxon.19))
   
   
   #########################################################################################################################
@@ -444,7 +514,7 @@ if(calc_niche == "TRUE") {
   
   
   #########################################################################################################################
-  ## 7). CALCULATE AREA OF OCCUPANCY
+  ## 5). CALCULATE AREA OF OCCUPANCY
   #########################################################################################################################
   
   
@@ -484,7 +554,7 @@ if(calc_niche == "TRUE") {
   
   
   names(GBIF.AOO)[names(GBIF.AOO) == 'taxa'] <- 'searchTaxon'
-  GBIF.AOO             = select(GBIF.AOO, searchTaxon, EOO, AOO, Category_CriteriaB)
+  GBIF.AOO             = dplyr::select(GBIF.AOO, searchTaxon, EOO, AOO, Category_CriteriaB)
   names(GBIF.AOO)      = c("searchTaxon",  "EOO", "AOO", "ICUN_catb")
   head(GBIF.AOO)
   
@@ -493,11 +563,13 @@ if(calc_niche == "TRUE") {
   ## Now join on the geographic range and glasshouse data
   identical(length(GBIF.AOO$AOO), length(GBIF.spp))
   COMBO.NICHE = join(GBIF.AOO, COMBO.NICHE, type = "right")
-
+  
+  
+  
   
   
   #########################################################################################################################
-  ## 8). JOIN ON CONTEXTUAL DATA
+  ## 6). JOIN ON CONTEXTUAL DATA
   #########################################################################################################################
   
   

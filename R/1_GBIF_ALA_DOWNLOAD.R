@@ -15,13 +15,20 @@
 ## Change the ALA biocache to the old one
 # ala_config(caching = "off")
 # ala_config(verbose = TRUE)
-# 
-# 
-# server_config = getOption("ALA4R_server_config")
+
+
+#server_config = getOption("ALA4R_server_config")
 # 
 # server_config$base_url_biocache = "https://biocache-lb.ala.org.au/ws"
 # server_config$base_url_biocache_download = "https://biocache-lb.ala.org.au/biocache-download/"
 # server_config
+
+#########################################################################################################################
+## For now, use the old version of the ALA
+## the base url for biocache downloads (used by offline occurrence downloads)
+# install.packages("devtools")
+devtools::install_github("AtlasOfLivingAustralia/ALA4R")
+#devtools::build(vignettes = FALSE)
 
 
 ## Create a list of all the taxa to download.
@@ -34,15 +41,14 @@ all.taxa.rev =  all.taxa[rev(order(all.taxa))]
 ## Run the download function on the species lists. This function needs to download at least one file, or they 
 ## will return NULL. Saves each spp as .Rdata file, returning list of skipped spp
 # TEMP DISABLE for katana - we have all the records so no need to check again
-if (FALSE) {
-  GBIF.taxa    = download_GBIF_all_species(species_list = all.taxa, 
-                                           path         = GBIF_path) ## insert path 
-  
-  
-  ALA.taxa        = download_ALA_all_species(species_list = all.taxa.rev, 
-                                             path         = ALA_path)
+GBIF.taxa    = download_GBIF_all_species(species_list = all.taxa, 
+                                         path         = GBIF_path) ## insert path 
 
-}
+
+ALA.taxa     = download_ALA_all_species(species_list = all.taxa.rev, 
+                                        path         = ALA_path)
+
+
 
 
 

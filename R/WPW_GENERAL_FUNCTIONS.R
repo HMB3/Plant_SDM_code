@@ -423,7 +423,7 @@ download_GBIF_all_species = function (species_list, path) {
       #   }) %>%
       #   
       #   ## Finally, bind all the rows together
-      #   bind_rows
+      #   dplyr::bind_rows
       
       GBIF <- occ_data(taxonKey = key, limit = GBIF.download.limit)
       GBIF <- as.data.frame(GBIF$data)
@@ -453,6 +453,8 @@ download_GBIF_all_species = function (species_list, path) {
 
 #########################################################################################################################
 ## ALA
+## sp.n = WPW.spp[1]
+## path    = ALA_path
 download_ALA_all_species = function (species_list, path) {
   
   ## create variables
@@ -479,7 +481,7 @@ download_ALA_all_species = function (species_list, path) {
     ## 2). Then check the spelling...incorrect nomenclature will return NULL result
     if (is.null(occurrences(taxon = sp.n, download_reason_id = 7)$data) == TRUE) {
       
-      ## Now append the species which had incorrect nomenclature to the skipped list
+      ## Now, append the species which had incorrect nomenclature to the skipped list
       ## this is slow, but it works for now
       print (paste ("Possible incorrect nomenclature", sp.n, "skipping"))
       nomenclature = paste ("Possible incorrect nomenclature |", sp.n)
@@ -646,7 +648,7 @@ read_bind_tables = function (table.list, path) {
     }) %>%
     
     ## Finally, bind all the rows together
-    bind_rows
+    dplyr::bind_rows
   
 }
 
@@ -679,7 +681,7 @@ read_bind_maxent = function (table.list, path) {
     }) %>% 
     
     ## finally, bind all the rows together
-    bind_rows
+    dplyr::bind_rows
   
 }
 
@@ -966,7 +968,7 @@ read_bind_tables = function (table.list, path) {
     }) %>% 
     
     ## finally, bind all the rows together
-    bind_rows
+    dplyr::bind_rows
   
 }
 
