@@ -99,7 +99,7 @@ background.points = readRDS("./data/ANALYSIS/background_points.rds") %>%
   spTransform(sp_epsg54009)
 length(unique(background.points $searchTaxon))
 dim(background.points )
-unique(background.points $SOURCE)
+unique(background.points$SOURCE)
 background.points.df = as.data.frame(background.points)
 
 
@@ -205,16 +205,7 @@ env.variables = c("Annual_mean_temp",
                   "PET")
 
 
-## Names of all 19 worldclim predictors that could be used to run SDMs
-sdm.predictors <- c("Annual_mean_temp",    "Mean_diurnal_range",  "Isothermality",      "Temp_seasonality",  
-                    "Max_temp_warm_month", "Min_temp_cold_month", "Temp_annual_range",  
-                    "Mean_temp_wet_qu",    "Mean_temp_dry_qu",    
-                    "Mean_temp_warm_qu",   "Mean_temp_cold_qu",   
-                    
-                    "Annual_precip",       "Precip_wet_month",   "Precip_dry_month",    "Precip_seasonality",  
-                    "Precip_wet_qu",       "Precip_dry_qu",      
-                    "Precip_warm_qu",      "Precip_col_qu")
-
+## Names of the 15 worldclim predictors that have reliable data
 bs.predictors <- c("Annual_mean_temp",    "Mean_diurnal_range",  "Isothermality",      "Temp_seasonality",  
                     "Max_temp_warm_month", "Min_temp_cold_month", "Temp_annual_range",  
                     "Mean_temp_warm_qu",   "Mean_temp_cold_qu",   
@@ -257,13 +248,7 @@ awap.variables = c("Annual_mean_temp",
                    "HW_CUM_ALL", "HW_CUM_AV",  "HW_CUM_HOT")
 
 
-## Names of A-priori worldclim predictors :: these have been chosen to capture means, variability and extremes
-sdm.select     <- c("Annual_mean_temp", "Temp_seasonality",    "Max_temp_warm_month", "Min_temp_cold_month",
-                    "Annual_precip",    "Precip_seasonality",  
-                    "Precip_wet_month", "Precip_dry_month")
-
-
-## Names of all the worldclim predictors :: uneeded
+## Names of all the worldclim predictors :: uneeded. This is the same as 
 grid.names = c('Annual_mean_temp',    'Mean_diurnal_range',  'Isothermality',      'Temp_seasonality', 
                'Max_temp_warm_month', 'Min_temp_cold_month', 'Temp_annual_range',  'Mean_temp_wet_qu',
                'Mean_temp_dry_qu',    'Mean_temp_warm_qu',   'Mean_temp_cold_qu',  'Annual_precip',

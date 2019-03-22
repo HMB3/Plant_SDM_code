@@ -4,236 +4,6 @@
 
 
 #########################################################################################################################
-## Package functions
-#########################################################################################################################
-
-
-ipak <- function(pkg){
-  
-  new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
-  
-  if (length(new.pkg)) 
-    install.packages(new.pkg, dependencies = TRUE)
-  
-  sapply(pkg, require, character.only = TRUE)
-  
-}
-
-
-#########################################################################################################################
-## Sorting functions
-#########################################################################################################################
-
-
-## Trim trailin and leading white space
-trim <- function (x) gsub("^\\s+|\\s+$", "", x)
-
-
-## Reorder column names
-movetolast <- function(data, move) {
-  
-  data[c(setdiff(names(data), move), move)]
-  
-}
-
-
-
-## Get the first two words of a string
-string_fun_first_two_words <- function(x) {
-  
-  ul = unlist(strsplit(x, split = "\\s+"))[1:2]
-  paste(ul, collapse = " ") 
-  
-}
-
-
-## Get the first word of a string
-string_fun_first_word <- function(x) {
-  
-  ul = unlist(strsplit(x, split = "\\s+"))[1]
-  paste(ul, collapse = " ") 
-  
-}
-
-
-##
-make.true.NA <- function(x) if(is.character(x)||is.factor(x)){
-  is.na(x) <- x=="NA"; x} else {
-    x}
-
-
-## Get a complete df
-completeFun <- function(data, desiredCols) {
-  completeVec <- complete.cases(data[, desiredCols])
-  return(data[completeVec, ])
-  
-}
-
-
-round_df <- function(x, digits) {
-  # round all numeric variables
-  # x: data frame 
-  # digits: number of digits to round
-  numeric_columns <- sapply(x, mode) == 'numeric'
-  x[numeric_columns] <-  round(x[numeric_columns], digits)
-  x
-}
-
-
-# ## Make the first letter of a string lower case
-# firs_lett_lower <- function(x) {
-#   substr(x, 1, 1) <- tolower(substr(x, 1, 1))
-#   x
-# }
-
-
-convert_ALA_columns <- function(ds) {
-  
-  
-  ## Make the first letter lowercase
-  firs_lett_lower <- function(x) {
-    substr(x, 1, 1) <- tolower(substr(x, 1, 1))
-    x
-  }
-  
-  ## 
-  names(ds) <- firs_lett_lower(names(ds))
-  
-  ## Convert any number of consecutive dots to a single space.
-  names(ds) <- gsub(x = names(ds),
-                    pattern = "(\\.)+",
-                    replacement = "")
-  
-  ## Drop the trailing spaces.
-  names(ds) <- gsub(x = names(ds),
-                    pattern = "( )+$",
-                    replacement = "")
-  
-  ## Remove dash
-  names(ds) <- gsub(x = names(ds),
-                    pattern = " - ",
-                    replacement = "")
-  
-  ## Remove parsed 
-  names(ds) <- gsub(x = names(ds),
-                    pattern = " - parsed",
-                    replacement = "")
-  
-  ## Remove white space.
-  names(ds) <- gsub(x = names(ds),
-                    pattern = " ",
-                    replacement = "")
-  
-  # ## for loop solution
-  # for(i in myobject){
-  #   mycolumns[grepl(i, mycolumns)] <- i
-  # }
-  
-  ds
-}
-
-
-
-
-
-
-
-#########################################################################################################################
-## CORRELATION PLOTTING FUNCTIONS
-#########################################################################################################################
-
-
-## if(missing(cex.cor)) cex = 0.8/strwidth(txt)
-## text(0.5, 0.5, txt, cex = 5) 
-panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...)
-  
-{
-  usr <- par("usr"); on.exit(par(usr))
-  par(usr = c(0, 1, 0, 1))
-  r <- abs(cor(x, y))
-  txt <- format(c(r, 0.123456789), digits = digits)[1]
-  txt <- paste0(prefix, txt)
-  if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
-  text(0.5, 0.5, txt, cex = 2)
-}
-
-
-panel.loess = function(x, y, digits=2, prefix="", cex.cor) {
-  
-  usr = par("usr"); on.exit(par(usr))
-  par(usr = c(0, 1, 0, 1))
-  
-  r = (loess(x, y))
-  
-  txt = format(c(r, 0.123456789), digits=digits)[1]
-  txt = paste(prefix, txt, sep = "")
-  
-  if(missing(cex.cor)) cex = 0.8/strwidth(txt)
-  text(0.5, 0.5, txt, cex = 5)
-  
-}
-
-
-panel.sig <- function(x, y, digits = 2, cex.cor)
-  
-{
-  usr <- par("usr"); on.exit(par(usr))
-  par(usr = c(0, 1, 0, 1))
-  r <- abs(cor(x, y))
-  txt <- format(c(r, 0.123456789), digits = digits)[1]
-  test <- cor.test(x,y)
-  Signif <- ifelse(round(test$p.value,3)<0.001,"p<0.001",paste("p=",round(test$p.value,3)))  
-  text(0.5, 0.25, paste("r=",txt))
-  text(.5, .75, Signif)
-  
-}
-
-
-## tweak these arguments: lwd = 8, cex, etc.
-panel.smooth <- function (x, y, col = "blue", bg = NA, pch = 19, 
-                          cex = 1.2, col.smooth = "red",
-                          cex.axis = 3,
-                          span = 2/3, iter = 3, ...) 
-  
-{
-  points(x, y, pch = pch, col = col, bg = bg, cex = cex, cex.axis = cex.axis)
-  
-  ok <- is.finite(x) & is.finite(y)
-  if (any(ok)) 
-    lines(stats::lowess(x[ok], y[ok], f = span, iter = iter), 
-          col = "orange", lwd = 4, cex.axis = 3, ...)
-  
-}
-
-
-## tweak these arguments: border = NA, colour = grey, etc.
-## cannot figure out how to get the axes of these plots to enlarge...
-panel.hist <- function(x, ...)
-  
-{
-  usr <- par("usr"); on.exit(par(usr))
-  par(usr = c(usr[1:2], 0, 1.5) )
-  h <- hist(x, plot = FALSE)
-  breaks <- h$breaks; nB <- length(breaks)
-  y <- h$counts; y <- y/max(y)
-  rect(breaks[-nB], 0, breaks[-1], y, #col = "grey", 
-       border = "NA", ...)
-  
-}
-
-
-Mode <- function(x) {
-  
-  ux <- unique(x)
-  ux[which.max(tabulate(match(x, ux)))]
-  
-}
-
-
-
-
-
-#########################################################################################################################
 ## DOWNLOADING FUNCTIONS
 #########################################################################################################################
 
@@ -270,77 +40,11 @@ gbif_parse <- function(x) {
 }
 
 
+
+
+
 #########################################################################################################################
 ## GBIF
-# download_GBIF_all_species = function (species_list, path) {
-#   
-#   ## create variables
-#   skip.spp.list       = list()
-#   GBIF.download.limit = 200000
-#   
-#   ## for every species in the list
-#   for(sp.n in species_list){
-#     
-#     ## 1). First, check if the f*&%$*# file exists
-#     ## data\base\HIA_LIST\GBIF\SPECIES
-#     file = paste0(path, sp.n, "_GBIF_records.RData")
-#     
-#     ## If it's already downloaded, skip
-#     if (file.exists (file)) {
-#       
-#       print (paste ("file exists for species", sp.n, "skipping"))
-#       next
-#       
-#     }
-#     
-#     ## 2). Then check the spelling...incorrect nomenclature will return NULL result
-#     if (is.null(occ_search(scientificName = sp.n, limit = 1)$meta$count) == TRUE) {
-#       
-#       ## now append the species which had incorrect nomenclature to the skipped list
-#       ## this is slow, but it works for now
-#       print (paste ("Possible incorrect nomenclature", sp.n, "skipping"))
-#       nomenclature = paste ("Possible incorrect nomenclature |", sp.n)
-#       skip.spp.list <- c(skip.spp.list, nomenclature)
-#       next
-#       
-#     }
-#     
-#     ## 3). Skip species with no records
-#     if (occ_search(scientificName = sp.n)$meta$count == 0) {
-#       
-#       ## now append the species which had no records to the skipped list
-#       print (paste ("No GBIF records for", sp.n, "skipping"))
-#       records = paste ("No GBIF records |", sp.n)
-#       skip.spp.list <- c(skip.spp.list, records)
-#       next
-#       
-#     }
-#     
-#     ## 4). Check how many records there are, and skip if there are over 200k
-#     if (occ_search(scientificName = sp.n, limit = 1)$meta$count > GBIF.download.limit) {
-#       
-#       ## now append the species which had > 200k records to the skipped list
-#       print (paste ("Number of records > max for GBIF download via R (200,000)", sp.n, "skipping"))
-#       max =  paste ("Number of records > 200,000 |", sp.n)
-#       skip.spp.list <- c(skip.spp.list, max)
-#       next
-#       
-#     }
-#     
-#     ## 5). Download ALL records from GBIF
-#     ## ala = occurrences(taxon = sp.n, download_reason_id = 7)
-#     print (paste (sp.n))
-#     GBIF = gbif(sp.n, download = TRUE)   ## could use more arguments here, download_reason_id = 7, etc.
-#     
-#     ## 6). save records to .Rdata file, note that using .csv files seemed to cause problems...
-#     save(GBIF, file = paste(path, sp.n, "_GBIF_records.RData", sep = ""))
-#     #return(skip.spp.list)
-#     
-#   }
-#   
-# }
-
-
 download_GBIF_all_species = function (species_list, path) {
   
   ## create variables
@@ -479,7 +183,7 @@ download_ALA_all_species = function (species_list, path) {
     save (dummy, file = file_name)
     
     ## 2). Then check the spelling...incorrect nomenclature will return NULL result
-    if (is.null(occurrences(taxon = sp.n, download_reason_id = 7)$data) == TRUE) {
+    if (is.null(ALA4R::occurrences(taxon = sp.n, download_reason_id = 7)$data) == TRUE) {
       
       ## Now, append the species which had incorrect nomenclature to the skipped list
       ## this is slow, but it works for now
@@ -491,7 +195,7 @@ download_ALA_all_species = function (species_list, path) {
     }
     
     ## 3). Skip species with no records
-    if (dim(occurrences(taxon = sp.n, download_reason_id = 7)$data)[1] <= 2) {
+    if (dim(ALA4R::occurrences(taxon = sp.n, download_reason_id = 7)$data)[1] <= 2) {
       
       ## now append the species which had no records to the skipped list
       print (paste ("No ALA records for", sp.n, "skipping"))
@@ -503,21 +207,18 @@ download_ALA_all_species = function (species_list, path) {
     
     ## 4). Download ALL records from ALA :: 
     message("Downloading ALA records for ", sp.n, " using ALA4R :: occurrences")
-    ALA = occurrences(taxon = sp.n, download_reason_id = 7)   ## could use more arguments here, download_reason_id = 7, etc.
+    ALA = ALA4R::occurrences(taxon = sp.n, download_reason_id = 1)   ## could use more arguments here, download_reason_id = 7, etc.
     ALA = ALA[["data"]]
+    
     cat("Synonyms returned for :: ", sp.n, unique(ALA$scientificName), sep="\n")
     message(dim(ALA[1]), " Records returned for ", sp.n)
     
     ## 5). save records to .Rdata file, note that using .csv files seemed to cause problems...
-    ##save(ALA, file = paste(path, sp.n, "_ALA_records.RData", sep = ""))
-    save (ALA, file = file_name)
-    #return(skip.spp.list)
+    save(ALA, file = file_name)
     
   }
   
 }
-
-
 
 
 #########################################################################################################################
@@ -587,6 +288,234 @@ download_GBIF_all_genera = function (list) {
     return(skip.gen.list)
     
   }
+  
+}
+
+
+
+
+
+#########################################################################################################################
+## Package functions
+#########################################################################################################################
+
+
+ipak <- function(pkg){
+  
+  new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+  
+  if (length(new.pkg)) 
+    install.packages(new.pkg, dependencies = TRUE)
+  
+  sapply(pkg, require, character.only = TRUE)
+  
+}
+
+
+#########################################################################################################################
+## Sorting functions
+#########################################################################################################################
+
+
+## Trim trailin and leading white space
+trim <- function (x) gsub("^\\s+|\\s+$", "", x)
+
+
+## Reorder column names
+movetolast <- function(data, move) {
+  
+  data[c(setdiff(names(data), move), move)]
+  
+}
+
+
+
+## Get the first two words of a string
+string_fun_first_two_words <- function(x) {
+  
+  ul = unlist(strsplit(x, split = "\\s+"))[1:2]
+  paste(ul, collapse = " ") 
+  
+}
+
+
+## Get the first word of a string
+string_fun_first_word <- function(x) {
+  
+  ul = unlist(strsplit(x, split = "\\s+"))[1]
+  paste(ul, collapse = " ") 
+  
+}
+
+
+##
+make.true.NA <- function(x) if(is.character(x)||is.factor(x)){
+  is.na(x) <- x=="NA"; x} else {
+    x}
+
+
+## Get a complete df
+completeFun <- function(data, desiredCols) {
+  completeVec <- complete.cases(data[, desiredCols])
+  return(data[completeVec, ])
+  
+}
+
+
+round_df <- function(x, digits) {
+  # round all numeric variables
+  # x: data frame 
+  # digits: number of digits to round
+  numeric_columns <- sapply(x, mode) == 'numeric'
+  x[numeric_columns] <-  round(x[numeric_columns], digits)
+  x
+}
+
+
+# ## Make the first letter of a string lower case
+# firs_lett_lower <- function(x) {
+#   substr(x, 1, 1) <- tolower(substr(x, 1, 1))
+#   x
+# }
+
+
+convert_ALA_columns <- function(ds) {
+  
+  
+  ## Make the first letter lowercase
+  firs_lett_lower <- function(x) {
+    substr(x, 1, 1) <- tolower(substr(x, 1, 1))
+    x
+  }
+  
+  ## 
+  names(ds) <- firs_lett_lower(names(ds))
+  
+  ## Convert any number of consecutive dots to a single space.
+  names(ds) <- gsub(x = names(ds),
+                    pattern = "(\\.)+",
+                    replacement = "")
+  
+  ## Drop the trailing spaces.
+  names(ds) <- gsub(x = names(ds),
+                    pattern = "( )+$",
+                    replacement = "")
+  
+  ## Remove dash
+  names(ds) <- gsub(x = names(ds),
+                    pattern = " - ",
+                    replacement = "")
+  
+  ## Remove parsed 
+  names(ds) <- gsub(x = names(ds),
+                    pattern = " - parsed",
+                    replacement = "")
+  
+  ## Remove white space.
+  names(ds) <- gsub(x = names(ds),
+                    pattern = " ",
+                    replacement = "")
+  
+  # ## for loop solution
+  # for(i in myobject){
+  #   mycolumns[grepl(i, mycolumns)] <- i
+  # }
+  
+  ds
+}
+
+
+
+
+
+#########################################################################################################################
+## CORRELATION PLOTTING FUNCTIONS
+#########################################################################################################################
+
+
+## if(missing(cex.cor)) cex = 0.8/strwidth(txt)
+## text(0.5, 0.5, txt, cex = 5) 
+panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...)
+  
+{
+  usr <- par("usr"); on.exit(par(usr))
+  par(usr = c(0, 1, 0, 1))
+  r <- abs(cor(x, y))
+  txt <- format(c(r, 0.123456789), digits = digits)[1]
+  txt <- paste0(prefix, txt)
+  if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
+  text(0.5, 0.5, txt, cex = 2)
+}
+
+
+panel.loess = function(x, y, digits=2, prefix="", cex.cor) {
+  
+  usr = par("usr"); on.exit(par(usr))
+  par(usr = c(0, 1, 0, 1))
+  
+  r = (loess(x, y))
+  
+  txt = format(c(r, 0.123456789), digits=digits)[1]
+  txt = paste(prefix, txt, sep = "")
+  
+  if(missing(cex.cor)) cex = 0.8/strwidth(txt)
+  text(0.5, 0.5, txt, cex = 5)
+  
+}
+
+
+panel.sig <- function(x, y, digits = 2, cex.cor)
+  
+{
+  usr <- par("usr"); on.exit(par(usr))
+  par(usr = c(0, 1, 0, 1))
+  r <- abs(cor(x, y))
+  txt <- format(c(r, 0.123456789), digits = digits)[1]
+  test <- cor.test(x,y)
+  Signif <- ifelse(round(test$p.value,3)<0.001,"p<0.001",paste("p=",round(test$p.value,3)))  
+  text(0.5, 0.25, paste("r=",txt))
+  text(.5, .75, Signif)
+  
+}
+
+
+## tweak these arguments: lwd = 8, cex, etc.
+panel.smooth <- function (x, y, col = "blue", bg = NA, pch = 19, 
+                          cex = 1.2, col.smooth = "red",
+                          cex.axis = 3,
+                          span = 2/3, iter = 3, ...) 
+  
+{
+  points(x, y, pch = pch, col = col, bg = bg, cex = cex, cex.axis = cex.axis)
+  
+  ok <- is.finite(x) & is.finite(y)
+  if (any(ok)) 
+    lines(stats::lowess(x[ok], y[ok], f = span, iter = iter), 
+          col = "orange", lwd = 4, cex.axis = 3, ...)
+  
+}
+
+
+## tweak these arguments: border = NA, colour = grey, etc.
+## cannot figure out how to get the axes of these plots to enlarge...
+panel.hist <- function(x, ...)
+  
+{
+  usr <- par("usr"); on.exit(par(usr))
+  par(usr = c(usr[1:2], 0, 1.5) )
+  h <- hist(x, plot = FALSE)
+  breaks <- h$breaks; nB <- length(breaks)
+  y <- h$counts; y <- y/max(y)
+  rect(breaks[-nB], 0, breaks[-1], y, #col = "grey", 
+       border = "NA", ...)
+  
+}
+
+
+Mode <- function(x) {
+  
+  ux <- unique(x)
+  ux[which.max(tabulate(match(x, ux)))]
   
 }
 

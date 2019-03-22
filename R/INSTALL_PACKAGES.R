@@ -3,14 +3,18 @@
 #########################################################################################################################
 
 
-## This code installs a list of packages. On this computer, they currently sit here ::
+
+#########################################################################################################################
+## This code installs a list of packages. On the workstation computer, they currently sit here ::
 ## .libPaths() 
 ## C:\Users\user\Documents\R\win-library
 ## lib.loc = "C:/Program Files/R/R-3.5.2/library"
 
+## There are several issues with the install - updating and transferring packages, etc.
+
 
 #########################################################################################################################
-## RE-INSTALL R
+## RE-INSTALL R, AND/OR UPDATE PACKAGES
 #########################################################################################################################
 
 
@@ -32,6 +36,17 @@ missing <- setdiff(installedpkgs, installedpkgs.new)
 install.packages(missing)
 update.packages()
 
+
+## Also to create pdf/html documents, you need to install a latex program. EG MiKtex for windows.
+## easiest to use the installr function, see:
+## https://stackoverflow.com/questions/24239420/tex-package-not-installing-in-r-version-3-1-0
+## installr::installr() and pick MikTeX (at least).
+## install.packages("climates",,"http://rforge.net/",type="source")
+
+
+## To rsemove all the packages
+## rownames(installed.packages())
+## remove.packages()
 
 
 
@@ -107,33 +122,33 @@ update.packages(old.package, ask = FALSE)
 #########################################################################################################################
 
 
-## Also to create pdf/html documents, you need to install a latex program. EG MiKtex for windows.
-## easiest to use the installr function, see:
-## https://stackoverflow.com/questions/24239420/tex-package-not-installing-in-r-version-3-1-0
-## installr::installr() and pick MikTeX (at least).
-## install.packages("climates",,"http://rforge.net/",type="source")
-
-
-## To rsemove all the packages
-## rownames(installed.packages())
-## remove.packages()
-
-
 #########################################################################################################################
 ## Install github packages that can't be downloaded from CRAN
 devtools::install_github("ropensci/rgbif")
 library(devtools)
+
+## John's packages: are any missing from here?
 install_github('johnbaums/rmaxent')
 install_github('johnbaums/jagstools')
 install_github('johnbaums/hues')
 install_github('johnbaums/trees')
 install_github('johnbaums/things')
+
+
+## Other tidbits
 install_github("ropenscilabs/datastorr")
 install_github("wcornwell/taxonlookup")
 install_github('KarelMokany/AdaptR')
 install_github("danlwarren/ENMTools")
+
+
+## Trait packages
 devtools::install_github("richfitz/datastorr")
 devtools::install_github("traitecoevo/baad.data")
+
+## Update ALA4R :: this should get around some of the issues with the CRAN version
+devtools::install_github("AtlasOfLivingAustralia/ALA4R")
+librayr(ALA4R)
 
 
 #########################################################################################################################
