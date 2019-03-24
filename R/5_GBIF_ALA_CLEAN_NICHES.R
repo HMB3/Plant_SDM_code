@@ -66,6 +66,7 @@ names(COMBO.RASTER.CONVERT)
 #########################################################################################################################
 ## Create a unique identifier. This is used for automated cleaing the records, and also saving shapefiles
 COMBO.RASTER.CONVERT$CC.OBS <- 1:nrow(COMBO.RASTER.CONVERT)
+COMBO.RASTER.CONVERT$CC.OBS <- paste0(CLEAN.TRUE$OBS, "_CC")
 
 
 
@@ -248,6 +249,12 @@ length(unique(CLEAN.TRUE$INVENTORY))
 length(unique(CLEAN.TRUE$searchTaxon))
 summary(CLEAN.TRUE$Annual_mean_temp)
 summary(CLEAN.TRUE$Annual_mean_temp)
+
+## Then create a unique ID column which can be used to identify outlier records
+CLEAN.TRUE$OBS_SHP <- 1:nrow(CLEAN.TRUE)
+CLEAN.TRUE$OBS_SHP <- paste0(CLEAN.TRUE$OBS, "_shp")
+dim(CLEAN.TRUE)[1];length(CLEAN.TRUE$OBS)  
+identical(nrow(CLEAN.TRUE), length(CLEAN.TRUE$OBS))
 
 
 ## By how many % does including tree inventories increase the overal number of records?
