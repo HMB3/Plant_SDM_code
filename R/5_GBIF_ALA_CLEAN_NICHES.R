@@ -45,9 +45,10 @@ if(read_data == "TRUE") {
 
 #########################################################################################################################
 ## Read in the global data
-if(dim(TI.XY.SPP)[1] > 0 & read_data == "TRUE") {
+if(nrow(TI.XY.SPP) > 0 & read_data == "TRUE") {
   
   ## Read in RDS files from previous step
+  message('Reading ', nrow(TI.XY.SPP), ' records for ', length(unique(TI.XY.SPP$searchTaxon)), ' species in the set ', "'", save_run, "'")
   TI.RASTER.CONVERT = readRDS(paste0(DATA_path, 'TI_RASTER_CONVERT_', save_run, '.rds'))
   
 } else {
@@ -59,14 +60,18 @@ if(dim(TI.XY.SPP)[1] > 0 & read_data == "TRUE") {
 
 ## Check dimensions of the occurrence and inventory data tables.
 length(unique(COMBO.RASTER.CONVERT$searchTaxon))
-formatC(dim(COMBO.RASTER.CONVERT)[1], format = "e", digits = 2)
+formatC(nrow(COMBO.RASTER.CONVERT), format = "e", digits = 2)
 names(COMBO.RASTER.CONVERT)
 
 
 #########################################################################################################################
 ## Create a unique identifier. This is used for automated cleaing the records, and also saving shapefiles
+## But this will only work for each species at a time. So, it probably needs to be a combination of number and species
+## Not great, but should work for creating a list of outliers.
 COMBO.RASTER.CONVERT$CC.OBS <- 1:nrow(COMBO.RASTER.CONVERT)
-COMBO.RASTER.CONVERT$CC.OBS <- paste0(CLEAN.TRUE$OBS, "_CC")
+COMBO.RASTER.CONVERT$CC.OBS <- paste0(COMBO.RASTER.CONVERT$CC.OBS, "_CC_", COMBO.RASTER.CONVERT$searchTaxon)
+COMBO.RASTER.CONVERT$CC.OBS <- gsub(" ",     "_",  COMBO.RASTER.CONVERT$CC.OBS, perl = TRUE)
+length(COMBO.RASTER.CONVERT$CC.OBS);length(unique(COMBO.RASTER.CONVERT$CC.OBS))
 
 
 
@@ -91,13 +96,14 @@ TIB.GBIF <- COMBO.RASTER.CONVERT %>% dplyr::rename(species          = searchTaxo
   ## Study area is the globe, but we are only projecting models onto Australia
   
   ## The geographic outlier detection is not working here. Try it in setp 6
+  ## Also, the duplicates step is not working, flagging too many records
   clean_coordinates(.,
                     verbose         = TRUE,
                     tests = c("capitals",     "centroids", "equal", "gbif", 
                               "institutions", "zeros"),
                     
-                    capitals_rad    = 10000,  ## remove records within 5km  of capitals
-                    centroids_rad   = 5000   ## remove records within 500m of country centroids
+                    capitals_rad    = 10000,  ## remove records within 10km  of capitals
+                    centroids_rad   = 5000   ## remove records within 5km of country centroids
                     # outliers_method = "distance", ## remove records > 100km from other records
                     # outliers_td     = 800,
                     # outliers_mtp    = 5
@@ -114,7 +120,7 @@ names(TIB.GBIF) = c("coord_spp", "CC.OBS",    "coord_val",  "coord_equ",  "coord
 
 
 ## Flagging ~ x%, excluding the spatial outliers. Seems reasonable?
-message(round(with(TIB.GBIF, table(coord_summary)/sum(table(coord_summary))*100), 1), " % records removed")
+message(round(with(TIB.GBIF, table(coord_summary)/sum(table(coord_summary))*100), 2), " % records removed")
 
 
 #########################################################################################################################
@@ -133,7 +139,7 @@ identical(COMBO.RASTER.CONVERT$CC.OBS,      TEST.GEO$CC.OBS)                    
 CLEAN.TRUE  = subset(TEST.GEO, coord_summary == "TRUE")
 CLEAN.FALSE = subset(TEST.GEO, coord_summary == "FALSE")
 unique(CLEAN.TRUE$coord_summary)   
-
+table(CLEAN.TRUE$coord_summary) 
 
 
 
@@ -150,9 +156,9 @@ CLEAN.FALSE.PLOT = SpatialPointsDataFrame(coords      = CLEAN.FALSE[c("lon", "la
                                           proj4string = CRS.WGS.84)
 
 
-CLEAN.TRUE.PLOT = SpatialPointsDataFrame(coords      = CLEAN.TRUE[c("lon", "lat")],
-                                         data        = CLEAN.TRUE,
-                                         proj4string = CRS.WGS.84)
+CLEAN.TRUE.PLOT  = SpatialPointsDataFrame(coords      = CLEAN.TRUE[c("lon", "lat")],
+                                          data        = CLEAN.TRUE,
+                                          proj4string = CRS.WGS.84)
 
 
 ## Add land
@@ -221,10 +227,12 @@ length(unique(CLEAN.TRUE$searchTaxon))
 message(round(nrow(CLEAN.TRUE)/nrow(TEST.GEO)*100, 2), " % records retained")                                               
 
 
+
+
 #########################################################################################################################
 ## Now bind on the urban tree inventory data. We are assuming this data is clean, after we manually fix the taxonomy
 ## If you want to clean the inventory records, put a OBS column in here too.
-if(dim(TI.XY.SPP)[1] > 0) {
+if(nrow(TI.XY.SPP) > 0) {
   
   message('Combining Australian inventory data with occurrence data') 
   intersect(names(TI.RASTER.CONVERT), names(CLEAN.TRUE))
@@ -240,9 +248,10 @@ if(dim(TI.XY.SPP)[1] > 0) {
 
 
 ## How many local municipalities have data for the species analysed
-names(CLEAN.TRUE)
+## Remove duplicate coordinates
+drops <- c("lon.1", "lat.1")
+CLEAN.TRUE <- CLEAN.TRUE[ , !(names(CLEAN.TRUE) %in% drops)]
 unique(CLEAN.TRUE$SOURCE) 
-unique(CLEAN.TRUE$INVENTORY)
 length(unique(CLEAN.TRUE$INVENTORY))
 
 
@@ -250,11 +259,13 @@ length(unique(CLEAN.TRUE$searchTaxon))
 summary(CLEAN.TRUE$Annual_mean_temp)
 summary(CLEAN.TRUE$Annual_mean_temp)
 
+
 ## Then create a unique ID column which can be used to identify outlier records
-CLEAN.TRUE$OBS_SHP <- 1:nrow(CLEAN.TRUE)
-CLEAN.TRUE$OBS_SHP <- paste0(CLEAN.TRUE$OBS, "_shp")
-dim(CLEAN.TRUE)[1];length(CLEAN.TRUE$OBS)  
-identical(nrow(CLEAN.TRUE), length(CLEAN.TRUE$OBS))
+## We don't want to clean the inventory data, so skip this
+# CLEAN.TRUE$OBS_SHP <- 1:nrow(CLEAN.TRUE)
+# CLEAN.TRUE$OBS_SHP <- paste0(CLEAN.TRUE$OBS, "_shp")
+# dim(CLEAN.TRUE)[1];length(CLEAN.TRUE$OBS)  
+# identical(nrow(CLEAN.TRUE), length(CLEAN.TRUE$OBS))
 
 
 ## By how many % does including tree inventories increase the overal number of records?
@@ -279,7 +290,7 @@ if(save_data == "TRUE") {
 
 
 #########################################################################################################################
-## 2). CREATE SHAPEFILES - IF (!) YOU WANT TO CHECK OUTLIERS ARCMAP
+## 2). CREATE SHAPEFILES - IF, (!) YOU WANT TO CHECK OUTLIERS ARCMAP
 #########################################################################################################################
 
 
@@ -345,7 +356,7 @@ for (i in 1:length(TAXA)) {
 
 
 #########################################################################################################################
-## 3). INTERSECT SPECIES RECORDS WITH LOCAL GOV AREAS AND SIGNIFICANT URBAN AREAS
+## 3). INTERSECT SPECIES RECORDS WITH SIGNIFICANT URBAN AREAS
 #########################################################################################################################
 
 
@@ -384,13 +395,14 @@ if(calc_niche == "TRUE") {
   message('Joining occurence data to SUAs for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
   
   
+  ## All the spatial files need to be in the same projection for "over" to work
   projection(COMBO.RASTER.SP);projection(LGA.WGS);projection(SUA.WGS);projection(AUS.WGS)
   SUA.JOIN      = over(COMBO.RASTER.SP,   SUA.WGS)
   COMBO.SUA.LGA = cbind.data.frame(COMBO.RASTER.SP, SUA.JOIN) 
   
   
   #########################################################################################################################
-  ## AGGREGATE THE NUMBER OF SUAs EACH SPECIES IS FOUND IN. NA LGAs ARE OUTSIDE AUS
+  ## AGGREGATE THE NUMBER OF SUAs EACH SPECIES IS FOUND IN
   SUA.AGG   = tapply(COMBO.SUA.LGA$SUA_NAME16, COMBO.SUA.LGA$searchTaxon, function(x) length(unique(x))) ## group SUA by species name
   SUA.AGG   = as.data.frame(SUA.AGG)
   AUS.AGG   = aggregate(SUA_NAME16 ~ searchTaxon, data = COMBO.SUA.LGA,   function(x) {sum(!is.na(x))}, na.action = NULL)
@@ -581,6 +593,34 @@ if(calc_niche == "TRUE") {
   COMBO.NICHE = join(GBIF.AOO, COMBO.NICHE, type = "right")
   
   
+  
+  
+  #########################################################################################################################
+  ## 6). CREATE HISTOGRAMS FOR EACH SPECIES
+  #########################################################################################################################
+  
+  
+  ##############################################################################################
+  ## histograms of temperature and rainfall
+  HIST.TAXA = (as.list(unique(COMBO.SUA.LGA$searchTaxon)))
+  names(TRAIT.RASTER.CONTEXT)
+  
+  
+  ## Back to here - could change to include density, or histograms for each source
+  ## Print the histograms to screen
+  Print_global_histogram(taxa.list    = HIST.TAXA, 
+                         DF           = COMBO.SUA.LGA,  
+                         env.var.1    = "Max_temp_warm_month",   
+                         env.col.1    = "orange",  
+                         env.units.1  = "°C",
+                         env.var.2    = "Annual_precip",   
+                         env.col.2    = "blue",     
+                         env.units.2  = "°C")
+  
+  
+  Boxplot_GBIF_records(taxa.list = HIST.TAXA,       DF = TRAIT.RASTER.CONTEXT,
+                       env.1 = "Max_temp_warm_month",   env.col.1 = "orange",     env.units.1 = "°C",
+                       env.2 = "Annual_precip",         env.col.2 = "blue",       env.units.2 = "°mm")
   
   
   

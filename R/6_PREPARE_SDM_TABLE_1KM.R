@@ -51,6 +51,7 @@ unique(CLEAN.TRUE$SOURCE)
 
 
 ## Select only the columns needed
+## This also needs to use the variable names
 COMBO.RASTER.ALL  <- dplyr::select(CLEAN.TRUE, searchTaxon, lon, lat, SOURCE, OBS,
                                    
                                    Annual_mean_temp,     Mean_diurnal_range,  Isothermality,     Temp_seasonality, 
@@ -226,19 +227,19 @@ head(SPAT.OUT)
 names(SPAT.OUT)[names(SPAT.OUT) == 'searchTaxon'] <- 'SPAT_SPP'
 
 
-#########################################################################################################################
-## save data
-if(save_data == "TRUE") {
-  
-  ## save .rds file for the next session
-  saveRDS(SPAT.OUT, paste0(DATA_path, 'ALA_GBIF_SPAT_OUT_', save_run, '.rds'))
-  #SPAT.OUT = readRDS(paste0(DATA_path, 'ALA_GBIF_SPAT_OUT_', save_run, '.rds'))
-  
-} else {
-  
-  message(' skip file saving, not many species analysed')   ##
-  
-}
+# #########################################################################################################################
+# ## save data
+# if(save_data == "TRUE") {
+#   
+#   ## save .rds file for the next session
+#   saveRDS(SPAT.OUT, paste0(DATA_path, 'ALA_GBIF_SPAT_OUT_', save_run, '.rds'))
+#   #SPAT.OUT = readRDS(paste0(DATA_path, 'ALA_GBIF_SPAT_OUT_', save_run, '.rds'))
+#   
+# } else {
+#   
+#   message(' skip file saving, not many species analysed')   ##
+#   
+# }
 
 
 
@@ -294,7 +295,7 @@ projection(SDM.SPAT.ALL)
 if(save_data == "TRUE") {
   
   ## Save .rds file for the next session
-  saveRDS(SPAT.FLAG, paste0(DATA_path, 'SPAT_FLAG_', save_run, '.rds'))
+  saveRDS(SDM.SPAT.ALL, paste0(DATA_path, 'SPAT_FLAG_', save_run, '.rds'))
   
   writeOGR(obj    = SDM.SPAT.ALL, 
            dsn    = SHP_path, 
@@ -341,7 +342,7 @@ if(save_data == "TRUE") {
   
   ## save .shp for future refrence 
   writeOGR(obj    = SPAT.OUT.SPDF, 
-           dsn    = DATA_path, 
+           dsn    = "./data/ANALYSIS/CLEAN_GBIF", 
            layer  = paste0('SPAT_OUT_CHECK_', save_run),
            driver = "ESRI Shapefile", overwrite_layer = TRUE)
   
@@ -362,7 +363,8 @@ if(save_data == "TRUE") {
 
 #########################################################################################################################
 ## Add in random records from previously saved runs
-background.points = background.points[!background.points$searchTaxon %in% GBIF.spp, ]                  ## Don't add records for other species
+## This need to be re-run................................................................................................
+background.points = background.points[!background.points$searchTaxon %in% GBIF.spp, ]   ## Don't add records for other species
 length(unique(background.points$searchTaxon));dim(background.points)
 intersect(unique(background.points$searchTaxon), GBIF.spp)
 
