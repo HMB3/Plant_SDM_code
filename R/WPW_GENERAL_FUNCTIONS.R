@@ -914,13 +914,12 @@ read_bind_tables = function (table.list, path) {
 ########################################################################################################################
 
 
-## This is much simpler than Stuart's EG, but we can add in more stuff later
+## This is much simpler than Stuart's EG
 niche_estimate = function (DF, 
                            colname) {
   
   ## Use ddply inside a function to create niche widths and medians for each species
   ## This syntax is tricky, maybe ask John and Stu what they think
-  
   
   ## Also, need to figure out how to make the aggregating column generic (species, genus, etc.)
   summary = ddply(DF, 
@@ -1698,7 +1697,7 @@ Print_global_histogram = function (taxa.list, DF, env.var.1, env.col.1, env.unit
     hist(env.2, 
          #xlim = c(min.2, max.2),
          breaks = 50, border = NA, col = env.col.2, main = taxa.n,
-         xlab = paste0("AWAP ", env.var.2, " ", env.units.2, sep = " "))
+         xlab = paste0(env.var.2, " ", env.units.2, sep = " "))
     
   }
   
@@ -1715,17 +1714,9 @@ histogram_GBIF_records = function (DF, taxa.list, env.1, env.col.1, env.units.1,
   for (taxa.n in taxa.list) {
     
     ## First, check if the file exists
-    file  = paste("./output/figures/Traits_v_glasshouse/", 
+    file  = paste("./data/ANALYSIS/CLEAN_GBIF/", 
                   taxa.n, "_", env.var.1, "_world_GBIF_histo.png", sep = "")
-    
-    ## If it's already downloaded, skip
-    # if (file.exists (file)) {
-    #   
-    #   print (paste ("Global histogram exists for", taxa.n, "skipping")) 
-    #   next
-    #   
-    # }
-    
+
     #####################################################
     ## 1). Plot histograms for global occurences of taxa.n
     

@@ -100,18 +100,18 @@ TIB.GBIF <- COMBO.RASTER.CONVERT %>% dplyr::rename(species          = searchTaxo
   clean_coordinates(.,
                     verbose         = TRUE,
                     tests = c("capitals",     "centroids", "equal", "gbif", 
-                              "institutions", "zeros"),
+                              "institutions", "zeros"), ## duplicates flagged too many
                     
                     capitals_rad    = 10000,  ## remove records within 10km  of capitals
-                    centroids_rad   = 5000   ## remove records within 5km of country centroids
-                    # outliers_method = "distance", ## remove records > 100km from other records
+                    centroids_rad   = 5000    ## remove records within 5km of country centroids
+                    # outliers_method = "distance", ## The other checks are not producing reliable results
                     # outliers_td     = 800,
                     # outliers_mtp    = 5
-                    ) %>%
+  ) %>%
   
   ## The select the relevant columns and rename
   select(., species, CC.OBS, .val,  .equ, .zer,  .cap,   
-            .cen,    .gbf,   .inst, .summary) 
+         .cen,    .gbf,   .inst, .summary) 
 
 ## Then rename
 summary(TIB.GBIF)
@@ -142,89 +142,15 @@ unique(CLEAN.TRUE$coord_summary)
 table(CLEAN.TRUE$coord_summary) 
 
 
-
-
 #########################################################################################################################
-## 2). PLOT GBIF OUTLIERS TO CHECK
-#########################################################################################################################
-
-
-#########################################################################################################################
-## Try plotting the points which are outliers for a subset of species and label them
-CLEAN.FALSE.PLOT = SpatialPointsDataFrame(coords      = CLEAN.FALSE[c("lon", "lat")],
-                                          data        = CLEAN.FALSE,
-                                          proj4string = CRS.WGS.84)
-
-
-CLEAN.TRUE.PLOT  = SpatialPointsDataFrame(coords      = CLEAN.TRUE[c("lon", "lat")],
-                                          data        = CLEAN.TRUE,
-                                          proj4string = CRS.WGS.84)
-
-
-## Add land
-LAND.84 = LAND %>%
-  spTransform(CRS.WGS.84)
-AUS.84 = AUS %>%
-  spTransform(CRS.WGS.84)
-
-
-#########################################################################################################################
-## Get the first 10 species
-## species = plot.taxa[9]
-plot.taxa <- as.character(unique(CLEAN.TRUE$searchTaxon))
-for (species in plot.taxa) {
-
-  ## Plot a subset of taxa
-  CLEAN.TRUE.P.I  = subset(CLEAN.TRUE.PLOT,  searchTaxon == species)
-  CLEAN.FALSE.P.I = subset(CLEAN.FALSE.PLOT, searchTaxon == species)
-  
-  message("plotting occ data for ", species, ", ", 
-          nrow(CLEAN.TRUE.P.I), " clean records")
-  
-  #############################################################
-  ## Plot true and false points for the world
-  message('Writing map of global coord clean records for ', species)
-  png(sprintf("./data/ANALYSIS/CLEAN_GBIF/%s_%s", species, "global_coord_check.png"),
-      16, 10, units = 'in', res = 500)
-  
-  par(mfrow = c(1,2))
-  plot(LAND.84, main = paste0("Global points for ", species),
-       lwd = 0.01, asp = 1, col = 'grey', bg = 'sky blue')
-  
-  points(CLEAN.TRUE.P.I,
-         pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2, 
-         xlab = "", ylab = "", asp = 1,
-         col = "blue")
-  
-  points(CLEAN.FALSE.P.I,
-         pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2, 
-         xlab = "", ylab = "", asp = 1,
-         col = "red")
-  
-  #############################################################
-  ## Plot true and false points for the world
-  plot(AUS.84, main = paste0("Australian points for ", species),
-       lwd = 0.01, asp = 1, bg = 'sky blue', col = 'grey')
-  
-  points(CLEAN.TRUE.P.I,
-         pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2, 
-         xlab = "", ylab = "", asp = 1,
-         col = "blue")
-  
-  points(CLEAN.FALSE.P.I,
-         pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2, 
-         xlab = "", ylab = "", asp = 1,
-         col = "red")
-  
-  dev.off()
-  
-
-}
+## Plot GBIF outliers to check. This might be overkill, but usefule to interrogate why species didn't work
+source('./R/CC_CLEAN_TEST.R')
 
 
 ## What percentage of records are retained?
 length(unique(CLEAN.TRUE$searchTaxon))
 message(round(nrow(CLEAN.TRUE)/nrow(TEST.GEO)*100, 2), " % records retained")                                               
+
 
 
 
@@ -258,14 +184,6 @@ length(unique(CLEAN.TRUE$INVENTORY))
 length(unique(CLEAN.TRUE$searchTaxon))
 summary(CLEAN.TRUE$Annual_mean_temp)
 summary(CLEAN.TRUE$Annual_mean_temp)
-
-
-## Then create a unique ID column which can be used to identify outlier records
-## We don't want to clean the inventory data, so skip this
-# CLEAN.TRUE$OBS_SHP <- 1:nrow(CLEAN.TRUE)
-# CLEAN.TRUE$OBS_SHP <- paste0(CLEAN.TRUE$OBS, "_shp")
-# dim(CLEAN.TRUE)[1];length(CLEAN.TRUE$OBS)  
-# identical(nrow(CLEAN.TRUE), length(CLEAN.TRUE$OBS))
 
 
 ## By how many % does including tree inventories increase the overal number of records?
@@ -331,19 +249,19 @@ GBIF.ALA.SPDF    = SpatialPointsDataFrame(coords      = GBIF.ALA.CHECK[c("LON", 
 
 
 ## Create list of species 
-TAXA <- unique(GBIF.ALA.SPDF$TAXON)
+plot.taxa <- unique(GBIF.ALA.SPDF$TAXON)
 
 
 #########################################################################################################################
 ## Then, loop over the species list and create a shapefile for each 
 ## For lots of taxa, this would be needed to 
-for (i in 1:length(TAXA)) {
-
+for (i in plot.taxa) {
+  
   ## Need to check the OBS column matches up - or do we not need this again?
   message("Writing shapefile for ", TAXA[i])
   tmp <- GBIF.ALA.SPDF[GBIF.ALA.SPDF$TAXON == TAXA[i], ]
   writeOGR(tmp, dsn = "./data/ANALYSIS/CLEAN_GBIF", TAXA[i], driver = "ESRI Shapefile", overwrite_layer = TRUE)
-
+  
 }
 
 
@@ -364,7 +282,7 @@ for (i in 1:length(TAXA)) {
 ## Only run this code if we are saving niches 
 if(calc_niche == "TRUE") {
   
-  ## We want to know the count of species that occur in 'n' LGAs, across a range of climates. Read in LGA and SUA
+  ## We want to know the count of species that occur in the SUAs, across a range of climates. Read in LGA and SUA
   length(unique(CLEAN.TRUE$searchTaxon))
   projection(LGA);projection(AUS);projection(SUA_2016)
   
@@ -390,8 +308,6 @@ if(calc_niche == "TRUE") {
   
   #########################################################################################################################
   ## Run join between species records and LGAs/SUAs :: Double check they are the same
-  ## See the ABS for details :: there are 563 LGAs
-  ## http://www.abs.gov.au/ausstats/abs@.nsf/Lookup/by%20Subject/1270.0.55.003~July%202016~Main%20Features~Local%20Government%20Areas%20(LGA)~7
   message('Joining occurence data to SUAs for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
   
   
@@ -522,7 +438,7 @@ if(calc_niche == "TRUE") {
   dim(COMBO.NICHE)
   
   
-
+  
   
   
   #########################################################################################################################
@@ -532,7 +448,7 @@ if(calc_niche == "TRUE") {
   
   ## Given a dataframe of georeferenced occurrences of one, or more, taxa, this function provide statistics values 
   ## (Extent of Occurrence, Area of Occupancy, number of locations, number of subpopulations) and provide a preliminary 
-  ## conservation status following Criterion B of IUCN. A graphical map output is also available.
+  ## conservation status following Criterion B of IUCN.
   
   
   ## Create a species list to estimate the ranges for. Currently we can't estimate ranges for widely distributed species
@@ -546,7 +462,7 @@ if(calc_niche == "TRUE") {
   
   ## Subset the occurrence records to Australia only.
   projection(COMBO.SUA.SP);projection(AUS.WGS)
-  AUS.AOO.DAT = COMBO.SUA.SP[AUS.WGS, ]
+  AUS.AOO.DAT = COMBO.SUA.SP[AUS.WGS, ]                  ## This line effectively clips a SPDF to the extent of the polygon
   
   
   ## This separates the points out 
@@ -595,32 +511,121 @@ if(calc_niche == "TRUE") {
   
   
   
+  
   #########################################################################################################################
   ## 6). CREATE HISTOGRAMS FOR EACH SPECIES
   #########################################################################################################################
   
   
   ##############################################################################################
-  ## histograms of temperature and rainfall
-  HIST.TAXA = (as.list(unique(COMBO.SUA.LGA$searchTaxon)))
-  names(TRAIT.RASTER.CONTEXT)
+  ## Plot histograms of temperature and rainfall
+  ## species = plot.taxa[9]
+  for (species in plot.taxa[1:3]) {
+    
+    ## Subset the spatial dataframe into records for each species
+    SP.DF  <- subset(COMBO.SUA.SP, searchTaxon == species)
+    
+    ## Subset DF into records for each species
+    DF     <- subset(COMBO.SUA.LGA, searchTaxon == species)
+    DF.OCC <- subset(COMBO.SUA.LGA, searchTaxon == species & SOURCE != "INVENTORY")
+    DF.INV <- subset(COMBO.SUA.LGA, searchTaxon == species & SOURCE == "INVENTORY")
+    
+    #############################################################
+    ## Plot occurrence points by source for the world
+    message('Writing global occ sources for ', species)
+    png(sprintf("./data/ANALYSIS/CLEAN_GBIF/%s_%s", species, "occ_points_all_records.png"),
+        16, 10, units = 'in', res = 500)
+    
+    plot(AUS.84, main = paste0("Global points for ", species),
+         lwd = 0.01, asp = 1, col = 'grey', bg = 'sky blue')
+    
+    points(SP.DF,
+           pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2, 
+           xlab = "", ylab = "", asp = 1,
+           col = factor(SP.DF$SOURCE))
+    
+    dev.off()
+    
+    #############################################################
+    ## Plot temperature histograms
+    message('Writing global temp histograms for ', species)
+    png(sprintf("./data/ANALYSIS/CLEAN_GBIF/%s_%s", species, "temp_niche_histograms_all_records.png"),
+        16, 10, units = 'in', res = 500)
+    
+    ## Use the 'SOURCE' column to create a histogram for each source.
+    temp.hist = ggplot(DF, aes(x = Annual_mean_temp, group = SOURCE, fill = SOURCE)) +
+      
+      geom_histogram(position = "identity", alpha = 0.5, binwidth = 0.25,
+                     aes(y =..density..))  + 
+      geom_density(col = 4, alpha = 0.5) +
+      
+      ## Add some median lines : overall, ALA and GBIF
+      geom_vline(aes(xintercept = median(DF.INV$Annual_mean_temp)),
+                 col = 'blue', size = 1) +
+      geom_vline(aes(xintercept = median(DF.OCC$Annual_mean_temp)),
+                 col = 'red', size = 1) +
+      
+      ggtitle(paste0("Worldclim temp niches for ", species)) +
+      
+      ## Add themes
+      theme(axis.title.x     = element_text(colour = "black", size = 35),
+            axis.text.x      = element_text(size = 25),
+            
+            axis.title.y     = element_text(colour = "black", size = 35),
+            axis.text.y      = element_text(size = 25),
+            
+            panel.background = element_blank(),
+            panel.border     = element_rect(colour = "black", fill = NA, size = 3),
+            plot.title       = element_text(size   = 40, face = "bold"),
+            legend.text      = element_text(size   = 20),
+            legend.title     = element_text(size   = 20),
+            legend.key.size  = unit(1.5, "cm"))
+    
+    ## Print the plot and close the device 
+    print(temp.hist + ggtitle(paste0("Worldclim temp niches for ", species)))
+    dev.off()
+    
+    #############################################################
+    ## Plot rainfall histograms
+    message('Writing global rain histograms for ', species)
+    png(sprintf("./data/ANALYSIS/CLEAN_GBIF/%s_%s", species, "rain_niche_histograms_all_records.png"),
+        16, 10, units = 'in', res = 500)
+    
+    ## Use the 'SOURCE' column to create a histogram for each source.
+    rain.hist = ggplot(DF, aes(x = Annual_precip, group = SOURCE, fill = SOURCE)) +
+      
+      geom_histogram(position = "identity", alpha = 0.5, binwidth = 15,
+                     aes(y =..density..))  + 
+      geom_density(col = 4, alpha = 0.5) +
+      
+      ## Add some median lines : overall, ALA and GBIF
+      geom_vline(aes(xintercept = median(DF.INV$Annual_precip)),
+                 col = 'blue', size = 1) +
+      geom_vline(aes(xintercept = median(DF.OCC$Annual_precip)),
+                 col = 'red', size = 1) +
+      
+      ggtitle(paste0("Worldclim rain niches for ", species)) +
+      
+      ## Add themes
+      theme(axis.title.x     = element_text(colour = "black", size = 35),
+            axis.text.x      = element_text(size = 25),
+            
+            axis.title.y     = element_text(colour = "black", size = 35),
+            axis.text.y      = element_text(size = 25),
+            
+            panel.background = element_blank(),
+            panel.border     = element_rect(colour = "black", fill = NA, size = 3),
+            plot.title       = element_text(size   = 40, face = "bold"),
+            legend.text      = element_text(size   = 20),
+            legend.title     = element_text(size   = 20),
+            legend.key.size  = unit(1.5, "cm"))
+    
+    ## Print the plot and close the device 
+    print(rain.hist)
+    dev.off()
+    
+  }
   
-  
-  ## Back to here - could change to include density, or histograms for each source
-  ## Print the histograms to screen
-  Print_global_histogram(taxa.list    = HIST.TAXA, 
-                         DF           = COMBO.SUA.LGA,  
-                         env.var.1    = "Max_temp_warm_month",   
-                         env.col.1    = "orange",  
-                         env.units.1  = "°C",
-                         env.var.2    = "Annual_precip",   
-                         env.col.2    = "blue",     
-                         env.units.2  = "°C")
-  
-  
-  Boxplot_GBIF_records(taxa.list = HIST.TAXA,       DF = TRAIT.RASTER.CONTEXT,
-                       env.1 = "Max_temp_warm_month",   env.col.1 = "orange",     env.units.1 = "°C",
-                       env.2 = "Annual_precip",         env.col.2 = "blue",       env.units.2 = "°mm")
   
   
   
@@ -693,7 +698,7 @@ if(calc_niche == "TRUE") {
   ## View the data
   dim(COMBO.RASTER.CONTEXT)
   dim(COMBO.NICHE.CONTEXT)
-
+  
   
   ## Print the dataframe dimensions to screen
   dim(CLEAN.TRUE)
