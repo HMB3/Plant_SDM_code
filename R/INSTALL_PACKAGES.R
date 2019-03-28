@@ -86,7 +86,7 @@ p <- c('ff',    'things',    'raster',        'dismo',        'sp',           'l
        'ALA4R', 'stringr',   'Taxonstand',    'CoordinateCleaner', 'gsubfn',  'PerformanceAnalytics',
        'rvest', 'magrittr',  'devtools',      'ggplot2',      'reshape2',     'rmarkdown', 'flexdashboard', 'shiny', 'rgbif',
        'ENMeval', 'tibble',  'ncdf4',         'Cairo', 'taxonlookup', 'kgc', 'maptools', 'DataCombine', 'mgcv', 'rsq', 'utf8',
-       'betareg', 'hydroTSM', 'bomrang', 'gridExtra', 'grid', 'lattice', 'ConR')
+       'betareg', 'hydroTSM', 'bomrang', 'gridExtra', 'grid', 'lattice', 'ConR', 'ggmap')
 
 
 #########################################################################################################################
@@ -145,6 +145,7 @@ install_github("danlwarren/ENMTools")
 ## Trait packages
 devtools::install_github("richfitz/datastorr")
 devtools::install_github("traitecoevo/baad.data")
+devtools::install_github("gdauby/ConR")
 
 ## Update ALA4R :: this should get around some of the issues with the CRAN version
 devtools::install_github("AtlasOfLivingAustralia/ALA4R")

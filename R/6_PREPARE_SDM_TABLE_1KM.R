@@ -227,21 +227,6 @@ head(SPAT.OUT)
 names(SPAT.OUT)[names(SPAT.OUT) == 'searchTaxon'] <- 'SPAT_SPP'
 
 
-# #########################################################################################################################
-# ## save data
-# if(save_data == "TRUE") {
-#   
-#   ## save .rds file for the next session
-#   saveRDS(SPAT.OUT, paste0(DATA_path, 'ALA_GBIF_SPAT_OUT_', save_run, '.rds'))
-#   #SPAT.OUT = readRDS(paste0(DATA_path, 'ALA_GBIF_SPAT_OUT_', save_run, '.rds'))
-#   
-# } else {
-#   
-#   message(' skip file saving, not many species analysed')   ##
-#   
-# }
-
-
 
 
 
