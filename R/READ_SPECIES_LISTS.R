@@ -342,6 +342,7 @@ round(with(GBIF.GROW.VALID, table(Origin)/sum(table(Origin))*100), 1)
 length(subset(GBIF.GROW.VALID , Plant_type == "")$searchTaxon)              ## No    taxa without life form
 length(subset(GBIF.GROW.VALID , Origin == "")$searchTaxon)                  ## 2582  taxa without origin
 length(intersect(GBIF.GROW.VALID$searchTaxon, unique(TI.XY$searchTaxon)))   ## 1,111 taxa on HIA and Inventory list
+TI.HIA = intersect(GBIF.GROW.VALID$searchTaxon, unique(TI.XY$searchTaxon))
 summary(GBIF.GROW.VALID)
 
 
@@ -354,6 +355,19 @@ TI.spp          = unique(TI.XY$searchTaxon)
 
 WPW.spp         = WPW.spp[lapply(WPW.spp,length)>0]
 WPW.NA          = unique(c(TPL.NA, GBIF.NA))          ## These taxa did not match either GBIF or ALA
+
+
+## This is a list of species we can use to test the models. These spp had poor models without MESS maps
+hollow.test.spp = c("Corymbia citriodora",      "Eucalyptus baileyana",  "Eucalyptus baxteri",  "Eucalyptus decorticans", "Eucalyptus dumosa",
+                    "Eucalyptus major",         "Eucalyptus megacarpa",  "Eucalyptus moluccana", "Eucalyptus ovata",      "Eucalyptus patens",
+                    "Eucalyptus salmonophloia", "Eucalyptus tenuipes")
+
+
+poular.test    = c("Acer palmatum", "Syzygium smithii", "Magnolia grandiflora", "Callistemon viminalis", 
+                   "Gardenia jasminoides", "Pyrus calleryana", "Murraya paniculata", "Ficus microcarpa",
+                   "Jacaranda mimosifolia", "Hardenbergia violacea")
+
+poular.test    = intersect(poular.test, TI.spp)
 
 
 #########################################################################################################################

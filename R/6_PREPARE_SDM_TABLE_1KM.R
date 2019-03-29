@@ -46,13 +46,13 @@ if(read_data == "TRUE") {
 dim(CLEAN.TRUE)
 length(unique(CLEAN.TRUE$searchTaxon))
 CLEAN.TRUE$searchTaxon = as_utf8(CLEAN.TRUE$searchTaxon, normalize = TRUE)
-length(unique(CLEAN.TRUE$OBS))
+length(unique(CLEAN.TRUE$CC.OBS))
 unique(CLEAN.TRUE$SOURCE)
 
 
 ## Select only the columns needed
 ## This also needs to use the variable names
-COMBO.RASTER.ALL  <- dplyr::select(CLEAN.TRUE, searchTaxon, lon, lat, SOURCE, OBS,
+COMBO.RASTER.ALL  <- dplyr::select(CLEAN.TRUE, searchTaxon, lon, lat, SOURCE, CC.OBS,
                                    
                                    Annual_mean_temp,     Mean_diurnal_range,  Isothermality,     Temp_seasonality, 
                                    Max_temp_warm_month,  Min_temp_cold_month, Temp_annual_range, Mean_temp_wet_qu,
@@ -77,10 +77,6 @@ length(occurrence_cells_all)   ## this is a list of dataframes, where the number
 
 #########################################################################################################################
 ## Now get just one record within each 10*10km cell.
-
-## Split the inventory data, and subsample inventory data to coarseer resoltion..........................................
-
-## INV data at 5km, ok GBIF data at 1km
 SDM.DATA.ALL <- mapply(function(x, cells) {
   x[!duplicated(cells), ]
 }, COMBO.RASTER.SPLIT.ALL, occurrence_cells_all, SIMPLIFY = FALSE) %>% do.call(rbind, .)
@@ -88,7 +84,10 @@ SDM.DATA.ALL <- mapply(function(x, cells) {
 
 ## Check to see we have 19 variables + the species for the standard predictors, and 19 for all predictors
 ## create two more template.raster files: 5km amnd 10km
-## Check data :: template, data table and species 
+## Check data :: template, data table and species
+message(round(nrow(SDM.DATA.ALL)/nrow(CLEAN.TRUE)*100, 2), " % records retained at 1km resolution")  
+
+
 dim(template.raster.1km)
 dim(SDM.DATA.ALL)
 names(SDM.DATA.ALL)
@@ -121,10 +120,10 @@ xres(template.raster.1km);yres(template.raster.1km)
 ## Check dimensions
 dim(SDM.DATA.ALL)
 length(unique(SDM.DATA.ALL$searchTaxon))
-length(unique(SDM.DATA.ALL$OBS))
+length(unique(SDM.DATA.ALL$CC.OBS))
 
-identical(head(SDM.DATA.ALL$OBS, 100), head(CLEAN.TRUE$OBS, 100))   ## should be false - SDM.DATA is a subset of CLEAN.TRUE
-identical(tail(SDM.DATA.ALL$OBS, 100), tail(CLEAN.TRUE$OBS, 100))
+identical(head(SDM.DATA.ALL$CC.OBS, 100), head(CLEAN.TRUE$CC.OBS, 100))   ## should be false - SDM.DATA is a subset of CLEAN.TRUE
+identical(tail(SDM.DATA.ALL$CC.OBS, 100), tail(CLEAN.TRUE$CC.OBS, 100))
 unique(SDM.DATA.ALL$SOURCE)
 
 
@@ -136,7 +135,7 @@ SDM.COORDS  <- SDM.DATA.ALL %>%
   
   as.data.frame() %>% 
   
-  select(searchTaxon, lon, lat, OBS, SOURCE) %>%
+  select(searchTaxon, lon, lat, CC.OBS, SOURCE) %>%
   
   dplyr::rename(species          = searchTaxon,
                 decimallongitude = lon, 
@@ -150,7 +149,7 @@ dim(SDM.COORDS)
 head(SDM.COORDS)
 class(SDM.COORDS)
 summary(SDM.COORDS$decimallongitude)
-identical(SDM.COORDS$index, SDM.COORDS$OBS)
+identical(SDM.COORDS$index, SDM.COORDS$CC.OBS)
 length(unique(SDM.COORDS$species))
 
 
@@ -188,22 +187,21 @@ SPAT.OUT <- LUT.100K  %>%
     f <- subset(SDM.COORDS, species == x)
     
     ## Run the spatial outlier detection
-    message("Running spatial outlier detection for ", x)
-    message(dim(f)[1], " records for ", x)
+    message("Running spatial outlier detection for ", nrow(f), " records for ", x)
     sp.flag <- cc_outl(f,
                        lon     = "decimallongitude",
                        lat     = "decimallatitude",
                        species = "species",
-                       method  = "distance",
-                       #mltpl   = 5,
-                       tdi     = 300,
-                       value   = "flags",
-                       verbose = "FALSE")
+                       method  = "quantile", #"distance",
+                       #mltpl   = 4,
+                       #tdi     = 300,
+                       value   = "flagged",
+                       verbose = "TRUE")
     
     ## Now add attache column for species, and the flag for each record
     #d = data.frame(searchTaxon = x, SPAT_OUT = sp.flag)
     d = cbind(searchTaxon = x,
-              SPAT_OUT = sp.flag, f)[c("searchTaxon", "SPAT_OUT", "index", "OBS")]
+              SPAT_OUT = sp.flag, f)[c("searchTaxon", "SPAT_OUT", "CC.OBS")]
     
     ## Remeber to explicitly return the df at the end of loop, so we can bind
     return(d)
@@ -224,7 +222,7 @@ head(SPAT.OUT)
 
 
 ## Rename the spatial outlier species column, as another identifier
-names(SPAT.OUT)[names(SPAT.OUT) == 'searchTaxon'] <- 'SPAT_SPP'
+#names(SPAT.OUT)[names(SPAT.OUT) == 'searchTaxon'] <- 'spat_spp'
 
 
 
@@ -237,15 +235,13 @@ names(SPAT.OUT)[names(SPAT.OUT) == 'searchTaxon'] <- 'SPAT_SPP'
 
 #########################################################################################################################
 ## Join data :: Best to use the 'OBS' column here
-identical(dim(SDM.COORDS)[1],dim(SPAT.OUT)[1])
-identical(dim(SDM.DATA.ALL)[1],dim(SPAT.OUT)[1])
-identical(SDM.DATA.ALL$searchTaxon, SPAT.OUT$SPAT_SPP)
-length(unique(SPAT.OUT$SPAT_SPP))
+identical(nrow(SDM.COORDS), nrow(SPAT.OUT))
+identical(SDM.DATA.ALL$searchTaxon, SPAT.OUT$searchTaxon)
+length(unique(SPAT.OUT$searchTaxon))
 
 
-SPAT.FLAG = join(as.data.frame(SDM.DATA.ALL), SPAT.OUT)    ## Join means the skipped species are left out
-dim(SPAT.FLAG)
-
+SPAT.FLAG = join(as.data.frame(SDM.DATA.ALL), SPAT.OUT, by = c("CC.OBS", "searchTaxon") , type = "left", match = "first")    
+identical(SDM.DATA.ALL$searchTaxon, SPAT.FLAG$searchTaxon)
 
 ## Check the join is working 
 message('Checking spatial flags for ', length(unique(SPAT.FLAG$searchTaxon)), ' species in the set ', "'", save_run, "'")
@@ -277,24 +273,24 @@ projection(SDM.SPAT.ALL)
 
 #########################################################################################################################
 ## save data
-if(save_data == "TRUE") {
-  
-  ## Save .rds file for the next session
-  saveRDS(SDM.SPAT.ALL, paste0(DATA_path, 'SPAT_FLAG_', save_run, '.rds'))
-  
-  writeOGR(obj    = SDM.SPAT.ALL, 
-           dsn    = SHP_path, 
-           layer  = paste0('SPAT_OUT_CHECK_', save_run),
-           driver = "ESRI Shapefile", overwrite_layer = TRUE)
-  
-} else {
-  
-  message(' skip file saving, not many species analysed')   ##
-  
-}
-
-## get rid of some memory
-gc()
+# if(save_data == "TRUE") {
+#   
+#   ## Save .rds file for the next session
+#   saveRDS(SDM.SPAT.ALL, paste0(DATA_path, 'SPAT_FLAG_', save_run, '.rds'))
+#   
+#   writeOGR(obj    = SDM.SPAT.ALL, 
+#            dsn    = SHP_path, 
+#            layer  = paste0('SPAT_OUT_CHECK_', save_run),
+#            driver = "ESRI Shapefile", overwrite_layer = TRUE)
+#   
+# } else {
+#   
+#   message(' skip file saving, not many species analysed')   ##
+#   
+# }
+# 
+# ## get rid of some memory
+# gc()
 
 
 
@@ -307,7 +303,7 @@ gc()
 
 ## Rename the fields so that ArcMap can handle them
 SPAT.OUT.CHECK     = SPAT.FLAG %>% 
-  select(OBS, searchTaxon, lat, lon, SOURCE, SPAT_OUT, index) %>%
+  select(CC.OBS, searchTaxon, lat, lon, SOURCE, SPAT_OUT) %>%
   dplyr::rename(TAXON     = searchTaxon,
                 LAT       = lat,
                 LON       = lon)
@@ -347,8 +343,8 @@ if(save_data == "TRUE") {
 
 
 #########################################################################################################################
-## Add in random records from previously saved runs
-## This need to be re-run................................................................................................
+## Re-run this after running steps 1-5 for all 4k species.
+## Add in random records from previously saved runs :: get all the species which have not
 background.points = background.points[!background.points$searchTaxon %in% GBIF.spp, ]   ## Don't add records for other species
 length(unique(background.points$searchTaxon));dim(background.points)
 intersect(unique(background.points$searchTaxon), GBIF.spp)
@@ -361,7 +357,7 @@ SDM.SPAT.ALL$TYPE      = "OCC"
 setdiff(names(SDM.SPAT.ALL), names(background.points))
 setdiff(names(background.points), names(SDM.SPAT.ALL))
  
-drops <- c("OBS", "SPAT_SPP", "SPAT_OUT", "index", "lon", "lat") 
+drops <- c("CC.OBS", "SPAT_SPP", "SPAT_OUT", "index", "lon", "lat") 
 SDM.SPAT.ALL      <- SDM.SPAT.ALL[,!(names(SDM.SPAT.ALL) %in% drops)]
 background.points <- background.points[,!(names(background.points) %in% drops)]
 setdiff(names(SDM.SPAT.ALL), names(background.points))
@@ -377,6 +373,7 @@ identical(length(names(SDM.SPAT.ALL)), length(names(background.points)))
 
 SDM.SPAT.OCC.BG = rbind(SDM.SPAT.ALL, background.points)
 unique(SDM.SPAT.OCC.BG$SOURCE)
+table(SDM.SPAT.OCC.BG$SOURCE)
 unique(SDM.SPAT.OCC.BG$TYPE)
 length(unique(SDM.SPAT.OCC.BG$searchTaxon))
 
@@ -386,15 +383,8 @@ length(unique(SDM.SPAT.OCC.BG$searchTaxon))
 if(save_data == "TRUE") {
   
   ## save .rds file for the next session
-  saveRDS(SDM.SPAT.OCC.BG, paste0(DATA_path, 'SDM_SPAT_OCC_BG',  save_run, '.rds'))
-  
-  ## save .shp for future refrence 
-  writeOGR(obj    = SPAT.OUT.SPDF, 
-           dsn    = DATA_path, 
-           layer  = paste0('SPAT_OUT_CHECK_', save_run),
-           driver = "ESRI Shapefile", overwrite_layer = TRUE)
-  
-  
+  saveRDS(SDM.SPAT.OCC.BG, paste0(DATA_path, 'SDM_SPAT_OCC_BG_',  save_run, '.rds'))
+
 } else {
   
   message(' skip file saving, not many species analysed')   ##

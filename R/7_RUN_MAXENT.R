@@ -76,7 +76,12 @@ lapply(GBIF.spp, function(spp){
     message('Doing ', spp) 
     
     ## Subset the records to only the taxa being processed
+	## Also, get the occurrence records from the source required
     occurrence <- subset(SDM.SPAT.OCC.BG, searchTaxon == spp)
+	occurrence[grep(OCC_SOURCE, occurrence$SOURCE), ]
+	
+	## Also remove the inventory records here if needed
+	
 
     ## Now get the background points. These can come from any spp, other than the modelled species.
     background <- subset(SDM.SPAT.OCC.BG, searchTaxon != spp)

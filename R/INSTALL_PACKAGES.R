@@ -80,6 +80,7 @@ packages <- c('ggplot2',    'plyr',      'reshape2',  'RColorBrewer',  'scales',
               'spThin',     'digest',    'CoordinateCleaner',          'PerformanceAnalytics', 'timetk',
               'dat', 'rcreds', 'pkgmaker', 'utf8') # class(packages)
 
+
 p <- c('ff',    'things',    'raster',        'dismo',        'sp',           'latticeExtra', 'data.table',
        'rgdal', 'rgeos',     'gdalUtils',     'rmaxent',      'readr',        'plyr',         'dplyr',
        'tidyr', 'readr',     'rnaturalearth', 'rasterVis',    'RColorBrewer', 'latticeExtra', 'parallel',
