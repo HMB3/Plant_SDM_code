@@ -18,7 +18,7 @@
 # world_shp     = "LAND_world.rds"
 # x             = scen_2030[3]
 # species       = map_spp[1]   ## "Eucalyptus_camaldulensis" it breaks on Euc. camuldulensis
-# maxent_path   = maxent_path
+# maxent_path   = bs_path
 # climate_path  = "./data/base/worldclim/aus/1km/bio"
 # grid_names    = grid.names
 # current_grids = aus.grids.current
@@ -73,7 +73,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
     
     ## Rename both the current and future environmental stack...
     ## critically important that the order of the name.....................................................................
-    names(s) <- names(current_grids) <- grid_names 
+    names(s) <- names(current_grids) <- grid.names 
     
     ########################################################################################################################
     ## Divide the 11 temperature rasters by 10: NA values are the ocean
@@ -106,10 +106,14 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
           ## Now read in the SDM model, calibrated on current conditions
           ## if it was run with backwards selection, just use the full model
           if (grepl("BS", maxent_path)) {
+            
+            message('Read in the BS model')
             m   <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, species)) 
             
           } else {
+            
             ## If it was run with targetted selection, index the full model
+            message('Read in the full model')
             m   <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, species))$me_full
             
           }
@@ -150,11 +154,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
             message('Running current mess map for ', species)
             
             ## Set the names of the rasters to match the occ data, and subset both
-            ## Watch the creation of objects in each run
             sdm_vars             = names(m@presence)
-            grid_names           = sdm.predictors
-            current_grids        = aus.grids.current
-            names(current_grids) = grid_names 
             current_grids        = subset(current_grids, sdm_vars)
             swd                  = swd [,sdm_vars]
             identical(names(swd), names(current_grids))
@@ -265,9 +265,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
               ## Set the names of the rasters to match the occ data, and subset both
               ## Watch the creation of objects in each run
               sdm_vars             = names(m@presence)
-              grid_names           = sdm.predictors
               future_grids         = s
-              names(future_grids)  = grid_names 
               future_grids         = subset(future_grids, sdm_vars)
               swd                  = swd [,sdm_vars]
               identical(names(swd), names(future_grids))

@@ -31,6 +31,21 @@ message('Running maxent models for ', length(GBIF.spp), ' species in the set ', 
 # }
 
 
+# #########################################################################################################################
+# ## FILTER
+# if(OCC_SOURCE == "ALA") {
+#   
+#   ## Save .rds file for the next session
+#   message('Create niches from ', OCC_SOURCE, ' records')
+#   COMBO.SUA.LGA = COMBO.SUA.LGA[COMBO.SUA.LGA$SOURCE %in% OCC_SOURCE , ]
+#   message(unique(COMBO.SUA.LGA$SOURCE))
+#   
+# } else {
+#   
+#   message('Create niches from all sources')
+#   message(unique(COMBO.SUA.LGA$SOURCE))
+#   
+# }
 
 
 
@@ -53,15 +68,15 @@ projection(template.raster.1km);projection(SDM.SPAT.OCC.BG);projection(Koppen_19
 
 
 #########################################################################################################################
-## Loop over all the species spp = GBIF.spp[1]
-lapply(GBIF.spp, function(spp){ 
+## Loop over all the species species = GBIF.spp[1]
+lapply(GBIF.spp, function(species){ 
   
   ## Skip the species if the directory already exists, before the loop
   outdir <- maxent_dir
   
-  dir_name = file.path(maxent_path, gsub(' ', '_', spp))
+  dir_name = file.path(maxent_path, gsub(' ', '_', species))
   if(dir.exists(dir_name)) {
-    message('Skipping ', spp, ' - already run.')
+    message('Skipping ', species, ' - already run.')
     invisible(return(NULL))
     
   }
@@ -72,27 +87,27 @@ lapply(GBIF.spp, function(spp){
   write.csv(data.frame(), file.path(dir_name, "in_progress.txt"))
   
   ## Print the taxa being processed to screen
-  if(spp %in% SDM.SPAT.OCC.BG$searchTaxon) {
-    message('Doing ', spp) 
+  if(species %in% SDM.SPAT.OCC.BG$searchTaxon) {
+    message('Doing ', species) 
     
     ## Subset the records to only the taxa being processed
-	## Also, get the occurrence records from the source required
-    occurrence <- subset(SDM.SPAT.OCC.BG, searchTaxon == spp)
-	occurrence[grep(OCC_SOURCE, occurrence$SOURCE), ]
-	
-	## Also remove the inventory records here if needed
-	
+    ## Also subset to the source : ALA+ GBIF, or ALA + GBIF + INV
+    occurrence <- subset(SDM.SPAT.OCC.BG, searchTaxon == species)
+    occurrence <- occurrence[grep(paste(OCC_SOURCE, collapse = '|'), occurrence$SOURCE, ignore.case = TRUE),]
+    message('Using occ records from ', unique(occurrence$SOURCE))
 
-    ## Now get the background points. These can come from any spp, other than the modelled species.
-    background <- subset(SDM.SPAT.OCC.BG, searchTaxon != spp)
-
+    ## Now get the background points. These can come from any species, other than the modelled species.
+    background <- subset(SDM.SPAT.OCC.BG, searchTaxon != species)
+    background <- background[grep(paste(OCC_SOURCE, collapse = '|'), background$SOURCE, ignore.case = TRUE),]
+    message('Using occ records from ', unique(background$SOURCE))
     
+  
     ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
     tryCatch(
       fit_maxent_targ_bg_back_sel(occ                     = occurrence,    ## name from the .rmd CV doc 
                                   bg                      = background,    ## name from the .rmd CV doc  
                                   sdm.predictors          = bs.predictors, 
-                                  name                    = spp, 
+                                  name                    = species, 
                                   outdir                  = maxent_dir,
                                   bsdir                   = bs_dir,
                                   backwards_sel           = "TRUE",
@@ -115,14 +130,14 @@ lapply(GBIF.spp, function(spp){
       ## If the species fails, write a fail message to file. Can this be the fail message itself?
       error = function(cond) {
         
-        message(spp, ' failed')  
+        message(species, ' failed')  
         write.csv(data.frame(), file.path(dir_name, "failed.txt"))
         
       })
     
   } else {
     
-    message(spp, ' skipped - no data.')         ## This condition ignores species which have no data...
+    message(species, ' skipped - no data.')         ## This condition ignores species which have no data...
     write.csv(data.frame(), file.path(dir_name, "completed.txt"))
     
   }  
@@ -220,7 +235,7 @@ MAXENT.RESULTS <- maxent.tables %>%
   }) %>%
   
   ## Finally, bind all the rows together
-  dplyr::bind_rows
+  bind_rows
 
 
 #########################################################################################################################
