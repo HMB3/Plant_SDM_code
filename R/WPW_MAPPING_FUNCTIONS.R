@@ -13,18 +13,18 @@
 
 #########################################################################################################################
 ## E.G. arguments to run the algorithm inside the function 
-# shp_path      = "./data/base/CONTEXTUAL/"
-# aus_shp       = "aus_states.rds"
-# world_shp     = "LAND_world.rds"
-# x             = scen_2030[3]
-# species       = map_spp[1]   ## "Eucalyptus_camaldulensis" it breaks on Euc. camuldulensis
-# maxent_path   = bs_path
-# climate_path  = "./data/base/worldclim/aus/1km/bio"
-# grid_names    = grid.names
-# current_grids = aus.grids.current
-# time_slice    = 30
+# shp_path      = "./data/base/CONTEXTUAL/" ## Path for shapefile
+# aus_shp       = "aus_states.rds"          ## Shapefile e.g. Australian states
+# world_shp     = "LAND_world.rds"          ## World shapefile          
+# 
+# scen_list     = scen_2030                 ## List of climate scenarios
+# species_list  = map_spp                   ## List of species folders with maxent models
+# maxent_path   = bs_path                   ## Output folder
+# climate_path  = "./data/base/worldclim/aus/1km/bio" ## climate data
+# grid_names    = bs.predictors             ## names of the predictor grids
+# time_slice    = 30                        ## Time period
+# current_grids = aus.grids.current         ## predictor grids
 # create_mess   = "TRUE"
-# MESS_folder   = "MESS_output"
 
 
 #########################################################################################################################
@@ -553,18 +553,18 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
 
 
 ## Arguments needed to run the function manually
-# unit_path     = "./data/base/CONTEXTUAL/SUA/"   ## Data path for the spatial unit of analysis
-# unit_shp      = "SUA_2016_AUST.rds"             ## Spatial unit of analysis - E.G. SUAs
-# unit_vec      = "SUA_2016_VEC.rds"              ## Vector of rasterized unit cells
-# world_shp     = "LAND_world.rds"                ## Polygon for AUS maps
-# aus_shp       = "aus_states.rds"                ## Polygon for World maps
-# 
-# DIR           = SDM.RESULTS.DIR[9]                 ## List of directories with rasters
-# species       = map_spp[9]                         ## List of species' directories
-# maxent_path   = bs_path                     ## Directory of maxent results
-# thresh        = percent.10.log[9]                  ## List of maxent thresholds
-# time_slice    = 30                              ## Time period, eg 2030
-# write_rasters = TRUE
+unit_path     = "./data/base/CONTEXTUAL/SUA/"   ## Data path for the spatial unit of analysis
+unit_shp      = "SUA_2016_AUST.rds"             ## Spatial unit of analysis - E.G. SUAs
+unit_vec      = "SUA_2016_VEC.rds"              ## Vector of rasterized unit cells
+world_shp     = "LAND_world.rds"                ## Polygon for AUS maps
+aus_shp       = "aus_states.rds"                ## Polygon for World maps
+
+DIR           = SDM.RESULTS.DIR[1]                 ## List of directories with rasters
+species       = map_spp[1]                         ## List of species' directories
+maxent_path   = bs_path                     ## Directory of maxent results
+thresh        = percent.10.log[1]                  ## List of maxent thresholds
+time_slice    = 30                              ## Time period, eg 2030
+write_rasters = TRUE
 
 
 #########################################################################################################################

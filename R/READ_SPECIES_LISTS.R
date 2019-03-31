@@ -363,11 +363,11 @@ hollow.test.spp = c("Corymbia citriodora",      "Eucalyptus baileyana",  "Eucaly
                     "Eucalyptus salmonophloia", "Eucalyptus tenuipes")
 
 
-poular.test    = c("Acer palmatum", "Syzygium smithii", "Magnolia grandiflora", "Callistemon viminalis", 
+popular.test    = c("Acer palmatum", "Syzygium smithii", "Magnolia grandiflora", "Callistemon viminalis", 
                    "Gardenia jasminoides", "Pyrus calleryana", "Murraya paniculata", "Ficus microcarpa",
                    "Jacaranda mimosifolia", "Hardenbergia violacea")
 
-poular.test    = intersect(poular.test, TI.spp)
+popular.test    = intersect(popular.test, TI.spp)
 
 
 #########################################################################################################################

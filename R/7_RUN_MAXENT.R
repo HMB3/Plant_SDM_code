@@ -31,23 +31,6 @@ message('Running maxent models for ', length(GBIF.spp), ' species in the set ', 
 # }
 
 
-# #########################################################################################################################
-# ## FILTER
-# if(OCC_SOURCE == "ALA") {
-#   
-#   ## Save .rds file for the next session
-#   message('Create niches from ', OCC_SOURCE, ' records')
-#   COMBO.SUA.LGA = COMBO.SUA.LGA[COMBO.SUA.LGA$SOURCE %in% OCC_SOURCE , ]
-#   message(unique(COMBO.SUA.LGA$SOURCE))
-#   
-# } else {
-#   
-#   message('Create niches from all sources')
-#   message(unique(COMBO.SUA.LGA$SOURCE))
-#   
-# }
-
-
 
 #########################################################################################################################
 ## 1). RUN SDMs USING ALL A-PRIORI VARIABLES FOR ALL SPECIES

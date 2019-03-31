@@ -140,7 +140,7 @@ suitability.2030 = mapply(SUA_cell_count,                                  ## Fu
                           
                           DIR_list      = SDM.RESULTS.DIR,                 ## List of directories with rasters
                           species_list  = map_spp,                         ## List of species' directories
-                          maxent_path   = bs_path,                     ## Directory of maxent results
+                          maxent_path   = bs_path,                         ## Directory of maxent results
                           thresholds    = percent.10.log,                  ## List of maxent thresholds
                           time_slice    = 30,                              ## Time period, eg 2030
                           write_rasters = TRUE)
