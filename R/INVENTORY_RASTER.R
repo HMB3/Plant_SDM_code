@@ -46,7 +46,7 @@ if(dim(TI.XY.SPP)[1] > 0) {
   ## Create points: the over function seems to need geographic coordinates for this data
   TI.POINTS   = SpatialPointsDataFrame(coords      = TI.XY.SPP[c("lon", "lat")],
                                        data        = TI.XY.SPP[c("lon", "lat")],
-                                       proj4string = CRS.WGS.84)
+                                       proj4string = CRS(projection(world.grids.current)))
   
   
   ## Check
@@ -80,35 +80,33 @@ if(dim(TI.XY.SPP)[1] > 0) {
   #########################################################################################################################
   ## Create a stack of rasters to sample: get all the Worldclim variables just for good measure
   ## Use the Mollweide projection for the points and rasters 
-  inventory.grids.current = stack(
-    file.path('./data/base/worldclim/aus/1km/bio/current/WGS/', 
-              sprintf('bio_%02d.tif', 1:19))) 
+
   
   
   ## Also get the PET raster
-  projection(PET);projection(inventory.grids.current)
+  projection(PET);projection(world.grids.current)
 
   #########################################################################################################################
   ## Check the projection and raster extents for worldclim vs aus data
-  # inventory.grids.current <- inventory.grids.current %>%
+  # world.grids.current <- world.grids.current %>%
   #   projectRaster(crs = CRS.WGS.84)
-  # saveRDS(inventory.grids.current, "./data/base/worldclim/aus/1km/bio/current/aus_grids_current.rds")
-  # projection(TI.POINTS);projection(inventory.grids.current)
+  # saveRDS(world.grids.current, "./data/base/worldclim/aus/1km/bio/current/aus_grids_current.rds")
+  # projection(TI.POINTS);projection(world.grids.current)
   # 
   # 
   # ## Save projected files
-  # saveRDS(inventory.grids.current, "./data/base/worldclim/aus/1km/bio/current/aus_grids_current.rds")
-  # inventory.grids.current = readRDS("./data/base/worldclim/aus/1km/bio/current/aus_grids_current.rds")
+  # saveRDS(world.grids.current, "./data/base/worldclim/aus/1km/bio/current/aus_grids_current.rds")
+  # world.grids.current = readRDS("./data/base/worldclim/aus/1km/bio/current/aus_grids_current.rds")
   
   
   #########################################################################################################################
   ## Now extract data
-  projection(TI.POINTS);projection(inventory.grids.current);projection(PET)
-  TI.RASTER <- raster::extract(inventory.grids.current, TI.POINTS) %>% 
+  ## > 200k points are coming out as NA. What could be the reason? Outside the raster extent 
+  projection(TI.POINTS);projection(world.grids.current);projection(PET)
+  TI.RASTER <- raster::extract(world.grids.current, TI.POINTS) %>% 
     cbind(TI.XY.SPP, .)
   summary(TI.RASTER)
-  class(TI.RASTER)
-  names(TI.RASTER)
+  class(TI.RASTER)  names(TI.RASTER)
   
   
   #########################################################################################################################
@@ -143,14 +141,15 @@ if(dim(TI.XY.SPP)[1] > 0) {
   
   #########################################################################################################################
   ## Extract the raster data for PET
-  projection(TI.POINTS);projection(PET)
-  POINTS.PET <- raster::extract(PET, TI.POINTS) %>% 
-    cbind(TI.RASTER, .)
-  TI.RASTER = POINTS.PET
-  names(TI.RASTER)[names(TI.RASTER) == "."] <- 'PET'
+  # projection(TI.POINTS);projection(PET)
+  # POINTS.PET <- raster::extract(PET, TI.POINTS) %>% 
+  #   cbind(TI.RASTER, .)
+  # TI.RASTER = POINTS.PET
+  # names(TI.RASTER)[names(TI.RASTER) == "."] <- 'PET'
   
   ## Check 
   dim(TI.RASTER)
+  dim(TI.POINTS)
   names(TI.RASTER)
   
   
@@ -214,6 +213,7 @@ if(dim(TI.XY.SPP)[1] > 0) {
   unique(TI.RASTER.CONVERT$INVENTORY)
   unique(TI.RASTER.CONVERT$searchTaxon)
   saveRDS(TI.RASTER.CONVERT, paste0(DATA_path, 'TI_RASTER_CONVERT_', save_run, '.rds'))
+  
   
 } else {
   

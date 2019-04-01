@@ -8,7 +8,8 @@
 ## saving the output as spatial points data frame - the format required by the dismo fucntion
 
 
-## The current cc_outl settings are not getting enough spatial outliers...................................................
+## Does the 1km filter remove too many inventory records?................................................................
+
 
 ## Print the species run to the screen
 message('Preparing SDM table for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
@@ -19,8 +20,8 @@ message('Preparing SDM table for ', length(GBIF.spp), ' species in the set ', "'
 if(read_data == "TRUE") {
   
   ## read in RDS files from previous step
-  CLEAN.TRUE = readRDS(paste0(DATA_path, 'CLEAN_TRUE_', save_run, '.rds'))
-  length(intersect(GBIF.spp, unique(CLEAN.TRUE$searchTaxon)))
+  CLEAN.INV = readRDS(paste0(DATA_path, 'CLEAN_TRUE_', save_run, '.rds'))
+  length(intersect(GBIF.spp, unique(CLEAN.INV$searchTaxon)))
   rasterTmpFile()
   
 } else {
@@ -41,18 +42,18 @@ if(read_data == "TRUE") {
 #########################################################################################################################
 ## Create a table with all the variables needed for SDM analysis
 ## This is the step where an ad/hoc version comes in 
-## CLEAN.TRUE = readRDS(paste0(DATA_path, 'COMBO_RASTER_ALL_WPW_TEST', '.rds'))
-## CLEAN.TRUE = CLEAN.TRUE[CLEAN.TRUE$searchTaxon %in% GBIF.spp, ]
-dim(CLEAN.TRUE)
-length(unique(CLEAN.TRUE$searchTaxon))
-CLEAN.TRUE$searchTaxon = as_utf8(CLEAN.TRUE$searchTaxon, normalize = TRUE)
-length(unique(CLEAN.TRUE$CC.OBS))
-unique(CLEAN.TRUE$SOURCE)
+## CLEAN.INV = readRDS(paste0(DATA_path, 'COMBO_RASTER_ALL_WPW_TEST', '.rds'))
+## CLEAN.INV = CLEAN.INV[CLEAN.INV$searchTaxon %in% GBIF.spp, ]
+dim(CLEAN.INV)
+length(unique(CLEAN.INV$searchTaxon))
+CLEAN.INV$searchTaxon = as_utf8(CLEAN.INV$searchTaxon, normalize = TRUE)
+length(unique(CLEAN.INV$CC.OBS))
+unique(CLEAN.INV$SOURCE)
 
 
 ## Select only the columns needed
 ## This also needs to use the variable names
-COMBO.RASTER.ALL  <- dplyr::select(CLEAN.TRUE, searchTaxon, lon, lat, SOURCE, CC.OBS,
+COMBO.RASTER.ALL  <- dplyr::select(CLEAN.INV, searchTaxon, lon, lat, SOURCE, CC.OBS,
                                    
                                    Annual_mean_temp,     Mean_diurnal_range,  Isothermality,     Temp_seasonality, 
                                    Max_temp_warm_month,  Min_temp_cold_month, Temp_annual_range, Mean_temp_wet_qu,
@@ -85,7 +86,7 @@ SDM.DATA.ALL <- mapply(function(x, cells) {
 ## Check to see we have 19 variables + the species for the standard predictors, and 19 for all predictors
 ## create two more template.raster files: 5km amnd 10km
 ## Check data :: template, data table and species
-message(round(nrow(SDM.DATA.ALL)/nrow(CLEAN.TRUE)*100, 2), " % records retained at 1km resolution")  
+message(round(nrow(SDM.DATA.ALL)/nrow(CLEAN.INV)*100, 2), " % records retained at 1km resolution")  
 
 
 dim(template.raster.1km)
@@ -122,8 +123,8 @@ dim(SDM.DATA.ALL)
 length(unique(SDM.DATA.ALL$searchTaxon))
 length(unique(SDM.DATA.ALL$CC.OBS))
 
-identical(head(SDM.DATA.ALL$CC.OBS, 100), head(CLEAN.TRUE$CC.OBS, 100))   ## should be false - SDM.DATA is a subset of CLEAN.TRUE
-identical(tail(SDM.DATA.ALL$CC.OBS, 100), tail(CLEAN.TRUE$CC.OBS, 100))
+identical(head(SDM.DATA.ALL$CC.OBS, 100), head(CLEAN.INV$CC.OBS, 100))   ## should be false - SDM.DATA is a subset of CLEAN.INV
+identical(tail(SDM.DATA.ALL$CC.OBS, 100), tail(CLEAN.INV$CC.OBS, 100))
 unique(SDM.DATA.ALL$SOURCE)
 
 

@@ -51,8 +51,8 @@ projection(template.raster.1km);projection(SDM.SPAT.OCC.BG);projection(Koppen_19
 
 
 #########################################################################################################################
-## Loop over all the species species = GBIF.spp[1]
-lapply(GBIF.spp, function(species){ 
+## Loop over all the species species = GBIF.spp[9]
+lapply(GBIF.spp[9], function(species){ 
   
   ## Skip the species if the directory already exists, before the loop
   outdir <- maxent_dir

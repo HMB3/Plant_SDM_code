@@ -81,7 +81,7 @@ native.good.models  = subset(MXT.CHECK, Origin == "Native" & Check.map <=2)$sear
 
 #########################################################################################################################
 ## Now read in the list of species Alessandro created by generating global tree inventories
-TI.XY = readRDS("./data/base/Global_tree_inventories/Global_Inventory_CLEAN_18.03.2019.rds")
+TI.XY = readRDS("./data/base/Global_tree_inventories/Global_Inventory_CLEAN_21.03.2019.rds")
 TI.XY = dplyr::select(TI.XY, New_binomial, Lat, Long, Country, City)
 
 
@@ -368,6 +368,8 @@ popular.test    = c("Acer palmatum", "Syzygium smithii", "Magnolia grandiflora",
                    "Jacaranda mimosifolia", "Hardenbergia violacea")
 
 popular.test    = intersect(popular.test, TI.spp)
+inv.test        = as.character(head(TI.LUT$searchTaxon, 20))
+popular.test    = unique(c(inv.test, popular.test))
 
 
 #########################################################################################################################

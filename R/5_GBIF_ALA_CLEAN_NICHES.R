@@ -16,7 +16,7 @@
 ## available data, and susequently model the niches using the maxent algorithm.
 
 
-## Update line 548 RE niches.............................................................................................
+## Why does merging the inventory and occ data not get global invenory records...........................................
 
 
 #########################################################################################################################
@@ -141,11 +141,6 @@ unique(CLEAN.TRUE$coord_summary)
 table(CLEAN.TRUE$coord_summary) 
 
 
-#########################################################################################################################
-## Plot GBIF outliers to check. This might be overkill, but useful to interrogate why species didn't work
-source('./R/CC_CLEAN_TEST.R')
-
-
 ## What percentage of records are retained?
 length(unique(CLEAN.TRUE$searchTaxon))
 message(round(nrow(CLEAN.TRUE)/nrow(TEST.GEO)*100, 2), " % records retained")                                               
@@ -156,18 +151,19 @@ message(round(nrow(CLEAN.TRUE)/nrow(TEST.GEO)*100, 2), " % records retained")
 
 #########################################################################################################################
 ## Now bind on the urban tree inventory data. We are assuming this data is clean, after we manually fix the taxonomy
-## If you want to clean the inventory records, put a OBS column in here too.
+
+## For some reason, at this point, the overseas tree inventory records disappear?.......................................
 if(nrow(TI.XY.SPP) > 0) {
   
   message('Combining Australian inventory data with occurrence data') 
   intersect(names(TI.RASTER.CONVERT), names(CLEAN.TRUE))
-  CLEAN.TRUE = bind_rows(CLEAN.TRUE, TI.RASTER.CONVERT)
+  CLEAN.INV = bind_rows(CLEAN.TRUE, TI.RASTER.CONVERT)
   
 } else {
   
   ## Update with global data
   message('No Australian inventory data for these species')   ##
-  CLEAN.TRUE = CLEAN.TRUE
+  CLEAN.INV = CLEAN.TRUE
   
 }
 
@@ -175,18 +171,24 @@ if(nrow(TI.XY.SPP) > 0) {
 ## How many local municipalities have data for the species analysed
 ## Remove duplicate coordinates
 drops <- c("lon.1", "lat.1")
-CLEAN.TRUE <- CLEAN.TRUE[ , !(names(CLEAN.TRUE) %in% drops)]
-unique(CLEAN.TRUE$SOURCE) 
-length(unique(CLEAN.TRUE$INVENTORY))
+CLEAN.INV <- CLEAN.INV[ , !(names(CLEAN.INV) %in% drops)]
+unique(CLEAN.INV$SOURCE) 
+length(unique(CLEAN.INV$INVENTORY))
 
 
-length(unique(CLEAN.TRUE$searchTaxon))
-summary(CLEAN.TRUE$Annual_mean_temp)
-summary(CLEAN.TRUE$Annual_mean_temp)
+length(unique(CLEAN.INV$searchTaxon))
+summary(CLEAN.INV$Annual_mean_temp)
+summary(CLEAN.INV$Annual_mean_temp)
 
 
 ## By how many % does including tree inventories increase the overal number of records?
-message("Tree inventory data increases records by ", round(dim(CLEAN.TRUE)[1]/dim(TEST.GEO)[1]*100, 2), " % ")   
+message("Tree inventory data increases records by ", round(dim(CLEAN.INV)[1]/dim(TEST.GEO)[1]*100, 2), " % ")
+Jacaranda = subset(CLEAN.INV, searchTaxon == "Jacaranda mimosifolia")
+
+
+#########################################################################################################################
+## Plot GBIF outliers to check. This might be overkill, but useful to interrogate why species didn't work
+source('./R/CC_CLEAN_TEST.R', echo = TRUE)
 
 
 #########################################################################################################################
@@ -194,7 +196,7 @@ message("Tree inventory data increases records by ", round(dim(CLEAN.TRUE)[1]/di
 if(save_data == "TRUE") {
   
   ## save .rds file for the next session
-  saveRDS(CLEAN.TRUE, paste0(DATA_path, 'CLEAN_TRUE_', save_run, '.rds'))
+  saveRDS(CLEAN.INV, paste0(DATA_path, 'CLEAN_INV_', save_run, '.rds'))
   
 } else {
   

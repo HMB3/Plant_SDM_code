@@ -57,6 +57,10 @@ CLEAN.PLOT = SpatialPointsDataFrame(coords      = TEST.GEO[c("lon", "lat")],
                                     data        = TEST.GEO,
                                     proj4string = CRS.WGS.84)
 
+ALL.PLOT = SpatialPointsDataFrame(coords      = CLEAN.TRUE[c("lon", "lat")],
+                                  data        = CLEAN.TRUE,
+                                  proj4string = CRS.WGS.84)
+
 ## Create global and australian shapefile in the local coordinate system
 LAND.84 = LAND %>%
   spTransform(CRS.WGS.84)
@@ -401,18 +405,19 @@ for (species in plot.taxa) {
 
 
 ## Create a DF for the histograms
-HIST.PLOT = SpatialPointsDataFrame(coords      = CLEAN.TRUE[c("lon", "lat")],
-                                   data        = CLEAN.TRUE,
+HIST.PLOT = SpatialPointsDataFrame(coords      = CLEAN.INV[c("lon", "lat")],
+                                   data        = CLEAN.INV,
                                    proj4string = CRS.WGS.84)
 
 
 ##############################################################################################
 ## Plot histograms of temperature and rainfall
-## species = plot.taxa[9]
+## species = plot.taxa[5]
 for (species in plot.taxa) {
   
   ## Subset the spatial dataframe into records for each species
   SP.DF  <- subset(HIST.PLOT, searchTaxon == species)
+  TI.DF  <- subset(TI.PLOT,   searchTaxon == species)
   
   ## Subset DF into records for each species
   DF     <- subset(CLEAN.TRUE, searchTaxon == species)
@@ -424,16 +429,22 @@ for (species in plot.taxa) {
   message('Writing global occ sources for ', species)
   png(sprintf("./data/ANALYSIS/CLEAN_GBIF/%s_%s", species, "occ_points_SOURCE.png"),
       16, 10, units = 'in', res = 500)
-
-  plot(AUS.84, main = paste0("Global points for ", species),
+  
+  plot(LAND.84, main = paste0("Global points for ", species),
        lwd = 0.01, asp = 1, col = 'grey', bg = 'sky blue')
-
+  
   points(SP.DF,
          pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2,
          xlab = "", ylab = "", asp = 1,
          col = factor(SP.DF$SOURCE))
-
+  
   dev.off()
+  
+  ## Write out shapefile, to check if the inventory data is being used
+  message("Writing coord_clean shapefile for ", species)
+  tmp <- HIST.PLOT[HIST.PLOT$searchTaxon == species, ]
+  writeOGR(tmp, dsn = "./data/ANALYSIS/CLEAN_GBIF", paste0(species, '_occ_points_source'), 
+           driver = "ESRI Shapefile", overwrite_layer = TRUE)
   
   #############################################################
   ## Plot temperature histograms
