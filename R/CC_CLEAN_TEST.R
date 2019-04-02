@@ -70,12 +70,13 @@ AUS.84 = AUS %>%
 
 #########################################################################################################################
 ## Get the first 10 species
-## species = plot.taxa[9]
+## species = plot.taxa[1]
+## species = plot.taxa[1]
 plot.taxa <- as.character(unique(CLEAN.PLOT$searchTaxon))
 for (species in plot.taxa) {
   
   ## Plot a subset of taxa
-  CLEAN.PLOT.PI = subset(CLEAN.PLOT, searchTaxon == species)
+  CLEAN.PLOT.PI = CLEAN.PLOT[ which(CLEAN.PLOT$searchTaxon == species), ]
   
   message("plotting occ data for ", species, ", ", 
           nrow(CLEAN.PLOT.PI), " records flagged as either ",
@@ -162,21 +163,18 @@ GBIF.ALA.SPDF    = SpatialPointsDataFrame(coords      = GBIF.ALA.CHECK[c("LON", 
                                           proj4string = CRS.WGS.84)
 
 
-## Create list of species 
-plot.taxa <- unique(GBIF.ALA.SPDF$TAXON)
-
 
 #########################################################################################################################
 ## Then, loop over the species list and create a shapefile for each 
 ## For lots of taxa, this would be needed to 
-for (species in plot.taxa) {
-  
-  ## Need to check the OBS column matches up - or do we not need this again?
-  message("Writing coord_clean shapefile for ", species)
-  tmp <- GBIF.ALA.SPDF[GBIF.ALA.SPDF$TAXON == species, ]
-  writeOGR(tmp, dsn = "./data/ANALYSIS/CLEAN_GBIF", paste0(species, '_coord_clean'), driver = "ESRI Shapefile", overwrite_layer = TRUE)
-  
-}
+# for (species in plot.taxa) {
+#   
+#   ## Need to check the OBS column matches up - or do we not need this again?
+#   message("Writing coord_clean shapefile for ", species)
+#   tmp <- GBIF.ALA.SPDF[GBIF.ALA.SPDF$TAXON == species, ]
+#   writeOGR(tmp, dsn = "./data/ANALYSIS/CLEAN_GBIF", paste0(species, '_coord_clean'), driver = "ESRI Shapefile", overwrite_layer = TRUE)
+#   
+# }
 
 
 ## Also write out the whole shapefile, just in case
@@ -400,7 +398,7 @@ for (species in plot.taxa) {
 
 
 #########################################################################################################################
-## CREATE HISTOGRAMS FOR EACH SPECIES
+## CREATE HISTOGRAMS FOR EACH SPECIES, USING INVENTORY DATA
 #########################################################################################################################
 
 
@@ -416,13 +414,13 @@ HIST.PLOT = SpatialPointsDataFrame(coords      = CLEAN.INV[c("lon", "lat")],
 for (species in plot.taxa) {
   
   ## Subset the spatial dataframe into records for each species
-  SP.DF  <- subset(HIST.PLOT, searchTaxon == species)
-  TI.DF  <- subset(TI.PLOT,   searchTaxon == species)
+  #SP.DF  <- subset(HIST.PLOT, searchTaxon == i)
+  SP.DF  <- HIST.PLOT[ which(HIST.PLOT$searchTaxon == species), ]
   
   ## Subset DF into records for each species
-  DF     <- subset(CLEAN.TRUE, searchTaxon == species)
-  DF.OCC <- subset(CLEAN.TRUE, searchTaxon == species & SOURCE != "INVENTORY")
-  DF.INV <- subset(CLEAN.TRUE, searchTaxon == species & SOURCE == "INVENTORY")
+  DF     <- CLEAN.INV[ which(CLEAN.INV$searchTaxon == species), ] #subset(CLEAN.TRUE, searchTaxon == i)
+  DF.OCC <- CLEAN.INV[ which(CLEAN.INV$searchTaxon == species & CLEAN.INV$SOURCE != "INVENTORY") , ]
+  DF.INV <- CLEAN.INV[ which(CLEAN.INV$searchTaxon == species & CLEAN.INV$SOURCE != "INVENTORY") , ]
   
   #############################################################
   ## Plot occurrence points by source for the world
@@ -441,10 +439,10 @@ for (species in plot.taxa) {
   dev.off()
   
   ## Write out shapefile, to check if the inventory data is being used
-  message("Writing coord_clean shapefile for ", species)
-  tmp <- HIST.PLOT[HIST.PLOT$searchTaxon == species, ]
-  writeOGR(tmp, dsn = "./data/ANALYSIS/CLEAN_GBIF", paste0(species, '_occ_points_source'), 
-           driver = "ESRI Shapefile", overwrite_layer = TRUE)
+  # message("Writing coord_clean shapefile for ", species)
+  # tmp <- HIST.PLOT[HIST.PLOT$searchTaxon == species, ]
+  # writeOGR(tmp, dsn = "./data/ANALYSIS/CLEAN_GBIF", paste0(species, '_occ_points_source'), 
+  #          driver = "ESRI Shapefile", overwrite_layer = TRUE)
   
   #############################################################
   ## Plot temperature histograms

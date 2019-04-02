@@ -553,18 +553,18 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
 
 
 ## Arguments needed to run the function manually
-unit_path     = "./data/base/CONTEXTUAL/SUA/"   ## Data path for the spatial unit of analysis
-unit_shp      = "SUA_2016_AUST.rds"             ## Spatial unit of analysis - E.G. SUAs
-unit_vec      = "SUA_2016_VEC.rds"              ## Vector of rasterized unit cells
-world_shp     = "LAND_world.rds"                ## Polygon for AUS maps
-aus_shp       = "aus_states.rds"                ## Polygon for World maps
-
-DIR           = SDM.RESULTS.DIR[1]                 ## List of directories with rasters
-species       = map_spp[1]                         ## List of species' directories
-maxent_path   = bs_path                     ## Directory of maxent results
-thresh        = percent.10.log[1]                  ## List of maxent thresholds
-time_slice    = 30                              ## Time period, eg 2030
-write_rasters = TRUE
+# unit_path     = "./data/base/CONTEXTUAL/SUA/"   ## Data path for the spatial unit of analysis
+# unit_shp      = "SUA_2016_AUST.rds"             ## Spatial unit of analysis - E.G. SUAs
+# unit_vec      = "SUA_2016_VEC.rds"              ## Vector of rasterized unit cells
+# world_shp     = "LAND_world.rds"                ## Polygon for AUS maps
+# aus_shp       = "aus_states.rds"                ## Polygon for World maps
+# 
+# DIR           = SDM.RESULTS.DIR[1]                 ## List of directories with rasters
+# species       = map_spp[1]                         ## List of species' directories
+# maxent_path   = bs_path                     ## Directory of maxent results
+# thresh        = percent.10.log[1]                  ## List of maxent thresholds
+# time_slice    = 30                              ## Time period, eg 2030
+# write_rasters = TRUE
 
 
 #########################################################################################################################

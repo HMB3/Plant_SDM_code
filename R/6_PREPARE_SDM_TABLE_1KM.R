@@ -20,7 +20,7 @@ message('Preparing SDM table for ', length(GBIF.spp), ' species in the set ', "'
 if(read_data == "TRUE") {
   
   ## read in RDS files from previous step
-  CLEAN.INV = readRDS(paste0(DATA_path, 'CLEAN_TRUE_', save_run, '.rds'))
+  CLEAN.INV = readRDS(paste0(DATA_path, 'CLEAN_INV_', save_run, '.rds'))
   length(intersect(GBIF.spp, unique(CLEAN.INV$searchTaxon)))
   rasterTmpFile()
   
@@ -65,6 +65,7 @@ COMBO.RASTER.ALL  <- dplyr::select(CLEAN.INV, searchTaxon, lon, lat, SOURCE, CC.
 
 #########################################################################################################################
 ## Create a spatial points object, and change to a projected system to calculate distance more accurately 
+## This is the mollweide projection used for the SDMs
 coordinates(COMBO.RASTER.ALL)    <- ~lon+lat
 proj4string(COMBO.RASTER.ALL)    <- '+init=epsg:4326'
 COMBO.RASTER.ALL                 <- spTransform(COMBO.RASTER.ALL, CRS(sp_epsg54009))
@@ -118,13 +119,19 @@ xres(template.raster.1km);yres(template.raster.1km)
 ## So we will need to process all the species locally, then send them to Shawn.
 
 
+#########################################################################################################################
+## Create a unique identifier for spatial cleaning. This is used for automated cleaing of the records, and also saving shapefiles
+## But this will not be run for all species linearly. So, it probably needs to be a combination of species and number
+SDM.DATA.ALL$SPOUT.OBS <- 1:nrow(SDM.DATA.ALL)
+SDM.DATA.ALL$SPOUT.OBS <- paste0(SDM.DATA.ALL$SPOUT.OBS, "_SPOUT_", SDM.DATA.ALL$searchTaxon)
+SDM.DATA.ALL$SPOUT.OBS <- gsub(" ",     "_",  SDM.DATA.ALL$SPOUT.OBS, perl = TRUE)
+length(SDM.DATA.ALL$SPOUT.OBS);length(unique(SDM.DATA.ALL$SPOUT.OBS))
+
+
 ## Check dimensions
 dim(SDM.DATA.ALL)
 length(unique(SDM.DATA.ALL$searchTaxon))
-length(unique(SDM.DATA.ALL$CC.OBS))
-
-identical(head(SDM.DATA.ALL$CC.OBS, 100), head(CLEAN.INV$CC.OBS, 100))   ## should be false - SDM.DATA is a subset of CLEAN.INV
-identical(tail(SDM.DATA.ALL$CC.OBS, 100), tail(CLEAN.INV$CC.OBS, 100))
+length(unique(SDM.DATA.ALL$SPOUT.OBS))
 unique(SDM.DATA.ALL$SOURCE)
 
 
@@ -136,7 +143,7 @@ SDM.COORDS  <- SDM.DATA.ALL %>%
   
   as.data.frame() %>% 
   
-  select(searchTaxon, lon, lat, CC.OBS, SOURCE) %>%
+  select(searchTaxon, lon, lat, SPOUT.OBS, SOURCE) %>%
   
   dplyr::rename(species          = searchTaxon,
                 decimallongitude = lon, 
@@ -150,7 +157,7 @@ dim(SDM.COORDS)
 head(SDM.COORDS)
 class(SDM.COORDS)
 summary(SDM.COORDS$decimallongitude)
-identical(SDM.COORDS$index, SDM.COORDS$CC.OBS)
+identical(SDM.COORDS$index, SDM.COORDS$SPOUT.OBS)
 length(unique(SDM.COORDS$species))
 
 
@@ -169,14 +176,14 @@ View(COMBO.LUT)
 
 ## Watch out here - this sorting could cause problems for the order of the data frame once it's stitched back together
 ## If we we use species to join the data back together, will it preserve the order? 
-LUT.100K = as.character(subset(COMBO.LUT, FREQUENCY < 65000)$species)
+LUT.100K = as.character(subset(COMBO.LUT, FREQUENCY < 100000)$species)
 LUT.100K = trimws(LUT.100K [order(LUT.100K)])
 length(LUT.100K)
 
 
-## Unfortunately, the cc_outl function can't handle vectors of a certain size - over 40 GB at least.
-## So we have to run this afterthe SDM step
-## The current settings are not getting enough spatial outliers..........................................................
+## See communications with Alex Zizka
+## Check the output for patterns - make the settings strict here, as outliers could be bogus after 1km thinning
+## Generally, species with heaps of records, especially those with clumped/biased records, get more outliers
 
 ## Create a data frame of species name and spatial outlier
 SPAT.OUT <- LUT.100K  %>%
@@ -194,15 +201,14 @@ SPAT.OUT <- LUT.100K  %>%
                        lat     = "decimallatitude",
                        species = "species",
                        method  = "quantile", #"distance",
-                       #mltpl   = 4,
+                       mltpl   = 10,
                        #tdi     = 300,
                        value   = "flagged",
                        verbose = "TRUE")
     
     ## Now add attache column for species, and the flag for each record
-    #d = data.frame(searchTaxon = x, SPAT_OUT = sp.flag)
     d = cbind(searchTaxon = x,
-              SPAT_OUT = sp.flag, f)[c("searchTaxon", "SPAT_OUT", "CC.OBS")]
+              SPAT_OUT = sp.flag, f)[c("searchTaxon", "SPAT_OUT", "SPOUT.OBS")]
     
     ## Remeber to explicitly return the df at the end of loop, so we can bind
     return(d)
@@ -217,7 +223,6 @@ gc()
 
 ## These settings produce too few outliers. Try changing the settings..................................................
 print(table(SPAT.OUT$SPAT_OUT, exclude = NULL))
-identical(SPAT.OUT$index, SPAT.OUT$OBS)
 length(unique(SPAT.OUT$searchTaxon))
 head(SPAT.OUT)
 
@@ -241,8 +246,10 @@ identical(SDM.DATA.ALL$searchTaxon, SPAT.OUT$searchTaxon)
 length(unique(SPAT.OUT$searchTaxon))
 
 
-SPAT.FLAG = join(as.data.frame(SDM.DATA.ALL), SPAT.OUT, by = c("CC.OBS", "searchTaxon") , type = "left", match = "first")    
+## This explicit join is required. Check the species have been analysed in exactly the same order
+SPAT.FLAG = join(as.data.frame(SDM.DATA.ALL), SPAT.OUT, by = c("SPOUT.OBS", "searchTaxon") , type = "left", match = "first")    
 identical(SDM.DATA.ALL$searchTaxon, SPAT.FLAG$searchTaxon)
+
 
 ## Check the join is working 
 message('Checking spatial flags for ', length(unique(SPAT.FLAG$searchTaxon)), ' species in the set ', "'", save_run, "'")
@@ -259,13 +266,12 @@ unique(SDM.SPAT.ALL$SOURCE)
 length(unique(SDM.SPAT.ALL$searchTaxon))
 
 
-## What percentage of records are retained?
-length(unique(SDM.SPAT.ALL$searchTaxon))
-message(round(dim(SDM.SPAT.ALL)[1]/dim(SPAT.FLAG)[1]*100, 2), " % records retained")                                               
+## What percentage of records are retained? 1-2% seems reasonable
+message(round(nrow(SDM.SPAT.ALL)/nrow(SPAT.FLAG)*100, 2), " % records retained")                                               
 
 
 #########################################################################################################################
-## Convert back to format for SDMs
+## Convert back to format for SDMs :: use Mollweide projection
 SDM.SPAT.ALL    = SpatialPointsDataFrame(coords      = SDM.SPAT.ALL[c("lon", "lat")],
                                          data        = SDM.SPAT.ALL,
                                          proj4string = CRS(sp_epsg54009))
@@ -304,7 +310,7 @@ projection(SDM.SPAT.ALL)
 
 ## Rename the fields so that ArcMap can handle them
 SPAT.OUT.CHECK     = SPAT.FLAG %>% 
-  select(CC.OBS, searchTaxon, lat, lon, SOURCE, SPAT_OUT) %>%
+  select(SPOUT.OBS, searchTaxon, lat, lon, SOURCE, SPAT_OUT) %>%
   dplyr::rename(TAXON     = searchTaxon,
                 LAT       = lat,
                 LON       = lon)
@@ -344,7 +350,7 @@ if(save_data == "TRUE") {
 
 
 #########################################################################################################################
-## Re-run this after running steps 1-5 for all 4k species.
+## Re-run this after running steps 1-5 for all 4k species, and use that for background.points instead
 ## Add in random records from previously saved runs :: get all the species which have not
 background.points = background.points[!background.points$searchTaxon %in% GBIF.spp, ]   ## Don't add records for other species
 length(unique(background.points$searchTaxon));dim(background.points)
@@ -358,7 +364,7 @@ SDM.SPAT.ALL$TYPE      = "OCC"
 setdiff(names(SDM.SPAT.ALL), names(background.points))
 setdiff(names(background.points), names(SDM.SPAT.ALL))
  
-drops <- c("CC.OBS", "SPAT_SPP", "SPAT_OUT", "index", "lon", "lat") 
+drops <- c("SPOUT.OBS", "OBS", "CC.OBS", "SPAT_SPP", "SPAT_OUT", "index", "lon", "lat") 
 SDM.SPAT.ALL      <- SDM.SPAT.ALL[,!(names(SDM.SPAT.ALL) %in% drops)]
 background.points <- background.points[,!(names(background.points) %in% drops)]
 setdiff(names(SDM.SPAT.ALL), names(background.points))

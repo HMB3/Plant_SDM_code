@@ -369,7 +369,7 @@ popular.test    = c("Acer palmatum", "Syzygium smithii", "Magnolia grandiflora",
 
 popular.test    = intersect(popular.test, TI.spp)
 inv.test        = as.character(head(TI.LUT$searchTaxon, 20))
-popular.test    = unique(c(inv.test, popular.test))
+inv.test        = unique(c(inv.test, popular.test))
 
 
 #########################################################################################################################

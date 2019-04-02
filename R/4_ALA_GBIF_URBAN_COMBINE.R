@@ -211,6 +211,7 @@ unique(Match.SN$New.Taxonomic.status)
 
 ## Also include records where the "scientificName" and the "searchTaxon" don't match, but status is synonym
 ## This is the same as the subset of species which are accpeted, but not on our list
+## Still have a problem for Acer palmatum................................................................................
 true.synonym   = unique(subset(Match.SN, Match.SN.ST == "TRUE" |
                                  Taxonomic.status == "Synonym")$scientificName)
 false.synonym  = unique(subset(Match.SN, Match.SN.ST == "FALSE" &
@@ -232,7 +233,7 @@ Match.record   = Match.SN[Match.SN$scientificName     %in% match.true, ]
 
 
 ## Check the species that was not matching :: this now gets only matching search taxa
-test.match = subset(Match.record, searchTaxon == "Acer capillipes")  
+test.match = subset(Match.record, searchTaxon == "Acer negundo")  
 unique(test.match$scientificName)
 
 
@@ -385,15 +386,11 @@ COMBO.RASTER.CONVERT = as.data.frame(COMBO.RASTER.CONVERT)                   ## 
 ## Check Looks ok?
 summary(COMBO.RASTER.CONVERT$Annual_mean_temp)  ## -23 looks too low/. Check where these are ok
 summary(COMBO.RASTER$Annual_mean_temp)
-
-summary(COMBO.RASTER.CONVERT$Isothermality)
-summary(COMBO.RASTER$Isothermality)
-
-summary(COMBO.RASTER.CONVERT$PET)
+summary(COMBO.RASTER.CONVERT)
 
 
 ## Print the dataframe dimensions to screen :: format to recognise millions, hundreds of thousands, etc.
-COMBO.RASTER.CONVERT = na.omit(COMBO.RASTER.CONVERT)
+COMBO.RASTER.CONVERT = completeFun(COMBO.RASTER.CONVERT, "PET")
 names(COMBO.RASTER.CONVERT)
 dim(COMBO.RASTER.CONVERT)
 formatC(dim(COMBO.RASTER.CONVERT)[1], format = "e", digits = 2)

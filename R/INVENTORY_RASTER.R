@@ -185,7 +185,7 @@ if(nrow(TI.XY.SPP) > 0) {
   
   #########################################################################################################################
   ## Save the raster datasets
-  TI.RASTER.CONVERT = na.omit(TI.RASTER.CONVERT)
+  TI.RASTER.CONVERT = completeFun(TI.RASTER.CONVERT, "PET")
   summary(TI.RASTER.CONVERT)
 
   

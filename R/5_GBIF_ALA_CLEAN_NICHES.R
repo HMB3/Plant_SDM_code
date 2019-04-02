@@ -65,7 +65,7 @@ names(COMBO.RASTER.CONVERT)
 
 
 #########################################################################################################################
-## Create a unique identifier. This is used for automated cleaing of the records, and also saving shapefiles
+## Create a unique identifier for GBIF cleaning. This is used for automated cleaing of the records, and also saving shapefiles
 ## But this will not be run for all species linearly. So, it probably needs to be a combination of species and number
 COMBO.RASTER.CONVERT$CC.OBS <- 1:nrow(COMBO.RASTER.CONVERT)
 COMBO.RASTER.CONVERT$CC.OBS <- paste0(COMBO.RASTER.CONVERT$CC.OBS, "_CC_", COMBO.RASTER.CONVERT$searchTaxon)
@@ -102,7 +102,7 @@ TIB.GBIF <- COMBO.RASTER.CONVERT %>% dplyr::rename(species          = searchTaxo
                               "institutions", "zeros"), ## duplicates flagged too many
                     
                     capitals_rad    = 10000,  ## remove records within 10km  of capitals
-                    centroids_rad   = 5000    ## remove records within 5km of country centroids
+                    centroids_rad   = 1000    ## remove records within 1km of country centroids
                     # outliers_method = "distance", ## The other checks are not producing reliable results
                     # outliers_td     = 800,
                     # outliers_mtp    = 5
@@ -119,6 +119,7 @@ names(TIB.GBIF) = c("coord_spp", "CC.OBS",    "coord_val",  "coord_equ",  "coord
 
 
 ## Flagging ~ x%, excluding the spatial outliers. Seems reasonable?
+## These numbers vary with the taxa, consider  how appropriate the settings are........................................
 message(round(with(TIB.GBIF, table(coord_summary)/sum(table(coord_summary))*100), 2), " % records removed")
 
 
@@ -182,8 +183,7 @@ summary(CLEAN.INV$Annual_mean_temp)
 
 
 ## By how many % does including tree inventories increase the overal number of records?
-message("Tree inventory data increases records by ", round(dim(CLEAN.INV)[1]/dim(TEST.GEO)[1]*100, 2), " % ")
-Jacaranda = subset(CLEAN.INV, searchTaxon == "Jacaranda mimosifolia")
+message("Tree inventory data increases records by ", round(nrow(CLEAN.INV)/nrow(TEST.GEO)*100, 2), " % ")
 
 
 #########################################################################################################################

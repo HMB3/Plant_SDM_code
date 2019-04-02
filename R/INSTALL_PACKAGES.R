@@ -150,7 +150,8 @@ devtools::install_github("gdauby/ConR")
 
 ## Update ALA4R :: this should get around some of the issues with the CRAN version
 devtools::install_github("AtlasOfLivingAustralia/ALA4R")
-librayr(ALA4R)
+# detach("package:ALA4R", unload=TRUE)
+library(ALA4R)
 
 
 #########################################################################################################################
