@@ -393,6 +393,7 @@ summary(COMBO.RASTER.CONVERT$PET)
 
 
 ## Print the dataframe dimensions to screen :: format to recognise millions, hundreds of thousands, etc.
+COMBO.RASTER.CONVERT = na.omit(COMBO.RASTER.CONVERT)
 names(COMBO.RASTER.CONVERT)
 dim(COMBO.RASTER.CONVERT)
 formatC(dim(COMBO.RASTER.CONVERT)[1], format = "e", digits = 2)

@@ -6,13 +6,17 @@
 #########################################################################################################################
 ## This code take the table of inventory data for the species list, extracts environmental values 
 
-## It creates two tables:
 
-## 1). A large table with one row for each species record
-## 2). A smaller table with one row for each species, including contextual data and species attributes (niches, traits, etc.)
+## 1). This code takes the table of inventory data for the species list, extracts environmental values and creates 
+## a large table with one row for each species record.
+
 
 ## These tables are subsequently used to estimate the current global realised niche/climatic tolerance using the best 
-## available data, and susequently model the niches using the maxent algorithm.  
+## available data, and susequently model the niches using the maxent algorithm. 
+
+ 
+## Could speed up the extract step, by creating an index of all possible raster cells, then only using the unique cells 
+## where occurrence data is found..................................................................................... 
 
 
 #########################################################################################################################
@@ -39,7 +43,7 @@ message('Extracting raster values for ',
 
 #########################################################################################################################
 ## Check the inventory table works
-if(dim(TI.XY.SPP)[1] > 0) {
+if(nrow(TI.XY.SPP) > 0) {
   
   
   #########################################################################################################################
@@ -105,8 +109,6 @@ if(dim(TI.XY.SPP)[1] > 0) {
   projection(TI.POINTS);projection(world.grids.current);projection(PET)
   TI.RASTER <- raster::extract(world.grids.current, TI.POINTS) %>% 
     cbind(TI.XY.SPP, .)
-  summary(TI.RASTER)
-  class(TI.RASTER)  names(TI.RASTER)
   
   
   #########################################################################################################################
@@ -141,11 +143,11 @@ if(dim(TI.XY.SPP)[1] > 0) {
   
   #########################################################################################################################
   ## Extract the raster data for PET
-  # projection(TI.POINTS);projection(PET)
-  # POINTS.PET <- raster::extract(PET, TI.POINTS) %>% 
-  #   cbind(TI.RASTER, .)
-  # TI.RASTER = POINTS.PET
-  # names(TI.RASTER)[names(TI.RASTER) == "."] <- 'PET'
+  projection(TI.POINTS);projection(PET)
+  POINTS.PET <- raster::extract(PET, TI.POINTS) %>%
+    cbind(TI.RASTER, .)
+  TI.RASTER = POINTS.PET
+  names(TI.RASTER)[names(TI.RASTER) == "."] <- 'PET'
   
   ## Check 
   dim(TI.RASTER)
@@ -154,39 +156,14 @@ if(dim(TI.XY.SPP)[1] > 0) {
   
   
   ## Check the raster values here..........................................................................................
+  ## Need a measure of how many points are outside the raster exent
   summary(TI.RASTER$Annual_mean_temp)
-  
   
   
   
   #########################################################################################################################
   ## 2). CONVERT RASTER VALUES
   #########################################################################################################################
-  
-  
-  #########################################################################################################################
-  ## Now summarise the niches. But figure out a cleaner way of doing this
-  env.variables = c("Annual_mean_temp",
-                    "Mean_diurnal_range",
-                    "Isothermality",
-                    "Temp_seasonality",
-                    "Max_temp_warm_month",
-                    "Min_temp_cold_month",
-                    "Temp_annual_range",
-                    "Mean_temp_wet_qu",
-                    "Mean_temp_dry_qu",
-                    "Mean_temp_warm_qu",
-                    "Mean_temp_cold_qu",
-                    
-                    "Annual_precip",
-                    "Precip_wet_month",
-                    "Precip_dry_month",
-                    "Precip_seasonality",
-                    "Precip_wet_qu",
-                    "Precip_dry_qu",
-                    "Precip_warm_qu",
-                    "Precip_col_qu",
-                    "PET")
   
   
   #########################################################################################################################
@@ -209,6 +186,13 @@ if(dim(TI.XY.SPP)[1] > 0) {
   #########################################################################################################################
   ## Save the raster datasets
   TI.RASTER.CONVERT = na.omit(TI.RASTER.CONVERT)
+  summary(TI.RASTER.CONVERT)
+
+  
+  ## Need a measure of how many points are outside the raster exent
+  message(round(nrow(TI.RASTER.CONVERT)/nrow(TI.RASTER)*100, 2), " % records retained after worldclim extract") 
+  
+  
   names(TI.RASTER.CONVERT)
   unique(TI.RASTER.CONVERT$INVENTORY)
   unique(TI.RASTER.CONVERT$searchTaxon)

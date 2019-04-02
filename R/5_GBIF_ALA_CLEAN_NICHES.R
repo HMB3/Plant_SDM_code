@@ -87,7 +87,7 @@ TIB.GBIF <- COMBO.RASTER.CONVERT %>% dplyr::rename(species          = searchTaxo
                                                    decimallongitude = lon, 
                                                    decimallatitude  = lat) %>%
   
-  ## The create a tibble for running the spatial outlier cleaning
+  ## Then, create a tibble for running the spatial outlier cleaning
   timetk::tk_tbl() %>% 
   
   ## Consider the arguments. We've already stripped out the records that fall outside
