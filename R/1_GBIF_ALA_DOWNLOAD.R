@@ -15,7 +15,6 @@
 ## Create a list of all the taxa to download.
 all.taxa     =  GBIF.spp
 all.taxa.rev =  all.taxa[rev(order(all.taxa))]
-
 #message (GBIF_path)
 
 #########################################################################################################################

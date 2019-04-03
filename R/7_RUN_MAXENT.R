@@ -48,6 +48,7 @@ projection(template.raster.1km);projection(SDM.SPAT.OCC.BG);projection(Koppen_19
 
 
 ## Can error messages be saved inside the text file......................................................................
+## Check why the BG sampling is not messaging.
 
 
 #########################################################################################################################
@@ -75,6 +76,7 @@ lapply(GBIF.spp, function(species){
     
     ## Subset the records to only the taxa being processed
     ## Also subset to the source : ALA+ GBIF, or ALA + GBIF + INV
+    ## This is what is causing the proportional sampling to skip.........................................
     occurrence <- subset(SDM.SPAT.OCC.BG, searchTaxon == species)
     occurrence <- occurrence[grep(paste(OCC_SOURCE, collapse = '|'), occurrence$SOURCE, ignore.case = TRUE),]
     message('Using occ records from ', unique(occurrence$SOURCE))
@@ -385,7 +387,9 @@ MAXENT.RESULTS.SAVE$searchTaxon = gsub("_", " ", MAXENT.RESULTS.SAVE$searchTaxon
 if(save_data == "TRUE") {
   
   ## save .rds file for the next session
-  saveRDS(MAXENT.RESULTS.SAVE, paste0(DATA_path, 'MAXENT_RESULTS_', save_run, '.rds'))
+  saveRDS(MAXENT.RESULTS.SAVE,   paste0(DATA_path, 'MAXENT_RESULTS_', save_run, '.rds'))
+  write.csv(MAXENT.RESULTS.SAVE, paste0(DATA_path, 'MAXENT_RESULTS_', save_run, '.csv'), row.names = FALSE)
+  
   
 } else {
   

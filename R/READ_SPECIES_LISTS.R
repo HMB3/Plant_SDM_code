@@ -352,6 +352,7 @@ WPW.spp         = sort(GBIF.GROW.VALID$searchTaxon)
 WPW.tree        = subset(GBIF.GROW.VALID, Plant_type == "Tree")$searchTaxon
 WPW.non.tree    = as.character(GBIF.GROW.VALID$searchTaxon[!GBIF.GROW.VALID$searchTaxon %in% WPW.tree ])
 TI.spp          = unique(TI.XY$searchTaxon)
+TI.HIA          = setdiff(TI.spp, WPW.spp)
 
 WPW.spp         = WPW.spp[lapply(WPW.spp,length)>0]
 WPW.NA          = unique(c(TPL.NA, GBIF.NA))          ## These taxa did not match either GBIF or ALA
@@ -367,9 +368,13 @@ popular.test    = c("Acer palmatum", "Syzygium smithii", "Magnolia grandiflora",
                    "Gardenia jasminoides", "Pyrus calleryana", "Murraya paniculata", "Ficus microcarpa",
                    "Jacaranda mimosifolia", "Hardenbergia violacea")
 
+
 popular.test    = intersect(popular.test, TI.spp)
 inv.test        = as.character(head(TI.LUT$searchTaxon, 20))
 inv.test        = unique(c(inv.test, popular.test))
+
+
+
 
 
 #########################################################################################################################
