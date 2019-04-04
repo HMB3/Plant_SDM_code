@@ -26,7 +26,7 @@ all.taxa.rev =  all.taxa[rev(order(all.taxa))]
 #                            Either there was an error with the request, or the servers may be down (try again later). 
 #                            If this problem persists please notify the ALA4R maintainers by lodging an issue at 
 #                            https://github.com/AtlasOfLivingAustralia/ALA4R/issues/ or emailing support@ala.org.au
-                           
+
 
 # 11111 Records returned for Acacia mangium
 # Downloading GBIF records for Acacia mearnsii using rgbif :: occ_data

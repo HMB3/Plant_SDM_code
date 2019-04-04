@@ -295,6 +295,8 @@ tpi  = raster("./data/base/ACLEP/TPI.tif")
 soil = stack(file.path('./data/base/ACLEP', sprintf('PC%d.tif', 1:3)))
 
 
+#########################################################################################################################
+## Try resampling the soil rasters :: consider which re-sampling method is best 
 # z <- file.path('./data/base/ACLEP', sprintf('PC%d.tif', 1:3))
 # system.time(z2 <- gdalUtils::gdalwarp(z[1], f <- tempfile(fileext = '.tif'), 
 #                                       te=c(bbox(aus.grids.current)), tr=c(1000, 1000),

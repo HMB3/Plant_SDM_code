@@ -79,15 +79,15 @@ native.good.models  = subset(MXT.CHECK, Origin == "Native" & Check.map <=2)$sear
 
 #########################################################################################################################
 ## Now read in tables of all plant records from ALA and GBIF
-ALA.PLANTS  = read.csv("./data/base/HIA_LIST/ALA_plants.csv", stringsAsFactors = FALSE)
-saveRDS(ALA.PLANTS, './data/base/HIA_LIST/ALA_plants.rds')
-redgum.test = ALA.PLANTS[ALA.PLANTS$scientificName %like% "Eucalyptus camaldulensis", ]
-ALA.RG      = ALA.RG[ALA.RG$scientificName %like% "Eucalyptus camaldulensis", ]
-dim(ALA.RG)
+#ALA.PLANTS  = read.csv("./data/base/HIA_LIST/ALA_plants.csv", stringsAsFactors = FALSE)
+#saveRDS(ALA.PLANTS, './data/base/HIA_LIST/ALA_plants.rds')
+# redgum.test = ALA.PLANTS[ALA.PLANTS$scientificName %like% "Eucalyptus camaldulensis", ]
+# ALA.RG      = ALA.RG[ALA.RG$scientificName %like% "Eucalyptus camaldulensis", ]
+# dim(ALA.RG)
 
 
 
-GBIF.PLANTS = read.csv("./data/base/HIA_LIST/GBIF_plants.csv", stringsAsFactors = FALSE)
+#GBIF.PLANTS = read.csv("./data/base/HIA_LIST/GBIF_plants.csv", stringsAsFactors = FALSE)
 
 
 

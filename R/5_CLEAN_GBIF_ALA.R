@@ -84,7 +84,7 @@ length(COMBO.RASTER.CONVERT$CC.OBS);length(unique(COMBO.RASTER.CONVERT$CC.OBS))
 
 #########################################################################################################################
 ## Rename the columns to fit the CleanCoordinates format and create a tibble. 
-TIB.GBIF <- COMBO.RASTER.CONVERT %>% dplyr::rename(species          = searchTaxon,
+TIB.GBIF <- COMBO.RASTER.CONVERT %>% dplyr::rename(coord_spp        = searchTaxon,
                                                    decimallongitude = lon, 
                                                    decimallatitude  = lat) %>%
   
@@ -110,7 +110,7 @@ TIB.GBIF <- COMBO.RASTER.CONVERT %>% dplyr::rename(species          = searchTaxo
   ) %>%
   
   ## The select the relevant columns and rename
-  select(., species, CC.OBS, .val,  .equ, .zer,  .cap,   
+  select(., coord_spp, CC.OBS, .val,  .equ, .zer,  .cap,   
          .cen,    .gbf,   .inst, .summary) 
 
 ## Then rename
@@ -139,22 +139,6 @@ identical(COMBO.RASTER.CONVERT$CC.OBS,      TEST.GEO$CC.OBS)                    
 CLEAN.TRUE  = subset(TEST.GEO, coord_summary == "TRUE")
 CLEAN.FALSE = subset(TEST.GEO, coord_summary == "FALSE")
 table(CLEAN.TRUE$coord_summary) 
-
-
-#########################################################################################################################
-## Plot GBIF outliers to check. This might be overkill, but useful to interrogate why species didn't work
-if(check_maps == "TRUE") {
-  
-  message('Writing shapefiles and maps to checking directory') 
-  source('./R/CC_CLEAN_TEST.R')
-  
-} else {
-  
-  ## Update with global data
-  message('Dont create maps and shapefile of points')   ##
-  
-}
-
 
 
 ## What percentage of records are retained?
@@ -206,7 +190,7 @@ message("Tree inventory data increases records by ", round(nrow(CLEAN.INV)/nrow(
 
 #########################################################################################################################
 ## Plot GBIF outliers to check. This might be overkill, but useful to interrogate why species didn't work
-source('./R/CC_CLEAN_TEST.R', echo = TRUE)
+#source('./R/CC_CLEAN_TEST.R', echo = TRUE)
 
 
 #########################################################################################################################
@@ -223,7 +207,19 @@ if(save_data == "TRUE") {
 }
 
 
-
+#########################################################################################################################
+## Plot GBIF outliers to check. This might be overkill, but useful to interrogate why species didn't work
+if(check_maps == "TRUE") {
+  
+  message('Writing shapefiles and maps to checking directory') 
+  source('./R/CC_CLEAN_TEST.R')
+  
+} else {
+  
+  ## Update with global data
+  message('Dont create maps and shapefile of points')   ##
+  
+}
 
 
 # #########################################################################################################################
