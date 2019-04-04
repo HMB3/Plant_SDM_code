@@ -157,7 +157,7 @@ download_GBIF_all_species = function (species_list, path) {
 
 #########################################################################################################################
 ## ALA
-## sp.n = WPW.spp[1]
+## sp.n = "Polyalthia longifolia"
 ## path    = ALA_path
 download_ALA_all_species = function (species_list, path) {
   
@@ -167,6 +167,9 @@ download_ALA_all_species = function (species_list, path) {
   
   ## for every species in the list
   for(sp.n in species_list){
+    
+    ## Get the ID?
+    lsid <- ALA4R::specieslist(sp.n)$taxonConceptLsid
     
     ## 1). First, check if the f*&%$*# file exists
     file_name = paste0(path, sp.n, "_ALA_records.RData")
@@ -183,10 +186,13 @@ download_ALA_all_species = function (species_list, path) {
     save (dummy, file = file_name)
     
     ## 2). Then check the spelling...incorrect nomenclature will return NULL result
-    if (is.null(ALA4R::occurrences(taxon = sp.n, download_reason_id = 7)$data) == TRUE) {
+    ## Also, add a condtion to only get species with not that many synonyms?
+    ## length(unique(ALA4R::occurrences(taxon = paste('taxon_name:\"', sp.n, '\"',sep=""), 
+    ##                    download_reason_id = 7)$data$scientificName)) > 30
+    if (is.null(ALA4R::occurrences(taxon = paste('taxon_name:\"', sp.n, '\"',sep=""), download_reason_id = 7)$data) == TRUE) {
       
       ## Now, append the species which had incorrect nomenclature to the skipped list
-      ## this is slow, but it works for now
+      ## this is slow, but it works for now.........................................
       print (paste ("Possible incorrect nomenclature", sp.n, "skipping"))
       nomenclature = paste ("Possible incorrect nomenclature |", sp.n)
       skip.spp.list <- c(skip.spp.list, nomenclature)
@@ -195,7 +201,7 @@ download_ALA_all_species = function (species_list, path) {
     }
     
     ## 3). Skip species with no records
-    if (dim(ALA4R::occurrences(taxon = sp.n, download_reason_id = 7)$data)[1] <= 2) {
+    if (nrow(ALA4R::occurrences(taxon = paste('taxon_name:\"', sp.n, '\"',sep=""), download_reason_id = 7)$data) <= 2) {
       
       ## now append the species which had no records to the skipped list
       print (paste ("No ALA records for", sp.n, "skipping"))
@@ -206,8 +212,14 @@ download_ALA_all_species = function (species_list, path) {
     }
     
     ## 4). Download ALL records from ALA :: 
+    ## Try testing the searchtaxon for a few species 
+    
+    
     message("Downloading ALA records for ", sp.n, " using ALA4R :: occurrences")
-    ALA = ALA4R::occurrences(taxon = sp.n, download_reason_id = 1)   ## could use more arguments here, download_reason_id = 7, etc.
+    # taxon="taxon_name:\"Alaba vibex\""
+    # paste('modelCheck(var"',i,'_d.bug")',sep="")
+    # paste('taxon_name:\', sp.n, '\"', sep="")
+    ALA = ALA4R::occurrences(taxon = paste('taxon_name:\"', sp.n, '\"',sep=""), download_reason_id = 7)   
     ALA = ALA[["data"]]
     
     cat("Synonyms returned for :: ", sp.n, unique(ALA$scientificName), sep="\n")

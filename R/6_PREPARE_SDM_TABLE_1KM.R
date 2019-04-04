@@ -271,6 +271,11 @@ message(round(nrow(SDM.SPAT.ALL)/nrow(SPAT.FLAG)*100, 2), " % records retained")
 
 
 #########################################################################################################################
+## Now calculate the niches here
+## source('./R/CALC_1KM_NICHES.R')
+
+
+#########################################################################################################################
 ## Convert back to format for SDMs :: use Mollweide projection
 SDM.SPAT.ALL    = SpatialPointsDataFrame(coords      = SDM.SPAT.ALL[c("lon", "lat")],
                                          data        = SDM.SPAT.ALL,

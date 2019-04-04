@@ -72,6 +72,25 @@ native.good.models  = subset(MXT.CHECK, Origin == "Native" & Check.map <=2)$sear
 
 
 
+#########################################################################################################################
+## 2). READ IN ALA PLANT DUMP
+#########################################################################################################################
+
+
+#########################################################################################################################
+## Now read in tables of all plant records from ALA and GBIF
+ALA.PLANTS  = read.csv("./data/base/HIA_LIST/ALA_plants.csv", stringsAsFactors = FALSE)
+saveRDS(ALA.PLANTS, './data/base/HIA_LIST/ALA_plants.rds')
+redgum.test = ALA.PLANTS[ALA.PLANTS$scientificName %like% "Eucalyptus camaldulensis", ]
+ALA.RG      = ALA.RG[ALA.RG$scientificName %like% "Eucalyptus camaldulensis", ]
+dim(ALA.RG)
+
+
+
+GBIF.PLANTS = read.csv("./data/base/HIA_LIST/GBIF_plants.csv", stringsAsFactors = FALSE)
+
+
+
 
 
 #########################################################################################################################
@@ -81,8 +100,9 @@ native.good.models  = subset(MXT.CHECK, Origin == "Native" & Check.map <=2)$sear
 
 #########################################################################################################################
 ## Now read in the list of species Alessandro created by generating global tree inventories
-TI.XY = readRDS("./data/base/Global_tree_inventories/Global_Inventory_CLEAN_21.03.2019.rds")
-TI.XY = dplyr::select(TI.XY, New_binomial, Lat, Long, Country, City)
+TI.XY   = readRDS("./data/base/Global_tree_inventories/Global_Inventory_CLEAN_21.03.2019.rds")
+TI.XY   = dplyr::select(TI.XY, New_binomial, Lat, Long, Country, City)
+TI.CITY = read.csv("./data/base/Global_tree_inventories/GTI_470cities_pop15.csv", stringsAsFactors = FALSE)
 
 
 ## Rename data

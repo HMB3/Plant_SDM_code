@@ -73,6 +73,7 @@ SUA_2016      = SUA_2016 %>%
 
 ## Read in the Local government areas
 LGA           = readRDS("./data/base/CONTEXTUAL/LGA.rds")
+POA_2016      = readOGR('data/base/CONTEXTUAL/SUA/POA_2016_AUST.shp')
 AUS           = readRDS("./data/base/CONTEXTUAL/aus_states.rds")
 ALL.SUA.POP   = read.csv("./data/base/CONTEXTUAL/ABS_SUA_POP.csv", stringsAsFactors = FALSE)
 URB.POP       = read.csv("./data/base/CONTEXTUAL/ABS_URBAN_CENTRE_POP.csv", stringsAsFactors = FALSE)
@@ -81,6 +82,7 @@ URB.POP       = read.csv("./data/base/CONTEXTUAL/ABS_URBAN_CENTRE_POP.csv", stri
 #########################################################################################################################
 ## Check how the Koppen zones were calculated
 Koppen_zones     = unique(readOGR('data/base/CONTEXTUAL/WC05_1975H_Koppen_Shapefile/WC05_1975H_Koppen_Kriticos_2012.shp')@data[, 1:2])
+Koppen_shp       = readOGR('data/base/CONTEXTUAL/WC05_1975H_Koppen_Shapefile/WC05_1975H_Koppen_Kriticos_2012.shp')
 Koppen_1975_1km  = raster('data/Koppen_1000m_Mollweide54009.tif')
 # Koppen_1975_2km  = raster('data/Koppen_2000m_Mollweide54009.tif')
 # Koppen_1975_3km  = raster('data/Koppen_3000m_Mollweide54009.tif')

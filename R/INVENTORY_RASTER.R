@@ -14,7 +14,7 @@
 ## These tables are subsequently used to estimate the current global realised niche/climatic tolerance using the best 
 ## available data, and susequently model the niches using the maxent algorithm. 
 
- 
+
 ## Could speed up the extract step, by creating an index of all possible raster cells, then only using the unique cells 
 ## where occurrence data is found..................................................................................... 
 
@@ -51,7 +51,7 @@ if(nrow(TI.XY.SPP) > 0) {
   TI.POINTS   = SpatialPointsDataFrame(coords      = TI.XY.SPP[c("lon", "lat")],
                                        data        = TI.XY.SPP[c("lon", "lat")],
                                        proj4string = CRS(projection(world.grids.current)))
-  
+
   
   ## Check
   dim(TI.POINTS)
@@ -84,12 +84,11 @@ if(nrow(TI.XY.SPP) > 0) {
   #########################################################################################################################
   ## Create a stack of rasters to sample: get all the Worldclim variables just for good measure
   ## Use the Mollweide projection for the points and rasters 
+  
 
-  
-  
   ## Also get the PET raster
   projection(PET);projection(world.grids.current)
-
+  
   #########################################################################################################################
   ## Check the projection and raster extents for worldclim vs aus data
   # world.grids.current <- world.grids.current %>%
@@ -137,7 +136,7 @@ if(nrow(TI.XY.SPP) > 0) {
                             Precip_dry_qu        = bio_17,
                             Precip_warm_qu       = bio_18,
                             Precip_col_qu        = bio_19)
-
+  
   gc()
   
   
@@ -187,7 +186,7 @@ if(nrow(TI.XY.SPP) > 0) {
   ## Save the raster datasets
   TI.RASTER.CONVERT = completeFun(TI.RASTER.CONVERT, "PET")
   summary(TI.RASTER.CONVERT)
-
+  
   
   ## Need a measure of how many points are outside the raster exent
   message(round(nrow(TI.RASTER.CONVERT)/nrow(TI.RASTER)*100, 2), " % records retained after worldclim extract") 

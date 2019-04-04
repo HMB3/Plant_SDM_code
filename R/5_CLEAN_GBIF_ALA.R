@@ -16,7 +16,7 @@
 ## available data, and susequently model the niches using the maxent algorithm.
 
 
-## Why does merging the inventory and occ data not get global invenory records...........................................
+## Update line 548 RE niches.............................................................................................
 
 
 #########################################################################################################################
@@ -45,6 +45,7 @@ if(read_data == "TRUE") {
 
 #########################################################################################################################
 ## Read in the global data
+## TI.XY.SPP = TI.XY[TI.XY$searchTaxon %in% GBIF.spp, ]
 if(nrow(TI.XY.SPP) > 0 & read_data == "TRUE") {
   
   ## Read in RDS files from previous step
@@ -65,7 +66,7 @@ names(COMBO.RASTER.CONVERT)
 
 
 #########################################################################################################################
-## Create a unique identifier for GBIF cleaning. This is used for automated cleaing of the records, and also saving shapefiles
+## Create a unique identifier. This is used for automated cleaing of the records, and also saving shapefiles
 ## But this will not be run for all species linearly. So, it probably needs to be a combination of species and number
 COMBO.RASTER.CONVERT$CC.OBS <- 1:nrow(COMBO.RASTER.CONVERT)
 COMBO.RASTER.CONVERT$CC.OBS <- paste0(COMBO.RASTER.CONVERT$CC.OBS, "_CC_", COMBO.RASTER.CONVERT$searchTaxon)
@@ -87,7 +88,7 @@ TIB.GBIF <- COMBO.RASTER.CONVERT %>% dplyr::rename(species          = searchTaxo
                                                    decimallongitude = lon, 
                                                    decimallatitude  = lat) %>%
   
-  ## Then, create a tibble for running the spatial outlier cleaning
+  ## The create a tibble for running the spatial outlier cleaning
   timetk::tk_tbl() %>% 
   
   ## Consider the arguments. We've already stripped out the records that fall outside
@@ -102,7 +103,7 @@ TIB.GBIF <- COMBO.RASTER.CONVERT %>% dplyr::rename(species          = searchTaxo
                               "institutions", "zeros"), ## duplicates flagged too many
                     
                     capitals_rad    = 10000,  ## remove records within 10km  of capitals
-                    centroids_rad   = 1000    ## remove records within 1km of country centroids
+                    centroids_rad   = 5000    ## remove records within 5km of country centroids
                     # outliers_method = "distance", ## The other checks are not producing reliable results
                     # outliers_td     = 800,
                     # outliers_mtp    = 5
@@ -119,7 +120,6 @@ names(TIB.GBIF) = c("coord_spp", "CC.OBS",    "coord_val",  "coord_equ",  "coord
 
 
 ## Flagging ~ x%, excluding the spatial outliers. Seems reasonable?
-## These numbers vary with the taxa, consider  how appropriate the settings are........................................
 message(round(with(TIB.GBIF, table(coord_summary)/sum(table(coord_summary))*100), 2), " % records removed")
 
 
@@ -138,8 +138,23 @@ identical(COMBO.RASTER.CONVERT$CC.OBS,      TEST.GEO$CC.OBS)                    
 ## Now subset to records that are flagged as outliers
 CLEAN.TRUE  = subset(TEST.GEO, coord_summary == "TRUE")
 CLEAN.FALSE = subset(TEST.GEO, coord_summary == "FALSE")
-unique(CLEAN.TRUE$coord_summary)   
 table(CLEAN.TRUE$coord_summary) 
+
+
+#########################################################################################################################
+## Plot GBIF outliers to check. This might be overkill, but useful to interrogate why species didn't work
+if(check_maps == "TRUE") {
+  
+  message('Writing shapefiles and maps to checking directory') 
+  source('./R/CC_CLEAN_TEST.R')
+  
+} else {
+  
+  ## Update with global data
+  message('Dont create maps and shapefile of points')   ##
+  
+}
+
 
 
 ## What percentage of records are retained?
@@ -151,9 +166,12 @@ message(round(nrow(CLEAN.TRUE)/nrow(TEST.GEO)*100, 2), " % records retained")
 
 
 #########################################################################################################################
-## Now bind on the urban tree inventory data. We are assuming this data is clean, after we manually fix the taxonomy
+## 2). JOIN ALA, GBIF & INVENTORY DATA
+#########################################################################################################################
 
-## For some reason, at this point, the overseas tree inventory records disappear?.......................................
+
+#########################################################################################################################
+## Now bind on the urban tree inventory data. We are assuming this data is clean, after we manually fix the taxonomy
 if(nrow(TI.XY.SPP) > 0) {
   
   message('Combining Australian inventory data with occurrence data') 
