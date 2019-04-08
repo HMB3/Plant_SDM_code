@@ -104,7 +104,7 @@ TIB.GBIF <- COMBO.RASTER.CONVERT %>% dplyr::rename(coord_spp        = searchTaxo
                     
                     capitals_rad    = 10000,  ## remove records within 10km  of capitals
                     centroids_rad   = 5000    ## remove records within 5km of country centroids
-                    # outliers_method = "distance", ## The other checks are not producing reliable results
+                    # outliers_method = "distance", ## Save the other checks for step 6
                     # outliers_td     = 800,
                     # outliers_mtp    = 5
   ) %>%

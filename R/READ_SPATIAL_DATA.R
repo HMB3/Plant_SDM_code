@@ -166,6 +166,49 @@ round(with(background.points.df, table(SOURCE)/sum(table(SOURCE))), 3)
 # saveRDS(areal_unit_vec, file = paste("./data/base/CONTEXTUAL/SUA/SUA_2016_VEC.rds"))
 
 
+
+###################################################################################################################
+## Read in the city data
+# CITY.POINTS   = SpatialPointsDataFrame(coords      = TI.CITY[c("lon", "lat")],
+#                                        data        = TI.CITY,
+#                                        proj4string = CRS(projection(world.grids.current)))
+# 
+# writeOGR(obj    = CITY.POINTS,
+#          dsn    = "./data/base/Global_tree_inventories",
+#          layer  = paste0('INVENTORY_CITY_POINTS'),
+#          driver = "ESRI Shapefile", overwrite_layer = TRUE)
+# saveRDS(CITY.POINTS, file = paste("./data/base/Global_tree_inventories/INVENTORY_CITY_POINTS.rds"))
+
+# CITY.CLIMATE = read.csv("./data/base/Global_tree_inventories/Tree_inventory_city_climate_koppen_table.csv", stringsAsFactors = FALSE)
+
+
+#########################################################################################################################
+## Create Koppen climate zone for centroid of each SUA
+# cents <- coordinates(CITY.POINTS)
+# cents <- SpatialPointsDataFrame(coords = cents, data = CITY.POINTS@data,
+#                                 proj4string = CRS("+proj=longlat +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +no_defs"))
+# 
+# plot(CITY.POINTS)
+# points(cents, col = "Blue")
+# writeSpatialShape(cents, "cents")
+
+# city_centroids <- coordinates(CITY.POINTS)
+# city_location  = data.frame(city_centroids)
+# city_location  = cbind(CITY.POINTS$CityCountr, city_location)
+# names(city_location)   = c("CityCountr","rndCoord.lon", "rndCoord.lat")
+# city_location$rndCoord.lon = RoundCoordinates(city_location$rndCoord.lon)
+# city_location$rndCoord.lat = RoundCoordinates(city_location$rndCoord.lat)
+# 
+# Kop.city.loc <- data.frame(city_location, ClimateZ = LookupCZ(city_location))
+# Kop.city.loc = Kop.city.loc[c("CityCountr", "ClimateZ")]
+# 
+# 
+# ## Join the city worldclim data to the 
+# CITY.CLIMATE = join(Kop.city.loc, CITY.CLIMATE)
+# head(CITY.CLIMATE)
+# write.csv(CITY.CLIMATE, "./data/base/Global_tree_inventories/Tree_inventory_city_climate_koppen_table.csv", row.names = FALSE)
+
+
 #########################################################################################################################
 ## Read in the files created by the code above for Section 2).
 SUA_2016_rast = readRDS("./data/base/CONTEXTUAL/SUA/SUA_2016_RAST.rds")

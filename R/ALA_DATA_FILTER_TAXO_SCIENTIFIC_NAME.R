@@ -68,6 +68,15 @@ ALA.ALL <- ala.download %>%
       
     }
     
+    ## Check if the dataframes have data
+    if (nrow(d) <= 2) {
+      
+      ## If the species has < 2 records, escape the loop
+      print (paste ("No GBIF records for ", x, " skipping "))
+      return (d)
+      
+    }
+    
     #  type standardisation    
     names(d)[names(d) == 'latitude']  <- 'lat'
     names(d)[names(d) == 'longitude'] <- 'lon'

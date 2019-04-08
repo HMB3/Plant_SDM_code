@@ -82,11 +82,12 @@ lapply(GBIF.spp, function(species){
     message('Using occ records from ', unique(occurrence$SOURCE))
 
     ## Now get the background points. These can come from any species, other than the modelled species.
+    ## However, they should be limited to the same SOURCE as the occ data
     background <- subset(SDM.SPAT.OCC.BG, searchTaxon != species)
-    background <- background[grep(paste(OCC_SOURCE, collapse = '|'), background$SOURCE, ignore.case = TRUE),]
+    background <- background[grep(paste(unique(occurrence$SOURCE), collapse = '|'), background$SOURCE, ignore.case = TRUE),]
     message('Using occ records from ', unique(background$SOURCE))
+
     
-  
     ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
     tryCatch(
       fit_maxent_targ_bg_back_sel(occ                     = occurrence,    ## name from the .rmd CV doc 
@@ -115,8 +116,11 @@ lapply(GBIF.spp, function(species){
       ## If the species fails, write a fail message to file. Can this be the fail message itself?
       error = function(cond) {
         
-        message(species, ' failed')  
-        write.csv(data.frame(), file.path(dir_name, "failed.txt"))
+        message(species, ' failed') 
+        ## zz <- file("all.Rout", open="wt")
+        ## sink(zz, type="message")
+        
+        write.csv(data.frame(zz), file.path(dir_name, "failed.txt"))
         
       })
     

@@ -144,7 +144,6 @@ TI.SPP$Plant_type = "Tree"
 
 
 
-
 #########################################################################################################################
 ## 3). CLEAN THE EVERGREEN LIST
 #########################################################################################################################
@@ -385,8 +384,8 @@ hollow.test.spp = c("Corymbia citriodora",      "Eucalyptus baileyana",  "Eucaly
 
 
 popular.test    = c("Acer palmatum", "Syzygium smithii", "Magnolia grandiflora", "Callistemon viminalis", 
-                   "Gardenia jasminoides", "Pyrus calleryana", "Murraya paniculata", "Ficus microcarpa",
-                   "Jacaranda mimosifolia", "Hardenbergia violacea")
+                    "Gardenia jasminoides", "Pyrus calleryana", "Murraya paniculata", "Ficus microcarpa",
+                    "Jacaranda mimosifolia", "Hardenbergia violacea")
 
 
 popular.test    = intersect(popular.test, TI.spp)
