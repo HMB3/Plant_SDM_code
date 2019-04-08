@@ -53,7 +53,7 @@
 ## GET TARGETTED BACKGROUND POINTS AND THEN FIT MAXENT WITH STANDARD VARIABLES
 #########################################################################################################################
 
-##
+## check the messages regarding sampling
 fit_maxent_targ_bg_back_sel <- function(occ,
                                         bg, # A Spatial points data frame (SPDF) of candidate background points
                                         sdm.predictors,
