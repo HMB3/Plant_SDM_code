@@ -116,9 +116,10 @@ lapply(GBIF.spp, function(species){
       ## If the species fails, write a fail message to file. Can this be the fail message itself?
       error = function(cond) {
         
+        ## How to put the message into the file?
         message(species, ' failed') 
-        ## zz <- file("all.Rout", open="wt")
-        ## sink(zz, type="message")
+        zz <- file("failed", open = "wt")
+        sink(zz, type = "message")
         
         write.csv(data.frame(zz), file.path(dir_name, "failed.txt"))
         

@@ -12,7 +12,7 @@
 
 
 ## Here are the argumetns needed to run the targetted background selection SDMs inside the function itself
-# spp                     = GBIF.spp[1]
+#spp                     = GBIF.spp[1]
 ## This is what is causing the proportional sampling to skip.........................................
 # occ <- subset(SDM.SPAT.OCC.BG, searchTaxon == spp)
 # occ <- occ[grep(paste(OCC_SOURCE, collapse = '|'), occ$SOURCE, ignore.case = TRUE),]
@@ -24,7 +24,8 @@
 # bg <- subset(SDM.SPAT.OCC.BG, searchTaxon != spp)
 # bg <- bg[grep(paste(unique(occ$SOURCE), collapse = '|'), bg$SOURCE, ignore.case = TRUE),]
 # message('Using occ records from ', unique(bg$SOURCE))
-# 
+
+ 
 # name                    = spp
 # outdir                  = maxent_dir
 # bsdir                   = bs_dir
@@ -33,8 +34,8 @@
 # cor_thr                 = 0.8      ## The maximum allowable pairwise correlation between predictor variables
 # pct_thr                 = 5        ## The minimum allowable percent variable contribution
 # k_thr                   = 4
-# 
-# 
+
+
 # template.raster         = template.raster.1km   ## 1km, 5km, 10km
 # min_n                   = 20
 # max_bg_size             = 70000
@@ -246,6 +247,14 @@ fit_maxent_targ_bg_back_sel <- function(occ,
       bg.comb = bg.samp
       
     }
+    
+    #####################################################################
+    ## Print the source proportions for occ and bg data to screen
+    message("Proportions of records from occurrence data sources ", unique(occ$SOURCE), " :: ",
+            round(with(as.data.frame(occ), table(SOURCE)/sum(table(SOURCE))), 3)) 
+    
+    message("Proportions of records from background data sources ", unique(bg.comb$SOURCE), " :: ",
+            round(with(as.data.frame(bg.comb), table(SOURCE)/sum(table(SOURCE))), 3)) 
     
     #####################################################################
     ## Now save an image of the background points 
