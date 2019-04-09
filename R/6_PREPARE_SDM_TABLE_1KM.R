@@ -42,7 +42,7 @@ if(read_data == "TRUE") {
 #########################################################################################################################
 ## Create a table with all the variables needed for SDM analysis
 ## This is the step where an ad/hoc version comes in 
-## CLEAN.INV = readRDS(paste0(DATA_path, 'COMBO_RASTER_ALL_WPW_TEST', '.rds'))
+## CLEAN.INV = readRDS(paste0(DATA_path, 'CLEAN_INV_ALL_', '.rds'))
 ## CLEAN.INV = CLEAN.INV[CLEAN.INV$searchTaxon %in% GBIF.spp, ]
 dim(CLEAN.INV)
 length(unique(CLEAN.INV$searchTaxon))
@@ -288,7 +288,7 @@ projection(SDM.SPAT.ALL)
 # if(save_data == "TRUE") {
 #   
 #   ## Save .rds file for the next session
-#   saveRDS(SDM.SPAT.ALL, paste0(DATA_path, 'SPAT_FLAG_', save_run, '.rds'))
+#   saveRDS(SDM.SPAT.ALL, paste0(DATA_path, 'SDM_SPAT_ALL', save_run, '.rds'))
 #   
 #   writeOGR(obj    = SDM.SPAT.ALL, 
 #            dsn    = SHP_path, 

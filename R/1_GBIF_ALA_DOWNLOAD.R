@@ -15,24 +15,6 @@
 ## Create a list of all the taxa to download.
 all.taxa     =  GBIF.spp
 all.taxa.rev =  all.taxa[rev(order(all.taxa))]
-#message (GBIF_path)
-#
-#
-
-# 
-# 5651 Records returned for Zamia loddigesii
-# Error in check_status_code(status_code, on_redirect = on_redirect, on_client_error = on_client_error,  : 
-#                              HTTP status code 504 received.
-#                            Either there was an error with the request, or the servers may be down (try again later). 
-#                            If this problem persists please notify the ALA4R maintainers by lodging an issue at 
-#                            https://github.com/AtlasOfLivingAustralia/ALA4R/issues/ or emailing support@ala.org.au
-
-
-# 11111 Records returned for Acacia mangium
-# Downloading GBIF records for Acacia mearnsii using rgbif :: occ_data
-# Error in curl::curl_fetch_memory(x$url$url, handle = x$url$handle) : 
-#   transfer closed with outstanding read data remaining
-
 
 
 #########################################################################################################################

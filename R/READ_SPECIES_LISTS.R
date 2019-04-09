@@ -73,7 +73,7 @@ native.good.models  = subset(MXT.CHECK, Origin == "Native" & Check.map <=2)$sear
 
 
 #########################################################################################################################
-## 2). READ IN ALA PLANT DUMP
+## READ IN ALA/GBIF PLANT DUMP
 #########################################################################################################################
 
 
@@ -216,7 +216,7 @@ write.csv(CLEAN.GROW, "./data/base/HIA_LIST/HIA/EVERGREEN_LIST_MARCH2019.csv", r
 
 
 #########################################################################################################################
-## 6). CHECK TAXONOMY FOR THE HORTICULTURAL SPECIES
+## 4). CHECK TAXONOMY FOR THE HORTICULTURAL SPECIES
 #########################################################################################################################
 
 
@@ -365,6 +365,14 @@ TI.HIA = intersect(GBIF.GROW.VALID$searchTaxon, unique(TI.XY$searchTaxon))
 summary(GBIF.GROW.VALID)
 
 
+
+
+
+#########################################################################################################################
+## 5). CREATE FINAL SPECIES LISTS FOR ANALYSIS
+#########################################################################################################################
+
+
 #########################################################################################################################
 ## These are the lists of trees and non-trees to model
 WPW.spp         = sort(GBIF.GROW.VALID$searchTaxon)
@@ -409,6 +417,83 @@ round(with(MAXENT.RATING.LAT, table(CHECK_MAP)/sum(table(CHECK_MAP))*100), 1)
 
 
 
+
+
+#########################################################################################################################
+## 6). COMBINE THE NICHE RUNS TOGETHER
+#########################################################################################################################
+
+
+# ## Create a list of all dataframes with the extension from this run
+# COMBO.NICHE.list  = list.files(DATA_path, pattern = 'COMBO_NICHE_CONTEXT_EVERGREEN',  full.names = TRUE, recursive = TRUE)
+COMBO.RASTER.list = list.files(DATA_path, pattern = 'CLEAN_INV_EVERGREEN', full.names = TRUE, recursive = TRUE)
+  
+
+# #########################################################################################################################
+# ## Now combine the niche tables for each species into one table
+# COMBO.NICHE.ALL <- COMBO.NICHE.list[1:8] %>%
+# 
+#   ## pipe the list into lapply
+#   lapply(function(x) {
+# 
+#     ## create the character string
+#     f <- paste0(x)
+# 
+#     ## load each .csv file
+#     d <- readRDS(f)
+#     d
+# 
+#   }) %>%
+# 
+#   ## finally, bind all the rows together
+#   bind_rows
+# 
+# 
+# ## Update this
+# str(COMBO.NICHE.ALL)
+# dim(COMBO.NICHE.ALL)
+# 
+# 
+# ## Make sure the Species are unique
+# COMBO.NICHE.ALL = COMBO.NICHE.ALL[!duplicated(COMBO.NICHE.ALL[,c('searchTaxon')]),]
+# dim(COMBO.NICHE.ALL)
+# length(unique(COMBO.NICHE.ALL$searchTaxon))
+# 
+# 
+# #########################################################################################################################
+# ## Now combine the raster tables for each species into one table
+# COMBO.RASTER.ALL <- COMBO.RASTER.list %>%
+# 
+#   ## pipe the list into lapply
+#   lapply(function(x) {
+# 
+#     ## create the character string
+#     f <- paste0(x)
+# 
+#     ## load each .csv file
+#     d <- readRDS(f)
+#     d
+# 
+#   }) %>%
+# 
+#   ## finally, bind all the rows together
+#   bind_rows
+# 
+# 
+# ## This is a summary of maxent output for current conditions
+# dim(COMBO.RASTER.ALL)
+# names(COMBO.RASTER.ALL)[1:10]
+# 
+# 
+# ##
+# length(unique(COMBO.RASTER.ALL$searchTaxon))
+# 
+# 
+# 
+# #########################################################################################################################
+# ## Save the niche and raster data
+# saveRDS(COMBO.NICHE.ALL,  paste0(DATA_path, 'COMBO_NICHE_ALL_',  save_run, '.rds'))
+# saveRDS(COMBO.RASTER.ALL, paste0(DATA_path, 'CLEAN_INV_ALL_', save_run, '.rds'))
 
 
 #########################################################################################################################

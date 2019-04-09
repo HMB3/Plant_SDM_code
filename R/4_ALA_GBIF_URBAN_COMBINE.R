@@ -84,6 +84,7 @@ length(unique(GBIF.ALA.COMBO$scientificName))
 summary(GBIF.ALA.COMBO$year)
 summary(GBIF.ALA.COMBO$lat)
 summary(GBIF.ALA.COMBO$lon)
+dim(GBIF.ALA.COMBO)
 
 
 ## Check NAs again
@@ -91,11 +92,12 @@ summary(GBIF.ALA.COMBO$lon)
 
 
 #########################################################################################################################
-## Now create table of species counts
+## Now create table of species counts :: this is another check of the taxonomy
 COMBO.LUT = as.data.frame(table(GBIF.ALA.COMBO$scientificName))
 names(COMBO.LUT) = c("scientificName", "FREQUENCY")
 COMBO.LUT = COMBO.LUT[with(COMBO.LUT, rev(order(FREQUENCY))), ] 
 head(COMBO.LUT, 10);dim(COMBO.LUT)
+View(COMBO.LUT)
 
 
 #########################################################################################################################
@@ -162,7 +164,7 @@ if(save_data == "TRUE") {
 message('Running TPL taxonomy for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
 
 COMBO.TAXO <- TPL(unique(GBIF.ALA.COMBO$scientificName), infra = TRUE,
-                corr = TRUE, repeats = 100)  ## to stop it timing out...
+                  corr = TRUE, repeats = 100)  ## to stop it timing out...
 sort(names(COMBO.TAXO))
 length(unique(COMBO.TAXO$Taxon))
 
@@ -204,6 +206,7 @@ unique(Match.SN$New.Taxonomic.status)
 
 
 
+
 #########################################################################################################################
 ## Incude records where the "scientificName" and the "searchTaxon" match, and where the taxonomic status is 
 ## a synonym. If the match is false, the scientific name must be a synonym of searchTaxon
@@ -227,14 +230,10 @@ match.true     = setdiff(match.true, false.accepted)
 
 
 #########################################################################################################################
-## Now remove these from the ALA dataset
-GBIF.ALA.COMBO = COMBO.TAXO[COMBO.TAXO$scientificName %in% match.true, ]
+## Now remove the taxa that don't from the ALA/GBIF dataset
+GBIF.ALA.MATCH = COMBO.TAXO[COMBO.TAXO$scientificName %in% match.true, ]
 Match.record   = Match.SN[Match.SN$scientificName     %in% match.true, ]
-
-
-## Check the species that was not matching :: this now gets only matching search taxa
-test.match = subset(Match.record, searchTaxon == "Acer negundo")  
-unique(test.match$scientificName)
+False.record   = Match.SN[Match.SN$scientificName     %in% match.false, ]
 
 
 ## Check the taxonomic status
@@ -244,23 +243,23 @@ round(with(Match.record, table(New.Taxonomic.status)/sum(table(New.Taxonomic.sta
 
 
 ## How many records were removed by taxonomic filtering?
-message(nrow(COMBO.TAXO) - nrow(GBIF.ALA.COMBO), " records removed")
-message(round((nrow(GBIF.ALA.COMBO))/nrow(COMBO.TAXO)*100, 2), 
+message(nrow(GBIF.ALA.COMBO) - nrow(GBIF.ALA.MATCH), " records removed")
+message(round((nrow(GBIF.ALA.MATCH))/nrow(GBIF.ALA.COMBO)*100, 2), 
         " % records retained using TPL mismatch")
 
 
 ## Check the taxonomic status of the updated table
-unique(GBIF.ALA.COMBO$Taxonomic.status)
-unique(GBIF.ALA.COMBO$New.Taxonomic.status)
+unique(GBIF.ALA.MATCH$Taxonomic.status)
+unique(GBIF.ALA.MATCH$New.Taxonomic.status)
 
-round(with(GBIF.ALA.COMBO, table(Taxonomic.status)/sum(table(Taxonomic.status))*100), 2)
-round(with(GBIF.ALA.COMBO, table(New.Taxonomic.status)/sum(table(New.Taxonomic.status))*100), 2)
+round(with(GBIF.ALA.MATCH, table(Taxonomic.status)/sum(table(Taxonomic.status))*100), 2)
+round(with(GBIF.ALA.MATCH, table(New.Taxonomic.status)/sum(table(New.Taxonomic.status))*100), 2)
 
 
 ## Check NAs again
-(sum(is.na(GBIF.ALA.COMBO$scientificName)) + 
-    nrow(subset(GBIF.ALA.COMBO, scientificName == "")))/
-  nrow(GBIF.ALA.COMBO)*100
+(sum(is.na(GBIF.ALA.MATCH$scientificName)) + 
+    nrow(subset(GBIF.ALA.MATCH, scientificName == "")))/
+  nrow(GBIF.ALA.MATCH)*100
 
 
 
