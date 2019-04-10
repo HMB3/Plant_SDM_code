@@ -133,8 +133,7 @@ for (species in plot.taxa) {
 
 ## Select columns to send to the shapefile
 GBIF.ALA.CHECK  = dplyr::select(TEST.GEO,     CC.OBS, searchTaxon, scientificName, lat, lon, SOURCE, year, 
-                                country, locality, basisOfRecord, institutionCode, 
-                                Taxonomic.status, New.Taxonomic.status,
+                                country, locality, basisOfRecord, institutionCode,
                                 coord_spp, coord_val,  coord_equ,  coord_zer,  coord_cap, 
                                 coord_cen, coord_gbf, coord_inst, coord_summary)
 
@@ -151,8 +150,6 @@ GBIF.ALA.CHECK  = dplyr::rename(GBIF.ALA.CHECK,
                                 INSTIT    = institutionCode,                
                                 COUNTRY   = country,                
                                 YEAR      = year,
-                                TAX_STAT  = Taxonomic.status,
-                                NEW_STA   = New.Taxonomic.status,
                                 COORD_CL  = coord_summary)
 names(GBIF.ALA.CHECK)
 

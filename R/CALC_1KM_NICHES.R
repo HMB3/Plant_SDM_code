@@ -38,7 +38,7 @@ if(calc_niche == "TRUE") {
   message(round(nrow(NICHE.1KM)/nrow(CLEAN.INV)*100, 2), " % records retained at 1km resolution")  
   length(unique(NICHE.1KM$searchTaxon))
   projection(LGA);projection(AUS);projection(SUA_2016)
-
+  
   
   ## Use a projected, rather than geographic, coordinate system
   ## Not sure why, but this is needed for the spatial overlay step
@@ -47,7 +47,7 @@ if(calc_niche == "TRUE") {
   POA.WGS      = spTransform(POA_2016,  CRS.WGS.84)
   SUA.WGS      = spTransform(SUA_2016 , CRS.WGS.84)
   LAND.WGS     = spTransform(LAND,      CRS.WGS.84)
-
+  
   
   ## Create global niche and Australian niche.
   ## So we need a subset for Australia 
@@ -59,59 +59,43 @@ if(calc_niche == "TRUE") {
   ## See the ABS for details :: there are 563 LGAs
   ## http://www.abs.gov.au/ausstats/abs@.nsf/Lookup/by%20Subject/1270.0.55.003~July%202016~Main%20Features~Local%20Government%20Areas%20(LGA)~7
   message('Joining occurence data to SUAs for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
-  
-  
   projection(NICHE.1KM.84);projection(SUA.WGS);projection(AUS.WGS);projection(POA.WGS)
   SUA.JOIN      = over(NICHE.1KM.84, SUA.WGS)
   POA.JOIN      = over(NICHE.1KM.84, POA.WGS)
-
-  
-  ##
-  unique(SUA.JOIN$SUA_NAME16)
-  unique(POA.JOIN$POA_NAME16)
   
   
-  ##
+  ## What are the lengths?
+  length(unique(SUA.JOIN$SUA_NAME16))
+  length(unique(POA.JOIN$POA_NAME16))
+  
+  
+  ## Bind the SUA and POA data to the occurence data
   COMBO.SUA.POA = cbind.data.frame(NICHE.1KM.84, SUA.JOIN, POA.JOIN) 
   
   
   #########################################################################################################################
-  ## AGGREGATE THE NUMBER OF SUAs EACH SPECIES IS FOUND IN
+  ## Aggregate the number of SUAs and POAs each species is found in
   SUA.AGG   = tapply(COMBO.SUA.POA$SUA_NAME16, COMBO.SUA.POA$searchTaxon, function(x) length(unique(x))) ## group SUA by species name
+  POA.AGG   = tapply(COMBO.SUA.POA$POA_NAME16, COMBO.SUA.POA$searchTaxon, function(x) length(unique(x))) ## group POA by species name
   SUA.AGG   = as.data.frame(SUA.AGG)
+  POA.AGG   = as.data.frame(POA.AGG)
   
   SUA.AGG <- setDT(SUA.AGG, keep.rownames = TRUE)[]
+  POA.AGG <- setDT(POA.AGG, keep.rownames = TRUE)[]
   names(SUA.AGG) = c("searchTaxon", "SUA_COUNT")
-
+  names(POA.AGG) = c("searchTaxon", "POA_COUNT")
+  
   
   ## Now create a table of all the SUA's that each species occurrs
-  SUA.SPP.COUNT = as.data.frame(table(COMBO.SUA.POA[["SUA_NAME16"]], COMBO.SUA.POA[["searchTaxon"]]))
-  names(SUA.SPP.COUNT) = c("SUA", "SPECIES", "SUA_RECORDS")
-  
-  
-  ## Save .rds file for the next session
-  saveRDS(SUA.SPP.COUNT, paste0(DATA_path, 'SUA_SPP_COUNT_', save_run, '.rds'))
-  
-  
-  ## Check : That's ok, but we want a table of which SUA each species is actually in.
-  dim(SUA.AGG)
-  head(SUA.AGG)
-  
-  
-  ## Remove duplicate coordinates
-  drops <- c("lon.1", "lat.1")
-  COMBO.SUA.POA <- COMBO.SUA.POA[ , !(names(COMBO.SUA.POA) %in% drops)]
-  names(COMBO.SUA.POA)
-  dim(COMBO.SUA.POA)
-  str(unique(COMBO.SUA.POA$searchTaxon))
-  unique(COMBO.SUA.POA$SOURCE)
+  SUA.AGG = join(SUA.AGG, POA.AGG)
+  saveRDS(SUA.AGG, paste0(DATA_path, 'SUA_SPP_COUNT_', save_run, '.rds'))
   
   
   
   
   
   #########################################################################################################################
-  ## 4). CREATE NICHES FOR SELECTED TAXA
+  ## 4). CREATE NICHES FOR PROCESSED TAXA
   #########################################################################################################################
   
   
@@ -125,7 +109,7 @@ if(calc_niche == "TRUE") {
   ## Here's what the function will produce :
   NICHE.AUS.DF = as.data.frame(NICHE.AUS)
   NICHE.GLO.DF = as.data.frame(NICHE.1KM.84) 
-
+  
   head(niche_estimate (DF = NICHE.AUS.DF, colname = "Annual_mean_temp"))  ## Including the q05 and q95
   head(niche_estimate (DF = NICHE.GLO.DF, colname = "Annual_mean_temp"))  ## Including the q05 and q95
   
@@ -151,12 +135,12 @@ if(calc_niche == "TRUE") {
   
   
   ## Remove duplicate Taxon columns and check the output :: would be great to skip these columns when running the function
-  names(COMBO.NICHE)
-  COMBO.NICHE <- subset(COMBO.NICHE, select = -c(searchTaxon.1,  searchTaxon.2,  searchTaxon.3,  searchTaxon.4,
-                                                 searchTaxon.5,  searchTaxon.6,  searchTaxon.7,  searchTaxon.7,
-                                                 searchTaxon.8,  searchTaxon.9,  searchTaxon.10, searchTaxon.11,
-                                                 searchTaxon.12, searchTaxon.13, searchTaxon.14, searchTaxon.15,
-                                                 searchTaxon.16, searchTaxon.17, searchTaxon.18, searchTaxon.19))
+  names(GLOB.NICHE)
+  GLOB.NICHE <- subset(GLOB.NICHE, select = -c(searchTaxon.1,  searchTaxon.2,  searchTaxon.3,  searchTaxon.4,
+                                               searchTaxon.5,  searchTaxon.6,  searchTaxon.7,  searchTaxon.7,
+                                               searchTaxon.8,  searchTaxon.9,  searchTaxon.10, searchTaxon.11,
+                                               searchTaxon.12, searchTaxon.13, searchTaxon.14, searchTaxon.15,
+                                               searchTaxon.16, searchTaxon.17, searchTaxon.18, searchTaxon.19))
   
   
   #########################################################################################################################
@@ -180,32 +164,38 @@ if(calc_niche == "TRUE") {
   
   
   ## Remove duplicate Taxon columns and check the output :: would be great to skip these columns when running the function
-  names(COMBO.NICHE)
-  COMBO.NICHE <- subset(COMBO.NICHE, select = -c(searchTaxon.1,  searchTaxon.2,  searchTaxon.3,  searchTaxon.4,
-                                                 searchTaxon.5,  searchTaxon.6,  searchTaxon.7,  searchTaxon.7,
-                                                 searchTaxon.8,  searchTaxon.9,  searchTaxon.10, searchTaxon.11,
-                                                 searchTaxon.12, searchTaxon.13, searchTaxon.14, searchTaxon.15,
-                                                 searchTaxon.16, searchTaxon.17, searchTaxon.18, searchTaxon.19))
+  names(AUS.NICHE)
+  AUS.NICHE <- subset(AUS.NICHE, select = -c(searchTaxon.1,  searchTaxon.2,  searchTaxon.3,  searchTaxon.4,
+                                             searchTaxon.5,  searchTaxon.6,  searchTaxon.7,  searchTaxon.7,
+                                             searchTaxon.8,  searchTaxon.9,  searchTaxon.10, searchTaxon.11,
+                                             searchTaxon.12, searchTaxon.13, searchTaxon.14, searchTaxon.15,
+                                             searchTaxon.16, searchTaxon.17, searchTaxon.18, searchTaxon.19))
   
+  
+  #########################################################################################################################
+  ## How are the AUS and GLOB niches related? Many species won't have both Australian and Global niches.
+  ## So best to calculate the AUS niche as a separate table. Then, just use the global niche table for the rest of the code
+  length(AUS.NICHE$searchTaxon); length(GLOB.NICHE$searchTaxon)
+  setdiff(AUS.NICHE$searchTaxon, GLOB.NICHE$searchTaxon)
+  setdiff(GLOB.NICHE$searchTaxon, AUS.NICHE$searchTaxon)
   
   
   #########################################################################################################################
   ## Add counts for each species, and record the total number of taxa processed
   GLOBAL_RECORDS = as.data.frame(table(COMBO.SUA.POA$searchTaxon))
   names(GLOBAL_RECORDS) = c("searchTaxon", "GLOBAL_RECORDS")
-  identical(nrow(GLOBAL_RECORDS), nrow(COMBO.NICHE))
+  identical(nrow(GLOBAL_RECORDS), nrow(GLOB.NICHE))
   
   
   #########################################################################################################################
   ## Add the counts of Australian records for each species to the niche database
-  Total.taxa.processed = nrow(COMBO.NICHE)
-  COMBO.NICHE  = join(GLOBAL_RECORDS, COMBO.NICHE, type = "right")
-  COMBO.NICHE  = join(SUA.AGG, COMBO.NICHE,        type = "right")
+  GLOB.NICHE = join(GLOBAL_RECORDS, GLOB.NICHE,  type = "right")
+  GLOB.NICHE = join(SUA.AGG,        GLOB.NICHE,  type = "right")
   
   
-  head(COMBO.NICHE$AUS_RECORDS)
-  head(COMBO.NICHE$SUA_COUNT)
-  
+  ## Check
+  head(GLOB.NICHE$GLOBAL_RECORDS)
+  head(GLOB.NICHE$SUA_COUNT)
   
   names(COMBO.NICHE)
   dim(COMBO.NICHE)
@@ -223,15 +213,12 @@ if(calc_niche == "TRUE") {
   ## (Extent of Occurrence, Area of Occupancy, number of locations, number of subpopulations) and provide a preliminary 
   ## conservation status following Criterion B of IUCN.
   
-  ## The IUCN.eval function needs a data frame, not a spdf
-  AUS.AOO.DAT = COMBO.SUA.POA 
-  
   
   #########################################################################################################################
   ## AREA OF OCCUPANCY (AOO).
   ## For every species in the list: calculate the AOO
   ## x = spp.geo[1]
-  spp.geo = as.character(unique(AUS.AOO.DAT$searchTaxon))
+  spp.geo = as.character(unique(COMBO.SUA.POA$searchTaxon))
   
   GBIF.AOO <- spp.geo %>%
     
@@ -239,11 +226,10 @@ if(calc_niche == "TRUE") {
     lapply(function(x) {
       
       ## Subset the the data frame to calculate area of occupancy according the IUCN.eval
-      DF   = subset(AUS.AOO.DAT, searchTaxon == x)[, c("lat", "lon", "searchTaxon")]
+      DF   = subset(COMBO.SUA.POA, searchTaxon == x)[, c("lat", "lon", "searchTaxon")]
       
       message('Calcualting geographic ranges for ', x, ', ', nrow(DF), ' records')
-      #IUCN.eval(DF, Cell_size_AOO = 10, DrawMap = FALSE, country_map = land, SubPop = FALSE) 
-      AOO  = AOO.computing(XY = DF)
+      AOO  = AOO.computing(XY = DF, Cell_size_AOO = 2)  ## Grid size in decimal degrees. Changes the results
       AOO  = as.data.frame(AOO)
       AOO$searchTaxon  <- rownames(AOO)
       rownames(AOO)    <- NULL
@@ -262,24 +248,104 @@ if(calc_niche == "TRUE") {
   #########################################################################################################################
   ## Now join on the geographic range and glasshouse data
   identical(nrow(GBIF.AOO), length(GBIF.spp))
-  COMBO.NICHE = join(GBIF.AOO, COMBO.NICHE, type = "right")
+  GLOB.NICHE = join(GBIF.AOO, GLOB.NICHE, type = "right")
+  
+  
+  #########################################################################################################################
+  ## 6). CALCULATE THE ZONAL STATS FOR POSTAL AREAS
+  #########################################################################################################################
+  
+  
+  ## This code can be used to re-do the zonal stats for the SUAs in step 9................................................. 
+  
+  
+  #########################################################################################################################
+  ## Just use the two environmental conditions likely  to be used for ranges
+  POA_temp = aus.grids.current[[1]]
+  POA_rain = aus.grids.current[[12]]
+  
+  ## Make sure the raster extents match with the POA 
+  POA_SF <- POA.WGS %>%
+    spTransform(., ALB.CON) %>%
+    crop(., extent(POA_temp)) %>%
+    st_as_sf()
+  
+  
+  #########################################################################################################################
+  ## Calculate the mean temp and rain in each POA - doesn't need a loop
+  POA_SF$Annual_mean_temp    <- exact_extract(POA_temp, POA_SF, weighted.mean, na.rm = TRUE)
+  POA_SF$Annual_precip       <- exact_extract(POA_rain, POA_SF, weighted.mean, na.rm = TRUE)
+  
+  POA_SF$Annual_mean_temp_30 <- exact_extract(aus.temp.2030, POA_SF, weighted.mean, na.rm = TRUE)
+  POA_SF$Annual_precip_30    <- exact_extract(aus.rain.2030, POA_SF, weighted.mean, na.rm = TRUE)
+  
+  POA_SF$Annual_mean_temp_50 <- exact_extract(aus.temp.2050, POA_SF, weighted.mean, na.rm = TRUE)
+  POA_SF$Annual_precip_50    <- exact_extract(aus.rain.2050, POA_SF, weighted.mean, na.rm = TRUE)
+  
+  POA_SF$Annual_mean_temp_70 <- exact_extract(aus.temp.2070, POA_SF, weighted.mean, na.rm = TRUE)
+  POA_SF$Annual_precip_70    <- exact_extract(aus.rain.2070, POA_SF, weighted.mean, na.rm = TRUE)
+  
+  length(POA_SF$Annual_mean_temp_30);length(POA_SF$Annual_precip_30);
+  length(POA_SF$Annual_mean_temp_50);length(POA_SF$Annual_precip_50);
+  length(POA_SF$Annual_mean_temp_70);length(POA_SF$Annual_precip_70);
+  
+  
+  
+  ## Create a dataframe of the temperature and rainfal
+  POA_climate          = as.data.frame(POA_SF)
+  POA_climate$geometry = NULL
+  head(POA_climate$POA_CODE16)
+  
+  #########################################################################################################################
+  ## How to include the POA? Could add them all 
+  POA.SYD = POA_climate[POA_climate$POA_CODE16 %in% 2000 , ] 
+  POA.BRI = POA_climate[POA_climate$POA_CODE16 %in% 4000 , ] 
+  POA.MEL = POA_climate[POA_climate$POA_CODE16 %in% 3000 , ] 
+  POA.PER = POA_climate[POA_climate$POA_CODE16 %in% 6000 , ]
+  POA.ADE = POA_climate[POA_climate$POA_CODE16 %in% 5000 , ] 
+  POA.DAR = POA_climate[POA_climate$POA_CODE16 %in% 0800 , ] 
+  POA.HOB = POA_climate[POA_climate$POA_CODE16 %in% 7000 , ] 
+  POA.CAN = POA_climate[POA_climate$POA_CODE16 %in% 2601 , ] 
   
   
   
   
   
   #########################################################################################################################
-  ## 6). PLOT HISTOGRAMS FOR EACH SPECIES AT 1KM
+  ## 7). PLOT HISTOGRAMS AND BAR CHARTS FOR EACH SPECIES AT 1KM
   #########################################################################################################################
-
-    
+  
+  
   ##############################################################################################
   ## Plot histograms of temperature and rainfall
-  ## species = plot.taxa[9]
-  for (species in plot.taxa) {
+  ## species = spp.geo[2]
+  for (species in spp.geo) {
     
     ## Subset the spatial dataframe into records for each species
-    SP.DF  <- subset(NICHE.1KM.84, searchTaxon == species)
+    SP.DF     <- NICHE.1KM.84[NICHE.1KM.84$searchTaxon %in% species , ] 
+    
+    TMP.GLO   <- subset(GLOB.NICHE,   searchTaxon == species)[c("searchTaxon", "Annual_mean_temp_q95_q05", 
+                                                                "Annual_mean_temp_q05", "Annual_mean_temp_q95")]
+    
+    TMP.AUS   <- subset(AUS.NICHE,    searchTaxon == species)[c("searchTaxon", "Annual_mean_temp_q95_q05", 
+                                                                "Annual_mean_temp_q05", "Annual_mean_temp_q95")]
+    
+    #############################################################
+    ## Now, build a df of the temperature vectors 
+    if(nrow(TMP.GLO) > 0){
+      TMP.GLO$RANGE = "GLOBAL"
+    } else {
+      message("No global data for ", species)
+    }
+    
+    if(nrow(TMP.AUS) > 0){
+      TMP.AUS$RANGE = "AUS"
+    } else {
+      message("No Australian data for ", species)
+    }
+    
+    TMP.RANGE <- rbind(TMP.GLO, TMP.AUS)
+    names(TMP.RANGE)[2] = c("Temperature_range")
     
     ## Subset DF into records for each species
     DF     <- subset(COMBO.SUA.POA, searchTaxon == species)
@@ -289,10 +355,10 @@ if(calc_niche == "TRUE") {
     #############################################################
     ## Plot occurrence points by source for the world
     message('Writing global occ sources for ', species)
-    png(sprintf("./data/ANALYSIS/CLEAN_GBIF/%s_%s", species, "occ_points_SOURCE.png"),
+    png(sprintf("./data/ANALYSIS/SPECIES_RANGES/%s_%s", species, "1km_occ_points_source.png"),
         16, 10, units = 'in', res = 500)
     
-    plot(AUS.84, main = paste0("Global points for ", species),
+    plot(LAND.84, main = paste0("Global points for ", species),
          lwd = 0.01, asp = 1, col = 'grey', bg = 'sky blue')
     
     points(SP.DF,
@@ -303,9 +369,60 @@ if(calc_niche == "TRUE") {
     dev.off()
     
     #############################################################
+    ## Plot temperature barchart
+    message('Writing global temp histograms for ', species)
+    png(sprintf("./data/ANALYSIS/SPECIES_RANGES/%s_%s", species, "temp_barchart_1km_records.png"),
+        16, 10, units = 'in', res = 500)
+    
+    ## Use the 'SOURCE' column to create a histogram for each source.
+    max.temp = max(TMP.RANGE$Annual_mean_temp_q95)+1
+    min.temp = min(TMP.RANGE$Annual_mean_temp_q05)-1
+    
+    temp.bar = 
+      ggplot(TMP.RANGE, aes(y = Temperature_range, x = RANGE, fill = RANGE)) +
+      
+      scale_x_discrete(limits = c(min(TMP.RANGE$Annual_mean_temp_q05), 
+                                  max(TMP.RANGE$Annual_mean_temp_q95))) +
+      
+      geom_bar(stat = "identity", position = "identity") +
+      coord_flip() +
+      
+      ## Add some median lines : overall, ALA and GBIF
+      geom_vline(aes(xintercept = POA.SYD$Annual_mean_temp),
+                 col = 'blue', size = 1) +
+      geom_vline(aes(xintercept = POA.SYD$Annual_mean_temp_50),
+                 col = 'blue', size = 1) +
+      geom_vline(aes(xintercept = POA.SYD$Annual_mean_temp_70),
+                 col = 'blue', size = 1) +
+      
+      
+      ggtitle(paste0("Worldclim temperature ranges for ", species)) +
+      
+      ## Add themes
+      theme(axis.title.x     = element_text(colour = "black", size = 35),
+            axis.text.x      = element_text(size = 25),
+            
+            axis.title.y     = element_text(colour = "black", size = 35),
+            axis.text.y      = element_text(size = 25),
+            
+            panel.background = element_blank(),
+            panel.border     = element_rect(colour = "black", fill = NA, size = 3),
+            plot.title       = element_text(size   = 40, face = "bold"),
+            legend.text      = element_text(size   = 20),
+            legend.title     = element_text(size   = 20),
+            legend.key.size  = unit(1.5, "cm"))
+    
+    ## Print the plot and close the device 
+    print(temp.hist + ggtitle(paste0("Worldclim temp niches for ", species)))
+    dev.off()
+    
+    
+    
+    
+    #############################################################
     ## Plot temperature histograms
     message('Writing global temp histograms for ', species)
-    png(sprintf("./data/ANALYSIS/CLEAN_GBIF/%s_%s", species, "temp_niche_histograms_all_records.png"),
+    png(sprintf("./data/ANALYSIS/SPECIES_RANGES/%s_%s", species, "temp_niche_histograms_1km_records.png"),
         16, 10, units = 'in', res = 500)
     
     ## Use the 'SOURCE' column to create a histogram for each source.
@@ -344,7 +461,7 @@ if(calc_niche == "TRUE") {
     #############################################################
     ## Plot rainfall histograms
     message('Writing global rain histograms for ', species)
-    png(sprintf("./data/ANALYSIS/CLEAN_GBIF/%s_%s", species, "rain_niche_histograms_all_records.png"),
+    png(sprintf("./data/ANALYSIS/SPECIES_RANGES/%s_%s", species, "rain_niche_histograms_1km_records.png"),
         16, 10, units = 'in', res = 500)
     
     ## Use the 'SOURCE' column to create a histogram for each source.

@@ -233,7 +233,6 @@ match.true     = setdiff(match.true, false.accepted)
 ## Now remove the taxa that don't from the ALA/GBIF dataset
 GBIF.ALA.MATCH = COMBO.TAXO[COMBO.TAXO$scientificName %in% match.true, ]
 Match.record   = Match.SN[Match.SN$scientificName     %in% match.true, ]
-False.record   = Match.SN[Match.SN$scientificName     %in% match.false, ]
 
 
 ## Check the taxonomic status

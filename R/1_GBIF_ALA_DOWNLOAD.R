@@ -25,7 +25,7 @@ GBIF.taxa    = download_GBIF_all_species(species_list = all.taxa,
                                          path         = GBIF_path) ## insert path 
 
 
-ALA.taxa     = download_ALA_all_species(species_list = all.taxa.rev, 
+ALA.taxa     = download_ALA_all_species(species_list = all.taxa, 
                                         path         = ALA_path)
 
 

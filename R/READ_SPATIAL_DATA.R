@@ -58,6 +58,7 @@ CRS.MOL.SDM  <- CRS('+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84
 CRS.WGS.84   <- CRS("+init=epsg:4326")
 CRS.AUS.ALB  <- CRS("+init=EPSG:3577")
 ALB.CONICAL  <- CRS('+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs')
+ALB.CON      <- '+proj=aea +lat_1=-18 +lat_2=-36 +lat_0=0 +lon_0=132 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'
 sp_epsg54009 <- "+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0"
 
 
@@ -328,6 +329,17 @@ for(i in 1:11) {
   aus.grids.current[[i]] <- aus.grids.current[[i]]/10
   
 }  
+
+
+#########################################################################################################################
+## Read in average of all 6 scenarios Australian environmental conditions
+aus.temp.2030 = raster('./data/base/worldclim/aus/1km/bio/BIO1_2030_MN.tif')/10
+aus.temp.2050 = raster('./data/base/worldclim/aus/1km/bio/BIO1_2050_MN.tif')/10
+aus.temp.2070 = raster('./data/base/worldclim/aus/1km/bio/BIO1_2070_MN.tif')/10
+
+aus.rain.2030 = raster('./data/base/worldclim/aus/1km/bio/BIO12_2030_MN.tif')
+aus.rain.2050 = raster('./data/base/worldclim/aus/1km/bio/BIO12_2050_MN.tif')
+aus.rain.2070 = raster('./data/base/worldclim/aus/1km/bio/BIO12_2070_MN.tif')
 
 
 #########################################################################################################################
