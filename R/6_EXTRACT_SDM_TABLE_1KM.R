@@ -291,7 +291,7 @@ unique(SDM.DATA.ALL$SOURCE)
 ## Create a tibble to supply to coordinate cleaner
 SDM.COORDS  <- SDM.DATA.ALL %>% 
   
-  spTransform(., CRS.WGS.84) %>% 
+  #spTransform(., CRS.WGS.84) %>% 
   
   as.data.frame() %>% 
   
