@@ -65,18 +65,31 @@ head(gcms.50) ; head(gcms.70) ; head(gcms.30)
 
 #########################################################################################################################
 ## Create 2030 maps
-project_maxent_grids_mess(shp_path      = "./data/base/CONTEXTUAL/", ## Path for shapefile
-                          aus_shp       = "aus_states.rds",          ## Shapefile, e.g. Australian states
-                          world_shp     = "LAND_world.rds",          ## World shapefile          
-                          
-                          scen_list     = scen_2030,              ## List of climate scenarios
-                          species_list  = map_spp,                   ## List of species folders with maxent models
-                          maxent_path   = bs_path,                   ## Output folder
-                          climate_path  = "./data/base/worldclim/aus/1km/bio", ## climate data
-                          grid_names    = bs.predictors,             ## names of the predictor grids
-                          time_slice    = 30,                        ## Time period
-                          current_grids = aus.grids.current,         ## predictor grids
-                          create_mess   = "TRUE")
+tryCatch(
+  project_maxent_grids_mess(shp_path      = "./data/base/CONTEXTUAL/", ## Path for shapefile
+                            aus_shp       = "aus_states.rds",          ## Shapefile, e.g. Australian states
+                            world_shp     = "LAND_world.rds",          ## World shapefile          
+                            
+                            scen_list     = scen_2030,                 ## List of climate scenarios
+                            species_list  = map_spp,                   ## List of species folders with maxent models
+                            maxent_path   = bs_path,                   ## Output folder
+                            climate_path  = "./data/base/worldclim/aus/1km/bio", ## climate data
+                            
+                            grid_names    = grid.names,
+                            time_slice    = 30,                        ## Time period
+                            current_grids = aus.grids.current,         ## predictor grids
+                            create_mess   = "TRUE",
+                            nclust        = 1),
+  error = function(cond) {
+    
+    ## How to put the message into the file?
+    file.create(file.path(dir_name, "mapping_failed.txt"))
+    message(species, ' failed') 
+    cat(cond$message, file=file.path(dir_name, "mapping_failed.txt"))
+    #warning(species, ': ', cond$message)
+  }
+)
+
 
 
 #########################################################################################################################

@@ -13,25 +13,28 @@
 
 #########################################################################################################################
 ## E.G. arguments to run the algorithm inside the function 
-# shp_path      = "./data/base/CONTEXTUAL/" ## Path for shapefile
-# aus_shp       = "aus_states.rds"          ## Shapefile e.g. Australian states
-# world_shp     = "LAND_world.rds"          ## World shapefile
-# 
-# x             = scen_2030[3]                 ## List of climate scenarios
-# species       = map_spp[5]                   ## List of species folders with maxent models
-# maxent_path   = bs_path                   ## Output folder
-# climate_path  = "./data/base/worldclim/aus/1km/bio" ## climate data
-# grid_names    = bs.predictors             ## names of the predictor grids
-# time_slice    = 30                        ## Time period
-# current_grids = aus.grids.current         ## predictor grids
-# create_mess   = "TRUE"
+shp_path      = "./data/base/CONTEXTUAL/" ## Path for shapefile
+aus_shp       = "aus_states.rds"          ## Shapefile e.g. Australian states
+world_shp     = "LAND_world.rds"          ## World shapefile
+
+x             = scen_2030[3]                 ## List of climate scenarios
+species       = map_spp[1]                   ## List of species folders with maxent models
+maxent_path   = bs_path                   ## Output folder
+climate_path  = "./data/base/worldclim/aus/1km/bio" ## climate data
+
+grid_names    = grid.names
+bs_names      = bs.predictors             ## names of the predictor grids
+time_slice    = 30                        ## Time period
+current_grids = aus.grids.current         ## predictor grids
+create_mess   = "TRUE"
+nclust        = 1
 
 
 #########################################################################################################################
 ## Try to run the mess maps at the same time as the map creation?
 project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list, 
-                                     species_list, maxent_path, climate_path, 
-                                     grid_names, time_slice, current_grids, create_mess) {
+                                     species_list, maxent_path, climate_path,
+                                     grid_names, time_slice, current_grids, create_mess, nclust) {
   
   ## Read in the Australian shapefile at the top
   aus_poly = readRDS(paste0(shp_path, aus_shp)) %>%
@@ -39,30 +42,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
   
   world_poly = readRDS(paste0(shp_path, world_shp)) %>%
     spTransform(CRS.WGS.84)
-  
-  ## Parallelising stuff #####################
-  # if(run_parallel == "TRUE") {
-  #   message('Run parallel mapping for using ', nclust, ' local cores for ', species)
-  #   
-  # cl <- makeCluster(nclust)
-  # clusterExport(cl, c(
-  #   'poly', 'scen_list', 'species_list', 'maxent_path', 'climate_path', 
-  #   'grid_names', 'time_slice', 'current_grids', 'create_mess',
-  #   'hatch', 'polygonizer', 'sdm.predictors', 'aus.grids.current', 
-  #   'sdm.select', 'diverge0'))
-  # 
-  # clusterEvalQ(cl, {
-  #   library(rmaxent)
-  #   library(sp)
-  #   library(raster)
-  #   library(rasterVis)
-  #   library(latticeExtra)
-  # })
-  # 
-  # } else {
-  #   message('Run mapping using one core for ', species)
-  # }
-  
+
   ###########################################
   ## First, run a loop over each scenario:    
   lapply(scen_list, function(x) {
@@ -73,7 +53,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
     
     ## Rename both the current and future environmental stack...
     ## critically important that the order of the name.....................................................................
-    names(s) <- names(current_grids) <- grid.names 
+    names(s) <- names(current_grids) <- grid_names 
     
     ########################################################################################################################
     ## Divide the 11 temperature rasters by 10: NA values are the ocean
@@ -89,11 +69,9 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
     ## Then apply each GCM to each species.
     ## First, check if the maxent model exists
     ## Then apply each GCM to each species
-    lapply(species_list, function(species) {
+    ## Define function to then send to one or multiple cores
+    maxent_predict_fun <- function(species) {
       
-      ######## Parallelising stuff ################
-      # clusterExport(cl, c('scen_list', 'x', 's'))
-      # parLapply(cl, species_list, function(species) {
       #############################################
       save_name = gsub(' ', '_', species)
       if(file.exists(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, species))) {
@@ -537,7 +515,33 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
         
       }
       
-    })
+    }
+    
+    if (nclust==1) {
+      lapply(species_list, maxent_predict_fun)  
+    } else {
+      cl <- makeCluster(nclust)
+      clusterExport(cl, c(
+        'shp_path',    'aus_shp',       'world_shp',   'scen_list',   'species_list', 
+        'maxent_path', 'climate_path',  'grid_names',  'time_slice',  'current_grids',  
+        'create_mess', 'hatch',        
+        'polygonizer', 'sdm.predictors', 'aus.grids.current', 'nclust',
+        'sdm.select',  'diverge0'))
+      
+      # shp_path, aus_shp, world_shp, scen_list, 
+      # species_list, maxent_path, climate_path, 
+      # grid_names, time_slice, current_grids, create_mess, nclust
+      
+      clusterEvalQ(cl, {
+        library(rmaxent)
+        library(sp)
+        library(raster)
+        library(rasterVis)
+        library(latticeExtra)
+      })
+      parLapply(cl, species_list, myfun)  
+    }
+    
     
   })
   

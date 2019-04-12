@@ -220,16 +220,16 @@ gc()
 
 #########################################################################################################################
 ## save data
-if(save_data == "TRUE") {
-
-  ## save .rds file for the next session
-  saveRDS(GBIF.LAND, paste0(GBIF_path, 'GBIF_LAND_', save_run, '.rds'))
-
-} else {
-
-  message(' skip file saving, not many species analysed')   ##
-
-}
+# if(save_data == "TRUE") {
+# 
+#   ## save .rds file for the next session
+#   saveRDS(GBIF.LAND, paste0(GBIF_path, 'GBIF_LAND_', save_run, '.rds'))
+# 
+# } else {
+# 
+#   message(' skip file saving, not many species analysed')   ##
+# 
+# }
 
 ## Get rid of some memory
 gc()

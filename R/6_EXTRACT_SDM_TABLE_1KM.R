@@ -103,60 +103,36 @@ xres(template.raster.1km);yres(template.raster.1km)
 
 
 #########################################################################################################################
-## 2). EXTRACT ENVIRONMENTAL DATA 
+## 2). EXTRACT ENVIRONMENTAL DATA AT 1KM
 #########################################################################################################################
 
 
 #########################################################################################################################
-## Create lat/lon points to extract the data
-SDM.COORDS    = as.data.frame(coordinates(SDM.DATA.ALL))
-SDM.COORDS    = SpatialPointsDataFrame(coords      = SDM.COORDS[c("lon", "lat")],
-                                       data        = SDM.COORDS[c("lon", "lat")],
-                                       proj4string = CRS.MOL.SDM)
+## Create lat/lon points to extract the data. For some reason I can only get this working in WGS84, would be better if
+## it was in mollweide
+SDM.POINTS   = spTransform(SDM.DATA.ALL, CRS.WGS.84)
+SDM.POINTS   = as.data.frame(coordinates(SDM.POINTS))
+SDM.POINTS   = SpatialPointsDataFrame(coords      = SDM.POINTS[c("lon", "lat")],
+                                      data        = SDM.POINTS[c("lon", "lat")],
+                                      proj4string = CRS.WGS.84)
 
 
-SDM.DATA.ALL  = cbind(SDM.COORDS, SDM.DATA.ALL)
-SDM.DATA.84   = spTransform(SDM.DATA.ALL, CRS.WGS.84)
-SDM.POINTS    = spTransform(SDM.DATA.ALL, CRS.WGS.84)[c("lon", "lat")]
+## Back to here - what am  I doing with SDM.DATA.ALL
+SDM.DATA.84  = spTransform(SDM.DATA.ALL, CRS.WGS.84)
 
 
 ## Check
 dim(SDM.POINTS)
 projection(SDM.POINTS)
-names(SDM.POINTS)
-
-
-#########################################################################################################################
-## Ignore edaphic variables
-
-
-# BIO1  = Annual Mean Temperature                                     ## 
-# BIO2  = Mean Diurnal Range (Mean of monthly (max temp - min temp))  ##
-# BIO3  = Isothermality (BIO2/BIO7) (* 100)
-# BIO4  = Temperature Seasonality (standard deviation *100)           ##
-# BIO5  = Max Temperature of Warmest Month                            ## 
-# BIO6  = Min Temperature of Coldest Month                            ## 
-# BIO7  = Temperature Annual Range (BIO5-BIO6)
-# BIO8  = Mean Temperature of Wettest Quarter
-# BIO9  = Mean Temperature of Driest Quarter
-# BIO10 = Mean Temperature of Warmest Quarter
-# BIO11 = Mean Temperature of Coldest Quarter
-# BIO12 = Annual Precipitation                                        ##
-# BIO13 = Precipitation of Wettest Month                              ##
-# BIO14 = Precipitation of Driest Month                               ##
-# BIO15 = Precipitation Seasonality (Coefficient of Variation)        ##
-# BIO16 = Precipitation of Wettest Quarter
-# BIO17 = Precipitation of Driest Quarter
-# BIO18 = Precipitation of Warmest Quarter
-# BIO19 = Precipitation of Coldest Quarter
+head(SDM.POINTS)
 
 
 #########################################################################################################################
 ## Extract worldclim data
-## This step is a bottle neck, can only the unique cells by used ........................................................
+## This step is a bottle neck, 1km cells, but can we just use the unique cells too?
 message('Extracting raster values for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
-projection(SDM.POINTS);projection(world.grids.current)
-dim(SDM.POINTS.84);dim(SDM.DATA.84)
+projection(SDM.POINTS);projection(world.grids.current);projection(SDM.DATA.84)
+dim(SDM.POINTS);dim(SDM.DATA.84)
 
 COMBO.RASTER <- raster::extract(world.grids.current, SDM.POINTS) %>%
   
@@ -191,18 +167,50 @@ COMBO.RASTER <- raster::extract(world.grids.current, SDM.POINTS) %>%
 gc();gc()
 
 
-## Check
+## Check the values
+summary(COMBO.RASTER$Annual_mean_temp)
+
+
+#########################################################################################################################
+## Extract the raster data for PET. Any extra variables for frost, etc. could be pulled in here
+projection(SDM.POINTS);projection(PET)
+dim(SDM.POINTS)
+
+POINTS.PET <- raster::extract(PET, SDM.POINTS) %>%
+  cbind(COMBO.RASTER, .)
+COMBO.RASTER = POINTS.PET
+names(COMBO.RASTER)[names(COMBO.RASTER) == "."] <- 'PET'
+
+
+## Check 
 dim(COMBO.RASTER)
 names(COMBO.RASTER)
 summary(COMBO.RASTER$Annual_mean_temp)
 summary(COMBO.RASTER$PET)
 
 
+#########################################################################################################################
+## Try binding on the rest of the data separately
+## Exclude the NAs - there really shouldn't be any...
+## View(COMBO.RASTER[is.na(COMBO.RASTER$Annual_mean_temp),])
+COMBO.RASTER = COMBO.RASTER[complete.cases(COMBO.RASTER$Annual_mean_temp), ]
+message(round(nrow(COMBO.RASTER)/nrow(SDM.POINTS)*100, 2), " % records retained")   
+
+
+## Check :: why are there still NA values?
+dim(COMBO.RASTER)
+names(COMBO.RASTER)
+summary(COMBO.RASTER$Annual_mean_temp)
+summary(COMBO.RASTER$PET)
+summary(COMBO.RASTER$lat)
+summary(COMBO.RASTER$lon)
+
+
 
 
 
 #########################################################################################################################
-## 4). CONVERT RASTER VALUES
+## 3). DIVIDE TEMPERATURE VALUES BY 10
 #########################################################################################################################
 
 
@@ -235,20 +243,25 @@ length(unique(COMBO.RASTER.CONVERT$searchTaxon));length(GBIF.spp)
 #        pch = ".", col = "red", cex = 3, asp = 1, main = "temp records < -5")
 
 
-## This also needs to use the variable names
-COMBO.RASTER.ALL  <- dplyr::select(COMBO.RASTER.CONVERT, searchTaxon, lon, lat, SOURCE, CC.OBS,
-                                   
-                                   Annual_mean_temp,     Mean_diurnal_range,  Isothermality,     Temp_seasonality, 
-                                   Max_temp_warm_month,  Min_temp_cold_month, Temp_annual_range, Mean_temp_wet_qu,
-                                   Mean_temp_dry_qu,     Mean_temp_warm_qu,   Mean_temp_cold_qu, 
-                                   
-                                   Annual_precip,        Precip_wet_month,    Precip_dry_month,  Precip_seasonality,   
-                                   Precip_wet_qu,        Precip_dry_qu,       Precip_warm_qu,    Precip_col_qu)
+#########################################################################################################################
+## save data to calculate environmetnal ranges
+if(save_data == "TRUE") {
+  
+  ## save .rds file for the next session
+  saveRDS(COMBO.RASTER.CONVERT, paste0(DATA_path, 'RASTER_DATA_1KM',  save_run, '.rds'))
+  
+} else {
+  
+  message(' skip file saving, not many species analysed')   ##
+  
+}
+
+
 
 
 
 #########################################################################################################################
-## 3). TRY CLEANING FILTERED DATA FOR SPATIAL OUTLIERS
+## 4). TRY CLEANING FILTERED DATA FOR SPATIAL OUTLIERS
 #########################################################################################################################
 
 
@@ -257,9 +270,10 @@ COMBO.RASTER.ALL  <- dplyr::select(COMBO.RASTER.CONVERT, searchTaxon, lon, lat, 
 ## So we will need to process all the species locally, then send them to Shawn.
 
 
-#########################################################################################################################
-## Create a unique identifier for spatial cleaning. This is used for automated cleaing of the records, and also saving shapefiles
-## But this will not be run for all species linearly. So, it probably needs to be a combination of species and number
+## Create a unique identifier for spatial cleaning. This is used for automated cleaing of the records, and also saving shapefiles.
+## But, this will not be run for all species linearly. So, it probably needs to be a combination of species and number
+SDM.DATA.ALL = COMBO.RASTER.CONVERT
+
 SDM.DATA.ALL$SPOUT.OBS <- 1:nrow(SDM.DATA.ALL)
 SDM.DATA.ALL$SPOUT.OBS <- paste0(SDM.DATA.ALL$SPOUT.OBS, "_SPOUT_", SDM.DATA.ALL$searchTaxon)
 SDM.DATA.ALL$SPOUT.OBS <- gsub(" ",     "_",  SDM.DATA.ALL$SPOUT.OBS, perl = TRUE)
@@ -344,7 +358,7 @@ SPAT.OUT <- LUT.100K  %>%
                        value   = "flagged",
                        verbose = "TRUE")
     
-    ## Now add attache column for species, and the flag for each record
+    ## Now, attach column for species, and the flag for each record
     d = cbind(searchTaxon = x,
               SPAT_OUT = sp.flag, f)[c("searchTaxon", "SPAT_OUT", "SPOUT.OBS")]
     
@@ -373,7 +387,7 @@ head(SPAT.OUT)
 
 
 #########################################################################################################################
-## 2). FILTER DATA TO THE CLEAN RECORDS
+## 5). FILTER DATA TO THE CLEAN RECORDS
 #########################################################################################################################
 
 
@@ -414,6 +428,17 @@ message(round(nrow(SDM.SPAT.ALL)/nrow(SPAT.FLAG)*100, 2), " % records retained")
 
 
 #########################################################################################################################
+## Restrict the data to just that needed for the SDMs
+SDM.SPAT.ALL  <- dplyr::select(SDM.SPAT.ALL, searchTaxon, lon, lat, SOURCE, CC.OBS,
+                               
+                               Annual_mean_temp,     Mean_diurnal_range,  Isothermality,     Temp_seasonality, 
+                               Max_temp_warm_month,  Min_temp_cold_month, Temp_annual_range, Mean_temp_wet_qu,
+                               Mean_temp_dry_qu,     Mean_temp_warm_qu,   Mean_temp_cold_qu, 
+                               
+                               Annual_precip,        Precip_wet_month,    Precip_dry_month,  Precip_seasonality,   
+                               Precip_wet_qu,        Precip_dry_qu,       Precip_warm_qu,    Precip_col_qu)
+
+
 ## Convert back to format for SDMs :: use Mollweide projection
 SDM.SPAT.ALL    = SpatialPointsDataFrame(coords      = SDM.SPAT.ALL[c("lon", "lat")],
                                          data        = SDM.SPAT.ALL,
@@ -488,7 +513,7 @@ if(save_data == "TRUE") {
 
 
 #########################################################################################################################
-## 3). CREATE BACKGROUND POINTS AND VARIBALE NAMES
+## 6). CREATE BACKGROUND POINTS AND VARIBALE NAMES
 #########################################################################################################################
 
 
@@ -507,6 +532,8 @@ SDM.SPAT.ALL$TYPE      = "OCC"
 setdiff(names(SDM.SPAT.ALL), names(background.points))
 setdiff(names(background.points), names(SDM.SPAT.ALL))
 
+
+## Drop the columns not in common
 drops <- c("SPOUT.OBS", "OBS", "CC.OBS", "SPAT_SPP", "SPAT_OUT", "index", "lon", "lat") 
 SDM.SPAT.ALL      <- SDM.SPAT.ALL[,!(names(SDM.SPAT.ALL) %in% drops)]
 background.points <- background.points[,!(names(background.points) %in% drops)]

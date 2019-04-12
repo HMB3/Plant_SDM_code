@@ -68,7 +68,8 @@ lapply(GBIF.spp, function(species){
   ## Create the directory for the species in progress, 
   ## so other parallel runs don't run the same species
   dir.create(dir_name)
-  write.csv(data.frame(), file.path(dir_name, "in_progress.txt"))
+  file.create(file.path(dir_name, "in_progress.txt"))
+  #write.csv(data.frame(), file.path(dir_name, "in_progress.txt"))
   
   ## Print the taxa being processed to screen
   if(species %in% SDM.SPAT.OCC.BG$searchTaxon) {
@@ -117,23 +118,21 @@ lapply(GBIF.spp, function(species){
       error = function(cond) {
         
         ## How to put the message into the file?
+        file.create(file.path(dir_name, "sdm_failed.txt"))
         message(species, ' failed') 
-        zz <- file("failed", open = "wt")
-        sink(zz, type = "message")
-        
-        write.csv(data.frame(zz), file.path(dir_name, "failed.txt"))
-        
+        cat(cond$message, file=file.path(dir_name, "sdm_failed.txt"))
+        #warning(species, ': ', cond$message)
       })
     
   } else {
     
     message(species, ' skipped - no data.')         ## This condition ignores species which have no data...
-    write.csv(data.frame(), file.path(dir_name, "completed.txt"))
+    file.create(file.path(dir_name, "completed.txt"))
     
   }  
   
   ## now add a file to the dir to denote that it has completed
-  write.csv(data.frame(), file.path(dir_name, "completed.txt"))
+  file.create(file.path(dir_name, "completed.txt"))
   
 })
 
@@ -178,7 +177,7 @@ MAXENT.RESULTS <- maxent.tables %>%
     
     #############################################################
     ## load model
-    if (grepl("BS", results_dir)) {
+    if (!grepl("BS", results_dir)) {
       m = readRDS(sprintf('%s/%s/full/maxent_fitted.rds', results_dir, x))
       
     } else {
@@ -253,7 +252,7 @@ max_tss <- sapply(omission.tables, function(file) {
 
 
 #########################################################################################################################
-## Then extract the omission rate for each logistic threshold 
+## Then extract the omission rate for each logistic threshold :: False negative rate
 omission_rate <- mapply(function(file, threshold) {
   
   ## Read in species data

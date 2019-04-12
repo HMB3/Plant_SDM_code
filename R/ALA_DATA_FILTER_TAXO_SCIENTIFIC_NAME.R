@@ -287,16 +287,16 @@ length(unique(ALA.LAND$searchTaxon))
 
 #########################################################################################################################
 ## save data
-if(save_data == "TRUE") {
-
-  ## save .rds file for the next session
-  saveRDS(ALA.LAND, paste0(ALA_path, 'ALA_LAND_', save_run, '.rds'))
-
-} else {
-
-  message(' skip file saving, not many species analysed')   ##
-
-}
+# if(save_data == "TRUE") {
+# 
+#   ## save .rds file for the next session
+#   saveRDS(ALA.LAND, paste0(ALA_path, 'ALA_LAND_', save_run, '.rds'))
+# 
+# } else {
+# 
+#   message(' skip file saving, not many species analysed')   ##
+# 
+# }
 
 ## get rid of some memory
 gc()
