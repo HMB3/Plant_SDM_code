@@ -192,7 +192,7 @@ GBIF.LAND = filter(GBIF.CLEAN, cellFromXY(world.grids.current, GBIF.CLEAN[c("lon
 
 
 ## how many records were on land?
-records.ocean = dim(GBIF.CLEAN)[1] - dim(GBIF.LAND)[1]  ## 91575 records are in the ocean   
+records.ocean = nrow(GBIF.CLEAN) - nrow(GBIF.LAND)  ## 91575 records are in the ocean   
 
 
 ## Print the dataframe dimensions to screen
@@ -220,19 +220,19 @@ gc()
 
 #########################################################################################################################
 ## save data
-# if(save_data == "TRUE") {
-#   
-#   ## save .rds file for the next session
-#   saveRDS(GBIF.LAND, paste0(GBIF_path, 'GBIF_LAND_', save_run, '.rds'))
-#  
-# } else {
-#   
-#   message(' skip file saving, not many species analysed')   ##
-#   
-# }
-# 
-# ## Get rid of some memory
-# gc()
+if(save_data == "TRUE") {
+
+  ## save .rds file for the next session
+  saveRDS(GBIF.LAND, paste0(GBIF_path, 'GBIF_LAND_', save_run, '.rds'))
+
+} else {
+
+  message(' skip file saving, not many species analysed')   ##
+
+}
+
+## Get rid of some memory
+gc()
 
 
 

@@ -381,8 +381,8 @@ if(calc_niche == "TRUE") {
     temp.bar = 
       ggplot(TMP.RANGE, aes(y = Temperature_range, x = RANGE, fill = RANGE)) +
       
-      scale_x_discrete(limits = c(min(TMP.RANGE$Annual_mean_temp_q05), 
-                                  max(TMP.RANGE$Annual_mean_temp_q95))) +
+      # scale_x_discrete(limits = c(min(TMP.RANGE$Annual_mean_temp_q05), 
+      #                             max(TMP.RANGE$Annual_mean_temp_q95))) +
       
       geom_bar(stat = "identity", position = "identity") +
       coord_flip() +
@@ -391,9 +391,9 @@ if(calc_niche == "TRUE") {
       geom_vline(aes(xintercept = POA.SYD$Annual_mean_temp),
                  col = 'blue', size = 1) +
       geom_vline(aes(xintercept = POA.SYD$Annual_mean_temp_50),
-                 col = 'blue', size = 1) +
+                 col = 'red', size = 1) +
       geom_vline(aes(xintercept = POA.SYD$Annual_mean_temp_70),
-                 col = 'blue', size = 1) +
+                 col = 'green', size = 1) +
       
       
       ggtitle(paste0("Worldclim temperature ranges for ", species)) +

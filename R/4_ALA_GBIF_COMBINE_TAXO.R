@@ -261,6 +261,22 @@ round(with(GBIF.ALA.MATCH, table(New.Taxonomic.status)/sum(table(New.Taxonomic.s
   nrow(GBIF.ALA.MATCH)*100
 
 
+## save data
+if(save_data == "TRUE") {
+
+  ## save .rds file for the next session
+  saveRDS(GBIF.ALA.MATCH, paste0(DATA_path, 'GBIF_ALA_MATCH_',  save_run, '.rds'))
+
+} else {
+
+  message(' skip file saving, not many species analysed')   ##
+
+}
+
+## get rid of some memory
+gc()
+
+
 
 
 
@@ -271,14 +287,14 @@ round(with(GBIF.ALA.MATCH, table(New.Taxonomic.status)/sum(table(New.Taxonomic.s
 
 #########################################################################################################################
 ## Create points: the 'over' function seems to need geographic coordinates for this data...
-COMBO.POINTS   = SpatialPointsDataFrame(coords      = GBIF.ALA.COMBO[c("lon", "lat")],
-                                        data        = GBIF.ALA.COMBO[c("lon", "lat")],
-                                        proj4string = CRS.WGS.84)
-
-## Check
-dim(COMBO.POINTS)
-projection(COMBO.POINTS)
-names(COMBO.POINTS)
+# COMBO.POINTS   = SpatialPointsDataFrame(coords      = GBIF.ALA.COMBO[c("lon", "lat")],
+#                                         data        = GBIF.ALA.COMBO[c("lon", "lat")],
+#                                         proj4string = CRS.WGS.84)
+# 
+# ## Check
+# dim(COMBO.POINTS)
+# projection(COMBO.POINTS)
+# names(COMBO.POINTS)
 
 
 #########################################################################################################################
@@ -307,116 +323,116 @@ names(COMBO.POINTS)
 
 
 #########################################################################################################################
-## Extract worldclim data
-## This step is a bottle neck, can only the unique cells by used ........................................................
-message('Extracting raster values for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
-projection(COMBO.POINTS);projection(world.grids.current)
-dim(COMBO.POINTS);dim(GBIF.ALA.COMBO)
-
-COMBO.RASTER <- raster::extract(world.grids.current, COMBO.POINTS) %>% 
-  
-  cbind(GBIF.ALA.COMBO, .) %>% 
-  
-  dplyr::rename(
-    ## Temperature
-    Annual_mean_temp     = bio_01,
-    Mean_diurnal_range   = bio_02,
-    Isothermality        = bio_03,
-    Temp_seasonality     = bio_04,
-    Max_temp_warm_month  = bio_05,
-    Min_temp_cold_month  = bio_06,
-    Temp_annual_range    = bio_07,
-    Mean_temp_wet_qu     = bio_08,
-    Mean_temp_dry_qu     = bio_09,
-    Mean_temp_warm_qu    = bio_10,
-    Mean_temp_cold_qu    = bio_11,
-    
-    ## Rainfall
-    Annual_precip        = bio_12,
-    Precip_wet_month     = bio_13,
-    Precip_dry_month     = bio_14,
-    Precip_seasonality   = bio_15,
-    Precip_wet_qu        = bio_16,
-    Precip_dry_qu        = bio_17,
-    Precip_warm_qu       = bio_18,
-    Precip_col_qu        = bio_19)
-
-
-## Free some memory
-gc();gc()
-
-
-#########################################################################################################################
-## Extract the raster data for PET
-projection(COMBO.POINTS);projection(PET)
-dim(COMBO.POINTS)
-
-POINTS.PET <- raster::extract(PET, COMBO.POINTS) %>% 
-  cbind(COMBO.RASTER, .)
-COMBO.RASTER = POINTS.PET
-names(COMBO.RASTER)[names(COMBO.RASTER) == "."] <- 'PET'
-
-
-## Check 
-dim(COMBO.RASTER)
-names(COMBO.RASTER)
-summary(COMBO.RASTER$Annual_mean_temp)
-summary(COMBO.RASTER$PET)
-
-
-
-
-
-#########################################################################################################################
-## 4). CONVERT RASTER VALUES
-#########################################################################################################################
-
-
-#########################################################################################################################
-## Change the raster values here: See http://worldclim.org/formats1 for description of the interger conversion. 
-## All temperature variables were multiplied by 10, so divide by 10 to reverse it.
-COMBO.RASTER.CONVERT = as.data.table(COMBO.RASTER)                           ## Check this works, also inefficient
-COMBO.RASTER.CONVERT[, (env.variables [c(1:11)]) := lapply(.SD, function(x) 
-  x / 10 ), .SDcols = env.variables [c(1:11)]]
-COMBO.RASTER.CONVERT = as.data.frame(COMBO.RASTER.CONVERT)                   ## Find another method without using data.table
-
-
-## Check Looks ok?
-summary(COMBO.RASTER.CONVERT$Annual_mean_temp)  ## -23 looks too low/. Check where these are ok
-summary(COMBO.RASTER$Annual_mean_temp)
-summary(COMBO.RASTER.CONVERT)
-
-
-## Print the dataframe dimensions to screen :: format to recognise millions, hundreds of thousands, etc.
-COMBO.RASTER.CONVERT = completeFun(COMBO.RASTER.CONVERT, "PET")
-names(COMBO.RASTER.CONVERT)
-dim(COMBO.RASTER.CONVERT)
-formatC(dim(COMBO.RASTER.CONVERT)[1], format = "e", digits = 2)
-length(unique(COMBO.RASTER.CONVERT$searchTaxon));length(GBIF.spp)
-
-
-## Plot a few points to see :: do those look reasonable?
-# plot(LAND, col = 'grey', bg = 'sky blue')
-# points(COMBO.RASTER.CONVERT[ which(COMBO.RASTER.CONVERT$Annual_mean_temp < -5), ][, c("lon", "lat")], 
-#        pch = ".", col = "red", cex = 3, asp = 1, main = "temp records < -5")
-
-
-
-#########################################################################################################################
-## save data
-if(save_data == "TRUE") {
-  
-  ## save .rds file for the next session
-  saveRDS(COMBO.RASTER.CONVERT, paste0(DATA_path, 'COMBO_RASTER_CONVERT_',  save_run, '.rds'))
-  
-} else {
-  
-  message(' skip file saving, not many species analysed')   ##
-  
-}
-
-## get rid of some memory
-gc()
+# ## Extract worldclim data
+# ## This step is a bottle neck, can only the unique cells by used ........................................................
+# message('Extracting raster values for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
+# projection(COMBO.POINTS);projection(world.grids.current)
+# dim(COMBO.POINTS);dim(GBIF.ALA.COMBO)
+# 
+# COMBO.RASTER <- raster::extract(world.grids.current, COMBO.POINTS) %>% 
+#   
+#   cbind(GBIF.ALA.COMBO, .) %>% 
+#   
+#   dplyr::rename(
+#     ## Temperature
+#     Annual_mean_temp     = bio_01,
+#     Mean_diurnal_range   = bio_02,
+#     Isothermality        = bio_03,
+#     Temp_seasonality     = bio_04,
+#     Max_temp_warm_month  = bio_05,
+#     Min_temp_cold_month  = bio_06,
+#     Temp_annual_range    = bio_07,
+#     Mean_temp_wet_qu     = bio_08,
+#     Mean_temp_dry_qu     = bio_09,
+#     Mean_temp_warm_qu    = bio_10,
+#     Mean_temp_cold_qu    = bio_11,
+#     
+#     ## Rainfall
+#     Annual_precip        = bio_12,
+#     Precip_wet_month     = bio_13,
+#     Precip_dry_month     = bio_14,
+#     Precip_seasonality   = bio_15,
+#     Precip_wet_qu        = bio_16,
+#     Precip_dry_qu        = bio_17,
+#     Precip_warm_qu       = bio_18,
+#     Precip_col_qu        = bio_19)
+# 
+# 
+# ## Free some memory
+# gc();gc()
+# 
+# 
+# #########################################################################################################################
+# ## Extract the raster data for PET
+# projection(COMBO.POINTS);projection(PET)
+# dim(COMBO.POINTS)
+# 
+# POINTS.PET <- raster::extract(PET, COMBO.POINTS) %>% 
+#   cbind(COMBO.RASTER, .)
+# COMBO.RASTER = POINTS.PET
+# names(COMBO.RASTER)[names(COMBO.RASTER) == "."] <- 'PET'
+# 
+# 
+# ## Check 
+# dim(COMBO.RASTER)
+# names(COMBO.RASTER)
+# summary(COMBO.RASTER$Annual_mean_temp)
+# summary(COMBO.RASTER$PET)
+# 
+# 
+# 
+# 
+# 
+# #########################################################################################################################
+# ## 4). CONVERT RASTER VALUES
+# #########################################################################################################################
+# 
+# 
+# #########################################################################################################################
+# ## Change the raster values here: See http://worldclim.org/formats1 for description of the interger conversion. 
+# ## All temperature variables were multiplied by 10, so divide by 10 to reverse it.
+# COMBO.RASTER.CONVERT = as.data.table(COMBO.RASTER)                           ## Check this works, also inefficient
+# COMBO.RASTER.CONVERT[, (env.variables [c(1:11)]) := lapply(.SD, function(x) 
+#   x / 10 ), .SDcols = env.variables [c(1:11)]]
+# COMBO.RASTER.CONVERT = as.data.frame(COMBO.RASTER.CONVERT)                   ## Find another method without using data.table
+# 
+# 
+# ## Check Looks ok?
+# summary(COMBO.RASTER.CONVERT$Annual_mean_temp)  ## -23 looks too low/. Check where these are ok
+# summary(COMBO.RASTER$Annual_mean_temp)
+# summary(COMBO.RASTER.CONVERT)
+# 
+# 
+# ## Print the dataframe dimensions to screen :: format to recognise millions, hundreds of thousands, etc.
+# COMBO.RASTER.CONVERT = completeFun(COMBO.RASTER.CONVERT, "PET")
+# names(COMBO.RASTER.CONVERT)
+# dim(COMBO.RASTER.CONVERT)
+# formatC(dim(COMBO.RASTER.CONVERT)[1], format = "e", digits = 2)
+# length(unique(COMBO.RASTER.CONVERT$searchTaxon));length(GBIF.spp)
+# 
+# 
+# ## Plot a few points to see :: do those look reasonable?
+# # plot(LAND, col = 'grey', bg = 'sky blue')
+# # points(COMBO.RASTER.CONVERT[ which(COMBO.RASTER.CONVERT$Annual_mean_temp < -5), ][, c("lon", "lat")], 
+# #        pch = ".", col = "red", cex = 3, asp = 1, main = "temp records < -5")
+# 
+# 
+# 
+# #########################################################################################################################
+# ## save data
+# if(save_data == "TRUE") {
+#   
+#   ## save .rds file for the next session
+#   saveRDS(COMBO.RASTER.CONVERT, paste0(DATA_path, 'COMBO_RASTER_CONVERT_',  save_run, '.rds'))
+#   
+# } else {
+#   
+#   message(' skip file saving, not many species analysed')   ##
+#   
+# }
+# 
+# ## get rid of some memory
+# gc()
 
 
 
