@@ -52,8 +52,8 @@ projection(template.raster.1km);projection(SDM.SPAT.OCC.BG);projection(Koppen_19
 
 
 #########################################################################################################################
-## Loop over all the species species = GBIF.spp[9]
-lapply(GBIF.spp, function(species){ 
+## Loop over all the species = GBIF.spp[1]
+lapply(GBIF.spp[3], function(species){ 
   
   ## Skip the species if the directory already exists, before the loop
   outdir <- maxent_dir
@@ -86,7 +86,7 @@ lapply(GBIF.spp, function(species){
     ## However, they should be limited to the same SOURCE as the occ data
     background <- subset(SDM.SPAT.OCC.BG, searchTaxon != species)
     background <- background[grep(paste(unique(occurrence$SOURCE), collapse = '|'), background$SOURCE, ignore.case = TRUE),]
-    message('Using occ records from ', unique(background$SOURCE))
+    message('Using bg records from ', unique(background$SOURCE))
 
     
     ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions

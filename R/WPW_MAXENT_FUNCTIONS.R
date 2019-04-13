@@ -11,21 +11,21 @@
 #########################################################################################################################
 
 
-## Here are the argumetns needed to run the targetted background selection SDMs inside the function itself
-#spp                     = GBIF.spp[1]
-## This is what is causing the proportional sampling to skip.........................................
+# ## Here are the argumetns needed to run the targetted background selection SDMs inside the function itself
+# spp                     = GBIF.spp[1]
+# # This is what is causing the proportional sampling to skip.........................................
 # occ <- subset(SDM.SPAT.OCC.BG, searchTaxon == spp)
 # occ <- occ[grep(paste(OCC_SOURCE, collapse = '|'), occ$SOURCE, ignore.case = TRUE),]
-# message('Using occ records from ', unique(occ$SOURCE))
-
-
-## Now get the background points. These can come from any species, other than the modelled species.
-## However, they should be limited to the same SOURCE as the occ data
+# # message('Using occ records from ', unique(occ$SOURCE))
+# 
+# 
+# ## Now get the background points. These can come from any species, other than the modelled species.
+# ## However, they should be limited to the same SOURCE as the occ data
 # bg <- subset(SDM.SPAT.OCC.BG, searchTaxon != spp)
 # bg <- bg[grep(paste(unique(occ$SOURCE), collapse = '|'), bg$SOURCE, ignore.case = TRUE),]
-# message('Using occ records from ', unique(bg$SOURCE))
-
- 
+# # message('Using occ records from ', unique(bg$SOURCE))
+# 
+# 
 # name                    = spp
 # outdir                  = maxent_dir
 # bsdir                   = bs_dir
@@ -34,8 +34,8 @@
 # cor_thr                 = 0.8      ## The maximum allowable pairwise correlation between predictor variables
 # pct_thr                 = 5        ## The minimum allowable percent variable contribution
 # k_thr                   = 4
-
-
+# 
+# 
 # template.raster         = template.raster.1km   ## 1km, 5km, 10km
 # min_n                   = 20
 # max_bg_size             = 70000
@@ -119,7 +119,7 @@ fit_maxent_targ_bg_back_sel <- function(occ,
   #####################################################################
   ## Get unique cell numbers for species occurrences
   cells <- cellFromXY(template.raster, occ)
-  
+
   ## Clean out duplicate cells and NAs (including points outside extent of predictor data)
   ## Note this will get rid of a lot of duplicate records not filtered out by GBIF columns, etc.
   not_dupes <- which(!duplicated(cells) & !is.na(cells))
@@ -263,13 +263,13 @@ fit_maxent_targ_bg_back_sel <- function(occ,
     aus.mol = readRDS(paste0(shp_path, aus_shp)) %>%
       spTransform(projection(buffer))
     
-    aus.kop = crop(Koppen_crop, aus.mol)
+    #aus.kop = crop(Koppen_crop, aus.mol)
     
     occ.mol <- occ %>%
       spTransform(projection(buffer))
     
     ## Print the koppen zones, occurrences and points to screen
-    plot(aus.kop, legend = FALSE,
+    plot(Koppen_crop, legend = FALSE,
          main = paste0('Occurence SDM records for ', name))
     
     plot(aus.mol, add = TRUE)
@@ -280,7 +280,7 @@ fit_maxent_targ_bg_back_sel <- function(occ,
     png(sprintf('%s/%s/%s_%s.png', maxent_path, save_name, save_name, "buffer_occ"),
         16, 10, units = 'in', res = 300)
     
-    plot(aus.kop, legend = FALSE,
+    plot(Koppen_crop, legend = FALSE,
          main = paste0('Occurence SDM records for ', name))
     
     plot(aus.mol, add = TRUE)
@@ -298,7 +298,7 @@ fit_maxent_targ_bg_back_sel <- function(occ,
       png(sprintf('%s/%s/%s_%s.png', maxent_path, save_name, save_name, "buffer_inv"),
           16, 10, units = 'in', res = 300)
       
-      plot(aus.kop, legend = FALSE, 
+      plot(Koppen_crop, legend = FALSE, 
            main = paste0('Inventory sdm records for ', save_name))
       plot(aus.mol, add = TRUE)
       plot(buffer,  add = TRUE, col = "red")

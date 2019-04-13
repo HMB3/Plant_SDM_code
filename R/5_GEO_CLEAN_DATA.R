@@ -26,7 +26,7 @@
 
 
 ## Print the species run to the screen
-message('Cleaning geogrphic outliers for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
+message('Cleaning outliers and creating niches for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
 
 
 #########################################################################################################################
@@ -34,7 +34,7 @@ message('Cleaning geogrphic outliers for ', length(GBIF.spp), ' species in the s
 if(read_data == "TRUE") {
   
   ## Read in RDS files from previous step
-  GBIF.ALA.MATCH = readRDS(paste0(DATA_path, 'GBIF_ALA_MATCH_',  save_run, '.rds'))
+  COMBO.RASTER.CONVERT = readRDS(paste0(DATA_path, 'COMBO_RASTER_CONVERT_',  save_run, '.rds'))
   
 } else {
   
@@ -44,28 +44,34 @@ if(read_data == "TRUE") {
 
 
 #########################################################################################################################
-## Restrict the tree inventory data to just the species analysed
-TI.XY.SPP = TI.XY[TI.XY$searchTaxon %in% GBIF.spp, ]
+## Read in the global data
+## TI.XY.SPP = TI.XY[TI.XY$searchTaxon %in% GBIF.spp, ]
+if(nrow(TI.XY.SPP) > 0 & read_data == "TRUE") {
+  
+  ## Read in RDS files from previous step
+  message('Reading ', nrow(TI.XY.SPP), ' records for ', length(unique(TI.XY.SPP$searchTaxon)), ' species in the set ', "'", save_run, "'")
+  TI.RASTER.CONVERT = readRDS(paste0(DATA_path, 'TI_RASTER_CONVERT_', save_run, '.rds'))
+  
+} else {
+  
+  message(' skip file reading, no urban records')   ##
+  
+}
 
-
-## Restrict the tree inventory data to just the species analysed
-message('Using tree inventory data for ', 
-        length(unique(TI.XY.SPP$searchTaxon)), ' urban species across ',
-        length(unique(TI.XY.SPP$INVENTORY)),   ' Councils ')
 
 ## Check dimensions of the occurrence and inventory data tables.
-length(unique(GBIF.ALA.MATCH$searchTaxon))
-formatC(nrow(GBIF.ALA.MATCH), format = "e", digits = 2)
-names(GBIF.ALA.MATCH)
+length(unique(COMBO.RASTER.CONVERT$searchTaxon))
+formatC(nrow(COMBO.RASTER.CONVERT), format = "e", digits = 2)
+names(COMBO.RASTER.CONVERT)
 
 
 #########################################################################################################################
 ## Create a unique identifier. This is used for automated cleaing of the records, and also saving shapefiles
 ## But this will not be run for all species linearly. So, it probably needs to be a combination of species and number
-GBIF.ALA.MATCH$CC.OBS <- 1:nrow(GBIF.ALA.MATCH)
-GBIF.ALA.MATCH$CC.OBS <- paste0(GBIF.ALA.MATCH$CC.OBS, "_CC_", GBIF.ALA.MATCH$searchTaxon)
-GBIF.ALA.MATCH$CC.OBS <- gsub(" ",     "_",  GBIF.ALA.MATCH$CC.OBS, perl = TRUE)
-length(GBIF.ALA.MATCH$CC.OBS);length(unique(GBIF.ALA.MATCH$CC.OBS))
+COMBO.RASTER.CONVERT$CC.OBS <- 1:nrow(COMBO.RASTER.CONVERT)
+COMBO.RASTER.CONVERT$CC.OBS <- paste0(COMBO.RASTER.CONVERT$CC.OBS, "_CC_", COMBO.RASTER.CONVERT$searchTaxon)
+COMBO.RASTER.CONVERT$CC.OBS <- gsub(" ",     "_",  COMBO.RASTER.CONVERT$CC.OBS, perl = TRUE)
+length(COMBO.RASTER.CONVERT$CC.OBS);length(unique(COMBO.RASTER.CONVERT$CC.OBS))
 
 
 
@@ -78,9 +84,9 @@ length(GBIF.ALA.MATCH$CC.OBS);length(unique(GBIF.ALA.MATCH$CC.OBS))
 
 #########################################################################################################################
 ## Rename the columns to fit the CleanCoordinates format and create a tibble. 
-TIB.GBIF <- GBIF.ALA.MATCH %>% dplyr::rename(coord_spp        = searchTaxon,
-                                             decimallongitude = lon, 
-                                             decimallatitude  = lat) %>%
+TIB.GBIF <- COMBO.RASTER.CONVERT %>% dplyr::rename(coord_spp        = searchTaxon,
+                                                   decimallongitude = lon, 
+                                                   decimallatitude  = lat) %>%
   
   ## The create a tibble for running the spatial outlier cleaning
   timetk::tk_tbl() %>% 
@@ -119,14 +125,14 @@ message(round(with(TIB.GBIF, table(coord_summary)/sum(table(coord_summary))*100)
 
 #########################################################################################################################
 ## Check the order still matches
-identical(GBIF.ALA.MATCH$CC.OBS, TIB.GBIF$CC.OBS)                                               ## order matches
-identical(GBIF.ALA.MATCH$searchTaxon, TIB.GBIF$coord_spp)                                       ## order matches
+identical(COMBO.RASTER.CONVERT$CC.OBS, TIB.GBIF$CC.OBS)                                               ## order matches
+identical(COMBO.RASTER.CONVERT$searchTaxon, TIB.GBIF$coord_spp)                                       ## order matches
 
 
 ## Is the species column the same as the searchTaxon column?
-TEST.GEO   = join(GBIF.ALA.MATCH, TIB.GBIF)
-identical(GBIF.ALA.MATCH$searchTaxon, TEST.GEO$coord_spp)                                       ## order matches 
-identical(GBIF.ALA.MATCH$CC.OBS,      TEST.GEO$CC.OBS)                                          ## order matches
+TEST.GEO   = join(COMBO.RASTER.CONVERT, TIB.GBIF)
+identical(COMBO.RASTER.CONVERT$searchTaxon, TEST.GEO$coord_spp)                                       ## order matches 
+identical(COMBO.RASTER.CONVERT$CC.OBS,      TEST.GEO$CC.OBS)                                          ## order matches
 
 
 ## Now subset to records that are flagged as outliers
@@ -153,8 +159,8 @@ message(round(nrow(CLEAN.TRUE)/nrow(TEST.GEO)*100, 2), " % records retained")
 if(nrow(TI.XY.SPP) > 0) {
   
   message('Combining Australian inventory data with occurrence data') 
-  intersect(names(TI.XY.SPP), names(CLEAN.TRUE))
-  CLEAN.INV = bind_rows(CLEAN.TRUE, TI.XY.SPP)
+  intersect(names(TI.RASTER.CONVERT), names(CLEAN.TRUE))
+  CLEAN.INV = bind_rows(CLEAN.TRUE, TI.RASTER.CONVERT)
   
 } else {
   
