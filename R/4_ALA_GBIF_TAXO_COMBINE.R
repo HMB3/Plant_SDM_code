@@ -277,7 +277,11 @@ GBIF.ALA.84   = SpatialPointsDataFrame(coords      = GBIF.ALA.COMBO[c("lon", "la
 
 
 ## Now split using the data using the species column, and get the unique occurrence cells
-GBIF.ALA.84.SPLIT.ALL <- split(GBIF.ALA.84, GBIF.ALA.84$searchTaxon)
+## Create a template raster in WGS84 projection
+template.raster.1km.84 = raster("./data/template_1km_WGS84.tif")
+
+length(unique(GBIF.ALA.84$searchTaxon))
+GBIF.ALA.84.SPLIT.ALL <- split(GBIF.ALA.84, as.character(unique(GBIF.ALA.84$searchTaxon)))
 occurrence_cells_all  <- lapply(GBIF.ALA.84.SPLIT.ALL, function(x) cellFromXY(template.raster.1km.84, x))
 length(occurrence_cells_all)   ## this is a list of dataframes, where the number of rows for each being the species table
 

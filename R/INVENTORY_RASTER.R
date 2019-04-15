@@ -34,6 +34,7 @@ rasterTmpFile()
 ## Restrict the inventory species to just the analysed species
 TI.XY.SPP = TI.XY[TI.XY$searchTaxon %in% GBIF.spp, ]
 length(unique(TI.XY.SPP$searchTaxon))
+unique(TI.XY.SPP$searchTaxon)
 
 
 message('Extracting raster values for ', 
@@ -47,67 +48,51 @@ if(nrow(TI.XY.SPP) > 0) {
   
   
   #########################################################################################################################
-  ## Create points: the over function seems to need geographic coordinates for this data
-  TI.POINTS   = SpatialPointsDataFrame(coords      = TI.XY.SPP[c("lon", "lat")],
-                                       data        = TI.XY.SPP[c("lon", "lat")],
-                                       proj4string = CRS(projection(world.grids.current)))
-
-  
-  ## Check
-  dim(TI.POINTS)
-  projection(TI.POINTS)
-  names(TI.POINTS)
+  ## Create points: the 'over' function seems to need geographic coordinates for this data...
+  TI.XY.84   = SpatialPointsDataFrame(coords      = TI.XY.SPP[c("lon", "lat")],
+                                      data        = TI.XY.SPP,
+                                      proj4string = CRS.WGS.84)
   
   
-  ## Now get the XY centroids of the unique 1km * 1km WORLDCLIM blocks where ALA records are found
-  ## Get cell number(s) of WORLDCLIM raster from row and/or column numbers. Cell numbers start at 1 in the upper left corner, 
-  ## and increase from left to right, and then from top to bottom. The last cell number equals the number of raster cells 
-  # TI.POINTS <- cellFromXY(world.grids.current, TI.XY.SPP[c("lon", "lat")]) %>% 
-  #   
-  #   ## get the unique raster cells
-  #   unique %>% 
-  #   
-  #   ## Get coordinates of the center of raster cells for a row, column, or cell number of WORLDCLIM raster
-  #   xyFromCell(world.temp, .) %>%
-  #   
-  #   as.data.frame() %>%
-  #   
-  #   SpatialPointsDataFrame(coords = ., data = .,
-  #                          proj4string = CRS.WGS.84)
+  ## Now split using the data using the species column, and get the unique occurrence cells
+  ## Create a template raster in WGS84 projection
+  template.raster.1km.84 = raster("./data/template_1km_WGS84.tif")
   
+  TI.XY.84.SPLIT.ALL <- split(TI.XY.84, as.character(unique(TI.XY.84$searchTaxon)))
+  inventory_cells_all  <- lapply(TI.XY.84.SPLIT.ALL, function(x) cellFromXY(template.raster.1km.84, x))
+  length(inventory_cells_all)   ## this is a list of dataframes, where the number of rows for each being the species table
   
-  ## Check
-  dim(TI.POINTS)
-  projection(TI.POINTS)
-  names(TI.POINTS)
   
   #########################################################################################################################
-  ## Create a stack of rasters to sample: get all the Worldclim variables just for good measure
-  ## Use the Mollweide projection for the points and rasters 
+  ## Now get just one record within each 10*10km cell.
+  TI.XY.84.1KM <- mapply(function(x, cells) {
+    x[!duplicated(cells), ]
+  }, TI.XY.84.SPLIT.ALL, inventory_cells_all, SIMPLIFY = FALSE) %>% do.call(rbind, .)
   
+  
+  ## Check to see we have 19 variables + the species for the standard predictors, and 19 for all predictors
+  ## create two more template.raster files: 5km amnd 10km
+  ## Check data :: template, data table and species
+  message(round(nrow(TI.XY.84.1KM)/nrow(TI.XY.84)*100, 2), " % records retained at 1km resolution") 
+  TI.POINTS   = TI.XY.84.1KM[c("lon", "lat")]
 
+  
+  ## Check
+  dim(TI.POINTS);dim(TI.XY.84.1KM)
+  projection(TI.POINTS)
+  names(TI.POINTS)
+  
+  
   ## Also get the PET raster
   projection(PET);projection(world.grids.current)
-  
-  #########################################################################################################################
-  ## Check the projection and raster extents for worldclim vs aus data
-  # world.grids.current <- world.grids.current %>%
-  #   projectRaster(crs = CRS.WGS.84)
-  # saveRDS(world.grids.current, "./data/base/worldclim/aus/1km/bio/current/aus_grids_current.rds")
-  # projection(TI.POINTS);projection(world.grids.current)
-  # 
-  # 
-  # ## Save projected files
-  # saveRDS(world.grids.current, "./data/base/worldclim/aus/1km/bio/current/aus_grids_current.rds")
-  # world.grids.current = readRDS("./data/base/worldclim/aus/1km/bio/current/aus_grids_current.rds")
+
   
   
   #########################################################################################################################
   ## Now extract data
-  ## > 200k points are coming out as NA. What could be the reason? Outside the raster extent 
   projection(TI.POINTS);projection(world.grids.current);projection(PET)
   TI.RASTER <- raster::extract(world.grids.current, TI.POINTS) %>% 
-    cbind(TI.XY.SPP, .)
+    cbind(as.data.frame(TI.XY.84.1KM), .)
   
   
   #########################################################################################################################

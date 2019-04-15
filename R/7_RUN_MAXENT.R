@@ -15,20 +15,19 @@ message('Running maxent models for ', length(GBIF.spp), ' species in the set ', 
 
 # #########################################################################################################################
 # ## Load SDM table.
-# if(read_data == "TRUE") {
-#   
-#   ## This table will be all the records for all HIA species (~3.8k). These data will be re-processed, 1000 species at
-#   ## a time. Then they will be combined, and modelled 100 at a time. EG GBIF.spp[100].
-#   ## So "save_run" for Katana needs to be a table containing all the species
-#   ## SDM.SPAT.OCC.BG <- readRDS("H:/green_cities_sdm/data/ANALYSIS/SDM_SPAT_OCC_BG_HOLLOW_SPP.rds")
-#   SDM.SPAT.OCC.BG = readRDS(paste0(DATA_path, 'SDM_SPAT_OCC_BG_',  save_run, '.rds'))
-#   
-# } else {
-#   
-#   message(' skip file reading, not many species analysed')   ##
-#   SDM.SPAT.OCC.BG <- readRDS("H:/green_cities_sdm/data/ANALYSIS/SDM_SPAT_OCC_BG_HOLLOW_SPP.rds")
-#   
-# }
+if(read_data == "TRUE") {
+
+  ## This table will be all the records for all HIA species (~3.8k). These data will be re-processed, 1000 species at
+  ## a time. Then they will be combined, and modelled 100 at a time. EG GBIF.spp[100].
+  ## So "save_run" for Katana needs to be a table containing all the species
+  ## SDM.SPAT.OCC.BG <- readRDS("H:/green_cities_sdm/data/ANALYSIS/SDM_SPAT_OCC_BG_HOLLOW_SPP.rds")
+  SDM.SPAT.OCC.BG = readRDS(paste0(DATA_path, 'SDM_SPAT_OCC_BG_',  save_run, '.rds'))
+
+} else {
+
+  message(' skip file reading, not many species analysed')   ##
+
+}
 
 
 
@@ -53,7 +52,7 @@ projection(template.raster.1km);projection(SDM.SPAT.OCC.BG);projection(Koppen_19
 
 #########################################################################################################################
 ## Loop over all the species = GBIF.spp[1]
-lapply(GBIF.spp[100], function(species){ 
+lapply(GBIF.spp, function(species){ 
   
   ## Skip the species if the directory already exists, before the loop
   outdir <- maxent_dir
