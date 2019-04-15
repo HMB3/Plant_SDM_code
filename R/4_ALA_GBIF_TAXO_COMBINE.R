@@ -271,18 +271,38 @@ round(with(GBIF.ALA.MATCH, table(New.Taxonomic.status)/sum(table(New.Taxonomic.s
 
 #########################################################################################################################
 ## Create points: the 'over' function seems to need geographic coordinates for this data...
-COMBO.POINTS   = SpatialPointsDataFrame(coords      = GBIF.ALA.COMBO[c("lon", "lat")],
-                                        data        = GBIF.ALA.COMBO[c("lon", "lat")],
-                                        proj4string = CRS.WGS.84)
+GBIF.ALA.84   = SpatialPointsDataFrame(coords      = GBIF.ALA.COMBO[c("lon", "lat")],
+                                       data        = GBIF.ALA.COMBO,
+                                       proj4string = CRS.WGS.84)
 
-## Check
-dim(COMBO.POINTS)
-projection(COMBO.POINTS)
-names(COMBO.POINTS)
+
+## Now split using the data using the species column, and get the unique occurrence cells
+GBIF.ALA.84.SPLIT.ALL <- split(GBIF.ALA.84, GBIF.ALA.84$searchTaxon)
+occurrence_cells_all  <- lapply(GBIF.ALA.84.SPLIT.ALL, function(x) cellFromXY(template.raster.1km.84, x))
+length(occurrence_cells_all)   ## this is a list of dataframes, where the number of rows for each being the species table
 
 
 #########################################################################################################################
-## Ignore edaphic variables
+## Now get just one record within each 10*10km cell.
+GBIF.ALA.84.1KM <- mapply(function(x, cells) {
+  x[!duplicated(cells), ]
+}, GBIF.ALA.84.SPLIT.ALL, occurrence_cells_all, SIMPLIFY = FALSE) %>% do.call(rbind, .)
+
+
+## Check to see we have 19 variables + the species for the standard predictors, and 19 for all predictors
+## create two more template.raster files: 5km amnd 10km
+## Check data :: template, data table and species
+message(round(nrow(GBIF.ALA.84.1KM)/nrow(GBIF.ALA.84)*100, 2), " % records retained at 1km resolution")  
+
+
+
+#########################################################################################################################
+## Create points: the 'over' function seems to need geographic coordinates for this data...
+COMBO.POINTS   = GBIF.ALA.84.1KM[c("lon", "lat")]
+
+
+#########################################################################################################################
+## Bioclim variables
 
 
 # BIO1  = Annual Mean Temperature                                     ## 
@@ -311,11 +331,11 @@ names(COMBO.POINTS)
 ## This step is a bottle neck, can only the unique cells by used ........................................................
 message('Extracting raster values for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
 projection(COMBO.POINTS);projection(world.grids.current)
-dim(COMBO.POINTS);dim(GBIF.ALA.COMBO)
+dim(COMBO.POINTS);dim(GBIF.ALA.84.1KM)
 
 COMBO.RASTER <- raster::extract(world.grids.current, COMBO.POINTS) %>% 
   
-  cbind(GBIF.ALA.COMBO, .) %>% 
+  cbind(as.data.frame(GBIF.ALA.84.1KM), .) %>% 
   
   dplyr::rename(
     ## Temperature

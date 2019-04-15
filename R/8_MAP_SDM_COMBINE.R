@@ -64,31 +64,45 @@ head(gcms.50) ; head(gcms.70) ; head(gcms.30)
 
 
 #########################################################################################################################
-## Create 2030 maps
-tryCatch(
-  project_maxent_grids_mess(shp_path      = "./data/base/CONTEXTUAL/", ## Path for shapefile
-                            aus_shp       = "aus_states.rds",          ## Shapefile, e.g. Australian states
-                            world_shp     = "LAND_world.rds",          ## World shapefile          
-                            
-                            scen_list     = scen_2030,                 ## List of climate scenarios
-                            species_list  = map_spp,                   ## List of species folders with maxent models
-                            maxent_path   = bs_path,                   ## Output folder
-                            climate_path  = "./data/base/worldclim/aus/1km/bio", ## climate data
-                            
-                            grid_names    = grid.names,
-                            time_slice    = 30,                        ## Time period
-                            current_grids = aus.grids.current,         ## predictor grids
-                            create_mess   = "TRUE",
-                            nclust        = 1),
-  error = function(cond) {
+## Create 2030 maps :: can the try catch be looped over the top
+lapply(map_spp, function(species){ 
+  
+  ## Create a directoty to store the error message
+  dir_name = file.path(bs_path, gsub(' ', '_', species))
+  
+  ## Then loop over the species folders and climate scenarios 
+  tryCatch(
+    project_maxent_grids_mess(shp_path      = "./data/base/CONTEXTUAL/", ## Path for shapefile
+                              aus_shp       = "aus_states.rds",          ## Shapefile, e.g. Australian states
+                              world_shp     = "LAND_world.rds",          ## World shapefile          
+                              
+                              scen_list     = scen_2030[3],                 ## List of climate scenarios
+                              species_list  = map_spp,                   ## List of species folders with maxent models
+                              maxent_path   = bs_path,                   ## Output folder
+                              climate_path  = "./data/base/worldclim/aus/1km/bio", ## climate data
+                              
+                              grid_names    = grid.names,
+                              time_slice    = 30,                        ## Time period
+                              current_grids = aus.grids.current,         ## predictor grids
+                              create_mess   = "TRUE",
+                              nclust        = 1),
     
-    ## How to put the message into the file?
-    file.create(file.path(dir_name, "mapping_failed.txt"))
-    message(species, ' failed') 
-    cat(cond$message, file=file.path(dir_name, "mapping_failed.txt"))
-    #warning(species, ': ', cond$message)
-  }
-)
+    ## If the species fails, write a fail message to file. 
+    error = function(cond) {
+      
+      ## print the warning message to the screen as well
+      file.create(file.path(dir_name, "map_failed.txt"))
+      message(species, ' failed') 
+      cat(cond$message, file=file.path(dir_name, "map_failed.txt"))
+      warning(species, ': ', cond$message)
+    })
+  
+  
+  ## now add a file to the dir to denote that it has completed
+  file.create(file.path(dir_name, "map_completed.txt"))
+  
+})
+
 
 
 

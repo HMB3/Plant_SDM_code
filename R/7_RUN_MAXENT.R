@@ -53,7 +53,7 @@ projection(template.raster.1km);projection(SDM.SPAT.OCC.BG);projection(Koppen_19
 
 #########################################################################################################################
 ## Loop over all the species = GBIF.spp[1]
-lapply(GBIF.spp[3], function(species){ 
+lapply(GBIF.spp[100], function(species){ 
   
   ## Skip the species if the directory already exists, before the loop
   outdir <- maxent_dir
@@ -121,7 +121,7 @@ lapply(GBIF.spp[3], function(species){
         file.create(file.path(dir_name, "sdm_failed.txt"))
         message(species, ' failed') 
         cat(cond$message, file=file.path(dir_name, "sdm_failed.txt"))
-        #warning(species, ': ', cond$message)
+        warning(species, ': ', cond$message)
       })
     
   } else {
@@ -177,7 +177,7 @@ MAXENT.RESULTS <- maxent.tables %>%
     
     #############################################################
     ## load model
-    if (!grepl("BS", results_dir)) {
+    if (grepl("BS", results_dir)) {
       m = readRDS(sprintf('%s/%s/full/maxent_fitted.rds', results_dir, x))
       
     } else {
@@ -199,9 +199,11 @@ MAXENT.RESULTS <- maxent.tables %>%
     pimp      = m.vars[rev(order(m.vars[["permutation.importance"]])),][["permutation.importance"]][1]
     
     ## Get maxent results columns to be used for model checking
+    ## Including the omission rate here
     Training_AUC             = m@results["Training.AUC",]
     Number_background_points = m@results["X.Background.points",]
-    Logistic_threshold       = m@results["X10.percentile.training.presence.Logistic.threshold",] 
+    Logistic_threshold       = m@results["X10.percentile.training.presence.Logistic.threshold",]
+    Omission_rate            = m@results["X10.percentile.training.presence.training.omission",]
     
     ## Now rename the maxent columns that we will use in the results table
     d = cbind(searchTaxon              = x, 
@@ -214,7 +216,14 @@ MAXENT.RESULTS <- maxent.tables %>%
               Training_AUC,
               Number_background_points,  
               Logistic_threshold,
-              d)  
+              Omission_rate,
+              d)
+    
+    ## Just get the columns we need
+    d = select(d, searchTaxon, Maxent_records, Number_var, Var_pcont,
+               Per_cont, Var_pimp, Perm_imp, Training_AUC, Number_background_points,  
+               Logistic_threshold, Omission_rate)
+    
     dim(d)
     
     ## Remove path gunk, and species
@@ -236,72 +245,52 @@ percent.10.log = percent.10.log$Logistic_threshold
 
 
 #########################################################################################################################
-## Get the maxium TSS value using the omission data : use _training_ ommission data only
+## Create a list of the omission files
 omission.tables = list.files(results_dir, pattern = 'species_omission\\.csv$', full.names = TRUE, recursive = TRUE)
 
-max_tss <- sapply(omission.tables, function(file) {
+
+## Get the maxium TSS value using the omission data : use _training_ ommission data only
+Max_tss <- sapply(omission.tables, function(file) {
   
   ## For eachg species, read in the training data
   d <- read.csv(file)
   i <- which.min(d$Training.omission + d$Fractional.area)
   
-  c(max_tss = 1 - min(d$Training.omission + d$Fractional.area),
+  c(Max_tss = 1 - min(d$Training.omission + d$Fractional.area),
     thr     = d$Corresponding.logistic.value[i])
   
 })
 
 
-#########################################################################################################################
-## Then extract the omission rate for each logistic threshold :: False negative rate
-omission_rate <- mapply(function(file, threshold) {
-  
-  ## Read in species data
-  d <- read.csv(file)
-  d[findInterval(threshold, d$Training.omission),]$Training.omission
-  
-}, omission.tables, percent.10.log)
-
 
 #########################################################################################################################
 ## Add a species variable to the TSS results, so we can subset to just the species analysed
-max_tss  = as.data.frame(max_tss)
-setDT(max_tss, keep.rownames = TRUE)[]
-max_tss  = as.data.frame(max_tss)
-names(max_tss)[names(max_tss) == 'rn'] <- 'searchTaxon'
+Max_tss  = as.data.frame(Max_tss)
+setDT(Max_tss, keep.rownames = TRUE)[]
+Max_tss  = as.data.frame(Max_tss)
+names(Max_tss)[names(Max_tss) == 'rn'] <- 'searchTaxon'
 
-
-omission_rate  = as.data.frame(omission_rate)
-setDT(omission_rate, keep.rownames = TRUE)[]
-omission_rate  = as.data.frame(omission_rate)
-names(omission_rate)[names(omission_rate) == 'rn'] <- 'searchTaxon'
 
 
 ## Remove extra text
-max_tss$searchTaxon = gsub("//",         "", max_tss$searchTaxon)
-max_tss$searchTaxon = gsub(results_dir,   "", max_tss$searchTaxon)
-max_tss$searchTaxon = gsub("/full/species_omission.csv.max_tss", "", max_tss$searchTaxon)
-max_tss$searchTaxon = gsub("/",          "", max_tss$searchTaxon)
-head(max_tss)
-
-omission_rate$searchTaxon = gsub("//",         "", omission_rate$searchTaxon)
-omission_rate$searchTaxon = gsub(results_dir,   "", omission_rate$searchTaxon)
-omission_rate$searchTaxon = gsub("/full/species_omission.csv", "", omission_rate$searchTaxon)
-omission_rate$searchTaxon = gsub("/",          "", omission_rate$searchTaxon)
-head(omission_rate)
+Max_tss$searchTaxon = gsub("//",         "", Max_tss$searchTaxon)
+Max_tss$searchTaxon = gsub(results_dir,   "", Max_tss$searchTaxon)
+Max_tss$searchTaxon = gsub("/full/species_omission.csv.Max_tss", "", Max_tss$searchTaxon)
+Max_tss$searchTaxon = gsub("/",          "", Max_tss$searchTaxon)
+head(Max_tss)
 
 
 ## Add max TSS to the results table
-MAXENT.RESULTS = join(MAXENT.RESULTS, max_tss)
-MAXENT.RESULTS = join(MAXENT.RESULTS, omission_rate)
-summary(MAXENT.RESULTS$max_tss)
-summary(MAXENT.RESULTS$omission_rate)
+MAXENT.RESULTS = join(MAXENT.RESULTS, Max_tss)
+summary(MAXENT.RESULTS$Max_tss)
+summary(MAXENT.RESULTS$Omission_rate)
 
 
 ## This is a summary of maxent output for current conditions
 ## Also which species have AUC < 0.7?
 dim(MAXENT.RESULTS)
 head(MAXENT.RESULTS, 20)[1:5]
-dim(subset(MAXENT.RESULTS, Training.AUC > 0.7))  ## all models should be above 0.7
+
 
 
 
@@ -311,16 +300,16 @@ dim(subset(MAXENT.RESULTS, Training.AUC > 0.7))  ## all models should be above 0
 ## Plot AUC vs. TSS
 if (nrow(MAXENT.RESULTS) > 2) {
   
-  lm.auc = lm(MAXENT.RESULTS$max_tss ~ MAXENT.RESULTS$Training.AUC)
+  lm.auc = lm(MAXENT.RESULTS$Max_tss ~ MAXENT.RESULTS$Training.AUC)
   
   ## Save this to file
   png(paste0('./output/maxent/', 'Maxent_run_summary_', save_run, '.png'), 16, 12, units = 'in', res = 500)
   
   layout(matrix(c(1,1,2,3), 2, 2, byrow = TRUE))
   
-  plot(MAXENT.RESULTS$Training.AUC, MAXENT.RESULTS$max_tss, pch = 19, col  = "blue",
+  plot(MAXENT.RESULTS$Training.AUC, MAXENT.RESULTS$Max_tss, pch = 19, col  = "blue",
        xlab = "AUC", ylab = "TSS", 
-       abline(lm(MAXENT.RESULTS$max_tss ~ MAXENT.RESULTS$Training.AUC)), 
+       abline(lm(MAXENT.RESULTS$Max_tss ~ MAXENT.RESULTS$Training.AUC)), 
        main = save_run, cex = 3)
   
   legend("topleft", bty = "n", 
@@ -329,7 +318,7 @@ if (nrow(MAXENT.RESULTS) > 2) {
   hist(MAXENT.RESULTS$Training.AUC, breaks = 10, col = "blue",   border = FALSE,
        ylab = "Frequency",
        xlab = "Training AUC", main = "AUC", cex = 3)
-  hist(MAXENT.RESULTS$max_tss,      breaks = 10, col = "orange", border = FALSE,
+  hist(MAXENT.RESULTS$Max_tss,      breaks = 10, col = "orange", border = FALSE,
        ylab = "",
        xlab = "Maximum True Skill Statistic", main = "TSS", cex = 3)
   
@@ -372,18 +361,8 @@ length(SDM.RESULTS.DIR)
 SDM.RESULTS.DIR = unlist(SDM.RESULTS.DIR)
 
 
-#########################################################################################################################
-## Which columns will help with model selection
-MAXENT.RESULTS.SAVE = select(MAXENT.RESULTS, searchTaxon,   Maxent_records, Number_var, Var_pcont,
-                             Per_cont,       Var_pimp,      Perm_imp,       Iterations, Training_AUC, 
-                             max_tss,        omission_rate, Number_background_points,    Logistic_threshold)
-
-
-## Rename the species so the niche info can be joined on later
-MAXENT.RESULTS.SAVE$searchTaxon = gsub("_", " ", MAXENT.RESULTS.SAVE$searchTaxon)
-
-
-
+## Change the species column
+MAXENT.RESULTS$searchTaxon = gsub("_", " ", MAXENT.RESULTS$searchTaxon)
 
 
 #########################################################################################################################
@@ -391,8 +370,8 @@ MAXENT.RESULTS.SAVE$searchTaxon = gsub("_", " ", MAXENT.RESULTS.SAVE$searchTaxon
 if(save_data == "TRUE") {
   
   ## save .rds file for the next session
-  saveRDS(MAXENT.RESULTS.SAVE,   paste0(DATA_path, 'MAXENT_RESULTS_', save_run, '.rds'))
-  write.csv(MAXENT.RESULTS.SAVE, paste0(DATA_path, 'MAXENT_RESULTS_', save_run, '.csv'), row.names = FALSE)
+  saveRDS(MAXENT.RESULTS,   paste0(DATA_path, 'MAXENT_RESULTS_', save_run, '.rds'))
+  write.csv(MAXENT.RESULTS, paste0(DATA_path, 'MAXENT_RESULTS_', save_run, '.csv'), row.names = FALSE)
   
   
 } else {

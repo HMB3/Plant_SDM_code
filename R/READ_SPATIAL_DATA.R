@@ -431,10 +431,15 @@ soil = stack(file.path('./data/base/ACLEP', sprintf('PC%d.tif', 1:3)))
 # saveRDS(template.cells.1km,  'data/has_data_cells_1km.rds')
 
 
+## Create a template raster in WGS84 projection
+template.raster.1km.84 = projectRaster(template.raster.1km, crs = CRS.WGS.84)
+writeRaster(template.raster.1km,  'data/template_WGS84_1km.tif', datatype = 'INT2S', overwrite = TRUE)
+
 
 #########################################################################################################################
 ## Load template rasters
-template.raster.1km  = raster("./data/template_hasData.tif")
+template.raster.1km    = raster("./data/template_hasData.tif")
+template.raster.1km.84 = projectRaster(template.raster.1km, crs = CRS.WGS.84)
 # template.raster.2km  = raster("./data/template_has_data_2km.tif")
 # template.raster.3km  = raster("./data/template_has_data_3km.tif")
 # template.raster.5km  = raster("./data/template_has_data_5km.tif")
