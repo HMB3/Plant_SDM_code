@@ -12,12 +12,16 @@ if(calc_niche == "TRUE") {
   ## Create a spatial points object
   ## We want to summarise the niches at 1km, but including all the environmental variables (EG PET, etc,),
   ## Not just those used in the SDM table (i.e. worldclim so far)
-  NICHE.1KM <- CLEAN.INV
+  ## CLEAN.INV = CLEAN.INV[CLEAN.INV$searchTaxon %in% GBIF.spp, ]
+  NICHE.1KM    <- CLEAN.INV
+  NICHE.1KM.84 <- SpatialPointsDataFrame(coords      = NICHE.1KM[c("lon", "lat")],
+                                         data        = NICHE.1KM,
+                                         proj4string = CRS.WGS.84)
   
-
+  
   ## Use a projected, rather than geographic, coordinate system
   ## Not sure why, but this is needed for the spatial overlay step
-  NICHE.1KM.84 = spTransform(NICHE.1KM, CRS.WGS.84)
+  #NICHE.1KM.84 = spTransform(NICHE.1KM, CRS.WGS.84)
   AUS.WGS      = spTransform(AUS,       CRS.WGS.84)
   POA.WGS      = spTransform(POA_2016,  CRS.WGS.84)
   SUA.WGS      = spTransform(SUA_2016 , CRS.WGS.84)
@@ -172,8 +176,8 @@ if(calc_niche == "TRUE") {
   head(GLOB.NICHE$GLOBAL_RECORDS)
   head(GLOB.NICHE$SUA_COUNT)
   
-  names(COMBO.NICHE)
-  dim(COMBO.NICHE)
+  names(GLOB.NICHE)
+  dim(GLOB.NICHE)
   
   
   
@@ -247,7 +251,7 @@ if(calc_niche == "TRUE") {
   
   
   #########################################################################################################################
-  ## Calculate the mean temp and rain in each POA - doesn't need a loop
+  ## Calculate the mean temp and rain in each POA - don't do inside a loop
   POA_SF$Annual_mean_temp    <- exact_extract(POA_temp, POA_SF, weighted.mean, na.rm = TRUE)
   POA_SF$Annual_precip       <- exact_extract(POA_rain, POA_SF, weighted.mean, na.rm = TRUE)
   
@@ -263,7 +267,6 @@ if(calc_niche == "TRUE") {
   length(POA_SF$Annual_mean_temp_30);length(POA_SF$Annual_precip_30);
   length(POA_SF$Annual_mean_temp_50);length(POA_SF$Annual_precip_50);
   length(POA_SF$Annual_mean_temp_70);length(POA_SF$Annual_precip_70);
-  
   
   
   ## Create a dataframe of the temperature and rainfal
@@ -333,7 +336,7 @@ if(calc_niche == "TRUE") {
     png(sprintf("./data/ANALYSIS/SPECIES_RANGES/%s_%s", species, "1km_occ_points_source.png"),
         16, 10, units = 'in', res = 500)
     
-    plot(LAND.84, main = paste0("Global points for ", species),
+    plot(LAND.WGS, main = paste0("Global points for ", species),
          lwd = 0.01, asp = 1, col = 'grey', bg = 'sky blue')
     
     points(SP.DF,
@@ -350,6 +353,7 @@ if(calc_niche == "TRUE") {
         16, 10, units = 'in', res = 500)
     
     ## Use the 'SOURCE' column to create a histogram for each source.
+    ## Back to here..............................................................................
     max.temp = max(TMP.RANGE$Annual_mean_temp_q95)+1
     min.temp = min(TMP.RANGE$Annual_mean_temp_q05)-1
     
@@ -363,6 +367,7 @@ if(calc_niche == "TRUE") {
       coord_flip() +
       
       ## Add some median lines : overall, ALA and GBIF
+      ## This will only work if we plot the full range of temperatures on the x-axis
       geom_vline(aes(xintercept = POA.SYD$Annual_mean_temp),
                  col = 'blue', size = 1) +
       geom_vline(aes(xintercept = POA.SYD$Annual_mean_temp_50),
