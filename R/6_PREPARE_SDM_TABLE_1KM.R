@@ -42,7 +42,7 @@ if(read_data == "TRUE") {
 #########################################################################################################################
 ## Create a table with all the variables needed for SDM analysis
 ## This is the step where an ad/hoc version comes in 
-## CLEAN.INV = readRDS(paste0(DATA_path, 'CLEAN_INV_ALL_', '.rds'))
+## CLEAN.INV = readRDS(paste0(DATA_path, 'CLEAN_INV_ALL.rds'))
 ## CLEAN.INV = CLEAN.INV[CLEAN.INV$searchTaxon %in% GBIF.spp, ]
 dim(CLEAN.INV)
 length(unique(CLEAN.INV$searchTaxon))

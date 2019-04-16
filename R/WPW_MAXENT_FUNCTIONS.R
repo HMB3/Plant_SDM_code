@@ -12,41 +12,41 @@
 
 
 # ## Here are the argumetns needed to run the targetted background selection SDMs inside the function itself
-spp                     = GBIF.spp[1]
-# This is what is causing the proportional sampling to skip.........................................
-occ <- subset(SDM.SPAT.OCC.BG, searchTaxon == spp)
-occ <- occ[grep(paste(OCC_SOURCE, collapse = '|'), occ$SOURCE, ignore.case = TRUE),]
-message('Using occ records from ', unique(occ$SOURCE))
-
-
-## Now get the background points. These can come from any species, other than the modelled species.
-## However, they should be limited to the same SOURCE as the occ data
-bg <- subset(SDM.SPAT.OCC.BG, searchTaxon != spp)
-bg <- bg[grep(paste(unique(occ$SOURCE), collapse = '|'), bg$SOURCE, ignore.case = TRUE),]
-message('Using occ records from ', unique(bg$SOURCE))
-
-
-name                    = spp
-outdir                  = maxent_dir
-bsdir                   = bs_dir
-
-backwards_sel           = "TRUE"
-cor_thr                 = 0.8      ## The maximum allowable pairwise correlation between predictor variables
-pct_thr                 = 5        ## The minimum allowable percent variable contribution
-k_thr                   = 4
-
-
-template.raster         = template.raster.1km   ## 1km, 5km, 10km
-min_n                   = 20
-max_bg_size             = 70000
-Koppen                  = Koppen_1975_1km
-background_buffer_width = 200000
-shapefiles              = TRUE
-features                = 'lpq'
-replicates              = 5
-responsecurves          = TRUE
-shp_path                = "./data/base/CONTEXTUAL/"
-aus_shp                 = "aus_states.rds"# sdm.predictors          = bs.predictors
+# spp                     = GBIF.spp[1]
+# # This is what is causing the proportional sampling to skip.........................................
+# occ <- subset(SDM.SPAT.OCC.BG, searchTaxon == spp)
+# occ <- occ[grep(paste(OCC_SOURCE, collapse = '|'), occ$SOURCE, ignore.case = TRUE),]
+# message('Using occ records from ', unique(occ$SOURCE))
+# 
+# 
+# ## Now get the background points. These can come from any species, other than the modelled species.
+# ## However, they should be limited to the same SOURCE as the occ data
+# bg <- subset(SDM.SPAT.OCC.BG, searchTaxon != spp)
+# bg <- bg[grep(paste(unique(occ$SOURCE), collapse = '|'), bg$SOURCE, ignore.case = TRUE),]
+# message('Using occ records from ', unique(bg$SOURCE))
+# 
+# 
+# name                    = spp
+# outdir                  = maxent_dir
+# bsdir                   = bs_dir
+# 
+# backwards_sel           = "TRUE"
+# cor_thr                 = 0.8      ## The maximum allowable pairwise correlation between predictor variables
+# pct_thr                 = 5        ## The minimum allowable percent variable contribution
+# k_thr                   = 4
+# 
+# 
+# template.raster         = template.raster.1km   ## 1km, 5km, 10km
+# min_n                   = 20
+# max_bg_size             = 70000
+# Koppen                  = Koppen_1975_1km
+# background_buffer_width = 200000
+# shapefiles              = TRUE
+# features                = 'lpq'
+# replicates              = 5
+# responsecurves          = TRUE
+# shp_path                = "./data/base/CONTEXTUAL/"
+# aus_shp                 = "aus_states.rds"# sdm.predictors          = bs.predictors
 
 
 

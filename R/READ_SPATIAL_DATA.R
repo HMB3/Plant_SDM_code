@@ -84,13 +84,19 @@ URB.POP       = read.csv("./data/base/CONTEXTUAL/ABS_URBAN_CENTRE_POP.csv", stri
 ## Check how the Koppen zones were calculated
 Koppen_zones     = unique(readOGR('data/base/CONTEXTUAL/WC05_1975H_Koppen_Shapefile/WC05_1975H_Koppen_Kriticos_2012.shp')@data[, 1:2])
 Koppen_shp       = readOGR('data/base/CONTEXTUAL/WC05_1975H_Koppen_Shapefile/WC05_1975H_Koppen_Kriticos_2012.shp')
-Koppen_1975_1km  = raster('data/Koppen_1000m_Mollweide54009.tif')
-# Koppen_1975_2km  = raster('data/Koppen_2000m_Mollweide54009.tif')
-# Koppen_1975_3km  = raster('data/Koppen_3000m_Mollweide54009.tif')
-# Koppen_1975_5km  = raster('data/Koppen_5000m_Mollweide54009.tif')
-# Koppen_1975_10km = raster('data/Koppen_10000m_Mollweide54009.tif')
+Koppen_1975_1km  = raster('data/world_koppen/Koppen_1000m_Mollweide54009.tif')
+# Koppen_1975_2km  = raster('data/world_koppen/Koppen_2000m_Mollweide54009.tif')
+# Koppen_1975_3km  = raster('data/world_koppen/Koppen_3000m_Mollweide54009.tif')
+# Koppen_1975_5km  = raster('data/world_koppen/Koppen_5000m_Mollweide54009.tif')
+# Koppen_1975_10km = raster('data/world_koppen/Koppen_10000m_Mollweide54009.tif')
 
 
+
+
+
+#########################################################################################################################
+## READ IN SDM POINTS
+#########################################################################################################################
 
 
 #########################################################################################################################
@@ -110,6 +116,13 @@ background.points.df = as.data.frame(background.points)
 ## this is ok, except for some Australian species which have 
 ## Loads of inventory data, so it becomes hard to sample proportional to the source of the occurrence dataset
 round(with(background.points.df, table(SOURCE)/sum(table(SOURCE))), 3)
+
+
+#########################################################################################################################
+## Read in the spatial points for all HIA species 
+SDM.SPAT.OCC.BG.ALL = readRDS(paste0(DATA_path, 'SDM_SPAT_OCC_BG_ALL.rds'))
+length(unique(SDM.SPAT.OCC.BG.ALL$searchTaxon))
+length(intersect(unique(SDM.SPAT.OCC.BG.ALL$searchTaxon), WPW.spp)) 
 
 
 
@@ -431,15 +444,10 @@ soil = stack(file.path('./data/base/ACLEP', sprintf('PC%d.tif', 1:3)))
 # saveRDS(template.cells.1km,  'data/has_data_cells_1km.rds')
 
 
-## Create a template raster in WGS84 projection
-template.raster.1km.84 = projectRaster(template.raster.1km, crs = CRS.WGS.84)
-writeRaster(template.raster.1km,  'data/template_WGS84_1km.tif', datatype = 'INT2S', overwrite = TRUE)
-
-
 #########################################################################################################################
 ## Load template rasters
-template.raster.1km    = raster("./data/template_hasData.tif")
-template.raster.1km.84 = raster("./data/template_1km_WGS84.tif")
+template.raster.1km    = raster("./data/world_koppen/template_hasData.tif")
+template.raster.1km.84 = raster("./data/world_koppen/template_1km_WGS84.tif")
 # template.raster.2km  = raster("./data/template_has_data_2km.tif")
 # template.raster.3km  = raster("./data/template_has_data_3km.tif")
 # template.raster.5km  = raster("./data/template_has_data_5km.tif")

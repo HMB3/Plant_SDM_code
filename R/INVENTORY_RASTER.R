@@ -56,7 +56,7 @@ if(nrow(TI.XY.SPP) > 0) {
   
   ## Now split using the data using the species column, and get the unique occurrence cells
   ## Create a template raster in WGS84 projection
-  template.raster.1km.84 = raster("./data/template_1km_WGS84.tif")
+  template.raster.1km.84 = raster("./data/world_koppen/template_1km_WGS84.tif")
   
   TI.XY.84.SPLIT.ALL <- split(TI.XY.84, as.character(unique(TI.XY.84$searchTaxon)))
   inventory_cells_all  <- lapply(TI.XY.84.SPLIT.ALL, function(x) cellFromXY(template.raster.1km.84, x))

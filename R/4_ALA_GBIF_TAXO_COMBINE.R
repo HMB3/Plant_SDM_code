@@ -105,7 +105,7 @@ View(COMBO.LUT)
 if(save_data == "TRUE") {
   
   ## save .rds file for the next session
-  write.csv(COMBO.LUT, "./data/base/HIA_LIST/COMBO/SUA_TREES_GBIF_ALA_LUT.csv", row.names = FALSE)
+  write.csv(COMBO.LUT, "./data/base/HIA_LIST/SUA_TREES_GBIF_ALA_LUT.csv", row.names = FALSE)
   
 } else {
   
@@ -278,7 +278,8 @@ GBIF.ALA.84   = SpatialPointsDataFrame(coords      = GBIF.ALA.COMBO[c("lon", "la
 
 ## Now split using the data using the species column, and get the unique occurrence cells
 ## Create a template raster in WGS84 projection
-template.raster.1km.84 = raster("./data/template_1km_WGS84.tif")
+template.raster.1km.84 = raster("./data/world_koppen/template_1km_WGS84.tif")
+
 
 length(unique(GBIF.ALA.84$searchTaxon))
 GBIF.ALA.84.SPLIT.ALL <- split(GBIF.ALA.84, as.character(unique(GBIF.ALA.84$searchTaxon)))

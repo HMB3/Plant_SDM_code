@@ -206,6 +206,9 @@ lapply(map_spp, function(species){
 ## hs_future_not_novel - for each scenario
 
 
+## Also, add ncores to this function....................................................................................
+
+
 #########################################################################################################################
 ## Combine GCM predictions and calculate gain and loss for 2030
 ## Here we can add the mask of novel environments to SUA aggregation

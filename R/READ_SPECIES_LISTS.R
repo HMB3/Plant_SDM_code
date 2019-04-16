@@ -43,7 +43,7 @@ HIA.list            = read.csv("./data/base/HIA_LIST/HIA/GREEN_CITIES_DRAFT_LIST
 HIA.RAW             = read.csv("./data/base/HIA_LIST/HIA/HIA_ORIGINAL_RAW.csv",                  stringsAsFactors = FALSE)
 CLEAN.list          = read.csv("./data/base/HIA_LIST/HIA/HIA.CLEAN.csv",                         stringsAsFactors = FALSE)
 TREE.list           = read.csv("./data/base/HIA_LIST/global_tree_search_trees_1_2.csv",          stringsAsFactors = FALSE)
-APNI                = readRDS("./data/base/HIA_LIST/ALA/APNI_LIST.rds")
+# APNI                = readRDS("./data/base/HIA_LIST/ALA/APNI_LIST.rds")
 
 
 #########################################################################################################################
@@ -69,6 +69,13 @@ MXT.CHECK           = read.csv("./output/maxent/MAXNET_ORIGIN_RESULTS.csv",     
 #########################################################################################################################
 ## This is the list of 176 species analysed for the STOTEN publication
 native.good.models  = subset(MXT.CHECK, Origin == "Native" & Check.map <=2)$searchTaxon
+
+
+#########################################################################################################################
+## Here are some other lists they would like modelled
+## EG species to be planted in Campbelltown
+campbelltown = read.csv("./data/base/HIA_LIST/HIA/campbelltown_species.csv",        stringsAsFactors = FALSE)
+camp.spp     = trimws(campbelltown$Species)
 
 
 
@@ -284,7 +291,6 @@ message('Running TPL taxonomy for ', length(CLEAN.GBIF.SPP), ' species in the HI
 # TPL.NA                = HIA.TAXO[(HIA.TAXO$New.Taxonomic.status == ""), ]$Taxon
 # names(HIA.TAXO)
 # saveRDS(HIA.TAXO, paste0(ALA_path, 'HIA_TPL_TAXO.rds'))
-ALA_path = "./data/base/HIA_LIST/ALA/" 
 HIA.TAXO = readRDS(paste0(ALA_path, 'HIA_TPL_TAXO.rds'))
 TPL.NA   = HIA.TAXO[(HIA.TAXO$New.Taxonomic.status == ""), ]$Taxon
 
@@ -380,6 +386,7 @@ WPW.tree        = subset(GBIF.GROW.VALID, Plant_type == "Tree")$searchTaxon
 WPW.non.tree    = as.character(GBIF.GROW.VALID$searchTaxon[!GBIF.GROW.VALID$searchTaxon %in% WPW.tree ])
 TI.spp          = unique(TI.XY$searchTaxon)
 TI.HIA          = setdiff(TI.spp, WPW.spp)
+TI.HIA          = sort(TI.HIA)
 
 WPW.spp         = WPW.spp[lapply(WPW.spp,length)>0]
 WPW.NA          = unique(c(TPL.NA, GBIF.NA))          ## These taxa did not match either GBIF or ALA
@@ -401,12 +408,9 @@ inv.test        = as.character(head(TI.LUT$searchTaxon, 20))
 inv.test        = unique(c(inv.test, popular.test))
 
 
-
-
-
 #########################################################################################################################
 ## Now we need a list of all the trees, and non trees. Native info not as important.
-write.csv(GBIF.GROW.VALID, "./data/base/HIA_LIST/HIA/WPW_MODELLING_LIST_MARCH2019.csv", row.names = FALSE)
+#write.csv(GBIF.GROW.VALID, "./data/base/HIA_LIST/HIA/WPW_MODELLING_LIST_MARCH2019.csv", row.names = FALSE)
 
 
 #########################################################################################################################
@@ -426,7 +430,8 @@ round(with(MAXENT.RATING.LAT, table(CHECK_MAP)/sum(table(CHECK_MAP))*100), 1)
 
 # ## Create a list of all dataframes with the extension from this run
 # COMBO.NICHE.list  = list.files(DATA_path, pattern = 'COMBO_NICHE_CONTEXT_EVERGREEN',  full.names = TRUE, recursive = TRUE)
-SDM.TABLE.list = list.files(DATA_path, pattern = 'SDM_SPAT_OCC_BG_', full.names = TRUE, recursive = TRUE)
+# SDM.TABLE.list = list.files(DATA_path, pattern = 'SDM_SPAT_OCC_BG_', full.names = TRUE)
+# INV.TABLE.list = list.files(DATA_path, pattern = 'CLEAN_INV_', full.names = TRUE)
   
 
 # #########################################################################################################################
@@ -446,7 +451,7 @@ SDM.TABLE.list = list.files(DATA_path, pattern = 'SDM_SPAT_OCC_BG_', full.names 
 #   }) %>%
 # 
 #   ## finally, bind all the rows together
-#   bind_rows
+#   rbind()
 # 
 # 
 # ## Update this
@@ -460,25 +465,26 @@ SDM.TABLE.list = list.files(DATA_path, pattern = 'SDM_SPAT_OCC_BG_', full.names 
 # length(unique(COMBO.NICHE.ALL$searchTaxon))
 # 
 # 
-# #########################################################################################################################
-# ## Now combine the raster tables for each species into one table
-# SDM.TABLE.ALL <- SDM.TABLE.list %>%
+#########################################################################################################################
+## Now combine the raster tables for each species into one table
+# SDM.TABLE.ALL <- INV.TABLE.list %>%
 # 
-#   ## pipe the list into lapply
+#   ## Pipe the list into lapply
 #   lapply(function(x) {
 # 
-#     ## create the character string
+#     ## Create the character string
 #     f <- paste0(x)
 # 
-#     ## load each .csv file
+#     ## Load each file
+#     message('Reading file for ', x)
 #     d <- readRDS(f)
-#     d
+#     message(nrow(d), ' Records for ', x)
+#     return(d)
 # 
 #   }) %>%
 # 
-#   ## finally, bind all the rows together
-#   bind_rows
-# 
+#   ## Finally, bind all the rows together
+#   bind_rows()
 # 
 # ## This is a summary of maxent output for current conditions
 # dim(SDM.TABLE.ALL)
@@ -487,17 +493,14 @@ SDM.TABLE.list = list.files(DATA_path, pattern = 'SDM_SPAT_OCC_BG_', full.names 
 # 
 # ##
 # length(unique(SDM.TABLE.ALL$searchTaxon))
-# 
-# 
-# 
+
+
 # #########################################################################################################################
 # ## Save the niche and raster data
-# saveRDS(COMBO.NICHE.ALL,  paste0(DATA_path, 'COMBO_NICHE_ALL_',  save_run, '.rds'))
-# saveRDS(SDM.TABLE.ALL, paste0(DATA_path, 'SDM_SPAT_OCC_BG_', save_run, '.rds'))
+# saveRDS(COMBO.NICHE.ALL,  paste0(DATA_path, 'COMBO_NICHE_ALL.rds'))
+# saveRDS(SDM.TABLE.ALL, paste0(DATA_path,    'CLEAN_INV_ALL.rds'))
 
 
-#########################################################################################################################
-#########################################################################################################################
 #########################################################################################################################
 ## Once the modelling is finished, these are the columns we can use to rate each species.
 ## The contextual data should come from the CLEAN taxa list above
@@ -524,6 +527,7 @@ results.columns = c("searchTaxon",       ## From the ALA/ GBIF download code
                     "Number_background_points", ## No. background points
                     "Logistic_threshold"        ## Maxent threshold)
 )
+
 
 
 
