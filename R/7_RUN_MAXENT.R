@@ -299,22 +299,22 @@ head(MAXENT.RESULTS, 20)[1:5]
 ## Plot AUC vs. TSS
 if (nrow(MAXENT.RESULTS) > 2) {
   
-  lm.auc = lm(MAXENT.RESULTS$Max_tss ~ MAXENT.RESULTS$Training.AUC)
+  lm.auc = lm(MAXENT.RESULTS$Max_tss ~ MAXENT.RESULTS$Training_AUC)
   
   ## Save this to file
   png(paste0('./output/maxent/', 'Maxent_run_summary_', save_run, '.png'), 16, 12, units = 'in', res = 500)
   
   layout(matrix(c(1,1,2,3), 2, 2, byrow = TRUE))
   
-  plot(MAXENT.RESULTS$Training.AUC, MAXENT.RESULTS$Max_tss, pch = 19, col  = "blue",
+  plot(MAXENT.RESULTS$Training_AUC, MAXENT.RESULTS$Max_tss, pch = 19, col  = "blue",
        xlab = "AUC", ylab = "TSS", 
-       abline(lm(MAXENT.RESULTS$Max_tss ~ MAXENT.RESULTS$Training.AUC)), 
+       abline(lm(MAXENT.RESULTS$Max_tss ~ MAXENT.RESULTS$Training_AUC)), 
        main = save_run, cex = 3)
   
   legend("topleft", bty = "n", 
          legend = paste("R2 is", format(summary(lm.auc)$adj.r.squared, digits = 4)))
   
-  hist(MAXENT.RESULTS$Training.AUC, breaks = 10, col = "blue",   border = FALSE,
+  hist(MAXENT.RESULTS$Training_AUC, breaks = 10, col = "blue",   border = FALSE,
        ylab = "Frequency",
        xlab = "Training AUC", main = "AUC", cex = 3)
   hist(MAXENT.RESULTS$Max_tss,      breaks = 10, col = "orange", border = FALSE,

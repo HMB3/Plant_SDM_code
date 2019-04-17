@@ -431,7 +431,8 @@ round(with(MAXENT.RATING.LAT, table(CHECK_MAP)/sum(table(CHECK_MAP))*100), 1)
 # ## Create a list of all dataframes with the extension from this run
 # COMBO.NICHE.list  = list.files(DATA_path, pattern = 'COMBO_NICHE_CONTEXT_EVERGREEN',  full.names = TRUE, recursive = TRUE)
 # SDM.TABLE.list = list.files(DATA_path, pattern = 'SDM_SPAT_OCC_BG_', full.names = TRUE)
-# INV.TABLE.list = list.files(DATA_path, pattern = 'CLEAN_INV_', full.names = TRUE)
+# INV.TABLE.list = list.files(DATA_path, pattern = 'CLEAN_INV_TREE_INVENTORY', full.names = TRUE)
+# INV.TABLE.list = list.files(DATA_path, pattern = 'CLEAN_INV_TREE_INVENTORY', full.names = TRUE)
   
 
 # #########################################################################################################################
@@ -493,12 +494,12 @@ round(with(MAXENT.RATING.LAT, table(CHECK_MAP)/sum(table(CHECK_MAP))*100), 1)
 # 
 # ##
 # length(unique(SDM.TABLE.ALL$searchTaxon))
-
-
-# #########################################################################################################################
-# ## Save the niche and raster data
-# saveRDS(COMBO.NICHE.ALL,  paste0(DATA_path, 'COMBO_NICHE_ALL.rds'))
-# saveRDS(SDM.TABLE.ALL, paste0(DATA_path,    'CLEAN_INV_ALL.rds'))
+# 
+# 
+# # #########################################################################################################################
+# # ## Save the niche and raster data
+# # saveRDS(COMBO.NICHE.ALL,  paste0(DATA_path, 'COMBO_NICHE_ALL.rds'))
+# saveRDS(SDM.TABLE.ALL, paste0(DATA_path,    'CLEAN_INV_TREE_INVENTORY.rds'))
 
 
 #########################################################################################################################
