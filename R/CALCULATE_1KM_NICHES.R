@@ -296,7 +296,7 @@ if(calc_niche == "TRUE") {
   
   ##############################################################################################
   ## Plot histograms of temperature and rainfall
-  ## species = spp.geo[2]
+  ## species = spp.geo[5]
   for (species in spp.geo) {
     
     ## Subset the spatial dataframe into records for each species
@@ -319,7 +319,7 @@ if(calc_niche == "TRUE") {
     if(nrow(TMP.AUS) > 0){
       TMP.AUS$RANGE = "AUS"
     } else {
-      message("No Australian data for ", species)
+      message("No Australian data for ", species, " don't plot the range")
     }
     
     TMP.RANGE <- rbind(TMP.GLO, TMP.AUS)
@@ -354,16 +354,16 @@ if(calc_niche == "TRUE") {
     
     ## Use the 'SOURCE' column to create a histogram for each source.
     ## Back to here..............................................................................
-    max.temp = max(TMP.RANGE$Annual_mean_temp_q95)+1
-    min.temp = min(TMP.RANGE$Annual_mean_temp_q05)-1
+    max.temp = max(TMP.RANGE$Annual_mean_temp_q95)+5
+    min.temp = min(TMP.RANGE$Annual_mean_temp_q05)-5
     
     temp.bar = 
       ggplot(TMP.RANGE, aes(y = Temperature_range, x = RANGE, fill = RANGE)) +
       
-      # scale_x_discrete(limits = c(min(TMP.RANGE$Annual_mean_temp_q05), 
-      #                             max(TMP.RANGE$Annual_mean_temp_q95))) +
+      scale_y_discrete(limits = c(min.temp,
+                                  max.temp)) +
       
-      geom_bar(stat = "identity", position = "identity") +
+      geom_bar(stat = "identity", position = "identity", width = 0.1) +
       coord_flip() +
       
       ## Add some median lines : overall, ALA and GBIF

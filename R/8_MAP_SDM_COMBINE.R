@@ -73,7 +73,7 @@ lapply(map_spp, function(species){
                               aus_shp       = "aus_states.rds",          ## Shapefile, e.g. Australian states
                               world_shp     = "LAND_world.rds",          ## World shapefile          
                               
-                              scen_list     = scen_2030,                 ## List of climate scenarios
+                              scen_list     = scen_2030[3],                 ## List of climate scenarios
                               species_list  = map_spp,                   ## List of species folders with maxent models
                               maxent_path   = bs_path,                   ## Output folder
                               climate_path  = "./data/base/worldclim/aus/1km/bio", ## climate data
@@ -212,41 +212,41 @@ lapply(map_spp, function(species){
 #########################################################################################################################
 ## Combine GCM predictions and calculate gain and loss for 2030
 ## Here we can add the mask of novel environments to SUA aggregation
-lapply(map_spp, function(species){ 
-  
-  ## Create a directoty to store the error message
-  dir_name = file.path(bs_path, gsub(' ', '_', species))
-  
-  ## Then loop over the species folders and climate scenarios 
-  tryCatch(mapply(SUA_cell_count,                                  ## Function aggreagating GCM predictions by spatial unit
-                  unit_path     = "./data/base/CONTEXTUAL/SUA/",   ## Data path for the spatial unit of analysis 
-                  unit_shp      = "SUA_2016_AUST.rds",             ## Spatial unit of analysis - E.G. SUAs
-                  unit_vec      = "SUA_2016_VEC.rds",              ## Vector of rasterized unit cells
-                  world_shp     = "LAND_world.rds",                ## Polygon for AUS maps           
-                  aus_shp       = "aus_states.rds",                ## Polygon for World maps  
-                  
-                  DIR_list      = SDM.RESULTS.DIR,                 ## List of directories with rasters
-                  species_list  = map_spp,                         ## List of species' directories
-                  maxent_path   = bs_path,                         ## Directory of maxent results
-                  thresholds    = percent.10.log,                  ## List of maxent thresholds
-                  time_slice    = 30,                              ## Time period, eg 2030
-                  write_rasters = TRUE),
-           
-           ## If the species fails, write a fail message to file. 
-           error = function(cond) {
-             
-             ## print the warning message to the screen as well
-             file.create(file.path(dir_name, "combined_2030_maps_failed.txt"))
-             message(species, ' failed') 
-             cat(cond$message, file = file.path(dir_name, "combined_2030_maps_failed.txt"))
-             warning(species, ': ', cond$message)
-           })
-  
-  
-  ## now add a file to the dir to denote that it has completed
-  file.create(file.path(dir_name, "combined_2030_maps_completed.txt"))
-  
-})
+# lapply(map_spp, function(species){ 
+#   
+#   ## Create a directoty to store the error message
+#   dir_name = file.path(bs_path, gsub(' ', '_', species))
+#   
+#   ## Then loop over the species folders and climate scenarios 
+#   tryCatch(mapply(SUA_cell_count,                                  ## Function aggreagating GCM predictions by spatial unit
+#                   unit_path     = "./data/base/CONTEXTUAL/SUA/",   ## Data path for the spatial unit of analysis 
+#                   unit_shp      = "SUA_2016_AUST.rds",             ## Spatial unit of analysis - E.G. SUAs
+#                   unit_vec      = "SUA_2016_VEC.rds",              ## Vector of rasterized unit cells
+#                   world_shp     = "LAND_world.rds",                ## Polygon for AUS maps           
+#                   aus_shp       = "aus_states.rds",                ## Polygon for World maps  
+#                   
+#                   DIR_list      = SDM.RESULTS.DIR,                 ## List of directories with rasters
+#                   species_list  = map_spp,                         ## List of species' directories
+#                   maxent_path   = bs_path,                         ## Directory of maxent results
+#                   thresholds    = percent.10.log,                  ## List of maxent thresholds
+#                   time_slice    = 30,                              ## Time period, eg 2030
+#                   write_rasters = TRUE),
+#            
+#            ## If the species fails, write a fail message to file. 
+#            error = function(cond) {
+#              
+#              ## print the warning message to the screen as well
+#              file.create(file.path(dir_name, "combined_2030_maps_failed.txt"))
+#              message(species, ' failed') 
+#              cat(cond$message, file = file.path(dir_name, "combined_2030_maps_failed.txt"))
+#              warning(species, ': ', cond$message)
+#            })
+#   
+#   
+#   ## now add a file to the dir to denote that it has completed
+#   file.create(file.path(dir_name, "combined_2030_maps_completed.txt"))
+#   
+# })
 
 
 
