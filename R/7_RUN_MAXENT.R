@@ -13,8 +13,8 @@
 message('Running maxent models for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
 
 
-# #########################################################################################################################
-# ## Load SDM table.
+##########################################################################################################################
+## Load SDM table.
 if(read_data == "TRUE") {
 
   ## This table will be all the records for all HIA species (~3.8k). These data will be re-processed, 1000 species at

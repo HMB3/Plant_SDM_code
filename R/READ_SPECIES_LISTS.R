@@ -138,8 +138,8 @@ length(unique(TI.XY$searchTaxon))
 ## What are the most commonly planted urban trees in Australia, or the world?
 ## Create a lookup table for the species
 TI.LUT = as.data.frame(table(TI.XY$searchTaxon))
-names(TI.LUT) = c("searchTaxon", "FREQUENCY")
-TI.LUT = TI.LUT[with(TI.LUT, rev(order(FREQUENCY))), ] 
+names(TI.LUT) = c("searchTaxon", "Plantings")
+TI.LUT = TI.LUT[with(TI.LUT, rev(order(Plantings))), ] 
 head(TI.LUT);dim(TI.LUT)
 
 
@@ -229,7 +229,7 @@ write.csv(CLEAN.GROW, "./data/base/HIA_LIST/HIA/EVERGREEN_LIST_MARCH2019.csv", r
 
 ## This species list for the Stoten publication is simply the number of native species with > 50 plantings and 1 grower, 
 ## with good modelsfrom the previous analyis :: 'native.good.models'
-length(intersect(subset(TI.LUT, FREQUENCY > 50)$searchTaxon, CLEAN.GROW$Evergreen_taxon))
+length(intersect(subset(TI.LUT, Plantings > 50)$searchTaxon, CLEAN.GROW$Evergreen_taxon))
 
 
 #########################################################################################################################
@@ -420,88 +420,6 @@ table(MAXENT.RATING.LAT$CHECK_MAP)
 round(with(MAXENT.RATING.LAT, table(CHECK_MAP)/sum(table(CHECK_MAP))*100), 1)
 
 
-
-
-
-#########################################################################################################################
-## 6). COMBINE THE NICHE RUNS TOGETHER
-#########################################################################################################################
-
-
-# ## Create a list of all dataframes with the extension from this run
-# COMBO.NICHE.list  = list.files(DATA_path, pattern = 'COMBO_NICHE_CONTEXT_EVERGREEN',  full.names = TRUE, recursive = TRUE)
-# SDM.TABLE.list = list.files(DATA_path, pattern = 'SDM_SPAT_OCC_BG_', full.names = TRUE)
-# INV.TABLE.list = list.files(DATA_path, pattern = 'CLEAN_INV_TREE_INVENTORY', full.names = TRUE)
-# INV.TABLE.list = list.files(DATA_path, pattern = 'CLEAN_INV_TREE_INVENTORY', full.names = TRUE)
-  
-
-# #########################################################################################################################
-# ## Now combine the niche tables for each species into one table
-# COMBO.NICHE.ALL <- COMBO.NICHE.list[1:8] %>%
-# 
-#   ## pipe the list into lapply
-#   lapply(function(x) {
-# 
-#     ## create the character string
-#     f <- paste0(x)
-# 
-#     ## load each .csv file
-#     d <- readRDS(f)
-#     d
-# 
-#   }) %>%
-# 
-#   ## finally, bind all the rows together
-#   rbind()
-# 
-# 
-# ## Update this
-# str(COMBO.NICHE.ALL)
-# dim(COMBO.NICHE.ALL)
-# 
-# 
-# ## Make sure the Species are unique
-# COMBO.NICHE.ALL = COMBO.NICHE.ALL[!duplicated(COMBO.NICHE.ALL[,c('searchTaxon')]),]
-# dim(COMBO.NICHE.ALL)
-# length(unique(COMBO.NICHE.ALL$searchTaxon))
-# 
-# 
-#########################################################################################################################
-## Now combine the raster tables for each species into one table
-# SDM.TABLE.ALL <- INV.TABLE.list %>%
-# 
-#   ## Pipe the list into lapply
-#   lapply(function(x) {
-# 
-#     ## Create the character string
-#     f <- paste0(x)
-# 
-#     ## Load each file
-#     message('Reading file for ', x)
-#     d <- readRDS(f)
-#     message(nrow(d), ' Records for ', x)
-#     return(d)
-# 
-#   }) %>%
-# 
-#   ## Finally, bind all the rows together
-#   bind_rows()
-# 
-# ## This is a summary of maxent output for current conditions
-# dim(SDM.TABLE.ALL)
-# names(SDM.TABLE.ALL)[1:10]
-# 
-# 
-# ##
-# length(unique(SDM.TABLE.ALL$searchTaxon))
-# 
-# 
-# # #########################################################################################################################
-# # ## Save the niche and raster data
-# # saveRDS(COMBO.NICHE.ALL,  paste0(DATA_path, 'COMBO_NICHE_ALL.rds'))
-# saveRDS(SDM.TABLE.ALL, paste0(DATA_path,    'CLEAN_INV_TREE_INVENTORY.rds'))
-
-
 #########################################################################################################################
 ## Once the modelling is finished, these are the columns we can use to rate each species.
 ## The contextual data should come from the CLEAN taxa list above
@@ -512,10 +430,10 @@ results.columns = c("searchTaxon",       ## From the ALA/ GBIF download code
                     "Number_states",     ## From Anthony Manea's spreadsheet.....
                     
                     "Plantings",         ## No. urban plantings :: from urban tree inventory
-                    "GLOBAL_RECORDS",    ## No. global records  :: from the R workflow
-                    "AUS_RECORDS",       ## No. AUS records     :: from the R workflow
                     "Maxent_records",    ## No. records used in the SDM
-                    "SUA_COUNT",         ## No. SUAs each species occurs in :: From the R workflow
+                    "Aus_records",       ## No. AUS records     :: from the R workflow
+                    "SUA_count",         ## No. SUAs each species occurs in :: From the R workflow
+                    "POA_count",         ## No. POAs each species occurs in :: From the R workflow
                     
                     "Number_var",        ## No. maxent variables :: from Maxent code
                     "Var_pcont",         ## Maxent Variable with highest permutation importance    
@@ -524,7 +442,7 @@ results.columns = c("searchTaxon",       ## From the ALA/ GBIF download code
                     "Perm_imp",          ## The permutaiton importance of that variable 
                     "Iterations",               ## No. iterations                                                                    
                     "Training_AUC",             ## training AUC
-                    "max_tss",                  ## Maximium True skill statistic
+                    "Max_tss",                  ## Maximium True skill statistic
                     "Number_background_points", ## No. background points
                     "Logistic_threshold"        ## Maxent threshold)
 )

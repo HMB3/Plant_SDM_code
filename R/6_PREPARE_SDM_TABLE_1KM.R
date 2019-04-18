@@ -21,7 +21,7 @@ if(read_data == "TRUE") {
   
   ## read in RDS files from previous step
   CLEAN.INV = readRDS(paste0(DATA_path, 'CLEAN_INV_', save_run, '.rds'))
-  length(intersect(GBIF.spp, unique(CLEAN.INV$searchTaxon)))
+  message('Species overlap ', length(intersect(GBIF.spp, unique(CLEAN.INV$searchTaxon))))
   rasterTmpFile()
   
 } else {
