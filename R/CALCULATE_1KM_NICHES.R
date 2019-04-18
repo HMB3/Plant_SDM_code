@@ -100,7 +100,7 @@ if(calc_niche == "TRUE") {
   
   
   #########################################################################################################################
-  ## Create niche summaries for each environmental condition like this...
+  ## Create niche summaries for each environmental condition like this...commit
   ## Here's what the function will produce :
   NICHE.AUS.DF = NICHE.AUS %>% 
     as.data.frame() %>% 
