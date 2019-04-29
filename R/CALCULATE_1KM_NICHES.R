@@ -45,7 +45,8 @@ if(calc_niche == "TRUE") {
   
   
   ## Create global niche and Australian niche.
-  ## So we need a subset for Australia 
+  ## So we need a subset for Australia
+  ## The ,] acts like a clip in ArcMap 
   NICHE.AUS <-  NICHE.1KM.84[AUS.WGS, ] 
   
   
@@ -65,6 +66,7 @@ if(calc_niche == "TRUE") {
   
   
   ## Bind the SUA and POA data to the occurence data
+  ## Can this be done using 
   COMBO.SUA.POA = cbind.data.frame(NICHE.1KM.84, SUA.JOIN, POA.JOIN) 
   
   
@@ -75,6 +77,8 @@ if(calc_niche == "TRUE") {
   SUA.AGG   = as.data.frame(SUA.AGG)
   POA.AGG   = as.data.frame(POA.AGG)
   
+  
+  ## Create tables
   SUA.AGG <- setDT(SUA.AGG, keep.rownames = TRUE)[]
   POA.AGG <- setDT(POA.AGG, keep.rownames = TRUE)[]
   names(SUA.AGG) = c("searchTaxon", "SUA_count")
@@ -96,7 +100,8 @@ if(calc_niche == "TRUE") {
   
   #########################################################################################################################
   ## Now summarise the niches. But, figure out a cleaner way of doing this
-  message('Estimating global niches for ', length(GBIF.spp), ' species across ', length(env.variables), ' climate variables')
+  message('Estimating global niches for ', length(unique(CLEAN.INV$searchTaxon)), ' species across ', 
+          length(env.variables), ' climate variables')
   
   
   #########################################################################################################################
@@ -110,9 +115,12 @@ if(calc_niche == "TRUE") {
   NICHE.GLO.DF = NICHE.1KM.84 %>% 
     as.data.frame() %>% 
     dplyr::select(., searchTaxon, one_of(env.variables))
-
+  
   
   ## new_DF <- NICHE.AUS.DF[rowSums(is.na(NICHE.AUS.DF)) > 0,]
+  NICHE.AUS.DF = completeFun(NICHE.AUS.DF, "PET")
+  NICHE.GLO.DF = completeFun(NICHE.GLO.DF, "PET")
+  
   
   head(niche_estimate (DF = NICHE.AUS.DF, colname = "Annual_mean_temp"))  ## Including the q05 and q95
   head(niche_estimate (DF = NICHE.GLO.DF, colname = "Annual_mean_temp"))  ## Including the q05 and q95
@@ -206,9 +214,10 @@ if(calc_niche == "TRUE") {
   
   
   ## Check the record and POA counts
-  head(GLOB.NICHE$Aus_records, 20)
-  head(GLOB.NICHE$SUA_COUNT, 20)
-  head(GLOB.NICHE$POA_COUNT, 20)
+  head(GLOB.NICHE$Aus_records,    20)
+  head(GLOB.NICHE$Global_records, 20)
+  head(GLOB.NICHE$SUA_count, 20)
+  head(GLOB.NICHE$POA_count, 20)
   
   names(GLOB.NICHE)
   dim(GLOB.NICHE)
@@ -319,11 +328,6 @@ if(calc_niche == "TRUE") {
   POA.DAR = POA_climate[POA_climate$POA_CODE16 %in% 0800 , ] 
   POA.HOB = POA_climate[POA_climate$POA_CODE16 %in% 7000 , ] 
   POA.CAN = POA_climate[POA_climate$POA_CODE16 %in% 2601 , ] 
-  
-  
-  
-  
-  
   
   
   
@@ -525,6 +529,8 @@ if(calc_niche == "TRUE") {
   
   
   
+  
+  
   #########################################################################################################################
   ## 8). JOIN NICHE DATE TO HORTICULTURAL CONTEXTUAL DATA
   #########################################################################################################################
@@ -535,7 +541,7 @@ if(calc_niche == "TRUE") {
   
   #########################################################################################################################
   ## Now join the horticultural contextual data onto one or both tables ()
-  message('Joining contextual data for raster and niche files', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
+  message('Joining contextual data for raster and niche files ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
   COMBO.RASTER.CONTEXT = CLEAN.INV
   names(COMBO.RASTER.CONTEXT)
   
@@ -544,12 +550,14 @@ if(calc_niche == "TRUE") {
   ## Now join the hort context data and the tree inventory plantings to the niche
   COMBO.NICHE.CONTEXT = join(CLEAN.GROW, GLOB.NICHE,           type = "right") 
   COMBO.NICHE.CONTEXT = join(TI.LUT,     COMBO.NICHE.CONTEXT,  type = "right")
+  COMBO.NICHE.CONTEXT = COMBO.NICHE.CONTEXT[c(1, 3:14, 2, 15:ncol(COMBO.NICHE.CONTEXT))]
   
   
   ## Check the columns are still there
-  head(COMBO.NICHE.CONTEXT$Aus_records, 20)
-  head(COMBO.NICHE.CONTEXT$Plantings, 20)
-  head(COMBO.NICHE.CONTEXT$SUA_COUNT, 20)
+  head(COMBO.NICHE.CONTEXT$Aus_records,    20)
+  head(COMBO.NICHE.CONTEXT$Global_records, 20)
+  head(COMBO.NICHE.CONTEXT$Plantings,      20)
+  head(COMBO.NICHE.CONTEXT$SUA_count,      20)
   
   
   #########################################################################################################################
@@ -558,30 +566,32 @@ if(calc_niche == "TRUE") {
   #windows();
   # plot(COMBO.NICHE.CONTEXT$Aus_records, COMBO.NICHE.CONTEXT$Global_records)
   # plot(COMBO.NICHE.CONTEXT$Aus_records, COMBO.NICHE.CONTEXT$Plantings)
-  # 
-  # 
-  # lm.glob  = lm(COMBO.NICHE.CONTEXT$Aus_records ~ COMBO.NICHE.CONTEXT$Global_records)
-  # lm.plant = lm(COMBO.NICHE.CONTEXT$Aus_records ~ COMBO.NICHE.CONTEXT$Plantings)
-  # 
-  # layout(matrix(c(1,1,2,3), 2, 1, byrow = TRUE))
-  # 
-  # plot(COMBO.NICHE.CONTEXT$Global_records, COMBO.NICHE.CONTEXT$Aus_records, 
-  #      pch = 19, col  = "blue",
-  #      xlab = "Global records", ylab = "Australian records", 
-  #      abline(lm.glob), 
-  #      main = save_run, cex = 2)
-  # 
-  # legend("topleft", bty = "n", 
-  #        legend = paste("R2 is", format(summary(lm.glob)$adj.r.squared, digits = 4)))
-  # 
-  # plot(COMBO.NICHE.CONTEXT$Aus_records, COMBO.NICHE.CONTEXT$Plantings, 
-  #      pch = 19, col  = "blue",
-  #      xlab = "Aus records", ylab = "Plantings", 
-  #      abline(lm.plant), 
-  #      main = save_run, cex = 2)
-  # 
-  # legend("topleft", bty = "n", 
-  #        legend = paste("R2 is", format(summary(lm.plant)$adj.r.squared, digits = 4)))
+
+
+  lm.glob  = lm(COMBO.NICHE.CONTEXT$Aus_records ~ COMBO.NICHE.CONTEXT$Global_records)
+  lm.plant = lm(COMBO.NICHE.CONTEXT$Aus_records ~ COMBO.NICHE.CONTEXT$Plantings)
+
+  layout(matrix(c(1,1,2,3), 2, 1, byrow = TRUE))
+
+  plot(COMBO.NICHE.CONTEXT$Global_records, COMBO.NICHE.CONTEXT$Aus_records,
+       pch = 19, col  = "blue",
+       xlab = "Global records", ylab = "Australian records",
+       abline(lm.glob),
+       main = save_run, cex = 2)
+
+  legend("topleft", bty = "n",
+         legend = paste("R2 is", format(summary(lm.glob)$adj.r.squared, digits = 4)))
+
+  plot(COMBO.NICHE.CONTEXT$Plantings, COMBO.NICHE.CONTEXT$Aus_records,
+       pch = 19, col  = "blue",
+       xlab = "Plantings", 
+       ylab = "Australian records", 
+       abline(lm.plant),
+       main = save_run, cex = 2)
+
+  legend("topright", bty = "n",
+         legend = paste("R2 is", format(summary(lm.plant)$adj.r.squared, digits = 4)))
+  
   
   #########################################################################################################################
   ## Now combine the SDM output with the niche context data 
@@ -591,7 +601,7 @@ if(calc_niche == "TRUE") {
   ## Set Total.growers NA to blank, then sort by no. of growers
   COMBO.NICHE.CONTEXT$Total_growers[is.na(COMBO.NICHE.CONTEXT$Total_growers)] <- 0
   COMBO.NICHE.CONTEXT = COMBO.NICHE.CONTEXT[with(COMBO.NICHE.CONTEXT, rev(order(Total_growers))), ]
-
+  
   
   ## Print the dataframe dimensions to screen
   dim(COMBO.RASTER.CONTEXT)

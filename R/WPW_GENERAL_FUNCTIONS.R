@@ -963,7 +963,7 @@ niche_estimate = function (DF,
                   
   )
   
-  ## concatenate output
+  ## Concatenate output
   ## Also, need to figure out how to make the aggregating column generic (species, genus, etc.)
   ## currently it only works hard-wired
   colnames(summary) = c("searchTaxon", 
@@ -1179,13 +1179,13 @@ EOO.computing =  function (XY, exclude.area = FALSE, country_map = NULL, export_
   if (parallel) 
     registerDoParallel(NbeCores)
   OUTPUT <- "NO_EOO_COMPUTED"
-    # llply(list_data, .fun = function(x) {
-    #   .EOO.comp(x, Name_Sp = ifelse(ncol(XY) > 2, as.character(unique(x$tax)), 
-    #                                 Name_Sp), exclude.area = exclude.area, buff_width = buff_width, 
-    #             country_map = country_map, alpha = alpha, buff.alpha = buff.alpha, 
-    #             alpha.hull = alpha.hull, convex.hull = convex.hull, 
-    #             method.less.than3 = method.less.than3)
-    # }, .progress = prog., .parallel = parallel)
+  # llply(list_data, .fun = function(x) {
+  #   .EOO.comp(x, Name_Sp = ifelse(ncol(XY) > 2, as.character(unique(x$tax)), 
+  #                                 Name_Sp), exclude.area = exclude.area, buff_width = buff_width, 
+  #             country_map = country_map, alpha = alpha, buff.alpha = buff.alpha, 
+  #             alpha.hull = alpha.hull, convex.hull = convex.hull, 
+  #             method.less.than3 = method.less.than3)
+  # }, .progress = prog., .parallel = parallel)
   if (parallel) 
     stopImplicitCluster()
   if (length(OUTPUT) == 1) 
@@ -1728,7 +1728,7 @@ histogram_GBIF_records = function (DF, taxa.list, env.1, env.col.1, env.units.1,
     ## First, check if the file exists
     file  = paste("./data/ANALYSIS/CLEAN_GBIF/", 
                   taxa.n, "_", env.var.1, "_world_GBIF_histo.png", sep = "")
-
+    
     #####################################################
     ## 1). Plot histograms for global occurences of taxa.n
     
