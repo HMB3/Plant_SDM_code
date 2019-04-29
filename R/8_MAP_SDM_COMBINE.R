@@ -57,7 +57,6 @@ head(gcms.50) ; head(gcms.70) ; head(gcms.30)
 
 
 ## The MESS map function needs to be modified so that it can handle species with no novel areas..........................
-## Why are these species producing strange results? Could be the multiple lists
 
 
 #########################################################################################################################

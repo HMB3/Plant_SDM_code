@@ -477,12 +477,7 @@ fit_maxent_targ_bg_back_sel <- function(occ,
       ## Save the chart corrleation file too for the training data set
       par(mar   = c(3, 3, 5, 3),
           oma   = c(1.5, 1.5, 1.5, 1.5))
-      
-      ## Add detail to the response plot
-      # chart.Correlation(bs.model@presence,
-      #                   histogram = TRUE, pch = 19,
-      #                   title = paste0('Reduced variable correlations for ', save_name)) 
-      
+
       png(sprintf('%s/%s/full/%s_%s.png', bsdir,
                   save_name, save_name, "bs_predictor_correlation"),
           3236, 2000, units = 'px', res = 300)
