@@ -434,6 +434,7 @@ DIANA.SPP  = read.csv("./data/base/HIA_LIST/RENEE/DIANA_SPP.csv",               
 DIANA.TC   = read.csv("./data/base/HIA_LIST/RENEE/Distribution_Species_Tcrit_Diana.csv",      stringsAsFactors = FALSE)
 TCRIT = select(DIANA.TC, Names, Tcrit, ster)
 names(TCRIT)[names(TCRIT) == 'Names'] <- 'searchTaxon'
+TCRIT.SPP = TCRIT$searchTaxon
 
 MOD.3.CHK  = join(MOD.3.SPP, MXT.CHECK[c("searchTaxon", "Check.map", "Origin", "genus", "order", "group",
                                          "Plant.type",  "Plantings", "COMBO.count", "AUS_RECORDS",

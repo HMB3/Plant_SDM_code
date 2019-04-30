@@ -423,11 +423,11 @@ round(with(MAXENT.RATING.LAT, table(CHECK_MAP)/sum(table(CHECK_MAP))*100), 1)
 #########################################################################################################################
 ## Once the modelling is finished, these are the columns we can use to rate each species.
 ## The contextual data should come from the CLEAN taxa list above
-results.columns = c("searchTaxon",       ## From the ALA/ GBIF download code 
-                    "Origin",            ## native/extoic : from Anthony Manea's spreadsheet, affected by taxonomy....
-                    "Plant_type",        ## From Anthony Manea's spreadsheet, will be affected by taxonomy....
-                    "Total_growers",     ## From Anthony Manea's spreadsheet.....    
-                    "Number_states",     ## From Anthony Manea's spreadsheet.....
+results.columns = c("searchTaxon",        ## From the ALA/ GBIF download code 
+                    "Origin",             ## native/extoic : from Anthony Manea's spreadsheet, affected by taxonomy....
+                    "Plant_type",         ## From Anthony Manea's spreadsheet, will be affected by taxonomy....
+                    "Total_growers",      ## From Anthony Manea's spreadsheet.....    
+                    #"Number_states",     ## From Anthony Manea's spreadsheet.....
                     
                     "Plantings",         ## No. urban plantings :: from urban tree inventory
                     "Maxent_records",    ## No. records used in the SDM
@@ -444,7 +444,8 @@ results.columns = c("searchTaxon",       ## From the ALA/ GBIF download code
                     "Training_AUC",             ## training AUC
                     "Max_tss",                  ## Maximium True skill statistic
                     "Number_background_points", ## No. background points
-                    "Logistic_threshold"        ## Maxent threshold)
+                    "Logistic_threshold",
+                    "Omission_rate"             ## Maxent threshold)
 )
 
 

@@ -149,7 +149,9 @@ devtools::install_github("traitecoevo/baad.data")
 devtools::install_github("gdauby/ConR")
 
 ## Update ALA4R :: this should get around some of the issues with the CRAN version
+## lapply(paste('package:',names(sessionInfo()$otherPkgs),sep=""),detach,character.only=TRUE,unload=TRUE)  ## detach all packages if you need to
 devtools::install_github("AtlasOfLivingAustralia/ALA4R")
+devtools::install_github("ropensci/CoordinateCleaner")
 # detach("package:ALA4R", unload=TRUE)
 library(ALA4R)
 

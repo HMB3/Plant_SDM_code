@@ -271,8 +271,8 @@ round(with(GBIF.ALA.MATCH, table(New.Taxonomic.status)/sum(table(New.Taxonomic.s
 
 #########################################################################################################################
 ## Create points: the 'over' function seems to need geographic coordinates for this data...
-GBIF.ALA.84   = SpatialPointsDataFrame(coords      = GBIF.ALA.COMBO[c("lon", "lat")],
-                                       data        = GBIF.ALA.COMBO,
+GBIF.ALA.84   = SpatialPointsDataFrame(coords      = GBIF.ALA.MATCH[c("lon", "lat")],
+                                       data        = GBIF.ALA.MATCH,
                                        proj4string = CRS.WGS.84)
 
 

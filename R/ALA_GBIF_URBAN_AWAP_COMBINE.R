@@ -19,8 +19,11 @@
 #########################################################################################################################
 ## Read in all data to run the SDM code :: species lists, shapefile, rasters & tables
 #source('./R/HIA_LIST_MATCHING.R')
+rasterTmpFile()
+
+
 ## Print the species run to the screen
-message('Extracting AWAP data for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
+message('Extracting Worldclim data for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
 
 
 if(read_data == "TRUE") {
@@ -47,24 +50,19 @@ if(read_data == "TRUE") {
 ## Merge on the ALA data. Consider that GBIF has data for both sources. We are topping up the native ranges with the AVH. 
 ## So there could be duplicates between both sources.
 length(unique(GBIF.LAND$searchTaxon)) 
-length(unique(ALA.LAND$searchTaxon)) 
+length(unique(ALA.LAND$searchTaxon))
+dim(GBIF.LAND);dim(ALA.LAND)
+
 unique(GBIF.LAND$SOURCE)
 unique(ALA.LAND$SOURCE)
 sort(intersect(sort(names(GBIF.LAND)), sort(names(ALA.LAND))))
-
 
 dim(GBIF.LAND);dim(ALA.LAND)
 setdiff(names(GBIF.LAND), names(ALA.LAND))
 
 
-## Rename a few fields
-GBIF.LAND     = dplyr::rename(GBIF.LAND, 
-                              coordinateUncertaintyInMetres = coordinateUncertaintyInMeters,
-                              rank = taxonRank)
-
-
 #########################################################################################################################
-## Bind the rows together
+## Bind the rows together, using the common columns from ALA and GBIF from here on
 common.cols = intersect(names(GBIF.LAND), names(ALA.LAND))
 GBIF.ALA.COMBO = bind_rows(GBIF.LAND, ALA.LAND)
 GBIF.ALA.COMBO = GBIF.ALA.COMBO %>% 
@@ -85,28 +83,187 @@ length(unique(GBIF.ALA.COMBO$scientificName))
 summary(GBIF.ALA.COMBO$year)
 summary(GBIF.ALA.COMBO$lat)
 summary(GBIF.ALA.COMBO$lon)
+dim(GBIF.ALA.COMBO)
 
 
 ## Check NAs again
-(sum(is.na(GBIF.ALA.COMBO$scientificName)) + dim(subset(GBIF.ALA.COMBO, scientificName == ""))[1])/dim(GBIF.ALA.COMBO)[1]*100
+(sum(is.na(GBIF.ALA.COMBO$scientificName)) + nrow(subset(GBIF.ALA.COMBO, scientificName == "")))/nrow(GBIF.ALA.COMBO)*100
 
 
 #########################################################################################################################
-## Now create table of species counts
+## Now create table of species counts :: this is another check of the taxonomy
 COMBO.LUT = as.data.frame(table(GBIF.ALA.COMBO$scientificName))
 names(COMBO.LUT) = c("scientificName", "FREQUENCY")
 COMBO.LUT = COMBO.LUT[with(COMBO.LUT, rev(order(FREQUENCY))), ] 
-head(COMBO.LUT);dim(COMBO.LUT)
+head(COMBO.LUT, 10);dim(COMBO.LUT)
+View(COMBO.LUT)
 
 
-## Write out the table
-#write.csv(COMBO.LUT, "./data/base/HIA_LIST/COMBO/SUA_TREES_GBIF_ALA_LUT.csv", row.names = FALSE)
+#########################################################################################################################
+## save data
+if(save_data == "TRUE") {
+  
+  ## save .rds file for the next session
+  write.csv(COMBO.LUT, "./data/base/HIA_LIST/SUA_TREES_GBIF_ALA_LUT.csv", row.names = FALSE)
+  
+} else {
+  
+  message(' skip file saving, not many species analysed')   ##
+  
+}
+
+
+
+
+
+#########################################################################################################################
+## 2). CHECK TAXONOMY RETURNED BY ALA USING TAXONSTAND
+######################################################################################################################### 
+
+
+## The key problem with using the ALA and GBIF data is the mis-match between what we searched, and what GBIF/ALA returned.
+## The approach below was followed to check the taxonomy
+
+## 1). Create the inital list by combing the planted trees with evergreen list.
+
+
+## 2). Clean this list using the GBIF backbone taxonomy :: use the "species" column in from the GBIF "species lookup" tool
+##     https://www.gbif.org/tools/species-lookup
+##     Then export the csv
+
+## 3). Import the CSV, and run the GBIF "species" list through the TPL taxonomy. Take "New Species" and "New Genus" as the "searchTaxon"
+
+## 4). Use rgbif and ALA4R to download occurence data, using "searchTaxon".
+##     For GBIF, we use
+##     key  <- name_backbone(name = sp.n, rank = 'species')$usageKey
+##     GBIF <- occ_data(taxonKey = key, limit = GBIF.download.limit)
+##     For ALA, we use
+##     ALA  <- occurrences(taxon = sp.n, download_reason_id = 7)
+
+##     This returns multiple keys and synonyms, but there is no simple way to skip these. Sp we just download, and clean later.
+
+## 5). Join the TPL taxonomy to the "scientificName" field. We can't use "name" (the equivalent of "species", it seems),
+##     because name is always the same as the searchTaxon and not reliable (i.e. they will always match, and we know that
+##     no one has gone through and checked each one).
+
+##     Exclude records where the "scientificName" both doesn't match the "searchTaxon", and, is also not a synonym according to TPL.
+##     The remaining records are either "accepted" "synonym" or "uresolved", with 97% of searched records matching returned records.
+##     To this conditon, we add for ALA records where "scientificName" both doesn't match the "searchTaxon", we also include "accepted"
+##     This doesn't happen for GBIF, but it does for ALA, because the APC taxonomy is different again from GBIF and TPL. Where they don't agree,
+##     ALA is correct. But as a global analysis, we take TPL as the baseline.
+
+
+##     Note that TPL is no longer being maintained, and the "taxize" package can now be used instead. However, the process would still
+##     be similar :: https://cran.r-project.org/web/packages/taxize/index.html
+##     This may have the advantage of processing any taxa, whether plant or animal
+
+
+#########################################################################################################################
+## Use "Taxonstand" to check the taxonomy of the species which are returned by GBIF. I.e. the "scientificName" field
+message('Running TPL taxonomy for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
+
+COMBO.TAXO <- TPL(unique(GBIF.ALA.COMBO$scientificName), infra = TRUE,
+                  corr = TRUE, repeats = 100)  ## to stop it timing out...
+sort(names(COMBO.TAXO))
+length(unique(COMBO.TAXO$Taxon))
+
+
+## Check the taxonomy by running scientificName through TPL. Then, join the GBIF data to the taxonomic check, using 
+## "scientificName" as the join field. The searchTaxon then becomes the join between the "New genus" and "new species"
+COMBO.TAXO <- GBIF.ALA.COMBO %>%
+  left_join(., COMBO.TAXO, by = c("scientificName" = "Taxon"))
+COMBO.TAXO$New_binomial = paste(COMBO.TAXO$New.Genus, COMBO.TAXO$New.Species, sep = " ") 
+names(COMBO.TAXO)
+
+
+## Check NAs again
+(sum(is.na(COMBO.TAXO$scientificName)) + nrow(subset(COMBO.TAXO, scientificName == "")))/nrow(GBIF.ALA.COMBO)*100
+
+
+#########################################################################################################################
+## However, the scientificName string and the searchTaxon string are not the same. That's because ALA and GBIF both 
+## return lot's of bogus taxa. We can check the match using 'str_detect'
+Match.SN = COMBO.TAXO  %>%
+  mutate(Match.SN.ST = 
+           str_detect(scientificName, searchTaxon)) %>%  ## Match the searched species with the returned species
+  
+  select(one_of(c("searchTaxon",
+                  "scientificName",
+                  "New_binomial",
+                  "Taxonomic.status",
+                  "New.Taxonomic.status",
+                  "country",
+                  "Match.SN.ST")))
+
+
+## How many records don't match?
+dim(Match.SN)
+unique(Match.SN$Match.SN.ST)
+unique(Match.SN$Taxonomic.status)
+unique(Match.SN$New.Taxonomic.status)
+
+
+
+
+
+#########################################################################################################################
+## Incude records where the "scientificName" and the "searchTaxon" match, and where the taxonomic status is 
+## a synonym. If the match is false, the scientific name must be a synonym of searchTaxon
+
+
+## Also include records where the "scientificName" and the "searchTaxon" don't match, but status is synonym
+## This is the same as the subset of species which are accpeted, but not on our list
+## Still have a problem for Acer palmatum................................................................................
+true.synonym   = unique(subset(Match.SN, Match.SN.ST == "TRUE" |
+                                 Taxonomic.status == "Synonym")$scientificName)
+false.synonym  = unique(subset(Match.SN, Match.SN.ST == "FALSE" &
+                                 Taxonomic.status == "Synonym")$scientificName)
+false.accepted = unique(subset(Match.SN, Match.SN.ST == "FALSE" &
+                                 Taxonomic.status == "Accepted")$scientificName)
+
+
+## However, the ALA taxonomy is right for some species. This can be caught with status = "accepted", but only when
+## the match is true.
+match.true     = unique(c(true.synonym, false.synonym))
+match.true     = setdiff(match.true, false.accepted)
+
+
+#########################################################################################################################
+## Now remove the taxa that don't from the ALA/GBIF dataset
+GBIF.ALA.MATCH = COMBO.TAXO[COMBO.TAXO$scientificName %in% match.true, ]
+Match.record   = Match.SN[Match.SN$scientificName     %in% match.true, ]
+
+
+## Check the taxonomic status
+round(with(Match.record, table(Match.SN.ST)/sum(table(Match.SN.ST))*100), 2)
+round(with(Match.record, table(Taxonomic.status)/sum(table(Taxonomic.status))*100), 2)
+round(with(Match.record, table(New.Taxonomic.status)/sum(table(New.Taxonomic.status))*100), 2)
+
+
+## How many records were removed by taxonomic filtering?
+message(nrow(GBIF.ALA.COMBO) - nrow(GBIF.ALA.MATCH), " records removed")
+message(round((nrow(GBIF.ALA.MATCH))/nrow(GBIF.ALA.COMBO)*100, 2), 
+        " % records retained using TPL mismatch")
+
+
+## Check the taxonomic status of the updated table
+unique(GBIF.ALA.MATCH$Taxonomic.status)
+unique(GBIF.ALA.MATCH$New.Taxonomic.status)
+
+round(with(GBIF.ALA.MATCH, table(Taxonomic.status)/sum(table(Taxonomic.status))*100), 2)
+round(with(GBIF.ALA.MATCH, table(New.Taxonomic.status)/sum(table(New.Taxonomic.status))*100), 2)
+
+
+## Check NAs again
+(sum(is.na(GBIF.ALA.MATCH$scientificName)) + 
+    nrow(subset(GBIF.ALA.MATCH, scientificName == "")))/
+  nrow(GBIF.ALA.MATCH)*100
 
 
 #########################################################################################################################
 ## Create points: the 'over' function seems to need geographic coordinates for this data...
-COMBO.POINTS   = SpatialPointsDataFrame(coords      = GBIF.ALA.COMBO[c("lon", "lat")], 
-                                        data        = GBIF.ALA.COMBO[c("lon", "lat")],
+COMBO.POINTS   = SpatialPointsDataFrame(coords      = GBIF.ALA.MATCH[c("lon", "lat")], 
+                                        data        = GBIF.ALA.MATCH[c("lon", "lat")],
                                         proj4string = CRS.WGS.84)
 
 
@@ -242,7 +399,7 @@ dim(COMBO.POINTS);dim(GBIF.ALA.COMBO)
 
 COMBO.RASTER <- raster::extract(world.grids.current, COMBO.POINTS) %>% 
   
-  cbind(GBIF.ALA.COMBO, .) %>% 
+  cbind(GBIF.ALA.MATCH, .) %>% 
   
   dplyr::rename(
     ## Temperature
