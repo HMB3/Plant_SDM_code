@@ -178,7 +178,7 @@ if(nrow(TI.XY.SPP) > 0) {
   
   
   names(TI.RASTER.CONVERT)
-  unique(TI.RASTER.CONVERT$INVENTORY)
+  length(unique(TI.RASTER.CONVERT$INVENTORY))
   unique(TI.RASTER.CONVERT$searchTaxon)
   saveRDS(TI.RASTER.CONVERT, paste0(DATA_path, 'TI_RASTER_CONVERT_', save_run, '.rds'))
   

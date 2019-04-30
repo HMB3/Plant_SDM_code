@@ -21,6 +21,7 @@ if(read_data == "TRUE") {
   ## a time. Then they will be combined, and modelled 100 at a time. EG GBIF.spp[100].
   ## So "save_run" for Katana needs to be a table containing all the species
   ## SDM.SPAT.OCC.BG <- readRDS("H:/green_cities_sdm/data/ANALYSIS/SDM_SPAT_OCC_BG_ALL_HIA.rds")
+  ## SDM.SPAT.OCC.BG <- SDM.SPAT.OCC.BG[SDM.SPAT.OCC.BG$scientificName %in% match.true, ]
   SDM.SPAT.OCC.BG = readRDS(paste0(DATA_path, 'SDM_SPAT_OCC_BG_',  save_run, '.rds'))
 
 } else {

@@ -106,29 +106,29 @@ Koppen_1975_1km  = raster('data/world_koppen/Koppen_1000m_Mollweide54009.tif')
 
 ## Re-create the background points using Alessandro's latest data........................................................
 ## change BG points to be the SDM_SPAT_OCC_BG_ALL data set.
-hollow.points     = readRDS("./data/ANALYSIS/SDM_SPAT_OCC_BG_HOLLOW_SPP.rds")%>%
-  spTransform(sp_epsg54009)
-TI.points = readRDS("./data/ANALYSIS/SDM_SPAT_OCC_BG_TREE_INVENTORY_SPP.rds") %>%
-  spTransform(sp_epsg54009)
+# hollow.points     = readRDS("./data/ANALYSIS/SDM_SPAT_OCC_BG_HOLLOW_SPP.rds")%>%
+#   spTransform(sp_epsg54009)
+# TI.points = readRDS("./data/ANALYSIS/SDM_SPAT_OCC_BG_TREE_INVENTORY_SPP.rds") %>%
+#   spTransform(sp_epsg54009)
 
 
 ## Bind the rows of the hollow and inventory SDM tables together 
-background.points = rbind(hollow.points, TI.points) 
+#background.points = rbind(hollow.points, TI.points) 
 
 
 ## 
-length(unique(background.points$searchTaxon))
-dim(background.points )
-unique(background.points$SOURCE)
+# length(unique(background.points$searchTaxon))
+# dim(background.points )
+# unique(background.points$SOURCE)
 #background.points.df = as.data.frame(background.points)
 
 
 
 #########################################################################################################################
 ## Read in the spatial points for all HIA species 
-SDM.SPAT.OCC.BG.ALL = readRDS(paste0(DATA_path, 'SDM_SPAT_OCC_BG_ALL.rds'))
-length(unique(SDM.SPAT.OCC.BG.ALL$searchTaxon))
-length(intersect(unique(SDM.SPAT.OCC.BG.ALL$searchTaxon), WPW.spp)) 
+# SDM.SPAT.OCC.BG.ALL = readRDS(paste0(DATA_path, 'SDM_SPAT_OCC_BG_ALL.rds'))
+# length(unique(SDM.SPAT.OCC.BG.ALL$searchTaxon))
+# length(intersect(unique(SDM.SPAT.OCC.BG.ALL$searchTaxon), WPW.spp)) 
 
 
 
@@ -327,6 +327,11 @@ world.grids.current = stack(
   file.path('./data/base/worldclim/world/0.5/bio/current',
             sprintf('bio_%02d', 1:19)))
 
+
+#########################################################################################################################
+## Create a velox raster to improve performance
+# world.grids.velox <- velox(world.grids.current)
+# writeRaster(world.grids.velox,  '/data/base/worldclim/world/0.5/bio/current/world_velox_1km.tif', datatype = 'INT2S', overwrite = TRUE)
 
 ## Create a raster stack of current Australian environmental conditions
 ## This is used to calculate the niches for the urban tree inventories
@@ -532,6 +537,7 @@ scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cc85bi70", "gf85bi70", "hg85b
 # SDM.TABLE.list = list.files(DATA_path, pattern = 'SDM_SPAT_OCC_BG_', full.names = TRUE)
 # INV.TABLE.list = list.files(DATA_path, pattern = 'CLEAN_INV_TREE_INVENTORY', full.names = TRUE)
 # INV.TABLE.list = list.files(DATA_path, pattern = 'CLEAN_INV_TREE_INVENTORY', full.names = TRUE)
+# RAS.TABLE.list = list.files(DATA_path, pattern = 'COMBO_RASTER_CONVERT_TREE_INVENTORY', full.names = TRUE)
 
 
 # #########################################################################################################################
@@ -589,9 +595,9 @@ scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cc85bi70", "gf85bi70", "hg85b
 # ## This is a summary of maxent output for current conditions
 # dim(SDM.TABLE.ALL)
 # names(SDM.TABLE.ALL)[1:10]
-# 
-# 
-# ##
+
+
+##
 # length(unique(SDM.TABLE.ALL$searchTaxon))
 # 
 # 

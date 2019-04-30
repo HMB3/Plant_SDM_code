@@ -42,8 +42,13 @@ if(read_data == "TRUE") {
 #########################################################################################################################
 ## Create a table with all the variables needed for SDM analysis
 ## This is the step where an ad/hoc version comes in 
-## CLEAN.INV = readRDS(paste0(DATA_path, 'CLEAN_INV_ALL.rds'))
-## CLEAN.INV = CLEAN.INV[CLEAN.INV$searchTaxon %in% GBIF.spp, ]
+## wpw_spp_taxo_matched_spp <- readRDS("H:/green_cities_sdm/data/ANALYSIS/wpw_spp_taxo_matched_spp.rds")
+## wpw_spp_taxo_matched_spp <- as_utf8(wpw_spp_taxo_matched_spp, normalize = TRUE)
+## CLEAN.INV = readRDS(paste0(DATA_path, 'CLEAN_INV_ALL_HIA_3004_2018.rds'))
+## CLEAN.INV$scientificName = as_utf8(CLEAN.INV$scientificName, normalize = TRUE)
+
+## CLEAN.INV <- CLEAN.INV[CLEAN.INV$scientificName %in% wpw_spp_taxo_matched_spp, ]
+## CLEAN.INV <- CLEAN.INV[CLEAN.INV$searchTaxon %in% GBIF.spp, ]
 dim(CLEAN.INV)
 length(unique(CLEAN.INV$searchTaxon))
 CLEAN.INV$searchTaxon = as_utf8(CLEAN.INV$searchTaxon, normalize = TRUE)
