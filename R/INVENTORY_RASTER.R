@@ -177,9 +177,10 @@ if(nrow(TI.XY.SPP) > 0) {
   message(round(nrow(TI.RASTER.CONVERT)/nrow(TI.RASTER)*100, 2), " % records retained after worldclim extract") 
   
   
-  names(TI.RASTER.CONVERT)
+  ## How many species were processed?
   length(unique(TI.RASTER.CONVERT$INVENTORY))
-  unique(TI.RASTER.CONVERT$searchTaxon)
+  message(length(unique(TI.RASTER.CONVERT$searchTaxon)), 
+          ' species processed in ', length(unique(TI.RASTER.CONVERT$INVENTORY)), ' councils')
   saveRDS(TI.RASTER.CONVERT, paste0(DATA_path, 'TI_RASTER_CONVERT_', save_run, '.rds'))
   
   

@@ -113,7 +113,7 @@ Koppen_1975_1km  = raster('data/world_koppen/Koppen_1000m_Mollweide54009.tif')
 
 
 ## Bind the rows of the hollow and inventory SDM tables together 
-#background.points = rbind(hollow.points, TI.points) 
+# background.points = rbind(hollow.points, TI.points) 
 
 
 ## 
@@ -357,13 +357,13 @@ for(i in 1:11) {
 
 #########################################################################################################################
 ## Read in average of all 6 scenarios Australian environmental conditions
-aus.temp.2030 = raster('./data/base/worldclim/aus/1km/bio/BIO1_2030_MN.tif')/10
-aus.temp.2050 = raster('./data/base/worldclim/aus/1km/bio/BIO1_2050_MN.tif')/10
-aus.temp.2070 = raster('./data/base/worldclim/aus/1km/bio/BIO1_2070_MN.tif')/10
-
-aus.rain.2030 = raster('./data/base/worldclim/aus/1km/bio/BIO12_2030_MN.tif')
-aus.rain.2050 = raster('./data/base/worldclim/aus/1km/bio/BIO12_2050_MN.tif')
-aus.rain.2070 = raster('./data/base/worldclim/aus/1km/bio/BIO12_2070_MN.tif')
+# aus.temp.2030 = raster('./data/base/worldclim/aus/1km/bio/BIO1_2030_MN.tif')/10
+# aus.temp.2050 = raster('./data/base/worldclim/aus/1km/bio/BIO1_2050_MN.tif')/10
+# aus.temp.2070 = raster('./data/base/worldclim/aus/1km/bio/BIO1_2070_MN.tif')/10
+# 
+# aus.rain.2030 = raster('./data/base/worldclim/aus/1km/bio/BIO12_2030_MN.tif')
+# aus.rain.2050 = raster('./data/base/worldclim/aus/1km/bio/BIO12_2050_MN.tif')
+# aus.rain.2070 = raster('./data/base/worldclim/aus/1km/bio/BIO12_2070_MN.tif')
 
 
 #########################################################################################################################
@@ -535,7 +535,7 @@ scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cc85bi70", "gf85bi70", "hg85b
 # ## Create a list of all dataframes with the extension from this run
 # COMBO.NICHE.list  = list.files(DATA_path, pattern = 'COMBO_NICHE_CONTEXT_EVERGREEN',  full.names = TRUE, recursive = TRUE)
 # SDM.TABLE.list = list.files(DATA_path, pattern = 'SDM_SPAT_OCC_BG_', full.names = TRUE)
-# INV.TABLE.list = list.files(DATA_path, pattern = 'CLEAN_INV_TREE_INVENTORY', full.names = TRUE)
+# INV.TABLE.list = list.files(DATA_path, pattern = 'CLEAN_INV_EVERGREEN', full.names = TRUE)
 # INV.TABLE.list = list.files(DATA_path, pattern = 'CLEAN_INV_TREE_INVENTORY', full.names = TRUE)
 # RAS.TABLE.list = list.files(DATA_path, pattern = 'COMBO_RASTER_CONVERT_TREE_INVENTORY', full.names = TRUE)
 
@@ -604,7 +604,7 @@ scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cc85bi70", "gf85bi70", "hg85b
 # # #########################################################################################################################
 # # ## Save the niche and raster data
 # # saveRDS(COMBO.NICHE.ALL,  paste0(DATA_path, 'COMBO_NICHE_ALL.rds'))
-# saveRDS(SDM.TABLE.ALL, paste0(DATA_path,    'CLEAN_INV_TREE_INVENTORY.rds'))
+# saveRDS(SDM.TABLE.ALL, paste0(DATA_path,    'CLEAN_INV_ALL_EVREGREEN_3004_2018.rds'))
 
 
 

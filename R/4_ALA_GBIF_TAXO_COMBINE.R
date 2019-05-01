@@ -423,6 +423,11 @@ formatC(dim(COMBO.RASTER.CONVERT)[1], format = "e", digits = 2)
 length(unique(COMBO.RASTER.CONVERT$searchTaxon));length(GBIF.spp)
 
 
+message(length(unique(TI.RASTER.CONVERT$searchTaxon)), 
+        ' species processed of ', length(GBIF.spp), ' original species')
+
+
+
 ## Plot a few points to see :: do those look reasonable?
 # plot(LAND, col = 'grey', bg = 'sky blue')
 # points(COMBO.RASTER.CONVERT[ which(COMBO.RASTER.CONVERT$Annual_mean_temp < -5), ][, c("lon", "lat")], 

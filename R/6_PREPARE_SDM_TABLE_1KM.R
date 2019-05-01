@@ -44,20 +44,17 @@ if(read_data == "TRUE") {
 ## This is the step where an ad/hoc version comes in 
 ## wpw_spp_taxo_matched_spp <- readRDS("H:/green_cities_sdm/data/ANALYSIS/wpw_spp_taxo_matched_spp.rds")
 ## wpw_spp_taxo_matched_spp <- as_utf8(wpw_spp_taxo_matched_spp, normalize = TRUE)
-## CLEAN.INV = readRDS(paste0(DATA_path, 'CLEAN_INV_ALL_HIA_3004_2018.rds'))
+## CLEAN.INV = readRDS(paste0(DATA_path, 'CLEAN_INV_ALL_EVREGREEN_3004_2018.rds'))
 ## CLEAN.INV$scientificName = as_utf8(CLEAN.INV$scientificName, normalize = TRUE)
 
 ## CLEAN.INV <- CLEAN.INV[CLEAN.INV$scientificName %in% wpw_spp_taxo_matched_spp, ]
 ## CLEAN.INV <- CLEAN.INV[CLEAN.INV$searchTaxon %in% GBIF.spp, ]
 dim(CLEAN.INV)
 length(unique(CLEAN.INV$searchTaxon))
-CLEAN.INV$searchTaxon = as_utf8(CLEAN.INV$searchTaxon, normalize = TRUE)
-length(unique(CLEAN.INV$CC.OBS))
 unique(CLEAN.INV$SOURCE)
 
 
-## Select only the columns needed
-## This also needs to use the variable names
+## Select only the columns needed. This also needs to use the variable names
 COMBO.RASTER.ALL  <- dplyr::select(CLEAN.INV, searchTaxon, lon, lat, SOURCE, CC.OBS,
                                    
                                    Annual_mean_temp,     Mean_diurnal_range,  Isothermality,     Temp_seasonality, 
@@ -271,8 +268,8 @@ unique(SDM.SPAT.ALL$SOURCE)
 length(unique(SDM.SPAT.ALL$searchTaxon))
 
 
-## What percentage of records are retained? 1-2% seems reasonable
-message(round(nrow(SDM.SPAT.ALL)/nrow(SPAT.FLAG)*100, 2), " % records retained")                                               
+## What percentage of records are retained?
+message(round(nrow(SDM.SPAT.ALL)/nrow(SPAT.FLAG)*100, 2), " % records retained after spatial outlier detection")                                               
 
 
 #########################################################################################################################
