@@ -430,11 +430,14 @@ EURO.NURSE.LOC      = read.csv("./data/base/HIA_LIST/URBAN/Euro_garden_flora_nur
 #TRAIT.SPP  = read.csv("./data/base/HIA_LIST/RENEE/RankingTraits_Control_latest.csv",              stringsAsFactors = FALSE)
 TRAIT.SPP  = read.csv("./data/base/HIA_LIST/RENEE/RankingTraits_ALL.csv",                     stringsAsFactors = FALSE)
 MOD.3.SPP  = read.csv("./data/base/HIA_LIST/RENEE/MOD3_OCT18.csv",                            stringsAsFactors = FALSE)
+MOD.2.SPP  = read.csv("./data/base/HIA_LIST/RENEE/MOD3_OCT18.csv",                            stringsAsFactors = FALSE)
 DIANA.SPP  = read.csv("./data/base/HIA_LIST/RENEE/DIANA_SPP.csv",                             stringsAsFactors = FALSE)
+MANUEL.SPP = read.csv("./data/base/HIA_LIST/MANUEL/species_module2.csv",                      stringsAsFactors = FALSE)
 DIANA.TC   = read.csv("./data/base/HIA_LIST/RENEE/Distribution_Species_Tcrit_Diana.csv",      stringsAsFactors = FALSE)
 TCRIT = select(DIANA.TC, Names, Tcrit, ster)
 names(TCRIT)[names(TCRIT) == 'Names'] <- 'searchTaxon'
 TCRIT.SPP = TCRIT$searchTaxon
+MANUEL.SPP = trimws(MANUEL.SPP$Species)
 
 MOD.3.CHK  = join(MOD.3.SPP, MXT.CHECK[c("searchTaxon", "Check.map", "Origin", "genus", "order", "group",
                                          "Plant.type",  "Plantings", "COMBO.count", "AUS_RECORDS",

@@ -423,7 +423,7 @@ formatC(dim(COMBO.RASTER.CONVERT)[1], format = "e", digits = 2)
 length(unique(COMBO.RASTER.CONVERT$searchTaxon));length(GBIF.spp)
 
 
-message(length(unique(TI.RASTER.CONVERT$searchTaxon)), 
+message(length(unique(COMBO.RASTER.CONVERT$searchTaxon)), 
         ' species processed of ', length(GBIF.spp), ' original species')
 
 
