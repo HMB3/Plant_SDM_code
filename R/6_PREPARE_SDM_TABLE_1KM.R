@@ -4,15 +4,8 @@
 
 
 #########################################################################################################################
-## This code prepares the occurrence data for the SDM analyses, by selecting only one record per 1km grid cell, and 
-## saving the output as spatial points data frame - the format required by the dismo fucntion
-
-
-## Does the 1km filter remove too many inventory records?................................................................
-
-
-## Print the species run to the screen
-message('Preparing SDM table for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
+## This code prepares the occurrence data for the SDM analyses, saving the output as spatial points data frame, the format 
+## required by the dismo fucntion. Background points are added to from both native australian trees and urban tree inventories.
 
 
 #########################################################################################################################
@@ -42,19 +35,17 @@ if(read_data == "TRUE") {
 #########################################################################################################################
 ## Create a table with all the variables needed for SDM analysis
 ## This is the step where an ad/hoc version comes in 
-## wpw_spp_taxo_matched_spp <- readRDS("H:/green_cities_sdm/data/ANALYSIS/wpw_spp_taxo_matched_spp.rds")
-## wpw_spp_taxo_matched_spp <- as_utf8(wpw_spp_taxo_matched_spp, normalize = TRUE)
-## CLEAN.INV = readRDS(paste0(DATA_path, 'CLEAN_INV_ALL_EVREGREEN_3004_2018.rds'))
-## CLEAN.INV$scientificName = as_utf8(CLEAN.INV$scientificName, normalize = TRUE)
-
-## CLEAN.INV <- CLEAN.INV[CLEAN.INV$scientificName %in% wpw_spp_taxo_matched_spp, ]
 ## CLEAN.INV <- CLEAN.INV[CLEAN.INV$searchTaxon %in% GBIF.spp, ]
-dim(CLEAN.INV)
-length(unique(CLEAN.INV$searchTaxon))
-unique(CLEAN.INV$SOURCE)
+## Print the species run to the screen
+message('Preparing SDM table for ', length(unique(CLEAN.INV$searchTaxon)), ' species in the set ', "'", save_run, "'",
+        'using ', unique(CLEAN.INV$SOURCE), ' data')
 
 
 ## Select only the columns needed. This also needs to use the variable names
+CLEAN.INV         <- CLEAN.INV[CLEAN.INV$searchTaxon %in% GBIF.spp, ]
+length(unique(CLEAN.INV$searchTaxon))
+
+
 COMBO.RASTER.ALL  <- dplyr::select(CLEAN.INV, searchTaxon, lon, lat, SOURCE, CC.OBS,
                                    
                                    Annual_mean_temp,     Mean_diurnal_range,  Isothermality,     Temp_seasonality, 
@@ -104,10 +95,6 @@ class(Koppen_1975_1km)
 xres(template.raster.1km);yres(template.raster.1km)
 
 
-## Save BG points here
-#saveRDS(SDM.DATA.ALL, paste0(DATA_path, 'background_points.rds'))
-
-
 
 
 
@@ -116,9 +103,7 @@ xres(template.raster.1km);yres(template.raster.1km)
 #########################################################################################################################
 
 
-## The cc_outl function is a bottleneck. I hoped to make the code run for one species at a time - this works locally,
-## but can't get it working easily on katana for all the species....................................................
-## So we will need to process all the species locally, then send them to Shawn.
+## The cc_outl function has been tweaked and sped up.
 
 
 #########################################################################################################################
@@ -223,7 +208,7 @@ SPAT.OUT <- LUT.100K  %>%
 gc()
 
 
-## These settings produce too few outliers. Try changing the settings..................................................
+## How many species are flagged as spatial outliers?
 print(table(SPAT.OUT$SPAT_OUT, exclude = NULL))
 length(unique(SPAT.OUT$searchTaxon))
 head(SPAT.OUT)
@@ -237,7 +222,7 @@ head(SPAT.OUT)
 
 
 #########################################################################################################################
-## 2). FILTER DATA TO THE CLEAN RECORDS
+## 2). FILTER DATA TO REMOVE SPATIAL OUTLIERS
 #########################################################################################################################
 
 
@@ -316,37 +301,37 @@ projection(SDM.SPAT.ALL)
 
 
 ## Rename the fields so that ArcMap can handle them
-SPAT.OUT.CHECK     = SPAT.FLAG %>% 
-  select(SPOUT.OBS, searchTaxon, lat, lon, SOURCE, SPAT_OUT) %>%
-  dplyr::rename(TAXON     = searchTaxon,
-                LAT       = lat,
-                LON       = lon)
-names(SPAT.OUT.CHECK)
-
-
-#########################################################################################################################
-## Then create a SPDF
-SPAT.OUT.SPDF    = SpatialPointsDataFrame(coords      = SPAT.OUT.CHECK[c("LON", "LAT")],
-                                          data        = SPAT.OUT.CHECK,
-                                          proj4string = CRS.WGS.84)
+# SPAT.OUT.CHECK     = SPAT.FLAG %>%
+#   select(SPOUT.OBS, searchTaxon, lat, lon, SOURCE, SPAT_OUT) %>%
+#   dplyr::rename(TAXON     = searchTaxon,
+#                 LAT       = lat,
+#                 LON       = lon)
+# names(SPAT.OUT.CHECK)
+# 
+# 
+# #########################################################################################################################
+# ## Then create a SPDF
+# SPAT.OUT.SPDF    = SpatialPointsDataFrame(coords      = SPAT.OUT.CHECK[c("LON", "LAT")],
+#                                           data        = SPAT.OUT.CHECK,
+#                                           proj4string = CRS.WGS.84)
 
 
 #########################################################################################################################
 ## Write the shapefile out
-if(save_data == "TRUE") {
-  
-  ## save .shp for future refrence 
-  writeOGR(obj    = SPAT.OUT.SPDF, 
-           dsn    = "./data/ANALYSIS/CLEAN_GBIF", 
-           layer  = paste0('SPAT_OUT_CHECK_', save_run),
-           driver = "ESRI Shapefile", overwrite_layer = TRUE)
-  
-} else {
-  
-  message(' skip file saving, not many species analysed')   ##
-  
-}
-
+# if(save_data == "TRUE") {
+#   
+#   ## save .shp for future refrence 
+#   writeOGR(obj    = SPAT.OUT.SPDF, 
+#            dsn    = "./data/ANALYSIS/CLEAN_GBIF", 
+#            layer  = paste0('SPAT_OUT_CHECK_', save_run),
+#            driver = "ESRI Shapefile", overwrite_layer = TRUE)
+#   
+# } else {
+#   
+#   message(' skip file saving, not many species analysed')   ##
+#   
+# }
+# 
 
 
 

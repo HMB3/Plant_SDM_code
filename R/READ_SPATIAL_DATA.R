@@ -110,18 +110,10 @@ Koppen_1975_1km  = raster('data/world_koppen/Koppen_1000m_Mollweide54009.tif')
 #   spTransform(sp_epsg54009)
 # TI.points = readRDS("./data/ANALYSIS/SDM_SPAT_OCC_BG_TREE_INVENTORY_SPP.rds") %>%
 #   spTransform(sp_epsg54009)
-
-
-## Bind the rows of the hollow and inventory SDM tables together 
-# background.points = rbind(hollow.points, TI.points) 
-
-
-## 
-# length(unique(background.points$searchTaxon))
-# dim(background.points )
-# unique(background.points$SOURCE)
-#background.points.df = as.data.frame(background.points)
-
+# 
+# 
+# ## Bind the rows of the hollow and inventory SDM tables together 
+# background.points = rbind(hollow.points, TI.points)
 
 
 #########################################################################################################################
@@ -535,7 +527,7 @@ scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cc85bi70", "gf85bi70", "hg85b
 # ## Create a list of all dataframes with the extension from this run
 # COMBO.NICHE.list  = list.files(DATA_path, pattern = 'COMBO_NICHE_CONTEXT_EVERGREEN',  full.names = TRUE, recursive = TRUE)
 # SDM.TABLE.list = list.files(DATA_path, pattern = 'SDM_SPAT_OCC_BG_', full.names = TRUE)
-# INV.TABLE.list = list.files(DATA_path, pattern = 'CLEAN_INV_EVERGREEN', full.names = TRUE)
+# INV.TABLE.list = list.files(DATA_path, pattern = 'CLEAN_INV_TREE_INV_', full.names = TRUE)
 # INV.TABLE.list = list.files(DATA_path, pattern = 'CLEAN_INV_TREE_INVENTORY', full.names = TRUE)
 # RAS.TABLE.list = list.files(DATA_path, pattern = 'COMBO_RASTER_CONVERT_TREE_INVENTORY', full.names = TRUE)
 
@@ -573,7 +565,7 @@ scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cc85bi70", "gf85bi70", "hg85b
 # 
 #########################################################################################################################
 ## Now combine the raster tables for each species into one table
-# SDM.TABLE.ALL <- INV.TABLE.list %>%
+# INV.TABLE.ALL <- INV.TABLE.list %>%
 # 
 #   ## Pipe the list into lapply
 #   lapply(function(x) {
@@ -593,18 +585,23 @@ scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cc85bi70", "gf85bi70", "hg85b
 #   bind_rows()
 # 
 # ## This is a summary of maxent output for current conditions
-# dim(SDM.TABLE.ALL)
-# names(SDM.TABLE.ALL)[1:10]
+# dim(INV.TABLE.ALL)
+# names(INV.TABLE.ALL)[1:10]
 
 
 ##
-# length(unique(SDM.TABLE.ALL$searchTaxon))
-# 
+# length(unique(INV.TABLE.ALL$searchTaxon))
+# unique(INV.TABLE.ALL$SOURCE)
 # 
 # # #########################################################################################################################
 # # ## Save the niche and raster data
 # # saveRDS(COMBO.NICHE.ALL,  paste0(DATA_path, 'COMBO_NICHE_ALL.rds'))
-# saveRDS(SDM.TABLE.ALL, paste0(DATA_path,    'CLEAN_INV_ALL_EVREGREEN_3004_2018.rds'))
+# saveRDS(INV.TABLE.ALL, paste0(DATA_path,    'CLEAN_INV_ALL_EVREGREEN_MAY_2018.rds'))
+
+
+
+#########################################################################################################################
+## SDM.SPAT.OCC.BG = readRDS(paste0(DATA_path, 'SDM_SPAT_OCC_BG_ALL_EVERGREEN_SPP.rds'))
 
 
 

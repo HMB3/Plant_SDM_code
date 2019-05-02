@@ -18,11 +18,7 @@ message('Running maxent models for ', length(GBIF.spp), ' species in the set ', 
 if(read_data == "TRUE") {
 
   ## This table will be all the records for all HIA species (~3.8k). These data will be re-processed, 1000 species at
-  ## a time. Then they will be combined, and modelled 100 at a time. EG GBIF.spp[100].
-  ## So "save_run" for Katana needs to be a table containing all the species
-  ## SDM.SPAT.OCC.BG <- readRDS("H:/green_cities_sdm/data/ANALYSIS/SDM_SPAT_OCC_BG_ALL_HIA.rds")
-  ## SDM.SPAT.OCC.BG <- SDM.SPAT.OCC.BG[SDM.SPAT.OCC.BG$scientificName %in% match.true, ]
-  SDM.SPAT.OCC.BG = readRDS(paste0(DATA_path, 'SDM_SPAT_OCC_BG_',  save_run, '.rds'))
+  SDM.SPAT.OCC.BG = readRDS(paste0(DATA_path, 'SDM_SPAT_OCC_BG_ALL_EVERGREEN_SPP.rds'))
 
 } else {
 
@@ -287,7 +283,7 @@ summary(MAXENT.RESULTS$Omission_rate)
 
 
 ## This is a summary of maxent output for current conditions
-## Also which species have AUC < 0.7?
+## All species should have AUC > 0.7
 dim(MAXENT.RESULTS)
 head(MAXENT.RESULTS, 20)[1:5]
 
@@ -295,42 +291,41 @@ head(MAXENT.RESULTS, 20)[1:5]
 
 
 
-
 #########################################################################################################################
 ## Plot AUC vs. TSS
-if (nrow(MAXENT.RESULTS) > 2) {
+# if (nrow(MAXENT.RESULTS) > 2) {
   
-  lm.auc = lm(MAXENT.RESULTS$Max_tss ~ MAXENT.RESULTS$Training_AUC)
+  # lm.auc = lm(MAXENT.RESULTS$Max_tss ~ MAXENT.RESULTS$Training_AUC)
   
-  ## Save this to file
-  png(paste0('./output/maxent/', 'Maxent_run_summary_', save_run, '.png'), 16, 12, units = 'in', res = 500)
+  # ## Save this to file
+  # png(paste0('./output/maxent/', 'Maxent_run_summary_', save_run, '.png'), 16, 12, units = 'in', res = 500)
   
-  layout(matrix(c(1,1,2,3), 2, 2, byrow = TRUE))
+  # layout(matrix(c(1,1,2,3), 2, 2, byrow = TRUE))
   
-  plot(MAXENT.RESULTS$Training_AUC, MAXENT.RESULTS$Max_tss, pch = 19, col  = "blue",
-       xlab = "AUC", ylab = "TSS", 
-       abline(lm(MAXENT.RESULTS$Max_tss ~ MAXENT.RESULTS$Training_AUC)), 
-       main = save_run, cex = 3)
+  # plot(MAXENT.RESULTS$Training_AUC, MAXENT.RESULTS$Max_tss, pch = 19, col  = "blue",
+       # xlab = "AUC", ylab = "TSS", 
+       # abline(lm(MAXENT.RESULTS$Max_tss ~ MAXENT.RESULTS$Training_AUC)), 
+       # main = save_run, cex = 3)
   
-  legend("topleft", bty = "n", 
-         legend = paste("R2 is", format(summary(lm.auc)$adj.r.squared, digits = 4)))
+  # legend("topleft", bty = "n", 
+         # legend = paste("R2 is", format(summary(lm.auc)$adj.r.squared, digits = 4)))
   
-  hist(MAXENT.RESULTS$Training_AUC, breaks = 10, col = "blue",   border = FALSE,
-       ylab = "Frequency",
-       xlab = "Training AUC", main = "AUC", cex = 3)
-  hist(MAXENT.RESULTS$Max_tss,      breaks = 10, col = "orange", border = FALSE,
-       ylab = "",
-       xlab = "Maximum True Skill Statistic", main = "TSS", cex = 3)
+  # hist(MAXENT.RESULTS$Training_AUC, breaks = 10, col = "blue",   border = FALSE,
+       # ylab = "Frequency",
+       # xlab = "Training AUC", main = "AUC", cex = 3)
+  # hist(MAXENT.RESULTS$Max_tss,      breaks = 10, col = "orange", border = FALSE,
+       # ylab = "",
+       # xlab = "Maximum True Skill Statistic", main = "TSS", cex = 3)
   
-  ## Finsish the device
-  dev.off()
+  # ## Finsish the device
+  # dev.off()
   
-  ## If the species list is < 2 records, don't plot
-} else {
+  # ## If the species list is < 2 records, don't plot
+# } else {
   
-  message('Dont plot, only ', length(GBIF.spp), ' species analysed')
+  # message('Dont plot, only ', length(GBIF.spp), ' species analysed')
   
-}
+# }
 
 
 #########################################################################################################################
@@ -343,42 +338,42 @@ length(map_spp);setdiff(sort(map_spp_list), sort(map_spp))
 
 #########################################################################################################################
 ## Then make a list of all the directories containing the individual GCM rasters. This is used for combining the rasters
-SDM.RESULTS.DIR <- map_spp %>%
+# SDM.RESULTS.DIR <- map_spp %>%
   
-  ## Pipe the list into lapply
-  lapply(function(species) {
+  # ## Pipe the list into lapply
+  # lapply(function(species) {
     
-    ## Create the character string...
-    m <-   sprintf('%s/%s/full/', results_dir, species)                ## path.backwards.sel
-    m 
+    # ## Create the character string...
+    # m <-   sprintf('%s/%s/full/', results_dir, species)                ## path.backwards.sel
+    # m 
     
-  }) %>%
+  # }) %>%
   
-  ## Bind the list together
-  c()
+  # ## Bind the list together
+  # c()
 
-length(SDM.RESULTS.DIR)
-SDM.RESULTS.DIR = unlist(SDM.RESULTS.DIR)
+# length(SDM.RESULTS.DIR)
+# SDM.RESULTS.DIR = unlist(SDM.RESULTS.DIR)
 
 
-## Change the species column
-MAXENT.RESULTS$searchTaxon = gsub("_", " ", MAXENT.RESULTS$searchTaxon)
+# ## Change the species column
+# MAXENT.RESULTS$searchTaxon = gsub("_", " ", MAXENT.RESULTS$searchTaxon)
 
 
 #########################################################################################################################
 ## Save maxent results 
-if(save_data == "TRUE") {
+# if(save_data == "TRUE") {
   
-  ## save .rds file for the next session
-  saveRDS(MAXENT.RESULTS,   paste0(DATA_path, 'MAXENT_RESULTS_', save_run, '.rds'))
-  write.csv(MAXENT.RESULTS, paste0(DATA_path, 'MAXENT_RESULTS_', save_run, '.csv'), row.names = FALSE)
+  # ## save .rds file for the next session
+  # saveRDS(MAXENT.RESULTS,   paste0(DATA_path, 'MAXENT_RESULTS_', save_run, '.rds'))
+  # write.csv(MAXENT.RESULTS, paste0(DATA_path, 'MAXENT_RESULTS_', save_run, '.csv'), row.names = FALSE)
   
   
-} else {
+# } else {
   
-  message('Dont save niche summary, only ', length(GBIF.spp), ' species analysed')
+  # message('Dont save niche summary, only ', length(GBIF.spp), ' species analysed')
   
-}
+# }
 
 
 #########################################################################################################################
