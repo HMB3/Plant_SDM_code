@@ -338,22 +338,22 @@ length(map_spp);setdiff(sort(map_spp_list), sort(map_spp))
 
 #########################################################################################################################
 ## Then make a list of all the directories containing the individual GCM rasters. This is used for combining the rasters
-# SDM.RESULTS.DIR <- map_spp %>%
+SDM.RESULTS.DIR <- map_spp %>%
   
-  # ## Pipe the list into lapply
-  # lapply(function(species) {
-    
-    # ## Create the character string...
-    # m <-   sprintf('%s/%s/full/', results_dir, species)                ## path.backwards.sel
-    # m 
-    
-  # }) %>%
-  
-  # ## Bind the list together
-  # c()
+  ## Pipe the list into lapply
+  lapply(function(species) {
 
-# length(SDM.RESULTS.DIR)
-# SDM.RESULTS.DIR = unlist(SDM.RESULTS.DIR)
+    ## Create the character string...
+    m <-   sprintf('%s/%s/full/', results_dir, species)                ## path.backwards.sel
+    m
+
+  }) %>%
+
+  ## Bind the list together
+  c()
+
+length(SDM.RESULTS.DIR)
+SDM.RESULTS.DIR = unlist(SDM.RESULTS.DIR)
 
 
 # ## Change the species column
