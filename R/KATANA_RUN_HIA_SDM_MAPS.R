@@ -175,7 +175,7 @@ Sys.setenv("PBS_ARRAYID" = 1)
 
 
 ## Run the species 500 or 1000 at a time
-GBIF.spp = WPW.tree  ## your list of species
+GBIF.spp = WPW.non.tree  ## your list of species
 
 
 ## Subset for PBS array jobs
@@ -198,7 +198,7 @@ check_maps    = "FALSE"                              ## Create maps, shapefiles 
 GBIF_path     = "./data/base/HIA_LIST/GBIF_UPDATE/"  ## The path where GBIF data is stored
 ALA_path      = "./data/base/HIA_LIST/ALA_UPDATE/"   ## The path where ALA data is stored place
 DATA_path     = "./data/ANALYSIS/"                   ## The path where the final data from/for analyses are stored 
-OCC_SOURCE    = c("ALA", "GBIF", "INVENTORY")        ## Data source :: for trees, ALL. For non trees, ALA/GBIF, for occ and bg
+OCC_SOURCE    = c("ALA", "GBIF")        ## Data source :: for trees, ALL. For non trees, ALA/GBIF, for occ and bg
 #OCC_SOURCE    = c("ALA", "GBIF")
 calc_niche    = "TRUE"
 

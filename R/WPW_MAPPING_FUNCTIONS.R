@@ -13,21 +13,21 @@
 
 #########################################################################################################################
 ## E.G. arguments to run the algorithm inside the function 
-# shp_path      = "./data/base/CONTEXTUAL/" ## Path for shapefile
-# aus_shp       = "aus_states.rds"          ## Shapefile e.g. Australian states
-# world_shp     = "LAND_world.rds"          ## World shapefile
-# 
-# x             = scen_2030[3]                 ## List of climate scenarios
-# species       = map_spp[1]                   ## List of species folders with maxent models
-# maxent_path   = bs_path                   ## Output folder
-# climate_path  = "./data/base/worldclim/aus/1km/bio" ## climate data
-# 
-# grid_names    = grid.names
-# bs_names      = bs.predictors             ## names of the predictor grids
-# time_slice    = 30                        ## Time period
-# current_grids = aus.grids.current         ## predictor grids
-# create_mess   = "TRUE"
-# nclust        = 1
+shp_path      = "./data/base/CONTEXTUAL/" ## Path for shapefile
+aus_shp       = "aus_states.rds"          ## Shapefile e.g. Australian states
+world_shp     = "LAND_world.rds"          ## World shapefile
+
+x             = scen_2030[3]                 ## List of climate scenarios
+species       = map_spp[1]                   ## List of species folders with maxent models
+maxent_path   = bs_path                   ## Output folder
+climate_path  = "./data/base/worldclim/aus/1km/bio" ## climate data
+
+grid_names    = grid.names
+bs_names      = bs.predictors             ## names of the predictor grids
+time_slice    = 30                        ## Time period
+current_grids = aus.grids.current         ## predictor grids
+create_mess   = "TRUE"
+nclust        = 1
 
 
 #########################################################################################################################
