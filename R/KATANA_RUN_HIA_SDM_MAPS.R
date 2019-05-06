@@ -233,23 +233,24 @@ message('Running SDMs and maps for ', length(GBIF.spp), ' species in the set ', 
 
 
 ## Step 2 :: combine GBIF occurrence data with ALA data and filter to records > 1950
-# source('./R/ALA_DATA_FILTER_TAXO_SCIENTIFIC_NAME.R', echo = TRUE)
-# source('./R/3_GBIF_DATA_TAXO_SCIENTIFIC_NAME.R',     echo = TRUE)
-# 
-# 
-# ## Step 4 :: combine GBIF, ALA and tree inventory data into a single table, extract environmental condtions
-# source('./R/4_ALA_GBIF_TAXO_COMBINE.R',   echo = TRUE)
-# source('./R/INVENTORY_RASTER.R',          echo = TRUE)
-# 
-# 
-# ## Step 5 :: clean the occurrence data using the 'CleanCoordinates' function in the CoordinateCleaner package, to remove
-# ## records near herbaria, duplicates, etc. & add contextual info for each record (taxonomic and horticultural).
-# ## Then prepare the SDM table
-# ## Then clean the spatial outliers
-# source('./R/5_GEO_CLEAN_DATA.R',         echo = TRUE)
-# # source('./R/6_PREPARE_SDM_TABLE_1KM.R',  echo = TRUE)
-# 
-# 
+source('./R/ALA_DATA_FILTER_TAXO_SCIENTIFIC_NAME.R', echo = TRUE)
+source('./R/3_GBIF_DATA_TAXO_SCIENTIFIC_NAME.R',     echo = TRUE)
+
+
+## Step 4 :: combine GBIF, ALA and tree inventory data into a single table, extract environmental condtions
+source('./R/4_ALA_GBIF_TAXO_COMBINE.R',   echo = TRUE)
+source('./R/INVENTORY_RASTER.R',          echo = TRUE)
+
+
+## Step 5 :: clean the occurrence data using the 'CleanCoordinates' function in the CoordinateCleaner package, to remove
+## records near herbaria, duplicates, etc. & add contextual info for each record (taxonomic and horticultural).
+## Then prepare the SDM table
+## Then clean the spatial outliers
+source('./R/5_GEO_CLEAN_DATA.R',         echo = TRUE)
+source('./R/CALCULATE_1KM_NICHES.R',     echo = TRUE)
+source('./R/6_PREPARE_SDM_TABLE_1KM.R',  echo = TRUE)
+
+
 # ## Step 7 :: Run maxent on a table of all species, using targetted background selection, then backwards selection
 # ## Step 8 :: Create habitat suitability maps for each species using six GCMs and three time slices (2030/50/70).
 source('./R/7_RUN_MAXENT.R',      echo = TRUE)

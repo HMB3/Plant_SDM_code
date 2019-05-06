@@ -388,9 +388,11 @@ names(cum_hot) = "HW_CUM_HOT"
 ## Combine them all
 awap.heatwave = stack(HWF, HWA, HWM, HWD, HWN, cum_all, cum_av, cum_hot)
 names(awap.heatwave)
-plot(HWF)
-plot(cum_hot)
+plot(HWF, main = "No. heatwaves during a season")
 
+
+plot(cum_hot, main = "Cumulative heat during hottest heatwave")
+points(NICHE.1KM.84, add = "TRUE")
 
 #########################################################################################################################
 ## Extract worldclim data
