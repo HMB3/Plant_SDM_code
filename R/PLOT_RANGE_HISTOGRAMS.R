@@ -62,11 +62,6 @@
 #########################################################################################################################
 
 
-#########################################################################################################################
-## 7). PLOT HISTOGRAMS AND BAR CHARTS FOR EACH SPECIES AT 1KM
-#########################################################################################################################
-
-
 # ##############################################################################################
 # ## Plot histograms of temperature and rainfall
 # ## species = spp.geo[5]
@@ -155,9 +150,6 @@
 #     theme(axis.title.x     = element_text(colour = "black", size = 35),
 #           axis.text.x      = element_text(size = 25),
 #           
-#           axis.title.y     = element_text(colour = "black", size = 35),
-#           axis.text.y      = element_text(size = 25),
-#           
 #           panel.background = element_blank(),
 #           panel.border     = element_rect(colour = "black", fill = NA, size = 3),
 #           plot.title       = element_text(size   = 40, face = "bold"),
@@ -170,6 +162,26 @@
 #   dev.off()
 
 
+#############################################################
+## PLot convex Hull
+# CLEAN.INV <- mutate(CLEAN.INV, OCC_TYPE = ifelse(grepl("INVENTORY", SOURCE), "INV", "OCC"))
+# 
+# 
+# ## Create PNG file
+# png(sprintf("./data/ANALYSIS/SPECIES_RANGES/%s_%s", species, "1km_occ_points_source.png"),
+#     16, 10, units = 'in', res = 500)
+# 
+# p <- ggplot(test, aes(Annual_mean_temp, Annual_precip, fill = OCC_TYPE)) + geom_point(shape = 21)
+# 
+# hull_occ_source <- test %>%
+#   group_by(OCC_TYPE) %>%
+#   slice(chull(Annual_mean_temp, Annual_precip))
+# 
+# ## Update the plot with a fill group, and overlay the new hulls
+# p + geom_polygon(data = hull_occ_source, alpha = 0.5)
+# 
+# ## close device
+# dev.off()
 
 
 #############################################################

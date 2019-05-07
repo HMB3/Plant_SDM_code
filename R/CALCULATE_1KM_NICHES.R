@@ -285,21 +285,55 @@ if(calc_niche == "TRUE") {
   #########################################################################################################################
   ## Create a convex hull plot of points for all specues, according to source :: OCC and GBIF
   CLEAN.INV <- mutate(CLEAN.INV, OCC_TYPE = ifelse(grepl("INVENTORY", SOURCE), "INV", "OCC"))
-
+  unique(CLEAN.INV$SOURCE)
+  unique(CLEAN.INV$OCC_TYPE)
+  
   
   #########################################################################################################################
   ## Calculate the hulls for each group
-  p <- ggplot(CLEAN.INV, aes(Annual_mean_temp, Annual_precip, fill = OCC_TYPE)) + geom_point(shape = 21)
+  #test = subset(CLEAN.INV, searchTaxon == CLEAN.INV$searchTaxon[1])
+  
+  
+  ## Create PNG file
+  png(sprintf("./data/ANALYSIS/SPECIES_RANGES/%s", "all_species_1km_convex_hull.png"),
+      16, 10, units = 'in', res = 500)
+  
+  p <- ggplot(CLEAN.INV, aes(Annual_mean_temp, Annual_precip, fill = OCC_TYPE, color = OCC_TYPE)) 
   
   hull_occ_source <- CLEAN.INV %>%
     group_by(OCC_TYPE) %>%
     slice(chull(Annual_mean_temp, Annual_precip))
   
   ## Update the plot with a fill group, and overlay the new hulls
-  p + geom_polygon(data = hull_occ_source, alpha = 0.5)
-  
-  
+  p + geom_polygon(data = hull_occ_source, alpha = 0.3) +
+    geom_point(shape = 21, size = 2.5) + ## geom_density_2d
     
+    ## Add x,y, and title
+    labs(x = "Mean annual temp", 
+         y = "Annual precipitation",
+         title = "Convex Hull for") +
+    
+    ## Add themes
+    theme(axis.title.x     = element_text(colour = "black", size = 35),
+          axis.text.x      = element_text(size = 20),
+          
+          axis.title.y     = element_text(colour = "black", size = 35),
+          axis.text.y      = element_text(size = 20),
+
+          panel.background = element_blank(),
+          panel.border     = element_rect(colour = "black", fill = NA, size = 1.5),
+          plot.title       = element_text(size   = 40, face = "bold"),
+          legend.text      = element_text(size   = 20),
+          legend.title     = element_text(size   = 20),
+          legend.key.size  = unit(1.5, "cm"))
+  
+  ## close device
+  dev.off()
+  
+  
+  
+  
+  
   #########################################################################################################################
   ## 8). JOIN NICHE DATE TO HORTICULTURAL CONTEXTUAL DATA
   #########################################################################################################################
