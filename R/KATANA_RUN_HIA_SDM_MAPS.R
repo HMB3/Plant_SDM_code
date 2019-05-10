@@ -66,7 +66,6 @@ on_windows = switch(Sys.info()[['sysname']], Windows = TRUE, FALSE)
 
 #########################################################################################################################
 ## Read in all data to run the SDM code :: species lists, shapefile, rasters & tables
-#source('./R/HIA_TREE_LIST.R')
 if (on_windows) {
   
   ## Is up to date
@@ -175,7 +174,7 @@ Sys.setenv("PBS_ARRAYID" = 1)
 
 
 ## Run the species 500 or 1000 at a time
-GBIF.spp = WPW.non.tree  ## your list of species
+GBIF.spp = WPW.spp  ## your list of species
 
 
 ## Subset for PBS array jobs
@@ -199,7 +198,7 @@ GBIF_path     = "./data/base/HIA_LIST/GBIF_UPDATE/"  ## The path where GBIF data
 ALA_path      = "./data/base/HIA_LIST/ALA_UPDATE/"   ## The path where ALA data is stored place
 DATA_path     = "./data/ANALYSIS/"                   ## The path where the final data from/for analyses are stored 
 OCC_SOURCE    = c("ALA", "GBIF")                     ## Data source :: for trees, ALL. For non trees, ALA/GBIF, for occ and bg
-#OCC_SOURCE    = c("ALA", "GBIF")
+#OCC_SOURCE    = c("ALA", "GBIF", "INVENTORY")
 calc_niche    = "TRUE"
 
 maxent_path   = './output/maxent/HIA_TEST_INV/'      ## The directory where maxent files are saved               
@@ -233,26 +232,26 @@ message('Running SDMs and maps for ', length(GBIF.spp), ' species in the set ', 
 
 
 ## Step 2 :: combine GBIF occurrence data with ALA data and filter to records > 1950
-source('./R/ALA_DATA_FILTER_TAXO_SCIENTIFIC_NAME.R', echo = TRUE)
-source('./R/3_GBIF_DATA_TAXO_SCIENTIFIC_NAME.R',     echo = TRUE)
-
-
-## Step 4 :: combine GBIF, ALA and tree inventory data into a single table, extract environmental condtions
-source('./R/4_ALA_GBIF_TAXO_COMBINE.R',   echo = TRUE)
-source('./R/INVENTORY_RASTER.R',          echo = TRUE)
-
-
-## Step 5 :: clean the occurrence data using the 'CleanCoordinates' function in the CoordinateCleaner package, to remove
-## records near herbaria, duplicates, etc. & add contextual info for each record (taxonomic and horticultural).
-## Then prepare the SDM table
-## Then clean the spatial outliers
-source('./R/5_GEO_CLEAN_DATA.R',         echo = TRUE)
-source('./R/CALCULATE_1KM_NICHES.R',     echo = TRUE)
-source('./R/6_PREPARE_SDM_TABLE_1KM.R',  echo = TRUE)
-
-
-# ## Step 7 :: Run maxent on a table of all species, using targetted background selection, then backwards selection
-# ## Step 8 :: Create habitat suitability maps for each species using six GCMs and three time slices (2030/50/70).
+# source('./R/ALA_DATA_FILTER_TAXO_SCIENTIFIC_NAME.R', echo = TRUE)
+# source('./R/3_GBIF_DATA_TAXO_SCIENTIFIC_NAME.R',     echo = TRUE)
+# 
+# 
+# ## Step 4 :: combine GBIF, ALA and tree inventory data into a single table, extract environmental condtions
+# source('./R/4_ALA_GBIF_TAXO_COMBINE.R',   echo = TRUE)
+# source('./R/INVENTORY_RASTER.R',          echo = TRUE)
+# 
+# 
+# ## Step 5 :: clean the occurrence data using the 'CleanCoordinates' function in the CoordinateCleaner package, to remove
+# ## records near herbaria, duplicates, etc. & add contextual info for each record (taxonomic and horticultural).
+# ## Then prepare the SDM table
+# ## Then clean the spatial outliers
+# source('./R/5_GEO_CLEAN_DATA.R',         echo = TRUE)
+# source('./R/CALCULATE_1KM_NICHES.R',     echo = TRUE)
+# source('./R/6_PREPARE_SDM_TABLE_1KM.R',  echo = TRUE)
+# 
+# 
+# # ## Step 7 :: Run maxent on a table of all species, using targetted background selection, then backwards selection
+# # ## Step 8 :: Create habitat suitability maps for each species using six GCMs and three time slices (2030/50/70).
 source('./R/7_RUN_MAXENT.R',      echo = TRUE)
 source('./R/8_MAP_SDM_COMBINE.R', echo = TRUE)
 
