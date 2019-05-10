@@ -150,9 +150,8 @@ message('Creating summary stats for ', length(GBIF.spp), ' species in the set ',
 #########################################################################################################################
 ## First, create a file list for each model run: Try crunching this into just the species required
 map_spp_list  = gsub(" ", "_", GBIF.spp)
-maxent.tables = list.files(results_dir)                 
-maxent.tables = intersect(maxent.tables, map_spp_list)   
-results_dir   = results_dir                             
+maxent.tables = list.files(results_dir, pattern = "maxent_fitted.rds", recursive = TRUE)
+maxent.tables = maxent.tables[-grep("xval", maxent.tables)]
 length(maxent.tables) 
 
 
@@ -165,21 +164,15 @@ MAXENT.RESULTS <- maxent.tables %>%
   ## Pipe the list into lapply
   lapply(function(x) {
     
-    ## Create the character string
-    f <- paste0(results_dir, "/",  x, "/full/maxentResults.csv")
-    
-    ## Load each .RData file
-    d <- read.csv(f)
-    
     #############################################################
     ## load model
     if (grepl("BS", results_dir)) {
-      m = readRDS(sprintf('%s/%s/full/maxent_fitted.rds', results_dir, x))
-      
+      m = readRDS(paste0(results_dir, '/',  x))
+
     } else {
       ## Get the background records from any source
-      m = readRDS(sprintf('%s/%s/full/maxent_fitted.rds', results_dir, x))$me_full
-      
+      m = readRDS(paste0(results_dir, '/',  x))$me_full
+
     }
     
     ## Get the number of Variables
@@ -202,28 +195,21 @@ MAXENT.RESULTS <- maxent.tables %>%
     Omission_rate            = m@results["X10.percentile.training.presence.training.omission",]
     
     ## Now rename the maxent columns that we will use in the results table
-    d = cbind(searchTaxon              = x, 
-              Maxent_records           = mxt.records,
-              Number_var               = number.var, 
-              Var_pcont                = var.pcont,
-              Per_cont                 = pcont,
-              Var_pimp                 = var.pimp,
-              Perm_imp                 = pimp,
-              Training_AUC,
-              Number_background_points,  
-              Logistic_threshold,
-              Omission_rate,
-              d)
-    
-    ## Just get the columns we need
-    d = select(d, searchTaxon, Maxent_records, Number_var, Var_pcont,
-               Per_cont, Var_pimp, Perm_imp, Training_AUC, Number_background_points,  
-               Logistic_threshold, Omission_rate)
-    
-    dim(d)
-    
+    d = data.frame(searchTaxon              = x, 
+                   Maxent_records           = mxt.records,
+                   Number_var               = number.var, 
+                   Var_pcont                = var.pcont,
+                   Per_cont                 = pcont,
+                   Var_pimp                 = var.pimp,
+                   Perm_imp                 = pimp,
+                   Training_AUC,
+                   Number_background_points,  
+                   Logistic_threshold,
+                   Omission_rate)
+
     ## Remove path gunk, and species
     d$Species     = NULL
+    d$searchTaxon = gsub("/full/maxent_fitted.rds", "", d$searchTaxon)
     return(d)
     
   }) %>%

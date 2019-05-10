@@ -14,11 +14,14 @@
 ## https://ggplot2.tidyverse.org/reference/geom_smooth.html
 
 
-## EG
-# ALL.GAIN.2070.GAM = gam(Species.gain/100 ~ s (CURRENT_MAT, k = 3), 
-#                         data = allSUAs2070, 
-#                         method = "REML", family = betar(link = "logit"))
-# summary(ALL.GAIN.2070.GAM)[["dev.expl"]][1]
+## Read in the libraries...
+library(ggplot2)
+library(mgcv)
+if (!require("RColorBrewer")) {
+  install.packages("RColorBrewer")
+  library(RColorBrewer)
+}
+
 
 
 
@@ -28,13 +31,13 @@
 #########################################################################################################################
 
 
-## prepare data
+## Prepare data
 turnover =  read.csv("./data/ANALYSIS/Fig2.csv", sep = ",", header=T, na.string = "NA")
 allSUAs <- subset(turnover, LARGE_SUA=="n") 
 bigSUAs <- subset(turnover, LARGE_SUA=="y") 
 
 
-## to calculate GAM deviance
+## To calculate GAM deviance
 allSUAs2070 <- subset(allSUAs, PERIOD=="2070")
 allSUAs2030 <- subset(allSUAs, PERIOD=="2030")
 bigSUAs2070 <- subset(bigSUAs, PERIOD=="2070")
@@ -65,25 +68,29 @@ ALL.GAIN.2030.GAM = gam(Species.gain ~ s (CURRENT_MAT, k = 3),
                         method = "REML")
 summary(ALL.GAIN.2030.GAM)[["dev.expl"]][1]  
 
-
-#########################################################################################################################
-## 
+## Plot the gams 
 dev.new(width = 17, height = 13)
 
-
-## Plot the gams 
 fig2A<-ggplot(allSUAs, aes(x=CURRENT_MAT, y=Species.gain, color=factor(PERIOD))) +
   
-  geom_point(size = 6) + theme_bw() +  theme(axis.title.x=element_text(margin = margin(t = 20)), axis.title.y=element_text(margin = margin(r = 20)),
-                                             axis.text.x=element_text(margin = margin(t = 10)), axis.text.y=element_text(margin = margin(r = 10)), 
+  geom_point(size = 6) + theme_bw() +  theme(axis.title.x=element_text(margin = margin(t = 20)), 
+                                             axis.title.y=element_text(margin = margin(r = 20)),
+                                             axis.text.x=element_text(margin = margin(t = 10)), 
+                                             axis.text.y=element_text(margin = margin(r = 10)), 
                                              legend.box.margin=margin(10,10,10,10)) +
   
   geom_smooth(method="gam", formula = y ~ s(x, k = 3), se=FALSE, fullrange=TRUE, size = 2) +
-  xlab(bquote('')) + ylim(0,70) + ylab(bquote('New species gained (%)')) + ggtitle("All SUAs") + theme(text = element_text(size=30)) + 
+  xlab(bquote('')) + ylim(0,70) + ylab(bquote('New species gained (%)')) + ggtitle("All SUAs") + 
+  theme(text = element_text(size=30)) + 
   
   scale_color_manual(values=c("darkgrey", "black"), name = "Period") + 
-  annotate(geom="text", size=8, x=20, y=65, label=paste("Deviance (2030) =", signif(summary(ALL.GAIN.2030.GAM)[["dev.expl"]][1]*100, digits = 3),"%")) +
-  annotate(geom="text", size=8, x=20, y=62, label=paste("Deviance (2070) =", signif(summary(ALL.GAIN.2070.GAM)[["dev.expl"]][1]*100, digits = 3),"%")) +
+  annotate(geom="text", size=8, x=20, y=65, 
+           label=paste("Deviance (2030) =", 
+                       signif(summary(ALL.GAIN.2030.GAM)[["dev.expl"]][1]*100, digits = 3),"%")) +
+  
+  annotate(geom="text", size=8, x=20, y=62, 
+           label=paste("Deviance (2070) =", 
+                       signif(summary(ALL.GAIN.2070.GAM)[["dev.expl"]][1]*100, digits = 3),"%")) +
   
   theme(legend.position="none")  #this remove legend on the right
 
@@ -117,8 +124,10 @@ dev.new(width=17, height=13)
 ##
 fig2B<-ggplot(bigSUAs, aes(x=CURRENT_MAT, y=Species.gain, color=factor(PERIOD))) +
   
-  geom_point(size = 6) + theme_bw() +  theme(axis.title.x=element_text(margin = margin(t = 20)), axis.title.y=element_text(margin = margin(r = 20)),
-                                             axis.text.x=element_text(margin = margin(t = 10)), axis.text.y=element_text(margin = margin(r = 10)), 
+  geom_point(size = 6) + theme_bw() +  theme(axis.title.x=element_text(margin = margin(t = 20)), 
+                                             axis.title.y=element_text(margin = margin(r = 20)),
+                                             axis.text.x=element_text(margin = margin(t = 10)), 
+                                             axis.text.y=element_text(margin = margin(r = 10)), 
                                              legend.box.margin=margin(10,10,10,10)) +
   
   geom_smooth(method="gam", formula = y ~ s(x, k = 3), se=FALSE, fullrange=TRUE, size = 2) +
@@ -126,8 +135,13 @@ fig2B<-ggplot(bigSUAs, aes(x=CURRENT_MAT, y=Species.gain, color=factor(PERIOD)))
   ylab(bquote('')) + ggtitle("Largest SUAs") + theme(text = element_text(size=30)) + 
   
   scale_color_manual(values=c("darkgrey", "black"), name = "Period") + 
-  annotate(geom="text", size=8, x=20, y=65, label=paste("Deviance (2030) =", signif(summary(BIG.GAIN.2030.GAM)[["dev.expl"]][1]*100, digits = 3),"%")) +
-  annotate(geom="text", size=8, x=20, y=62, label=paste("Deviance (2070) =", signif(summary(BIG.GAIN.2070.GAM)[["dev.expl"]][1]*100, digits = 3),"%")) 
+  annotate(geom="text", size=8, x=20, y=65, 
+           label=paste("Deviance (2030) =", 
+                       signif(summary(BIG.GAIN.2030.GAM)[["dev.expl"]][1]*100, digits = 3),"%")) +
+  
+  annotate(geom="text", size=8, x=20, y=62, 
+           label=paste("Deviance (2070) =", 
+                       signif(summary(BIG.GAIN.2070.GAM)[["dev.expl"]][1]*100, digits = 3),"%")) 
 #theme(legend.position="none")  #this remove legend on the right
 
 fig2B
@@ -159,16 +173,25 @@ summary(ALL.LOSS.2030.GAM)[["dev.expl"]][1]
 dev.new(width=17, height=13)
 fig2C<-ggplot(allSUAs, aes(x=CURRENT_MAT, y=Species.loss, color=factor(PERIOD))) +
   
-  geom_point(size = 6) + theme_bw() +  theme(axis.title.x=element_text(margin = margin(t = 20)), axis.title.y=element_text(margin = margin(r = 20)),
-                                             axis.text.x=element_text(margin = margin(t = 10)), axis.text.y=element_text(margin = margin(r = 10)), 
+  geom_point(size = 6) + theme_bw() +  theme(axis.title.x=element_text(margin = margin(t = 20)), 
+                                             axis.title.y=element_text(margin = margin(r = 20)),
+                                             axis.text.x=element_text(margin = margin(t = 10)), 
+                                             axis.text.y=element_text(margin = margin(r = 10)), 
                                              legend.box.margin=margin(10,10,10,10)) +
   
   geom_smooth(method="gam", formula = y ~ s(x, k = 3), se=FALSE, fullrange=TRUE, size = 2) +
-  xlab(bquote('Current MAT of SUA (1960-1990)')) + ylim(0,80) + ylab(bquote('Species lost (%)')) + theme(text = element_text(size=30)) + 
+  xlab(bquote('Current MAT of SUA (1960-1990)')) + ylim(0,80) + ylab(bquote('Species lost (%)')) + 
+  theme(text = element_text(size=30)) + 
   scale_color_manual(values=c("darkgrey", "black"), name = "Period") + 
   
-  annotate(geom="text", size=8, x=20, y=7, label=paste("Deviance (2030) =", signif(summary(ALL.LOSS.2030.GAM)[["dev.expl"]][1]*100, digits = 3),"%")) +
-  annotate(geom="text", size=8, x=20, y=4, label=paste("Deviance (2070) =", signif(summary(ALL.LOSS.2070.GAM)[["dev.expl"]][1]*100, digits = 3),"%")) +
+  annotate(geom="text", size=8, x=20, y=7, 
+           label=paste("Deviance (2030) =", 
+                       signif(summary(ALL.LOSS.2030.GAM)[["dev.expl"]][1]*100, digits = 3),"%")) +
+  
+  annotate(geom="text", size=8, x=20, y=4, 
+           label=paste("Deviance (2070) =", 
+                       signif(summary(ALL.LOSS.2070.GAM)[["dev.expl"]][1]*100, digits = 3),"%")) +
+  
   theme(legend.position="none")  #this remove legend on the right
 
 fig2C
@@ -200,8 +223,10 @@ dev.new(width=17, height=13)
 
 fig2D<-ggplot(bigSUAs, aes(x=CURRENT_MAT, y=Species.loss, color=factor(PERIOD))) +
   
-  geom_point(size = 6) + theme_bw() +  theme(axis.title.x=element_text(margin = margin(t = 20)), axis.title.y=element_text(margin = margin(r = 20)),
-                                             axis.text.x=element_text(margin = margin(t = 10)), axis.text.y=element_text(margin = margin(r = 10)), 
+  geom_point(size = 6) + theme_bw() +  theme(axis.title.x=element_text(margin = margin(t = 20)), 
+                                             axis.title.y=element_text(margin = margin(r = 20)),
+                                             axis.text.x=element_text(margin = margin(t = 10)), 
+                                             axis.text.y=element_text(margin = margin(r = 10)), 
                                              legend.box.margin=margin(10,10,10,10)) +
   
   geom_smooth(method="gam", formula = y ~ s(x, k = 3), se=FALSE, fullrange=TRUE, size = 2) +
@@ -209,12 +234,16 @@ fig2D<-ggplot(bigSUAs, aes(x=CURRENT_MAT, y=Species.loss, color=factor(PERIOD)))
   ylab(bquote('')) + theme(text = element_text(size=30)) + 
   
   scale_color_manual(values=c("darkgrey", "black"), name = "Period") + 
-  annotate(geom="text", size=8, x=20, y=7, label=paste("Deviance (2030) =", signif(summary(BIG.LOSS.2030.GAM)[["dev.expl"]][1]*100, digits = 3),"%")) +
-  annotate(geom="text", size=8, x=20, y=4, label=paste("Deviance (2070) =", signif(summary(BIG.LOSS.2070.GAM)[["dev.expl"]][1]*100, digits = 3),"%")) + 
+  annotate(geom="text", size=8, x=20, y=7, 
+           label=paste("Deviance (2030) =", 
+                       signif(summary(BIG.LOSS.2030.GAM)[["dev.expl"]][1]*100, digits = 3),"%")) +
+  
+  annotate(geom="text", size=8, x=20, y=4, 
+           label=paste("Deviance (2070) =", 
+                       signif(summary(BIG.LOSS.2070.GAM)[["dev.expl"]][1]*100, digits = 3),"%")) + 
   theme(legend.position="none")  #this remove legend on the right
 
 fig2D
-
 
 
 
