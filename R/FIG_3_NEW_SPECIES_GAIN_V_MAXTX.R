@@ -83,12 +83,12 @@ fig2A<-ggplot(allSUAs, aes(x=MAXT, y=Species.gain, color=factor(PERIOD))) +
   xlab(bquote('')) + ylim(0,70) + ylab(bquote('New species gained (%)')) + ggtitle("All SUAs") + 
   theme(text = element_text(size=30)) + 
   
-  scale_color_manual(values=c("darkgrey", "black"), name = "Period") + 
-  annotate(geom="text", size=8, x=20, y=65, 
+  scale_color_manual(values = c("darkgrey", "black"), name = "Period") + 
+  annotate(geom="text", size = 8, -Inf, Inf, hjust = 0, vjust = 1, 
            label=paste("Deviance (2030) =", 
                        signif(summary(ALL.GAIN.2030.GAM)[["dev.expl"]][1]*100, digits = 3),"%")) +
   
-  annotate(geom="text", size=8, x=20, y=62, 
+  annotate(geom="text", size=8, -Inf, Inf, hjust = 0, vjust = 3,  
            label=paste("Deviance (2070) =", 
                        signif(summary(ALL.GAIN.2070.GAM)[["dev.expl"]][1]*100, digits = 3),"%")) +
   
@@ -135,11 +135,11 @@ fig2B<-ggplot(bigSUAs, aes(x=MAXT, y=Species.gain, color=factor(PERIOD))) +
   ylab(bquote('')) + ggtitle("Largest SUAs") + theme(text = element_text(size=30)) + 
   
   scale_color_manual(values=c("darkgrey", "black"), name = "Period") + 
-  annotate(geom="text", size=8, x=20, y=65, 
+  annotate(geom="text", size=8, -Inf, Inf, hjust = 0, vjust = 1,        
            label=paste("Deviance (2030) =", 
                        signif(summary(BIG.GAIN.2030.GAM)[["dev.expl"]][1]*100, digits = 3),"%")) +
   
-  annotate(geom="text", size=8, x=20, y=62, 
+  annotate(geom="text", size=8, -Inf, Inf, hjust = 0, vjust = 3, 
            label=paste("Deviance (2070) =", 
                        signif(summary(BIG.GAIN.2070.GAM)[["dev.expl"]][1]*100, digits = 3),"%")) 
 #theme(legend.position="none")  #this remove legend on the right
@@ -184,11 +184,11 @@ fig2C<-ggplot(allSUAs, aes(x=MAXT, y=Species.loss, color=factor(PERIOD))) +
   theme(text = element_text(size=30)) + 
   scale_color_manual(values=c("darkgrey", "black"), name = "Period") + 
   
-  annotate(geom="text", size=8, x=20, y=7, 
+  annotate(geom="text", size=8, -Inf, Inf, hjust = 0, vjust = 1, 
            label=paste("Deviance (2030) =", 
                        signif(summary(ALL.LOSS.2030.GAM)[["dev.expl"]][1]*100, digits = 3),"%")) +
   
-  annotate(geom="text", size=8, x=20, y=4, 
+  annotate(geom="text", size=8, -Inf, Inf, hjust = 0, vjust = 3,   
            label=paste("Deviance (2070) =", 
                        signif(summary(ALL.LOSS.2070.GAM)[["dev.expl"]][1]*100, digits = 3),"%")) +
   
@@ -234,11 +234,11 @@ fig2D<-ggplot(bigSUAs, aes(x=MAXT, y=Species.loss, color=factor(PERIOD))) +
   ylab(bquote('')) + theme(text = element_text(size=30)) + 
   
   scale_color_manual(values=c("darkgrey", "black"), name = "Period") + 
-  annotate(geom="text", size=8, x=20, y=7, 
+  annotate(geom="text", size=8, -Inf, Inf, hjust = 0, vjust = 1,  
            label=paste("Deviance (2030) =", 
                        signif(summary(BIG.LOSS.2030.GAM)[["dev.expl"]][1]*100, digits = 3),"%")) +
   
-  annotate(geom="text", size=8, x=20, y=4, 
+  annotate(geom="text", size=8, -Inf, Inf, hjust = 0, vjust = 3,  
            label=paste("Deviance (2070) =", 
                        signif(summary(BIG.LOSS.2070.GAM)[["dev.expl"]][1]*100, digits = 3),"%")) + 
   theme(legend.position="none")  #this remove legend on the right

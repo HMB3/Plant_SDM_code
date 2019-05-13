@@ -391,7 +391,7 @@ if(save_data == "TRUE") {
 #########################################################################################################################
 ## We can count of all the species that are being lost, gained or remaining stable in each SUA
 ## However, this doesn't give us the turner of species, because it ignores the species identities
-## SUA.PREDICT = readRDS(paste0('output/tables/MAXENT_SUA_PRESENCE_KOPPEN_',    save_run, '.rds'))
+SUA.PREDICT = readRDS(paste0('output/tables/MAXENT_SUA_PRESENCE_KOPPEN_',    save_run, '.rds'))
 length(unique(SUA.PREDICT$SPECIES))
 SUA.PLOT.GOOD = subset(SUA.PREDICT, MAXENT_RATING < 3) 
 unique(SUA.PLOT.GOOD$MAXENT_RATING)

@@ -148,11 +148,15 @@ message('Creating summary stats for ', length(GBIF.spp), ' species in the set ',
 
 
 #########################################################################################################################
-## First, create a file list for each model run: Try crunching this into just the species required
+## First, create a file list for each model run:
+## First, make a list of all the species with models, then restrict them to just the models on the GBIF.spp list 
 map_spp_list  = gsub(" ", "_", GBIF.spp)
+map_spp_patt  = paste0(map_spp_list, collapse = "|")
+
 maxent.tables = list.files(results_dir, pattern = "maxent_fitted.rds", recursive = TRUE)
 maxent.tables = maxent.tables[-grep("xval", maxent.tables)]
-length(maxent.tables) 
+maxent.tables = stringr::str_subset(maxent.tables, map_spp_patt)
+length(maxent.tables)
 
 
 #########################################################################################################################

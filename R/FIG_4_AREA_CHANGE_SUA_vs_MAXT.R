@@ -8,8 +8,8 @@
 
 
 ## This file should only have gain and loss - never and stable were omitted
-#SUA.PLOT<-readRDS(file="C:/Users/MQ20174608/Documents/WPW project documents/Papers/Hugh/Fig3/SUA_GAIN_LOSS_PLOT_SUA_ANALYSIS_NATIVE_GOOD.rds")
-SUA.PLOT  = readRDS(paste0(DATA_path, 'SUA_GAIN_LOSS_', save_run, '.rds'))
+#SUA.PLOT<-readRDS(file="C:/Users/Hugh/Fig3/SUA_GAIN_LOSS_PLOT_SUA_ANALYSIS_NATIVE_GOOD.rds")
+#SUA.PLOT  = readRDS(paste0(DATA_path, 'SUA_GAIN_LOSS_', save_run, '.rds'))
 unique(SUA.PLOT$AREA_CHANGE)
 unique(SUA.PLOT$PERIOD)
 unique(SUA.PLOT$ClimateZ)
@@ -66,9 +66,7 @@ SUA.plot.cols = brewer.pal(12, "Paired")
 
 
 ###############################################################################################
-### Fig 3A 
-
-
+## Fig 3A 
 ## Run GAMs of species gains vs MAXT for 2070, ALL SUA
 ALL.GAIN.2070.GAM = gam(SPECIES_GAIN ~ s (CURRENT_MAXT, k = 3), 
                         data = allSUAsGAIN2070, 
@@ -104,11 +102,11 @@ fig3A<-ggplot(allSUAsGAIN, aes(x=CURRENT_MAXT, y=SPECIES_GAIN, color=factor(PERI
   scale_color_manual(values=c("darkgrey", "black"), name = "Period") + 
   
   ##
-  annotate(geom="text", size=8, x=20, y=65, 
+  annotate(geom="text", size=8, -Inf, Inf, hjust = 0, vjust = 1,
            label=paste("Deviance (2030) =", 
                        signif(summary(ALL.GAIN.2030.GAM)[["dev.expl"]][1]*100, digits = 3),"%")) +
   
-  annotate(geom="text", size=8, x=20, y=62, 
+  annotate(geom="text", size=8, -Inf, Inf, hjust = 0, vjust = 3,
            label=paste("Deviance (2070) =", 
                        signif(summary(ALL.GAIN.2070.GAM)[["dev.expl"]][1]*100, digits = 3),"%")) +
   
@@ -130,15 +128,18 @@ fig3A
 BIG.GAIN.2070.GAM = gam(SPECIES_GAIN ~ s (CURRENT_MAXT, k = 3), 
                         data = bigSUAsGAIN2070, 
                         method = "REML")
-summary(BIG.GAIN.2070.GAM)[["dev.expl"]][1]               
+summary(BIG.GAIN.2070.GAM)[["dev.expl"]][1]
+
+
 ######################################################
 ## Run GAMs of species gains vs MAXT for 2030, BIG SUA
 BIG.GAIN.2030.GAM = gam(SPECIES_GAIN ~ s (CURRENT_MAXT, k = 3), 
                         data = bigSUAsGAIN2030, 
                         method = "REML")
-summary(BIG.GAIN.2030.GAM)[["dev.expl"]][1]             
-######################################################
+summary(BIG.GAIN.2030.GAM)[["dev.expl"]][1]
 
+
+######################################################
 dev.new(width=17, height=13)
 fig3B<-ggplot(bigSUAsGAIN, aes(x=CURRENT_MAXT, y=SPECIES_GAIN, color=factor(PERIOD))) +
   
@@ -154,10 +155,10 @@ fig3B<-ggplot(bigSUAsGAIN, aes(x=CURRENT_MAXT, y=SPECIES_GAIN, color=factor(PERI
   ylab(bquote('')) + ggtitle("Largest SUAs") + theme(text = element_text(size=30)) + 
   scale_color_manual(values=c("darkgrey", "black"), name = "Period") + 
   
-  annotate(geom="text", size=8, x=20, y=65, 
+  annotate(geom="text", size=8, -Inf, Inf, hjust = 0, vjust = 1,
            label=paste("Deviance (2030) =", 
                        signif(summary(BIG.GAIN.2030.GAM)[["dev.expl"]][1]*100, digits = 3),"%")) +
-  annotate(geom="text", size=8, x=20, y=62, 
+  annotate(geom="text", size=8, -Inf, Inf, hjust = 0, vjust = 3, 
            label=paste("Deviance (2070) =", 
                        signif(summary(BIG.GAIN.2070.GAM)[["dev.expl"]][1]*100, digits = 3),"%")) 
 #theme(legend.position="none")  #this remove legend on the right
@@ -177,13 +178,17 @@ fig3B
 ALL.LOSS.2070.GAM = gam(SPECIES_LOSS ~ s (CURRENT_MAXT, k = 3), 
                         data = allSUAsLOSS2070, 
                         method = "REML")
-summary(ALL.LOSS.2070.GAM)[["dev.expl"]][1]               
+summary(ALL.LOSS.2070.GAM)[["dev.expl"]][1]
+
+
 ######################################################
 ## Run GAMs of species losses vs MAXT for 2030, ALL SUA
 ALL.LOSS.2030.GAM = gam(SPECIES_LOSS ~ s (CURRENT_MAXT, k = 3), 
                         data = allSUAsLOSS2030, 
                         method = "REML")
-summary(ALL.LOSS.2030.GAM)[["dev.expl"]][1]             
+summary(ALL.LOSS.2030.GAM)[["dev.expl"]][1]  
+
+
 ######################################################
 
 dev.new(width=17, height=13)
@@ -203,11 +208,11 @@ fig3C<-ggplot(allSUAsLOSS, aes(x=CURRENT_MAXT, y=SPECIES_LOSS, color=factor(PERI
   theme(text = element_text(size=30)) + 
   scale_color_manual(values=c("darkgrey", "black"), name = "Period") + 
   
-  annotate(geom="text", size=8, x=20, y=7, 
+  annotate(geom="text", size=8, -Inf, Inf, hjust = 0, vjust = 1,
            label=paste("Deviance (2030) =", 
                        signif(summary(ALL.LOSS.2030.GAM)[["dev.expl"]][1]*100, digits = 3),"%")) +
   
-  annotate(geom="text", size=8, x=20, y=4, 
+  annotate(geom="text", size=8, -Inf, Inf, hjust = 0, vjust = 3, 
            label=paste("Deviance (2070) =", 
                        signif(summary(ALL.LOSS.2070.GAM)[["dev.expl"]][1]*100, digits = 3),"%")) +
   theme(legend.position="none")  #this remove legend on the right
@@ -255,11 +260,11 @@ fig3D<-ggplot(bigSUAsLOSS, aes(x=CURRENT_MAXT, y=SPECIES_LOSS, color=factor(PERI
   
   scale_color_manual(values=c("darkgrey", "black"), name = "Period") + 
   
-  annotate(geom="text", size=8, x=20, y=7, 
+  annotate(geom="text", size=8, -Inf, Inf, hjust = 0, vjust = 1, 
            label=paste("Deviance (2030) =", 
                        signif(summary(BIG.LOSS.2030.GAM)[["dev.expl"]][1]*100, digits = 3),"%")) +
   
-  annotate(geom="text", size=8, x=20, y=4, 
+  annotate(geom="text", size=8, -Inf, Inf, hjust = 0, vjust = 3,
            label=paste("Deviance (2070) =", 
                        signif(summary(BIG.LOSS.2070.GAM)[["dev.expl"]][1]*100, digits = 3),"%")) +
   
