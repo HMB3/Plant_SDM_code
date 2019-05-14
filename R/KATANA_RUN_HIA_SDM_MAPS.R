@@ -175,7 +175,7 @@ Sys.setenv("PBS_ARRAYID" = 1)
 
 
 ## Run the species 500 or 1000 at a time
-GBIF.spp = unique(WPW.spp)[5]  ## your list of species
+GBIF.spp = unique(WPW.spp)  ## your list of species
 
 
 ## Subset for PBS array jobs
