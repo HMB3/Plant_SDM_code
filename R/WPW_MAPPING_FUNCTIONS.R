@@ -924,37 +924,54 @@ hatch <- function(x, density) {
   # density: approx number of lines to plot
   require(sp)
   require(raster)
-  
   e <- extent(x)
   w <- diff(e[1:2])
-  
   x1 <- seq(xmin(e), xmax(e)+w, length.out=floor(density*2))
   x0 <- seq(xmin(e)-w, xmax(e), length.out=floor(density*2))
-  
   y0 <- rep(ymin(e), floor(density*2))
   y1 <- rep(ymax(e), floor(density*2))
-  
   ll <- spLines(mapply(function(x0, y0, x1, y1) {
-    
     rbind(c(x0, y0), c(x1, y1))
-    
   }, x0, y0, x1, y1, 
-  
   SIMPLIFY=FALSE))  
   if(is(x, 'sf')) {
-    
     require(sf)
     ll <- st_as_sf(ll)
     st_crs(ll) <- st_crs(x)
     st_intersection(ll, x)
-    
   } else {
-    
     proj4string(ll) <- proj4string(x)
-    raster::intersect(ll, x)
-    
+    intersect(ll, x)
   }
-  
+}
+
+
+
+
+#########################################################################################################################
+## Plot a rasterVis::levelplot with a colour ramp diverging around zero
+diverge0 <- function(p, ramp) {
+  # p: a trellis object resulting from rasterVis::levelplot
+  # ramp: the name of an RColorBrewer palette (as character), a character 
+  #       vector of colour names to interpolate, or a colorRampPalette.
+  require(RColorBrewer)
+  require(rasterVis)
+  if(length(ramp)==1 && is.character(ramp) && ramp %in% 
+     row.names(brewer.pal.info)) {
+    ramp <- suppressWarnings(colorRampPalette(brewer.pal(11, ramp)))
+  } else if(length(ramp) > 1 && is.character(ramp) && all(ramp %in% colors())) {
+    ramp <- colorRampPalette(ramp)
+  } else if(!is.function(ramp)) 
+    stop('ramp should be either the name of a RColorBrewer palette, ', 
+         'a vector of colours to be interpolated, or a colorRampPalette.')
+  rng <- range(p$legend[[1]]$args$key$at)
+  s <- seq(-max(abs(rng)), max(abs(rng)), len=1001)
+  i <- findInterval(rng[which.min(abs(rng))], s)
+  zlim <- switch(which.min(abs(rng)), `1`=i:(1000+1), `2`=1:(i+1))
+  p$legend[[1]]$args$key$at <- s[zlim]
+  p[[grep('^legend', names(p))]][[1]]$args$key$col <- ramp(1000)[zlim[-length(zlim)]]
+  p$panel.args.common$col.regions <- ramp(1000)[zlim[-length(zlim)]]
+  p
 }
 
 
@@ -963,12 +980,14 @@ hatch <- function(x, density) {
 
 #########################################################################################################################
 ## This function turns a raster into a polygon 
-polygonizer <- function(x, outshape=NULL, readpoly=TRUE, 
+polygonizer <- function(x, outshape=NULL, pypath=NULL, readpoly=TRUE, 
                         fillholes=FALSE, aggregate=FALSE, 
                         quietish=TRUE) {
   # x: an R Raster layer, or the file path to a raster file recognised by GDAL 
   # outshape: the path to the output shapefile (if NULL, a temporary file will 
   #           be created) 
+  # pypath: the path to gdal_polygonize.py or OSGeo4W.bat (if NULL, the function 
+  #         will attempt to determine the location)
   # readpoly: should the polygon shapefile be read back into R, and returned by
   #           this function? (logical) 
   # fillholes: should holes be deleted (i.e., their area added to the containing
@@ -977,8 +996,16 @@ polygonizer <- function(x, outshape=NULL, readpoly=TRUE,
   # quietish: should (some) messages be suppressed? (logical)
   if (isTRUE(readpoly) || isTRUE(fillholes)) require(rgdal)
   if (isTRUE(aggregate)) require(rgeos)
-  cmd <- 'c:/OSGeo4W64/OSGeo4W.bat'
-  pypath <- 'gdal_polygonize'
+  if (is.null(pypath)) {
+    cmd <- Sys.which('OSGeo4W.bat')
+    pypath <- 'gdal_polygonize'
+    if(cmd=='') {
+      cmd <- 'python'
+      pypath <- Sys.which('gdal_polygonize.py')
+      if (!file.exists(pypath)) 
+        stop("Could not find gdal_polygonize.py or OSGeo4W on your system.") 
+    }
+  }
   if (!is.null(outshape)) {
     outshape <- sub('\\.shp$', '', outshape)
     f.exists <- file.exists(paste(outshape, c('shp', 'shx', 'dbf'), sep='.'))
