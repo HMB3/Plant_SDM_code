@@ -75,7 +75,7 @@ if (on_windows) {
   
   cmd_args <- commandArgs(TRUE)
   rdata_file = cmd_args[1]
-  if (is.na(rdata_file)) {rdata_file = "../KATANA_RUN_DATA.RData"}
+  if (is.na(rdata_file)) {rdata_file = "KATANA_RUN_DATA.RData"}
   message (rdata_file)
   load(rdata_file)
   
@@ -171,7 +171,7 @@ if (on_windows == "FALSE") {
 
 #########################################################################################################################
 ## Now set global analysis variables :: these assume you are using an R project folder structure
-Sys.setenv("PBS_ARRAYID" = 1)
+#Sys.setenv("PBS_ARRAYID" = 1)
 
 
 ## Run the species 500 or 1000 at a time
@@ -179,7 +179,7 @@ GBIF.spp = unique(WPW.spp)  ## your list of species
 
 
 ## Subset for PBS array jobs
-if (length(Sys.getenv("PBS_ARRAYID"))) {
+if (Sys.getenv("PBS_ARRAYID") != "") {
 
     i = as.integer (Sys.getenv("PBS_ARRAYID"))
     GBIF.spp = GBIF.spp[1:length(GBIF.spp) %% 200 == i]
