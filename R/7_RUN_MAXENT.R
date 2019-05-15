@@ -153,14 +153,27 @@ message('Creating summary stats for ', length(GBIF.spp), ' species in the set ',
 map_spp_list  = gsub(" ", "_", GBIF.spp)
 map_spp_patt  = paste0(map_spp_list, collapse = "|")
 message ("map_spp_list head:")
-message (paste (head(map_spp_list)))
+message (paste (head(map_spp_list), collapse=","))
 
-maxent.tables = list.files(results_dir, pattern = "maxent_fitted.rds", recursive = TRUE)
+#message ("DEBUGDEBUG - remember to disable next line")
+#map_spp_list = head (map_spp_list)
+
+message (results_dir)
+maxent.tables = lapply (map_spp_list, FUN = function (x) {paste(results_dir , x, "full/maxent_fitted.rds", sep="/")})
 message (paste ("maxent.tables has this many entries:", length(maxent.tables)))
-maxent.tables = maxent.tables[-grep("xval", maxent.tables)]
+message (paste (head (maxent.tables), collapse=","))
+exists = lapply (maxent.tables, FUN = function (x) {file.exists (x)})
+exists = unlist(exists)
+message (paste (head (exists), collapse=","))
+maxent.tables = maxent.tables[exists]
+
+#maxent.tables = list.files(results_dir, pattern = "maxent_fitted.rds", recursive = TRUE)
 message (paste ("maxent.tables has this many entries:", length(maxent.tables)))
+#maxent.tables = maxent.tables[-grep("xval", maxent.tables)]
+#message (paste ("maxent.tables has this many entries:", length(maxent.tables)))
 maxent.tables = stringr::str_subset(maxent.tables, map_spp_patt)
 message (paste ("maxent.tables has this many entries:", length(maxent.tables)))
+message (paste (head(maxent.tables), collapse=","))
 
 
 #########################################################################################################################
@@ -171,7 +184,9 @@ MAXENT.RESULTS <- maxent.tables %>%
   
   ## Pipe the list into lapply
   lapply(function(x) {
-    
+#  kludge
+x = gsub(paste0(results_dir, "/"), "", x) 
+   message (x)
     #############################################################
     ## load model
     if (grepl("BS", results_dir)) {
@@ -239,8 +254,14 @@ percent.10.log = percent.10.log$Logistic_threshold
 
 #########################################################################################################################
 ## Create a list of the omission files
-omission.tables = list.files(results_dir, pattern = 'species_omission\\.csv$', full.names = TRUE, recursive = TRUE)
+#omission.tables = list.files(results_dir, pattern = 'species_omission\\.csv$', full.names = TRUE, recursive = TRUE)
+omission.tables = lapply (map_spp_list, FUN = function (x) {paste(results_dir , x, "full/species_omission.csv", sep="/")})
+message (head (omission.tables))
+exists = lapply (omission.tables, FUN = function (x) {file.exists (x)})
+exists = unlist(exists)
+omission.tables = omission.tables[exists]
 
+message (head (omission.tables))
 
 ## Get the maxium TSS value using the omission data : use _training_ ommission data only
 Max_tss <- sapply(omission.tables, function(file) {
