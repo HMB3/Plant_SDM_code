@@ -155,7 +155,15 @@ map_spp_patt  = paste0(map_spp_list, collapse = "|")
 message ("map_spp_list head:")
 message (paste (head(map_spp_list)))
 
-maxent.tables = list.files(results_dir, pattern = "maxent_fitted.rds", recursive = TRUE)
+message (results_dir)
+maxent.tables = lapply (map_spp_list, FUN = function (x) {paste(results_dir , x, "full/maxent_fitted.rds", sep="/")})
+message (paste (head (maxent.tables)))
+exists = lapply (maxent.tables, FUN = function (x) {file.exists (x)})
+exists = unlist(exists)
+message (paste (head (exists)))
+maxent.tables = maxent.tables[exists]
+
+#maxent.tables = list.files(results_dir, pattern = "maxent_fitted.rds", recursive = TRUE)
 message (paste ("maxent.tables has this many entries:", length(maxent.tables)))
 maxent.tables = maxent.tables[-grep("xval", maxent.tables)]
 message (paste ("maxent.tables has this many entries:", length(maxent.tables)))
@@ -239,7 +247,11 @@ percent.10.log = percent.10.log$Logistic_threshold
 
 #########################################################################################################################
 ## Create a list of the omission files
-omission.tables = list.files(results_dir, pattern = 'species_omission\\.csv$', full.names = TRUE, recursive = TRUE)
+#omission.tables = list.files(results_dir, pattern = 'species_omission\\.csv$', full.names = TRUE, recursive = TRUE)
+omission_tables = lapply (map_spp_list, FUN = function (x) {paste(results_dir , x, "full/species_omission.csv", sep="/")})
+exists = lapply (omission_tables, FUN = function (x) {file.exists (x)})
+exists = unlist(exists)
+omission_tables = omission_tables[exists]
 
 
 ## Get the maxium TSS value using the omission data : use _training_ ommission data only
