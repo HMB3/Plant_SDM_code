@@ -90,7 +90,7 @@ lapply(map_spp, function(species){
       ## print the warning message to the screen as well
       file.create(file.path(dir_name, "map_2030_failed.txt"))
       message(species, ' failed for 2030') 
-      cat(cond$message, file=file.path(dir_name, "map_failed.txt"))
+      cat(paste(cond), file=file.path(dir_name, "map_failed.txt"))
       warning(species, ': ', cond$message)
     })
   
