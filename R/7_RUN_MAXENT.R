@@ -153,7 +153,7 @@ message('Creating summary stats for ', length(GBIF.spp), ' species in the set ',
 map_spp_list  = gsub(" ", "_", GBIF.spp)
 map_spp_patt  = paste0(map_spp_list, collapse = "|")
 message ("map_spp_list head:")
-message (head(map_spp_list))
+message (paste (head(map_spp_list)))
 
 maxent.tables = list.files(results_dir, pattern = "maxent_fitted.rds", recursive = TRUE)
 message (paste ("maxent.tables has this many entries:", length(maxent.tables)))
@@ -230,8 +230,8 @@ MAXENT.RESULTS <- maxent.tables %>%
 ## Now create a list of the '10th percentile training presence Logistic threshold'. This is used in step 8 to threshold
 ## the maps to just areas above the threshold.
 message ("MAXENT.RESULTS columns") 
-message (colnames (MAXENT.RESULTS))
-message (dim (MAXENT.RESULTS))
+message (paste (colnames (MAXENT.RESULTS)))
+message (paste (dim (MAXENT.RESULTS)))
 summary(MAXENT.RESULTS["Logistic_threshold"])   
 percent.10.log = as.list(MAXENT.RESULTS["Logistic_threshold"])  
 percent.10.log = percent.10.log$Logistic_threshold
