@@ -414,25 +414,25 @@ if(calc_niche == "TRUE") {
   
   
   ## Create df for worldclim variables...............................................................DIANA CHANGE TO AUS
-  ENV.DF = NICHE.1KM %>% 
+  ENV.DF = NICHE.AUS %>% 
     as.data.frame() %>% 
     dplyr::select(., searchTaxon, one_of(env.variables))
   
   
   ## Create df for drought variables
-  DROUGHT.DF = NICHE.1KM %>% 
+  DROUGHT.DF = NICHE.AUS %>% 
     as.data.frame() %>% 
     dplyr::select(., searchTaxon, one_of(drought.variables))
   
   
   ## Create df for heat variables
-  HEAT.DF = NICHE.1KM %>% 
+  HEAT.DF = NICHE.AUS %>% 
     as.data.frame() %>% 
     dplyr::select(., searchTaxon, one_of(heat.variables))
   
   
   ## Create df for radiation variables
-  RAD.DF = NICHE.1KM %>% 
+  RAD.DF = NICHE.AUS %>% 
     as.data.frame() %>% 
     dplyr::select(., searchTaxon, one_of(rad.variables))
   
@@ -442,11 +442,11 @@ if(calc_niche == "TRUE") {
   
   
   #########################################################################################################################
-  ## Remove the NA worldclim data :: 99% retained
+  ## Remove the NA worldclim data :: check these make sense............................................................... 
   ENV.DAT = completeFun(ENV.DF, "PET")
   head(niche_estimate (DF = ENV.DAT, colname = "Annual_mean_temp"))[1:5]  ## Including the q05 and q95
   
-  message(round(nrow(ENV.DAT)/nrow(ENV.DF)*100, 2), " % records retained")
+  message(round(nrow(ENV.DAT)/nrow(ENV.DF)*100, 2), " % records retained for worldclim")
   message(round(length(unique(ENV.DAT$searchTaxon))/
                   length(unique(ENV.DF$searchTaxon))*100, 2), "% species retained for worldclim")
   
@@ -454,7 +454,7 @@ if(calc_niche == "TRUE") {
   DROUGHT.DAT = completeFun(DROUGHT.DF, "Drought_freq_extr")
   head(niche_estimate (DF = DROUGHT.DAT, colname = "Drought_freq_extr"))[1:5]  ## Including the q05 and q95
   
-  message(round(nrow(DROUGHT.DAT)/nrow(DROUGHT.DF)*100, 2), " % records retained")
+  message(round(nrow(DROUGHT.DAT)/nrow(DROUGHT.DF)*100, 2), " % records retained for drought")
   message(round(length(unique(DROUGHT.DAT$searchTaxon))/
                   length(unique(ENV.DF$searchTaxon))*100, 2), "% species retained for drought")
   
@@ -463,7 +463,7 @@ if(calc_niche == "TRUE") {
   HEAT.DAT = completeFun(HEAT.DF, "HW_CUM_ALL")
   head(niche_estimate (DF = HEAT.DAT, colname = "HW_CUM_ALL"))[1:5]  ## Including the q05 and q95
   
-  message(round(nrow(HEAT.DAT)/nrow(HEAT.DF)*100, 2), " % records retained")
+  message(round(nrow(HEAT.DAT)/nrow(HEAT.DF)*100, 2), " % records retained for heat")
   message(round(length(unique(HEAT.DAT$searchTaxon))/
                   length(unique(ENV.DF$searchTaxon))*100, 2), "% species retained for heat")
   
@@ -471,7 +471,7 @@ if(calc_niche == "TRUE") {
   RAD.DAT = completeFun(RAD.DF, "mean_monthly_par")
   head(niche_estimate (DF = RAD.DAT, colname = "mean_monthly_par"))[1:5]  ## Including the q05 and q95
   
-  message(round(nrow(RAD.DAT)/nrow(RAD.DF)*100, 2), " % records retained for radiation")
+  message(round(nrow(RAD.DAT)/nrow(RAD.DF)*100, 2), " % records retained for radiation for radiation")
   message(round(length(unique(RAD.DAT$searchTaxon))/
                   length(unique(ENV.DF$searchTaxon))*100, 2), "% species retained for radiation")
   
@@ -577,20 +577,20 @@ if(calc_niche == "TRUE") {
   #########################################################################################################################
   ## Add global counts for each species, and record the total number of taxa processed
   ## This is actually redundant - the records will the be the same as the maxent_records
-  Global_records = as.data.frame(table(NICHE.1KM$searchTaxon))
-  names(Global_records) = c("searchTaxon", "Global_records")
-  identical(nrow(Global_records), nrow(ENV.NICHE))
+  # Global_records = as.data.frame(table(NICHE.AUS$searchTaxon))
+  # names(Global_records) = c("searchTaxon", "Global_records")
+  # identical(nrow(Global_records), nrow(ENV.NICHE))
   
   
   ## Add the count of Australian records - this is not necessarily the same as maxent_records 
-  # Aus_records = as.data.frame(table(NICHE.AUS.DF$searchTaxon))
-  # names(Aus_records) = c("searchTaxon", "Aus_records")
-  # identical(nrow(Aus_records), nrow(AUS.NICHE))
+  Aus_records = as.data.frame(table(NICHE.AUS$searchTaxon))
+  names(Aus_records) = c("searchTaxon", "Aus_records")
+  identical(nrow(Aus_records), nrow(ENV.NICHE))
   
   
   #########################################################################################################################
   ## Join all the tables together - this allows all the data to be used for each vaiable group
-  ALL.NICHE = join_all(list(Global_records, ENV.NICHE, DROUGHT.NICHE, HEAT.NICHE, RAD.NICHE),  by = 'searchTaxon', type = 'full')
+  ALL.NICHE = join_all(list(Aus_records, ENV.NICHE, DROUGHT.NICHE, HEAT.NICHE, RAD.NICHE), by = 'searchTaxon', type = 'full')
   
 
   

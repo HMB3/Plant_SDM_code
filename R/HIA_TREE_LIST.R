@@ -428,6 +428,9 @@ EURO.NURSE.LOC      = read.csv("./data/base/HIA_LIST/URBAN/Euro_garden_flora_nur
 ## Experimental trait lists ::
 #HEAT.RISK  = read.csv("./data/base/HIA_LIST/RENEE/MOD3_HEAT_RANKS_072018.csv",                   stringsAsFactors = FALSE)
 #TRAIT.SPP  = read.csv("./data/base/HIA_LIST/RENEE/RankingTraits_Control_latest.csv",              stringsAsFactors = FALSE)
+DROUGHT.TRAIT  = read.csv("./data/base/HIA_LIST/RENEE/RankingTraits_Control_2019.csv",        stringsAsFactors = FALSE)
+names(DROUGHT.TRAIT)[names(DROUGHT.TRAIT) == 'Species'] <- 'searchTaxon'
+
 TRAIT.SPP  = read.csv("./data/base/HIA_LIST/RENEE/RankingTraits_ALL.csv",                     stringsAsFactors = FALSE)
 MOD.3.SPP  = read.csv("./data/base/HIA_LIST/RENEE/MOD3_OCT18.csv",                            stringsAsFactors = FALSE)
 MOD.2.SPP  = read.csv("./data/base/HIA_LIST/RENEE/MOD3_OCT18.csv",                            stringsAsFactors = FALSE)
