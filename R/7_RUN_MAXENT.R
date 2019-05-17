@@ -16,14 +16,14 @@ message('Running maxent models for ', length(GBIF.spp), ' species in the set ', 
 ##########################################################################################################################
 ## Load SDM table.
 if(read_data == "TRUE") {
-
+  
   ## This table will be all the records for all HIA species (~3.8k). These data will be re-processed, 1000 species at
   SDM.SPAT.OCC.BG = readRDS(paste0(DATA_path, 'SDM_SPAT_OCC_BG_ALL_EVERGREEN_SPP.rds'))
-
+  
 } else {
-
+  
   message(' skip file reading, not many species analysed')   ##
-
+  
 }
 
 
@@ -148,54 +148,60 @@ message('Creating summary stats for ', length(GBIF.spp), ' species in the set ',
 
 
 #########################################################################################################################
-## First, create a file list for each model run:
 ## First, make a list of all the species with models, then restrict them to just the models on the GBIF.spp list 
 map_spp_list  = gsub(" ", "_", GBIF.spp)
 map_spp_patt  = paste0(map_spp_list, collapse = "|")
 message ("map_spp_list head:")
 message (paste (head(map_spp_list), collapse=","))
 
+
+#########################################################################################################################
+## Now stop R from creating listing all the maxent files that have completed - this takes a long time
 #message ("DEBUGDEBUG - remember to disable next line")
 #map_spp_list = head (map_spp_list)
-
-message (results_dir)
+message(results_dir)
 maxent.tables = lapply (map_spp_list, FUN = function (x) {paste(results_dir , x, "full/maxent_fitted.rds", sep="/")})
-message (paste ("maxent.tables has this many entries:", length(maxent.tables)))
-message (paste (head (maxent.tables), collapse=","))
-exists = lapply (maxent.tables, FUN = function (x) {file.exists (x)})
-exists = unlist(exists)
-message (paste (head (exists), collapse=","))
-maxent.tables = maxent.tables[exists]
 
-#maxent.tables = list.files(results_dir, pattern = "maxent_fitted.rds", recursive = TRUE)
+
+## How many species have been modelled?
+message(paste("maxent.tables has this many entries:", length(maxent.tables)))
+message(paste(head (maxent.tables), collapse=","))
+sdm.exists = lapply(maxent.tables, FUN = function (x) {file.exists (x)})
+sdm.exists = unlist(sdm.exists)
+
+
+## Only list the intersection between the modelled species and 
+message(paste(head(sdm.exists), collapse=","))
+maxent.tables = maxent.tables[sdm.exists]
+
+
 message (paste ("maxent.tables has this many entries:", length(maxent.tables)))
-#maxent.tables = maxent.tables[-grep("xval", maxent.tables)]
-#message (paste ("maxent.tables has this many entries:", length(maxent.tables)))
 maxent.tables = stringr::str_subset(maxent.tables, map_spp_patt)
 message (paste ("maxent.tables has this many entries:", length(maxent.tables)))
 message (paste (head(maxent.tables), collapse=","))
 
 
 #########################################################################################################################
-## This section illustrates how to index the maxent model object, which could be applied to other methods     #---------#
-## Create a table of the results 
+## Now create a table of the results 
 ## x = maxent.tables[1]
 MAXENT.RESULTS <- maxent.tables %>%         
   
   ## Pipe the list into lapply
   lapply(function(x) {
-#  kludge
-x = gsub(paste0(results_dir, "/"), "", x) 
-   message (x)
+    
+    ## We don't need to skip species that haven't been modelled
+    x = gsub(paste0(results_dir, "/"), "", x) 
+    message (x)
+    
     #############################################################
-    ## load model
+    ## load the backwards selected model
     if (grepl("BS", results_dir)) {
       m = readRDS(paste0(results_dir, '/',  x))
-
+      
     } else {
       ## Get the background records from any source
       m = readRDS(paste0(results_dir, '/',  x))$me_full
-
+      
     }
     
     ## Get the number of Variables
@@ -229,7 +235,7 @@ x = gsub(paste0(results_dir, "/"), "", x)
                    Number_background_points,  
                    Logistic_threshold,
                    Omission_rate)
-
+    
     ## Remove path gunk, and species
     d$Species     = NULL
     d$searchTaxon = gsub("/full/maxent_fitted.rds", "", d$searchTaxon)
@@ -253,15 +259,19 @@ percent.10.log = percent.10.log$Logistic_threshold
 
 
 #########################################################################################################################
-## Create a list of the omission files
-#omission.tables = list.files(results_dir, pattern = 'species_omission\\.csv$', full.names = TRUE, recursive = TRUE)
+## Create a list of the omission files - again, don't do this for all the files, just the intersection
 omission.tables = lapply (map_spp_list, FUN = function (x) {paste(results_dir , x, "full/species_omission.csv", sep="/")})
 message (head (omission.tables))
-exists = lapply (omission.tables, FUN = function (x) {file.exists (x)})
-exists = unlist(exists)
-omission.tables = omission.tables[exists]
 
-message (head (omission.tables))
+
+## Only process the existing files 
+om.exists = lapply (omission.tables, FUN = function (x) {file.exists (x)})
+om.exists = unlist(om.exists)
+
+
+omission.tables = omission.tables[om.exists]
+message(head(omission.tables))
+
 
 ## Get the maxium TSS value using the omission data : use _training_ ommission data only
 Max_tss <- sapply(omission.tables, function(file) {
@@ -312,37 +322,37 @@ head(MAXENT.RESULTS, 20)[1:5]
 #########################################################################################################################
 ## Plot AUC vs. TSS
 # if (nrow(MAXENT.RESULTS) > 2) {
-  
-  # lm.auc = lm(MAXENT.RESULTS$Max_tss ~ MAXENT.RESULTS$Training_AUC)
-  
-  # ## Save this to file
-  # png(paste0('./output/maxent/', 'Maxent_run_summary_', save_run, '.png'), 16, 12, units = 'in', res = 500)
-  
-  # layout(matrix(c(1,1,2,3), 2, 2, byrow = TRUE))
-  
-  # plot(MAXENT.RESULTS$Training_AUC, MAXENT.RESULTS$Max_tss, pch = 19, col  = "blue",
-       # xlab = "AUC", ylab = "TSS", 
-       # abline(lm(MAXENT.RESULTS$Max_tss ~ MAXENT.RESULTS$Training_AUC)), 
-       # main = save_run, cex = 3)
-  
-  # legend("topleft", bty = "n", 
-         # legend = paste("R2 is", format(summary(lm.auc)$adj.r.squared, digits = 4)))
-  
-  # hist(MAXENT.RESULTS$Training_AUC, breaks = 10, col = "blue",   border = FALSE,
-       # ylab = "Frequency",
-       # xlab = "Training AUC", main = "AUC", cex = 3)
-  # hist(MAXENT.RESULTS$Max_tss,      breaks = 10, col = "orange", border = FALSE,
-       # ylab = "",
-       # xlab = "Maximum True Skill Statistic", main = "TSS", cex = 3)
-  
-  # ## Finsish the device
-  # dev.off()
-  
-  # ## If the species list is < 2 records, don't plot
+
+# lm.auc = lm(MAXENT.RESULTS$Max_tss ~ MAXENT.RESULTS$Training_AUC)
+
+# ## Save this to file
+# png(paste0('./output/maxent/', 'Maxent_run_summary_', save_run, '.png'), 16, 12, units = 'in', res = 500)
+
+# layout(matrix(c(1,1,2,3), 2, 2, byrow = TRUE))
+
+# plot(MAXENT.RESULTS$Training_AUC, MAXENT.RESULTS$Max_tss, pch = 19, col  = "blue",
+# xlab = "AUC", ylab = "TSS", 
+# abline(lm(MAXENT.RESULTS$Max_tss ~ MAXENT.RESULTS$Training_AUC)), 
+# main = save_run, cex = 3)
+
+# legend("topleft", bty = "n", 
+# legend = paste("R2 is", format(summary(lm.auc)$adj.r.squared, digits = 4)))
+
+# hist(MAXENT.RESULTS$Training_AUC, breaks = 10, col = "blue",   border = FALSE,
+# ylab = "Frequency",
+# xlab = "Training AUC", main = "AUC", cex = 3)
+# hist(MAXENT.RESULTS$Max_tss,      breaks = 10, col = "orange", border = FALSE,
+# ylab = "",
+# xlab = "Maximum True Skill Statistic", main = "TSS", cex = 3)
+
+# ## Finsish the device
+# dev.off()
+
+# ## If the species list is < 2 records, don't plot
 # } else {
-  
-  # message('Dont plot, only ', length(GBIF.spp), ' species analysed')
-  
+
+# message('Dont plot, only ', length(GBIF.spp), ' species analysed')
+
 # }
 
 
@@ -360,13 +370,13 @@ SDM.RESULTS.DIR <- map_spp %>%
   
   ## Pipe the list into lapply
   lapply(function(species) {
-
+    
     ## Create the character string...
     m <-   sprintf('%s/%s/full/', results_dir, species)                ## path.backwards.sel
     m
-
+    
   }) %>%
-
+  
   ## Bind the list together
   c()
 
@@ -381,16 +391,16 @@ SDM.RESULTS.DIR = unlist(SDM.RESULTS.DIR)
 #########################################################################################################################
 ## Save maxent results 
 # if(save_data == "TRUE") {
-  
-  # ## save .rds file for the next session
-  # saveRDS(MAXENT.RESULTS,   paste0(DATA_path, 'MAXENT_RESULTS_', save_run, '.rds'))
-  # write.csv(MAXENT.RESULTS, paste0(DATA_path, 'MAXENT_RESULTS_', save_run, '.csv'), row.names = FALSE)
-  
-  
+
+# ## save .rds file for the next session
+# saveRDS(MAXENT.RESULTS,   paste0(DATA_path, 'MAXENT_RESULTS_', save_run, '.rds'))
+# write.csv(MAXENT.RESULTS, paste0(DATA_path, 'MAXENT_RESULTS_', save_run, '.csv'), row.names = FALSE)
+
+
 # } else {
-  
-  # message('Dont save niche summary, only ', length(GBIF.spp), ' species analysed')
-  
+
+# message('Dont save niche summary, only ', length(GBIF.spp), ' species analysed')
+
 # }
 
 
