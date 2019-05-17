@@ -62,10 +62,10 @@ head(gcms.50) ; head(gcms.70) ; head(gcms.30)
 #########################################################################################################################
 ## Create 2030 maps :: can the try catch be looped over the top
 #lapply(map_spp, function(species){ 
-  message ("Running 2030 projection for ", species)
+  #message ("Running 2030 projection for ", species)
   
   ## Create a directoty to store the error message
-  dir_name = file.path(bs_path, gsub(' ', '_', species))
+  #dir_name = file.path(bs_path, gsub(' ', '_', species))
   
   ## Then loop over the species folders and climate scenarios 
   tryCatch(
@@ -86,17 +86,18 @@ head(gcms.50) ; head(gcms.70) ; head(gcms.30)
     
     ## If the species fails, write a fail message to file. 
     error = function(cond) {
+message ("failure in 2030")
       
       ## print the warning message to the screen as well
-      file.create(file.path(dir_name, "map_2030_failed.txt"))
-      message(species, ' failed for 2030') 
-      cat(paste(cond), file=file.path(dir_name, "map_failed.txt"))
-      warning(species, ': ', cond$message)
+      #file.create(file.path(dir_name, "map_2030_failed.txt"))
+      #message(species, ' failed for 2030') 
+      #cat(paste(cond), file=file.path(dir_name, "map_failed.txt"))
+      #warning(species, ': ', cond$message)
     })
   
   
   ## now add a file to the dir to denote that it has completed
-  file.create(file.path(dir_name, "map_2030_completed.txt"))
+  #file.create(file.path(dir_name, "map_2030_completed.txt"))
   
 #})
 
@@ -108,7 +109,7 @@ head(gcms.50) ; head(gcms.70) ; head(gcms.30)
 #lapply(map_spp, function(species){
 
   ## Create a directoty to store the error message
-  dir_name = file.path(bs_path, gsub(' ', '_', species))
+  #dir_name = file.path(bs_path, gsub(' ', '_', species))
 
   ## Then loop over the species folders and climate scenarios
   tryCatch(
@@ -130,27 +131,27 @@ head(gcms.50) ; head(gcms.70) ; head(gcms.30)
     ## If the species fails, write a fail message to file.
     error = function(cond) {
 
+message ("failure in 2050")
       ## print the warning message to the screen as well
-      file.create(file.path(dir_name, "map_2050_failed.txt"))
-      message(species, ' failed for 2050')
-      cat(cond$message, file=file.path(dir_name, "map_2050_failed.txt"))
-      warning(species, ': ', cond$message)
+      #file.create(file.path(dir_name, "map_2050_failed.txt"))
+      #message(species, ' failed for 2050')
+      #cat(cond$message, file=file.path(dir_name, "map_2050_failed.txt"))
+      #warning(species, ': ', cond$message)
     })
 
 
   ## now add a file to the dir to denote that it has completed
-  file.create(file.path(dir_name, "map_2050_completed.txt"))
+  #file.create(file.path(dir_name, "map_2050_completed.txt"))
 
 #})
 
-#browser()
 
 #########################################################################################################################
 ## Create 2070 maps
 #lapply(map_spp, function(species){
 
   ## Create a directoty to store the error message
-  dir_name = file.path(bs_path, gsub(' ', '_', species))
+  #dir_name = file.path(bs_path, gsub(' ', '_', species))
 
   ## Then loop over the species folders and climate scenarios
   tryCatch(
@@ -171,17 +172,17 @@ head(gcms.50) ; head(gcms.70) ; head(gcms.30)
 
     ## If the species fails, write a fail message to file.
     error = function(cond) {
-
+message ("failures in 2070")
       ## print the warning message to the screen as well
-      file.create(file.path(dir_name, "map_2070_failed.txt"))
-      message(species, ' failed for 2070')
-      cat(cond$message, file=file.path(dir_name, "map_2070_failed.txt"))
-      warning(species, ': ', cond$message)
+      #file.create(file.path(dir_name, "map_2070_failed.txt"))
+      #message(species, ' failed for 2070')
+      #cat(cond$message, file=file.path(dir_name, "map_2070_failed.txt"))
+      #warning(species, ': ', cond$message)
     })
 
 
   ## now add a file to the dir to denote that it has completed
-  file.create(file.path(dir_name, "map_2070_completed.txt"))
+  #file.create(file.path(dir_name, "map_2070_completed.txt"))
 
 #})
 

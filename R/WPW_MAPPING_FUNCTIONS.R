@@ -349,8 +349,10 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
             ## Below, we create a dummy polygon as the first list element (which is the extent
             ## of the raster, expanded by 10%), to plot on panel 1). 50 = approx 50 lines across the polygon
             message('Creating polygon list under ', x, ' scenario for ', species) 
+            #  cast the objects into the sf class so we avoid issues with wrong methods being called in hatch()
             novel_hatch <- list(as(extent(pred.current)*1.1, 'SpatialPolygons'),  
-                                hatch(novel_current_poly, 50), hatch(novel_future_poly, 50)) 
+                                hatch(as(novel_current_poly, 'sf'), 50),
+                                hatch(as(novel_future_poly,  'sf'), 50)) 
             
             ########################################################################################################################
             ## Now create a panel of PNG files for maxent projections and MESS maps
@@ -368,6 +370,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
             if(create_mess == "TRUE") {
               message('Create MESS panel maps for ', species, ' under ', x, ' scenario')
               
+
               ############################################################
               ## Create level plot of current conditions including MESS                        
               png(sprintf('%s/%s/full/%s_%s.png', maxent_path, species, species, "mess_panel"),      
