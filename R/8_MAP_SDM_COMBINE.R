@@ -61,7 +61,7 @@ head(gcms.50) ; head(gcms.70) ; head(gcms.30)
 
 #########################################################################################################################
 ## Create 2030 maps :: can the try catch be looped over the top
-lapply(map_spp, function(species){ 
+#lapply(map_spp, function(species){ 
   message ("Running 2030 projection for ", species)
   
   ## Create a directoty to store the error message
@@ -74,7 +74,7 @@ lapply(map_spp, function(species){
                               world_shp     = "LAND_world.rds",          ## World shapefile          
                               
                               scen_list     = scen_2030,                 ## List of climate scenarios
-                              species_list  = c(species),                ## List of species folders with maxent models
+                              species_list  = map_spp,                   ## List of species folders with maxent models
                               maxent_path   = bs_path,                   ## Output folder
                               climate_path  = "./data/base/worldclim/aus/1km/bio", ## climate data
                               
@@ -98,14 +98,14 @@ lapply(map_spp, function(species){
   ## now add a file to the dir to denote that it has completed
   file.create(file.path(dir_name, "map_2030_completed.txt"))
   
-})
+#})
 
 
 
 
 #########################################################################################################################
 ## Create 2050 maps
-lapply(map_spp, function(species){
+#lapply(map_spp, function(species){
 
   ## Create a directoty to store the error message
   dir_name = file.path(bs_path, gsub(' ', '_', species))
@@ -117,7 +117,7 @@ lapply(map_spp, function(species){
                               world_shp     = "LAND_world.rds",          ## World shapefile
 
                               scen_list     = scen_2050,                 ## List of climate scenarios
-                              species_list  = c(species),                   ## List of species folders with maxent models
+                              species_list  = map_spp,                   ## List of species folders with maxent models
                               maxent_path   = bs_path,                   ## Output folder
                               climate_path  = "./data/base/worldclim/aus/1km/bio", ## climate data
 
@@ -141,13 +141,13 @@ lapply(map_spp, function(species){
   ## now add a file to the dir to denote that it has completed
   file.create(file.path(dir_name, "map_2050_completed.txt"))
 
-})
+#})
 
-
+#browser()
 
 #########################################################################################################################
 ## Create 2070 maps
-lapply(map_spp, function(species){
+#lapply(map_spp, function(species){
 
   ## Create a directoty to store the error message
   dir_name = file.path(bs_path, gsub(' ', '_', species))
@@ -159,7 +159,7 @@ lapply(map_spp, function(species){
                               world_shp     = "LAND_world.rds",          ## World shapefile
 
                               scen_list     = scen_2070,                 ## List of climate scenarios
-                              species_list  = c(species),                ## List of species folders with maxent models
+                              species_list  = map_spp,                ## List of species folders with maxent models
                               maxent_path   = bs_path,                   ## Output folder
                               climate_path  = "./data/base/worldclim/aus/1km/bio", ## climate data
 
@@ -183,7 +183,7 @@ lapply(map_spp, function(species){
   ## now add a file to the dir to denote that it has completed
   file.create(file.path(dir_name, "map_2070_completed.txt"))
 
-})
+#})
 
 
 
