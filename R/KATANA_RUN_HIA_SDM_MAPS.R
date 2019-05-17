@@ -105,7 +105,7 @@ p <- c('ff',      'things',    'raster',        'dismo',             'sp',      
 ## Require packages
 sapply(p, require, character.only = TRUE)
 #devtools::source_gist('26e8091f082f2b3dd279')
-#source_gist('26e8091f082f2b3dd279',             filename = 'polygonizer.R')
+# source_gist('26e8091f082f2b3dd279',             filename = 'polygonizer.R')
 # source_gist('c6a1cb61b8b6616143538950e6ec34aa', filename = 'hatch.R')
 #  try to avoid github rate limiting
 # devtools::source_gist('306e4b7e69c87b1826db',   filename = 'diverge0.R')

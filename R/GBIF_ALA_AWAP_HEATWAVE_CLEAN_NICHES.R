@@ -29,6 +29,7 @@ if(read_data == "TRUE") {
   
 }
 
+
 ## Check dimensions of the occurrence and inventory data tables.
 length(unique(COMBO.AWAP.CONVERT$searchTaxon))
 formatC(dim(COMBO.AWAP.CONVERT)[1], format = "e", digits = 2)
@@ -381,58 +382,14 @@ if(calc_niche == "TRUE") {
   
   ## Use a projected, rather than geographic, coordinate system
   ## Not sure why, but this is needed for the spatial overlay step
-  #NICHE.1KM.84 = spTransform(NICHE.1KM, CRS.WGS.84)
   AUS.WGS      = spTransform(AUS,       CRS.WGS.84)
-  POA.WGS      = spTransform(POA_2016,  CRS.WGS.84)
-  SUA.WGS      = spTransform(SUA_2016 , CRS.WGS.84)
-  LAND.WGS     = spTransform(LAND,      CRS.WGS.84)
-  
-  
+
+
   ## Create global niche and Australian niche.
   ## So we need a subset for Australia
-  ## The ,] acts like a clip in ArcMap 
-  NICHE.AUS <-  NICHE.1KM.84[AUS.WGS, ] 
-  
-  
-  #########################################################################################################################
-  ## Run join between species records and LGAs/SUAs :: Double check they are the same.
-  ## See the ABS for details :: there are 563 LGAs
-  ## http://www.abs.gov.au/ausstats/abs@.nsf/Lookup/by%20Subject/1270.0.55.003~July%202016~Main%20Features~Local%20Government%20Areas%20(LGA)~7
-  message('Joining occurence data to SUAs for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
-  projection(NICHE.1KM.84);projection(SUA.WGS);projection(AUS.WGS);projection(POA.WGS)
-  SUA.JOIN      = over(NICHE.1KM.84, SUA.WGS)
-  POA.JOIN      = over(NICHE.1KM.84, POA.WGS)
-  
-  
-  ## What are the lengths?
-  length(unique(SUA.JOIN$SUA_NAME16))
-  length(unique(POA.JOIN$POA_NAME16))
-  
-  
-  ## Bind the SUA and POA data to the occurence data
-  ## Can this be done using 
-  COMBO.SUA.POA = cbind.data.frame(NICHE.1KM.84, SUA.JOIN, POA.JOIN) 
-  
-  
-  #########################################################################################################################
-  ## Aggregate the number of SUAs and POAs each species is found in
-  SUA.AGG   = tapply(COMBO.SUA.POA$SUA_NAME16, COMBO.SUA.POA$searchTaxon, function(x) length(unique(x))) ## group SUA by species name
-  POA.AGG   = tapply(COMBO.SUA.POA$POA_NAME16, COMBO.SUA.POA$searchTaxon, function(x) length(unique(x))) ## group POA by species name
-  SUA.AGG   = as.data.frame(SUA.AGG)
-  POA.AGG   = as.data.frame(POA.AGG)
-  
-  
-  ## Create tables
-  SUA.AGG <- setDT(SUA.AGG, keep.rownames = TRUE)[]
-  POA.AGG <- setDT(POA.AGG, keep.rownames = TRUE)[]
-  names(SUA.AGG) = c("searchTaxon", "SUA_count")
-  names(POA.AGG) = c("searchTaxon", "POA_count")
-  
-  
-  ## Now create a table of all the SUA's that each species occurrs
-  SUA.AGG = join(SUA.AGG, POA.AGG)
-  saveRDS(SUA.AGG, paste0(DATA_path, 'SUA_SPP_COUNT_', save_run, '.rds'))
-  
+  ## The ,] acts like a clip in ArcMap
+  NICHE.AUS <-  NICHE.1KM.84[AUS.WGS, ]
+
   
   
   
@@ -449,59 +406,79 @@ if(calc_niche == "TRUE") {
   
   
   #########################################################################################################################
-  ## Create niche summaries for each environmental condition like this...commit
-  ## Here's what the function will produce :
-  NICHE.AUS.DF = NICHE.AUS %>% 
+  ## Create niche summaries for each environmental condition like this
+  ## Here's what the function will produce
+  # NICHE.AUS.DF = NICHE.AUS %>% 
+  #   as.data.frame() %>% 
+  #   dplyr::select(., searchTaxon, one_of(env.variables))
+  
+  
+  ## Create df for worldclim variables...............................................................DIANA CHANGE TO AUS
+  ENV.DF = NICHE.1KM %>% 
     as.data.frame() %>% 
     dplyr::select(., searchTaxon, one_of(env.variables))
   
+  
+  ## Create df for drought variables
+  DROUGHT.DF = NICHE.1KM %>% 
+    as.data.frame() %>% 
+    dplyr::select(., searchTaxon, one_of(drought.variables))
+  
+  
+  ## Create df for heat variables
+  HEAT.DF = NICHE.1KM %>% 
+    as.data.frame() %>% 
+    dplyr::select(., searchTaxon, one_of(heat.variables))
+  
+  
+  ## Create df for radiation variables
+  RAD.DF = NICHE.1KM %>% 
+    as.data.frame() %>% 
+    dplyr::select(., searchTaxon, one_of(rad.variables))
   
   # NICHE.GLO.DF = NICHE.1KM.84 %>% 
   #   as.data.frame() %>% 
   #   dplyr::select(., searchTaxon, one_of(env.variables))
   
   
-  ## new_DF <- NICHE.AUS.DF[rowSums(is.na(NICHE.AUS.DF)) > 0,]
-  NICHE.AUS.DF = completeFun(NICHE.AUS.DF, "PET")
-  #NICHE.GLO.DF = completeFun(NICHE.GLO.DF, "PET")
+  #########################################################################################################################
+  ## Remove the NA worldclim data :: 99% retained
+  ENV.DAT = completeFun(ENV.DF, "PET")
+  head(niche_estimate (DF = ENV.DAT, colname = "Annual_mean_temp"))[1:5]  ## Including the q05 and q95
+  
+  message(round(nrow(ENV.DAT)/nrow(ENV.DF)*100, 2), " % records retained")
+  message(round(length(unique(ENV.DAT$searchTaxon))/
+                  length(unique(ENV.DF$searchTaxon))*100, 2), "% species retained for worldclim")
+  
+  ## Remove the NA drought data :: 60% retained
+  DROUGHT.DAT = completeFun(DROUGHT.DF, "Drought_freq_extr")
+  head(niche_estimate (DF = DROUGHT.DAT, colname = "Drought_freq_extr"))[1:5]  ## Including the q05 and q95
+  
+  message(round(nrow(DROUGHT.DAT)/nrow(DROUGHT.DF)*100, 2), " % records retained")
+  message(round(length(unique(DROUGHT.DAT$searchTaxon))/
+                  length(unique(ENV.DF$searchTaxon))*100, 2), "% species retained for drought")
   
   
-  head(niche_estimate (DF = NICHE.AUS.DF, colname = "Annual_mean_temp"))  ## Including the q05 and q95
-  #head(niche_estimate (DF = NICHE.GLO.DF, colname = "Annual_mean_temp"))  ## Including the q05 and q95
+  ## Remove the NA heat data :: 35% retained
+  HEAT.DAT = completeFun(HEAT.DF, "HW_CUM_ALL")
+  head(niche_estimate (DF = HEAT.DAT, colname = "HW_CUM_ALL"))[1:5]  ## Including the q05 and q95
   
+  message(round(nrow(HEAT.DAT)/nrow(HEAT.DF)*100, 2), " % records retained")
+  message(round(length(unique(HEAT.DAT$searchTaxon))/
+                  length(unique(ENV.DF$searchTaxon))*100, 2), "% species retained for heat")
   
-  # #########################################################################################################################
-  # message('Estimating global niches for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
-  # GLOB.NICHE <- env.variables %>% 
-  #   
-  #   ## Pipe the list into lapply
-  #   lapply(function(x) {
-  #     
-  #     ## Now, use the niche width function on each colname
-  #     ## Also, need to figure out how to make the aggregating column generic (species, genus, etc.)
-  #     ## currently it only works hard-wired..............................................................................
-  #     niche_estimate(DF = NICHE.GLO.DF, colname = x)
-  #     
-  #     ## Would be good to remove the duplicate columns here..............................................................
-  #     
-  #   }) %>% 
-  #   
-  #   ## finally, create one dataframe for all niches
-  #   as.data.frame
-  # 
-  # 
-  # ## Remove duplicate Taxon columns and check the output :: would be great to skip these columns when running the function
-  # names(GLOB.NICHE)
-  # GLOB.NICHE <- subset(GLOB.NICHE, select = -c(searchTaxon.1,  searchTaxon.2,  searchTaxon.3,  searchTaxon.4,
-  #                                              searchTaxon.5,  searchTaxon.6,  searchTaxon.7,  searchTaxon.7,
-  #                                              searchTaxon.8,  searchTaxon.9,  searchTaxon.10, searchTaxon.11,
-  #                                              searchTaxon.12, searchTaxon.13, searchTaxon.14, searchTaxon.15,
-  #                                              searchTaxon.16, searchTaxon.17, searchTaxon.18, searchTaxon.19))
+  ## Remove the NA radiation data :: 62.98 % retained
+  RAD.DAT = completeFun(RAD.DF, "mean_monthly_par")
+  head(niche_estimate (DF = RAD.DAT, colname = "mean_monthly_par"))[1:5]  ## Including the q05 and q95
+  
+  message(round(nrow(RAD.DAT)/nrow(RAD.DF)*100, 2), " % records retained for radiation")
+  message(round(length(unique(RAD.DAT$searchTaxon))/
+                  length(unique(ENV.DF$searchTaxon))*100, 2), "% species retained for radiation")
   
   
   #########################################################################################################################
-  message('Estimating global niches for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
-  AUS.NICHE <- env.variables %>% 
+  message('Estimating environmental niches for ', length(unique(ENV.DAT$searchTaxon)), ' species in the set ', "'", save_run, "'")
+  ENV.NICHE <- env.variables %>% 
     
     ## Pipe the list into lapply
     lapply(function(x) {
@@ -509,7 +486,7 @@ if(calc_niche == "TRUE") {
       ## Now, use the niche width function on each colname
       ## Also, need to figure out how to make the aggregating column generic (species, genus, etc.)
       ## currently it only works hard-wired..............................................................................
-      niche_estimate(DF = NICHE.AUS.DF, colname = x)
+      niche_estimate(DF = ENV.DAT, colname = x)
       
       ## Would be good to remove the duplicate columns here..............................................................
       
@@ -518,10 +495,8 @@ if(calc_niche == "TRUE") {
     ## finally, create one dataframe for all niches
     as.data.frame
   
-  
   ## Remove duplicate Taxon columns and check the output :: would be great to skip these columns when running the function
-  names(AUS.NICHE)
-  AUS.NICHE <- subset(AUS.NICHE, select = -c(searchTaxon.1,  searchTaxon.2,  searchTaxon.3,  searchTaxon.4,
+  ENV.NICHE <- subset(ENV.NICHE, select = -c(searchTaxon.1,  searchTaxon.2,  searchTaxon.3,  searchTaxon.4,
                                              searchTaxon.5,  searchTaxon.6,  searchTaxon.7,  searchTaxon.7,
                                              searchTaxon.8,  searchTaxon.9,  searchTaxon.10, searchTaxon.11,
                                              searchTaxon.12, searchTaxon.13, searchTaxon.14, searchTaxon.15,
@@ -529,45 +504,95 @@ if(calc_niche == "TRUE") {
   
   
   #########################################################################################################################
-  ## How are the AUS and GLOB niches related? Many species won't have both Australian and Global niches.
-  ## So best to calculate the AUS niche as a separate table. Then, just use the global niche table for the rest of the code
-  length(AUS.NICHE$searchTaxon)#; length(GLOB.NICHE$searchTaxon)
-  #setdiff(AUS.NICHE$searchTaxon#, GLOB.NICHE$searchTaxon)
-  #setdiff(GLOB.NICHE$searchTaxon, AUS.NICHE$searchTaxon)
+  message('Estimating drought niches for ', length(unique(DROUGHT.DAT$searchTaxon)), ' species in the set ', "'", save_run, "'")
+  DROUGHT.NICHE <- drought.variables %>% 
+    
+    ## Pipe the list into lapply
+    lapply(function(x) {
+      
+      ## Now, use the niche width function on each colname
+      ## Also, need to figure out how to make the aggregating column generic (species, genus, etc.)
+      ## currently it only works hard-wired..............................................................................
+      niche_estimate(DF = DROUGHT.DAT, colname = x)
+      
+      ## Would be good to remove the duplicate columns here..............................................................
+      
+    }) %>% 
+    
+    ## finally, create one dataframe for all niches
+    as.data.frame
+  
+  ## Remove duplicate Taxon columns and check the output :: would be great to skip these columns when running the function
+  DROUGHT.NICHE <- subset(DROUGHT.NICHE, select = -c(searchTaxon.1,  searchTaxon.2,  searchTaxon.3,  searchTaxon.4,
+                                                     searchTaxon.5,  searchTaxon.6))
+  
+  #########################################################################################################################
+  message('Estimating drought niches for ', length(unique(HEAT.DAT$searchTaxon)), ' species in the set ', "'", save_run, "'")
+  HEAT.NICHE <- heat.variables %>% 
+    
+    ## Pipe the list into lapply
+    lapply(function(x) {
+      
+      ## Now, use the niche width function on each colname
+      ## Also, need to figure out how to make the aggregating column generic (species, genus, etc.)
+      ## currently it only works hard-wired..............................................................................
+      niche_estimate(DF = HEAT.DAT, colname = x)
+      
+      ## Would be good to remove the duplicate columns here..............................................................
+      
+    }) %>% 
+    
+    ## finally, create one dataframe for all niches
+    as.data.frame
+  
+  ## Remove duplicate Taxon columns and check the output :: would be great to skip these columns when running the function
+  HEAT.NICHE <- subset(HEAT.NICHE, select = -c(searchTaxon.1,  searchTaxon.2,  searchTaxon.3,  searchTaxon.4,
+                                               searchTaxon.5,  searchTaxon.6, searchTaxon.7))
   
   
+  #########################################################################################################################
+  message('Estimating drought niches for ', length(unique(HEAT.DAT$searchTaxon)), ' species in the set ', "'", save_run, "'")
+  RAD.NICHE <- rad.variables %>% 
+    
+    ## Pipe the list into lapply
+    lapply(function(x) {
+      
+      ## Now, use the niche width function on each colname
+      ## Also, need to figure out how to make the aggregating column generic (species, genus, etc.)
+      ## currently it only works hard-wired..............................................................................
+      niche_estimate(DF = RAD.DAT, colname = x)
+      
+      ## Would be good to remove the duplicate columns here..............................................................
+      
+    }) %>% 
+    
+    ## finally, create one dataframe for all niches
+    as.data.frame
+  
+  ## Remove duplicate Taxon columns and check the output :: would be great to skip these columns when running the function
+  RAD.NICHE <- subset(RAD.NICHE, select = -c(searchTaxon.1))
+  
+
+
   #########################################################################################################################
   ## Add global counts for each species, and record the total number of taxa processed
   ## This is actually redundant - the records will the be the same as the maxent_records
-  # Global_records = as.data.frame(table(COMBO.SUA.POA$searchTaxon))
-  # names(Global_records) = c("searchTaxon", "Global_records")
-  # identical(nrow(Global_records), nrow(GLOB.NICHE))
+  Global_records = as.data.frame(table(NICHE.1KM$searchTaxon))
+  names(Global_records) = c("searchTaxon", "Global_records")
+  identical(nrow(Global_records), nrow(ENV.NICHE))
   
   
   ## Add the count of Australian records - this is not necessarily the same as maxent_records 
-  Aus_records = as.data.frame(table(NICHE.AUS.DF$searchTaxon))
-  names(Aus_records) = c("searchTaxon", "Aus_records")
-  identical(nrow(Aus_records), nrow(AUS.NICHE))
+  # Aus_records = as.data.frame(table(NICHE.AUS.DF$searchTaxon))
+  # names(Aus_records) = c("searchTaxon", "Aus_records")
+  # identical(nrow(Aus_records), nrow(AUS.NICHE))
   
   
   #########################################################################################################################
-  ## Add the counts of Australian records for each species to the niche database
-  # GLOB.NICHE = join(Aus_records,    GLOB.NICHE,  type = "right")
-  # GLOB.NICHE = join(Global_records, GLOB.NICHE,  type = "right")
-  # GLOB.NICHE = join(SUA.AGG,        GLOB.NICHE,  type = "right")
+  ## Join all the tables together - this allows all the data to be used for each vaiable group
+  ALL.NICHE = join_all(list(Global_records, ENV.NICHE, DROUGHT.NICHE, HEAT.NICHE, RAD.NICHE),  by = 'searchTaxon', type = 'full')
   
-  AUS.NICHE = join(Aus_records,    AUS.NICHE,  type = "right")
-  AUS.NICHE = join(SUA.AGG,        AUS.NICHE,  type = "right")
-  
-  
-  ## Check the record and POA counts
-  head(AUS.NICHE$Aus_records,    20)
-  head(AUS.NICHE$SUA_count, 20)
-  head(AUS.NICHE$POA_count, 20)
-  
-  dim(AUS.NICHE)
-  
-  
+
   
   
   
@@ -585,7 +610,7 @@ if(calc_niche == "TRUE") {
   ## AREA OF OCCUPANCY (AOO).
   ## For every species in the list: calculate the AOO
   ## x = spp.geo[1]
-  spp.geo = as.character(unique(COMBO.SUA.POA$searchTaxon))
+  spp.geo = as.character(unique(NICHE.1KM$searchTaxon))
   
   GBIF.AOO <- spp.geo %>%
     
@@ -593,7 +618,7 @@ if(calc_niche == "TRUE") {
     lapply(function(x) {
       
       ## Subset the the data frame to calculate area of occupancy according the IUCN.eval
-      DF   = subset(COMBO.SUA.POA, searchTaxon == x)[, c("lat", "lon", "searchTaxon")]
+      DF   = subset(NICHE.1KM, searchTaxon == x)[, c("lat", "lon", "searchTaxon")]
       
       message('Calcualting geographic ranges for ', x, ', ', nrow(DF), ' records')
       AOO  = AOO.computing(XY = DF, Cell_size_AOO = 2)  ## Grid size in decimal degrees. Changes the results
@@ -614,14 +639,15 @@ if(calc_niche == "TRUE") {
   
   #########################################################################################################################
   ## Now join on the geographic range and glasshouse data
-  identical(nrow(GBIF.AOO), length(GBIF.spp))
-  AUS.NICHE = join(GBIF.AOO, AUS.NICHE, type = "right")
+  identical(nrow(GBIF.AOO), length(unique(NICHE.1KM$searchTaxon)))
+  ALL.NICHE = join(GBIF.AOO, ALL.NICHE, type = 'full')
+  ALL.NICHE = ALL.NICHE[c(2, 1, 3:length(names(ALL.NICHE)))]
   
   
   #########################################################################################################################
   ## save .rds file for the next session
   message('Writing 1km resolution niche data for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
-  saveRDS(AUS.NICHE,              paste0(DATA_path, 'AWAP_NICHE_DATA_',  save_run, '.rds'))
+  saveRDS(ALL.NICHE,              paste0(DATA_path, 'AWAP_NICHE_DATA_',  save_run, '.rds'))
   saveRDS(CLEAN.TRUE,             paste0(DATA_path, 'AWAP_POINT_DATA_',  save_run, '.rds'))
   
 } else {
