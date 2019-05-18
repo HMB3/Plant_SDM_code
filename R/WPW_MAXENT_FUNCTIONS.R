@@ -97,7 +97,7 @@ fit_maxent_targ_bg_back_sel <- function(occ,
     if(!is(Koppen, 'RasterLayer'))
       stop('Koppen must be a RasterLayer, and should be in the same coordinate system as template.raster')  
   }
-  
+
   ## If the file doesn't exist, split out the features
   if(!file.exists(outdir_sp)) dir.create(outdir_sp)
   features <- unlist(strsplit(features, ''))

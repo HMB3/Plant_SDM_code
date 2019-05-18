@@ -63,7 +63,6 @@
 ## save.image("KATANA_RUN_DATA.RData") 
 on_windows = switch(Sys.info()[['sysname']], Windows = TRUE, FALSE)
 
-
 #########################################################################################################################
 ## Read in all data to run the SDM code :: species lists, shapefile, rasters & tables
 if (on_windows) {
@@ -81,7 +80,8 @@ if (on_windows) {
   
 }
 
-
+#  reassert after loading object
+on_windows = switch(Sys.info()[['sysname']], Windows = TRUE, FALSE)
 
 
 
@@ -120,8 +120,7 @@ rasterOptions(tmpdir = './RTEMP')
 
 #########################################################################################################################
 ##  If on Katana, override the raster objects so we use the local versions
-if (on_windows == "FALSE") {
-  
+if (!on_windows) {
   message ("Loading world raster stack")
   world.grids.current = stack(
     file.path('./data/base/worldclim/world/0.5/bio/current',
@@ -176,7 +175,9 @@ if (on_windows == "FALSE") {
 
 
 ## Run the species 500 or 1000 at a time
-GBIF.spp = unique(WPW.spp)  ## your list of species
+#GBIF.spp = unique(WPW.spp)  ## your list of species
+GBIF.spp = unique(WPW.tree)  ## your list of species
+#GBIF.spp = unique(WPW.non.tree)
 
 
 ## Subset for PBS array jobs
@@ -188,7 +189,7 @@ if (Sys.getenv("PBS_ARRAYID") != "") {
 }
 
 #  DEBUG
-GBIF.spp = head(GBIF.spp)
+#GBIF.spp = head(GBIF.spp)
 
 #########################################################################################################################
 ## The required folders must be created on katana
@@ -201,8 +202,8 @@ check_maps    = "FALSE"                              ## Create maps, shapefiles 
 GBIF_path     = "./data/base/HIA_LIST/GBIF_UPDATE/"  ## The path where GBIF data is stored
 ALA_path      = "./data/base/HIA_LIST/ALA_UPDATE/"   ## The path where ALA data is stored place
 DATA_path     = "./data/ANALYSIS/"                   ## The path where the final data from/for analyses are stored. 
-OCC_SOURCE    = c("ALA", "GBIF")                     ## Data source :: for trees, ALL. For non trees, ALA/GBIF, for occ and bg
-#OCC_SOURCE    = c("ALA", "GBIF", "INVENTORY")
+#OCC_SOURCE    = c("ALA", "GBIF")                     ## Data source :: for trees, ALL. For non trees, ALA/GBIF, for occ and bg
+OCC_SOURCE    = c("ALA", "GBIF", "INVENTORY")
 calc_niche    = "TRUE"
 
 maxent_path   = './output/maxent/HIA_TEST_INV/'      ## The directory where maxent files are saved               
