@@ -259,7 +259,8 @@ env.variables = c("Annual_mean_temp",
                   "Precip_dry_qu",
                   "Precip_warm_qu",
                   "Precip_col_qu",
-                  "PET")
+                  "PET", 
+                  "AI")
 
 rad.variables = c("mean_monthly_par", 
                   "mean_yearly_rad")
@@ -376,6 +377,7 @@ for(i in 1:11) {
 #########################################################################################################################
 ## Also get the the soil rasters
 PET  = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
+AI   = raster("./data/base/worldclim/world/1km/ai_yr1.tif")
 twi  = raster("./data/base/ACLEP/TWI.tif")
 tpi  = raster("./data/base/ACLEP/TPI.tif")
 soil = stack(file.path('./data/base/ACLEP', sprintf('PC%d.tif', 1:3)))

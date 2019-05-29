@@ -434,6 +434,7 @@ results.columns = c("searchTaxon",        ## From the ALA/ GBIF download code
                     "Aus_records",       ## No. AUS records     :: from the R workflow
                     "SUA_count",         ## No. SUAs each species occurs in :: From the R workflow
                     "POA_count",         ## No. POAs each species occurs in :: From the R workflow
+                    "AOO",               ## Area of occurrence across australia
                     
                     "Number_var",        ## No. maxent variables :: from Maxent code
                     "Var_pcont",         ## Maxent Variable with highest permutation importance    

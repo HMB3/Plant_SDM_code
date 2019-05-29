@@ -46,39 +46,58 @@ message('Creating summary stats for ', length(GBIF.spp), ' species in the set ',
 
 
 #########################################################################################################################
-## First, create a file list for each model run: Try crunching this into just the species required
-## GBIF.spp = maxent.tables
-## GBIF.spp = gsub("_", " ", GBIF.spp)
+## First, make a list of all the species with models, then restrict them to just the models on the GBIF.spp list 
 map_spp_list  = gsub(" ", "_", GBIF.spp)
-maxent.tables = list.files(results_dir)                 
-maxent.tables = intersect(maxent.tables, map_spp_list)   
-results_dir   = results_dir                             
-length(maxent.tables) 
+map_spp_patt  = paste0(map_spp_list, collapse = "|")
+message ("map_spp_list head:")
+message (paste (head(map_spp_list), collapse=","))
 
 
 #########################################################################################################################
-## This section illustrates how to index the maxent model object, which could be applied to other methods     #---------#
-## Create a table of the results 
+## Now stop R from creating listing all the maxent files that have completed - this takes a long time
+message(results_dir)
+maxent.tables = lapply (map_spp_list, FUN = function (x) {paste(results_dir , x, "full/maxent_fitted.rds", sep="/")})
+
+
+## How many species have been modelled?
+message(paste("maxent.tables has this many entries:", length(maxent.tables)))
+message(paste(head (maxent.tables), collapse=","))
+sdm.exists = lapply(maxent.tables, FUN = function (x) {file.exists (x)})
+sdm.exists = unlist(sdm.exists)
+
+
+## Only list the intersection between the modelled species and 
+message(paste(head(sdm.exists), collapse=","))
+maxent.tables = maxent.tables[sdm.exists]
+
+
+message (paste ("maxent.tables has this many entries:", length(maxent.tables)))
+maxent.tables = stringr::str_subset(maxent.tables, map_spp_patt)
+message (paste ("maxent.tables has this many entries:", length(maxent.tables)))
+message (paste (head(maxent.tables), collapse=","))
+length(maxent.tables)
+
+
+#########################################################################################################################
+## Now create a table of the results 
 ## x = maxent.tables[1]
 MAXENT.RESULTS <- maxent.tables %>%         
   
   ## Pipe the list into lapply
   lapply(function(x) {
     
-    ## Create the character string
-    f <- paste0(results_dir, "/",  x, "/full/maxentResults.csv")
-    
-    ## Load each .RData file
-    d <- read.csv(f)
+    ## We don't need to skip species that haven't been modelled
+    x = gsub(paste0(results_dir, "/"), "", x) 
+    message (x)
     
     #############################################################
-    ## load model
+    ## load the backwards selected model
     if (grepl("BS", results_dir)) {
-      m = readRDS(sprintf('%s/%s/full/maxent_fitted.rds', results_dir, x))
+      m = readRDS(paste0(results_dir, '/',  x))
       
     } else {
       ## Get the background records from any source
-      m = readRDS(sprintf('%s/%s/full/maxent_fitted.rds', results_dir, x))$me_full
+      m = readRDS(paste0(results_dir, '/',  x))$me_full
       
     }
     
@@ -97,33 +116,28 @@ MAXENT.RESULTS <- maxent.tables %>%
     ## Get maxent results columns to be used for model checking
     ## Including the omission rate here
     Training_AUC             = m@results["Training.AUC",]
+    Iterations               = m@results["Iterations",]
     Number_background_points = m@results["X.Background.points",]
     Logistic_threshold       = m@results["X10.percentile.training.presence.Logistic.threshold",]
     Omission_rate            = m@results["X10.percentile.training.presence.training.omission",]
     
     ## Now rename the maxent columns that we will use in the results table
-    d = cbind(searchTaxon              = x, 
-              Maxent_records           = mxt.records,
-              Number_var               = number.var, 
-              Var_pcont                = var.pcont,
-              Per_cont                 = pcont,
-              Var_pimp                 = var.pimp,
-              Perm_imp                 = pimp,
-              Training_AUC,
-              Number_background_points,  
-              Logistic_threshold,
-              Omission_rate,
-              d)
-    
-    ## Just get the columns we need
-    d = select(d, searchTaxon, Maxent_records, Number_var, Var_pcont,
-               Per_cont, Var_pimp, Perm_imp, Training_AUC, Number_background_points,  
-               Logistic_threshold, Omission_rate)
-    
-    dim(d)
+    d = data.frame(searchTaxon              = x, 
+                   Maxent_records           = mxt.records,
+                   Number_var               = number.var, 
+                   Var_pcont                = var.pcont,
+                   Per_cont                 = pcont,
+                   Var_pimp                 = var.pimp,
+                   Perm_imp                 = pimp,
+                   Iterations,
+                   Training_AUC,
+                   Number_background_points,  
+                   Logistic_threshold,
+                   Omission_rate)
     
     ## Remove path gunk, and species
     d$Species     = NULL
+    d$searchTaxon = gsub("/full/maxent_fitted.rds", "", d$searchTaxon)
     return(d)
     
   }) %>%
@@ -135,14 +149,27 @@ MAXENT.RESULTS <- maxent.tables %>%
 #########################################################################################################################
 ## Now create a list of the '10th percentile training presence Logistic threshold'. This is used in step 8 to threshold
 ## the maps to just areas above the threshold.
+message ("MAXENT.RESULTS columns") 
+message (paste (colnames (MAXENT.RESULTS)))
+message (paste (nrow (MAXENT.RESULTS)))
 summary(MAXENT.RESULTS["Logistic_threshold"])   
 percent.10.log = as.list(MAXENT.RESULTS["Logistic_threshold"])  
 percent.10.log = percent.10.log$Logistic_threshold
 
 
 #########################################################################################################################
-## Create a list of the omission files
-omission.tables = list.files(results_dir, pattern = 'species_omission\\.csv$', full.names = TRUE, recursive = TRUE)
+## Create a list of the omission files - again, don't do this for all the files, just the intersection
+omission.tables = lapply (map_spp_list, FUN = function (x) {paste(results_dir , x, "full/species_omission.csv", sep="/")})
+message (head (omission.tables))
+
+
+## Only process the existing files 
+om.exists = lapply (omission.tables, FUN = function (x) {file.exists (x)})
+om.exists = unlist(om.exists)
+
+
+omission.tables = omission.tables[om.exists]
+message(head(omission.tables))
 
 
 ## Get the maxium TSS value using the omission data : use _training_ ommission data only
@@ -161,31 +188,16 @@ Max_tss <- sapply(omission.tables, function(file) {
 
 #########################################################################################################################
 ## Add a species variable to the TSS results, so we can subset to just the species analysed
-Max_tss  = as.data.frame(Max_tss)
-setDT(Max_tss, keep.rownames = TRUE)[]
-Max_tss  = as.data.frame(Max_tss)
-names(Max_tss)[names(Max_tss) == 'rn'] <- 'searchTaxon'
-
-
-
-## Remove extra text
-Max_tss$searchTaxon = gsub("//",         "", Max_tss$searchTaxon)
-Max_tss$searchTaxon = gsub(results_dir,   "", Max_tss$searchTaxon)
-Max_tss$searchTaxon = gsub("/full/species_omission.csv.Max_tss", "", Max_tss$searchTaxon)
-Max_tss$searchTaxon = gsub("/",          "", Max_tss$searchTaxon)
-head(Max_tss)
-
-
-## Add max TSS to the results table
-MAXENT.RESULTS = join(MAXENT.RESULTS, Max_tss)
+Max_tss        = as.data.frame(Max_tss)
+MAXENT.RESULTS = cbind(MAXENT.RESULTS, Max_tss)
 summary(MAXENT.RESULTS$Max_tss)
 summary(MAXENT.RESULTS$Omission_rate)
 
 
 ## This is a summary of maxent output for current conditions
-## Also which species have AUC < 0.7?
+## All species should have AUC > 0.7
 dim(MAXENT.RESULTS)
-head(MAXENT.RESULTS, nrow(MAXENT.RESULTS))[1:5]
+head(MAXENT.RESULTS, 20)[1:5]
 
 
 
@@ -209,7 +221,7 @@ if (nrow(MAXENT.RESULTS) > 2) {
   
   
   ## Save this to file
-  png(paste0('./output/maxent/', 'Maxent_run_summary_', save_run, '.png'), 16, 12, units = 'in', res = 500)
+  #png(paste0('./output/maxent/', 'Maxent_run_summary_', save_run, '.png'), 16, 12, units = 'in', res = 500)
   
   layout(matrix(c(1,1,2,3), 2, 2, byrow = TRUE))
   
@@ -229,7 +241,7 @@ if (nrow(MAXENT.RESULTS) > 2) {
        xlab = "Maximum True Skill Statistic", main = "TSS", cex = 3)
   
   ## Finsish the device
-  dev.off()
+  #dev.off()
   
   ## If the species list is < 2 records, don't plot
 } else {
@@ -243,24 +255,16 @@ if (nrow(MAXENT.RESULTS) > 2) {
 
 
 #########################################################################################################################
-## 3). COMBINE SDM RESULTS WITH HIA CONTEXT DATA
+## 3). COMBINE SDM RESULTS WITH HIA CONTEXT DATA AND SAVE
 #########################################################################################################################
 
 
 #########################################################################################################################
-## Now check the match between the species list, and the results list. 
-length(intersect(map_spp_list, MAXENT.RESULTS$searchTaxon)) 
-MAXENT.RESULTS  =  MAXENT.RESULTS[MAXENT.RESULTS$searchTaxon %in% map_spp_list , ] 
-map_spp         = unique(MAXENT.RESULTS$searchTaxon)
-length(map_spp);setdiff(sort(map_spp_list), sort(map_spp))
-
-
 ## Change the species column
 MAXENT.RESULTS$searchTaxon = gsub("_", " ", MAXENT.RESULTS$searchTaxon)
-
-
-## Join the Maxent data to the niche data
 MAXENT.RESULTS = join(COMBO.NICHE.CONTEXT, MAXENT.RESULTS, type = "right")
+MAXENT.RESULTS = dplyr::select(MAXENT.RESULTS, results.columns)
+summary(MAXENT.RESULTS)
 
 
 #########################################################################################################################

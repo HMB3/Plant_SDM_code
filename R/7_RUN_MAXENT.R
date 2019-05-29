@@ -252,7 +252,7 @@ MAXENT.RESULTS <- maxent.tables %>%
 ## the maps to just areas above the threshold.
 message ("MAXENT.RESULTS columns") 
 message (paste (colnames (MAXENT.RESULTS)))
-message (paste (dim (MAXENT.RESULTS)))
+message (paste (nrow (MAXENT.RESULTS)))
 summary(MAXENT.RESULTS["Logistic_threshold"])   
 percent.10.log = as.list(MAXENT.RESULTS["Logistic_threshold"])  
 percent.10.log = percent.10.log$Logistic_threshold

@@ -19,21 +19,10 @@
 ##         
 
 
-
-
-############################################################################
-##     2). Re-run steps 1-5, 1000 at a time
-
-
-##     -   Need more background data at 1km, add the data from TI.HIA
-
-
 ############################################################################
 ##     3). Problems to solve in steps 7 and 8 ::
 
-##     - To make the code run on Katana, we need to update the folder structure ::
-##     - EG "world_koppen", etc, and replace rasters, etc. 
-
+##     - Summarise the Results table, and also create search for PNG files :: MESS_panel & occ_source
 
 ##     - Calculate the environmental ranges and add them to MAXENT results  
 
@@ -43,19 +32,13 @@
 
 ##     - Change the mapping function to handle species with no  novel areas :: Use Eucalyptus Camuldelunsis
 
-##     - Add 'ncores' argument to both functions (try with n = 6)
-
 ##     - Barcharts for Australia and the whole world (R users group)
 
-##     - Don't aggregate to postial areas first, write a separate function to do this  
+##     - Histograms and convex hulls for each species 
 
-##     - Summarise the Results table, and also create search for PNG files :: MESS_panel & occ_source
+##     - Don't aggregate to postal areas first, write a separate function to do this  
 
-##     - Make a unique key for searchTaxon - to be meaningfull, there needs to be a gamma for whole project.
-##     - Or, start with HIA.LIST, then extra species are added to the list:
-##       Surrogate rather than natural key. WPW-1001
 
-##     - 
 
 
 ## This code runs the whole SDM workflow for the HIA project, for a subset of species (e.g. whichever you supply)
@@ -176,8 +159,8 @@ if (!on_windows) {
 
 ## Run the species 500 or 1000 at a time
 #GBIF.spp = unique(WPW.spp)  ## your list of species
-GBIF.spp = unique(WPW.tree)  ## your list of species
-#GBIF.spp = unique(WPW.non.tree)
+#GBIF.spp = unique(WPW.tree)  ## your list of species
+GBIF.spp = unique(WPW.non.tree)
 
 
 ## Subset for PBS array jobs
@@ -190,6 +173,7 @@ if (Sys.getenv("PBS_ARRAYID") != "") {
 
 #  DEBUG
 #GBIF.spp = head(GBIF.spp)
+
 
 #########################################################################################################################
 ## The required folders must be created on katana
