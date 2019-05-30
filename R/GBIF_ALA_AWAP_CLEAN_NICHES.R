@@ -17,8 +17,8 @@
 
 #########################################################################################################################
 ## Read in the three data tables
-COMBO.AWAP.CONVERT = readRDS(paste0('data/base/HIA_LIST/COMBO/COMBO_AWAP_CONVERT_', save_run, '.rds'))
-rasterTmpFile()
+# COMBO.AWAP.CONVERT = readRDS(paste0('data/base/HIA_LIST/COMBO/COMBO_AWAP_CONVERT_', save_run, '.rds'))
+# rasterTmpFile()
 
 
 ## Check dimensions of the occurrence and inventory data tables.

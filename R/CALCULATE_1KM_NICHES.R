@@ -418,7 +418,7 @@ if(calc_niche == "TRUE") {
   
   ## Check the column order for the niche and the record tables
   ## Note that for records with catalogue numbers, you can actually search GBIF and ALA for those occurrences
-  head(COMBO.NICHE.CONTEXT)[1:12]
+  head(COMBO.NICHE.CONTEXT)[1:15]
   head(COMBO.RASTER.CONTEXT)[1:16]
   
   
