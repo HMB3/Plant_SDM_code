@@ -15,22 +15,22 @@
 
 #########################################################################################################################
 ## E.G. arguments to run the algorithm inside the function 
-shp_path      = "./data/base/CONTEXTUAL/" ## Path for shapefile
-aus_shp       = "aus_states.rds"          ## Shapefile e.g. Australian states
-world_shp     = "LAND_world.rds"          ## World shapefile
-
-x             = scen_2030[3]                 ## List of climate scenarios
-species       = map_spp[1]                   ## List of species folders with maxent models
-maxent_path   = bs_path                   ## Output folder
-climate_path  = "./data/base/worldclim/aus/1km/bio" ## climate data
-
-grid_names    = grid.names
-bs_names      = bs.predictors             ## names of the predictor grids
-time_slice    = 30                        ## Time period
-current_grids = aus.grids.current         ## predictor grids
-create_mess   = "TRUE"
-png_only      = "TRUE"
-nclust        = 1
+# shp_path      = "./data/base/CONTEXTUAL/" ## Path for shapefile
+# aus_shp       = "aus_states.rds"          ## Shapefile e.g. Australian states
+# world_shp     = "LAND_world.rds"          ## World shapefile
+# 
+# x             = scen_2030[3]                 ## List of climate scenarios
+# species       = map_spp[1]                   ## List of species folders with maxent models
+# maxent_path   = bs_path                   ## Output folder
+# climate_path  = "./data/base/worldclim/aus/1km/bio" ## climate data
+# 
+# grid_names    = grid.names
+# bs_names      = bs.predictors             ## names of the predictor grids
+# time_slice    = 30                        ## Time period
+# current_grids = aus.grids.current         ## predictor grids
+# create_mess   = "TRUE"
+# png_only      = "TRUE"
+# nclust        = 1
 
 
 #########################################################################################################################
@@ -352,14 +352,15 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
             ## Below, we create a dummy polygon as the first list element (which is the extent
             ## of the raster, expanded by 10%), to plot on panel 1). 50 = approx 50 lines across the polygon
             message('Creating polygon list under ', x, ' scenario for ', species) 
-            #  cast the objects into the sf class so we avoid issues with wrong methods being called in hatch()
-            # novel_hatch <- list(as(extent(pred.current)*1.1, 'SpatialPolygons'),  
-            #                     hatch(as(novel_current_poly, 'sf'), 50),
-            #                     hatch(as(novel_future_poly,  'sf'), 50)) 
             
-            novel_hatch <- list(as(extent(pred.current)*1.1, 'SpatialPolygons'),  
-                                hatch(novel_current_poly, 50),
-                                hatch(novel_future_poly, 50))
+            ##  cast the objects into the sf class so we avoid issues with wrong methods being called in hatch()
+            novel_hatch <- list(as(extent(pred.current)*1.1, 'SpatialPolygons'),
+                                hatch(as(novel_current_poly, 'sf'), 50),
+                                hatch(as(novel_future_poly,  'sf'), 50))
+            
+            # novel_hatch <- list(as(extent(pred.current)*1.1, 'SpatialPolygons'),  
+            #                     hatch(novel_current_poly, 50),
+            #                     hatch(novel_future_poly, 50))
             
             ########################################################################################################################
             ## Now create a panel of PNG files for maxent projections and MESS maps
@@ -403,8 +404,8 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
                       latticeExtra::layer(sp.polygons(aus_poly), data = list(aus_poly = aus_poly)) +
                       latticeExtra::layer(sp.points(occ, pch = 19, cex = 0.15, 
                                                     col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)) +
-                      #latticeExtra::layer(sp.polygons(h[[panel.number()]]), data = list(h = novel_hatch)))
-                      latticeExtra::layer(sp.lines(h[[panel.number()]]), data = list(h = novel_hatch)))
+                      latticeExtra::layer(sp.polygons(h[[panel.number()]]), data = list(h = novel_hatch)))
+                      #latticeExtra::layer(sp.lines(h[[panel.number()]]), data = list(h = novel_hatch)))
               dev.off()
               
               
@@ -473,8 +474,8 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
                       latticeExtra::layer(sp.polygons(aus_poly), data = list(aus_poly = aus_poly)) +
                       latticeExtra::layer(sp.points(occ, pch = 19, cex = 0.15, 
                                                     col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)) +
-                      #latticeExtra::layer(sp.polygons(h[[panel.number()]]), data = list(h = novel_hatch)))
-                      latticeExtra::layer(sp.lines(h[[panel.number()]]), data = list(h = novel_hatch)))
+                      latticeExtra::layer(sp.polygons(h[[panel.number()]]), data = list(h = novel_hatch)))
+                      #latticeExtra::layer(sp.lines(h[[panel.number()]]), data = list(h = novel_hatch)))
               dev.off()
               
             } else {
@@ -988,85 +989,6 @@ diverge0 <- function(p, ramp) {
 
 
 
-
-
-#########################################################################################################################
-## This function turns a raster into a polygon 
-## Windows version
-polygonizer_windows <- function(x, outshape=NULL, pypath=NULL, readpoly=TRUE, 
-                        fillholes=FALSE, aggregate=FALSE, 
-                        quietish=TRUE) {
-  # x: an R Raster layer, or the file path to a raster file recognised by GDAL 
-  # outshape: the path to the output shapefile (if NULL, a temporary file will 
-  #           be created) 
-  # pypath: the path to gdal_polygonize.py or OSGeo4W.bat (if NULL, the function 
-  #         will attempt to determine the location)
-  # readpoly: should the polygon shapefile be read back into R, and returned by
-  #           this function? (logical) 
-  # fillholes: should holes be deleted (i.e., their area added to the containing
-  #            polygon)
-  # aggregate: should polygons be aggregated by their associated raster value?
-  # quietish: should (some) messages be suppressed? (logical)
-  if (isTRUE(readpoly) || isTRUE(fillholes)) require(rgdal)
-  if (isTRUE(aggregate)) require(rgeos)
-  if (is.null(pypath)) {
-    cmd <- Sys.which('C:/OSGeo4W64/OSGeo4W.bat')
-    pypath <- 'gdal_polygonize'
-    if(cmd=='') {
-      cmd <- 'python'
-      pypath <- Sys.which('gdal_polygonize.py')
-      if (!file.exists(pypath)) 
-        stop("Could not find gdal_polygonize.py or OSGeo4W on your system.") 
-    }
-  }
-  if (!is.null(outshape)) {
-    outshape <- sub('\\.shp$', '', outshape)
-    f.exists <- file.exists(paste(outshape, c('shp', 'shx', 'dbf'), sep='.'))
-    if (any(f.exists)) 
-      stop(sprintf('File already exists: %s', 
-                   toString(paste(outshape, c('shp', 'shx', 'dbf'), 
-                                  sep='.')[f.exists])), call.=FALSE)
-  } else outshape <- tempfile()
-  if (is(x, 'Raster')) {
-    require(raster)
-    writeRaster(x, {f <- tempfile(fileext='.tif')})
-    rastpath <- normalizePath(f)
-  } else if (is.character(x)) {
-    rastpath <- normalizePath(x)
-  } else stop('x must be a file path (character string), or a Raster object.')
-  
-  system2(cmd, args=(
-    sprintf('"%s" "%s" %s -f "ESRI Shapefile" "%s.shp"', 
-            pypath, rastpath, ifelse(quietish, '-q ', ''), outshape)))
-  
-  if(isTRUE(aggregate)||isTRUE(readpoly)||isTRUE(fillholes)) {
-    shp <- readOGR(dirname(outshape), layer=basename(outshape), 
-                   verbose=!quietish)    
-  } else return(NULL)
-  
-  if (isTRUE(fillholes)) {
-    poly_noholes <- lapply(shp@polygons, function(x) {
-      Filter(function(p) p@ringDir==1, x@Polygons)[[1]]
-    })
-    pp <- SpatialPolygons(mapply(function(x, id) {
-      list(Polygons(list(x), ID=id))
-    }, poly_noholes, row.names(shp)), proj4string=CRS(proj4string(shp)))
-    shp <- SpatialPolygonsDataFrame(pp, shp@data)
-    if(isTRUE(aggregate)) shp <- aggregate(shp, names(shp))
-    writeOGR(shp, dirname(outshape), basename(outshape), 
-             'ESRI Shapefile', overwrite=TRUE)
-  }
-  if(isTRUE(aggregate) & !isTRUE(fillholes)) {
-    shp <- aggregate(shp, names(shp))
-    writeOGR(shp, dirname(outshape), basename(outshape), 
-             'ESRI Shapefile', overwrite=TRUE)
-  }
-  ifelse(isTRUE(readpoly), return(shp), return(NULL))
-}
-
-
-
-
 ## Linux version
 polygonizer <- function(x, outshape=NULL, pypath=NULL, readpoly=TRUE, 
                         fillholes=FALSE, aggregate=FALSE, 
@@ -1085,7 +1007,7 @@ polygonizer <- function(x, outshape=NULL, pypath=NULL, readpoly=TRUE,
   if (isTRUE(readpoly) || isTRUE(fillholes)) require(rgdal)
   if (isTRUE(aggregate)) require(rgeos)
   if (is.null(pypath)) {
-    cmd <- Sys.which('C:/OSGeo4W64/OSGeo4W.bat')
+    cmd <- Sys.which('OSGeo4W.bat')
     pypath <- 'gdal_polygonize'
     if(cmd=='') {
       cmd <- 'python'

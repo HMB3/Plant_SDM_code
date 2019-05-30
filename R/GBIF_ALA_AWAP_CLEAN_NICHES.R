@@ -58,12 +58,12 @@ TIB.GBIF <- TIB.GBIF %>% dplyr::rename(species          = searchTaxon,
 #########################################################################################################################
 ## Don't run the outliers test here, it is slower. Also, can't run cleaning on the urban tree inventory data, because this
 ## removes all the records near capital cities 
-FLAGS  <- CleanCoordinates(TIB.GBIF,
-                           #countries        = "country",    ## too many flagged here...
-                           capitals.rad     = 0.12,
-                           countrycheck     = TRUE,
-                           duplicates       = TRUE,
-                           seas             = FALSE)
+FLAGS  <- clean_coordinates(TIB.GBIF,
+                            #countries        = "country",    ## too many flagged here...
+                            capitals.rad     = 0.12,
+                            countrycheck     = TRUE,
+                            duplicates       = TRUE,
+                            seas             = FALSE)
 
 
 ## save/load the flags
@@ -177,7 +177,7 @@ dim(subset(TEST.GEO, summary == "TRUE")) #| SPAT_OUT == "TRUE"))
 CLEAN.TRUE = subset(TEST.GEO, summary == "TRUE")# & SPAT_OUT == "TRUE")
 unique(CLEAN.TRUE$summary)#;unique(CLEAN.TRUE$SPAT_OUT)   
 
-                                    
+
 ## What percentage of records are retained?
 identical(dim(CLEAN.TRUE)[1], (dim(COMBO.AWAP.CONVERT)[1] - dim(subset(TEST.GEO, summary == "FALSE"))[1])) #| SPAT_OUT == "FALSE"))[1]))
 length(unique(CLEAN.TRUE$searchTaxon))
