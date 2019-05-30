@@ -437,9 +437,16 @@ MOD.2.SPP  = read.csv("./data/base/HIA_LIST/RENEE/MOD3_OCT18.csv",              
 DIANA.SPP  = read.csv("./data/base/HIA_LIST/RENEE/DIANA_SPP.csv",                             stringsAsFactors = FALSE)
 MANUEL.SPP = read.csv("./data/base/HIA_LIST/MANUEL/species_module2.csv",                      stringsAsFactors = FALSE)
 DIANA.TC   = read.csv("./data/base/HIA_LIST/RENEE/Distribution_Species_Tcrit_Diana.csv",      stringsAsFactors = FALSE)
+DIANA.TEST = read.csv("./data/base/HIA_LIST/RENEE/MQ_Species_2017_DB.csv",                    stringsAsFactors = FALSE)
+DIANA.TEST = read.csv("./data/base/HIA_LIST/RENEE/Species 4.csv",                             stringsAsFactors = FALSE)
+
+
 TCRIT = select(DIANA.TC, Names, Tcrit, ster)
 names(TCRIT)[names(TCRIT) == 'Names'] <- 'searchTaxon'
+names(DIANA.TEST)[names(DIANA.TEST) == 'Species'] <- 'searchTaxon'
+
 TCRIT.SPP = TCRIT$searchTaxon
+DIANA.SPP = DIANA.TEST$searchTaxon
 MANUEL.SPP = trimws(MANUEL.SPP$Species)
 
 MOD.3.CHK  = join(MOD.3.SPP, MXT.CHECK[c("searchTaxon", "Check.map", "Origin", "genus", "order", "group",

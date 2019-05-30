@@ -410,8 +410,8 @@ names(awap.heatwave)
 plot(HWF, main = "No. heatwaves during a season")
 
 
-plot(cum_hot, main = "Cumulative heat during hottest heatwave")
-points(NICHE.1KM.84, add = "TRUE")
+# plot(cum_hot, main = "Cumulative heat during hottest heatwave")
+# points(NICHE.1KM.84, add = "TRUE")
 
 
 
@@ -423,7 +423,7 @@ points(NICHE.1KM.84, add = "TRUE")
 
 
 ## Make a list of all the ANCUCLIM data
-fpar.tot = stack(list.files(as.character('./data/base/ANUCLIM'), pattern = 'Aust_ftot_1km_mth', full.names = TRUE, recursive = TRUE))
+#fpar.tot = stack(list.files(as.character('./data/base/ANUCLIM'), pattern = 'Aust_ftot_1km_mth', full.names = TRUE, recursive = TRUE))
 
 
 #########################################################################################################################

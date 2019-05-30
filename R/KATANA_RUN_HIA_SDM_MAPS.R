@@ -41,6 +41,7 @@
 
 
 
+
 ## This code runs the whole SDM workflow for the HIA project, for a subset of species (e.g. whichever you supply)
 ## In order to run this from katana, we need to use only the necessary packages.
 ## save.image("KATANA_RUN_DATA.RData") 
@@ -160,7 +161,7 @@ if (!on_windows) {
 ## Run the species 500 or 1000 at a time
 #GBIF.spp = unique(WPW.spp)  ## your list of species
 #GBIF.spp = unique(WPW.tree)  ## your list of species
-GBIF.spp = unique(WPW.non.tree)
+GBIF.spp = unique(WPW.spp)
 
 
 ## Subset for PBS array jobs
@@ -178,7 +179,7 @@ if (Sys.getenv("PBS_ARRAYID") != "") {
 #########################################################################################################################
 ## The required folders must be created on katana
 GBIF.spp      = as_utf8(GBIF.spp, normalize = TRUE)  ## Check the species names have the right characters
-save_run      = "ALL_EVERGREEN_SPP"                  ## a variable to append the run name to the output files
+save_run      = "ALL_EVREGREEN_MAY_2018"                  ## a variable to append the run name to the output files
 read_data     = "FALSE"                              ## Read intermediary data between the steps?
 save_data     = "TRUE"                               ## Save data?
 check_maps    = "FALSE"                              ## Create maps, shapefiles and histograms of each speices?
