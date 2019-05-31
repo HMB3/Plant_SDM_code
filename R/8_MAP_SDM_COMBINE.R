@@ -61,130 +61,81 @@ head(gcms.50) ; head(gcms.70) ; head(gcms.30)
 
 #########################################################################################################################
 ## Create 2030 maps :: can the try catch be looped over the top
-#lapply(map_spp, function(species){ 
-  #message ("Running 2030 projection for ", species)
+tryCatch(
+  project_maxent_grids_mess(shp_path      = "./data/base/CONTEXTUAL/", ## Path for shapefile
+                            aus_shp       = "aus_states.rds",          ## Shapefile, e.g. Australian states
+                            world_shp     = "LAND_world.rds",          ## World shapefile          
+                            
+                            scen_list     = scen_2030,                 ## List of climate scenarios
+                            species_list  = map_spp,                   ## List of species folders with maxent models
+                            maxent_path   = bs_path,                   ## Output folder
+                            climate_path  = "./data/base/worldclim/aus/1km/bio", ## climate data
+                            
+                            grid_names    = grid.names,
+                            time_slice    = 30,                        ## Time period
+                            current_grids = aus.grids.current,         ## predictor grids
+                            create_mess   = "TRUE",
+                            nclust        = 1),
   
-  ## Create a directoty to store the error message
-  #dir_name = file.path(bs_path, gsub(' ', '_', species))
-  
-  ## Then loop over the species folders and climate scenarios 
-  tryCatch(
-    project_maxent_grids_mess(shp_path      = "./data/base/CONTEXTUAL/", ## Path for shapefile
-                              aus_shp       = "aus_states.rds",          ## Shapefile, e.g. Australian states
-                              world_shp     = "LAND_world.rds",          ## World shapefile          
-                              
-                              scen_list     = scen_2030,                 ## List of climate scenarios
-                              species_list  = map_spp,                   ## List of species folders with maxent models
-                              maxent_path   = bs_path,                   ## Output folder
-                              climate_path  = "./data/base/worldclim/aus/1km/bio", ## climate data
-                              
-                              grid_names    = grid.names,
-                              time_slice    = 30,                        ## Time period
-                              current_grids = aus.grids.current,         ## predictor grids
-                              create_mess   = "TRUE",
-                              nclust        = 1),
+  ## If the species fails, write a fail message to file. 
+  error = function(cond) {
+    message ("failure in 2030")
     
-    ## If the species fails, write a fail message to file. 
-    error = function(cond) {
-message ("failure in 2030")
-      
-      ## print the warning message to the screen as well
-      #file.create(file.path(dir_name, "map_2030_failed.txt"))
-      #message(species, ' failed for 2030') 
-      #cat(paste(cond), file=file.path(dir_name, "map_failed.txt"))
-      #warning(species, ': ', cond$message)
-    })
-  
-  
-  ## now add a file to the dir to denote that it has completed
-  #file.create(file.path(dir_name, "map_2030_completed.txt"))
-  
-#})
+  })
 
 
 
 
 #########################################################################################################################
 ## Create 2050 maps
-#lapply(map_spp, function(species){
+tryCatch(
+  project_maxent_grids_mess(shp_path      = "./data/base/CONTEXTUAL/", ## Path for shapefile
+                            aus_shp       = "aus_states.rds",          ## Shapefile, e.g. Australian states
+                            world_shp     = "LAND_world.rds",          ## World shapefile
+                            
+                            scen_list     = scen_2050,                 ## List of climate scenarios
+                            species_list  = map_spp,                   ## List of species folders with maxent models
+                            maxent_path   = bs_path,                   ## Output folder
+                            climate_path  = "./data/base/worldclim/aus/1km/bio", ## climate data
+                            
+                            grid_names    = grid.names,
+                            time_slice    = 50,                        ## Time period
+                            current_grids = aus.grids.current,         ## predictor grids
+                            create_mess   = "TRUE",
+                            nclust        = 1),
+  
+  ## If the species fails, write a fail message to file.
+  error = function(cond) {
+    
+    message ("failure in 2050")
+  })
 
-  ## Create a directoty to store the error message
-  #dir_name = file.path(bs_path, gsub(' ', '_', species))
-
-  ## Then loop over the species folders and climate scenarios
-  tryCatch(
-    project_maxent_grids_mess(shp_path      = "./data/base/CONTEXTUAL/", ## Path for shapefile
-                              aus_shp       = "aus_states.rds",          ## Shapefile, e.g. Australian states
-                              world_shp     = "LAND_world.rds",          ## World shapefile
-
-                              scen_list     = scen_2050,                 ## List of climate scenarios
-                              species_list  = map_spp,                   ## List of species folders with maxent models
-                              maxent_path   = bs_path,                   ## Output folder
-                              climate_path  = "./data/base/worldclim/aus/1km/bio", ## climate data
-
-                              grid_names    = grid.names,
-                              time_slice    = 50,                        ## Time period
-                              current_grids = aus.grids.current,         ## predictor grids
-                              create_mess   = "TRUE",
-                              nclust        = 1),
-
-    ## If the species fails, write a fail message to file.
-    error = function(cond) {
-
-message ("failure in 2050")
-      ## print the warning message to the screen as well
-      #file.create(file.path(dir_name, "map_2050_failed.txt"))
-      #message(species, ' failed for 2050')
-      #cat(cond$message, file=file.path(dir_name, "map_2050_failed.txt"))
-      #warning(species, ': ', cond$message)
-    })
-
-
-  ## now add a file to the dir to denote that it has completed
-  #file.create(file.path(dir_name, "map_2050_completed.txt"))
-
-#})
 
 
 #########################################################################################################################
 ## Create 2070 maps
-#lapply(map_spp, function(species){
+## Then loop over the species folders and climate scenarios
+tryCatch(
+  project_maxent_grids_mess(shp_path      = "./data/base/CONTEXTUAL/", ## Path for shapefile
+                            aus_shp       = "aus_states.rds",          ## Shapefile, e.g. Australian states
+                            world_shp     = "LAND_world.rds",          ## World shapefile
+                            
+                            scen_list     = scen_2070,                 ## List of climate scenarios
+                            species_list  = map_spp,                   ## List of species folders with maxent models
+                            maxent_path   = bs_path,                   ## Output folder
+                            climate_path  = "./data/base/worldclim/aus/1km/bio", ## climate data
+                            
+                            grid_names    = grid.names,
+                            time_slice    = 70,                        ## Time period
+                            current_grids = aus.grids.current,         ## predictor grids
+                            create_mess   = "TRUE",
+                            nclust        = 1),
+  
+  ## If the species fails, write a fail message to file.
+  error = function(cond) {
+    message ("failures in 2070")
+  })
 
-  ## Create a directoty to store the error message
-  #dir_name = file.path(bs_path, gsub(' ', '_', species))
-
-  ## Then loop over the species folders and climate scenarios
-  tryCatch(
-    project_maxent_grids_mess(shp_path      = "./data/base/CONTEXTUAL/", ## Path for shapefile
-                              aus_shp       = "aus_states.rds",          ## Shapefile, e.g. Australian states
-                              world_shp     = "LAND_world.rds",          ## World shapefile
-
-                              scen_list     = scen_2070,                 ## List of climate scenarios
-                              species_list  = map_spp,                ## List of species folders with maxent models
-                              maxent_path   = bs_path,                   ## Output folder
-                              climate_path  = "./data/base/worldclim/aus/1km/bio", ## climate data
-
-                              grid_names    = grid.names,
-                              time_slice    = 70,                        ## Time period
-                              current_grids = aus.grids.current,         ## predictor grids
-                              create_mess   = "TRUE",
-                              nclust        = 1),
-
-    ## If the species fails, write a fail message to file.
-    error = function(cond) {
-message ("failures in 2070")
-      ## print the warning message to the screen as well
-      #file.create(file.path(dir_name, "map_2070_failed.txt"))
-      #message(species, ' failed for 2070')
-      #cat(cond$message, file=file.path(dir_name, "map_2070_failed.txt"))
-      #warning(species, ': ', cond$message)
-    })
-
-
-  ## now add a file to the dir to denote that it has completed
-  #file.create(file.path(dir_name, "map_2070_completed.txt"))
-
-#})
 
 
 
@@ -213,125 +164,78 @@ message ("failures in 2070")
 #########################################################################################################################
 ## Combine GCM predictions and calculate gain and loss for 2030
 ## Here we can add the mask of novel environments to SUA aggregation
-# lapply(map_spp, function(species){
-# 
-#   ## Create a directoty to store the error message
-#   dir_name = file.path(bs_path, gsub(' ', '_', species))
-# 
-#   ## Then loop over the species folders and climate scenarios
-#   tryCatch(mapply(SUA_cell_count,                                  ## Function aggreagating GCM predictions by spatial unit
-#                   unit_path     = "./data/base/CONTEXTUAL/SUA/",   ## Data path for the spatial unit of analysis
-#                   unit_shp      = "SUA_2016_AUST.rds",             ## Spatial unit of analysis - E.G. SUAs
-#                   unit_vec      = "SUA_2016_VEC.rds",              ## Vector of rasterized unit cells
-#                   world_shp     = "LAND_world.rds",                ## Polygon for AUS maps
-#                   aus_shp       = "aus_states.rds",                ## Polygon for World maps
-# 
-#                   DIR_list      = SDM.RESULTS.DIR,                 ## List of directories with rasters
-#                   species_list  = map_spp,                         ## List of species' directories
-#                   maxent_path   = bs_path,                         ## Directory of maxent results
-#                   thresholds    = percent.10.log,                  ## List of maxent thresholds
-#                   time_slice    = 30,                              ## Time period, eg 2030
-#                   write_rasters = TRUE),
-# 
-#            ## If the species fails, write a fail message to file.
-#            error = function(cond) {
-# 
-#              ## print the warning message to the screen as well
-#              file.create(file.path(dir_name, "combined_2030_maps_failed.txt"))
-#              message(species, ' failed')
-#              cat(cond$message, file = file.path(dir_name, "combined_2030_maps_failed.txt"))
-#              warning(species, ': ', cond$message)
-#            })
-# 
-# 
-#   ## now add a file to the dir to denote that it has completed
-#   file.create(file.path(dir_name, "combined_2030_maps_completed.txt"))
-# 
-# })
-# 
-# 
-# 
-# 
-# 
-# #########################################################################################################################
-# ## Combine GCM output for 2050 
-# lapply(map_spp, function(species){
-# 
-#   ## Create a directoty to store the error message
-#   dir_name = file.path(bs_path, gsub(' ', '_', species))
-# 
-#   ## Then loop over the species folders and climate scenarios
-#   tryCatch(mapply(SUA_cell_count,                                  ## Function aggreagating GCM predictions by spatial unit
-#                   unit_path     = "./data/base/CONTEXTUAL/SUA/",   ## Data path for the spatial unit of analysis
-#                   unit_shp      = "SUA_2016_AUST.rds",             ## Spatial unit of analysis - E.G. SUAs
-#                   unit_vec      = "SUA_2016_VEC.rds",              ## Vector of rasterized unit cells
-#                   world_shp     = "LAND_world.rds",                ## Polygon for AUS maps
-#                   aus_shp       = "aus_states.rds",                ## Polygon for World maps
-# 
-#                   DIR_list      = SDM.RESULTS.DIR,                 ## List of directories with rasters
-#                   species_list  = map_spp,                         ## List of species' directories
-#                   maxent_path   = bs_path,                         ## Directory of maxent results
-#                   thresholds    = percent.10.log,                  ## List of maxent thresholds
-#                   time_slice    = 50,                              ## Time period, eg 2030
-#                   write_rasters = TRUE),
-# 
-#            ## If the species fails, write a fail message to file.
-#            error = function(cond) {
-# 
-#              ## print the warning message to the screen as well
-#              file.create(file.path(dir_name, "combined_2050_maps_failed.txt"))
-#              message(species, ' failed')
-#              cat(cond$message, file = file.path(dir_name, "combined_2050_maps_failed.txt"))
-#              warning(species, ': ', cond$message)
-#            })
-# 
-# 
-#   ## now add a file to the dir to denote that it has completed
-#   file.create(file.path(dir_name, "combined_2050_maps_completed.txt"))
-# 
-# })
-# 
-# 
-# 
-# 
-# 
-# #########################################################################################################################
-# ## Combine GCM output for 2070 
-# lapply(map_spp, function(species){
-# 
-#   ## Create a directoty to store the error message
-#   dir_name = file.path(bs_path, gsub(' ', '_', species))
-# 
-#   ## Then loop over the species folders and climate scenarios
-#   tryCatch(mapply(SUA_cell_count,                                  ## Function aggreagating GCM predictions by spatial unit
-#                   unit_path     = "./data/base/CONTEXTUAL/SUA/",   ## Data path for the spatial unit of analysis
-#                   unit_shp      = "SUA_2016_AUST.rds",             ## Spatial unit of analysis - E.G. SUAs
-#                   unit_vec      = "SUA_2016_VEC.rds",              ## Vector of rasterized unit cells
-#                   world_shp     = "LAND_world.rds",                ## Polygon for AUS maps
-#                   aus_shp       = "aus_states.rds",                ## Polygon for World maps
-# 
-#                   DIR_list      = SDM.RESULTS.DIR,                 ## List of directories with rasters
-#                   species_list  = map_spp,                         ## List of species' directories
-#                   maxent_path   = bs_path,                         ## Directory of maxent results
-#                   thresholds    = percent.10.log,                  ## List of maxent thresholds
-#                   time_slice    = 70,                              ## Time period, eg 2030
-#                   write_rasters = TRUE),
-# 
-#            ## If the species fails, write a fail message to file.
-#            error = function(cond) {
-# 
-#              ## print the warning message to the screen as well
-#              file.create(file.path(dir_name, "combined_2070_maps_failed.txt"))
-#              message(species, ' failed')
-#              cat(cond$message, file = file.path(dir_name, "combined_2070_maps_failed.txt"))
-#              warning(species, ': ', cond$message)
-#            })
-# 
-# 
-#   ## now add a file to the dir to denote that it has completed
-#   file.create(file.path(dir_name, "combined_2070_maps_completed.txt"))
-# 
-# })
+
+
+## Then loop over the species folders and climate scenarios
+tryCatch(mapply(SUA_cell_count,                                  ## Function aggreagating GCM predictions by spatial unit
+                unit_path     = "./data/base/CONTEXTUAL/SUA/",   ## Data path for the spatial unit of analysis
+                unit_shp      = "SUA_2016_AUST.rds",             ## Spatial unit of analysis - E.G. SUAs
+                unit_vec      = "SUA_2016_VEC.rds",              ## Vector of rasterized unit cells
+                world_shp     = "LAND_world.rds",                ## Polygon for AUS maps
+                aus_shp       = "aus_states.rds",                ## Polygon for World maps
+                
+                DIR_list      = SDM.RESULTS.DIR,                 ## List of directories with rasters
+                species_list  = map_spp,                         ## List of species' directories
+                maxent_path   = bs_path,                         ## Directory of maxent results
+                thresholds    = percent.10.log,                  ## List of maxent thresholds
+                time_slice    = 30,                              ## Time period, eg 2030
+                write_rasters = TRUE),
+         
+         ## If the species fails, write a fail message to file.
+         error = function(cond) {
+           message ("failures in 2070")
+         })
+
+
+
+
+
+#########################################################################################################################
+## Combine GCM output for 2050
+tryCatch(mapply(SUA_cell_count,                                  ## Function aggreagating GCM predictions by spatial unit
+                unit_path     = "./data/base/CONTEXTUAL/SUA/",   ## Data path for the spatial unit of analysis
+                unit_shp      = "SUA_2016_AUST.rds",             ## Spatial unit of analysis - E.G. SUAs
+                unit_vec      = "SUA_2016_VEC.rds",              ## Vector of rasterized unit cells
+                world_shp     = "LAND_world.rds",                ## Polygon for AUS maps
+                aus_shp       = "aus_states.rds",                ## Polygon for World maps
+                
+                DIR_list      = SDM.RESULTS.DIR,                 ## List of directories with rasters
+                species_list  = map_spp,                         ## List of species' directories
+                maxent_path   = bs_path,                         ## Directory of maxent results
+                thresholds    = percent.10.log,                  ## List of maxent thresholds
+                time_slice    = 50,                              ## Time period, eg 2030
+                write_rasters = TRUE),
+         
+         ## If the species fails, write a fail message to file.
+         error = function(cond) {
+           message ("failures in 2070")
+         })
+
+
+
+
+
+#########################################################################################################################
+## Combine GCM output for 2070
+## Then loop over the species folders and climate scenarios
+tryCatch(mapply(SUA_cell_count,                                  ## Function aggreagating GCM predictions by spatial unit
+                unit_path     = "./data/base/CONTEXTUAL/SUA/",   ## Data path for the spatial unit of analysis
+                unit_shp      = "SUA_2016_AUST.rds",             ## Spatial unit of analysis - E.G. SUAs
+                unit_vec      = "SUA_2016_VEC.rds",              ## Vector of rasterized unit cells
+                world_shp     = "LAND_world.rds",                ## Polygon for AUS maps
+                aus_shp       = "aus_states.rds",                ## Polygon for World maps
+                
+                DIR_list      = SDM.RESULTS.DIR,                 ## List of directories with rasters
+                species_list  = map_spp,                         ## List of species' directories
+                maxent_path   = bs_path,                         ## Directory of maxent results
+                thresholds    = percent.10.log,                  ## List of maxent thresholds
+                time_slice    = 70,                              ## Time period, eg 2030
+                write_rasters = TRUE),
+         
+         ## If the species fails, write a fail message to file.
+         error = function(cond) {
+           message ("failures in 2070")
+         })
 
 
 
