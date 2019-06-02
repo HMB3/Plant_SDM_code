@@ -8,18 +8,8 @@
 ## First step is to get the katana models run.
 
 
-## Then, run all the niches locally, and combine the niche data to the maxent results in this code.
 
-
-## How does this need to be modified to process Katana output?
-## All we need to do is splice on the context info from the 
-
-
-## Print the species run to the screen
-message('Creating summary stats for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
-
-
-## Read in niche data
+## Read in niche data :: this is needed to combine the context data with the maxent output
 if(read_data == "TRUE") {
   
   ## Load GBIF and ALA data :: this would ideally be for all species, not just for those run
@@ -32,6 +22,9 @@ if(read_data == "TRUE") {
   message(' skip file reading, running species in parallel')   ##
   
 }
+
+
+
 
 
 #########################################################################################################################
@@ -255,7 +248,7 @@ if (nrow(MAXENT.RESULTS) > 2) {
 
 
 #########################################################################################################################
-## 3). COMBINE SDM RESULTS WITH HIA CONTEXT DATA AND SAVE
+## 3). COMBINE SDM RESULTS WITH HIA CONTEXT DATA, RUN LOCAL MESS MAPS AND SAVE
 #########################################################################################################################
 
 
@@ -265,6 +258,12 @@ MAXENT.RESULTS$searchTaxon = gsub("_", " ", MAXENT.RESULTS$searchTaxon)
 MAXENT.RESULTS = join(COMBO.NICHE.CONTEXT, MAXENT.RESULTS, type = "right")
 MAXENT.RESULTS = dplyr::select(MAXENT.RESULTS, results.columns)
 summary(MAXENT.RESULTS)
+View(MAXENT.RESULTS)
+
+
+#########################################################################################################################
+## Source the MESS map creation when it works
+
 
 
 #########################################################################################################################

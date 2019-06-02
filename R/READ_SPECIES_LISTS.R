@@ -388,7 +388,7 @@ TI.spp          = unique(TI.XY$searchTaxon)
 TI.HIA          = setdiff(TI.spp, WPW.spp)
 TI.HIA          = sort(TI.HIA)
 
-WPW.spp         = WPW.spp[lapply(WPW.spp,length)>0]
+WPW.spp         = unique(WPW.spp[lapply(WPW.spp,length)>0])
 WPW.NA          = unique(c(TPL.NA, GBIF.NA))          ## These taxa did not match either GBIF or ALA
 
 
