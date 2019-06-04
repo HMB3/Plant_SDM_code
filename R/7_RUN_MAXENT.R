@@ -17,7 +17,8 @@ message('Running maxent models for ', length(GBIF.spp), ' species in the set ', 
 ## Load SDM table.
 if(read_data == "TRUE") {
   
-  ## This table will be all the records for all HIA species (~3.8k). These data will be re-processed, 1000 species at
+  ## This table will contains all the records for all HIA species (~3.8k).
+  ## SDM_SPAT_OCC_BG_ALL_EVERGREEN_SPP is the latest version
   SDM.SPAT.OCC.BG = readRDS(paste0(DATA_path, 'SDM_SPAT_OCC_BG_ALL_EVERGREEN_SPP.rds'))
   
 } else {
@@ -289,23 +290,8 @@ Max_tss <- sapply(omission.tables, function(file) {
 
 #########################################################################################################################
 ## Add a species variable to the TSS results, so we can subset to just the species analysed
-Max_tss  = as.data.frame(Max_tss)
-setDT(Max_tss, keep.rownames = TRUE)[]
-Max_tss  = as.data.frame(Max_tss)
-names(Max_tss)[names(Max_tss) == 'rn'] <- 'searchTaxon'
-
-
-
-## Remove extra text
-Max_tss$searchTaxon = gsub("//",         "", Max_tss$searchTaxon)
-Max_tss$searchTaxon = gsub(results_dir,   "", Max_tss$searchTaxon)
-Max_tss$searchTaxon = gsub("/full/species_omission.csv.Max_tss", "", Max_tss$searchTaxon)
-Max_tss$searchTaxon = gsub("/",          "", Max_tss$searchTaxon)
-head(Max_tss)
-
-
-## Add max TSS to the results table
-MAXENT.RESULTS = join(MAXENT.RESULTS, Max_tss)
+Max_tss        = as.data.frame(Max_tss)
+MAXENT.RESULTS = cbind(MAXENT.RESULTS, Max_tss)
 summary(MAXENT.RESULTS$Max_tss)
 summary(MAXENT.RESULTS$Omission_rate)
 
@@ -386,22 +372,6 @@ SDM.RESULTS.DIR = unlist(SDM.RESULTS.DIR)
 
 # ## Change the species column
 # MAXENT.RESULTS$searchTaxon = gsub("_", " ", MAXENT.RESULTS$searchTaxon)
-
-
-#########################################################################################################################
-## Save maxent results 
-# if(save_data == "TRUE") {
-
-# ## save .rds file for the next session
-# saveRDS(MAXENT.RESULTS,   paste0(DATA_path, 'MAXENT_RESULTS_', save_run, '.rds'))
-# write.csv(MAXENT.RESULTS, paste0(DATA_path, 'MAXENT_RESULTS_', save_run, '.csv'), row.names = FALSE)
-
-
-# } else {
-
-# message('Dont save niche summary, only ', length(GBIF.spp), ' species analysed')
-
-# }
 
 
 #########################################################################################################################

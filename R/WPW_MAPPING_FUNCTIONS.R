@@ -474,8 +474,8 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
                       latticeExtra::layer(sp.polygons(aus_poly), data = list(aus_poly = aus_poly)) +
                       latticeExtra::layer(sp.points(occ, pch = 19, cex = 0.15, 
                                                     col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)) +
-                      latticeExtra::layer(sp.polygons(h[[panel.number()]]), data = list(h = novel_hatch)))
-                      #latticeExtra::layer(sp.lines(h[[panel.number()]]), data = list(h = novel_hatch)))
+                      #latticeExtra::layer(sp.polygons(h[[panel.number()]]), data = list(h = novel_hatch)))
+                      latticeExtra::layer(sp.lines(h[[panel.number()]]), data = list(h = novel_hatch)))
               dev.off()
               
             } else {

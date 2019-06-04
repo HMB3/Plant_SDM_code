@@ -100,7 +100,7 @@ for (species in spp.geo) {
   DF     <- subset(COMBO.SUA.POA, searchTaxon == species)
   DF.OCC <- subset(COMBO.SUA.POA, searchTaxon == species & SOURCE != "INVENTORY")
   DF.INV <- subset(COMBO.SUA.POA, searchTaxon == species & SOURCE == "INVENTORY")
-  # 
+   
   # #############################################################
   # ## Plot occurrence points by source for the world
   # message('Writing global occ sources for ', species)
