@@ -57,6 +57,7 @@ head(gcms.50) ; head(gcms.70) ; head(gcms.30)
 
 
 ## The MESS map function needs to be modified so that it can handle species with no novel areas..........................
+## Also, make R write a text file here too, which contains the error message if it fails.................................
 
 
 #########################################################################################################################
@@ -66,8 +67,8 @@ tryCatch(
                             aus_shp       = "aus_states.rds",          ## Shapefile, e.g. Australian states
                             world_shp     = "LAND_world.rds",          ## World shapefile          
                             
-                            scen_list     = scen_2030,                 ## List of climate scenarios
-                            species_list  = map_spp,                   ## List of species folders with maxent models
+                            scen_list     = scen_2030[1:2],            ## List of climate scenarios
+                            species_list  = map_spp[15:16],            ## List of species folders with maxent models
                             maxent_path   = bs_path,                   ## Output folder
                             climate_path  = "./data/base/worldclim/aus/1km/bio", ## climate data
                             
@@ -75,11 +76,16 @@ tryCatch(
                             time_slice    = 30,                        ## Time period
                             current_grids = aus.grids.current,         ## predictor grids
                             create_mess   = "TRUE",
-                            nclust        = 1),
+                            nclust        = 2),
   
   ## If the species fails, write a fail message to file. 
   error = function(cond) {
-    message ("failure in 2030")
+    
+    ## This will write the error message inside the text file, 
+    ## but it won't include the species
+    file.create(file.path(bs_path, "mapping_failed_2030.txt"))
+    cat(cond$message, file=file.path(bs_path, "mapping_failed_2030.txt"))
+    warning(cond$message)
     
   })
 
@@ -107,9 +113,13 @@ tryCatch(
   ## If the species fails, write a fail message to file.
   error = function(cond) {
     
-    message ("failure in 2050")
+    ## This will write the error message inside the text file, 
+    ## but it won't include the species
+    file.create(file.path(bs_path, "mapping_failed_2050.txt"))
+    cat(cond$message, file=file.path(bs_path, "mapping_failed_2050.txt"))
+    warning(cond$message)
+    
   })
-
 
 
 #########################################################################################################################
@@ -133,9 +143,14 @@ tryCatch(
   
   ## If the species fails, write a fail message to file.
   error = function(cond) {
-    message ("failures in 2070")
+    
+    ## This will write the error message inside the text file, 
+    ## but it won't include the species
+    file.create(file.path(bs_path, "mapping_failed_2070.txt"))
+    cat(cond$message, file=file.path(bs_path, "mapping_failed_2070.txt"))
+    warning(cond$message)
+    
   })
-
 
 
 
@@ -183,9 +198,14 @@ tryCatch(mapply(SUA_cell_count,                                  ## Function agg
          
          ## If the species fails, write a fail message to file.
          error = function(cond) {
-           message ("failures in 2070")
+           
+           ## This will write the error message inside the text file, 
+           ## but it won't include the species
+           file.create(file.path(bs_path, "sua_count_failed_2030.txt"))
+           cat(cond$message, file=file.path(bs_path, "sua_count_failed_2030.txt"))
+           warning(cond$message)
+           
          })
-
 
 
 
@@ -206,9 +226,16 @@ tryCatch(mapply(SUA_cell_count,                                  ## Function agg
                 time_slice    = 50,                              ## Time period, eg 2030
                 write_rasters = TRUE),
          
+         
          ## If the species fails, write a fail message to file.
          error = function(cond) {
-           message ("failures in 2070")
+           
+           ## This will write the error message inside the text file, 
+           ## but it won't include the species
+           file.create(file.path(bs_path, "sua_count_failed_2050.txt"))
+           cat(cond$message, file=file.path(bs_path, "sua_count_failed_2050.txt"))
+           warning(cond$message)
+           
          })
 
 
@@ -234,7 +261,13 @@ tryCatch(mapply(SUA_cell_count,                                  ## Function agg
          
          ## If the species fails, write a fail message to file.
          error = function(cond) {
-           message ("failures in 2070")
+           
+           ## This will write the error message inside the text file, 
+           ## but it won't include the species
+           file.create(file.path(bs_path, "sua_count_failed_2070.txt"))
+           cat(cond$message, file=file.path(bs_path, "sua_count_failed_2070.txt"))
+           warning(cond$message)
+           
          })
 
 

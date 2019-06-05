@@ -538,8 +538,8 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
         'shp_path',    'aus_shp',       'world_shp',   'scen_list',   'species_list', 
         'maxent_path', 'climate_path',  'grid_names',  'time_slice',  'current_grids',  
         'create_mess', 'hatch',        
-        'polygonizer', 'sdm.predictors', 'aus.grids.current', 'nclust',
-        'sdm.select',  'diverge0'))
+        'polygonizer', 'nclust',
+        'sdm.select',  'diverge0'),  envir = environment())
       
       # shp_path, aus_shp, world_shp, scen_list, 
       # species_list, maxent_path, climate_path, 

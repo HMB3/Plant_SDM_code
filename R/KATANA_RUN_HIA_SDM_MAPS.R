@@ -48,7 +48,7 @@ p <- c('ff',      'things',    'raster',        'dismo',             'sp',      
        'rvest',   'magrittr',  'devtools',      'ggplot2',           'reshape2',     'rmarkdown',             'flexdashboard', 
        'shiny',   'rgbif',     'ENMeval',       'tibble',            'ncdf4',        'Cairo',                 'taxonlookup',  
        'kgc',     'betareg',   'gridExtra',     'grid',              'lattice',      'ConR',                  'writexl',
-       'sf',      'ggmap',     'DataCombine',   'exactextractr', 'mgcv')
+       'sf',      'ggmap',     'DataCombine',   'exactextractr',     'mgcv', 'doSNOW')
 
 
 ## Require packages
@@ -131,8 +131,8 @@ if (!on_windows) {
 #Sys.setenv("PBS_ARRAYID" = 1)
 
 
-## Run the species 500 or 1000 at a time
-#GBIF.spp = unique(WPW.spp)  ## your list of species
+## Run the species across multiple jobs
+#GBIF.spp = unique(WPW.spp)   ## your list of species
 #GBIF.spp = unique(WPW.tree)  ## your list of species
 GBIF.spp = unique(WPW.spp)
 
