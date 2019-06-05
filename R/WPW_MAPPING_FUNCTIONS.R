@@ -538,9 +538,9 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
       
       cl <- makeCluster(nclust)
       clusterExport(cl, c(
-        'shp_path',    'aus_shp',       'world_shp',   'scen_list',   'species_list', 
-        'maxent_path', 'climate_path',  'grid_names',  'time_slice',  'current_grids',  
-        'create_mess', 'hatch', 'x',       
+        'shp_path',    'aus_shp',       'world_shp',   'ALB.CONICAL',  'CRS.WGS.84',   
+        'scen_list',   'species_list',  'maxent_path', 'climate_path', 'grid_names',  
+        'time_slice',  'current_grids', 'create_mess', 'hatch', 'x',       
         'polygonizer', 'nclust', 'diverge0'),  envir = environment())
       
       # shp_path, aus_shp, world_shp, scen_list, 
@@ -554,6 +554,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
         library(raster)
         library(rasterVis)
         library(latticeExtra)
+        library(magrittr)
         
       })
       
