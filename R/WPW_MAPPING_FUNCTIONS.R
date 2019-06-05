@@ -531,28 +531,36 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
     }
     
     if (nclust==1) {
-      lapply(species_list, maxent_predict_fun)  
+      
+      lapply(species_list, maxent_predict_fun) 
+      
     } else {
+      
       cl <- makeCluster(nclust)
       clusterExport(cl, c(
         'shp_path',    'aus_shp',       'world_shp',   'scen_list',   'species_list', 
         'maxent_path', 'climate_path',  'grid_names',  'time_slice',  'current_grids',  
-        'create_mess', 'hatch',        
-        'polygonizer', 'nclust',
-        'sdm.select',  'diverge0'),  envir = environment())
+        'create_mess', 'hatch', 'x',       
+        'polygonizer', 'nclust', 'diverge0'),  envir = environment())
       
       # shp_path, aus_shp, world_shp, scen_list, 
       # species_list, maxent_path, climate_path, 
       # grid_names, time_slice, current_grids, create_mess, nclust
       
       clusterEvalQ(cl, {
+        
         library(rmaxent)
         library(sp)
         library(raster)
         library(rasterVis)
         library(latticeExtra)
+        
       })
-      parLapply(cl, species_list, myfun)  
+      
+      message('Running project_maxent_grids_mess for ', length(species_list),
+              ' species on ', nclust, ' cores for GCM ', x)
+      
+      parLapply(cl, species_list, maxent_predict_fun)  
     }
     
     
@@ -1008,6 +1016,83 @@ polygonizer <- function(x, outshape=NULL, pypath=NULL, readpoly=TRUE,
   if (isTRUE(aggregate)) require(rgeos)
   if (is.null(pypath)) {
     cmd <- Sys.which('OSGeo4W.bat')
+    pypath <- 'gdal_polygonize'
+    if(cmd=='') {
+      cmd <- 'python'
+      pypath <- Sys.which('gdal_polygonize.py')
+      if (!file.exists(pypath)) 
+        stop("Could not find gdal_polygonize.py or OSGeo4W on your system.") 
+    }
+  }
+  if (!is.null(outshape)) {
+    outshape <- sub('\\.shp$', '', outshape)
+    f.exists <- file.exists(paste(outshape, c('shp', 'shx', 'dbf'), sep='.'))
+    if (any(f.exists)) 
+      stop(sprintf('File already exists: %s', 
+                   toString(paste(outshape, c('shp', 'shx', 'dbf'), 
+                                  sep='.')[f.exists])), call.=FALSE)
+  } else outshape <- tempfile()
+  if (is(x, 'Raster')) {
+    require(raster)
+    writeRaster(x, {f <- tempfile(fileext='.tif')})
+    rastpath <- normalizePath(f)
+  } else if (is.character(x)) {
+    rastpath <- normalizePath(x)
+  } else stop('x must be a file path (character string), or a Raster object.')
+  
+  system2(cmd, args=(
+    sprintf('"%s" "%s" %s -f "ESRI Shapefile" "%s.shp"', 
+            pypath, rastpath, ifelse(quietish, '-q ', ''), outshape)))
+  
+  if(isTRUE(aggregate)||isTRUE(readpoly)||isTRUE(fillholes)) {
+    shp <- readOGR(dirname(outshape), layer=basename(outshape), 
+                   verbose=!quietish)    
+  } else return(NULL)
+  
+  if (isTRUE(fillholes)) {
+    poly_noholes <- lapply(shp@polygons, function(x) {
+      Filter(function(p) p@ringDir==1, x@Polygons)[[1]]
+    })
+    pp <- SpatialPolygons(mapply(function(x, id) {
+      list(Polygons(list(x), ID=id))
+    }, poly_noholes, row.names(shp)), proj4string=CRS(proj4string(shp)))
+    shp <- SpatialPolygonsDataFrame(pp, shp@data)
+    if(isTRUE(aggregate)) shp <- aggregate(shp, names(shp))
+    writeOGR(shp, dirname(outshape), basename(outshape), 
+             'ESRI Shapefile', overwrite=TRUE)
+  }
+  if(isTRUE(aggregate) & !isTRUE(fillholes)) {
+    shp <- aggregate(shp, names(shp))
+    writeOGR(shp, dirname(outshape), basename(outshape), 
+             'ESRI Shapefile', overwrite=TRUE)
+  }
+  ifelse(isTRUE(readpoly), return(shp), return(NULL))
+}
+
+
+
+
+
+#########################################################################################################################
+## This function turns a raster into a polygon - Windows version
+polygonizer_windows <- function(x, outshape=NULL, pypath=NULL, readpoly=TRUE, 
+                                fillholes=FALSE, aggregate=FALSE, 
+                                quietish=TRUE) {
+  # x: an R Raster layer, or the file path to a raster file recognised by GDAL 
+  # outshape: the path to the output shapefile (if NULL, a temporary file will 
+  #           be created) 
+  # pypath: the path to gdal_polygonize.py or OSGeo4W.bat (if NULL, the function 
+  #         will attempt to determine the location)
+  # readpoly: should the polygon shapefile be read back into R, and returned by
+  #           this function? (logical) 
+  # fillholes: should holes be deleted (i.e., their area added to the containing
+  #            polygon)
+  # aggregate: should polygons be aggregated by their associated raster value?
+  # quietish: should (some) messages be suppressed? (logical)
+  if (isTRUE(readpoly) || isTRUE(fillholes)) require(rgdal)
+  if (isTRUE(aggregate)) require(rgeos)
+  if (is.null(pypath)) {
+    cmd <- Sys.which('C:/OSGeo4W64/OSGeo4W.bat')
     pypath <- 'gdal_polygonize'
     if(cmd=='') {
       cmd <- 'python'

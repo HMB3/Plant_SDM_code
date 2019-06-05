@@ -54,34 +54,35 @@ projection(template.raster.1km);projection(SDM.SPAT.OCC.BG);projection(Koppen_19
 ## https://stackoverflow.com/questions/47424367/error-in-check-for-remote-errors-val-5-nodes-produced-an-error-object-not-fo
 
 
-## Export cluster might work better 
-message('Running SDMs on the cluster ')
-nclust      <- 5
-cluster     <- makeCluster(nclust)
-clusterExport(cluster, c('template.raster.1km', 'SDM.SPAT.OCC.BG', 'Koppen_1975_1km', 'aus_states.rds', ## objects
-                         'fit_maxent_targ_bg_back_sel', 'local_simplify',                               ## functions
-                         'maxent_path', 'maxent_dir', 'bs_dir', 'OCC_SOURCE'))                          ## variables
-
-clusterEvalQ(cluster, {
-
-  ## These packages are required by SDM
-  require(ff)
-  require(rgeos)
-  require(sp)
-  require(raster)
-  require(rJava)
-  require(dismo)
-  require(things)
-
-})
+## Export cluster might work better - this takes a long time to export a cluster for 5 cores, given the size of each 
+## Object. How can this be sped up, or maybe saved in the environment
+# message('Running SDMs on the cluster ')
+# nclust      <- 5
+# cluster     <- makeCluster(nclust)
+# clusterExport(cluster, c('template.raster.1km', 'SDM.SPAT.OCC.BG', 'Koppen_1975_1km', 'aus_states.rds', ## objects
+#                          'fit_maxent_targ_bg_back_sel', 'local_simplify',                               ## functions
+#                          'maxent_path', 'maxent_dir', 'bs_dir', 'OCC_SOURCE'))                          ## variables
+# 
+# clusterEvalQ(cluster, {
+# 
+#   ## These packages are required by SDM
+#   require(ff)
+#   require(rgeos)
+#   require(sp)
+#   require(raster)
+#   require(rJava)
+#   require(dismo)
+#   require(things)
+# 
+# })
 
 
 #########################################################################################################################
 ## Loop over all the specie  ## species = GBIF.spp[1]  ##  
 ## Make this a conditon, so you can run the cluster if nclust is > 1, etc.
-#lapply(GBIF.spp[5:9], function(species){ 
-message('Running SDMs on the cluster ')
-parLapply(cluster, GBIF.spp[5:9], function(species) {      ## uncomment to run the cluster
+lapply(GBIF.spp, function(species){ 
+#message('Running SDMs on the cluster ')
+#parLapply(cluster, GBIF.spp[5:9], function(species) {      ## uncomment to run the cluster
   
   ## Skip the species if the directory already exists, before the loop
   message('Running SDMs on the cluster for ', species)
@@ -166,7 +167,10 @@ parLapply(cluster, GBIF.spp[5:9], function(species) {      ## uncomment to run t
 
 
 ## Stop the cluster
-stopCluster(cluster)
+#stopCluster(cluster)
+
+# Error in checkForRemoteErrors(val) : 
+#   5 nodes produced errors; first error: object 'maxent_dir' not found
 
 
 
