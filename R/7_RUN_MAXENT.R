@@ -80,7 +80,7 @@ projection(template.raster.1km);projection(SDM.SPAT.OCC.BG);projection(Koppen_19
 #########################################################################################################################
 ## Loop over all the specie  ## species = GBIF.spp[1]  ##  
 ## Make this a conditon, so you can run the cluster if nclust is > 1, etc.
-lapply(GBIF.spp, function(species){ 
+lapply(GBIF.spp[5], function(species){ 
 #message('Running SDMs on the cluster ')
 #parLapply(cluster, GBIF.spp[5:9], function(species) {      ## uncomment to run the cluster
   

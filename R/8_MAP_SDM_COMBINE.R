@@ -76,7 +76,7 @@ tryCatch(
                             time_slice    = 30,                        ## Time period
                             current_grids = aus.grids.current,         ## predictor grids
                             create_mess   = "TRUE",
-                            nclust        = 2),
+                            nclust        = 1),
   
   ## If the species fails, write a fail message to file. 
   error = function(cond) {
@@ -194,7 +194,8 @@ tryCatch(mapply(SUA_cell_count,                                  ## Function agg
                 maxent_path   = bs_path,                         ## Directory of maxent results
                 thresholds    = percent.10.log,                  ## List of maxent thresholds
                 time_slice    = 30,                              ## Time period, eg 2030
-                write_rasters = TRUE),
+                write_rasters = TRUE,
+                nclust        = 1),
          
          ## If the species fails, write a fail message to file.
          error = function(cond) {
