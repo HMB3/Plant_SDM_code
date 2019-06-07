@@ -13,30 +13,30 @@
 ## Add if/else for raster divide........................................................................................
 ## Add argument for just the MESS panel....................................................................................
 
+
 #########################################################################################################################
 ## E.G. arguments to run the algorithm inside the function 
 # shp_path      = "./data/base/CONTEXTUAL/" ## Path for shapefile
 # aus_shp       = "aus_states.rds"          ## Shapefile e.g. Australian states
 # world_shp     = "LAND_world.rds"          ## World shapefile
-# 
-# x             = scen_2030[3]                 ## List of climate scenarios
-# species       = map_spp[1]                   ## List of species folders with maxent models
+
+# x             = scen_2030[3]              ## List of climate scenarios
+# species       = map_spp[20]               ## List of species folders with maxent models
 # maxent_path   = bs_path                   ## Output folder
 # climate_path  = "./data/base/worldclim/aus/1km/bio" ## climate data
-# 
-# grid_names    = grid.names
-# bs_names      = bs.predictors             ## names of the predictor grids
+# static_path   = "./data/base/ACLEP"                 ## Soil aata
+
+# grid_names    = clim.soil
 # time_slice    = 30                        ## Time period
-# current_grids = aus.grids.current         ## predictor grids
+# current_grids = clim.soil.current         ## predictor grids
 # create_mess   = "TRUE"
-# png_only      = "TRUE"
 # nclust        = 1
 
 
 #########################################################################################################################
 ## Try to run the mess maps at the same time as the map creation?
 project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list, 
-                                     species_list, maxent_path, climate_path,
+                                     species_list, maxent_path, climate_path, # static_path,
                                      grid_names, time_slice, current_grids, create_mess, nclust) {
   
   ## Read in the Australian shapefile at the top
@@ -51,11 +51,18 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
   lapply(scen_list, function(x) {
     
     ## Create a raster stack for each of the 6 GCMs, not for each species
-    s <- stack(c(sprintf('%s/20%s/%s/%s%s.tif', climate_path, time_slice, x, x, 1:19)))
+    ## They need to have exactly the same extent.
+    ## Could stack all the rasters, or, keep them separate
+    s <- stack(c(sprintf('%s/20%s/%s/%s%s.tif', climate_path, time_slice, x, x, 1:19)))  ## Dynamic path
+                 #list.files(static_path, '\\.tif$', full.names = TRUE)))                ## Static rasters
+    
     identical(projection(s), projection(aus_poly))
     
     ## Rename both the current and future environmental stack...
     ## critically important that the order of the name.....................................................................
+    ## So this now needs to include all the names, static and not
+    
+    ## Note this step is only needed if the current grids used in the their original form, rather than being renamed.......
     names(s) <- names(current_grids) <- grid_names 
     
     ########################################################################################################################
@@ -93,7 +100,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
             
           } else {
             
-            ## If it was run with targetted selection, index the full model
+            ## Otherwise, index the full model
             message('Read in the full model')
             m   <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, species))$me_full
             
@@ -120,13 +127,16 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
             writeRaster(pred.current, f_current, overwrite = TRUE)
             
           } else {
-            message('Use existing prediction for ', species) 
+            message('Use existing prediction for ', species)                   ## Can get rid of this
             pred.current = raster(sprintf('%s/%s/full/%s_current.tif',
                                           maxent_path, species, species))
           }
           
           #####################################################################
           ## Report current mess map in progress
+          ## Could optimise this step too......................................
+          ## Doesn't need to happen every time for the static variables
+          ## Could work out how to the static mess once, before looping through scenarios
           MESS_dir = sprintf('%s%s/full/%s', 
                              maxent_path, species, 'MESS_output')
           f_mess_current = sprintf('%s/%s%s.tif', MESS_dir, species, "_current_mess")

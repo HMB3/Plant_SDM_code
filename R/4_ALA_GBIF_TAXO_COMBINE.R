@@ -340,8 +340,11 @@ COMBO.POINTS   = GBIF.ALA.84.1KM[c("lon", "lat")]
 message('Extracting raster values for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
 projection(COMBO.POINTS);projection(world.grids.current)
 dim(COMBO.POINTS);dim(GBIF.ALA.84.1KM)
+env.world.grids = stack(world.grids.current, PET, AI)
 
-COMBO.RASTER <- raster::extract(world.grids.current, COMBO.POINTS) %>% 
+
+## Extract the raster values
+COMBO.RASTER <- raster::extract(env.world.grids, COMBO.POINTS) %>% 
   
   cbind(as.data.frame(GBIF.ALA.84.1KM), .) %>% 
   
@@ -367,7 +370,9 @@ COMBO.RASTER <- raster::extract(world.grids.current, COMBO.POINTS) %>%
     Precip_wet_qu        = bio_16,
     Precip_dry_qu        = bio_17,
     Precip_warm_qu       = bio_18,
-    Precip_col_qu        = bio_19)
+    Precip_col_qu        = bio_19,
+    PET                  = pet_he_yr1,
+    AI                   = ai_yr1)
 
 
 ## Free some memory
@@ -375,14 +380,25 @@ gc();gc()
 
 
 #########################################################################################################################
-## Extract the raster data for PET
-projection(COMBO.POINTS);projection(PET)
+## Extract soil data
+projection(COMBO.POINTS);projection(soil)
 dim(COMBO.POINTS)
 
-POINTS.PET <- raster::extract(PET, COMBO.POINTS) %>% 
+POINTS.SOIL <- raster::extract(soil, COMBO.POINTS) %>% 
   cbind(COMBO.RASTER, .)
-COMBO.RASTER = POINTS.PET
-names(COMBO.RASTER)[names(COMBO.RASTER) == "."] <- 'PET'
+COMBO.RASTER = POINTS.SOIL
+
+
+#########################################################################################################################
+## Extract topo data
+projection(COMBO.POINTS);projection(topo)
+dim(COMBO.POINTS)
+
+
+POINTS.TOPO <- raster::extract(topo, COMBO.POINTS) %>% 
+  cbind(COMBO.RASTER, .)
+COMBO.RASTER = POINTS.TOPO
+names(COMBO.RASTER)
 
 
 ## Check 
@@ -390,6 +406,11 @@ dim(COMBO.RASTER)
 names(COMBO.RASTER)
 summary(COMBO.RASTER$Annual_mean_temp)
 summary(COMBO.RASTER$PET)
+summary(COMBO.RASTER$AI)
+summary(COMBO.RASTER$PC1_WGS84)
+summary(COMBO.RASTER$TWI)
+summary(COMBO.RASTER$TPI)
+
 
 
 
