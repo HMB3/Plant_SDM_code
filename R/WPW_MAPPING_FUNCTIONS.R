@@ -278,7 +278,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
               ## Create a PNG file of all the future MESS output: 
               ## raster_list  = unstack(mess_current$similarity) :: list of environmental rasters
               ## raster_names = names(mess_current$similarity)   :: names of the rasters
-              message('Creating mess maps of each future environmental predictor for ', species, ' under senario ', x)
+              message('Creating mess maps of each future environmental predictor for ', species, ' under scenario ', x)
               mapply(function(raster, raster_name) {
                 
                 p <- levelplot(raster, margin = FALSE, scales = list(draw = FALSE),
@@ -299,7 +299,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
               
               ## Write the raster of novel environments to the maxent directory 
               ## The "full" directory is getting full, could create a sub dir for MESS maps
-              message('Writing future novel environments to file for ',    species, ' under senario ', x) 
+              message('Writing future novel environments to file for ',    species, ' under scenario ', x) 
               writeRaster(novel_future, sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_novel_",  x), 
                           overwrite = TRUE)
               
