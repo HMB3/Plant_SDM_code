@@ -159,16 +159,17 @@ if (!on_windows) {
 
 
 ## Run the species 500 or 1000 at a time
-#GBIF.spp = unique(WPW.spp)  ## your list of species
+GBIF.spp = unique(WPW.spp)  ## your list of species
 #GBIF.spp = unique(WPW.tree)  ## your list of species
-GBIF.spp = unique(WPW.spp)
+#GBIF.spp = unique(WPW.non.tree)
 
 
 ## Subset for PBS array jobs
 if (Sys.getenv("PBS_ARRAYID") != "") {
 
+    max_i = as.integer(Sys.getenv("WPW_MAX_I"))
     i = as.integer (Sys.getenv("PBS_ARRAYID"))
-    GBIF.spp = GBIF.spp[1:length(GBIF.spp) %% 27 == i]
+    GBIF.spp = GBIF.spp[1:length(GBIF.spp) %% 100 == (i-1)]
 
 }
 
@@ -187,8 +188,8 @@ check_maps    = "FALSE"                              ## Create maps, shapefiles 
 GBIF_path     = "./data/base/HIA_LIST/GBIF_UPDATE/"  ## The path where GBIF data is stored
 ALA_path      = "./data/base/HIA_LIST/ALA_UPDATE/"   ## The path where ALA data is stored place
 DATA_path     = "./data/ANALYSIS/"                   ## The path where the final data from/for analyses are stored. 
-#OCC_SOURCE    = c("ALA", "GBIF")                     ## Data source :: for trees, ALL. For non trees, ALA/GBIF, for occ and bg
-OCC_SOURCE    = c("ALA", "GBIF", "INVENTORY")
+#OCC_SOURCE    = c("ALA", "GBIF", "INVENTORY")
+OCC_SOURCE    = c("ALA", "GBIF")                     ## Data source :: for trees, ALL. For non trees, ALA/GBIF, for occ and bg
 calc_niche    = "TRUE"
 
 maxent_path   = './output/maxent/HIA_TEST_INV/'      ## The directory where maxent files are saved               
