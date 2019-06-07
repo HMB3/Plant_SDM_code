@@ -17,7 +17,8 @@ message('Running maxent models for ', length(GBIF.spp), ' species in the set ', 
 ## Load SDM table.
 if(read_data == "TRUE") {
   
-  ## This table will be all the records for all HIA species (~3.8k). These data will be re-processed, 1000 species at
+  ## This table will contains all the records for all HIA species (~3.8k).
+  ## SDM_SPAT_OCC_BG_ALL_EVERGREEN_SPP is the latest version
   SDM.SPAT.OCC.BG = readRDS(paste0(DATA_path, 'SDM_SPAT_OCC_BG_ALL_EVERGREEN_SPP.rds'))
   
 } else {
@@ -49,8 +50,6 @@ projection(template.raster.1km);projection(SDM.SPAT.OCC.BG);projection(Koppen_19
 
 # #########################################################################################################################
 # ## Loop over all the species = GBIF.spp[1]
-#  set this condition to TRUE to run the tree data - it really needs a flag var
-if (TRUE) {
 
 lapply(GBIF.spp, function(species){ 
    
@@ -134,8 +133,127 @@ lapply(GBIF.spp, function(species){
    file.create(file.path(dir_name, "completed.txt"))
    
  })
+#########################################################################################################################
+## Create a cluster to speed up the local running of SDMs - there are multiple ways to do this, and probably better ones!
+## In this example, we need to export absolutely everything we need to the cluster. Sounds like there's a cleaner way to do it
+## https://stackoverflow.com/questions/47424367/error-in-check-for-remote-errors-val-5-nodes-produced-an-error-object-not-fo
 
-}
+
+## Export cluster might work better - this takes a long time to export a cluster for 5 cores, given the size of each 
+## Object. How can this be sped up, or maybe saved in the environment
+# message('Running SDMs on the cluster ')
+# nclust      <- 5
+# cluster     <- makeCluster(nclust)
+# clusterExport(cluster, c('template.raster.1km', 'SDM.SPAT.OCC.BG', 'Koppen_1975_1km', 'aus_states.rds', ## objects
+#                          'fit_maxent_targ_bg_back_sel', 'local_simplify',                               ## functions
+#                          'maxent_path', 'maxent_dir', 'bs_dir', 'OCC_SOURCE'))                          ## variables
+# 
+# clusterEvalQ(cluster, {
+# 
+#   ## These packages are required by SDM
+#   require(ff)
+#   require(rgeos)
+#   require(sp)
+#   require(raster)
+#   require(rJava)
+#   require(dismo)
+#   require(things)
+# 
+# })
+
+
+#########################################################################################################################
+## Loop over all the specie  ## species = GBIF.spp[1]  ##  
+## Make this a conditon, so you can run the cluster if nclust is > 1, etc.
+# lapply(GBIF.spp, function(species){ 
+# #message('Running SDMs on the cluster ')
+# #parLapply(cluster, GBIF.spp[5:9], function(species) {      ## uncomment to run the cluster
+  
+  # ## Skip the species if the directory already exists, before the loop
+  # message('Running SDMs on the cluster for ', species)
+  # outdir <- maxent_dir
+  
+  # dir_name = file.path(maxent_path, gsub(' ', '_', species))
+  # if(dir.exists(dir_name)) {
+    # message('Skipping ', species, ' - already run.')
+    # invisible(return(NULL))
+    
+  # }
+  
+  # ## Create the directory for the species in progress, 
+  # ## so other parallel runs don't run the same species
+  # dir.create(dir_name)
+  # file.create(file.path(dir_name, "in_progress.txt"))
+  
+  # ## Print the taxa being processed to screen
+  # if(species %in% SDM.SPAT.OCC.BG$searchTaxon) {
+    # message('Doing ', species) 
+    
+    # ## Subset the records to only the taxa being processed
+    # ## Also subset to the source : ALA+ GBIF, or ALA + GBIF + INV
+    # ## This is what is causing the proportional sampling to skip.........................................
+    # occurrence <- subset(SDM.SPAT.OCC.BG, searchTaxon == species)
+    # occurrence <- occurrence[grep(paste(OCC_SOURCE, collapse = '|'), occurrence$SOURCE, ignore.case = TRUE),]
+    # message('Using occ records from ', unique(occurrence$SOURCE))
+    
+    # ## Now get the background points. These can come from any species, other than the modelled species.
+    # ## However, they should be limited to the same SOURCE as the occ data
+    # background <- subset(SDM.SPAT.OCC.BG, searchTaxon != species)
+    # background <- background[grep(paste(unique(occurrence$SOURCE), collapse = '|'), background$SOURCE, ignore.case = TRUE),]
+    # message('Using bg records from ', unique(background$SOURCE))
+    
+    # ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
+    # tryCatch(
+      # fit_maxent_targ_bg_back_sel(occ                     = occurrence,    ## name from the .rmd CV doc 
+                                  # bg                      = background,    ## name from the .rmd CV doc  
+                                  # sdm.predictors          = bs.predictors, 
+                                  # name                    = species, 
+                                  # outdir                  = maxent_dir,
+                                  # bsdir                   = bs_dir,
+                                  # backwards_sel           = "TRUE",
+                                  # cor_thr                 = 0.8,      ## The maximum allowable pairwise correlation between predictor variables
+                                  # pct_thr                 = 5,        ## The minimum allowable percent variable contribution
+                                  # k_thr                   = 4,        ## The minimum number of variables to be kept in the model.
+                                  
+                                  # template.raster         = template.raster.1km,
+                                  # min_n                   = 20,            ## This should be higher...
+                                  # max_bg_size             = 70000,         ## could be 50k or lower, it just depends on the biogeography
+                                  # Koppen                  = Koppen_1975_1km,
+                                  # background_buffer_width = 200000,
+                                  # shapefiles              = TRUE,
+                                  # features                = 'lpq',
+                                  # replicates              = 5,
+                                  # responsecurves          = TRUE,
+                                  # shp_path                = "./data/base/CONTEXTUAL/", 
+                                  # aus_shp                 = "aus_states.rds"),
+      
+      # ## If the species fails, write a fail message to file. Can this be the fail message itself?
+      # error = function(cond) {
+        
+        # ## This will write the error message inside the text file, but I couldn't get it working for the mapping steps
+        # file.create(file.path(dir_name, "sdm_failed.txt"))
+        # message(species, ' failed') 
+        # cat(cond$message, file=file.path(dir_name, "sdm_failed.txt"))
+        # warning(species, ': ', cond$message)
+      # })
+    
+  # } else {
+    
+    # message(species, ' skipped - no data.')         ## ignore species which have no data
+    # #file.create(file.path(dir_name, "completed.txt"))
+    
+  # }  
+  
+  # ## Could add a file to the directory, to denote that it has completed
+  # ## This writes out even if the species fails, so skip it until it's fixed
+  # #file.create(file.path(dir_name, "completed.txt"))
+  
+# })
+
+
+## Stop the cluster
+#stopCluster(cluster)
+
 
 
 
@@ -292,23 +410,8 @@ Max_tss <- sapply(omission.tables, function(file) {
 
 #########################################################################################################################
 ## Add a species variable to the TSS results, so we can subset to just the species analysed
-Max_tss  = as.data.frame(Max_tss)
-setDT(Max_tss, keep.rownames = TRUE)[]
-Max_tss  = as.data.frame(Max_tss)
-names(Max_tss)[names(Max_tss) == 'rn'] <- 'searchTaxon'
-
-
-
-## Remove extra text
-Max_tss$searchTaxon = gsub("//",         "", Max_tss$searchTaxon)
-Max_tss$searchTaxon = gsub(results_dir,   "", Max_tss$searchTaxon)
-Max_tss$searchTaxon = gsub("/full/species_omission.csv.Max_tss", "", Max_tss$searchTaxon)
-Max_tss$searchTaxon = gsub("/",          "", Max_tss$searchTaxon)
-head(Max_tss)
-
-
-## Add max TSS to the results table
-MAXENT.RESULTS = join(MAXENT.RESULTS, Max_tss)
+Max_tss        = as.data.frame(Max_tss)
+MAXENT.RESULTS = cbind(MAXENT.RESULTS, Max_tss)
 summary(MAXENT.RESULTS$Max_tss)
 summary(MAXENT.RESULTS$Omission_rate)
 
@@ -389,22 +492,6 @@ SDM.RESULTS.DIR = unlist(SDM.RESULTS.DIR)
 
 # ## Change the species column
 # MAXENT.RESULTS$searchTaxon = gsub("_", " ", MAXENT.RESULTS$searchTaxon)
-
-
-#########################################################################################################################
-## Save maxent results 
-# if(save_data == "TRUE") {
-
-# ## save .rds file for the next session
-# saveRDS(MAXENT.RESULTS,   paste0(DATA_path, 'MAXENT_RESULTS_', save_run, '.rds'))
-# write.csv(MAXENT.RESULTS, paste0(DATA_path, 'MAXENT_RESULTS_', save_run, '.csv'), row.names = FALSE)
-
-
-# } else {
-
-# message('Dont save niche summary, only ', length(GBIF.spp), ' species analysed')
-
-# }
 
 
 #########################################################################################################################

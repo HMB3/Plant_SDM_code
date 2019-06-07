@@ -106,14 +106,14 @@ Koppen_1975_1km  = raster('data/world_koppen/Koppen_1000m_Mollweide54009.tif')
 
 ## Re-create the background points using Alessandro's latest data........................................................
 ## change BG points to be the SDM_SPAT_OCC_BG_ALL data set.
-# hollow.points     = readRDS("./data/ANALYSIS/SDM_SPAT_OCC_BG_HOLLOW_SPP.rds")%>%
-#   spTransform(sp_epsg54009)
-# TI.points = readRDS("./data/ANALYSIS/SDM_SPAT_OCC_BG_TREE_INVENTORY_SPP.rds") %>%
-#   spTransform(sp_epsg54009)
-# 
-# 
-# ## Bind the rows of the hollow and inventory SDM tables together 
-# background.points = rbind(hollow.points, TI.points)
+hollow.points     = readRDS("./data/ANALYSIS/SDM_SPAT_OCC_BG_HOLLOW_SPP.rds")%>%
+  spTransform(sp_epsg54009)
+TI.points = readRDS("./data/ANALYSIS/SDM_SPAT_OCC_BG_TREE_INVENTORY_SPP.rds") %>%
+  spTransform(sp_epsg54009)
+
+
+## Bind the rows of the hollow and inventory SDM tables together
+background.points = rbind(hollow.points, TI.points)
 
 
 #########################################################################################################################
@@ -260,10 +260,12 @@ env.variables = c("Annual_mean_temp",
                   "Precip_warm_qu",
                   "Precip_col_qu",
                   "PET")#, 
-                  #"AI")
+#"AI")
+
 
 rad.variables = c("mean_monthly_par", 
                   "mean_yearly_rad")
+
 
 drought.variables = c("Drought_freq_extr",         
                       "Drought_max_dur_extr",      
@@ -272,6 +274,7 @@ drought.variables = c("Drought_freq_extr",
                       "Drought_mean_dur_extr",     
                       "Drought_mean_int_extr",     
                       "Drought_mean_rel_int_extr")
+
 
 heat.variables = c("HWF", "HWA", "HWM", "HWD", 
                    "HWN", "HW_CUM_ALL", 
@@ -285,6 +288,32 @@ bs.predictors <- c("Annual_mean_temp",    "Mean_diurnal_range",  "Isothermality"
                    
                    "Annual_precip",       "Precip_wet_month",   "Precip_dry_month",    "Precip_seasonality",  
                    "Precip_wet_qu",       "Precip_dry_qu")
+
+clim.soil <- c("Annual_mean_temp",
+               "Mean_diurnal_range",
+               "Isothermality",
+               "Temp_seasonality",
+               "Max_temp_warm_month",
+               "Min_temp_cold_month",
+               "Temp_annual_range",
+               "Mean_temp_wet_qu",
+               "Mean_temp_dry_qu",
+               "Mean_temp_warm_qu",
+               "Mean_temp_cold_qu",
+               
+               "Annual_precip",
+               "Precip_wet_month",
+               "Precip_dry_month",
+               "Precip_seasonality",
+               "Precip_wet_qu",
+               "Precip_dry_qu",
+               "Precip_warm_qu",
+               "Precip_col_qu",
+               "PC1", 
+               "PC2", 
+               "PC3", 
+               "TPI", 
+               "TWI")
 
 
 ## Names of the AWAP variables :: used to create niches for extreme weather events
@@ -376,11 +405,19 @@ for(i in 1:11) {
 
 #########################################################################################################################
 ## Also get the the soil rasters
-PET  = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
-AI   = raster("./data/base/worldclim/world/1km/ai_yr1.tif")
-twi  = raster("./data/base/ACLEP/TWI.tif")
-tpi  = raster("./data/base/ACLEP/TPI.tif")
-soil = stack(file.path('./data/base/ACLEP', sprintf('PC%d.tif', 1:3)))
+PET      = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
+AI       = raster("./data/base/worldclim/world/1km/ai_yr1.tif")
+twi      = raster("./data/base/ACLEP/TWI.tif")
+tpi      = raster("./data/base/ACLEP/TPI.tif")
+
+
+## Create a stack of rasters
+# clim.soil.current = stack(list.files('./data/base/ACLEP', 'snap\\.tif$', full.names = TRUE))
+# names(clim.soil.current) = clim.soil
+
+
+## Save the raster stack so it doesn't need to be re-created
+#writeRaster(clim.soil.current, filename="./data/base/ACLEP/aus_clim_soil_stack.tif", options = "INTERLEAVE=BAND", overwrite = TRUE)
 
 
 #########################################################################################################################
@@ -584,21 +621,21 @@ scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cc85bi70", "gf85bi70", "hg85b
 #########################################################################################################################
 ## Now combine the raster tables for each species into one table
 INV.TABLE.ALL <- INV.TABLE.list %>%
-
+  
   ## Pipe the list into lapply
   lapply(function(x) {
-
+    
     ## Create the character string
     f <- paste0(x)
-
+    
     ## Load each file
     message('Reading file for ', x)
     d <- readRDS(f)
     message(nrow(d), ' Records for ', x)
     return(d)
-
+    
   }) %>%
-
+  
   ## Finally, bind all the rows together
   bind_rows()
 

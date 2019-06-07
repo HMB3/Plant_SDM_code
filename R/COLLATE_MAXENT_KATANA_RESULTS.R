@@ -284,13 +284,36 @@ if(save_data == "TRUE") {
 
 
 
+#########################################################################################################################
+## 4). RUN MESS MAPS LOCALLY - BEST TO GET IT WORKING ON LINUX....
+#########################################################################################################################
+
+
+## Run MESS maps for all species 
+source('./R/LOCAL_MESS_MAPS.R', echo = TRUE)
+
+
+
+
 
 #########################################################################################################################
-## OUTSTANDING SDM TASKS:
+## OUTSTANDING COLLATION TASKS:
 #########################################################################################################################
 
 
-## 1). Check the code can be run through katana
+## 1).  Introduce more switches for operating system, etc
+
+## 2).  Tidy up all the code (using piping, etc.)
+
+## 3).  Make the code more modular, less monolithic
+
+## 3).  Iron out some of the points which are not as reproducible (e.g the background points in step 7)
+
+## 4).  Improve the reading of objects and files - e.g. the RData object is cumbersome.... 
+
+
+
+
 
 
 ########################################################################################################################

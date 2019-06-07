@@ -3,52 +3,23 @@
 #########################################################################################################################
 
 
-#########################################################################################################################
-##     To-do list
-
-
-############################################################################
-##     1). Katana checklist :
-
-##         Trees have inventory data
-##         Non-trees have no inventory data
-         
-##         Move/upload Katana folders :: raster files
-##         Create folder for Maxent storage on katana
-##         DATA_path, maxent_path, bs_dir
-##         
-
-
-############################################################################
-##     3). Problems to solve in steps 7 and 8 ::
-
-##     - Summarise the Results table, and also create search for PNG files :: MESS_panel & occ_source
-
-##     - Calculate the environmental ranges and add them to MAXENT results  
-
-##     - Omission rate caculation (check) 
-
-##     - Store error messages in step 7 and 8 if possible (check)
-
-##     - Change the mapping function to handle species with no  novel areas :: Use Eucalyptus Camuldelunsis
-
-##     - Barcharts for Australia and the whole world (R users group)
-
-##     - Histograms and convex hulls for each species 
-
-##     - Don't aggregate to postal areas first, write a separate function to do this  
-
-
-
-
 
 ## This code runs the whole SDM workflow for the HIA project, for a subset of species (e.g. whichever you supply)
 ## In order to run this from katana, we need to use only the necessary packages.
 ## save.image("KATANA_RUN_DATA.RData") 
-on_windows = switch(Sys.info()[['sysname']], Windows = TRUE, FALSE)
+
 
 #########################################################################################################################
-## Read in all data to run the SDM code :: species lists, shapefile, rasters & tables
+## 1). SETUP DATA & PACKAGES
+#########################################################################################################################
+
+
+## First, check which operating system we're on
+on_windows = switch(Sys.info()[['sysname']], Windows = TRUE, FALSE)
+
+
+#########################################################################################################################
+## Then read in all data to run the SDM code :: species lists, shapefile, rasters & tables
 if (on_windows) {
   
   ## Is up to date
@@ -68,12 +39,6 @@ if (on_windows) {
 on_windows = switch(Sys.info()[['sysname']], Windows = TRUE, FALSE)
 
 
-
-#########################################################################################################################
-## 1). SETUP
-#########################################################################################################################
-
-
 #########################################################################################################################
 ## Load only the packages needed for the analysis
 p <- c('ff',      'things',    'raster',        'dismo',             'sp',           'latticeExtra',          'data.table',
@@ -83,7 +48,7 @@ p <- c('ff',      'things',    'raster',        'dismo',             'sp',      
        'rvest',   'magrittr',  'devtools',      'ggplot2',           'reshape2',     'rmarkdown',             'flexdashboard', 
        'shiny',   'rgbif',     'ENMeval',       'tibble',            'ncdf4',        'Cairo',                 'taxonlookup',  
        'kgc',     'betareg',   'gridExtra',     'grid',              'lattice',      'ConR',                  'writexl',
-       'sf',      'ggmap',     'DataCombine',   'exactextractr', 'mgcv')
+       'sf',      'ggmap',     'DataCombine',   'exactextractr',     'mgcv', 'doSNOW')
 
 
 ## Require packages
@@ -153,6 +118,14 @@ if (!on_windows) {
 }
 
 
+
+
+
+#########################################################################################################################
+## 2). SET GLOBAL VARIABLES
+#########################################################################################################################
+
+
 #########################################################################################################################
 ## Now set global analysis variables :: these assume you are using an R project folder structure
 #Sys.setenv("PBS_ARRAYID" = 1)
@@ -160,8 +133,11 @@ if (!on_windows) {
 
 ## Run the species 500 or 1000 at a time
 GBIF.spp = unique(WPW.spp)  ## your list of species
+## Run the species across multiple jobs
+#GBIF.spp = unique(WPW.spp)   ## your list of species
 #GBIF.spp = unique(WPW.tree)  ## your list of species
 #GBIF.spp = unique(WPW.non.tree)
+GBIF.spp = c("Acacia falcata")
 
 
 ## Subset for PBS array jobs
@@ -180,7 +156,9 @@ if (Sys.getenv("PBS_ARRAYID") != "") {
 #########################################################################################################################
 ## The required folders must be created on katana
 GBIF.spp      = as_utf8(GBIF.spp, normalize = TRUE)  ## Check the species names have the right characters
-save_run      = "ALL_EVREGREEN_MAY_2018"                  ## a variable to append the run name to the output files
+save_run      = "ALL_EVREGREEN_MAY_2018"             ## a variable to append the run name to the output files
+                                                     ## ALL_EVREGREEN_MAY_2018 is the latest version of the niche data
+
 read_data     = "FALSE"                              ## Read intermediary data between the steps?
 save_data     = "TRUE"                               ## Save data?
 check_maps    = "FALSE"                              ## Create maps, shapefiles and histograms of each speices?
@@ -204,13 +182,16 @@ results_dir   = bs_dir
 
 
 #########################################################################################################################
-## 2). RUN SDMS, MAPS and COMBINE
+## 3). RUN ANALYSIS
 #########################################################################################################################
 
 
-## Run the SDM workflow for the species set.
-## Steps 1 - 5 are hard to complete across a huge set of binomials. So try just using the data I created locally to run
-## only steps 7 and 8.
+## Run the SDM workflow for the species set -
+## Steps 1 - 5 are hard to complete on the cluster across a huge set of binomials. 
+## So I processed all species in groups of 500 through steps 1-6 (run_500, _100..._3500, etc.)
+## Only steps 7 and 8 were run on Katana.
+
+## This makes the worlflow less repeatable, see Outstanding tasks ........................................................
 
 
 #########################################################################################################################
@@ -227,17 +208,21 @@ message('Running SDMs and maps for ', length(GBIF.spp), ' species in the set ', 
 # source('./R/3_GBIF_DATA_TAXO_SCIENTIFIC_NAME.R',     echo = TRUE)
 # 
 # 
-# ## Step 4 :: combine GBIF, ALA and tree inventory data into a single table, extract environmental condtions
+# ## Step 4 :: combine GBIF, ALA and tree inventory data into a single table, 
+# ## clean taxonomy, 
+# ## extract environmental condtions
 # source('./R/4_ALA_GBIF_TAXO_COMBINE.R',   echo = TRUE)
 # source('./R/INVENTORY_RASTER.R',          echo = TRUE)
 # 
 # 
 # ## Step 5 :: clean the occurrence data using the 'CleanCoordinates' function in the CoordinateCleaner package, to remove
 # ## records near herbaria, duplicates, etc. & add contextual info for each record (taxonomic and horticultural).
-# ## Then prepare the SDM table
-# ## Then clean the spatial outliers
+# ## Then estimate the environmental and geographic range of each species
 # source('./R/5_GEO_CLEAN_DATA.R',         echo = TRUE)
 # source('./R/CALCULATE_1KM_NICHES.R',     echo = TRUE)
+
+
+# ## Step 6 :: Prepare the SDM table and clean the spatial outliers at 1km resolution.
 # source('./R/6_PREPARE_SDM_TABLE_1KM.R',  echo = TRUE)
 # 
 # 
@@ -245,6 +230,44 @@ message('Running SDMs and maps for ', length(GBIF.spp), ' species in the set ', 
 # # ## Step 8 :: Create habitat suitability maps for each species using six GCMs and three time slices (2030/50/70).
 source('./R/7_RUN_MAXENT.R',      echo = TRUE)
 source('./R/8_MAP_SDM_COMBINE.R', echo = TRUE)
+
+
+## COLLATE SDM RESULTS 
+#source('./R/COLLATE_MAXENT_KATANA_RESULTS.R', echo = TRUE)
+
+
+
+
+
+#########################################################################################################################
+##     To-do list
+
+
+############################################################################
+##     1). Katana checklist :
+
+##         Trees have inventory data
+##         Non-trees have no inventory data
+
+##         Direct transfer of species folders :: how big will they be?         
+
+
+############################################################################
+##     2). Further problems to solve in steps 7 and 8 ::
+
+##     - Summarise the Results table, and also create search for PNG files :: MESS_panel & occ_source
+
+##     - Calculate the environmental ranges and add them to MAXENT results  
+
+##     - Omission rate caculation
+
+##     - Store error messages in step 7 and 8 if possible (didn't work)
+
+##     - Change the mapping function to handle species with no  novel areas :: Use Eucalyptus Camuldelunsis
+
+##     - Barcharts for Australia and the whole world, histograms and convex hull (R users group)
+
+##     - Don't aggregate to postal areas first, write a separate function to post-process (modify SUA_cell_count)
 
 
 
@@ -255,9 +278,15 @@ source('./R/8_MAP_SDM_COMBINE.R', echo = TRUE)
 #########################################################################################################################
 
 
+## 1).  Introduce more switches for operating system, etc
 
+## 2).  Tidy up all the code (using piping, etc.)
 
-## 1) Figure out how to make the whole process parallel - help from Shawn.
+## 3).  Make the code more modular, less monolithic
+
+## 3).  Iron out some of the points which are not as reproducible (e.g the background points in step 6)
+
+## 4).  Improve the reading of objects and files - e.g. the RData object is cumbersome.... 
 
 
 

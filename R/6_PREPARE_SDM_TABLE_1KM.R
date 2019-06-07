@@ -53,7 +53,8 @@ COMBO.RASTER.ALL  <- dplyr::select(CLEAN.INV, searchTaxon, lon, lat, SOURCE, CC.
                                    Mean_temp_dry_qu,     Mean_temp_warm_qu,   Mean_temp_cold_qu, 
                                    
                                    Annual_precip,        Precip_wet_month,    Precip_dry_month,  Precip_seasonality,   
-                                   Precip_wet_qu,        Precip_dry_qu,       Precip_warm_qu,    Precip_col_qu)
+                                   Precip_wet_qu,        Precip_dry_qu,       Precip_warm_qu,    Precip_col_qu,
+                                   PC1_WGS84, PC2_WGS84, PC3_WGS84, TWI, TPI)
 
 
 #########################################################################################################################
@@ -355,6 +356,7 @@ background.points$TYPE = "BG"
 SDM.SPAT.ALL$TYPE      = "OCC"
 setdiff(names(SDM.SPAT.ALL), names(background.points))
 setdiff(names(background.points), names(SDM.SPAT.ALL))
+
  
 drops <- c("SPOUT.OBS", "OBS", "CC.OBS", "SPAT_SPP", "SPAT_OUT", "index", "lon", "lat") 
 SDM.SPAT.ALL      <- SDM.SPAT.ALL[,!(names(SDM.SPAT.ALL) %in% drops)]
