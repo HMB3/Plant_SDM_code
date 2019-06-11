@@ -47,7 +47,7 @@ message (paste (head(map_spp_list), collapse=","))
 
 
 #########################################################################################################################
-## Now stop R from creating listing all the maxent files that have completed - this takes a long time
+## Now stop R from listing all the maxent files that have completed - this takes a long time
 message(results_dir)
 maxent.tables = lapply (map_spp_list, FUN = function (x) {paste(results_dir , x, "full/maxent_fitted.rds", sep="/")})
 
@@ -197,7 +197,7 @@ head(MAXENT.RESULTS, 20)[1:5]
 
 
 #########################################################################################################################
-## 2). PLOT DASHBOARD OF MAXENT STATS
+## 2). PLOT DASHBOARD OF MAXENT STATS FOR SPOT CHECK
 #########################################################################################################################
 
 
@@ -289,9 +289,12 @@ if(save_data == "TRUE") {
 #########################################################################################################################
 
 
-## Run MESS maps for all species 
+## Run MESS maps for all species - this will take awhile!
 source('./R/LOCAL_MESS_MAPS.R', echo = TRUE)
 
+
+## Then, we need linux/windows code to find all files with strings, and copy and move them to a new location - the
+## same directory where the above table is stored...
 
 
 
@@ -305,7 +308,7 @@ source('./R/LOCAL_MESS_MAPS.R', echo = TRUE)
 
 ## 2).  Tidy up all the code (using piping, etc.)
 
-## 3).  Make the code more modular, less monolithic
+## 3).  Make the code more modular, less monolithic (e.g. code blocks, markdown, etc.)
 
 ## 3).  Iron out some of the points which are not as reproducible (e.g the background points in step 7)
 

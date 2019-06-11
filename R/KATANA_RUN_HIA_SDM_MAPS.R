@@ -134,7 +134,7 @@ if (!on_windows) {
 ## Run the species 500 or 1000 at a time
 GBIF.spp = unique(WPW.spp)  ## your list of species
 ## Run the species across multiple jobs
-#GBIF.spp = unique(WPW.spp)   ## your list of species
+#GBIF.spp = unique(WPW.non.tree)   ## your list of species
 #GBIF.spp = unique(WPW.tree)  ## your list of species
 #GBIF.spp = unique(WPW.non.tree)
 GBIF.spp = c("Acacia falcata")
@@ -287,6 +287,42 @@ source('./R/8_MAP_SDM_COMBINE.R', echo = TRUE)
 ## 3).  Iron out some of the points which are not as reproducible (e.g the background points in step 6)
 
 ## 4).  Improve the reading of objects and files - e.g. the RData object is cumbersome.... 
+
+
+
+
+
+#########################################################################################################################
+## OUTSTANDING WORKFLOW TASKS:
+#########################################################################################################################
+
+
+## 1)/ Table of all the species modelled/screened for the evergreen list... 
+
+  
+## 2).  All directories for evergreen species modelled, zipped up (using WG drives) ::
+## 
+##      - SDMs 
+##      - Maps for 2030/50/70 for 6 GCMs with MESS 
+##      - Gain/loss/stable rasters + tables for 2030/50/70
+##      - This needs the local mess function to work. 
+##        Need a folder for checking all species - MESS.png + global occ + 2070 gain/loss.png in one folder
+
+  
+## 3).  H:drive (2TB SSD that I've been working off) and G:drive (8TB HDD for backup).
+
+##      - Clean up files on HD
+##      - Put species to check in the results
+
+
+## 4). Latest code for running SDMs and maps on windows and linux. This include the PBS script
+
+
+## 5). Mark down file of example species - a readme file
+
+
+## 6). If possible, environmental ranges, histograms and convex hulls for all species...
+
 
 
 
