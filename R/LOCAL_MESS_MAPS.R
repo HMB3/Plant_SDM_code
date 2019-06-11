@@ -8,14 +8,14 @@
 
 
 ## Might need to add skip condtions to this..............................................................................
-shp_path      = "./data/base/CONTEXTUAL/" ## Path for shapefile
-aus_shp       = "aus_states.rds"          ## Shapefile, e.g. Australian states
-world_shp     = "LAND_world.rds"          ## World shapefile          
-x             = scen_2030                 ## List of climate scenarios
-species       = map_spp[8]                ## List of species folders with maxent models
-maxent_path   = bs_path
-time_slice    = 30
-nclust        = 1
+# shp_path      = "./data/base/CONTEXTUAL/" ## Path for shapefile
+# aus_shp       = "aus_states.rds"          ## Shapefile, e.g. Australian states
+# world_shp     = "LAND_world.rds"          ## World shapefile          
+# x             = scen_2030                 ## List of climate scenarios
+# species       = map_spp[8]                ## List of species folders with maxent models
+# maxent_path   = bs_path
+# time_slice    = 30
+# nclust        = 1
 
 
 #########################################################################################################################

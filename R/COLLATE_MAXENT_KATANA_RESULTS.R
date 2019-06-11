@@ -47,7 +47,7 @@ message (paste (head(map_spp_list), collapse=","))
 
 
 #########################################################################################################################
-## Now stop R from creating listing all the maxent files that have completed - this takes a long time
+## Now stop R from listing all the maxent files that have completed - this takes a long time
 message(results_dir)
 maxent.tables = lapply (map_spp_list, FUN = function (x) {paste(results_dir , x, "full/maxent_fitted.rds", sep="/")})
 

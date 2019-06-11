@@ -608,10 +608,10 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
 # world_shp     = "LAND_world.rds"                ## Polygon for AUS maps
 # aus_shp       = "aus_states.rds"                ## Polygon for World maps
 # 
-# DIR           = SDM.RESULTS.DIR[1]                 ## List of directories with rasters
-# species       = map_spp[1]                         ## List of species' directories
+# DIR           = SDM.RESULTS.DIR[8]                 ## List of directories with rasters
+# species       = map_spp[8]                         ## List of species' directories
 # maxent_path   = bs_path                     ## Directory of maxent results
-# thresh        = percent.10.log[1]                  ## List of maxent thresholds
+# thresh        = percent.10.log[8]                  ## List of maxent thresholds
 # time_slice    = 30                              ## Time period, eg 2030
 # write_rasters = TRUE
 
@@ -656,8 +656,12 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
       if(!file.exists(f_mean)) { 
         
         ## Read in all the habitat suitability rasters for each time period which are _not_ novel
-        #raster.list       = list.files(as.character(DIR), pattern = sprintf('bi%s.tif$', time_slice), full.names = TRUE)  
+        #raster.list       = list.files(as.character(DIR), pattern = sprintf('bi%s.tif$', time_slice), full.names = TRUE)
         raster.list       = list.files(as.character(DIR), pattern = 'future_not_novel', full.names = TRUE) 
+        raster.list       = raster.list[grep(paste0('bi', time_slice, collapse = '|'), raster.list, ignore.case = TRUE)]
+        
+        ## This is a bit hack, but it works :: better to use a regular expression
+        message('Combining SDM prediction for ', length(raster.list), ' GCMS for 20', time_slice)
         suit              = stack(raster.list)
         suit.list         = unstack(suit)
         combo_suit_mean   = mean(suit)
@@ -796,7 +800,6 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
         ## Create a table of these values, to merge with the levels later. This avoids the problem that not all the categories will
         ## be present for all species
         change_values = data.frame("ID" = 1:4, "CHANGE" = c("LOST", "GAINED", "STABLE", "NEVER"))
-        
         
         ## Now convert the raster to a factor and assign lables to the levels
         gain_loss <- as.factor(r)
