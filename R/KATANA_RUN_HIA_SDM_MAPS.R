@@ -137,7 +137,7 @@ GBIF.spp = unique(WPW.spp)  ## your list of species
 #GBIF.spp = unique(WPW.non.tree)   ## your list of species
 #GBIF.spp = unique(WPW.tree)  ## your list of species
 #GBIF.spp = unique(WPW.non.tree)
-GBIF.spp = c("Acacia falcata")
+#GBIF.spp = c("Acacia falcata")
 
 
 ## Subset for PBS array jobs

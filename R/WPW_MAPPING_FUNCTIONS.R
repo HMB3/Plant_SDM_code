@@ -88,7 +88,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
         message('Then run maxent projections for ', species, ' under ', x, ' scenario')
         
         ## Then, check if the species projection has already been run...
-        if(!file.exists(sprintf('%s/%s/full/%s_%s.tif', maxent_path, species, species, x))) {
+        if(!file.exists(sprintf('%s/%s/full/%s_future_not_novel_%s.tif', maxent_path, species, species, x))) {
           
           ########################################################################
           ## Now read in the SDM model, calibrated on current conditions
@@ -233,7 +233,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
           
           ########################################################################################################################
           ## Create file path for future raster doesn't exist, create it 
-          f_future <- sprintf('%s/%s/full/%s_%s.tif', 
+          f_future <- sprintf('%s/%s/full/%s_future_not_novel_%s.tif', 
                               maxent_path, species, species, x)
           
           if(!file.exists(f_future)) {
