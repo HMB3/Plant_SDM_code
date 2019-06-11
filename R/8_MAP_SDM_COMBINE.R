@@ -67,8 +67,8 @@ tryCatch(
                             aus_shp       = "aus_states.rds",          ## Shapefile, e.g. Australian states
                             world_shp     = "LAND_world.rds",          ## World shapefile          
                             
-                            scen_list     = scen_2030[1:2],            ## List of climate scenarios
-                            species_list  = map_spp[20],               ## List of species folders with maxent models
+                            scen_list     = scen_2030,            ## List of climate scenarios
+                            species_list  = map_spp,               ## List of species folders with maxent models
                             maxent_path   = bs_path,                   ## Output folder
                             climate_path  = "./data/base/worldclim/aus/1km/bio", ## climate data
                             

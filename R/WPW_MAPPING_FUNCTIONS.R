@@ -19,16 +19,16 @@
 # shp_path      = "./data/base/CONTEXTUAL/" ## Path for shapefile
 # aus_shp       = "aus_states.rds"          ## Shapefile e.g. Australian states
 # world_shp     = "LAND_world.rds"          ## World shapefile
-
+# 
 # x             = scen_2030[3]              ## List of climate scenarios
-# species       = map_spp[20]               ## List of species folders with maxent models
+# species       = map_spp[8]               ## List of species folders with maxent models
 # maxent_path   = bs_path                   ## Output folder
 # climate_path  = "./data/base/worldclim/aus/1km/bio" ## climate data
 # static_path   = "./data/base/ACLEP"                 ## Soil aata
-
-# grid_names    = clim.soil
+# 
+# grid_names    = grid.names#clim.soil
 # time_slice    = 30                        ## Time period
-# current_grids = clim.soil.current         ## predictor grids
+# current_grids = aus.grids.current ## clim.soil.current         ## predictor grids
 # create_mess   = "TRUE"
 # nclust        = 1
 
@@ -36,7 +36,7 @@
 #########################################################################################################################
 ## Try to run the mess maps at the same time as the map creation?
 project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list, 
-                                     species_list, maxent_path, climate_path, # static_path,
+                                     species_list, maxent_path, climate_path, static_path,
                                      grid_names, time_slice, current_grids, create_mess, nclust) {
   
   ## Read in the Australian shapefile at the top
@@ -53,8 +53,8 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
     ## Create a raster stack for each of the 6 GCMs, not for each species
     ## They need to have exactly the same extent.
     ## Could stack all the rasters, or, keep them separate
-    s <- stack(c(sprintf('%s/20%s/%s/%s%s.tif', climate_path, time_slice, x, x, 1:19)))  ## Dynamic path
-                 #list.files(static_path, '\\.tif$', full.names = TRUE)))                ## Static rasters
+    s <- stack(c(sprintf('%s/20%s/%s/%s%s.tif', climate_path, time_slice, x, x, 1:19)))#,  ## Dynamic path
+                 #list.files(static_path, '\\.tif$', full.names = TRUE)))                  ## static path
     
     identical(projection(s), projection(aus_poly))
     
@@ -62,7 +62,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
     ## critically important that the order of the name.....................................................................
     ## So this now needs to include all the names, static and not
     
-    ## Note this step is only needed if the current grids used in the their original form, rather than being renamed.......
+    ## Note this step is only needed if the current grids used in the their original form, rather than being renamed...............
     names(s) <- names(current_grids) <- grid_names 
     
     ########################################################################################################################
@@ -334,8 +334,21 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
             ## this can fail if no ebvironments are novel, e.g the red gum.
             ## Can we add a condtiton in poluygonizer to check if the file has data?..............................
             message('Converting raster MESS maps to polygons under ', x, ' scenario for ', species) 
+            
+            ## If we're on linux, use the standard polygonizer function
+            if (!on_windows) {
+            
             novel_current_poly <- polygonizer(sprintf('%s/%s%s.tif',   MESS_dir, species, "_current_novel"))
             novel_future_poly  <- polygonizer(sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_novel_", x))
+            
+            } else {
+              
+              ## If we're on windows, use the GDAL .bat file
+              novel_current_poly <- polygonizer_windows(sprintf('%s/%s%s.tif',   MESS_dir, species, "_current_novel"))
+              novel_future_poly  <- polygonizer_windows(sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_novel_", x))
+              
+            }
+            
             
             ## Re-project the shapefiles
             novel_current_poly = novel_current_poly %>%
@@ -595,10 +608,10 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
 # world_shp     = "LAND_world.rds"                ## Polygon for AUS maps
 # aus_shp       = "aus_states.rds"                ## Polygon for World maps
 # 
-# DIR           = SDM.RESULTS.DIR[5]                 ## List of directories with rasters
-# species       = map_spp[5]                         ## List of species' directories
+# DIR           = SDM.RESULTS.DIR[1]                 ## List of directories with rasters
+# species       = map_spp[1]                         ## List of species' directories
 # maxent_path   = bs_path                     ## Directory of maxent results
-# thresh        = percent.10.log[5]                  ## List of maxent thresholds
+# thresh        = percent.10.log[1]                  ## List of maxent thresholds
 # time_slice    = 30                              ## Time period, eg 2030
 # write_rasters = TRUE
 
@@ -694,7 +707,8 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
         ## Maximum training sensitivity plus specificity Logistic threshold
         message('Running thresholds for ', species, ' | 20', time_slice, ' combined suitability > ', thresh)
         
-        suit_ras1_thresh   = thresh_greater(suit.list[[1]])   ## Abbreviate these...
+        ## Create a loop, etc to compress this...................................................................................
+        suit_ras1_thresh   = thresh_greater(suit.list[[1]]) 
         suit_ras2_thresh   = thresh_greater(suit.list[[2]])
         suit_ras3_thresh   = thresh_greater(suit.list[[3]])
         suit_ras4_thresh   = thresh_greater(suit.list[[4]])   
