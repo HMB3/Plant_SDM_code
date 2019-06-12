@@ -48,6 +48,91 @@ projection(template.raster.1km);projection(SDM.SPAT.OCC.BG);projection(Koppen_19
 ## Check why the BG sampling is not messaging.
 
 
+# #########################################################################################################################
+# ## Loop over all the species = GBIF.spp[1]
+
+lapply(GBIF.spp, function(species){ 
+   
+   ## Skip the species if the directory already exists, before the loop
+   outdir <- maxent_dir
+   
+   dir_name = file.path(maxent_path, gsub(' ', '_', species))
+   if(dir.exists(dir_name)) {
+     message('Skipping ', species, ' - already run.')
+     invisible(return(NULL))
+     
+   }
+   
+   ## Create the directory for the species in progress, 
+   ## so other parallel runs don't run the same species
+   dir.create(dir_name)
+   file.create(file.path(dir_name, "in_progress.txt"))
+   #write.csv(data.frame(), file.path(dir_name, "in_progress.txt"))
+   
+   ## Print the taxa being processed to screen
+   if(species %in% SDM.SPAT.OCC.BG$searchTaxon) {
+     message('Doing ', species) 
+     
+     ## Subset the records to only the taxa being processed
+     ## Also subset to the source : ALA+ GBIF, or ALA + GBIF + INV
+     ## This is what is causing the proportional sampling to skip.........................................
+     occurrence <- subset(SDM.SPAT.OCC.BG, searchTaxon == species)
+     occurrence <- occurrence[grep(paste(OCC_SOURCE, collapse = '|'), occurrence$SOURCE, ignore.case = TRUE),]
+     message('Using occ records from ', unique(occurrence$SOURCE))
+ 
+     ## Now get the background points. These can come from any species, other than the modelled species.
+     ## However, they should be limited to the same SOURCE as the occ data
+     background <- subset(SDM.SPAT.OCC.BG, searchTaxon != species)
+     background <- background[grep(paste(unique(occurrence$SOURCE), collapse = '|'), background$SOURCE, ignore.case = TRUE),]
+     message('Using bg records from ', unique(background$SOURCE))
+ 
+     
+     ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
+     tryCatch(
+       fit_maxent_targ_bg_back_sel(occ                     = occurrence,    ## name from the .rmd CV doc 
+                                   bg                      = background,    ## name from the .rmd CV doc  
+                                   sdm.predictors          = bs.predictors, 
+                                   name                    = species, 
+                                   outdir                  = maxent_dir,
+                                   bsdir                   = bs_dir,
+                                   backwards_sel           = "TRUE",
+                                   cor_thr                 = 0.8,      ## The maximum allowable pairwise correlation between predictor variables
+                                   pct_thr                 = 5,        ## The minimum allowable percent variable contribution
+                                   k_thr                   = 4,        ## The minimum number of variables to be kept in the model.
+                                   
+                                   template.raster         = template.raster.1km,
+                                   min_n                   = 20,            ## This should be higher...
+                                   max_bg_size             = 70000,         ## could be 50k or lower, it just depends on the biogeography
+                                   Koppen                  = Koppen_1975_1km,
+                                   background_buffer_width = 200000,
+                                   shapefiles              = TRUE,
+                                   features                = 'lpq',
+                                   replicates              = 5,
+                                   responsecurves          = TRUE,
+                                   shp_path                = "./data/base/CONTEXTUAL/", 
+                                   aus_shp                 = "aus_states.rds"),
+       
+       ## If the species fails, write a fail message to file. Can this be the fail message itself?
+       error = function(cond) {
+         
+         ## How to put the message into the file?
+         file.create(file.path(dir_name, "sdm_failed.txt"))
+         message(species, ' failed') 
+         cat(cond$message, file=file.path(dir_name, "sdm_failed.txt"))
+         warning(species, ': ', cond$message)
+       })
+     
+   } else {
+     
+     message(species, ' skipped - no data.')         ## This condition ignores species which have no data...
+     file.create(file.path(dir_name, "completed.txt"))
+     
+   }  
+   
+   ## now add a file to the dir to denote that it has completed
+   file.create(file.path(dir_name, "completed.txt"))
+   
+ })
 #########################################################################################################################
 ## Create a cluster to speed up the local running of SDMs - there are multiple ways to do this, and probably better ones!
 ## In this example, we need to export absolutely everything we need to the cluster. Sounds like there's a cleaner way to do it
@@ -168,7 +253,6 @@ projection(template.raster.1km);projection(SDM.SPAT.OCC.BG);projection(Koppen_19
 
 ## Stop the cluster
 #stopCluster(cluster)
-
 
 
 

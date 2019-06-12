@@ -1,0 +1,36 @@
+#!/bin/bash
+
+#PBS -l nodes=1:E52650V2:ppn=1,vmem=64GB
+#PBS -l walltime=40:00:00
+###PBS -M shawn.laffan@unsw.edu.au
+#PBS -m ae
+####PBS -j oe
+#PBS -v WPW_MAX_I=20
+##PBS -t 1-20
+#PBS -t 9
+#PBS -t 12,13,15
+#PBS -t 19,11,13
+##PBS -t 1,16,19,5,8
+##PBS -t 6-9,12-14,16,18,20-22,24-26
+
+ulimit 
+
+source ~/.bash_profile
+module add python/2.7.12
+module add proj4/4.9.3
+module add java/8u162
+
+
+cd $SCRATCH/Burley/green_cities_sdm
+
+#module add R/3.4.2
+
+export JAVA_TOOL_OPTIONS='-Xmx8G'
+#export _JAVA_OPTIONS="-Xms4G -Xmx4G"
+
+
+export PYTHONPATH=${HOME}/usr/lib64/python2.6/site-packages/
+
+
+Rscript --verbose R/KATANA_RUN_HIA_SDM_MAPS.R
+
