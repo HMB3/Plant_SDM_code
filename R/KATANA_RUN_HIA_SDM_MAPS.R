@@ -129,17 +129,17 @@ if (!on_windows) {
 #########################################################################################################################
 ## Now set global analysis variables :: these assume you are using an R project folder structure
 #Sys.setenv("PBS_ARRAYID" = 1)
-#outstanding_spp <- readRDS("./data/ANALYSIS/outstanding_spp.rds")
+outstanding_spp <- readRDS("./data/ANALYSIS/outstanding_spp.rds")
 
 
 ## Run the species 500 or 1000 at a time
-GBIF.spp = unique(WPW.spp)  ## your list of species
+#GBIF.spp = unique(WPW.spp)  ## your list of species
 ## Run the species across multiple jobs
 #GBIF.spp = unique(WPW.non.tree)   ## your list of species
 #GBIF.spp = unique(WPW.tree)  ## your list of species
 #GBIF.spp = unique(WPW.non.tree)
 #GBIF.spp = c("Acacia falcata")
-#GBIF.spp = unique(gsub("_", " ", outstanding_spp))
+GBIF.spp = unique(gsub("_", " ", outstanding_spp))
 
 
 

@@ -349,7 +349,6 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
               
             }
             
-            
             ## Re-project the shapefiles
             novel_current_poly = novel_current_poly %>%
               spTransform(ALB.CONICAL)
