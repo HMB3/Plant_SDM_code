@@ -121,8 +121,8 @@ if(calc_niche == "TRUE") {
   
   
   ## new_DF <- NICHE.AUS.DF[rowSums(is.na(NICHE.AUS.DF)) > 0,]
-  NICHE.AUS.DF = completeFun(NICHE.AUS.DF, "PET")
-  NICHE.GLO.DF = completeFun(NICHE.GLO.DF, "PET")
+  NICHE.AUS.DF = completeFun(NICHE.AUS.DF, c("PET"))
+  NICHE.GLO.DF = completeFun(NICHE.GLO.DF, c("PET"))
   
   
   head(niche_estimate (DF = NICHE.AUS.DF, colname = "Annual_mean_temp"))  ## Including the q05 and q95

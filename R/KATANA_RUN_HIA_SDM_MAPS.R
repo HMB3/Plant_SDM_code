@@ -142,7 +142,6 @@ outstanding_spp <- readRDS("./data/ANALYSIS/outstanding_spp.rds")
 GBIF.spp = unique(gsub("_", " ", outstanding_spp))
 
 
-
 ## Subset for PBS array jobs
 if (Sys.getenv("PBS_ARRAYID") != "") {
 
@@ -202,30 +201,30 @@ results_dir   = bs_dir
 message('Running SDMs and maps for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
 
 
-# ## Step 1 :: download GBIF and ALA data
+## Step 1 :: download GBIF and ALA data
 # source('./R/1_GBIF_ALA_DOWNLOAD.R', echo = TRUE)
 
 
 ## Step 2 :: combine GBIF occurrence data with ALA data and filter to records > 1950
 # source('./R/ALA_DATA_FILTER_TAXO_SCIENTIFIC_NAME.R', echo = TRUE)
 # source('./R/3_GBIF_DATA_TAXO_SCIENTIFIC_NAME.R',     echo = TRUE)
-# 
-# 
-# ## Step 4 :: combine GBIF, ALA and tree inventory data into a single table, 
-# ## clean taxonomy, 
-# ## extract environmental condtions
+
+
+## Step 4 :: combine GBIF, ALA and tree inventory data into a single table,
+## clean taxonomy,
+## extract environmental condtions
 # source('./R/4_ALA_GBIF_TAXO_COMBINE.R',   echo = TRUE)
 # source('./R/INVENTORY_RASTER.R',          echo = TRUE)
-# 
-# 
-# ## Step 5 :: clean the occurrence data using the 'CleanCoordinates' function in the CoordinateCleaner package, to remove
-# ## records near herbaria, duplicates, etc. & add contextual info for each record (taxonomic and horticultural).
-# ## Then estimate the environmental and geographic range of each species
+
+
+## Step 5 :: clean the occurrence data using the 'CleanCoordinates' function in the CoordinateCleaner package, to remove
+## records near herbaria, duplicates, etc. & add contextual info for each record (taxonomic and horticultural).
+## Then estimate the environmental and geographic range of each species
 # source('./R/5_GEO_CLEAN_DATA.R',         echo = TRUE)
 # source('./R/CALCULATE_1KM_NICHES.R',     echo = TRUE)
 
 
-# ## Step 6 :: Prepare the SDM table and clean the spatial outliers at 1km resolution.
+## Step 6 :: Prepare the SDM table and clean the spatial outliers at 1km resolution.
 # source('./R/6_PREPARE_SDM_TABLE_1KM.R',  echo = TRUE)
 # 
 # 
@@ -281,7 +280,7 @@ source('./R/8_MAP_SDM_COMBINE.R', echo = TRUE)
 #########################################################################################################################
 
 
-## 1).  Introduce more switches for operating system, etc
+## 1).  Introduce more switches for operating system, etc.
 
 ## 2).  Tidy up all the code (using piping, etc.)
 
@@ -300,7 +299,9 @@ source('./R/8_MAP_SDM_COMBINE.R', echo = TRUE)
 #########################################################################################################################
 
 
-## 1)/ Table of all the species modelled/screened for the evergreen list... 
+## 1). Table of all the species modelled/screened for the evergreen list... 
+
+##     - Check the latest output. Species in CLEAN.GROW should match species in COMBO.NICHE
 
   
 ## 2).  All directories for evergreen species modelled, zipped up (using WG drives) ::
@@ -308,20 +309,22 @@ source('./R/8_MAP_SDM_COMBINE.R', echo = TRUE)
 ##      - SDMs 
 ##      - Maps for 2030/50/70 for 6 GCMs with MESS 
 ##      - Gain/loss/stable rasters + tables for 2030/50/70
-##      - This needs the local mess function to work. 
-##        Need a folder for checking all species - MESS.png + global occ + 2070 gain/loss.png in one folder
+##      - Local mess function is working. 
+##        Need a folder for checking all species 
+##      - MESS.png + global occ + 2070 gain/loss.png + Maxent table in one folder
 
   
 ## 3).  H:drive (2TB SSD that I've been working off) and G:drive (8TB HDD for backup).
 
-##      - Clean up files on HD
+##      - Clean up files on HD. Done
 ##      - Put species to check in the results
+##      - Store the full evergreen results in G:
 
 
 ## 4). Latest code for running SDMs and maps on windows and linux. This include the PBS script
 
 
-## 5). Mark down file of example species - a readme file
+## 5). Mark down file of example species - a read me file
 
 
 ## 6). If possible, environmental ranges, histograms and convex hulls for all species...

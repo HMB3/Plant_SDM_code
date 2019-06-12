@@ -106,14 +106,14 @@ Koppen_1975_1km  = raster('data/world_koppen/Koppen_1000m_Mollweide54009.tif')
 
 ## Re-create the background points using Alessandro's latest data........................................................
 ## change BG points to be the SDM_SPAT_OCC_BG_ALL data set.
-hollow.points     = readRDS("./data/ANALYSIS/SDM_SPAT_OCC_BG_HOLLOW_SPP.rds")%>%
-  spTransform(sp_epsg54009)
-TI.points = readRDS("./data/ANALYSIS/SDM_SPAT_OCC_BG_TREE_INVENTORY_SPP.rds") %>%
-  spTransform(sp_epsg54009)
-
-
-## Bind the rows of the hollow and inventory SDM tables together
-background.points = rbind(hollow.points, TI.points)
+# hollow.points     = readRDS("./data/ANALYSIS/SDM_SPAT_OCC_BG_HOLLOW_SPP.rds")%>%
+#   spTransform(sp_epsg54009)
+# TI.points = readRDS("./data/ANALYSIS/SDM_SPAT_OCC_BG_TREE_INVENTORY_SPP.rds") %>%
+#   spTransform(sp_epsg54009)
+# 
+# 
+# ## Bind the rows of the hollow and inventory SDM tables together
+# background.points = rbind(hollow.points, TI.points)
 
 
 #########################################################################################################################
@@ -259,8 +259,8 @@ env.variables = c("Annual_mean_temp",
                   "Precip_dry_qu",
                   "Precip_warm_qu",
                   "Precip_col_qu",
-                  "PET")#, 
-#"AI")
+                  "PET")#,
+                  #"AI")
 
 
 rad.variables = c("mean_monthly_par", 
@@ -578,86 +578,81 @@ scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cc85bi70", "gf85bi70", "hg85b
 #########################################################################################################################
 
 
-# ## Create a list of all dataframes with the extension from this run
-# COMBO.NICHE.list  = list.files(DATA_path, pattern = 'COMBO_NICHE_CONTEXT_EVERGREEN',  full.names = TRUE, recursive = TRUE)
+## Create a list of all dataframes with the extension from this run
+# NICE.list      = list.files(DATA_path, pattern = 'COMBO_NICHE_CONTEXT_EVERGREEN',  full.names = TRUE, recursive = TRUE)
+# RECORDS.list   = list.files(DATA_path, pattern = 'COMBO_RASTER_CONTEXT_EVERGREEN', full.names = TRUE)
 # SDM.TABLE.list = list.files(DATA_path, pattern = 'SDM_SPAT_OCC_BG_', full.names = TRUE)
-# INV.TABLE.list = list.files(DATA_path, pattern = 'CLEAN_INV_TREE_INV_', full.names = TRUE)
-# INV.TABLE.list = list.files(DATA_path, pattern = 'CLEAN_INV_TREE_INVENTORY', full.names = TRUE)
-# RAS.TABLE.list = list.files(DATA_path, pattern = 'COMBO_RASTER_CONVERT_TREE_INVENTORY', full.names = TRUE)
 
 
-# #########################################################################################################################
-# ## Now combine the niche tables for each species into one table
-# COMBO.NICHE.ALL <- COMBO.NICHE.list %>%
-#   
-#   ## pipe the list into lapply
-#   lapply(function(x) {
-#     
-#     ## create the character string
-#     f <- paste0(x)
-#     
-#     ## load each .csv file
-#     d <- readRDS(f)
-#     message(nrow(d), ' Records for ', x)
-#     return(d)
-#     
-#   }) %>%
-#   
-#   ## finally, bind all the rows together
-#   bind_rows()
-# 
-# 
-# ## Update this
-# str(COMBO.NICHE.ALL)
-# dim(COMBO.NICHE.ALL)
 
 
-## Make sure the Species are unique
-# COMBO.NICHE.ALL = COMBO.NICHE.ALL[!duplicated(COMBO.NICHE.ALL[,c('searchTaxon')]),]
-# dim(COMBO.NICHE.ALL)
-# length(unique(COMBO.NICHE.ALL$searchTaxon))
-# 
-# 
+#########################################################################################################################
+## Now combine the niche tables for each species into one table
+COMBO.NICHE.ALL <- NICE.list %>%
+
+  ## pipe the list into lapply
+  lapply(function(x) {
+
+    ## create the character string
+    f <- paste0(x)
+
+    ## load each .csv file
+    d <- readRDS(f)
+    message(nrow(d), ' Records for ', x)
+    return(d)
+
+  }) %>%
+
+  ## finally, bind all the rows together
+  bind_rows()
+
+
+## Update this
+str(COMBO.NICHE.ALL)
+dim(COMBO.NICHE.ALL)
+
+
+# Make sure the Species are unique
+COMBO.NICHE.ALL = COMBO.NICHE.ALL[!duplicated(COMBO.NICHE.ALL[,c('searchTaxon')]),]
+dim(COMBO.NICHE.ALL)
+length(unique(COMBO.NICHE.ALL$searchTaxon))
+
+
 #########################################################################################################################
 ## Now combine the raster tables for each species into one table
-INV.TABLE.ALL <- INV.TABLE.list %>%
-  
+RECORDS.TABLE.ALL <- RECORDS.list %>%
+
   ## Pipe the list into lapply
   lapply(function(x) {
-    
+
     ## Create the character string
     f <- paste0(x)
-    
+
     ## Load each file
     message('Reading file for ', x)
     d <- readRDS(f)
     message(nrow(d), ' Records for ', x)
     return(d)
-    
+
   }) %>%
-  
+
   ## Finally, bind all the rows together
   bind_rows()
 
 ## This is a summary of maxent output for current conditions
-dim(INV.TABLE.ALL)
-names(INV.TABLE.ALL)[1:10]
+dim(RECORDS.TABLE.ALL)
+names(RECORDS.TABLE.ALL)[1:10]
 
 
 ##
-# length(unique(INV.TABLE.ALL$searchTaxon))
-# unique(INV.TABLE.ALL$SOURCE)
-# 
-# # #########################################################################################################################
-# # ## Save the niche and raster data
-# # saveRDS(COMBO.NICHE.ALL,  paste0(DATA_path, 'COMBO_NICHE_CONTEXT_ALL_EVREGREEN_MAY_2018.rds'))
-# saveRDS(INV.TABLE.ALL, paste0(DATA_path,    'CLEAN_INV_ALL_EVREGREEN_MAY_2018.rds'))
+length(unique(RECORDS.TABLE.ALL$searchTaxon))
+unique(RECORDS.TABLE.ALL$SOURCE)
 
 
-
-#########################################################################################################################
-## SDM.SPAT.OCC.BG = readRDS(paste0(DATA_path, 'SDM_SPAT_OCC_BG_ALL_EVERGREEN_SPP.rds'))
-
+# #########################################################################################################################
+# ## Save the niche and raster data
+# saveRDS(COMBO.NICHE.ALL,      paste0(DATA_path, 'COMBO_NICHE_CONTEXT_ALL_EVREGREEN_JUNE_2018.rds'))
+# saveRDS(RECORDS.TABLE.ALL,    paste0(DATA_path, 'CLEAN_INV_ALL_EVREGREEN_JUNE_2018.rds'))
 
 
 
@@ -667,13 +662,6 @@ names(INV.TABLE.ALL)[1:10]
 #########################################################################################################################
 
 
-## 1). Re-create the background points using Alessandro's latest data....................................................
-
-## 2). Clean up the variable names so that they don't repeat. EG one name for Aus, one for world, etc.
-
-
-
-## Suggestions: 
 ##  Add more rasters and vectors in future :: EG soil layers, etc.
 
 
