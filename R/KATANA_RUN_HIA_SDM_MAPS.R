@@ -129,12 +129,15 @@ if (!on_windows) {
 #########################################################################################################################
 ## Now set global analysis variables :: these assume you are using an R project folder structure
 #Sys.setenv("PBS_ARRAYID" = 1)
+#outstanding_spp <- readRDS("./data/ANALYSIS/outstanding_spp.rds")
 
 
 ## Run the species across multiple jobs
 #GBIF.spp = unique(WPW.non.tree)   ## your list of species
 #GBIF.spp = unique(WPW.tree)  ## your list of species
+#GBIF.spp = unique(gsub("_", " ", outstanding_spp))
 GBIF.spp = unique(WPW.spp)
+
 
 
 ## Subset for PBS array jobs

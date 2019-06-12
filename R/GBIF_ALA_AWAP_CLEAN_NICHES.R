@@ -273,7 +273,7 @@ head(SUA.WGS)
 projection(COMBO.AWAP.SP);projection(LGA.WGS);projection(SUA.WGS);projection(AUS.WGS)
 SUA.JOIN      = over(COMBO.AWAP.SP, SUA.WGS)              
 COMBO.SUA.LGA = cbind.data.frame(COMBO.AWAP.SP, SUA.JOIN) 
-saveRDS(COMBO.SUA.LGA, file = paste0('data/base/HIA_LIST/COMBO/COMBO_SUA_OVER_', save_run, '.rds'))
+#saveRDS(COMBO.SUA.LGA, file = paste0('data/base/HIA_LIST/COMBO/COMBO_SUA_OVER_', save_run, '.rds'))
 ## COMBO.SUA.LGA = readRDS("./data/base/HIA_LIST/GBIF/COMBO_SUA_LGA.rds")
 ## str(unique(COMBO.SUA.LGA$searchTaxon))
 
