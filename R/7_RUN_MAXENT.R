@@ -18,7 +18,7 @@ message('Running maxent models for ', length(GBIF.spp), ' species in the set ', 
 if(read_data == "TRUE") {
   
   ## This table will contains all the records for all HIA species (~3.8k).
-  ## SDM_SPAT_OCC_BG_ALL_EVERGREEN_SPP is the latest version
+  ## SDM_SPAT_OCC_BG_ALL_EVERGREEN_SPP is the latest version of all the species
   SDM.SPAT.OCC.BG = readRDS(paste0(DATA_path, 'SDM_SPAT_OCC_BG_ALL_EVERGREEN_SPP.rds'))
   
 } else {
