@@ -454,11 +454,56 @@ results.columns = c("searchTaxon",        ## From the ALA/ GBIF download code
 
 
 #########################################################################################################################
+## 6). COUNT THE SPECIES WHICH DID NOT COMPLETE THE MAPPING RUN
+#########################################################################################################################
+
+
+## Read in a list of species which didn't complete
+mapping.files    = read.csv("./output/maxent/list_of_maping_species.csv", stringsAsFactors = FALSE)
+mapping.species  = read.csv("./output/maxent/mapped_species.csv",         stringsAsFactors = FALSE)
+
+
+## Take a count of how many times each species occurs in the list of mapped files
+## We are looking for species with < 18 files
+mapped.count = map(mapping.species$Mapped_spp, grepl, x = mapping.files$Map_file) %>% 
+  map(which) %>% 
+  map_int(length) %>% 
+  setNames(mapping.species$Mapped_spp) %>%
+  as.data.frame(.) %>%
+  setDT(., keep.rownames = TRUE)
+
+
+## Now we need the species that have less than 18 rows
+colnames(mapped.count) <- c("searchTaxon", "number_maps")
+
+
+## How many species are incomplete?
+mapped.less = subset(mapped.count, number_maps < 18)
+mapped.more = subset(mapped.count, number_maps == 18)
+
+
+nrow(mapped.less)
+nrow(mapped.more)
+summary(mapped.less$number_maps)
+summary(mapped.more$number_maps)
+
+
+## saveRDS(mapped.less, paste0(DATA_path, 'mapped_less.rds'))
+
+
+## local.map = intersect(map_spp, mapped.less$searchTaxon)
+## 3059 species have produced maps, 1256 have less than 18 maps each.
+## There can't be that many species with valid exceptions...........
+## Send this data to Shawn tomo to test. Try it locally too
+
+
+
+#########################################################################################################################
 ## OUTSTANDING LIST TASKS:
 #########################################################################################################################
 
 
-## Find a way to code the infilling of data on origing, life form, etc..................................................
+## Find a way to code the infilling of data on origin, life form, etc..................................................
 
 
 

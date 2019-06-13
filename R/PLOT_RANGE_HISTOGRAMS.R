@@ -72,31 +72,31 @@ for (species in spp.geo) {
   ## Subset the spatial dataframe into records for each species
   SP.DF     <- NICHE.1KM.84[NICHE.1KM.84$searchTaxon %in% species , ]
   DF        <- CLEAN.INV[CLEAN.INV$searchTaxon %in% species , ]
-  # 
-  # TMP.GLO   <- subset(GLOB.NICHE,   searchTaxon == species)[c("searchTaxon", "Annual_mean_temp_q95_q05",
-  #                                                             "Annual_mean_temp_q05", "Annual_mean_temp_q95")]
-  # 
-  # TMP.AUS   <- subset(AUS.NICHE,    searchTaxon == species)[c("searchTaxon", "Annual_mean_temp_q95_q05",
-  #                                                             "Annual_mean_temp_q05", "Annual_mean_temp_q95")]
-  # 
-  # #############################################################
-  # ## Now, build a df of the temperature vectors
-  # if(nrow(TMP.GLO) > 0){
-  #   TMP.GLO$RANGE = "GLOBAL"
-  # } else {
-  #   message("No global data for ", species)
-  # }
-  # 
-  # if(nrow(TMP.AUS) > 0){
-  #   TMP.AUS$RANGE = "AUS"
-  # } else {
-  #   message("No Australian data for ", species, " don't plot the range")
-  # }
-  # 
-  # TMP.RANGE <- rbind(TMP.GLO, TMP.AUS)
-  # names(TMP.RANGE)[2] = c("Temperature_range")
-  # 
-  # ## Subset DF into records for each species
+  
+  TMP.GLO   <- subset(GLOB.NICHE,   searchTaxon == species)[c("searchTaxon", "Annual_mean_temp_q95_q05",
+                                                              "Annual_mean_temp_q05", "Annual_mean_temp_q95")]
+
+  TMP.AUS   <- subset(AUS.NICHE,    searchTaxon == species)[c("searchTaxon", "Annual_mean_temp_q95_q05",
+                                                              "Annual_mean_temp_q05", "Annual_mean_temp_q95")]
+
+  #############################################################
+  ## Now, build a df of the temperature vectors
+  if(nrow(TMP.GLO) > 0){
+    TMP.GLO$RANGE = "GLOBAL"
+  } else {
+    message("No global data for ", species)
+  }
+
+  if(nrow(TMP.AUS) > 0){
+    TMP.AUS$RANGE = "AUS"
+  } else {
+    message("No Australian data for ", species, " don't plot the range")
+  }
+
+  TMP.RANGE <- rbind(TMP.GLO, TMP.AUS)
+  names(TMP.RANGE)[2] = c("Temperature_range")
+
+  ## Subset DF into records for each species
   DF     <- subset(COMBO.SUA.POA, searchTaxon == species)
   DF.OCC <- subset(COMBO.SUA.POA, searchTaxon == species & SOURCE != "INVENTORY")
   DF.INV <- subset(COMBO.SUA.POA, searchTaxon == species & SOURCE == "INVENTORY")
@@ -107,13 +107,13 @@ for (species in spp.geo) {
   # png(sprintf("./data/ANALYSIS/SPECIES_RANGES/%s_%s", species, "1km_occ_points_source.png"),
   #     16, 10, units = 'in', res = 500)
   # 
-  # plot(LAND.WGS, main = paste0("Global points for ", species),
-  #      lwd = 0.01, asp = 1, col = 'grey', bg = 'sky blue')
-  # 
-  # points(SP.DF,
-  #        pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2,
-  #        xlab = "", ylab = "", asp = 1,
-  #        col = factor(SP.DF$SOURCE))
+  plot(LAND.WGS, main = paste0("Global points for ", species),
+       lwd = 0.01, asp = 1, col = 'grey', bg = 'sky blue')
+
+  points(SP.DF,
+         pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2,
+         xlab = "", ylab = "", asp = 1,
+         col = factor(SP.DF$SOURCE))
   # 
   # dev.off()
   # 
@@ -125,40 +125,40 @@ for (species in spp.geo) {
   # 
   # ## Use the 'SOURCE' column to create a histogram for each source.
   # ## Back to here..............................................................................
-  # max.temp = max(TMP.RANGE$Annual_mean_temp_q95)+5
-  # min.temp = min(TMP.RANGE$Annual_mean_temp_q05)-5
-  # 
-  # temp.bar =
-  #   ggplot(TMP.RANGE, aes(y = Temperature_range, x = RANGE, fill = RANGE)) +
-  #   
-  #   # scale_y_discrete(limits = c(min.temp,
-  #   #                             max.temp)) +
-  #   
-  #   geom_bar(stat = "identity", position = "identity", width = 0.1) +
-  #   coord_flip() +
-  #   
-  #   ## Add some median lines : overall, ALA and GBIF
-  #   ## This will only work if we plot the full range of temperatures on the x-axis
-  #   geom_vline(aes(xintercept = POA.SYD$Annual_mean_temp),
-  #              col = 'blue', size = 1) +
-  #   geom_vline(aes(xintercept = POA.SYD$Annual_mean_temp_50),
-  #              col = 'red', size = 1) +
-  #   geom_vline(aes(xintercept = POA.SYD$Annual_mean_temp_70),
-  #              col = 'green', size = 1) +
-  #   
-  #   
-  #   ggtitle(paste0("Worldclim temperature ranges for ", species)) +
-  #   
-  #   ## Add themes
-  #   theme(axis.title.x     = element_text(colour = "black", size = 35),
-  #         axis.text.x      = element_text(size = 25),
-  #         
-  #         panel.background = element_blank(),
-  #         panel.border     = element_rect(colour = "black", fill = NA, size = 3),
-  #         plot.title       = element_text(size   = 40, face = "bold"),
-  #         legend.text      = element_text(size   = 20),
-  #         legend.title     = element_text(size   = 20),
-  #         legend.key.size  = unit(1.5, "cm"))
+  max.temp = max(TMP.RANGE$Annual_mean_temp_q95)+5
+  min.temp = min(TMP.RANGE$Annual_mean_temp_q05)-5
+
+  temp.bar =
+    ggplot(TMP.RANGE, aes(y = Temperature_range, x = RANGE, fill = RANGE)) +
+
+    # scale_y_discrete(limits = c(min.temp,
+    #                             max.temp)) +
+
+    geom_bar(stat = "identity", position = "identity", width = 0.1) +
+    coord_flip() +
+
+    ## Add some median lines : overall, ALA and GBIF
+    ## This will only work if we plot the full range of temperatures on the x-axis
+    geom_vline(aes(xintercept = POA.SYD$Annual_mean_temp),
+               col = 'blue', size = 1) +
+    geom_vline(aes(xintercept = POA.SYD$Annual_mean_temp_50),
+               col = 'red', size = 1) +
+    geom_vline(aes(xintercept = POA.SYD$Annual_mean_temp_70),
+               col = 'green', size = 1) +
+
+
+    ggtitle(paste0("Worldclim temperature ranges for ", species)) +
+
+    ## Add themes
+    theme(axis.title.x     = element_text(colour = "black", size = 35),
+          axis.text.x      = element_text(size = 25),
+
+          panel.background = element_blank(),
+          panel.border     = element_rect(colour = "black", fill = NA, size = 3),
+          plot.title       = element_text(size   = 40, face = "bold"),
+          legend.text      = element_text(size   = 20),
+          legend.title     = element_text(size   = 20),
+          legend.key.size  = unit(1.5, "cm"))
   # 
   # ## Print the plot and close the device
   # print(temp.hist + ggtitle(paste0("Worldclim temp niches for ", species)))
@@ -176,14 +176,14 @@ for (species in spp.geo) {
   png(sprintf("./data/ANALYSIS/SPECIES_RANGES/%s_%s", species, "_1km_convex_hull.png"),
       16, 10, units = 'in', res = 500)
   
-  p <- ggplot(DF.CONV, aes(Annual_mean_temp, Annual_precip, fill = OCC_TYPE, color = OCC_TYPE)) 
+  convex <- ggplot(DF.CONV, aes(Annual_mean_temp, Annual_precip, fill = OCC_TYPE, color = OCC_TYPE)) 
   
   hull_occ_source <- DF.CONV %>%
     group_by(OCC_TYPE) %>%
     slice(chull(Annual_mean_temp, Annual_precip))
   
   ## Update the plot with a fill group, and overlay the new hulls
-  p + geom_polygon(data = hull_occ_source, alpha = 0.3) +
+  convex + geom_polygon(data = hull_occ_source, alpha = 0.3) +
     geom_point(shape = 21, size = 2.5) + ## geom_density_2d
     
     ## Add x,y, and title
@@ -204,6 +204,10 @@ for (species in spp.geo) {
           legend.text      = element_text(size   = 20),
           legend.title     = element_text(size   = 20),
           legend.key.size  = unit(1.5, "cm"))
+  
+  
+  ##
+  print(convex + ggtitle(paste0("Worldclim temp niches for ", species)))
   
   ## close device
   dev.off()

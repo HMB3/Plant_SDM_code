@@ -211,9 +211,9 @@ if(calc_niche == "TRUE") {
   
   #########################################################################################################################
   ## Add the counts of Australian records for each species to the niche database
-  GLOB.NICHE = join(Aus_records,    GLOB.NICHE,  type = "right")
-  GLOB.NICHE = join(Global_records, GLOB.NICHE,  type = "right")
-  GLOB.NICHE = join(SUA.AGG,        GLOB.NICHE,  type = "right")
+  GLOB.NICHE = join(Aus_records,    GLOB.NICHE)#,  type = "right")
+  GLOB.NICHE = join(Global_records, GLOB.NICHE)#,  type = "right")
+  GLOB.NICHE = join(SUA.AGG,        GLOB.NICHE)#,  type = "right")
   
   
   ## Check the record and POA counts
@@ -281,7 +281,7 @@ if(calc_niche == "TRUE") {
   
   
   #########################################################################################################################
-  ## 6). PLOT CONVEX HULL OF DATA
+  ## 6). PLOT CONVEX HULL OF ALL DATA
   #########################################################################################################################
   
   

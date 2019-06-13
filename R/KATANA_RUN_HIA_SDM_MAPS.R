@@ -48,7 +48,7 @@ p <- c('ff',      'things',    'raster',        'dismo',             'sp',      
        'rvest',   'magrittr',  'devtools',      'ggplot2',           'reshape2',     'rmarkdown',             'flexdashboard', 
        'shiny',   'rgbif',     'ENMeval',       'tibble',            'ncdf4',        'Cairo',                 'taxonlookup',  
        'kgc',     'betareg',   'gridExtra',     'grid',              'lattice',      'ConR',                  'writexl',
-       'sf',      'ggmap',     'DataCombine',   'exactextractr',     'mgcv', 'doSNOW')
+       'sf',      'ggmap',     'DataCombine',   'exactextractr',     'mgcv', 'doSNOW', 'tidyverse')
 
 
 ## Require packages
@@ -128,17 +128,16 @@ if (!on_windows) {
 
 #########################################################################################################################
 ## Now set global analysis variables :: these assume you are using an R project folder structure
-#outstanding_spp <- readRDS("./data/ANALYSIS/outstanding_spp.rds")
+outstanding_spp <- readRDS("./data/ANALYSIS/mapped_less.rds")
 
 
 ## Run the species 500 or 1000 at a time
-GBIF.spp = unique(WPW.spp)  ## your list of species
-## Run the species across multiple jobs
+#GBIF.spp = unique(WPW.spp)  ## your list of species
 #GBIF.spp = unique(WPW.non.tree)   ## your list of species
 #GBIF.spp = unique(WPW.tree)  ## your list of species
 #GBIF.spp = unique(WPW.non.tree)
 #GBIF.spp = c("Acacia falcata")
-#GBIF.spp = unique(gsub("_", " ", outstanding_spp))
+GBIF.spp = unique(gsub("_", " ", outstanding_spp$searchTaxon))
 
 
 ## Subset for PBS array jobs
@@ -205,7 +204,7 @@ message('Running SDMs and maps for ', length(GBIF.spp), ' species in the set ', 
 
 
 ## Step 2 :: combine GBIF occurrence data with ALA data and filter to records > 1950
-# source('./R/ALA_DATA_FILTER_TAXO_SCIENTIFIC_NAME.R', echo = TRUE)
+# source('./R/2_ALA_DATA_FILTER_TAXO_SCIENTIFIC_NAME.R', echo = TRUE)
 # source('./R/3_GBIF_DATA_TAXO_SCIENTIFIC_NAME.R',     echo = TRUE)
 
 
