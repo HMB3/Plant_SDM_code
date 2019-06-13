@@ -128,18 +128,17 @@ if (!on_windows) {
 
 #########################################################################################################################
 ## Now set global analysis variables :: these assume you are using an R project folder structure
-#Sys.setenv("PBS_ARRAYID" = 1)
-outstanding_spp <- readRDS("./data/ANALYSIS/outstanding_spp.rds")
+#outstanding_spp <- readRDS("./data/ANALYSIS/outstanding_spp.rds")
 
 
 ## Run the species 500 or 1000 at a time
-#GBIF.spp = unique(WPW.spp)  ## your list of species
+GBIF.spp = unique(WPW.spp)  ## your list of species
 ## Run the species across multiple jobs
 #GBIF.spp = unique(WPW.non.tree)   ## your list of species
 #GBIF.spp = unique(WPW.tree)  ## your list of species
 #GBIF.spp = unique(WPW.non.tree)
 #GBIF.spp = c("Acacia falcata")
-GBIF.spp = unique(gsub("_", " ", outstanding_spp))
+#GBIF.spp = unique(gsub("_", " ", outstanding_spp))
 
 
 ## Subset for PBS array jobs
@@ -158,7 +157,7 @@ if (Sys.getenv("PBS_ARRAYID") != "") {
 #########################################################################################################################
 ## The required folders must be created on katana
 GBIF.spp      = as_utf8(GBIF.spp, normalize = TRUE)  ## Check the species names have the right characters
-save_run      = "ALL_EVREGREEN_MAY_2018"             ## a variable to append the run name to the output files
+save_run      = "ALL_EVREGREEN_JUNE_2018"            ## a variable to append the run name to the output files
                                                      ## ALL_EVREGREEN_MAY_2018 is the latest version of the niche data
 
 read_data     = "FALSE"                              ## Read intermediary data between the steps?
@@ -302,11 +301,13 @@ source('./R/8_MAP_SDM_COMBINE.R', echo = TRUE)
 ## 1). Table of all the species modelled/screened for the evergreen list... 
 
 ##     - Check the latest output. Species in CLEAN.GROW should match species in COMBO.NICHE
+##     - They do, yay!
+##     - CSV output
 
   
 ## 2).  All directories for evergreen species modelled, zipped up (using WG drives) ::
 ## 
-##      - SDMs 
+##      - SDMs (two folders, all variables, and Backwards selected)
 ##      - Maps for 2030/50/70 for 6 GCMs with MESS 
 ##      - Gain/loss/stable rasters + tables for 2030/50/70
 ##      - Local mess function is working. 
@@ -319,12 +320,13 @@ source('./R/8_MAP_SDM_COMBINE.R', echo = TRUE)
 ##      - Clean up files on HD. Done
 ##      - Put species to check in the results
 ##      - Store the full evergreen results in G:
+##      - Run the code from inside H to test
 
 
 ## 4). Latest code for running SDMs and maps on windows and linux. This include the PBS script
 
 
-## 5). Mark down file of example species - a read me file
+## 5). Mark down file of example species - a 'read me' file
 
 
 ## 6). If possible, environmental ranges, histograms and convex hulls for all species...

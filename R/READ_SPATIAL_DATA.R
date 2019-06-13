@@ -588,69 +588,69 @@ scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cc85bi70", "gf85bi70", "hg85b
 
 #########################################################################################################################
 ## Now combine the niche tables for each species into one table
-COMBO.NICHE.ALL <- NICE.list %>%
-
-  ## pipe the list into lapply
-  lapply(function(x) {
-
-    ## create the character string
-    f <- paste0(x)
-
-    ## load each .csv file
-    d <- readRDS(f)
-    message(nrow(d), ' Records for ', x)
-    return(d)
-
-  }) %>%
-
-  ## finally, bind all the rows together
-  bind_rows()
+# COMBO.NICHE.ALL <- NICE.list %>%
+# 
+#   ## pipe the list into lapply
+#   lapply(function(x) {
+# 
+#     ## create the character string
+#     f <- paste0(x)
+# 
+#     ## load each .csv file
+#     d <- readRDS(f)
+#     message(nrow(d), ' Records for ', x)
+#     return(d)
+# 
+#   }) %>%
+# 
+#   ## finally, bind all the rows together
+#   bind_rows()
 
 
 ## Update this
-str(COMBO.NICHE.ALL)
-dim(COMBO.NICHE.ALL)
+# str(COMBO.NICHE.ALL)
+# dim(COMBO.NICHE.ALL)
 
 
 # Make sure the Species are unique
-COMBO.NICHE.ALL = COMBO.NICHE.ALL[!duplicated(COMBO.NICHE.ALL[,c('searchTaxon')]),]
-dim(COMBO.NICHE.ALL)
-length(unique(COMBO.NICHE.ALL$searchTaxon))
+# COMBO.NICHE.ALL = COMBO.NICHE.ALL[!duplicated(COMBO.NICHE.ALL[,c('searchTaxon')]),]
+# dim(COMBO.NICHE.ALL)
+# length(unique(COMBO.NICHE.ALL$searchTaxon))
 
 
 #########################################################################################################################
 ## Now combine the raster tables for each species into one table
-RECORDS.TABLE.ALL <- RECORDS.list %>%
-
-  ## Pipe the list into lapply
-  lapply(function(x) {
-
-    ## Create the character string
-    f <- paste0(x)
-
-    ## Load each file
-    message('Reading file for ', x)
-    d <- readRDS(f)
-    message(nrow(d), ' Records for ', x)
-    return(d)
-
-  }) %>%
-
-  ## Finally, bind all the rows together
-  bind_rows()
+# RECORDS.TABLE.ALL <- RECORDS.list %>%
+# 
+#   ## Pipe the list into lapply
+#   lapply(function(x) {
+# 
+#     ## Create the character string
+#     f <- paste0(x)
+# 
+#     ## Load each file
+#     message('Reading file for ', x)
+#     d <- readRDS(f)
+#     message(nrow(d), ' Records for ', x)
+#     return(d)
+# 
+#   }) %>%
+# 
+#   ## Finally, bind all the rows together
+#   bind_rows()
 
 ## This is a summary of maxent output for current conditions
-dim(RECORDS.TABLE.ALL)
-names(RECORDS.TABLE.ALL)[1:10]
+# dim(RECORDS.TABLE.ALL)
+# names(RECORDS.TABLE.ALL)[1:10]
 
 
 ##
-length(unique(RECORDS.TABLE.ALL$searchTaxon))
-unique(RECORDS.TABLE.ALL$SOURCE)
+# length(unique(RECORDS.TABLE.ALL$searchTaxon))
+# unique(RECORDS.TABLE.ALL$SOURCE)
 
 
-# #########################################################################################################################
-# ## Save the niche and raster data
+#########################################################################################################################
+## Save the niche and raster data
 # saveRDS(COMBO.NICHE.ALL,      paste0(DATA_path, 'COMBO_NICHE_CONTEXT_ALL_EVREGREEN_JUNE_2018.rds'))
 # saveRDS(RECORDS.TABLE.ALL,    paste0(DATA_path, 'CLEAN_INV_ALL_EVREGREEN_JUNE_2018.rds'))
 
