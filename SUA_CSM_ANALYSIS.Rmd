@@ -20,9 +20,19 @@ https://www.whichplantwhere.com.au/
 
 
 The text and code below summarises a workflow in R that can be used to relatively rapidly assess the effect
-of climate change on a given taxon within Australia, from dowloading occurrence records, through to creating
-maps of predicted climatic suitablity across Australia at 1km*1km resolution. An example for 10 species is
-given in the markdown file.
+of climate change on a given plant within Australia, from dowloading occurrence records, through to creating
+maps of predicted climatic suitablity across Australia at 1km*1km resolution. 
+
+This work is published in Science of the Total Environment ::
+
+Burley, H., Beaumont, L.J., Ossola, A., et al. (2019) Substantial declines in urban tree habitat predicted 
+under climate change. Science of The Total Environment, 685, 451-462.
+
+https://www.sciencedirect.com/science/article/pii/S0048969719323289#f0030 
+
+
+An example for 10 species is given in the markdown file below.
+
 
 \
 
@@ -125,69 +135,6 @@ source('./R/RMD_READ_PACKAGES.R')
 For each of these planted and sold species, we downloaded global occurrence records from GBIF and the 
 Atlas of Living Australia (ALA, www.ala.org.au) using the rgbif and ALA4R packages in R 
 [https://github.com/AtlasOfLivingAustralia/ALA4R, (Hijmans et al. 2016) (R Core Team, 2017)]. 
-
-\
-
-```{r eval = FALSE, echo = TRUE}
-
-## Download ALA data
-download_ALA_all_species = function (species_list, path) {
-  
-  ## create variables
-  skip.spp.list       = list()
-
-  ## for every species in the list
-  for(sp.n in species_list){
-    
-    ## 1). First, check if the f*&%$*# file exists
-    file = paste0(path, sp.n, "_ALA_records.RData")
-    
-    ## If it's already downloaded, skip
-    if (file.exists (file)) {
-      
-      print (paste ("file exists for species", sp.n, "skipping"))
-      next
-      
-    }
-    
-    ## 2). Then check the spelling...incorrect nomenclature will return NULL result
-    if (is.null(occurrences(taxon = sp.n, download_reason_id = 7)$data) == TRUE) {
-      
-      ## Now append the species which had incorrect nomenclature to the skipped list
-      ## this is slow, but it works for now
-      print (paste ("Possible incorrect nomenclature", sp.n, "skipping"))
-      nomenclature = paste ("Possible incorrect nomenclature |", sp.n)
-      skip.spp.list <- c(skip.spp.list, nomenclature)
-      next
-      
-    }
-    
-    ## 3). Skip species with no records
-    if (dim(occurrences(taxon = sp.n, download_reason_id = 7)$data)[1] <= 2) {
-      
-      ## now append the species which had no records to the skipped list
-      print (paste ("No ALA records for", sp.n, "skipping"))
-      records = paste ("No ALA records |", sp.n)
-      skip.spp.list <- c(skip.spp.list, records)
-      next
-      
-    }
-    
-    ## 4). Download ALL records from ALA :: 
-    message("Downloading ALA records for ", sp.n, " using ALA4R :: occurrences")
-    ALA = occurrences(taxon = sp.n, download_reason_id = 7) 
-    ALA = ALA[["data"]]
-    cat("Synonyms returned for :: ", sp.n, unique(ALA$scientificName), sep="\n")
-    message(dim(ALA[1]), " Records returned for ", sp.n)
-    
-    ## 5). save records to .Rdata file
-    save(ALA, file = paste(path, sp.n, "_ALA_records.RData", sep = ""))
-    
-  }
-  
-}
-
-```
 
 \
 
