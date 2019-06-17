@@ -463,9 +463,14 @@ mapping.files    = read.csv("./output/maxent/list_of_maping_species.csv", string
 mapping.species  = read.csv("./output/maxent/mapped_species.csv",         stringsAsFactors = FALSE)
 
 
+## Check
+head(mapping.files$Mapped_files)
+head(mapping.species$Mapped_spp)
+
+
 ## Take a count of how many times each species occurs in the list of mapped files
 ## We are looking for species with < 18 files
-mapped.count = map(mapping.species$Mapped_spp, grepl, x = mapping.files$Map_file) %>% 
+mapped.count = map(mapping.species$Mapped_spp, grepl, x = mapping.files$Mapped_files) %>% 
   map(which) %>% 
   map_int(length) %>% 
   setNames(mapping.species$Mapped_spp) %>%
@@ -478,17 +483,24 @@ colnames(mapped.count) <- c("searchTaxon", "number_maps")
 
 
 ## How many species are incomplete?
-mapped.less = subset(mapped.count, number_maps < 18)
-mapped.more = subset(mapped.count, number_maps == 18)
+outstanding.spp  = subset(mapped.count, number_maps < 18)
+mapped.less      = subset(mapped.count, number_maps < 18 & number_maps >= 10)
+mapped.least     = subset(mapped.count, number_maps < 10)
+mapped.more      = subset(mapped.count, number_maps == 18)
 
 
+nrow(outstanding.spp)
 nrow(mapped.less)
+nrow(mapped.least)
 nrow(mapped.more)
 summary(mapped.less$number_maps)
 summary(mapped.more$number_maps)
 
 
 ## saveRDS(mapped.less, paste0(DATA_path, 'mapped_less.rds'))
+saveRDS(outstanding.spp,  paste0(DATA_path, 'outstanding_spp.rds'))
+saveRDS(mapped.less,      paste0(DATA_path, 'mapped_less.rds'))
+saveRDS(mapped.least,     paste0(DATA_path, 'mapped_least.rds'))
 
 
 ## local.map = intersect(map_spp, mapped.less$searchTaxon)
