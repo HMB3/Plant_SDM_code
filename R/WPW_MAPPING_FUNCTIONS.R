@@ -37,7 +37,7 @@
 ## Try to run the mess maps at the same time as the map creation?
 project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list, 
                                      species_list, maxent_path, climate_path, static_path,
-                                     grid_names, time_slice, current_grids, create_mess, nclust) {
+                                     grid_names, time_slice, current_grids, create_mess, save_mess, nclust) {
   
   ## Read in the Australian shapefile at the top
   aus_poly = readRDS(paste0(shp_path, aus_shp)) %>%
@@ -206,7 +206,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
             
           } else {
             
-            message(species, 'Current MESS directory already created') 
+            message(species, 'Current MESS file already saved') 
             
           }
           
@@ -226,11 +226,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
           writeRaster(hs_current_not_novel, sprintf('%s%s/full/%s%s.tif', maxent_path, 
                                                     species, species, "_current_not_novel"),
                       overwrite = TRUE)
-          
-          # } else {
-          #   message('Dont run current MESS maps for ', species) 
-          # }
-          
+
           ########################################################################################################################
           ## Create file path for future raster doesn't exist, create it 
           f_future <- sprintf('%s/%s/full/%s_future_not_novel_%s.tif', 
@@ -336,7 +332,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
             ## Need to save the polygons to file ::  
             ## this can fail if no ebvironments are novel, e.g the red gum.
             ## Can we add a condtiton in poluygonizer to check if the file has data?..............................
-            if(create_mess == "TRUE") {
+            if(save_mess == "TRUE") {
               message('Converting raster MESS maps to polygons under ', x, ' scenario for ', species) 
               
               ## If we're on linux, use the standard polygonizer function

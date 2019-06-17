@@ -75,7 +75,8 @@ tryCatch(
                             grid_names    = grid.names,                ## This must include the soil variables, 
                             time_slice    = 30,                        ## Time period
                             current_grids = aus.grids.current,         ## predictor grids - this must include soil variables too
-                            create_mess   = "FALSE",
+                            create_mess   = "TRUE",
+                            save_mess     = "FALSE",
                             nclust        = 1),
   
   ## If the species fails, write a fail message to file. 
@@ -107,7 +108,8 @@ tryCatch(
                             grid_names    = grid.names,
                             time_slice    = 50,                        ## Time period
                             current_grids = aus.grids.current,         ## predictor grids
-                            create_mess   = "FALSE",
+                            create_mess   = "TRUE",
+                            save_mess     = "FALSE",
                             nclust        = 1),
   
   ## If the species fails, write a fail message to file.
@@ -138,7 +140,8 @@ tryCatch(
                             grid_names    = grid.names,
                             time_slice    = 70,                        ## Time period
                             current_grids = aus.grids.current,         ## predictor grids
-                            create_mess   = "FALSE",
+                            create_mess   = "TRUE",
+                            save_mess     = "FALSE",
                             nclust        = 1),
   
   ## If the species fails, write a fail message to file.

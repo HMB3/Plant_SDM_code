@@ -10,9 +10,9 @@
 ## Might need to add skip condtions to this..............................................................................
 # shp_path      = "./data/base/CONTEXTUAL/" ## Path for shapefile
 # aus_shp       = "aus_states.rds"          ## Shapefile, e.g. Australian states
-# world_shp     = "LAND_world.rds"          ## World shapefile          
-# x             = scen_2030                 ## List of climate scenarios
-# species       = map_spp[8]                ## List of species folders with maxent models
+# world_shp     = "LAND_world.rds"          ## World shapefile
+# x             = scen_2030[1]                 ## List of climate scenarios
+# species       = map_spp[1]                ## List of species folders with maxent models
 # maxent_path   = bs_path
 # time_slice    = 30
 # nclust        = 1
@@ -50,14 +50,18 @@ create_mess_pngs = function(shp_path, aus_shp, world_shp, scen_list,
       ###################################################################
       ## Read in all the objects needed to create the MESS maps for each 
       ## species. Just do the current rasters
-      current = sprintf('%s/%s/full/%s_current.tif',
-                        maxent_path, species, species)
+      current = sprintf('%s/%s%s.tif', MESS_dir, species, "_current_novel")
+      
+      # future  = sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_novel_",  x)
+      
+      current.mess = sprintf('%s/%s/full/%s_local_mess_panel.png',
+                             maxent_path, species, species)
+      
       # future = sprintf('%s/%s/full/%s_%s.tif', 
       #                  maxent_path, species, species, x)
       
-      
       ## This step assumes the predictions all worked...................
-      if(file.exists(current)) { # && file.exists(future)) {
+      if(file.exists(current) && !file.exists(current.mess)) {
         
         pred.current = raster(sprintf('%s/%s/full/%s_current.tif',
                                       maxent_path, species, species))
@@ -72,7 +76,31 @@ create_mess_pngs = function(shp_path, aus_shp, world_shp, scen_list,
         ## Can we add a condtiton in poluygonizer to check if the file has data?..............................
         message('Converting raster MESS maps to polygons under ', x, ' scenario for ', species) 
         novel_current_poly <- polygonizer_windows(sprintf('%s/%s%s.tif',   MESS_dir, species, "_current_novel"))
-        novel_future_poly  <- polygonizer_windows(sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_novel_", x))
+        #novel_future_poly  <- polygonizer_windows(sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_novel_", x))
+        
+        ###################################################################
+        ## Re-project the shapefiles
+        novel_current_poly = novel_current_poly %>%
+          spTransform(ALB.CONICAL)
+        
+        # novel_future_poly = novel_future_poly %>%
+        #   spTransform(ALB.CONICAL)
+        
+        ###################################################################
+        ## Now save the novel areas as shapefiles
+        ## There is a problem with accessing the files at the same time
+        MESS_shp_path   = sprintf('%s%s/full/%s', 
+                                  maxent_path, species, 'MESS_output')
+        
+        writeOGR(obj    = novel_current_poly, 
+                 dsn    = sprintf('%s',  MESS_shp_path), 
+                 layer  = paste0(species, "_current_novel_polygon"),
+                 driver = "ESRI Shapefile", overwrite_layer = TRUE)
+        
+        # writeOGR(obj    = novel_future_poly, 
+        #          dsn    = sprintf('%s',  MESS_shp_path), 
+        #          layer  = paste0(species, "_future_novel_polygon_", x),
+        #          driver = "ESRI Shapefile", overwrite_layer = TRUE)
         
         ## Create a SpatialLines object that indicates novel areas (this will be overlaid)            
         ## Below, we create a dummy polygon as the first list element (which is the extent
@@ -85,11 +113,10 @@ create_mess_pngs = function(shp_path, aus_shp, world_shp, scen_list,
         #                     hatch(as(novel_future_poly,  'sf'), 50))
         
         novel_hatch <- list(as(extent(pred.current)*1.1, 'SpatialPolygons'),  
-                            hatch(novel_current_poly, 50),
-                            hatch(novel_future_poly, 50)) 
+                            hatch(novel_current_poly, 50))#,
+                            #hatch(novel_future_poly, 50)) 
         
-        
-        ########################################################################################################################
+        ###################################################################
         ## Now create a panel of PNG files for maxent projections and MESS maps
         ## All the projections and extents need to match
         empty_ras <- init(pred.current, function(x) NA) 
@@ -100,14 +127,13 @@ create_mess_pngs = function(shp_path, aus_shp, world_shp, scen_list,
         ## Assign the scenario name to use in the plot title below
         scen_name = eval(parse(text = sprintf('gcms.%s$GCM[gcms.%s$id == x]', time_slice, time_slice)))      
         
-        
-        ########################################################################################################################
+        ###################################################################
         ## Use the 'levelplot' function to make a multipanel output: occurrence points, current raster and future raster
         # if(create_mess == "TRUE") {
         message('Create MESS panel maps for ', species, ' under ', x, ' scenario')
         
         
-        ############################################################
+        ###################################################################
         ## Create level plot of current conditions including MESS                        
         png(sprintf('%s/%s/full/%s_%s.png', maxent_path, species, species, "local_mess_panel"),      
             11, 4, units = 'in', res = 300)
@@ -138,44 +164,44 @@ create_mess_pngs = function(shp_path, aus_shp, world_shp, scen_list,
         dev.off()
         
         
-        ##################################################################################
+        ###################################################################
         ## Save the global records to PNG :: try to code the colors for ALA/GBIF/INVENTORY
-        # occ.world <- readRDS(sprintf('%s/%s/%s_occ.rds', maxent_path, species, save_name)) %>%
-        #   spTransform(CRS.WGS.84)
-        # 
-        # message('writing map of global records for ', species)
-        # png(sprintf('%s/%s/full/%s_%s.png', maxent_path, save_name, save_name, "global_occ_records"),
-        #     16, 10, units = 'in', res = 500)
-        # 
-        # ## Add land
-        # plot(world_poly, #add = TRUE, 
-        #      lwd = 0.01, asp = 1, col = 'grey', bg = 'sky blue')
-        # 
-        # ## Add points
-        # points(subset(occ.world, SOURCE == "GBIF"), 
-        #        pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2, 
-        #        xlab = "", ylab = "", asp = 1,
-        #        col = "orange", 
-        #        legend(7,4.3, unique(occ.world$SOURCE), col = "orange", pch = 1))
-        # 
-        # points(subset(occ.world, SOURCE == "ALA"), 
-        #        pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2, 
-        #        xlab = "", ylab = "", asp = 1,
-        #        col = "blue", 
-        #        legend(7,4.3, unique(occ.world$SOURCE), col = "blue", pch = 1))
-        # 
-        # points(subset(occ.world, SOURCE == "INVENTORY"), 
-        #        pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2, 
-        #        xlab = "", ylab = "", asp = 1,
-        #        col = "red", 
-        #        legend(7,4.3, unique(occ.world$SOURCE), col = "red", pch = 1))
-        # 
-        # title(main = list(paste0(gsub('_', ' ', species), ' global SDM records'), font = 4, cex = 2),
-        #       cex.main = 4,   font.main = 4, col.main = "black")
-        # 
-        # dev.off()
-        # 
-        # 
+        occ.world <- readRDS(sprintf('%s/%s/%s_occ.rds', maxent_path, species, save_name)) %>%
+          spTransform(CRS.WGS.84)
+        
+        message('writing map of global records for ', species)
+        png(sprintf('%s/%s/full/%s_%s.png', maxent_path, save_name, save_name, "global_occ_records"),
+            16, 10, units = 'in', res = 500)
+        
+        ## Add land
+        plot(world_poly, #add = TRUE,
+             lwd = 0.01, asp = 1, col = 'grey', bg = 'sky blue')
+        
+        ## Add points
+        points(subset(occ.world, SOURCE == "GBIF"),
+               pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2,
+               xlab = "", ylab = "", asp = 1,
+               col = "orange",
+               legend(7,4.3, unique(occ.world$SOURCE), col = "orange", pch = 1))
+        
+        points(subset(occ.world, SOURCE == "ALA"),
+               pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2,
+               xlab = "", ylab = "", asp = 1,
+               col = "blue",
+               legend(7,4.3, unique(occ.world$SOURCE), col = "blue", pch = 1))
+        
+        points(subset(occ.world, SOURCE == "INVENTORY"),
+               pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2,
+               xlab = "", ylab = "", asp = 1,
+               col = "red",
+               legend(7,4.3, unique(occ.world$SOURCE), col = "red", pch = 1))
+        
+        title(main = list(paste0(gsub('_', ' ', species), ' global SDM records'), font = 4, cex = 2),
+              cex.main = 4,   font.main = 4, col.main = "black")
+        
+        dev.off()
+        
+        
         # ############################################################
         # ## Create level plot of scenario x, including MESS                        
         # png(sprintf('%s/%s/full/%s%s_%s.png', maxent_path, species, species, "_local_mess", x),      
@@ -211,7 +237,7 @@ create_mess_pngs = function(shp_path, aus_shp, world_shp, scen_list,
         
       } else {
         
-        message(species, ' skipped - no current or future predictions')
+        message(species, ' skipped local mess already run')
         
       } 
       
@@ -271,7 +297,7 @@ tryCatch(
                    aus_shp       = "aus_states.rds",          ## Shapefile, e.g. Australian states
                    world_shp     = "LAND_world.rds",          ## World shapefile          
                    scen_list     = scen_2030,            ## List of climate scenarios
-                   species_list  = map_spp,            ## List of species folders with maxent models
+                   species_list  = map_spp[1:10],            ## List of species folders with maxent models
                    maxent_path   = bs_path,
                    time_slice    = 30,
                    nclust        = 1),
