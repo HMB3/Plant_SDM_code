@@ -90,7 +90,7 @@ if (!on_windows) {
               sprintf('bio_%02d.tif', 1:19)))
   
   ## Divide the current Australian bioclim values by 10
-  ## The future values are divided nby 10 within the mapping function
+  ## The future values are divided by 10 within the mapping function
   message ("Iterating over aus current grids")
   for(i in 1:11) {
     
@@ -130,13 +130,15 @@ if (!on_windows) {
 ## Now set global analysis variables :: these assume you are using an R project folder structure
 # least_mapped <- readRDS("./data/ANALYSIS/mapped_least.rds")
 # less_mapped  <- readRDS("./data/ANALYSIS/mapped_less.rds")
-out_spp      <- readRDS("./data/ANALYSIS/outstanding_spp.rds")
+# out_spp      <- readRDS("./data/ANALYSIS/outstanding_spp.rds")
 
 
 ## Run the species 500 or 1000 at a time
+#GBIF.spp   = HOL.HIA    ##
+
 #GBIF.spp = unique(WPW.spp)  ## your list of species
 #GBIF.spp = unique(WPW.non.tree)   ## your list of species
-#GBIF.spp = unique(WPW.tree)  ## your list of species
+#GBIF.spp = unique(WPW.tree)       ## your list of species
 #GBIF.spp = unique(WPW.non.tree)
 #GBIF.spp = c("Acacia falcata")
 GBIF.spp = unique(gsub("_", " ", unique(out_spp$searchTaxon)))
@@ -158,20 +160,37 @@ if (Sys.getenv("PBS_ARRAYID") != "") {
 #########################################################################################################################
 ## The required folders must be created on katana
 GBIF.spp      = as_utf8(GBIF.spp, normalize = TRUE)  ## Check the species names have the right characters
-save_run      = "ALL_EVREGREEN_JUNE_2018"            ## a variable to append the run name to the output files
-                                                     ## ALL_EVREGREEN_MAY_2018 is the latest version of the niche data
+save_run      = "ALL_EVREGREEN_TREE"            ## a variable to append the run name to the output files
+                                                ## ALL_EVREGREEN_JUNE_2018 is the latest version of the niche data
+	
+## If running the trees, use all three data sources
+if (grepl("TREE", save_run)) {
+      OCC_SOURCE    = c("ALA", "GBIF", "INVENTORY")
+    
+	## If running the non-trees, use ALA and GBIF only
+    } else {
+      ## Get the background records from any source
+    OCC_SOURCE    = c("ALA", "GBIF") 
+      
+}
 
+#########################################################################################################################
+## Reading and writing?
 read_data     = "FALSE"                              ## Read intermediary data between the steps?
 save_data     = "TRUE"                               ## Save data?
 check_maps    = "FALSE"                              ## Create maps, shapefiles and histograms of each speices?
 
+
+#########################################################################################################################
+## Data paths
 GBIF_path     = "./data/base/HIA_LIST/GBIF_UPDATE/"  ## The path where GBIF data is stored
 ALA_path      = "./data/base/HIA_LIST/ALA_UPDATE/"   ## The path where ALA data is stored place
 DATA_path     = "./data/ANALYSIS/"                   ## The path where the final data from/for analyses are stored. 
-#OCC_SOURCE    = c("ALA", "GBIF", "INVENTORY")
-OCC_SOURCE    = c("ALA", "GBIF")                     ## Data source :: for trees, ALL. For non trees, ALA/GBIF, for occ and bg
 calc_niche    = "TRUE"
 
+
+#########################################################################################################################
+## Analysis/results paths
 maxent_path   = './output/maxent/HIA_TEST_INV/'      ## The directory where maxent files are saved               
 maxent_dir    = 'output/maxent/HIA_TEST_INV'         ## Another version of the path needed to run maxent loop
 
@@ -188,12 +207,12 @@ results_dir   = bs_dir
 #########################################################################################################################
 
 
-## Run the SDM workflow for the species set -
+## Run the SDM work flow for the species set -
 ## Steps 1 - 5 are hard to complete on the cluster across a huge set of binomials. 
 ## So I processed all species in groups of 500 through steps 1-6 (run_500, _100..._3500, etc.)
 ## Only steps 7 and 8 were run on Katana.
 
-## This makes the worlflow less repeatable, see Outstanding tasks ........................................................
+## This makes the work flow less repeatable, see Outstanding tasks ........................................................
 
 
 #########################################################################################################################
@@ -211,8 +230,8 @@ message('Running SDMs and maps for ', length(GBIF.spp), ' species in the set ', 
 
 
 ## Step 4 :: combine GBIF, ALA and tree inventory data into a single table,
-## clean taxonomy,
-## extract environmental condtions
+## clean taxonomy, then extract raster values
+## extract environmental conditions
 # source('./R/4_ALA_GBIF_TAXO_COMBINE.R',   echo = TRUE)
 # source('./R/INVENTORY_RASTER.R',          echo = TRUE)
 
@@ -228,13 +247,13 @@ message('Running SDMs and maps for ', length(GBIF.spp), ' species in the set ', 
 # source('./R/6_PREPARE_SDM_TABLE_1KM.R',  echo = TRUE)
 # 
 # 
-# # ## Step 7 :: Run maxent on a table of all species, using targetted background selection, then backwards selection
-# # ## Step 8 :: Create habitat suitability maps for each species using six GCMs and three time slices (2030/50/70).
+## Step 7 :: Run maxent on a table of all species, using targeted background selection, then backwards selection
+## Step 8 :: Create habitat suitability maps for each species using six GCMs and three time slices (2030/50/70).
 source('./R/7_RUN_MAXENT.R',      echo = TRUE)
 source('./R/8_MAP_SDM_COMBINE.R', echo = TRUE)
 
 
-## COLLATE SDM RESULTS 
+## COLLATE SDM RESULTS & PLOT MESS MAPS
 #source('./R/COLLATE_MAXENT_KATANA_RESULTS.R', echo = TRUE)
 
 

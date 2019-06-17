@@ -33,6 +33,7 @@ rasterTmpFile()
 #########################################################################################################################
 ## Restrict the inventory species to just the analysed species
 TI.XY.SPP = TI.XY[TI.XY$searchTaxon %in% GBIF.spp, ]
+
 length(unique(TI.XY.SPP$searchTaxon))
 unique(TI.XY.SPP$searchTaxon)
 
@@ -58,9 +59,15 @@ if(nrow(TI.XY.SPP) > 0) {
   ## Create a template raster in WGS84 projection
   template.raster.1km.84 = raster("./data/world_koppen/template_1km_WGS84.tif")
   
-  TI.XY.84.SPLIT.ALL <- split(TI.XY.84, as.character(unique(TI.XY.84$searchTaxon)))
+  
+  ## Make sure the SPLIT is being applied properly....
+  TI.XY.84$searchTaxon  = as.character(TI.XY.84$searchTaxon)
+  TI.XY.84.SPLIT.ALL   <- split(TI.XY.84, TI.XY.84$searchTaxon)
   inventory_cells_all  <- lapply(TI.XY.84.SPLIT.ALL, function(x) cellFromXY(template.raster.1km.84, x))
-  length(inventory_cells_all)   ## this is a list of dataframes, where the number of rows for each being the species table
+  
+  
+  ## Check with a message, but could check with a fail 
+  message('Split prodcues ', length(occurrence_cells_all), ' data frames for ', length(GBIF.spp), ' species')    ## This is a list of dataframes 
   
   
   #########################################################################################################################

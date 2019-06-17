@@ -244,7 +244,7 @@ if (nrow(GBIF.ALL) > 0) {
   
   
   message('No GBIF data for this taxon, creating empty datframe to bind to GBIF data')
-  GBIF.LAND  = setNames(data.frame(matrix(ncol = length(GBIF.keep), nrow = 0)), GBIF.keep)
+  GBIF.LAND  = setNames(data.frame(matrix(ncol = length(gbif.keep), nrow = 0)), gbif.keep)
   
 }
 

@@ -53,8 +53,8 @@ COMBO.RASTER.ALL  <- dplyr::select(CLEAN.INV, searchTaxon, lon, lat, SOURCE, CC.
                                    Mean_temp_dry_qu,     Mean_temp_warm_qu,   Mean_temp_cold_qu, 
                                    
                                    Annual_precip,        Precip_wet_month,    Precip_dry_month,  Precip_seasonality,   
-                                   Precip_wet_qu,        Precip_dry_qu,       Precip_warm_qu,    Precip_col_qu,
-                                   PC1_WGS84, PC2_WGS84, PC3_WGS84, TWI, TPI)
+                                   Precip_wet_qu,        Precip_dry_qu,       Precip_warm_qu,    Precip_col_qu)#,
+                                   #PC1_WGS84, PC2_WGS84, PC3_WGS84, TWI, TPI)
 
 
 #########################################################################################################################
@@ -68,7 +68,10 @@ COMBO.RASTER.ALL                 <- spTransform(COMBO.RASTER.ALL, CRS(sp_epsg540
 ## Now split using the data using the species column, and get the unique occurrence cells
 COMBO.RASTER.SPLIT.ALL <- split(COMBO.RASTER.ALL, COMBO.RASTER.ALL$searchTaxon)
 occurrence_cells_all   <- lapply(COMBO.RASTER.SPLIT.ALL, function(x) cellFromXY(template.raster.1km, x))
-length(occurrence_cells_all)   ## this is a list of dataframes, where the number of rows for each being the species table
+
+
+## Check with a message, but could check with a fail 
+message('Split prodcues ', length(occurrence_cells_all), ' data frames for ', length(GBIF.spp), ' species')   ## This is a list of dataframes 
 
 
 #########################################################################################################################
@@ -247,7 +250,7 @@ unique(SPAT.FLAG$SOURCE)
 unique(SPAT.FLAG$SPAT_OUT)
 
 
-## Just get the records that were not spatial outliers
+## Just get the records that were not spatial outliers.
 SDM.SPAT.ALL = subset(SPAT.FLAG, SPAT_OUT == "TRUE")
 unique(SDM.SPAT.ALL$SPAT_OUT)   
 unique(SDM.SPAT.ALL$SOURCE) 
@@ -269,6 +272,24 @@ SDM.SPAT.ALL    = SpatialPointsDataFrame(coords      = SDM.SPAT.ALL[c("lon", "la
                                          data        = SDM.SPAT.ALL,
                                          proj4string = CRS(sp_epsg54009))
 projection(SDM.SPAT.ALL)
+message(length(unique(SDM.SPAT.ALL$searchTaxon)), ' species processed through from download to SDM table')
+
+
+#########################################################################################################################
+## save data
+if(save_data == "TRUE") {
+  
+  ## save .rds file for the next session
+  saveRDS(SDM.SPAT.ALL, paste0(DATA_path, 'SDM_SPAT_ALL_',  save_run, '.rds'))
+  
+} else {
+  
+  message(' skip file saving, not many species analysed')   ##
+  
+}
+
+
+## The here, read in the combined data..................................................................................
 
 
 #########################################################################################################################
@@ -358,7 +379,7 @@ setdiff(names(SDM.SPAT.ALL), names(background.points))
 setdiff(names(background.points), names(SDM.SPAT.ALL))
 
  
-drops <- c("SPOUT.OBS", "OBS", "CC.OBS", "SPAT_SPP", "SPAT_OUT", "index", "lon", "lat") 
+drops <- c("SPOUT.OBS", "OBS", "CC.OBS", "SPAT_SPP", "SPAT_OUT", "index", "lon", "lat")
 SDM.SPAT.ALL      <- SDM.SPAT.ALL[,!(names(SDM.SPAT.ALL) %in% drops)]
 background.points <- background.points[,!(names(background.points) %in% drops)]
 setdiff(names(SDM.SPAT.ALL), names(background.points))
@@ -381,16 +402,16 @@ length(unique(SDM.SPAT.OCC.BG$searchTaxon))
 
 #########################################################################################################################
 ## save data
-if(save_data == "TRUE") {
-  
-  ## save .rds file for the next session
-  saveRDS(SDM.SPAT.OCC.BG, paste0(DATA_path, 'SDM_SPAT_OCC_BG_',  save_run, '.rds'))
-
-} else {
-  
-  message(' skip file saving, not many species analysed')   ##
-  
-}
+# if(save_data == "TRUE") {
+#   
+#   ## save .rds file for the next session
+#   saveRDS(SDM.SPAT.OCC.BG, paste0(DATA_path, 'SDM_SPAT_OCC_BG_',  save_run, '.rds'))
+# 
+# } else {
+#   
+#   message(' skip file saving, not many species analysed')   ##
+#   
+# }
 
 ## get rid of some memory
 gc()

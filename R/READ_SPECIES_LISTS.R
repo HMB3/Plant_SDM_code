@@ -144,7 +144,7 @@ head(TI.LUT);dim(TI.LUT)
 
 
 ## What are the unique binomials?
-TI.LIST     = unique(TI.XY$searchTaxon)
+TI.LIST     = as.character(unique(TI.XY$searchTaxon))
 TI.SPP      = TI.XY[!duplicated(TI.XY[,c("searchTaxon")]),][c("searchTaxon")]
 TI.SPP$Plant_type = "Tree"
 
@@ -387,8 +387,10 @@ WPW.non.tree    = as.character(GBIF.GROW.VALID$searchTaxon[!GBIF.GROW.VALID$sear
 TI.spp          = unique(TI.XY$searchTaxon)
 TI.HIA          = setdiff(TI.spp, WPW.spp)
 TI.HIA          = sort(TI.HIA)
+HOL.HIA         = sort(c(setdiff(HOLLOW.SPP, WPW.spp), TI.HIA))
 
 WPW.spp         = unique(WPW.spp[lapply(WPW.spp,length)>0])
+WPW.spp         = unique(WPW.spp)
 WPW.NA          = unique(c(TPL.NA, GBIF.NA))          ## These taxa did not match either GBIF or ALA
 
 
@@ -459,48 +461,48 @@ results.columns = c("searchTaxon",        ## From the ALA/ GBIF download code
 
 
 ## Read in a list of species which didn't complete
-mapping.files    = read.csv("./output/maxent/list_of_maping_species.csv", stringsAsFactors = FALSE)
-mapping.species  = read.csv("./output/maxent/mapped_species.csv",         stringsAsFactors = FALSE)
+# mapping.files    = read.csv("./output/maxent/list_of_maping_species.csv", stringsAsFactors = FALSE)
+# mapping.species  = read.csv("./output/maxent/mapped_species.csv",         stringsAsFactors = FALSE)
 
 
 ## Check
-head(mapping.files$Mapped_files)
-head(mapping.species$Mapped_spp)
+# head(mapping.files$Mapped_files)
+# head(mapping.species$Mapped_spp)
 
 
 ## Take a count of how many times each species occurs in the list of mapped files
 ## We are looking for species with < 18 files
-mapped.count = map(mapping.species$Mapped_spp, grepl, x = mapping.files$Mapped_files) %>% 
-  map(which) %>% 
-  map_int(length) %>% 
-  setNames(mapping.species$Mapped_spp) %>%
-  as.data.frame(.) %>%
-  setDT(., keep.rownames = TRUE)
+# mapped.count = map(mapping.species$Mapped_spp, grepl, x = mapping.files$Mapped_files) %>% 
+#   map(which) %>% 
+#   map_int(length) %>% 
+#   setNames(mapping.species$Mapped_spp) %>%
+#   as.data.frame(.) %>%
+#   setDT(., keep.rownames = TRUE)
 
 
 ## Now we need the species that have less than 18 rows
-colnames(mapped.count) <- c("searchTaxon", "number_maps")
+# colnames(mapped.count) <- c("searchTaxon", "number_maps")
 
 
 ## How many species are incomplete?
-outstanding.spp  = subset(mapped.count, number_maps < 18)
-mapped.less      = subset(mapped.count, number_maps < 18 & number_maps >= 10)
-mapped.least     = subset(mapped.count, number_maps < 10)
-mapped.more      = subset(mapped.count, number_maps == 18)
-
-
-nrow(outstanding.spp)
-nrow(mapped.less)
-nrow(mapped.least)
-nrow(mapped.more)
-summary(mapped.less$number_maps)
-summary(mapped.more$number_maps)
+# outstanding.spp  = subset(mapped.count, number_maps < 18)
+# mapped.less      = subset(mapped.count, number_maps < 18 & number_maps >= 10)
+# mapped.least     = subset(mapped.count, number_maps < 10)
+# mapped.more      = subset(mapped.count, number_maps == 18)
+# 
+# 
+# nrow(outstanding.spp)
+# nrow(mapped.less)
+# nrow(mapped.least)
+# nrow(mapped.more)
+# summary(mapped.less$number_maps)
+# summary(mapped.more$number_maps)
 
 
 ## saveRDS(mapped.less, paste0(DATA_path, 'mapped_less.rds'))
-saveRDS(outstanding.spp,  paste0(DATA_path, 'outstanding_spp.rds'))
-saveRDS(mapped.less,      paste0(DATA_path, 'mapped_less.rds'))
-saveRDS(mapped.least,     paste0(DATA_path, 'mapped_least.rds'))
+# saveRDS(outstanding.spp,  paste0(DATA_path, 'outstanding_spp.rds'))
+# saveRDS(mapped.less,      paste0(DATA_path, 'mapped_less.rds'))
+# saveRDS(mapped.least,     paste0(DATA_path, 'mapped_least.rds'))
 
 
 ## local.map = intersect(map_spp, mapped.less$searchTaxon)

@@ -105,15 +105,16 @@ Koppen_1975_1km  = raster('data/world_koppen/Koppen_1000m_Mollweide54009.tif')
 
 
 ## Re-create the background points using Alessandro's latest data........................................................
+## Replace with the results from HOL.HIA
 ## change BG points to be the SDM_SPAT_OCC_BG_ALL data set.
-# hollow.points     = readRDS("./data/ANALYSIS/SDM_SPAT_OCC_BG_HOLLOW_SPP.rds")%>%
-#   spTransform(sp_epsg54009)
-# TI.points = readRDS("./data/ANALYSIS/SDM_SPAT_OCC_BG_TREE_INVENTORY_SPP.rds") %>%
-#   spTransform(sp_epsg54009)
-# 
-# 
-# ## Bind the rows of the hollow and inventory SDM tables together
-# background.points = rbind(hollow.points, TI.points)
+hollow.points     = readRDS("./data/ANALYSIS/SDM_SPAT_OCC_BG_HOLLOW_SPP.rds")%>%
+  spTransform(sp_epsg54009)
+TI.points = readRDS("./data/ANALYSIS/SDM_SPAT_OCC_BG_TREE_INVENTORY_SPP.rds") %>%
+  spTransform(sp_epsg54009)
+
+
+## Bind the rows of the hollow and inventory SDM tables together
+background.points = rbind(hollow.points, TI.points)
 
 
 #########################################################################################################################

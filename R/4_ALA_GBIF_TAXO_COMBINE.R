@@ -283,10 +283,14 @@ GBIF.ALA.84   = SpatialPointsDataFrame(coords      = GBIF.ALA.MATCH[c("lon", "la
 template.raster.1km.84 = raster("./data/world_koppen/template_1km_WGS84.tif")
 
 
+## The length needs to be the same
 length(unique(GBIF.ALA.84$searchTaxon))
-GBIF.ALA.84.SPLIT.ALL <- split(GBIF.ALA.84, as.character(unique(GBIF.ALA.84$searchTaxon)))
+GBIF.ALA.84.SPLIT.ALL <- split(GBIF.ALA.84, GBIF.ALA.84$searchTaxon)
 occurrence_cells_all  <- lapply(GBIF.ALA.84.SPLIT.ALL, function(x) cellFromXY(template.raster.1km.84, x))
-length(occurrence_cells_all)   ## this is a list of dataframes, where the number of rows for each being the species table
+
+
+## Check with a message, but could check with a fail 
+message('Split prodcues ', length(occurrence_cells_all), ' data frames for ', length(GBIF.spp), ' species')   ## This is a list of dataframes 
 
 
 #########################################################################################################################
