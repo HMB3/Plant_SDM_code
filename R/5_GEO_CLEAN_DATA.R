@@ -181,10 +181,9 @@ length(unique(CLEAN.INV$INVENTORY))
 
 length(unique(CLEAN.INV$searchTaxon))
 summary(CLEAN.INV$Annual_mean_temp)
-summary(CLEAN.INV$Annual_mean_temp)
 
 
-## By how many % does including tree inventories increase the overal number of records?
+## By how much does including tree inventories increase the overal number of records?
 message("Tree inventory data increases records by ", round(nrow(CLEAN.INV)/nrow(TEST.GEO)*100, 2), " % ")
 
 

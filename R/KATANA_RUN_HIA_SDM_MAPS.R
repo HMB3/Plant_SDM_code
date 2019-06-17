@@ -134,7 +134,7 @@ if (!on_windows) {
 
 
 ## Run the species 500 or 1000 at a time
-#GBIF.spp   = HOL.HIA    ##
+#GBIF.spp   = TI.HIA    ##
 
 #GBIF.spp = unique(WPW.spp)  ## your list of species
 #GBIF.spp = unique(WPW.non.tree)   ## your list of species

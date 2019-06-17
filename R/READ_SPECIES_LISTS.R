@@ -384,14 +384,17 @@ summary(GBIF.GROW.VALID)
 WPW.spp         = sort(GBIF.GROW.VALID$searchTaxon)
 WPW.tree        = subset(GBIF.GROW.VALID, Plant_type == "Tree")$searchTaxon
 WPW.non.tree    = as.character(GBIF.GROW.VALID$searchTaxon[!GBIF.GROW.VALID$searchTaxon %in% WPW.tree ])
-TI.spp          = unique(TI.XY$searchTaxon)
-TI.HIA          = setdiff(TI.spp, WPW.spp)
-TI.HIA          = sort(TI.HIA)
-HOL.HIA         = sort(c(setdiff(HOLLOW.SPP, WPW.spp), TI.HIA))
+TI.spp          = as.character(unique(TI.XY$searchTaxon))
+
 
 WPW.spp         = unique(WPW.spp[lapply(WPW.spp,length)>0])
 WPW.spp         = unique(WPW.spp)
 WPW.NA          = unique(c(TPL.NA, GBIF.NA))          ## These taxa did not match either GBIF or ALA
+
+
+## The list of inventory trees, minus the hollow and evergreen species
+TI.HIA          = sort(setdiff(c(TI.spp, HOLLOW.SPP), WPW.spp))
+
 
 
 ## This is a list of species we can use to test the models. These spp had poor models without MESS maps

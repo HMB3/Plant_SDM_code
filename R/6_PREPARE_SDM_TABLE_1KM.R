@@ -366,31 +366,31 @@ if(save_data == "TRUE") {
 #########################################################################################################################
 ## Re-run this after running steps 1-5 for all 4k species, and use that for background.points instead
 ## Add in random records from previously saved runs :: get all the species which have not
-background.points = background.points[!background.points$searchTaxon %in% GBIF.spp, ]   ## Don't add records for other species
-length(unique(background.points$searchTaxon));dim(background.points)
-intersect(unique(background.points$searchTaxon), GBIF.spp)
+# background.points = background.points[!background.points$searchTaxon %in% GBIF.spp, ]   ## Don't add records for other species
+# length(unique(background.points$searchTaxon));dim(background.points)
+# intersect(unique(background.points$searchTaxon), GBIF.spp)
 
 
 #########################################################################################################################
 ## Add a column for which source the data comes from :: Background or occurrence 
-background.points$TYPE = "BG"
-SDM.SPAT.ALL$TYPE      = "OCC"
-setdiff(names(SDM.SPAT.ALL), names(background.points))
-setdiff(names(background.points), names(SDM.SPAT.ALL))
+# background.points$TYPE = "BG"
+# SDM.SPAT.ALL$TYPE      = "OCC"
+# setdiff(names(SDM.SPAT.ALL), names(background.points))
+# setdiff(names(background.points), names(SDM.SPAT.ALL))
 
  
-drops <- c("SPOUT.OBS", "OBS", "CC.OBS", "SPAT_SPP", "SPAT_OUT", "index", "lon", "lat")
-SDM.SPAT.ALL      <- SDM.SPAT.ALL[,!(names(SDM.SPAT.ALL) %in% drops)]
-background.points <- background.points[,!(names(background.points) %in% drops)]
-setdiff(names(SDM.SPAT.ALL), names(background.points))
+# drops <- c("SPOUT.OBS", "OBS", "CC.OBS", "SPAT_SPP", "SPAT_OUT", "index", "lon", "lat")
+# SDM.SPAT.ALL      <- SDM.SPAT.ALL[,!(names(SDM.SPAT.ALL) %in% drops)]
+# background.points <- background.points[,!(names(background.points) %in% drops)]
+# setdiff(names(SDM.SPAT.ALL), names(background.points))
 
 
 #########################################################################################################################
 ## Now bind on the background points
-projection(SDM.SPAT.ALL);
-projection(background.points)
-setdiff(names(SDM.SPAT.ALL), names(SDM.SPAT.ALL))
-identical(length(names(SDM.SPAT.ALL)), length(names(background.points)))
+# projection(SDM.SPAT.ALL);
+# projection(background.points)
+# setdiff(names(SDM.SPAT.ALL), names(SDM.SPAT.ALL))
+# identical(length(names(SDM.SPAT.ALL)), length(names(background.points)))
 
 
 SDM.SPAT.OCC.BG = rbind(SDM.SPAT.ALL, background.points)
