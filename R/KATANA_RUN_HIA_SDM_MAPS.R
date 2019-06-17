@@ -128,7 +128,9 @@ if (!on_windows) {
 
 #########################################################################################################################
 ## Now set global analysis variables :: these assume you are using an R project folder structure
-outstanding_spp <- readRDS("./data/ANALYSIS/mapped_less.rds")
+# least_mapped <- readRDS("./data/ANALYSIS/mapped_least.rds")
+# less_mapped  <- readRDS("./data/ANALYSIS/mapped_less.rds")
+out_spp      <- readRDS("./data/ANALYSIS/outstanding_spp.rds")
 
 
 ## Run the species 500 or 1000 at a time
@@ -137,7 +139,7 @@ outstanding_spp <- readRDS("./data/ANALYSIS/mapped_less.rds")
 #GBIF.spp = unique(WPW.tree)  ## your list of species
 #GBIF.spp = unique(WPW.non.tree)
 #GBIF.spp = c("Acacia falcata")
-GBIF.spp = unique(gsub("_", " ", outstanding_spp$searchTaxon))
+GBIF.spp = unique(gsub("_", " ", unique(out_spp$searchTaxon)))
 
 
 ## Subset for PBS array jobs
@@ -307,11 +309,15 @@ source('./R/8_MAP_SDM_COMBINE.R', echo = TRUE)
 ## 2).  All directories for evergreen species modelled, zipped up (using WG drives) ::
 ## 
 ##      - SDMs (two folders, all variables, and Backwards selected)
+##      - Check the output for a few species
+      
+
 ##      - Maps for 2030/50/70 for 6 GCMs with MESS 
 ##      - Gain/loss/stable rasters + tables for 2030/50/70
 ##      - Local mess function is working. 
 ##        Need a folder for checking all species 
 ##      - MESS.png + global occ + 2070 gain/loss.png + Maxent table in one folder
+##      - This will need to be stored on the G:drive - hopefully there's enough space (compress full folder)
 
   
 ## 3).  H:drive (2TB SSD that I've been working off) and G:drive (8TB HDD for backup).

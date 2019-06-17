@@ -336,73 +336,73 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
             ## Need to save the polygons to file ::  
             ## this can fail if no ebvironments are novel, e.g the red gum.
             ## Can we add a condtiton in poluygonizer to check if the file has data?..............................
-            message('Converting raster MESS maps to polygons under ', x, ' scenario for ', species) 
-            
-            ## If we're on linux, use the standard polygonizer function
-            if (!on_windows) {
-              
-              novel_current_poly <- polygonizer(sprintf('%s/%s%s.tif',   MESS_dir, species, "_current_novel"))
-              novel_future_poly  <- polygonizer(sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_novel_", x))
-              
-            } else {
-              
-              ## If we're on windows, use the GDAL .bat file
-              novel_current_poly <- polygonizer_windows(sprintf('%s/%s%s.tif',   MESS_dir, species, "_current_novel"))
-              novel_future_poly  <- polygonizer_windows(sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_novel_", x))
-              
-            }
-            
-            ## Re-project the shapefiles
-            novel_current_poly = novel_current_poly %>%
-              spTransform(ALB.CONICAL)
-            
-            novel_future_poly = novel_future_poly %>%
-              spTransform(ALB.CONICAL)
-            
-            ## Now save the novel areas as shapefiles
-            MESS_shp_path   = sprintf('%s%s/full/%s', 
-                                      maxent_path, species, 'MESS_output')
-            
-            writeOGR(obj    = novel_current_poly, 
-                     dsn    = sprintf('%s',  MESS_shp_path), 
-                     layer  = paste0(species, "_current_novel_polygon"),
-                     driver = "ESRI Shapefile", overwrite_layer = TRUE)
-            
-            writeOGR(obj    = novel_future_poly, 
-                     dsn    = sprintf('%s',  MESS_shp_path), 
-                     layer  = paste0(species, "_future_novel_polygon_", x),
-                     driver = "ESRI Shapefile", overwrite_layer = TRUE)
-            
-            ## Create a SpatialLines object that indicates novel areas (this will be overlaid)            
-            ## Below, we create a dummy polygon as the first list element (which is the extent
-            ## of the raster, expanded by 10%), to plot on panel 1). 50 = approx 50 lines across the polygon
-            message('Creating polygon list under ', x, ' scenario for ', species) 
-            
-            ##  cast the objects into the sf class so we avoid issues with wrong methods being called in hatch()
-            novel_hatch <- list(as(extent(pred.current)*1.1, 'SpatialPolygons'),
-                                hatch(as(novel_current_poly, 'sf'), 50),
-                                hatch(as(novel_future_poly,  'sf'), 50))
-            
-            # novel_hatch <- list(as(extent(pred.current)*1.1, 'SpatialPolygons'),  
-            #                     hatch(novel_current_poly, 50),
-            #                     hatch(novel_future_poly, 50))
-            
-            ########################################################################################################################
-            ## Now create a panel of PNG files for maxent projections and MESS maps
-            ## All the projections and extents need to match
-            empty_ras <- init(pred.current, function(x) NA) 
-            projection(novel_current_poly);projection(occ);projection(empty_ras);projection(poly)
-            projection(pred.current);projection(pred.future)
-            identical(extent(pred.current), extent(pred.future))
-            
-            ## Assign the scenario name (to use in the plot below)
-            scen_name = eval(parse(text = sprintf('gcms.%s$GCM[gcms.%s$id == x]', time_slice, time_slice)))      
-            
-            ########################################################################################################################
-            ## Use the 'levelplot' function to make a multipanel output: occurrence points, current raster and future raster
             if(create_mess == "TRUE") {
-              message('Create MESS panel maps for ', species, ' under ', x, ' scenario')
+              message('Converting raster MESS maps to polygons under ', x, ' scenario for ', species) 
               
+              ## If we're on linux, use the standard polygonizer function
+              if (!on_windows) {
+                
+                novel_current_poly <- polygonizer(sprintf('%s/%s%s.tif',   MESS_dir, species, "_current_novel"))
+                novel_future_poly  <- polygonizer(sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_novel_", x))
+                
+              } else {
+                
+                ## If we're on windows, use the GDAL .bat file
+                novel_current_poly <- polygonizer_windows(sprintf('%s/%s%s.tif',   MESS_dir, species, "_current_novel"))
+                novel_future_poly  <- polygonizer_windows(sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_novel_", x))
+                
+              }
+              
+              ## Re-project the shapefiles
+              novel_current_poly = novel_current_poly %>%
+                spTransform(ALB.CONICAL)
+              
+              novel_future_poly = novel_future_poly %>%
+                spTransform(ALB.CONICAL)
+              
+              ## Now save the novel areas as shapefiles
+              ## There is a problem with accessing the files at the same time
+              MESS_shp_path   = sprintf('%s%s/full/%s', 
+                                        maxent_path, species, 'MESS_output')
+              
+              writeOGR(obj    = novel_current_poly, 
+                       dsn    = sprintf('%s',  MESS_shp_path), 
+                       layer  = paste0(species, "_current_novel_polygon"),
+                       driver = "ESRI Shapefile", overwrite_layer = TRUE)
+              
+              writeOGR(obj    = novel_future_poly, 
+                       dsn    = sprintf('%s',  MESS_shp_path), 
+                       layer  = paste0(species, "_future_novel_polygon_", x),
+                       driver = "ESRI Shapefile", overwrite_layer = TRUE)
+              
+              ## Create a SpatialLines object that indicates novel areas (this will be overlaid)            
+              ## Below, we create a dummy polygon as the first list element (which is the extent
+              ## of the raster, expanded by 10%), to plot on panel 1). 50 = approx 50 lines across the polygon
+              message('Creating polygon list under ', x, ' scenario for ', species) 
+              
+              ##  cast the objects into the sf class so we avoid issues with wrong methods being called in hatch()
+              novel_hatch <- list(as(extent(pred.current)*1.1, 'SpatialPolygons'),
+                                  hatch(as(novel_current_poly, 'sf'), 50),
+                                  hatch(as(novel_future_poly,  'sf'), 50))
+              
+              # novel_hatch <- list(as(extent(pred.current)*1.1, 'SpatialPolygons'),  
+              #                     hatch(novel_current_poly, 50),
+              #                     hatch(novel_future_poly, 50))
+              
+              ########################################################################################################################
+              ## Now create a panel of PNG files for maxent projections and MESS maps
+              ## All the projections and extents need to match
+              empty_ras <- init(pred.current, function(x) NA) 
+              projection(novel_current_poly);projection(occ);projection(empty_ras);projection(poly)
+              projection(pred.current);projection(pred.future)
+              identical(extent(pred.current), extent(pred.future))
+              
+              ## Assign the scenario name (to use in the plot below)
+              scen_name = eval(parse(text = sprintf('gcms.%s$GCM[gcms.%s$id == x]', time_slice, time_slice)))      
+              
+              ########################################################################################################################
+              ## Use the 'levelplot' function to make a multipanel output: occurrence points, current raster and future raster
+              message('Create MESS panel maps for ', species, ' under ', x, ' scenario')
               
               ############################################################
               ## Create level plot of current conditions including MESS                        
@@ -439,38 +439,37 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
               occ.world <- readRDS(sprintf('%s/%s/%s_occ.rds', maxent_path, species, save_name)) %>%
                 spTransform(CRS.WGS.84)
               
-              message('writing map of global records for ', species)
-              png(sprintf('%s/%s/full/%s_%s.png', maxent_path, save_name, save_name, "global_occ_records"),
-                  16, 10, units = 'in', res = 500)
-              
-              ## Add land
-              plot(world_poly, #add = TRUE, 
-                   lwd = 0.01, asp = 1, col = 'grey', bg = 'sky blue')
-              
-              ## Add points
-              points(subset(occ.world, SOURCE == "GBIF"), 
-                     pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2, 
-                     xlab = "", ylab = "", asp = 1,
-                     col = "orange", 
-                     legend(7,4.3, unique(occ.world$SOURCE), col = "orange", pch = 1))
-              
-              points(subset(occ.world, SOURCE == "ALA"), 
-                     pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2, 
-                     xlab = "", ylab = "", asp = 1,
-                     col = "blue", 
-                     legend(7,4.3, unique(occ.world$SOURCE), col = "blue", pch = 1))
-              
-              points(subset(occ.world, SOURCE == "INVENTORY"), 
-                     pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2, 
-                     xlab = "", ylab = "", asp = 1,
-                     col = "red", 
-                     legend(7,4.3, unique(occ.world$SOURCE), col = "red", pch = 1))
-              
-              title(main = list(paste0(gsub('_', ' ', species), ' global SDM records'), font = 4, cex = 2),
-                    cex.main = 4,   font.main = 4, col.main = "black")
-              
-              dev.off()
-              
+              # message('writing map of global records for ', species)
+              # png(sprintf('%s/%s/full/%s_%s.png', maxent_path, save_name, save_name, "global_occ_records"),
+              #     16, 10, units = 'in', res = 500)
+              # 
+              # ## Add land
+              # plot(world_poly, #add = TRUE, 
+              #      lwd = 0.01, asp = 1, col = 'grey', bg = 'sky blue')
+              # 
+              # ## Add points
+              # points(subset(occ.world, SOURCE == "GBIF"), 
+              #        pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2, 
+              #        xlab = "", ylab = "", asp = 1,
+              #        col = "orange", 
+              #        legend(7,4.3, unique(occ.world$SOURCE), col = "orange", pch = 1))
+              # 
+              # points(subset(occ.world, SOURCE == "ALA"), 
+              #        pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2, 
+              #        xlab = "", ylab = "", asp = 1,
+              #        col = "blue", 
+              #        legend(7,4.3, unique(occ.world$SOURCE), col = "blue", pch = 1))
+              # 
+              # points(subset(occ.world, SOURCE == "INVENTORY"), 
+              #        pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2, 
+              #        xlab = "", ylab = "", asp = 1,
+              #        col = "red", 
+              #        legend(7,4.3, unique(occ.world$SOURCE), col = "red", pch = 1))
+              # 
+              # title(main = list(paste0(gsub('_', ' ', species), ' global SDM records'), font = 4, cex = 2),
+              #       cex.main = 4,   font.main = 4, col.main = "black")
+              # 
+              # dev.off()
               
               ############################################################
               ## Create level plot of scenario x, including MESS                        
@@ -507,33 +506,33 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
               
               ############################################################
               ## OR Create level plot without MESS maps                        
-              message('Create panel maps for ', species, ' under ', x, ' scenario')
-              png(sprintf('%s/%s/full/%s_%s.png', maxent_path, species, species, x),      
-                  11, 4, units = 'in', res = 300)
-              
-              ## Create levelplot without MESS maps
-              print(levelplot(stack(empty_ras,
-                                    pred.current, 
-                                    pred.future, quick = TRUE), margin = FALSE,
-                              
-                              ## Create a colour scheme using colbrewer: 100 is to make it continuos
-                              ## Also, make it a one-directional colour scheme
-                              scales      = list(draw = FALSE), 
-                              at = seq(0, 1, length = 100),
-                              col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
-                              
-                              ## Give each plot a name: the third panel is the GCM
-                              names.attr = c('Australian records', 'Current', sprintf('%s, 20%s, RCP8.5', scen_name, time_slice)),
-                              colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
-                              main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
-                      
-                      ## Plot the Aus shapefile with the occurrence points for reference
-                      ## Can the points be made more legible for both poorly and well recorded species?
-                      ## layer(sp.polygons(aus_albers), data = list(aus_albers = aus_albers))
-                      latticeExtra::layer(sp.polygons(aus_poly), data = list(aus_poly = aus_poly)) +
-                      latticeExtra::layer(sp.points(occ, pch = 19, cex = 0.15, 
-                                                    col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
-              dev.off()                     
+              # message('Create panel maps for ', species, ' under ', x, ' scenario')
+              # png(sprintf('%s/%s/full/%s_%s.png', maxent_path, species, species, x),      
+              #     11, 4, units = 'in', res = 300)
+              # 
+              # ## Create levelplot without MESS maps
+              # print(levelplot(stack(empty_ras,
+              #                       pred.current, 
+              #                       pred.future, quick = TRUE), margin = FALSE,
+              #                 
+              #                 ## Create a colour scheme using colbrewer: 100 is to make it continuos
+              #                 ## Also, make it a one-directional colour scheme
+              #                 scales      = list(draw = FALSE), 
+              #                 at = seq(0, 1, length = 100),
+              #                 col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
+              #                 
+              #                 ## Give each plot a name: the third panel is the GCM
+              #                 names.attr = c('Australian records', 'Current', sprintf('%s, 20%s, RCP8.5', scen_name, time_slice)),
+              #                 colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
+              #                 main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
+              #         
+              #         ## Plot the Aus shapefile with the occurrence points for reference
+              #         ## Can the points be made more legible for both poorly and well recorded species?
+              #         ## layer(sp.polygons(aus_albers), data = list(aus_albers = aus_albers))
+              #         latticeExtra::layer(sp.polygons(aus_poly), data = list(aus_poly = aus_poly)) +
+              #         latticeExtra::layer(sp.points(occ, pch = 19, cex = 0.15, 
+              #                                       col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)))
+              # dev.off()                     
               
               message('Dont run MESS maps for ', species) 
               
