@@ -9,7 +9,7 @@ pdf_document: default
 
 \
 
-This R markdown file summarises my contribution to the 'Which Plant Where' project at Macquarie University, 
+This R markdown file summarises Hugh's contribution to the 'Which Plant Where' project at Macquarie University, 
 outlining the key functions I have created during my postdoctural work. WPW is part of the Green Cities
 co-investment fund : 
 
@@ -20,7 +20,7 @@ https://www.whichplantwhere.com.au/
 
 
 The text and code below summarises a workflow in R that can be used to relatively rapidly assess the effect
-of climate change on a given plant within Australia, from dowloading occurrence records, through to creating
+of climate change on a given plant within Australia, from downloading occurrence records, through to creating
 maps of predicted climatic suitablity across Australia at 1km*1km resolution. 
 
 This work is published in Science of the Total Environment ::
@@ -31,7 +31,7 @@ under climate change. Science of The Total Environment, 685, 451-462.
 https://www.sciencedirect.com/science/article/pii/S0048969719323289#f0030 
 
 
-An example for 10 species is given in the markdown file below.
+An example for 20 species is given in the markdown file below.
 
 
 \
@@ -77,15 +77,55 @@ experiments) – to identify new planting opportunities.
 
 
 #########################################################################################################
-# **<span style="color:blue"> Methods </span>**
+# **<span style="color:blue"> Intro </span>**
 #########################################################################################################
+
+\
+
+Globally, government authorities are placing great emphasis on the environmental and socio-economic importance 
+of urban trees and vegetation (Luttik, 2000; Chiesura, 2004). In particular, planting trees is increasingly
+considered a cost-effective method for improving the adaptability and sustainability of cities to projected 
+changes in climate (Espeland and Kettenring, 2018). Trees can further mitigate urban environmental issues that 
+will likely be exacerbated by climate change, such as the urban heat island effect [UHI, Norton et al., 2015; 
+Lanza and Stone, 2016] and air pollution (Grote et al., 2016; Livesley et al., 2016). As a consequence of these 
+benefits, local authorities are increasing their investment in planting as well asmonitoring tree and forest 
+assets across urban environments (Endreny, 2018).
+
+\
+
+Despite these financial commitments, there is little consideration of whether the current selection of species 
+commonly used in urban plantings will be resilient to changes in climate projected to occur throughout the 
+lifespan of each tree species (Ordóñez and Duinker, 2015), which may be decades to a century. Thus, as 
+temperatures continue to rise in the 21st century, urban forestry and planning efforts must identify species
+that are most likely to thrive in future climates, to maximise planting success and return on investment 
+in the long term.
+
+\
+
+In this study, we assessed the baseline (1960–1990), short term (2030) and long term(2070) distribution of 
+climatically suitable habitat for 176 native Australian tree species that are commonly planted across
+Australia's urban landscapes and are also currently sold in commercial plant nurseries. These species are 
+a representative sample of the continent's urban tree flora, and thus are indicative of how urban trees
+may fare under climate change. In doing so, we asked: 1) which tree species are more likely to experience 
+increases and decreases in the distribution of climatically suitable habitat across urban areas in the short
+(2030) and long term(2070); and 2)which urban areas aremore likely to experience substantial increases or 
+decreases in the number of species with suitable habitat by 2030 and 2070? We expect that urban areas in 
+cooler regions will experience greater gains in the number of species with climatically suitable habitat 
+than urban areas in warmer regions, consistent with findings from previous studies modelling large suites 
+of species occurring in natural environments on the Australian continent [e.g. O'Donnell et al., 2012]. 
+We also identify key challenges associated with the use of CSMs for species in urban environments, and 
+further discuss the implications for urban forestry, planning and industry efforts in order to create |
+future urban forests that are more resilient to climate change.
+
+\
 
 #########################################################################################################
 ### **Defining significant Urban Areas** 
-Our spatial units for estimating species' future climatic suitability are the 101 Australian Significant 
-Urban Areas (SUAs). SUAs are defined by the Australian Bureau of Statistics (ABS) as containing at least 
-10,000 people within a single labour market. The SUA boundaries were taken from the ABS 2016 SUA shapefile, 
-and cover the full span of current Australian climate (Fig 1). 
+Our spatial units for estimating species' climatic suitability are Australia's Significant Urban Areas 
+(SUAs). SUAs are defined by the Australian Bureau of Statistics (ABS) as containing at least 10,000 people
+within a single labour market (ABS, 2018). The boundaries for these SUAs were obtained from the Australian 
+Bureau of Statistics (ABS, 2018) and refer to the year 2016. Combined, the 82 SUAs span ~46,211 km2, and 
+range in size from ~46 km2 (City of Sale, Victoria) to 6189 km2 (City of Melbourne, Victoria).
 
 
 \newpage 
@@ -95,10 +135,10 @@ and cover the full span of current Australian climate (Fig 1).
 \newpage 
 ![](output/figures/CV_figs/figMAT_PET_SUA.png)
 
-**Figure 1.** Largest Significant Urban Areas in each Australian State and Territory 
-(top panel). The distribution of SUAs in climate space [bottom panel, largest SUAs labelled. 
-MAT = current mean annual temperature (worldclim 1960-1990), MAP = current annual 
-precipitation, PET = current potential evaporation]. 
+**Figure 1.** Map of 82 Australian Significant Urban Areas (SUA, plotted in pink) included in this study, 
+with the largest SUA in each state and territory plotted in blue symbols. According to the Köppen classification 
+of Kriticos et al. (2012), all these SUAs fall within ‘temperate’ zones. (For interpretation of the references 
+to color in this figure legend, the reader is referred to the web version of this article.)
 
 \
 
@@ -113,9 +153,9 @@ with the nursery list (i.e. those trees currently being sold within any Australi
 a list of 248 native species. We consider these 248 species as the most commonly planted and sold native 
 trees in the current Australian horticultural market. This species list was first checked against the 
 backbone taxonomy of the Global Biodiversity Information Facilty (GBIF, www.gbif.org), and then against 
-]The Plant List (TPL) backbone taxonomy using the Taxonstand package 
-[version 2.1, Cayuela et al (2012)] in the R language [Version 3.5.1, R Core team (2018)]. The accepted 
-names from the TPL taxonomy were then used for this analysis. 
+The Plant List (TPL) backbone taxonomy using the Taxonstand package [version 2.1, Cayuela et al (2012)] 
+in the R language [Version 3.5.1, R Core team (2018)]. The accepted names from the TPL taxonomy were then 
+used for this analysis. 
 
 \
 
@@ -134,22 +174,29 @@ source('./R/RMD_READ_PACKAGES.R')
 ## **Occurrence data** 
 For each of these planted and sold species, we downloaded global occurrence records from GBIF and the 
 Atlas of Living Australia (ALA, www.ala.org.au) using the rgbif and ALA4R packages in R 
-[https://github.com/AtlasOfLivingAustralia/ALA4R, (Hijmans et al. 2016) (R Core Team, 2017)]. 
+[https://github.com/AtlasOfLivingAustralia/ALA4R, (Hijmans et al. 2016) (R Core Team, 2017), 
+see R script "1_GBIF_ALA_DOWNLOAD.R"]. 
 
 \
 
-We then undertook an intensive spatial data-cleaning process to remove spatially invalid or suspect records 
-that, if retained, can cause species' climate tolerances to be miscalculated. Spatially invalid records, 
-those taken before 1950, duplicate records, those within 10 km of capital cities, herbaria and biodiversity 
-institutions, and individual records > 300 km from other records were all removed using the CoordinateCleaner 
-package (version 1.0-7). We then calibrated climate suitability models (CSMs) for all 248 native planted 
-and sold tree species using best practices, as summarised below.
+We then undertook an intensive spatial data-cleaning process to remove spatially invalid or suspect
+records that, if retained, can cause species' climate niches to be miscalculated (R scripts 2-6). 
+Spatially invalid records, those collected before 1950, duplicate records, those records within 10 km 
+of capital cities (which are likely to be herbarium records, and thus not reflective of the species 
+realised niche), herbaria and biodiversity institutions, and individual records 300 km from other 
+records for that species were removed using the CoordinateCleaner package [Zizka et al., 2019, 
+version 1.0–7, resulting in ~22% of ~ 2.2 million records for 248 species being removed].
 
 \
+
+The backbone of the R workflow is a list of plant species. It is designed to download occurrence data for
+that list of species, clean it for common errors with a series of filters (taxonomic, contextual, spatial), 
+extract the climatic conditions for all records, and finally format the records into a table that can be
+passed to the Maxent algorithm (see H:\green_cities_sdm\output\maxent\SUA_SDM_analysis_workflow.pptx).   
 
 ```{r echo = FALSE, message = FALSE, warning = FALSE}
 ## Step 3 :: combine GBIF occurrence data with ALA data and filter to records > 1950
-source('./R/ALA_DATA_FILTER_TAXO_SCIENTIFIC_NAME.R', echo = FALSE)
+source('./R/2_ALA_DATA_FILTER_TAXO_SCIENTIFIC_NAME.R', echo = FALSE)
 source('./R/3_GBIF_DATA_TAXO_SCIENTIFIC_NAME.R',     echo = FALSE)
 
 
@@ -162,7 +209,7 @@ source('./R/INVENTORY_RASTER.R',          echo = FALSE)
 ## records near herbaria, duplicates, etc. & add contextual info for each record (taxonomic and horticultural) 
 ## Then prepare the SDM table
 ## Then clean the spatial outliers
-source('./R/5_GBIF_ALA_CLEAN_NICHES.R',  echo = FALSE)
+source('./R/5_GEO_CLEAN_DATA.R',  echo = FALSE)
 source('./R/6_PREPARE_SDM_TABLE_1KM.R',  echo = FALSE)
 
 
@@ -178,15 +225,20 @@ of which we used eight for model calibration: Annual mean temperature, Temperatu
 Maximum temperature of the warmest month, Minimum temperature of the coldest month, Annual precipitation, 
 Precipitation seasonality, Precipitation of the wettest month, and Precipitation of the driest month. 
 These variables were chosen to capture climate averages, seasonality and extremes, all of which have 
-been identified as important variables for predicting suitable habitat for plants (Bradie & Leung, 2017). 
+been identified as important variables for predicting suitable habitat for plants (Bradie & Leung, 2017).
+Importantly, when averaged across the species analysed, the tree inventory data shows the urban climate niche 
+(quantified using tree inventory records) is effectively a subset of the ‘natural’ niche (quantified using 
+occurrence records fromGBIF and ALA, see Appendix, Fig. S1). 
 
-\
+\newpage 
+![](output/figures/CV_figs/Niche_overlap.png)
+
 
 When assessing the impacts of climate change, it is more robust to use projections from multiple climate 
 models (IPCC, 2014; Taylor, Stouffer, & Meehl, 2011; Beaumont et al. 2007, Baumgartner et al 2018). We 
 utilised a subset of six models recommended by CSIRO's Climate Change in Australia report 
 (https://www.climatechangeinaustralia.gov.au/en/), as these models were shown to perform better than others 
-in their ability to simulate historical Australian climate (Table 1). Hence, more confidence can be placed 
+in their ability to simulate historical Australian climate. Hence, more confidence can be placed 
 in their projections of future climate. For each of these six GCMs, we downloaded monthly maximum and 
 minimum temperature and monthly precipitation from CSIRO for 2030, 2050 and 2070, at a spatial resolution 
 of 30 arc-seconds (~1 km). From these data, we calculated the eight bioclimatic variables for the three 
@@ -201,18 +253,46 @@ We modelled climatic suitability under current conditions (1960-1990) using the 
 (Elith et al. 2011; Phillips et al. 2006; Phillips and Dudik 2008) within the Dismo R package 
 (Hijmans et al. 2016). Maxent is a machine learning, correlative approach to modelling climatic suitability 
 that is generally regarded as superior to other algorithms that are used to model presence-only 
-occurrence data (Elith et al. 2006). To run models for all species, we created a function in the 
-R programming language which splits a table of species records * environment into only those spatial 
-records for a given species, and calibrates a Maxent model under current climate for that species.
+occurrence data (Elith et al. 2006). 
 
 \
+
+Models were calibrated using most of the default Maxent settings, although hinge and threshold ‘features’ 
+[mathematical transformations/simplifications of predictor variables, Elith et al., 2011] were disabled
+to reduce over-fitting the models. In addition to occurrence records, Maxent requires ‘background’ data 
+that characterise the surrounding environment in which the modelled species occurs. Our background
+points comprised random samples of up to 70,000 cells from the pool of cells that (a) contained occurrence 
+records in ALA for one or more plant species, (b) fell within 200 km of records for the target species
+[i.e. a buffered target-group background, Elith and Leathwick, 2007;Phillips and Dudík, 2008], and 
+(c)were within the same Köppen climate zone as the modelled species' known occurrences [using the Köppen
+
+\
+
+To run models for all species in the list, we created a function in the R programming language which splits 
+a table of all species records * environmental conditions (the outcome of R scripts 1-6) into only those 
+spatial records for a given species, and calibrates a Maxent model under current climate for that species.
+The background points in this function are simply any record in the maxent table which is not the species
+being modelled. This means the maxent table must be large for a big list of taxa (e.g plants and animals).
+This is a limitation of the current workflow, but is suitable for processing smaller sets of species
+(i.e. several hundred, or a few thousand).
+
+\
+
+This function runs two maxent models :: one using all the predictor variables supplied and one which uses 
+variance inflation factors (VIF) to run backwards selection on the full model. Given a candidate set of predictor 
+variables (e.g. climate, soil, etc.) , this function identifies a subset that meets specified multicollinearity 
+criteria. Subsequently, backward stepwise variable selection (VIF) is used to iteratively drop the variable that 
+contributes least to the model, until the contribution of each variable meets a specified minimum, or until 
+a predetermined minimum number of predictors remains. While this function is memory intensive, it is very useful 
+to screen a large number of potentially useful but strongly correlated GIS layers (e.g. interpolated layers 
+which are all based on similar input data, such as digital elevation models, meteorological stations or soil samples).
 
 
 ```{r run maxent, eval = FALSE, echo = TRUE}
 
 #########################################################################################################
-## A function which splits a table of species records * enviromental conditions into records for each 
-## species, then fits a maxent model under current climatic conditions.
+## A function which splits a table of species records * environmental conditions into records for each 
+## species, then fits a maxent model under current climatic conditions, and runs backwards selection
 lapply(GBIF.spp, function(spp){ 
   
   ## Skip the species if the directory already exists, before the loop
@@ -241,6 +321,13 @@ lapply(GBIF.spp, function(spp){
                          sdm.predictors          = sdm.select,  ## predictor variables
                          name                    = spp,         ## Species name
                          outdir,                                ## Output directory
+						 bsdir                   = bs_dir,      ## Store BS results
+						 
+                         backwards_sel           = "TRUE",
+                         cor_thr                 = 0.8,         ## Max pairwise correlation 
+                         pct_thr                 = 5,           ## Min percent contribution
+                         k_thr                   = 4,           ## Min number of variables
+						 
                          template.raster,                       ## Resolution raster
                          min_n                   = 20,          ## Minimum records           
                          max_bg_size             = 70000,       ## Max bg points
@@ -274,38 +361,43 @@ lapply(GBIF.spp, function(spp){
 ```{r eval = FALSE, echo = TRUE}
 
 ## Print the maxent function
-FIT_MAXENT_TARG_BG <- function(occ,
-                               bg, # A Spatial points data frame (SPDF) of candidate background points
-                               sdm.predictors, # a vector of enviro conditions that you want to include
-                               name,
-                               outdir,
-                               template.raster,
-                               # template.raster is an empty raster with extent, 
-                               # res and projection of final output rasters. 
-                               # It is used to reduce occurrences to a single 
-                               # point per cell.
-                               min_n,
-                               # min_n is the minimum number of records (unique cells)
-                               # required for a model to be fit
-                               max_bg_size,
-                               background_buffer_width, # How many km to buffer
-                               shapefiles,
-                               features,
-                               replicates, # number of cross-validation replicates
-                               responsecurves,
-                               rep_args,
-                               full_args) {
+fit_maxent_targ_bg_back_sel <- function(occ,
+                                        bg, # 
+                                        sdm.predictors,
+                                        name,
+                                        outdir,
+                                        bsdir,
+                                        cor_thr,                 
+                                        pct_thr, 
+                                        k_thr,
+                                        
+                                        backwards_sel,
+                                        template.raster,
+                                        min_n,
+
+                                        max_bg_size,
+                                        background_buffer_width, 
+                                        Koppen,
+                                        shapefiles,
+                                        features,
+                                        replicates, 
+                                        responsecurves,
+                                        rep_args,
+                                        full_args,
+                                        shp_path, 
+                                        aus_shp) {
   
   ########################################################################
   ## First, stop if the outdir file exists,
   if(!file.exists(outdir)) stop('outdir does not exist :(', call. = FALSE)
   outdir_sp <- file.path(outdir, gsub(' ', '_', name))
+  bsdir_sp  <- file.path(bsdir,  gsub(' ', '_', name))
   
   if(!missing('Koppen')) {
     if(!is(Koppen, 'RasterLayer'))
-      stop('Koppen must be a RasterLayer, should be the same coord system as template.raster')  
+      stop('Koppen must be a RasterLayer, and should be in the same coordinate system as template.raster')  
   }
-  
+
   ## If the file doesn't exist, split out the features
   if(!file.exists(outdir_sp)) dir.create(outdir_sp)
   features <- unlist(strsplit(features, ''))
@@ -315,21 +407,21 @@ FIT_MAXENT_TARG_BG <- function(occ,
   ## l: linear
   ## p: product
   ## q: quadratic
-  ## h: hinge
-  ## t: threshold
+  ## h: hinge       ## disabled for this analysis
+  ## t: threshold   ## disabled for this analysis
   if(length(setdiff(features, c('l', 'p', 'q', 'h', 't'))) > 1)
     stop("features must be a vector of one or more of ',
          'l', 'p', 'q', 'h', and 't'.")
   
-  ## Aggregate
-  b <- aggregate(gBuffer(occ, width = background_buffer_width, byid = TRUE))
+  ## Create a buffer of xkm around the occurrence points
+  buffer <- aggregate(gBuffer(occ, width = background_buffer_width, byid = TRUE))
   
   #####################################################################
   ## Get unique cell numbers for species occurrences
   cells <- cellFromXY(template.raster, occ)
-  
-  ## Clean out duplicate cells and NAs 
-  ## Note this will get rid of a lot of duplicate records 
+
+  ## Clean out duplicate cells and NAs (including points outside extent of predictor data)
+  ## Note this will get rid of a lot of duplicate records not filtered out by GBIF columns, etc.
   not_dupes <- which(!duplicated(cells) & !is.na(cells))
   occ       <- occ[not_dupes, ]
   cells     <- cells[not_dupes]
@@ -345,97 +437,106 @@ FIT_MAXENT_TARG_BG <- function(occ,
     
   } else {
     
+    #####################################################################
     ## Subset the background records to the 200km buffered polygon
     message(name, ' creating background cells')
-    system.time(o <- over(bg, b))
+    system.time(o <- over(bg, buffer))
     bg <- bg[which(!is.na(o)), ]
     bg_cells <- cellFromXY(template.raster, bg)
     
     ## Clean out duplicates and NAs (including points outside extent of predictor data)
     bg_not_dupes <- which(!duplicated(bg_cells) & !is.na(bg_cells))
-    bg <- bg[bg_not_dupes, ]
-    bg_cells <- bg_cells[bg_not_dupes]
+    bg           <- bg[bg_not_dupes, ]
+    bg_cells     <- bg_cells[bg_not_dupes]
     
     ## Find which of these cells fall within the Koppen-Geiger zones that the species occupies
-    if(!missing('Koppen')) {
-      
-      ## Crop the Kopppen raster to the extent of the occurrences, and snap it
-      message(name, ' intersecting background cells with Koppen zones')
-      Koppen_crop <- crop(Koppen, occ, snap = 'out')
-      
-      ## Only extract and match those cells that overlap between koppen_cropp, occ and bg 
-      zones               <- raster::extract(Koppen_crop, occ)
-      cells_in_zones_crop <- Which(Koppen_crop %in% zones, cells = TRUE)
-      cells_in_zones      <- cellFromXY(Koppen, xyFromCell(Koppen_crop, cells_in_zones_crop))
-      bg_cells            <- intersect(bg_cells, cells_in_zones)
-      i                   <- cellFromXY(template.raster, bg)
-      bg                  <- bg[which(i %in% bg_cells), ]
-      
-    }
+    ## Crop the Kopppen raster to the extent of the occurrences, and snap it
+    message(name, ' intersecting background cells with Koppen zones')
+    Koppen_crop <- crop(Koppen, occ, snap = 'out')
     
-    ## Reduce background sample if it's larger than max_bg_size
+    ## Only extract and match those cells that overlap between the ::
+    ## 1). cropped koppen zone, 
+    ## 2). occurrences and 
+    ## 3). background points 
+    message(xres(template.raster), ' metre cell size for template raster')
+    message(xres(Koppen), ' metre cell size for Koppen raster')
+    zones               <- raster::extract(Koppen_crop, occ)
+    cells_in_zones_crop <- Which(Koppen_crop %in% zones, cells = TRUE)
+    cells_in_zones      <- cellFromXY(Koppen, xyFromCell(Koppen_crop, cells_in_zones_crop))
+    bg_cells            <- intersect(bg_cells, cells_in_zones)  ## this is 0 for 5km 
+    i                   <- cellFromXY(template.raster, bg)
+    bg                  <- bg[which(i %in% bg_cells), ]
+       
+    #####################################################################
+    ## Get the proportion of occurrence records from each source 
+    source.prop = round(with(as.data.frame(occ), table(SOURCE)/sum(table(SOURCE))), 3)
+    ala.prop    = sum(source.prop["ALA"], source.prop["GBIF"], na.rm = TRUE)
+    inv.prop    = source.prop["INVENTORY"]
+    
+    ## Reduce background sample, if it's larger than max_bg_size
     if (nrow(bg) > max_bg_size) {
       
-      message(nrow(bg), ' target species background records, reduced to random ',
-              max_bg_size, '.')
-      
-      bg <- bg[sample(nrow(bg), max_bg_size), ]  ## Change this to use 
+      message(nrow(bg), ' target species background records for ', name, 
+              ', reduced to random ', max_bg_size, ' using random points from :: ', unique(bg$SOURCE))
+      bg.samp <- bg[sample(nrow(bg), max_bg_size), ]
       
     } else {
       
-      message(nrow(bg), ' target species background records.')
+      ## If the bg points are smaller that the max_bg_size, just get all the points
+      message(nrow(bg), ' target species background records for ', name, 
+              ' using all points from :: ', unique(bg$SOURCE))
+      bg.samp <- bg
       
     }
-    
+      
     #####################################################################
-    ## Save occ and bg shapefiles objects for future reference
-    save_name = gsub(' ', '_', name)
+    ## Now save the buffer, the occ and bg points as shapefiles
     if(shapefiles) {
       
       suppressWarnings({
         
         message(name, ' writing occ and bg shapefiles')
-        writeOGR(SpatialPolygonsDataFrame(b, data.frame(ID = seq_len(length(b)))),
-                 outdir_sp, paste0(save_name, '_bg_buffer'), 'ESRI Shapefile', overwrite_layer = TRUE)
-        writeOGR(bg,  outdir_sp, paste0(save_name, '_bg'),   'ESRI Shapefile', overwrite_layer = TRUE)
-        writeOGR(occ, outdir_sp, paste0(save_name, '_occ'),  'ESRI Shapefile', overwrite_layer = TRUE)
+        writeOGR(SpatialPolygonsDataFrame(buffer, data.frame(ID = seq_len(length(buffer)))),
+                 outdir_sp, paste0(save_name, '_bg_buffer'),          'ESRI Shapefile', overwrite_layer = TRUE)
+        writeOGR(bg.comb,  outdir_sp, paste0(save_name, '_bg'),       'ESRI Shapefile', overwrite_layer = TRUE)
+        writeOGR(occ,           outdir_sp, paste0(save_name, '_occ'), 'ESRI Shapefile', overwrite_layer = TRUE)
         
       })
       
     }
     
-    ## Save the background and occurrence points as objects
-    saveRDS(bg,  file.path(outdir_sp, paste0(save_name, '_bg.rds')))
-    saveRDS(occ, file.path(outdir_sp, paste0(save_name, '_occ.rds')))
+    ## Also save the background and occurrence points as .rds files
+    saveRDS(bg.comb,  file.path(outdir_sp, paste0(save_name, '_bg.rds')))
+    saveRDS(occ,      file.path(outdir_sp, paste0(save_name, '_occ.rds')))
     
     #####################################################################
+    ## SWD = species with data. Now sample the environmental 
+    ## variables used in the model at all the occ and bg points
     swd_occ <- occ[, sdm.predictors]
     saveRDS(swd_occ, file.path(outdir_sp, paste0(save_name,'_occ_swd.rds')))
     
-    swd_bg <- bg[, sdm.predictors]
+    swd_bg <- bg.comb[, sdm.predictors]
     saveRDS(swd_bg, file.path(outdir_sp, paste0(save_name, '_bg_swd.rds')))
     
-    ## Save shapefiles of the occurrence and background points
+    ## Save the SWD tables as shapefiles
     if(shapefiles) {
       
-      writeOGR(swd_occ, outdir_sp,  paste0(save_name, '_occ_swd'), 
-               'ESRI Shapefile', overwrite_layer = TRUE)
-      
-      writeOGR(swd_bg,  outdir_sp,  paste0(save_name, '_bg_swd'),  
-               'ESRI Shapefile', overwrite_layer = TRUE)
+      writeOGR(swd_occ, outdir_sp,  paste0(save_name, '_occ_swd'), 'ESRI Shapefile', overwrite_layer = TRUE)
+      writeOGR(swd_bg,  outdir_sp,  paste0(save_name, '_bg_swd'),  'ESRI Shapefile', overwrite_layer = TRUE)
       
     }
     
     #####################################################################
-    ## Combine occurrence and background data
+    ## Now combine the occurrence and background data
     swd <- as.data.frame(rbind(swd_occ@data, swd_bg@data))
     saveRDS(swd, file.path(outdir_sp, 'swd.rds'))
-    pa <- rep(1:0, c(nrow(swd_occ), nrow(swd_bg)))
+    pa  <- rep(1:0, c(nrow(swd_occ), nrow(swd_bg)))
     
-    ## Now check the features arguments are correct
+    ## Now, set the features to be used by maxent ::
+    ## Linear, product and quadratic
     off <- setdiff(c('l', 'p', 'q', 't', 'h'), features)
     
-    ## 
+    ## This sets threshold and hinge features to "off"
     if(length(off) > 0) {
       
       off <- c(l = 'linear=false',    p = 'product=false', q = 'quadratic=false',
@@ -449,7 +550,8 @@ FIT_MAXENT_TARG_BG <- function(occ,
       
       if(missing(rep_args)) rep_args <- NULL
       
-      ## Run MAXENT for x cross validation data splits of swd : so 5 replicaes, 0-4
+      ## Run MAXENT for cross validation data splits of swd : so 5 replicaes, 0-4
+      ## first argument is the predictors, the second is the occurrence data
       message(name, ' running xval maxent')
       me_xval <- maxent(swd, pa, path = file.path(outdir_sp, 'xval'),
                         args = c(paste0('replicates=', replicates),
@@ -459,7 +561,7 @@ FIT_MAXENT_TARG_BG <- function(occ,
       
     }
     
-    ## Runs the full maxent model - using all the data in swd
+    ## Run the full maxent model - using all the data in swd
     ## This uses DISMO to output standard files, but the names can't be altered
     if(missing(full_args)) full_args <- NULL
     message(name, ' running full maxent')
@@ -468,28 +570,71 @@ FIT_MAXENT_TARG_BG <- function(occ,
                                'responsecurves=true',
                                'outputformat=logistic'))
     
-    ## Save the full model
+    ## Save the full model. Replicate this line in the backwards selection algortithm
+    ## This is needed to project the models.........................................
+    ## Also worth checking that the koppen zones can be used at any resolution
     saveRDS(list(me_xval = me_xval, me_full = me_full, swd = swd, pa = pa, 
-                 koppen_gridcode = as.character
-                 (Koppen_zones$Koppen[match(unique(zones), Koppen_zones$GRIDCODE)])), 
+                 koppen_gridcode=as.character(Koppen_zones$Koppen[match(unique(zones), Koppen_zones$GRIDCODE)])), 
             file.path(outdir_sp, 'full', 'maxent_fitted.rds'))
     
-    #####################################################################
-    ## Save the chart corrleation file too for the variable set
-    png(sprintf('%s/%s/full/%s_%s.png', outdir,
-                save_name, save_name, "predictor_correlation"),
-        3236, 2000, units = 'px', res = 300)
-    
-    ## set margins
-    par(mar   = c(3, 3, 5, 3),  ## b, l, t, r
-        oma   = c(1.5, 1.5, 1.5, 1.5))
-    
-    ## Add detail to the response plot
-    chart.Correlation(swd_occ@data,
-                      histogram = TRUE, pch = 19) 
-
-    ## Finish the device
-    dev.off()
+    if (backwards_sel == "TRUE") {
+      
+      #####################################################################
+      ## Coerce the "species with data" (SWD) files to regular data.frames
+      ## This is needed to use the simplify function 
+      swd_occ     <- as.data.frame(swd_occ)
+      swd_occ$lon <- NULL
+      swd_occ$lat <- NULL
+      swd_bg      <- as.data.frame(swd_bg)
+      swd_bg$lon  <- NULL
+      swd_bg$lat  <- NULL
+      
+      ## Need to create a species column here
+      swd_occ$searchTaxon <- name
+      swd_bg$searchTaxon  <- name
+      
+      #####################################################################
+      ## Run simplify rmaxent::simplify
+      
+      # Given a candidate set of predictor variables, this function identifies 
+      # a subset that meets specified multicollinearity criteria. Subsequently, 
+      # backward stepwise variable selection (VIF) is used to iteratively drop 
+      # the variable that contributes least to the model, until the contribution 
+      # of each variable meets a specified minimum, or until a predetermined 
+      # minimum number of predictors remains. It returns a model object for the 
+      # full model, rather than a list of models as does the previous function
+      
+      ## Using a modified versionof rmaxent::simplify, so that the name of the
+      ## maxent model object "maxent_fitted.rds" is the same in both models.
+      ## This is needed to run the mapping step over either the full or BS folder
+      m <- local_simplify(      
+        swd_occ, 
+        swd_bg,
+        path            = bsdir, 
+        species_column  = "searchTaxon",
+        replicates      = replicates,  ## 5 as above
+        response_curves = TRUE, 
+        logistic_format = TRUE, 
+        cor_thr         = cor_thr, 
+        pct_thr         = pct_thr, 
+        k_thr           = k_thr, 
+        features        = features,    ## LPQ as above
+        quiet           = FALSE)
+      
+      ## Save the bg, occ and swd files into the backwards selection folder too
+      saveRDS(bg.comb,  file.path(bsdir_sp, paste0(save_name, '_bg.rds')))
+      saveRDS(occ,      file.path(bsdir_sp, paste0(save_name, '_occ.rds')))
+      saveRDS(swd,      file.path(bsdir_sp, paste0('swd.rds')))
+      
+      ## Read the model in, because it's tricky to index
+      bs.model <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', bsdir,  save_name))
+      identical(length(bs.model@presence$Annual_mean_temp), nrow(occ))
+	  
+    } else {
+      
+      message("Don't run backwards selection")
+      
+    }
     
   }
   
@@ -504,8 +649,8 @@ Operating Characteristic curve (AUC, Swets, 1988) and the True Skill Statistic (
 cross-validation. This involved splitting the occurrence data for each species into five subsets of 
 roughly equal size (i.e. folds), fitting the model to four of the five folds and predicting to the 
 fifth. This process was repeated until each fold was used four times for model fitting and once for 
-model evaluation (Stone, 1974). Below is a plot and table of the results for the full models (i.e. 
-using all the data). 
+model evaluation (Stone, 1974). Below is a plot and table of the results for the backwards selected
+models - this code needs to be updated !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
 
 \
 
@@ -518,93 +663,137 @@ kable(MAXENT.RESULTS[c("searchTaxon", "X.Background.points", "Var_pimp", "Perm_i
 \
 
 #########################################################################################################
-## **Combining the  models**
-We then created a function to take the maxent model for each species, and project it onto the six climate 
-scenarios for three future time periods (2030, 2050 and 2070), using the 'Rmaxent' package (i.e. looping 
-over each future climate scenario and species, for one period at a time).
+## **Projecting the models to future scenarios**
+We then created a function to take the maxent model for each species, and project it onto the six chosen 
+climate scenarios for three future time periods (2030, 2050 and 2070), using the 'Rmaxent' package.
+This function loops over all 6 climate scenarios for each species analysed, one time period at a time 
+(2030/50/70).
 
 \
 
 ```{r, eval=FALSE, echo=TRUE}
 
 ## A function which projects climatic suitability under six GCMs at each time step (2030/50/70)
-env.grids.2030 = tryCatch(project_maxent_grids(scen_list     = scen_2030,    ## List of global circulation models
-                                               species_list  = map_spp_list, ## List of species' directories
-                                               maxent_path   = maxent_path,  ## Directory of maxent results
-                                               climate_path  = "./clim/",    ## Directory of climate rasters
-                                               grid_names    = grid.names,   ## Names of climate rasters
-                                               current_grids = aus.grids,    ## Stack of climate rasters
-                                               time_slice    = 30)           ## Time period 
-                          
-                          ## Skip species
-                          error = function(cond) {
+tryCatch(
+  project_maxent_grids_mess(shp_path      = "./data/base/CONTEXTUAL/", ## Path for shapefile
+                            aus_shp       = "aus_states.rds",          ## Shapefile
+                            world_shp     = "LAND_world.rds",          ## World shapefile          
                             
-                            message(paste('Species skipped - check', spp))
+                            scen_list     = scen_2030,                 ## Scenario list
+                            species_list  = map_spp,                   ## Species folder list
+                            maxent_path   = bs_path,                   ## Output folder
+                            climate_path  = "./data/climate",          ## Climate path
                             
-                          })
+                            grid_names    = grid.names,                ## Predictor variable names
+                            time_slice    = 30,                        ## Time period
+                            current_grids = aus.grids.current,         ## Predictor grids 
+                            create_mess   = "TRUE",
+                            nclust        = 1),
+  
+  ## If the species fails, write a fail message to file. 
+  error = function(cond) {
+    
+    ## This will write the error message inside the text file, 
+    ## but it won't include the species
+    file.create(file.path(bs_path, "mapping_failed_2030.txt"))
+    cat(cond$message, file=file.path(bs_path, "mapping_failed_2030.txt"))
+    warning(cond$message)
+    
+  })
 
 ```
 
 \
 
+This function also runs Multivariate environmental similarity (MESS) maps for each species. MESS maps measure 
+the similarity between the new environments, and those in the training sample. When model predictions are 
+projected into regions, times or spatial resolutions not analysed in the training data, it is important 
+to measure the similarity between the new environments, and those in the training sample (Elith et al. 2010), 
+as models are unreliable when predicting outside their domain (Barbosa et al. 2009). This process is 
+especially important for interpreting the results for taxa which have been reliably recorded across large 
+geographic and environmental ranges (e.g. for plant species that have wide distributions both in their 
+country of 'origin', and throughout the world, as is the case for many forestry species such as E. spp, 
+and invasive example.
+
+\
+
 ```{r eval = FALSE, echo = TRUE}
 
-## Run the porject function for each time period separately
-project_maxent_grids = function(scen_list, species_list, maxent_path, 
-                                climate_path, grid_names, time_slice, current_grids) {
+## Run the project function for each time period separately
+project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list, 
+                                     species_list, maxent_path, climate_path, 
+									 static_path,  grid_names, time_slice, 
+									 current_grids, create_mess, nclust) {
   
-  ## Read in Australia
-  aus = AUS %>%
+  ## Read in the Australian shapefile at the top
+  aus_poly = readRDS(paste0(shp_path, aus_shp)) %>%
     spTransform(ALB.CONICAL)
   
+  world_poly = readRDS(paste0(shp_path, world_shp)) %>%
+    spTransform(CRS.WGS.84)
+  
+  ###########################################
   ## First, run a loop over each scenario:    
   lapply(scen_list, function(x) {
     
     ## Create a raster stack for each of the 6 GCMs, not for each species
-    s <- stack(sprintf('%s/20%s/%s/%s%s.tif', climate_path, time_slice, x, x, 1:19))
-    projection(s)
+    ## They need to have exactly the same extent.
+    ## Could stack all the rasters, or, keep them separate
+    s <- stack(c(sprintf('%s/20%s/%s/%s%s.tif', climate_path, time_slice, x, x, 1:19)))#
     
-    ## Rename both the current and future environmental stack...
+    ## Note this step is only needed if the current grids used in the their original form, rather than being renamed...............
     names(s) <- names(current_grids) <- grid_names 
     
-    #####################################################################
+    ########################################################################################################################
     ## Divide the 11 temperature rasters by 10: NA values are the ocean
     ## s[[1:11]] <- s[[1:11]]/10 ## That code doesn't work
-    message('20', time_slice, ' rasters / 10 ', x)
+    message('First, divide the raster stack for ', x, ' by 10 ')
     for(i in 1:11) {
-      
       ## Simple loop
       message(i)
       s[[i]] <- s[[ i]]/10
       
     }
     
+    ## Then apply each GCM to each species.
+    ## First, check if the maxent model exists
     ## Then apply each GCM to each species
-    lapply(species_list, function(species) {
+    ## Define function to then send to one or multiple cores
+    maxent_predict_fun <- function(species) {
       
-      ## First, check if the maxent model exists
+      #############################################
       save_name = gsub(' ', '_', species)
       if(file.exists(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, species))) {
-        message('Doing ', species)
+        message('Then run maxent projections for ', species, ' under ', x, ' scenario')
         
         ## Then, check if the species projection has already been run...
-        if(!file.exists(sprintf('%s/%s/full/%s_%s.tif', maxent_path, species, species, x))) {
+        if(!file.exists(sprintf('%s/%s/full/%s_future_not_novel_%s.tif', maxent_path, species, species, x))) {
           
-          ## Assign the scenario name (to use later in the plot)
-          scen_name = eval(parse(text = sprintf('gcms.%s$GCM[gcms.%s$id == x]', time_slice, time_slice)))           
+          ########################################################################
+          ## Now read in the SDM model, calibrated on current conditions
+          ## if it was run with backwards selection, just use the full model
+          if (grepl("BS", maxent_path)) {
+            
+            message('Read in the BS model')
+            m   <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, species)) 
+            
+          } else {
+            
+            ## Otherwise, index the full model
+            message('Read in the full model')
+            m   <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, species))$me_full
+            
+          }
           
-          #####################################################################
-          ## Now read in the SDM model calibrated on current conditions
-          m <- readRDS(sprintf('%s/%s/full/maxent_fitted.rds', maxent_path, species)) 
-          m <- m$me_full  ##
-          
-          ## Read in the occurrence points used to create the SDM :: need the transform to plot later
-          occ <- readRDS(sprintf('%s/%s/%s_occ.rds', maxent_path, species, save_name)) %>%
+          ## Read in the swd object and occurrence data
+          swd <- as.data.frame(readRDS(sprintf('%s%s/swd.rds',    maxent_path, species, species)))
+          occ <- readRDS(sprintf('%s%s/%s_occ.rds', maxent_path, species, save_name)) %>%
             spTransform(ALB.CONICAL)  
           
-          ## Create file path fpr current raster doesn't exist, create it
-          f_current <- sprintf('%s/%s/full/%s_current.tif', maxent_path, species, species)
+          ## Create a file path for the current raster prediction
+          f_current  <- sprintf('%s%s/full/%s_current.tif', maxent_path, species, species)
           
+          ## If the current raster prediction has not been run, run it
           if(!file.exists(f_current)) {
             
             ## Report which prediction is in progress :: m$me_full, m$me_full@presence
@@ -615,62 +804,367 @@ project_maxent_grids = function(scen_list, species_list, maxent_path,
             writeRaster(pred.current, f_current, overwrite = TRUE)
             
           } else {
-            
+            message('Use existing prediction for ', species)                   ## Can get rid of this
             pred.current = raster(sprintf('%s/%s/full/%s_current.tif',
                                           maxent_path, species, species))
           }
           
           #####################################################################
+          ## Report current mess map in progress
+          MESS_dir = sprintf('%s%s/full/%s', 
+                             maxent_path, species, 'MESS_output')
+          f_mess_current = sprintf('%s/%s%s.tif', MESS_dir, species, "_current_mess")
+          
+          # if(create_mess == "TRUE" && !file.exists(f_mess_current)) {
+          #   message('Running current mess map for ', species)
+          
+          ## Set the names of the rasters to match the occ data, and subset both
+          sdm_vars             = names(m@presence)
+          current_grids        = subset(current_grids, sdm_vars)
+          swd                  = swd [,sdm_vars]
+          identical(names(swd), names(current_grids))
+          
+          ## Create a map of novel environments for current conditions.
+          ## This similarity function only uses variables (e.g. n bioclim), not features
+          mess_current  <- similarity(current_grids, swd, full = TRUE)
+          novel_current <- mess_current$similarity_min < 0  ##   All novel environments are < 0
+          novel_current[novel_current==0] <- NA             ##   0 values are NA
+          
+          ##################################################################
+          ## Write out the current mess maps - 
+          ## create a new folder for the mess output 
+          if(!dir.exists(MESS_dir)) {
+            message('Creating MESS directory for ', species) 
+            dir.create(MESS_dir)
+            
+          } else {        
+            message(species, ' MESS directory already created')             
+          }
+          
+          ## Then write the mess output to a directory inside the 'full' maxent folder
+          writeRaster(mess_current$similarity_min, sprintf('%s/%s%s.tif', MESS_dir, species, "_current_mess"), 
+                      overwrite = TRUE)
+          
+          ##################################################################
+          ## Create a PNG file of MESS maps for each maxent variable
+          ## raster_list  = unstack(mess_current$similarity) :: list of environmental rasters
+          ## raster_names = names(mess_current$similarity)   :: names of the rasters
+          message('Creating mess maps of each current environmental predictor for ', species)
+          mapply(function(raster, raster_name) {
+            
+            ## Create a level plot of MESS output for each predictor variable, for each species
+            p <- levelplot(raster, margin = FALSE, scales = list(draw = FALSE),
+                           at = seq(minValue(raster), maxValue(raster), len = 100),
+                           colorkey = list(height = 0.6), 
+                           main = gsub('_', ' ', sprintf('Current_mess_for_%s (%s)', raster_name, species))) +
+              
+              latticeExtra::layer(sp.polygons(aus_poly), data = list(aus_poly = aus_poly))  ## need list() for polygon
+            
+            p <- diverge0(p, 'RdBu')
+            f <- sprintf('%s/%s%s%s.png', MESS_dir, species, "_current_mess_", raster_name)
+            
+            png(f, 8, 8, units = 'in', res = 300, type = 'cairo')
+            print(p)
+            dev.off()
+            
+          }, unstack(mess_current$similarity), names(mess_current$similarity))
+          
+          ## Write the raster of novel environments to the MESS sub-directory
+          if(!file.exists(sprintf('%s/%s%s.tif', MESS_dir, species, "_current_novel")))  {
+            
+            message('Writing currently novel environments to file for ', species) 
+            writeRaster(novel_current, sprintf('%s/%s%s.tif', MESS_dir, species, "_current_novel"), 
+                        overwrite = TRUE)
+            
+          } else {
+            
+            message(species, 'Current MESS directory already created') 
+            
+          }
+          
+          ##################################################################
+          ## Now mask out novel environments
+          ## is.na(novel_current) is a binary layer showing 
+          ## not novel [=1] vs novel [=0], 
+          ## so multiplying this with hs_current will mask out novel
+          hs_current_not_novel <- pred.current * is.na(novel_current) 
+          
+          ## This layer of currently un-novel environments can be used 
+          ## for the next algorithm step, where we combine the models
+          plot(hs_current_not_novel, main = save_name)
+          
+          ## Write out not-novel raster :: this can go to the main directory
+          message('Writing currently un-novel environments to file for ', species) 
+          writeRaster(hs_current_not_novel, sprintf('%s%s/full/%s%s.tif', maxent_path, 
+                                                    species, species, "_current_not_novel"),
+                      overwrite = TRUE)
+
+          #####################################################################
           ## Create file path for future raster doesn't exist, create it 
-          f_future <- sprintf('%s/%s/full/%s_%s.tif', 
+          f_future <- sprintf('%s/%s/full/%s_future_not_novel_%s.tif', 
                               maxent_path, species, species, x)
           
           if(!file.exists(f_future)) {
             
             ## Report which prediction is in progress
-            message('Running future prediction for ', species, ' ', x) 
+            message('Running future maxent prediction for ', species, ' under ', x) 
             
             ## Create the future raster
             pred.future <- rmaxent::project(
               m, s[[colnames(m@presence)]])$prediction_logistic
             writeRaster(pred.future, f_future, overwrite = TRUE)
             
-            ## Now create the empty panel just before plotting
+            ###################################################################
+            ## Report future mess map in progress
+            f_mess_future = sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_mess_", x)
+            
+            if(create_mess == "TRUE" & !file.exists(f_mess_future)) {
+              message('Running future mess map for ', species, ' under ', x)
+              
+              ## Set the names of the rasters to match the occ data, and subset both
+              ## Watch the creation of objects in each run
+              sdm_vars             = names(m@presence)
+              future_grids         = s
+              future_grids         = subset(future_grids, sdm_vars)
+              swd                  = swd [,sdm_vars]
+              identical(names(swd), names(future_grids))
+              
+              ## Create a map of novel environments for future conditions
+              ## This similarity function only uses variables (e.g. n bioclim), not features.
+              ## We don't need to repeat the static layer MESS each time - just
+              ## include their results here
+              mess_future  <- similarity(future_grids, swd, full = TRUE)
+              novel_future <- mess_future$similarity_min < 0  ##   All novel environments are < 0
+              novel_future[novel_future==0] <- NA             ##   0 values are NA
+              
+              ##################################################################
+              ## Write out the future mess maps, for all variables
+              writeRaster(mess_future$similarity_min, sprintf('%s/%s%s%s.tif', 
+			  MESS_dir, species, "_future_mess_", x), 
+                          overwrite = TRUE)
+              
+              ##################################################################
+              ## Create a PNG file of all the future MESS output: 
+              ## raster_list  = unstack(mess_current$similarity) :: list of environmental rasters
+              ## raster_names = names(mess_current$similarity)   :: names of the rasters
+              message('Creating mess maps of each future environmental predictor for ', 
+			  species, ' under scenario ', x)
+              mapply(function(raster, raster_name) {
+                
+                p <- levelplot(raster, margin = FALSE, scales = list(draw = FALSE),
+                               at = seq(minValue(raster), maxValue(raster), len = 100),
+                               colorkey = list(height = 0.6), 
+                               main = gsub('_', ' ', sprintf('Future_mess_for_%s_%s (%s)', 
+							   raster_name, x, species, x))) +
+                  
+                  latticeExtra::layer(sp.polygons(aus_poly), data = list(aus_poly = aus_poly)) 
+                
+                p <- diverge0(p, 'RdBu')
+                f <- sprintf('%s/%s%s%s%s%s.png', MESS_dir, species, "_future_mess_", raster_name, "_", x)
+                
+                png(f, 8, 8, units = 'in', res = 300, type = 'cairo')
+                print(p)
+                dev.off()
+                
+              }, unstack(mess_future$similarity), names(mess_future$similarity))
+              
+              ## Write the raster of novel environments to the maxent directory 
+              ## The "full" directory is getting full, could create a sub dir for MESS maps
+              message('Writing future novel environments to file for ',    species, ' under scenario ', x) 
+              writeRaster(novel_future, sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_novel_",  x), 
+                          overwrite = TRUE)
+              
+              ##################################################################
+              # mask out future novel environments 
+              # is.na(novel_future) is a binary layer showing 
+              # not novel [=1] vs novel [=0], 
+              # so multiplying this with hs_future will mask out novel
+              hs_future_not_novel <- pred.future * is.na(novel_future)
+              
+              ## This layer of future un-novel environments can be used 
+              ## for the next algorithm step, where we combine the models
+              plot(pred.future);plot(hs_future_not_novel)
+              summary(pred.future,         maxsamp = 100000);
+              summary(hs_future_not_novel, maxsamp = 100000)
+              
+              ## Write out not-novel raster
+              message('Writing un-novel environments to file under ', x, ' scenario for ', species) 
+              writeRaster(hs_future_not_novel, sprintf('%s%s/full/%s%s%s.tif', maxent_path, 
+                                                       species, species, "_future_not_novel_", x), 
+                          overwrite = TRUE)
+              
+            } else {
+              
+              message('Dont run future MESS maps for ', species, ' under scenario ',  x ) 
+              
+            }
+            
+            ###################################################################
+            ## Convert binary rasters of novel climate to polygons
+            ## Need to save the polygons to file ::  
+            message('Converting raster MESS maps to polygons under ', x, ' scenario for ', species) 
+            
+            ## If we're on linux, use the standard polygonizer function
+            if (!on_windows) {
+              
+              novel_current_poly <- polygonizer(sprintf('%s/%s%s.tif',   MESS_dir, species, "_current_novel"))
+              novel_future_poly  <- polygonizer(sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_novel_", x))
+              
+            } else {
+              
+              ## If we're on windows, use the GDAL .bat file
+              novel_current_poly <- polygonizer_windows(sprintf('%s/%s%s.tif',   MESS_dir, species, "_current_novel"))
+              novel_future_poly  <- polygonizer_windows(sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_novel_", x))
+              
+            }
+            
+            ## Re-project the shapefiles
+            novel_current_poly = novel_current_poly %>%
+              spTransform(ALB.CONICAL)
+            
+            novel_future_poly = novel_future_poly %>%
+              spTransform(ALB.CONICAL)
+            
+            ## Now save the novel areas as shapefiles
+            MESS_shp_path   = sprintf('%s%s/full/%s', 
+                                      maxent_path, species, 'MESS_output')
+            
+            writeOGR(obj    = novel_current_poly, 
+                     dsn    = sprintf('%s',  MESS_shp_path), 
+                     layer  = paste0(species, "_current_novel_polygon"),
+                     driver = "ESRI Shapefile", overwrite_layer = TRUE)
+            
+            writeOGR(obj    = novel_future_poly, 
+                     dsn    = sprintf('%s',  MESS_shp_path), 
+                     layer  = paste0(species, "_future_novel_polygon_", x),
+                     driver = "ESRI Shapefile", overwrite_layer = TRUE)
+            
+            ## Create a SpatialLines object that indicates novel areas (this will be overlaid)            
+            ## Below, we create a dummy polygon as the first list element (which is the extent
+            ## of the raster, expanded by 10%), to plot on panel 1). 50 = approx 50 lines across the polygon
+            message('Creating polygon list under ', x, ' scenario for ', species) 
+            
+            ##  cast the objects into the sf class so we avoid issues with wrong methods being called in hatch()
+            novel_hatch <- list(as(extent(pred.current)*1.1, 'SpatialPolygons'),
+                                hatch(as(novel_current_poly, 'sf'), 50),
+                                hatch(as(novel_future_poly,  'sf'), 50))
+            
+            #######################################################################
+            ## Now create a panel of PNG files for maxent projections and MESS maps
+            ## All the projections and extents need to match
             empty_ras <- init(pred.current, function(x) NA) 
-            
-            projection(aus);projection(occ);projection(empty_ras)
+            projection(novel_current_poly);projection(occ);projection(empty_ras);projection(poly)
             projection(pred.current);projection(pred.future)
-            
             identical(extent(pred.current), extent(pred.future))
             
-            #####################################################################
-            ## Use the levelplot function to make a multipanel output: 
-            ## occurrence points, current raster and future raster
-            png(sprintf('%s/%s/full/%s_%s.png', maxent_path, species, species, x),      
-                11, 4, units = 'in', res = 300)
+            ## Assign the scenario name (to use in the plot below)
+            scen_name = eval(parse(text = sprintf('gcms.%s$GCM[gcms.%s$id == x]', time_slice, time_slice)))      
             
-            ## Need an empty frame
-            print(levelplot(stack(empty_ras,
-                                  pred.current, 
-                                  pred.future, quick = TRUE), margin = FALSE,
-                            
-                            ## Create a colour scheme using colbrewer
-                            scales      = list(draw = FALSE), 
-                            at = seq(0, 1, length = 100),
-                            col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
-                            
-                            ## Give each plot a name: the third panel is the GCM
-                            names.attr = c('Australian records', 'Current', 
-                                           sprintf('%s, 20%s, RCP8.5', scen_name, time_slice)),
-                            colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
-                            main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
-                    
-                    ## Plot the Aus shapefile with the occurrence points for reference
-                    latticeExtra::layer(sp.polygons(aus), data = list(aus = aus)) +
-                    latticeExtra::layer(sp.points(occ, pch = 19, cex = 0.15, 
-                                                  col = c('red', 'transparent', 'transparent')
-                                                  [panel.number()]), data = list(occ = occ)))
-            dev.off()
+            #########################################################################
+            ## Use the 'levelplot' function to make a multi-panel 
+			## output: occurrence points, current raster and future raster
+            if(create_mess == "TRUE") {
+              message('Create MESS panel maps for ', species, ' under ', x, ' scenario')
+              
+              
+              ############################################################
+              ## Create level plot of current conditions including MESS                        
+              png(sprintf('%s/%s/full/%s_%s.png', maxent_path, species, species, "mess_panel"),      
+                  11, 4, units = 'in', res = 300)
+              
+              print(levelplot(stack(empty_ras,
+                                    pred.current, quick = TRUE), margin = FALSE,
+                              
+                              ## Create a colour scheme using colbrewer: 100 is to make it continuos
+                              ## Also, make it a one-directional colour scheme
+                              scales      = list(draw = FALSE), 
+                              at = seq(0, 1, length = 100),
+                              col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
+                              
+                              ## Give each plot a name: the third panel is the GCM
+                              names.attr = c('Australian records', 'Current'),
+                              colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
+                              main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
+                      
+                      ## Plot the Aus shapefile with the occurrence points for reference
+                      ## Can the current layer be plotted on it's own?
+                      ## Add the novel maps as vectors.              
+                      latticeExtra::layer(sp.polygons(aus_poly), data = list(aus_poly = aus_poly)) +
+                      latticeExtra::layer(sp.points(occ, pch = 19, cex = 0.15, 
+                                                    col = c('red', 'transparent', 'transparent')
+													[panel.number()]), data = list(occ = occ)) +
+                      latticeExtra::layer(sp.polygons(h[[panel.number()]]), data = list(h = novel_hatch)))
+              dev.off()
+                           
+              ############################################################
+              ## Create level plot of scenario x, including MESS                        
+              png(sprintf('%s/%s/full/%s_%s.png', maxent_path, species, species, x),      
+                  11, 4, units = 'in', res = 300)
+              
+              ## Create a panel of the Australian occurrences, the current layer and the future layer
+              print(levelplot(stack(empty_ras,
+                                    pred.current, 
+                                    pred.future, quick = TRUE), margin = FALSE,
+                              
+                              ## Create a colour scheme using colbrewer: 100 is to make it continuos
+                              ## Also, make it a one-directional colour scheme
+                              scales      = list(draw = FALSE), 
+                              at = seq(0, 1, length = 100),
+                              col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
+                              
+                              ## Give each plot a name: the third panel is the GCM
+                              names.attr = c('Australian records', 'Current', 
+							  sprintf('%s, 20%s, RCP8.5', scen_name, time_slice)),
+                              colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
+                              main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
+                      
+                      ## Plot the Aus shapefile with the occurrence points for reference
+                      ## Can the current layer be plotted on it's own?
+                      ## Add the novel maps as vectors.              
+                      latticeExtra::layer(sp.polygons(aus_poly), data = list(aus_poly = aus_poly)) +
+                      latticeExtra::layer(sp.points(occ, pch = 19, cex = 0.15, 
+                                                    col = c('red', 'transparent', 'transparent')[
+													panel.number()]), data = list(occ = occ)) +
+                      latticeExtra::layer(sp.lines(h[[panel.number()]]), data = list(h = novel_hatch)))
+              dev.off()
+              
+            } else {
+              
+              ############################################################
+              ## OR Create level plot without MESS maps                        
+              message('Create panel maps for ', species, ' under ', x, ' scenario')
+              png(sprintf('%s/%s/full/%s_%s.png', maxent_path, species, species, x),      
+                  11, 4, units = 'in', res = 300)
+              
+              ## Create levelplot without MESS maps
+              print(levelplot(stack(empty_ras,
+                                    pred.current, 
+                                    pred.future, quick = TRUE), margin = FALSE,
+                              
+                              ## Create a colour scheme using colbrewer: 100 is to make it continuous
+                              ## Also, make it a one-directional colour scheme
+                              scales      = list(draw = FALSE), 
+                              at = seq(0, 1, length = 100),
+                              col.regions = colorRampPalette(rev(brewer.pal(11, 'Spectral'))),
+                              
+                              ## Give each plot a name: the third panel is the GCM
+                              names.attr = c('Australian records', 'Current', 
+							  sprintf('%s, 20%s, RCP8.5', scen_name, time_slice)),
+                              colorkey   = list(height = 0.5, width = 3), xlab = '', ylab = '',
+                              main       = list(gsub('_', ' ', species), font = 4, cex = 2)) +
+                      
+                      ## Plot the Aus shapefile with the occurrence points for reference
+                      ## Can the points be made more legible for both poorly and well recorded species?
+                      ## layer(sp.polygons(aus_albers), data = list(aus_albers = aus_albers))
+                      latticeExtra::layer(sp.polygons(aus_poly), data = list(aus_poly = aus_poly)) +
+                      latticeExtra::layer(sp.points(occ, pch = 19, cex = 0.15, 
+                                                    col = c('red', 'transparent', 'transparent')
+													[panel.number()]), data = list(occ = occ)))
+              dev.off()                     
+              
+              message('Dont run MESS maps for ', species) 
+              
+            }
             
           }
           
@@ -682,58 +1176,86 @@ project_maxent_grids = function(scen_list, species_list, maxent_path,
         
       } else {
         
-        message(species, ' ', x, ' skipped - SDM not yet run') 
+        message(species, ' ', x, ' skipped - SDM not yet run')l
         
       }
       
-    })
+    }
+    
+    if (nclust==1) {
+      
+      lapply(species_list, maxent_predict_fun) 
+      
+    } else {
+      
+      cl <- makeCluster(nclust)
+      clusterExport(cl, c(
+        'shp_path',    'aus_shp',       'world_shp',   'ALB.CONICAL',  'CRS.WGS.84',   
+        'scen_list',   'species_list',  'maxent_path', 'climate_path', 'grid_names',  
+        'time_slice',  'current_grids', 'create_mess', 'hatch', 'x',       
+        'polygonizer', 'nclust', 'diverge0'),  envir = environment())
+      
+      # shp_path, aus_shp, world_shp, scen_list, 
+      # species_list, maxent_path, climate_path, 
+      # grid_names, time_slice, current_grids, create_mess, nclust
+      
+      clusterEvalQ(cl, {
+        
+        library(rmaxent)
+        library(sp)
+        library(raster)
+        library(rasterVis)
+        library(latticeExtra)
+        library(magrittr)
+        
+      })
+      
+      message('Running project_maxent_grids_mess for ', length(species_list),
+              ' species on ', nclust, ' cores for GCM ', x)
+      
+      parLapply(cl, species_list, maxent_predict_fun)  
+    }
+    
     
   })
   
-}
+} 
 
 ```
 
 \
 
-The resulting maps generated by this function illustrate how climatic suitability varies across the landscape, 
-with values of grid cells ranging from 0 (not suitable) to 1 (suitable, see Elith et al. 2011; Merow et al. 2013 
-for more details of the  Maxent algorithm).
-
-\newpage 
-![](output/figures/CV_figs/A_implexa_CURRENT_SUIT.png)
-
-**Figure 2.** Example of a continuous climatic suitabiliy map for one species under current condtions. 
-Species occurrence points are plotted in red on the left panel. The cells in the centre and 
-lower panels are coded from 0 - no to low suitability, to 1, highly suitable.
-
-\
-
-
 #########################################################################################################
 ## **Summarising the climatic suitability output within Significant Urban areas** 
-For each species, we generated maps illustrating areas where suitable climate is projected to occur under 
-current and future conditions. In these maps, a grid cell is given a value between 0 (highly unsuitable) 
-and 1 (highly suitable). Using a species-specific threshold  -  the 10th percentile training presence 
-logistic threshold  -  based on the weighting of different model errors ('commission' errors where 
-a grid cell is classified as suitable when it is not, versus 'omission' errors where a grid cell 
-is classified as unsuitable when it is suitable) these continuous suitability maps were converted 
-into binary suitable/unsuitable maps (0 or 1). This resulted in six maps per species for each of 
-the three future time periods - one map for each of the climate scenarios. The six maps were overlaid 
-and summed such that the value of a grid cell could range from 0 (unsuitable in all climate scenarios) 
-to 6 (suitable in all climate scenarios). Finally, maps were re-coded to quantify the number of grid 
-cells that were classified as suitable in a least four of the six climate scenarios. These are grid 
-cells that we have greater confidence will be climatically suitability for that species in the future.
+The maps generated by the function illustrate how climatic suitability varies across the landscape. 
+In these maps, a grid cell is given a probability value between 0 (highly unsuitable) and 1 (highly suitable). 
+Using a species-specific threshold – the 10th percentile training presence logistic threshold – based on the 
+weighting of different model errors (‘commission’ errors, where a grid cell is classified as suitable when 
+it is not, versus ‘omission’ errors, where a grid cell is classified as unsuitable when it is suitable) 
+the maps were converted into binary representations of regions that are less or more suitable (0 or 1). 
+Henceforth, we refer to these regions as ‘no to low suitability’ and ‘suitable’ regions, respectively. 
+This terminology more clearly articulates the subjective nature of threshold selection.
+
+\newpage 
+![](output/figures/CV_figs/A_floribunda_continuous.png)
+
+\newpage 
+![](output/figures/CV_figs/A_floribunda_theshold_suit.png
+
+**Figure 2.** Top panel: Example of a continuous climatic suitability map for one plant species under 
+current conditions. Species occurrence points are plotted in red on the left panel. The cells in the right 
+panel are coded from 0 : no to low suitability, to 1 : highly suitable. The shaded areas on the right panel
+indicate where the maxent model is extrapolating beyond the training data (i.e. the result of a MESS map).
+Bottom panel: the map of climatic suitability has been thresholded to binary representations of regions 
+that are less or more suitable (0 or 1).
 
 \
 
-We then calculated changes to the size of suitable climate in terms of i) overall change in size, 
-ii) loss of currently suitable areas and iii) gain in new areas. Finally, we intersected species' maps 
-with Significant Urban Areas (SUAs) from the 2016 Census. We then calculated the current area that 
-is projected to be climatically suitable within all SUAs, and the extent to which this area may change 
-under the future time periods (2030, 2050 and 2070). This was achieved by creating a third function, 
-that counts cells lost or gained within an SUA (i.e. looping over each species and maxent threshold, 
-for each time period, E.G. 2030)
+To combine the maps for each climate scenario, we then created a function to overlay and sum maps for all six 
+scenarios, such that the value of a grid cell in the combined map could range from 0 (no to low suitability in 
+all climate scenarios) to 6 (suitable in all climate scenarios). This function loops over three lists : a list 
+of directories containing the maps, a list of species, and a list of maxent thresholds for all species analysed
+(i.e. the climatic suitability maps below which species are not considered to occur in a grid cell).
 
 \
 
@@ -741,27 +1263,49 @@ for each time period, E.G. 2030)
 
 #########################################################################################################
 ## A function which counts the number cells gained or lost for each species inside an SUA
-suitability.2030 = tryCatch(mapply(SUA_cell_count,                      ## Function aggreagating GCMs by spatial unit
-                                   unit_path     = "./DIR/",            ## Data path for the spatial unit 
-                                   unit_file     = "SUA_2016_AUST.rds", ## Spatial unit of analysis - E.G. SUAs
-                                   unit_vec      = "SUA_2016_VEC.rds",  ## Vector of rasterized unit cells
-                                   DIR_list      = SDM.RESULTS.DIR,     ## List of directories with rasters
-                                   species_list  = map_spp,             ## List of species' directories
-                                   maxent_path   = maxent_path,         ## Directory of maxent results
-                                   thresholds    = percent.10.log,      ## List of maxent thresholds
-                                   percentiles   = percent.10.om,       ## 2nd List of maxent thresholds
-                                   time_slice    = 30,                  ## Time period, eg 2030
-                                   write_rasters = TRUE),               ## Save the combined rasters?
-                            
-                            error = function(cond) {
-                              
-                              message(paste('Species skipped - check inputs', spp))
-                              
-                            })
+tryCatch(mapply(SUA_cell_count,                                  ## Function aggregating GCM predictions
+                unit_path     = "./data/base/CONTEXTUAL/SUA/",   ## Data path for the spatial unit
+                unit_shp      = "SUA_2016_AUST.rds",             ## Spatial unit - E.G. urban areas
+                unit_vec      = "SUA_2016_VEC.rds",              ## Vector of rasterized unit cells
+                world_shp     = "LAND_world.rds",                ## Polygon for AUS maps
+                aus_shp       = "aus_states.rds",                ## Polygon for World maps
+                
+                DIR_list      = SDM.RESULTS.DIR,                 ## List of raster directories
+                species_list  = map_spp,                         ## List of species
+                maxent_path   = bs_path,                         ## Directory of maxent results
+                thresholds    = percent.10.log,                  ## List of maxent thresholds
+                time_slice    = 30,                              ##Time period, eg 2030
+                write_rasters = TRUE),
+         
+         #If the species fails, write a fail message to file.
+         error = function(cond) {
+           
+           #This will write the error message inside the text file, 
+           file.create(file.path(bs_path, "sua_count_failed_2030.txt"))
+           cat(cond$message, file=file.path(bs_path, "sua_count_failed_2030.txt"))
+           warning(cond$message)
+           
+         })
 
 ```
 
 \
+
+The combined maps were then re-coded to indicate whether grid cells were classified as suitable 
+in the majority of climate scenarios (i.e. at least four of the six scenarios). These grid cells 
+are most likely to be climatically suitable for the modelled species in the future. We then 
+calculated percent changes to the size of suitable climate in terms of 
+(i) overall change in size, 
+(ii) loss of baseline suitable areas and (iii) gain of newly suitable areas. 
+
+\
+
+The function also intersects species' maps with Significant Urban Areas (SUAs) from the 2016 ABS Australian Census. 
+It calculates the area predicted to be climatically suitable within the 82 temperature SUAs under current climate, 
+and the extent to which this area may change under the future scenarios. Preliminary analyses demonstrated 
+that environmental space tends to be poorly characterised by Maxent background samples in arid/tropical 
+SUAs, further justifying the exclusion of these SUAs from results.
+
 
 ```{r eval = FALSE, echo = TRUE}
 
@@ -1026,13 +1570,28 @@ SUA_cell_count = function(unit_path, unit_file, unit_vec,
 
 ```
 
-
 \newpage 
-![](output/figures/CV_figs/A_implexa_FUTURE_SUIT.png)
+![](output/figures/CV_figs/A_floribunda_future.png)
 
-**Figure 3.** Example of a combined suitabiliy map for one species under six climate models for 2030. 
-Species occurrence points are plotted in red on the left panel. The cells in the left and lower panels 
-are coded as cells where the species is predicted to be lost, gained, or remain stable.
+**Figure 3.** Example of a combined map of change in climatic suitability from current conditions to 2070. 
+Species occurrence points are plotted in red on the left panel. The cells in the right and bottom panels 
+are coded as either lost (orange cells - present now but not in 2070 according to 4 or more GCMs), 
+gained (green cells - absent now, but present in 2070), stable (blue cells - present now and in 2070), 
+or never suitable (white cells - never present). 
+
+\
+
+
+Finally, we fitted generalised additive models (GAMs) to assess the relationship between both the mean 
+annual temperature, and the maximum temperature of the warmest month (1960–1990) within an SUA
+– averaged across grid cells – and (a) the percent of species lost (i.e. percent of species with suitable 
+climate within the SUA during the baseline, that lacked suitable climate in the future) and gained 
+(i.e. percent of species with suitable climate within the SUA in the future, but not during the baseline) 
+and (b) the percent of the SUA's area that changed over time from (i) unsuitable to suitable or (ii) 
+suitable to unsuitable averaged over all species. We used the mgcv R package [version 1.8.4, Wood, 2011; 
+R Core Team, 2018] to fit GAMs, using a restricted maximum likelihood approach (i.e. REML). Note that 
+we also fitted GAMs using annual precipitation (see Figs. S2–S5 in supporting information)
+but the relationships show no pattern.
 
 \
 
@@ -1043,26 +1602,22 @@ are coded as cells where the species is predicted to be lost, gained, or remain 
 #########################################################################################################
 ### **Climatically suitable habitat for horticultural tree species** 
 
-All 176 species received AUC and TSS values sufficiently high (i.e. AUC > 0.69 and TSS > 0.29) to indicate 
-acceptable predictive power (see Table S1 in supplementary material). Averaged over all species, climate 
-space across the 82 SUAs was predicted to span 16,150 km2 (± 9,082 km2) in the baseline period. However, 
-we emphasize that the Maxent suitability surfaces have been thresholded: a higher or lower threshold will 
-decrease or increase, respectively, the area classified as “suitable”. The spatial extent of climate space 
-is predicted to decline to an average 13,043 (± 8,924 km2) by 2030, and 12,300 km2 (± 10,016 km2) by 2070. 
-Of the 176 species, 73% are predicted to experience range declines: 18% are predicted to lose > 50% of 
-climate space across their respective SUAs, by 2030, while 34% are predicted to lose > 50% by 2070. Among 
-the 14 species (8%) predicted to have losses exceeding 90% of baseline climate space are Callitris oblonga 
-(Pygmy cypress pine) and Acacia fimbriata (Brisbane golden wattle). In contrast, 11 species are predicted 
-to experience increases in the extent of suitable climate space of more than 50%, e.g. Ficus platypoda 
-(Rock fig) and Brachychiton rupestris (Queensland bottle tree).
-
-\
-
-Generally, suitable habitat is predicted to shift poleward. As such, species are likely to experience an 
-extension of their southern (colder) range margin (e.g., Pongamia pinnata and Melia azedarach in Fig. 4), 
-and/or a contraction of their northern (warmer) margin (e.g., Melia azedarach and Syzygium smithii in 
-Fig. 4). However, some species  –  particularly those found along coastal strips of south-east Australia  
-– may experience contraction at both range latitudinal margins (see Syzygium smithii, Fig. 4).
+Models for all 176 species had AUC and TSS values sufficiently high to indicate acceptable predictive 
+power [median AUC = 0.869 (±0.6)and median TSS=0.6 (±0.09), see Table S1 in supplementary material,
+Swets, 1988]. Overall, the spatial extent of climatically suitable habitat is predicted to decline 
+from an average of 16,152 km2 (±9082 km2) in the baseline period to 13,043 km2 (±8924 km2) by 2030, 
+and 12,300 km2(±,016 km2) by 2070. Of the 176 species, 73% are predicted to experience declines in 
+the extent of climatically suitable habitat across their respective SUAs: 18% are predicted to lose N50% 
+of this habitat by 2030, while 34% are predicted to lose N50% by 2070. Fourteen species(8%) were 
+projected to have losses exceeding 90% of baseline climatically suitable habitat [e.g. Callitris oblonga 
+(Pygmy cypress pine) and Acacia fimbriata (Brisbane golden wattle)]. In contrast, 11 species are predicted 
+to experience increases in the extent of climatically suitable habitat of 50%, e.g. Ficus platypoda 
+(Rock fig) and Brachychiton rupestris (Queensland bottle tree). Generally, suitable habitat is predicted 
+to shift poleward. As such, species are likely to experience an extension of their southern (colder) 
+range margin (e.g. Pongamia pinnata and Melia azedarach in Fig. 2), and/or a contraction of their 
+northern (warmer) margin (e.g. Melia azedarach and Syzygium smithii in Fig. 2). However, some species – 
+particularly those found along coastal regions of southeast Australia – may experience contraction at 
+both range margins(see Syzygium smithii, Fig. 2).
 
 
 \newpage 
@@ -1075,6 +1630,14 @@ to their baseline distributions (grey areas). Australia’s temperate SUAs are p
 in pink on the baseline map. Images are freely available in the public domain from 
 Wikimedia Commons (CC BY-SA 3.0) and credited to Alpsdake (Melia azedarach), 
 L. Shyamal [Pongamia pinnata (Millettia pinnata)] and Akos Kokai (Syzygium smithii).
+\
+
+Generally, suitable habitat is predicted to shift poleward. As such, species are likely to experience an 
+extension of their southern (colder) range margin (e.g., Pongamia pinnata and Melia azedarach in Fig. 4), 
+and/or a contraction of their northern (warmer) margin (e.g., Melia azedarach and Syzygium smithii in 
+Fig. 4). However, some species  –  particularly those found along coastal strips of south-east Australia  
+– may experience contraction at both range latitudinal margins (see Syzygium smithii, Fig. 4).
+
 
 
 \
@@ -1112,12 +1675,12 @@ losses (red) in the extent of suitable habitat over 82 Significant Urban Areas
 
 \
 
-SUAs with warmer baseline mean annual temperature 
-are predicted to have fewer tree species experience increases in suitable habitat compared to cooler 
-SUAs (Fig. 6). Similarly, the percent of tree species predicted to experience losses in suitable 
-habitat increases with increasing mean annual temperature within SUAs. These patterns of change 
-were consistent regardless of the area and population of the SUAs (Fig. 6). In addition, the deviance 
-explained by GAMs in the long term (2070) was higher than the model deviance in the short term (2030).
+SUAs with warmer baseline mean annual temperature are predicted to have fewer tree species experience 
+increases in suitable habitat compared to cooler SUAs (Fig. 6). Similarly, the percent of tree species 
+predicted to experience losses in suitable habitat increases with increasing mean annual temperature 
+within SUAs. These patterns of change were consistent regardless of the area and population of the SUAs 
+(Fig. 6). In addition, the deviance explained by GAMs in the long term (2070) was higher than the model 
+deviance in the short term (2030).
 
 
 \newpage 
@@ -1136,19 +1699,21 @@ gain/loss (y axis) in each SUA vs. the SUA MAT.
 
 
 #########################################################################################################
-# **<span style="color:blue"> Implications, caveats and future work </span>**
+# **<span style="color:blue"> Implications </span>**
 #########################################################################################################
 
 \
 
-Our analysis shows that commonly planted tree species are likely to respond to climate change 
-within temperate urban areas in a similar fashion as they are predicted to respond within natural 
-ecosystems – i.e. migrating pole-wards. Thus species found in SUAs in cooler areas are predicted 
-to experience greater expansion of suitable climate compared to species in SUAs in warmer areas. 
-(Figure 6). This increase of suitable habitat for more species in cooler urban areas is driven by 
-the projection of a southwards (poleward) shift in climate space in the underlying climate models: 
-species’ northern-most range margins are predicted to contract, while their southern-most margins 
-may be extending into new areas.
+Climate suitability models (CSMs) for 176 commonly-planted, native Australian tree species show that 
+climate change will likely reduce climatically suitable habitat within the majority of the 82 temperate and
+subtropical urban areas included in this study. Patterns in the loss of climatically suitable habitat for 
+urban species are broadly similar for predictions for plant species in natural ecosystems. That is, suitable
+habitat for urban trees is generally contracting, and shifting polewards, similar to trends in natural 
+populations [e.g. Hickling et al.,2006; O'Donnell et al., 2012; Butt et al., 2013]. This overarching pattern
+is driven by the projection of a poleward shift in climate space in the underlying climate models: hence, 
+generally within temperate and subtropical regions, species' low-latitude (here, northernmost) range margins 
+are predicted to contract, while their high-latitude (southernmost) margins may extend into new areas.
+
 
 \newpage 
 ![](output/figures/CV_figs/FIG_1_SUA_PLOT_crop.png)
@@ -1163,43 +1728,41 @@ suitability models, from baseline to 2070.
 
 \
 
-
-The repercussions of loss and gain for the Nursery Industry are two fold. Firstly, 
-if an area becomes unsuitable for a species, this means that existing plants are 
-likely to be vulnerable to climate change. Secondly, it signifies changing opportunities 
-for growers: species that may have been solid performers in the past may be unreliable 
-in the future, while new opportunities will emerge as suitable climate space appears 
-beyond a species’ current range.  
-
-\
-
-While CSMs are useful tools for exploring the distribution of climatically suitable 
-habitat, several factors should be kept in mind when interpreting their output 
-- particularly when applied to plants growing in urban environments.
+As with all CSM studies, it is important to highlight several key caveats. Firstly, due to the availability 
+of quality occurrence and tree inventory data in eastern Australia, the majority of the 176 tree species
+we modelled are temperate (e.g. Syzygium smithii, see Appendix, Table S2). It is possible that the responses 
+of trees planted within tropical and sub-tropical SUAs may drive overall patterns of species turnover
+in the warm temperate SUAs included in our study (e.g. city of Rockhampton in Queensland). Secondly, we 
+have only considered macro-climatic variables in our CSMs. Clearly, other factors – from microclimate,
+extreme weather events and edaphic conditions, to phenotypic plasticity [e.g. Singer et al., 2016; 
+Senner et al., 2018; (Benito Garzon et al., 2019)] – will also influence the suitability of urban areas 
+for particular species. 
 
 \
 
-**1).** CSMs do not ‘predict’ where a species will occur. These tools identify where 
-suitable conditions for the species occur with respect to the climatic variables used 
-to calibrate the model. However, climatic extremes have been excluded from the model, 
-which may alter the likelihood that a plant will survive in a given location.
+Thirdly, the ability to adjust otherwise limiting variables, such as rainfall through the use of 
+irrigation (Moore, 2016; Vogt et al., 2017), may enable some species to survive in urban areas
+that CSMs suggest are unsuitable (e.g. espaliered fruit trees). Locations characterised by contractions 
+in the range of climatically suitable habitat predicted here may also be able to support urban species 
+via additional watering or provision of shade, and our findings can assist in identifying regions 
+which may require new maintenance regimes in the future. Revised maintenance requirements are just 
+one response to climate change in urbanised areas, and below we discuss further implications
+for urban planning.
 
 \
 
-**2).**  The models were generated at a spatial resolution of 1 x 1 km. At a finer scale, microclimatic 
-characteristics also need to be considered when determining the suitability of a location for a species.
-
-\
-
-**3).**  CSMs provide an indication of the exposure of a species to climate change. However, they do not account 
-for plasticity in the response of individuals to weather and climate. A species may be able to tolerate 
-a broader range of conditions than is apparent from the distribution of its occurrence records. As such, 
-the species may be able to survive in areas projected to be unsuitable.
-
-\
-
-In sum, CSMs are tools for developing a broad understanding of responses to climate change and are best 
-used when combined with species-specific trait or experimental data.
+The number of current horticultural tree species with suitable climate within Australia's SUAs 
+is predicted to progressively decline as climate change intensifies, with more pronounced 
+reductions in urban areas which are currently warmest. Our results show that climatic
+‘opportunities’ for species differ markedly across the Australian continent, indicating 
+that a proactive approach is needed to identify new climate-ready species and plantings for climate
+change. The climate suitability model outputs we present provide a useful baseline assessment 
+of the impact of climate change on urban tree species, but should not be used in isolation 
+for urban forestry and planning. We advocate for an approach that combines multiple lines 
+of evidence to assess plant responses to climatic factors, particularly to shorter-term extreme 
+events – including measurements from plant traits and physiological experiments. 
+Combinatorial/synthetic approaches like this promote a more holistic understanding of the 
+resilience of urban plants and trees to climate change.
 
 \
 

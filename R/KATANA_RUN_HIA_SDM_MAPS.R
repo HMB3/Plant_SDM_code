@@ -139,7 +139,7 @@ if (!on_windows) {
 
 #GBIF.spp = unique(WPW.spp)  ## your list of species
 #GBIF.spp = unique(WPW.non.tree) 
-GBIF.spp = unique(WPW.tree[1])
+GBIF.spp = unique(WPW.tree)
 #GBIF.spp = unique(WPW.non.tree)
 #GBIF.spp = c("Acacia falcata")
 #GBIF.spp = unique(gsub("_", " ", unique(out_spp$searchTaxon)))
