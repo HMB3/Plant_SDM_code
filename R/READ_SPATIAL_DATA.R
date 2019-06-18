@@ -583,8 +583,49 @@ scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cc85bi70", "gf85bi70", "hg85b
 # NICE.list      = list.files(DATA_path, pattern = 'COMBO_NICHE_CONTEXT_EVERGREEN',  full.names = TRUE, recursive = TRUE)
 # RECORDS.list   = list.files(DATA_path, pattern = 'COMBO_RASTER_CONTEXT_EVERGREEN', full.names = TRUE)
 # SDM.TABLE.list = list.files(DATA_path, pattern = 'SDM_SPAT_OCC_BG_', full.names = TRUE)
+# BG.TABLE.list  = list.files(DATA_path,  pattern = 'SDM_SPAT_ALL_', full.names = TRUE)
 
 
+#########################################################################################################################
+## Now combine the raster tables for each species into one table
+BG.TABLE.ALL <- BG.TABLE.list %>%
+
+  ## Pipe the list into lapply
+  lapply(function(x) {
+
+    ## Create the character string
+    f <- paste0(x)
+
+    ## Load each file
+    message('Reading file for ', x)
+    d <- readRDS(f)
+    d <- as.data.frame(d)
+    message(nrow(d), ' BG for ', x)
+    message(class(d))
+    
+    return(d)
+
+  }) %>%
+
+  ## Finally, bind all the rows together
+  bind_rows()
+
+## This is a summary of maxent output for current conditions
+dim(BG.TABLE.ALL)
+names(BG.TABLE.ALL)
+
+
+#########################################################################################################################
+## Save table
+BG.TABLE.ALL    = SpatialPointsDataFrame(coords      = BG.TABLE.ALL[c("lon", "lat")],
+                                         data        = BG.TABLE.ALL,
+                                         proj4string = CRS(sp_epsg54009))
+projection(BG.TABLE.ALL)
+message(length(unique(BG.TABLE.ALL$searchTaxon)), ' species processed through from download to SDM table')
+
+
+## Save the data
+saveRDS(BG.TABLE.ALL, paste0(DATA_path, 'SDM_SPAT_OCC_BG_ALL_EVREGREEN_JULY_2018.rds'))
 
 
 #########################################################################################################################
@@ -652,6 +693,7 @@ scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cc85bi70", "gf85bi70", "hg85b
 
 #########################################################################################################################
 ## Save the niche and raster data
+# saveRDS(COMBO.NICHE.ALL,      paste0(DATA_path, 'COMBO_NICHE_CONTEXT_ALL_EVREGREEN_JUNE_2018.rds'))
 # saveRDS(COMBO.NICHE.ALL,      paste0(DATA_path, 'COMBO_NICHE_CONTEXT_ALL_EVREGREEN_JUNE_2018.rds'))
 # saveRDS(RECORDS.TABLE.ALL,    paste0(DATA_path, 'CLEAN_INV_ALL_EVREGREEN_JUNE_2018.rds'))
 

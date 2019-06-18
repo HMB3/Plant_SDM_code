@@ -5,8 +5,9 @@
 
 
 ## This code runs the whole SDM workflow for the HIA project, for a subset of species (e.g. whichever you supply)
-## In order to run this from katana, we need to use only the necessary packages.
-## save.image("KATANA_RUN_DATA.RData") 
+
+
+
 
 
 #########################################################################################################################
@@ -137,42 +138,46 @@ if (!on_windows) {
 #GBIF.spp   = TI.HIA    ##
 
 #GBIF.spp = unique(WPW.spp)  ## your list of species
-#GBIF.spp = unique(WPW.non.tree)   ## your list of species
-#GBIF.spp = unique(WPW.tree)       ## your list of species
+#GBIF.spp = unique(WPW.non.tree) 
+GBIF.spp = unique(WPW.tree[1])
 #GBIF.spp = unique(WPW.non.tree)
 #GBIF.spp = c("Acacia falcata")
-GBIF.spp = unique(gsub("_", " ", unique(out_spp$searchTaxon)))
+#GBIF.spp = unique(gsub("_", " ", unique(out_spp$searchTaxon)))
 
 
 ## Subset for PBS array jobs
 if (Sys.getenv("PBS_ARRAYID") != "") {
-
-    max_i = as.integer(Sys.getenv("WPW_MAX_I"))
-    i = as.integer (Sys.getenv("PBS_ARRAYID"))
-    GBIF.spp = GBIF.spp[1:length(GBIF.spp) %% 100 == (i-1)]
-
+  
+  max_i = as.integer(Sys.getenv("WPW_MAX_I"))
+  i = as.integer (Sys.getenv("PBS_ARRAYID"))
+  GBIF.spp = GBIF.spp[1:length(GBIF.spp) %% 100 == (i-1)]
+  
 }
-
-#  DEBUG
-#GBIF.spp = head(GBIF.spp)
 
 
 #########################################################################################################################
 ## The required folders must be created on katana
 GBIF.spp      = as_utf8(GBIF.spp, normalize = TRUE)  ## Check the species names have the right characters
-save_run      = "ALL_EVREGREEN_TREE"            ## a variable to append the run name to the output files
-                                                ## ALL_EVREGREEN_JUNE_2018 is the latest version of the niche data
-	
+save_run      = "ALL_EVREGREEN_JULY_2018"            ## a variable to append the run name to the output files
+
+
 ## If running the trees, use all three data sources
 if (grepl("TREE", save_run)) {
-      OCC_SOURCE    = c("ALA", "GBIF", "INVENTORY")
-    
-	## If running the non-trees, use ALA and GBIF only
-    } else {
-      ## Get the background records from any source
-    OCC_SOURCE    = c("ALA", "GBIF") 
-      
+  OCC_SOURCE    = c("ALA", "GBIF", "INVENTORY")
+  
+  ## If running the non-trees, use ALA and GBIF only
+} else {
+  ## Get the background records from any source
+  OCC_SOURCE    = c("ALA", "GBIF") 
+  
 }
+
+
+## Create new directories for the split check
+dir.create('./output/maxent/SPLIT_TEST_INV/')
+dir.create('./output/maxent/SPLIT_TEST_INV_BS/')
+
+
 
 #########################################################################################################################
 ## Reading and writing?
@@ -191,11 +196,11 @@ calc_niche    = "TRUE"
 
 #########################################################################################################################
 ## Analysis/results paths
-maxent_path   = './output/maxent/HIA_TEST_INV/'      ## The directory where maxent files are saved               
-maxent_dir    = 'output/maxent/HIA_TEST_INV'         ## Another version of the path needed to run maxent loop
+maxent_path   = './output/maxent/SPLIT_TEST_INV/'      ## The directory where maxent files are saved               
+maxent_dir    = 'output/maxent/SPLIT_TEST_INV'         ## Another version of the path needed to run maxent loop
 
-bs_path       = './output/maxent/HIA_TEST_INV_BS/'   ## Backwards selection directory
-bs_dir        = 'output/maxent/HIA_TEST_INV_BS'      ## the directory to harvest results : BS dir?
+bs_path       = './output/maxent/SPLIT_TEST_INV_BS/'   ## Backwards selection directory
+bs_dir        = 'output/maxent/SPLIT_TEST_INV_BS'      ## the directory to harvest results : BS dir?
 results_dir   = bs_dir   
 
 
@@ -324,12 +329,12 @@ source('./R/8_MAP_SDM_COMBINE.R', echo = TRUE)
 ##     - They do, yay!
 ##     - CSV output
 
-  
+
 ## 2).  All directories for evergreen species modelled, zipped up (using WG drives) ::
 ## 
 ##      - SDMs (two folders, all variables, and Backwards selected)
 ##      - Check the output for a few species
-      
+
 
 ##      - Maps for 2030/50/70 for 6 GCMs with MESS 
 ##      - Gain/loss/stable rasters + tables for 2030/50/70
@@ -338,7 +343,7 @@ source('./R/8_MAP_SDM_COMBINE.R', echo = TRUE)
 ##      - MESS.png + global occ + 2070 gain/loss.png + Maxent table in one folder
 ##      - This will need to be stored on the G:drive - hopefully there's enough space (compress full folder)
 
-  
+
 ## 3).  H:drive (2TB SSD that I've been working off) and G:drive (8TB HDD for backup).
 
 ##      - Clean up files on HD. Done

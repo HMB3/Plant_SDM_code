@@ -359,8 +359,13 @@ if(save_data == "TRUE") {
 
 
 #########################################################################################################################
-## 3). CREATE BACKGROUND POINTS AND VARIBALE NAMES
+## 3). FOR SMALL RUNS OF SPECIES, CREATE BACKGROUND POINTS AND VARIBALE NAMES
 #########################################################################################################################
+
+
+## Use one data frame for all species analysis, to save mucking around with background points............................
+# background.points = readRDS(paste0(DATA_path, 'SDM_SPAT_OCC_BG_ALL_EVREGREEN_JULY_2018.rds'))
+# SDM.SPAT.OCC.BG   = rbind(SDM.SPAT.ALL, background.points)
 
 
 #########################################################################################################################
@@ -393,11 +398,11 @@ if(save_data == "TRUE") {
 # identical(length(names(SDM.SPAT.ALL)), length(names(background.points)))
 
 
-SDM.SPAT.OCC.BG = rbind(SDM.SPAT.ALL, background.points)
-unique(SDM.SPAT.OCC.BG$SOURCE)
-table(SDM.SPAT.OCC.BG$SOURCE)
-unique(SDM.SPAT.OCC.BG$TYPE)
-length(unique(SDM.SPAT.OCC.BG$searchTaxon))
+# SDM.SPAT.OCC.BG = rbind(SDM.SPAT.ALL, background.points)
+# unique(SDM.SPAT.OCC.BG$SOURCE)
+# table(SDM.SPAT.OCC.BG$SOURCE)
+# unique(SDM.SPAT.OCC.BG$TYPE)
+# length(unique(SDM.SPAT.OCC.BG$searchTaxon))
 
 
 #########################################################################################################################

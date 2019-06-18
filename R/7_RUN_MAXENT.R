@@ -18,14 +18,16 @@ message('Running maxent models for ', length(GBIF.spp), ' species in the set ', 
 if(read_data == "TRUE") {
   
   ## This table will contains all the records for all HIA species (~3.8k).
-  ## SDM_SPAT_OCC_BG_ALL_EVERGREEN_SPP is the latest version of all the species
-  SDM.SPAT.OCC.BG = readRDS(paste0(DATA_path, 'SDM_SPAT_OCC_BG_ALL_EVERGREEN_SPP.rds'))
+  ## SDM_SPAT_OCC_BG_ALL_EVREGREEN_JULY_2018 is the latest version of all the species
+  SDM.SPAT.OCC.BG = readRDS(paste0(DATA_path, 'SDM_SPAT_OCC_BG_ALL_EVREGREEN_JULY_2018.rds'))
   
 } else {
   
   message(' skip file reading, not many species analysed')   ##
   
 }
+
+
 
 
 
@@ -38,19 +40,17 @@ if(read_data == "TRUE") {
 ## Run Maxent using a targetted selection of background points. 
 ## within 200km of existing points
 ## Within the same Koppen zone as the existing points
-## Try to sample bg points from the three sources (ALA/GBIF/INV in the same proportions as the occurrece data).
+SDM.SPAT.OCC.BG = readRDS(paste0(DATA_path, 'SDM_SPAT_OCC_BG_ALL_EVREGREEN_JULY_2018.rds'))
+
+
+## Check the table has all the species
 dim(SDM.SPAT.OCC.BG)
 length(intersect(unique(SDM.SPAT.OCC.BG$searchTaxon), GBIF.spp))  ## Should be same length as GBIF.spp
 projection(template.raster.1km);projection(SDM.SPAT.OCC.BG);projection(Koppen_1975_1km)
 
 
-## Can error messages be saved inside the text file......................................................................
-## Check why the BG sampling is not messaging.
-
-
-# # #########################################################################################################################
-# # ## Loop over all the species = GBIF.spp[1]
-
+#########################################################################################################################
+## Loop over all the species
 lapply(GBIF.spp, function(species){
 
    ## Skip the species if the directory already exists, before the loop
@@ -85,7 +85,6 @@ lapply(GBIF.spp, function(species){
      background <- subset(SDM.SPAT.OCC.BG, searchTaxon != species)
      background <- background[grep(paste(unique(occurrence$SOURCE), collapse = '|'), background$SOURCE, ignore.case = TRUE),]
      message('Using bg records from ', unique(background$SOURCE))
-
 
      ## Finally fit the models using FIT_MAXENT_TARG_BG. Also use tryCatch to skip any exceptions
      tryCatch(

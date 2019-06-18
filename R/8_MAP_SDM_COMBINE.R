@@ -185,36 +185,36 @@ tryCatch(
 
 
 ## Then loop over the species folders and climate scenarios
-# tryCatch(mapply(SUA_cell_count,                                  ## Function aggreagating GCM predictions by spatial unit
-#                 unit_path     = "./data/base/CONTEXTUAL/SUA/",   ## Data path for the spatial unit of analysis
-#                 unit_shp      = "SUA_2016_AUST.rds",             ## Spatial unit of analysis - E.G. SUAs
-#                 unit_vec      = "SUA_2016_VEC.rds",              ## Vector of rasterized unit cells
-#                 world_shp     = "LAND_world.rds",                ## Polygon for AUS maps
-#                 aus_shp       = "aus_states.rds",                ## Polygon for World maps
-#                 
-#                 DIR_list      = SDM.RESULTS.DIR,                 ## List of directories with rasters
-#                 species_list  = map_spp,                         ## List of species' directories
-#                 maxent_path   = bs_path,                         ## Directory of maxent results
-#                 thresholds    = percent.10.log,                  ## List of maxent thresholds
-#                 time_slice    = 30,                              ## Time period, eg 2030
-#                 write_rasters = TRUE),
-#          
-#          ## If the species fails, write a fail message to file.
-#          error = function(cond) {
-#            
-#            ## This will write the error message inside the text file, 
-#            ## but it won't include the species
-#            file.create(file.path(bs_path, "sua_count_failed_2030.txt"))
-#            cat(cond$message, file=file.path(bs_path, "sua_count_failed_2030.txt"))
-#            warning(cond$message)
-#            
-#          })
-# 
-# 
-# 
-# 
-# #########################################################################################################################
-# ## Combine GCM output for 2050
+tryCatch(mapply(SUA_cell_count,                                  ## Function aggreagating GCM predictions by spatial unit
+                unit_path     = "./data/base/CONTEXTUAL/SUA/",   ## Data path for the spatial unit of analysis
+                unit_shp      = "SUA_2016_AUST.rds",             ## Spatial unit of analysis - E.G. SUAs
+                unit_vec      = "SUA_2016_VEC.rds",              ## Vector of rasterized unit cells
+                world_shp     = "LAND_world.rds",                ## Polygon for AUS maps
+                aus_shp       = "aus_states.rds",                ## Polygon for World maps
+
+                DIR_list      = SDM.RESULTS.DIR,                 ## List of directories with rasters
+                species_list  = map_spp,                         ## List of species' directories
+                maxent_path   = bs_path,                         ## Directory of maxent results
+                thresholds    = percent.10.log,                  ## List of maxent thresholds
+                time_slice    = 30,                              ## Time period, eg 2030
+                write_rasters = TRUE),
+
+         ## If the species fails, write a fail message to file.
+         error = function(cond) {
+
+           ## This will write the error message inside the text file,
+           ## but it won't include the species
+           file.create(file.path(bs_path, "sua_count_failed_2030.txt"))
+           cat(cond$message, file=file.path(bs_path, "sua_count_failed_2030.txt"))
+           warning(cond$message)
+
+         })
+
+
+
+
+#########################################################################################################################
+## Combine GCM output for 2050
 tryCatch(mapply(SUA_cell_count,                                  ## Function aggreagating GCM predictions by spatial unit
                 unit_path     = "./data/base/CONTEXTUAL/SUA/",   ## Data path for the spatial unit of analysis
                 unit_shp      = "SUA_2016_AUST.rds",             ## Spatial unit of analysis - E.G. SUAs
@@ -241,38 +241,38 @@ tryCatch(mapply(SUA_cell_count,                                  ## Function agg
 
          })
 
-# 
-# 
-# 
-# 
-# 
-# #########################################################################################################################
-# ## Combine GCM output for 2070
-# ## Then loop over the species folders and climate scenarios
-# tryCatch(mapply(SUA_cell_count,                                  ## Function aggreagating GCM predictions by spatial unit
-#                 unit_path     = "./data/base/CONTEXTUAL/SUA/",   ## Data path for the spatial unit of analysis
-#                 unit_shp      = "SUA_2016_AUST.rds",             ## Spatial unit of analysis - E.G. SUAs
-#                 unit_vec      = "SUA_2016_VEC.rds",              ## Vector of rasterized unit cells
-#                 world_shp     = "LAND_world.rds",                ## Polygon for AUS maps
-#                 aus_shp       = "aus_states.rds",                ## Polygon for World maps
-#                 
-#                 DIR_list      = SDM.RESULTS.DIR,                 ## List of directories with rasters
-#                 species_list  = map_spp,                         ## List of species' directories
-#                 maxent_path   = bs_path,                         ## Directory of maxent results
-#                 thresholds    = percent.10.log,                  ## List of maxent thresholds
-#                 time_slice    = 70,                              ## Time period, eg 2030
-#                 write_rasters = TRUE),
-#          
-#          ## If the species fails, write a fail message to file.
-#          error = function(cond) {
-#            
-#            ## This will write the error message inside the text file, 
-#            ## but it won't include the species
-#            file.create(file.path(bs_path, "sua_count_failed_2070.txt"))
-#            cat(cond$message, file=file.path(bs_path, "sua_count_failed_2070.txt"))
-#            warning(cond$message)
-#            
-#          })
+
+
+
+
+
+#########################################################################################################################
+## Combine GCM output for 2070
+## Then loop over the species folders and climate scenarios
+tryCatch(mapply(SUA_cell_count,                                  ## Function aggreagating GCM predictions by spatial unit
+                unit_path     = "./data/base/CONTEXTUAL/SUA/",   ## Data path for the spatial unit of analysis
+                unit_shp      = "SUA_2016_AUST.rds",             ## Spatial unit of analysis - E.G. SUAs
+                unit_vec      = "SUA_2016_VEC.rds",              ## Vector of rasterized unit cells
+                world_shp     = "LAND_world.rds",                ## Polygon for AUS maps
+                aus_shp       = "aus_states.rds",                ## Polygon for World maps
+
+                DIR_list      = SDM.RESULTS.DIR,                 ## List of directories with rasters
+                species_list  = map_spp,                         ## List of species' directories
+                maxent_path   = bs_path,                         ## Directory of maxent results
+                thresholds    = percent.10.log,                  ## List of maxent thresholds
+                time_slice    = 70,                              ## Time period, eg 2030
+                write_rasters = TRUE),
+
+         ## If the species fails, write a fail message to file.
+         error = function(cond) {
+
+           ## This will write the error message inside the text file,
+           ## but it won't include the species
+           file.create(file.path(bs_path, "sua_count_failed_2070.txt"))
+           cat(cond$message, file=file.path(bs_path, "sua_count_failed_2070.txt"))
+           warning(cond$message)
+
+         })
 
 
 

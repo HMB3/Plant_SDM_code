@@ -33,9 +33,7 @@ rasterTmpFile()
 #########################################################################################################################
 ## Restrict the inventory species to just the analysed species
 TI.XY.SPP = TI.XY[TI.XY$searchTaxon %in% GBIF.spp, ]
-
 length(unique(TI.XY.SPP$searchTaxon))
-unique(TI.XY.SPP$searchTaxon)
 
 
 message('Extracting raster values for ', 
