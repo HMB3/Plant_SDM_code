@@ -40,11 +40,11 @@ if(calc_niche == "TRUE") {
   
   ## Use a projected, rather than geographic, coordinate system
   ## Not sure why, but this is needed for the spatial overlay step
-  #NICHE.1KM.84 = spTransform(NICHE.1KM, CRS.WGS.84)
-  AUS.WGS      = spTransform(AUS,       CRS.WGS.84)
-  POA.WGS      = spTransform(POA_2016,  CRS.WGS.84)
-  SUA.WGS      = spTransform(SUA_2016 , CRS.WGS.84)
-  LAND.WGS     = spTransform(LAND,      CRS.WGS.84)
+  AUS.WGS      = spTransform(AUS,        CRS.WGS.84)
+  POA.WGS      = spTransform(POA_2016,   CRS.WGS.84)
+  SUA.WGS      = spTransform(SUA_2016 ,  CRS.WGS.84)
+  LAND.WGS     = spTransform(LAND,       CRS.WGS.84)
+  KOP.WGS      = spTransform(Koppen_shp, CRS.WGS.84)
   
   
   ## Create global niche and Australian niche.
@@ -61,35 +61,43 @@ if(calc_niche == "TRUE") {
   projection(NICHE.1KM.84);projection(SUA.WGS);projection(AUS.WGS);projection(POA.WGS)
   SUA.JOIN      = over(NICHE.1KM.84, SUA.WGS)
   POA.JOIN      = over(NICHE.1KM.84, POA.WGS)
+  KOP.JOIN      = over(NICHE.1KM.84, KOP.WGS)
   
   
   ## What are the lengths?
   length(unique(SUA.JOIN$SUA_NAME16))
   length(unique(POA.JOIN$POA_NAME16))
+  length(unique(KOP.JOIN$Koppen))
   
   
   ## Bind the SUA and POA data to the occurence data
   ## Can this be done using 
-  COMBO.SUA.POA = cbind.data.frame(NICHE.1KM.84, SUA.JOIN, POA.JOIN) 
+  COMBO.SUA.POA = cbind.data.frame(NICHE.1KM.84, SUA.JOIN, POA.JOIN, KOP.JOIN) 
   
   
   #########################################################################################################################
   ## Aggregate the number of SUAs and POAs each species is found in
   SUA.AGG   = tapply(COMBO.SUA.POA$SUA_NAME16, COMBO.SUA.POA$searchTaxon, function(x) length(unique(x))) ## group SUA by species name
   POA.AGG   = tapply(COMBO.SUA.POA$POA_NAME16, COMBO.SUA.POA$searchTaxon, function(x) length(unique(x))) ## group POA by species name
+  KOP.AGG   = tapply(COMBO.SUA.POA$Koppen,     COMBO.SUA.POA$searchTaxon, function(x) length(unique(x))) ## group POA by species name
+  
   SUA.AGG   = as.data.frame(SUA.AGG)
   POA.AGG   = as.data.frame(POA.AGG)
+  KOP.AGG   = as.data.frame(KOP.AGG)
   
   
-  ## Create tables
+  ## Create tables with counts
   SUA.AGG <- setDT(SUA.AGG, keep.rownames = TRUE)[]
   POA.AGG <- setDT(POA.AGG, keep.rownames = TRUE)[]
+  KOP.AGG <- setDT(KOP.AGG, keep.rownames = TRUE)[]
   names(SUA.AGG) = c("searchTaxon", "SUA_count")
   names(POA.AGG) = c("searchTaxon", "POA_count")
+  names(KOP.AGG) = c("searchTaxon", "KOP_count")
   
   
   ## Now create a table of all the SUA's that each species occurrs
-  SUA.AGG = join(SUA.AGG, POA.AGG)
+  #SUA.AGG = join(SUA.AGG, POA.AGG)
+  SUA.AGG = join_all(list(SUA.AGG, POA.AGG, KOP.AGG),  by = 'searchTaxon', type = 'full')
   saveRDS(SUA.AGG, paste0(DATA_path, 'SUA_SPP_COUNT_', save_run, '.rds'))
   
   
@@ -374,29 +382,29 @@ if(calc_niche == "TRUE") {
   # plot(COMBO.NICHE.CONTEXT$Aus_records, COMBO.NICHE.CONTEXT$Plantings)
   
   
-  lm.glob  = lm(COMBO.NICHE.CONTEXT$Aus_records ~ COMBO.NICHE.CONTEXT$Global_records)
-  lm.plant = lm(COMBO.NICHE.CONTEXT$Aus_records ~ COMBO.NICHE.CONTEXT$Plantings)
-  
-  layout(matrix(c(1,1,2,3), 2, 1, byrow = TRUE))
-  
-  plot(COMBO.NICHE.CONTEXT$Global_records, COMBO.NICHE.CONTEXT$Aus_records,
-       pch = 19, col  = "blue",
-       xlab = "Global records", ylab = "Australian records",
-       abline(lm.glob),
-       main = save_run, cex = 2)
-  
-  legend("topleft", bty = "n",
-         legend = paste("R2 is", format(summary(lm.glob)$adj.r.squared, digits = 4)))
-  
-  plot(COMBO.NICHE.CONTEXT$Plantings, COMBO.NICHE.CONTEXT$Aus_records,
-       pch = 19, col  = "blue",
-       xlab = "Plantings", 
-       ylab = "Australian records", 
-       abline(lm.plant),
-       main = save_run, cex = 2)
-  
-  legend("topright", bty = "n",
-         legend = paste("R2 is", format(summary(lm.plant)$adj.r.squared, digits = 4)))
+  # lm.glob  = lm(COMBO.NICHE.CONTEXT$Aus_records ~ COMBO.NICHE.CONTEXT$Global_records)
+  # lm.plant = lm(COMBO.NICHE.CONTEXT$Aus_records ~ COMBO.NICHE.CONTEXT$Plantings)
+  # 
+  # layout(matrix(c(1,1,2,3), 2, 1, byrow = TRUE))
+  # 
+  # plot(COMBO.NICHE.CONTEXT$Global_records, COMBO.NICHE.CONTEXT$Aus_records,
+  #      pch = 19, col  = "blue",
+  #      xlab = "Global records", ylab = "Australian records",
+  #      abline(lm.glob),
+  #      main = save_run, cex = 2)
+  # 
+  # legend("topleft", bty = "n",
+  #        legend = paste("R2 is", format(summary(lm.glob)$adj.r.squared, digits = 4)))
+  # 
+  # plot(COMBO.NICHE.CONTEXT$Plantings, COMBO.NICHE.CONTEXT$Aus_records,
+  #      pch = 19, col  = "blue",
+  #      xlab = "Plantings", 
+  #      ylab = "Australian records", 
+  #      abline(lm.plant),
+  #      main = save_run, cex = 2)
+  # 
+  # legend("topright", bty = "n",
+  #        legend = paste("R2 is", format(summary(lm.plant)$adj.r.squared, digits = 4)))
   
   
   #########################################################################################################################
@@ -429,8 +437,8 @@ if(calc_niche == "TRUE") {
   ## save .rds file for the next session
   message('Writing 1km resolution niche and raster data for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
   saveRDS(COMBO.NICHE.CONTEXT,    paste0(DATA_path, 'COMBO_NICHE_CONTEXT_',  save_run, '.rds'))
-  saveRDS(COMBO.RASTER.CONTEXT,   paste0(DATA_path, 'COMBO_RASTER_CONTEXT_', save_run, '.rds'))
-  write.csv(COMBO.NICHE.CONTEXT,  paste0(DATA_path, 'COMBO_NICHE_CONTEXT_',  save_run, '.csv'), row.names = FALSE)
+  #saveRDS(COMBO.RASTER.CONTEXT,   paste0(DATA_path, 'COMBO_RASTER_CONTEXT_', save_run, '.rds'))
+  #write.csv(COMBO.NICHE.CONTEXT,  paste0(DATA_path, 'COMBO_NICHE_CONTEXT_',  save_run, '.csv'), row.names = FALSE)
   
   
 } else {

@@ -216,22 +216,22 @@ if (nrow(MAXENT.RESULTS) > 2) {
   ## Save this to file
   #png(paste0('./output/maxent/', 'Maxent_run_summary_', save_run, '.png'), 16, 12, units = 'in', res = 500)
   
-  layout(matrix(c(1,1,2,3), 2, 2, byrow = TRUE))
+  layout(matrix(c(1,1,2,3), 1, 1, byrow = TRUE))
   
   plot(MAXENT.RESULTS$Training_AUC, MAXENT.RESULTS$Max_tss, pch = 19, col  = "blue",
        xlab = "AUC", ylab = "TSS", 
        abline(lm(MAXENT.RESULTS$Max_tss ~ MAXENT.RESULTS$Training_AUC)), 
-       main = save_run, cex = 3)
+       main = '', cex = 1.3)
   
   legend("topleft", bty = "n", 
          legend = paste("R2 is", format(summary(lm.auc)$adj.r.squared, digits = 4)))
   
-  hist(MAXENT.RESULTS$Training_AUC, breaks = 10, col = "blue",   border = FALSE,
-       ylab = "Frequency",
-       xlab = "Training AUC", main = "AUC", cex = 3)
-  hist(MAXENT.RESULTS$Max_tss,      breaks = 10, col = "orange", border = FALSE,
-       ylab = "",
-       xlab = "Maximum True Skill Statistic", main = "TSS", cex = 3)
+  # hist(MAXENT.RESULTS$Training_AUC, breaks = 10, col = "blue",   border = FALSE,
+  #      ylab = "Frequency",
+  #      xlab = "Training AUC", main = "AUC", cex = 3)
+  # hist(MAXENT.RESULTS$Max_tss,      breaks = 10, col = "orange", border = FALSE,
+  #      ylab = "",
+  #      xlab = "Maximum True Skill Statistic", main = "TSS", cex = 3)
   
   ## Finsish the device
   #dev.off()
@@ -257,8 +257,8 @@ if (nrow(MAXENT.RESULTS) > 2) {
 MAXENT.RESULTS$searchTaxon = gsub("_", " ", MAXENT.RESULTS$searchTaxon)
 MAXENT.RESULTS = join(COMBO.NICHE.CONTEXT, MAXENT.RESULTS, type = "right")
 MAXENT.RESULTS = dplyr::select(MAXENT.RESULTS, results.columns)
-summary(MAXENT.RESULTS)
-View(MAXENT.RESULTS)
+#summary(MAXENT.RESULTS)
+#View(MAXENT.RESULTS)
 
 
 #########################################################################################################################
@@ -284,13 +284,14 @@ if(save_data == "TRUE") {
 
 
 
+
 #########################################################################################################################
 ## 4). RUN MESS MAPS LOCALLY - BEST TO GET IT WORKING ON LINUX....
 #########################################################################################################################
 
 
 ## Run MESS maps for all species - this will take awhile!
-source('./R/LOCAL_MESS_MAPS.R', echo = TRUE)
+#source('./R/LOCAL_MESS_MAPS.R', echo = TRUE)
 
 
 ## Then, we need linux/windows code to find all files with strings, and copy and move them to a new location - the

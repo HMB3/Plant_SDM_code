@@ -580,10 +580,10 @@ scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cc85bi70", "gf85bi70", "hg85b
 
 
 ## Create a list of all dataframes with the extension from this run
-# NICE.list      = list.files(DATA_path, pattern = 'COMBO_NICHE_CONTEXT_EVERGREEN',  full.names = TRUE, recursive = TRUE)
-# RECORDS.list   = list.files(DATA_path, pattern = 'COMBO_RASTER_CONTEXT_EVERGREEN', full.names = TRUE)
-# SDM.TABLE.list = list.files(DATA_path, pattern = 'SDM_SPAT_OCC_BG_', full.names = TRUE)
+# NICE.list      = list.files(DATA_path, pattern = 'COMBO_NICHE_CONTEXT_EVER_',  full.names = TRUE, recursive = TRUE)
 # BG.TABLE.list  = list.files(DATA_path,  pattern = 'SDM_SPAT_ALL_', full.names = TRUE)
+# RECORDS.list   = list.files(DATA_path, pattern = 'COMBO_RASTER_CONTEXT_EVER', full.names = TRUE)
+# SDM.TABLE.list = list.files(DATA_path, pattern = 'SDM_SPAT_OCC_BG_', full.names = TRUE)
 
 
 #########################################################################################################################
@@ -630,28 +630,28 @@ saveRDS(BG.TABLE.ALL, paste0(DATA_path, 'SDM_SPAT_OCC_BG_ALL_EVREGREEN_JULY_2018
 
 #########################################################################################################################
 ## Now combine the niche tables for each species into one table
-# COMBO.NICHE.ALL <- NICE.list %>%
-# 
-#   ## pipe the list into lapply
-#   lapply(function(x) {
-# 
-#     ## create the character string
-#     f <- paste0(x)
-# 
-#     ## load each .csv file
-#     d <- readRDS(f)
-#     message(nrow(d), ' Records for ', x)
-#     return(d)
-# 
-#   }) %>%
-# 
-#   ## finally, bind all the rows together
-#   bind_rows()
+COMBO.NICHE.ALL <- NICE.list %>%
+
+  ## pipe the list into lapply
+  lapply(function(x) {
+
+    ## create the character string
+    f <- paste0(x)
+
+    ## load each .csv file
+    d <- readRDS(f)
+    message(nrow(d), ' Records for ', x)
+    return(d)
+
+  }) %>%
+
+  ## finally, bind all the rows together
+  bind_rows()
 
 
 ## Update this
-# str(COMBO.NICHE.ALL)
-# dim(COMBO.NICHE.ALL)
+str(COMBO.NICHE.ALL)
+dim(COMBO.NICHE.ALL)
 
 
 # Make sure the Species are unique
@@ -662,40 +662,37 @@ saveRDS(BG.TABLE.ALL, paste0(DATA_path, 'SDM_SPAT_OCC_BG_ALL_EVREGREEN_JULY_2018
 
 #########################################################################################################################
 ## Now combine the raster tables for each species into one table
-# RECORDS.TABLE.ALL <- RECORDS.list %>%
-# 
-#   ## Pipe the list into lapply
-#   lapply(function(x) {
-# 
-#     ## Create the character string
-#     f <- paste0(x)
-# 
-#     ## Load each file
-#     message('Reading file for ', x)
-#     d <- readRDS(f)
-#     message(nrow(d), ' Records for ', x)
-#     return(d)
-# 
-#   }) %>%
-# 
-#   ## Finally, bind all the rows together
-#   bind_rows()
+RECORDS.TABLE.ALL <- RECORDS.list %>%
+
+  ## Pipe the list into lapply
+  lapply(function(x) {
+
+    ## Create the character string
+    f <- paste0(x)
+
+    ## Load each file
+    message('Reading file for ', x)
+    d <- readRDS(f)
+    message(nrow(d), ' Records for ', x)
+    return(d)
+
+  }) %>%
+
+  ## Finally, bind all the rows together
+  bind_rows()
 
 ## This is a summary of maxent output for current conditions
-# dim(RECORDS.TABLE.ALL)
-# names(RECORDS.TABLE.ALL)[1:10]
-
-
-##
-# length(unique(RECORDS.TABLE.ALL$searchTaxon))
-# unique(RECORDS.TABLE.ALL$SOURCE)
+dim(RECORDS.TABLE.ALL)
+length(unique(RECORDS.TABLE.ALL$searchTaxon))
+unique(RECORDS.TABLE.ALL$SOURCE)
+names(RECORDS.TABLE.ALL)[1:10]
 
 
 #########################################################################################################################
 ## Save the niche and raster data
 # saveRDS(COMBO.NICHE.ALL,      paste0(DATA_path, 'COMBO_NICHE_CONTEXT_ALL_EVREGREEN_JUNE_2018.rds'))
 # saveRDS(COMBO.NICHE.ALL,      paste0(DATA_path, 'COMBO_NICHE_CONTEXT_ALL_EVREGREEN_JUNE_2018.rds'))
-# saveRDS(RECORDS.TABLE.ALL,    paste0(DATA_path, 'CLEAN_INV_ALL_EVREGREEN_JUNE_2018.rds'))
+# saveRDS(RECORDS.TABLE.ALL,    paste0(DATA_path, 'CLEAN_INV_ALL_EVREGREEN_JULY_2018.rds'))
 
 
 

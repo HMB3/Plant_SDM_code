@@ -231,7 +231,7 @@ message('Running SDMs and maps for ', length(GBIF.spp), ' species in the set ', 
 
 ## Step 2 :: combine GBIF occurrence data with ALA data and filter to records > 1950
 # source('./R/2_ALA_DATA_FILTER_TAXO_SCIENTIFIC_NAME.R', echo = TRUE)
-# source('./R/3_GBIF_DATA_TAXO_SCIENTIFIC_NAME.R',     echo = TRUE)
+# source('./R/3_GBIF_DATA_TAXO_SCIENTIFIC_NAME.R',       echo = TRUE)
 
 
 ## Step 4 :: combine GBIF, ALA and tree inventory data into a single table,
@@ -341,15 +341,15 @@ source('./R/8_MAP_SDM_COMBINE.R', echo = TRUE)
 ##      - Local mess function is working. 
 ##        Need a folder for checking all species 
 ##      - MESS.png + global occ + 2070 gain/loss.png + Maxent table in one folder
-##      - This will need to be stored on the G:drive - hopefully there's enough space (compress full folder)
+##      - This will need to be stored on the G:drive : check_evergreen_species
 
 
 ## 3).  H:drive (2TB SSD that I've been working off) and G:drive (8TB HDD for backup).
 
-##      - Clean up files on HD. Done
+##      - Clean up files on H: ..............................................................................
 ##      - Put species to check in the results
 ##      - Store the full evergreen results in G:
-##      - Run the code from inside H to test
+##      - Run the code from inside G to test. Keep the full folders on the temporary drive
 
 
 ## 4). Latest code for running SDMs and maps on windows and linux. This include the PBS script

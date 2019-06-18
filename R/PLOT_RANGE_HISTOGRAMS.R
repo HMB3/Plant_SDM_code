@@ -7,8 +7,8 @@
 ## This code can be used to re-do the zonal stats for the SUAs in step 9................................................. 
 
 
-# #########################################################################################################################
-# ## Just use the two environmental conditions likely  to be used for ranges
+#########################################################################################################################
+## Just use the two environmental conditions likely  to be used for ranges
 POA_temp = aus.grids.current[[1]]
 POA_rain = aus.grids.current[[12]]
 

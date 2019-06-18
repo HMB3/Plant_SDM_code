@@ -1,5 +1,5 @@
 ---
-title: "Predicted change of suitable habitat for horticultural trees in urban areas under climate change"
+title: "Substantial declines in urban tree habitat predicted under climate change"
 authors: "Hugh Burley, John Baumgartner, Linda Beaumont"
 date: "December 2018"
 output:
@@ -9,33 +9,34 @@ pdf_document: default
 
 \
 
+
 This R markdown file summarises Hugh's contribution to the 'Which Plant Where' project at Macquarie University, 
-outlining the key functions I have created during my postdoctural work. WPW is part of the Green Cities
+outlining the key functions I have created during my post doctoral work. WPW is part of the Green Cities
 co-investment fund : 
+
+\
 
 https://horticulture.com.au/co-investment-fund/green-cities-fund/
 
 
 https://www.whichplantwhere.com.au/ 
 
+\
+
 
 The text and code below summarises a workflow in R that can be used to relatively rapidly assess the effect
 of climate change on a given plant within Australia, from downloading occurrence records, through to creating
-maps of predicted climatic suitablity across Australia at 1km*1km resolution. 
+maps of predicted climatic suitability across Australia at 1km*1km resolution. This work is published in Science 
+of the Total Environment ::
 
-This work is published in Science of the Total Environment ::
+\
 
 Burley, H., Beaumont, L.J., Ossola, A., et al. (2019) Substantial declines in urban tree habitat predicted 
 under climate change. Science of The Total Environment, 685, 451-462.
 
 https://www.sciencedirect.com/science/article/pii/S0048969719323289#f0030 
 
-
-An example for 20 species is given in the markdown file below.
-
-
 \
-
 
 #########################################################################################################
 # **<span style="color:blue"> Summary </span>**
@@ -108,13 +109,13 @@ Australia's urban landscapes and are also currently sold in commercial plant nur
 a representative sample of the continent's urban tree flora, and thus are indicative of how urban trees
 may fare under climate change. In doing so, we asked: 1) which tree species are more likely to experience 
 increases and decreases in the distribution of climatically suitable habitat across urban areas in the short
-(2030) and long term(2070); and 2)which urban areas aremore likely to experience substantial increases or 
+(2030) and long term(2070); and 2)which urban areas are more likely to experience substantial increases or 
 decreases in the number of species with suitable habitat by 2030 and 2070? We expect that urban areas in 
 cooler regions will experience greater gains in the number of species with climatically suitable habitat 
 than urban areas in warmer regions, consistent with findings from previous studies modelling large suites 
 of species occurring in natural environments on the Australian continent [e.g. O'Donnell et al., 2012]. 
 We also identify key challenges associated with the use of CSMs for species in urban environments, and 
-further discuss the implications for urban forestry, planning and industry efforts in order to create |
+further discuss the implications for urban forestry, planning and industry efforts in order to create
 future urban forests that are more resilient to climate change.
 
 \
@@ -129,11 +130,7 @@ range in size from ~46 km2 (City of Sale, Victoria) to 6189 km2 (City of Melbour
 
 
 \newpage 
-![](output/figures/CV_figs/SUA_TEMP_ESA_PLOT.png)
-
-
-\newpage 
-![](output/figures/CV_figs/figMAT_PET_SUA.png)
+![](output/figures/CV_figs/FIG1_SUA_PLOTS_NO_SHP.png)
 
 **Figure 1.** Map of 82 Australian Significant Urban Areas (SUA, plotted in pink) included in this study, 
 with the largest SUA in each state and territory plotted in blue symbols. According to the Köppen classification 
@@ -163,7 +160,6 @@ used for this analysis.
 
 ########################################################################################################
 ## List of Variables used to run the SDM analyses
-load("H:/green_cities_sdm/TEST_RUN.RData")
 source('./R/RMD_READ_PACKAGES.R')
 
 ```
@@ -175,45 +171,20 @@ source('./R/RMD_READ_PACKAGES.R')
 For each of these planted and sold species, we downloaded global occurrence records from GBIF and the 
 Atlas of Living Australia (ALA, www.ala.org.au) using the rgbif and ALA4R packages in R 
 [https://github.com/AtlasOfLivingAustralia/ALA4R, (Hijmans et al. 2016) (R Core Team, 2017), 
-see R script "1_GBIF_ALA_DOWNLOAD.R"]. 
-
-\
-
-We then undertook an intensive spatial data-cleaning process to remove spatially invalid or suspect
-records that, if retained, can cause species' climate niches to be miscalculated (R scripts 2-6). 
-Spatially invalid records, those collected before 1950, duplicate records, those records within 10 km 
-of capital cities (which are likely to be herbarium records, and thus not reflective of the species 
-realised niche), herbaria and biodiversity institutions, and individual records 300 km from other 
-records for that species were removed using the CoordinateCleaner package [Zizka et al., 2019, 
-version 1.0–7, resulting in ~22% of ~ 2.2 million records for 248 species being removed].
+see R script "1_GBIF_ALA_DOWNLOAD.R"]. We then undertook an intensive spatial data-cleaning process to 
+remove spatially invalid or suspect records that, if retained, can cause species' climate niches to be 
+miscalculated (R scripts 2-6). Spatially invalid records, those collected before 1950, duplicate records, 
+those records within 10 km of capital cities (which are likely to be herbarium records, and thus not 
+reflective of the species realised niche), herbaria and biodiversity institutions, and individual 
+records 300 km from other records for that species were removed using the CoordinateCleaner package 
+[Zizka et al., 2019, version 1.0–7, resulting in ~22% of ~ 2.2 million records for 248 species being removed].
 
 \
 
 The backbone of the R workflow is a list of plant species. It is designed to download occurrence data for
 that list of species, clean it for common errors with a series of filters (taxonomic, contextual, spatial), 
 extract the climatic conditions for all records, and finally format the records into a table that can be
-passed to the Maxent algorithm (see H:\green_cities_sdm\output\maxent\SUA_SDM_analysis_workflow.pptx).   
-
-```{r echo = FALSE, message = FALSE, warning = FALSE}
-## Step 3 :: combine GBIF occurrence data with ALA data and filter to records > 1950
-source('./R/2_ALA_DATA_FILTER_TAXO_SCIENTIFIC_NAME.R', echo = FALSE)
-source('./R/3_GBIF_DATA_TAXO_SCIENTIFIC_NAME.R',     echo = FALSE)
-
-
-## Step 4 :: combine GBIF, ALA and tree inventory data into a single table, extract environmental condtions
-source('./R/4_ALA_GBIF_URBAN_COMBINE.R',  echo = FALSE)
-source('./R/INVENTORY_RASTER.R',          echo = FALSE)
-
-
-## Step 5 :: clean the occurrence data using the 'CleanCoordinates' function in the CoordinateCleaner package to remove
-## records near herbaria, duplicates, etc. & add contextual info for each record (taxonomic and horticultural) 
-## Then prepare the SDM table
-## Then clean the spatial outliers
-source('./R/5_GEO_CLEAN_DATA.R',  echo = FALSE)
-source('./R/6_PREPARE_SDM_TABLE_1KM.R',  echo = FALSE)
-
-
-```
+passed to the Maxent algorithm (see 'H:\green_cities_sdm\output\maxent\SUA_SDM_analysis_workflow.pptx').   
 
 \
 
@@ -233,6 +204,12 @@ occurrence records fromGBIF and ALA, see Appendix, Fig. S1).
 \newpage 
 ![](output/figures/CV_figs/Niche_overlap.png)
 
+**Figure S1.** Convex hull plot of current (1960-1990) annual rainfall and mean annual temperature, 
+using the spatial data for all 176 native Australian trees in our analysis. ‘OCC’ denotes 
+occurrence data from GBIF and ALA (blue points and convex hull), while ‘INV’ denotes data 
+from the tree inventories (red points and convex hull).
+
+\
 
 When assessing the impacts of climate change, it is more robust to use projections from multiple climate 
 models (IPCC, 2014; Taylor, Stouffer, & Meehl, 2011; Beaumont et al. 2007, Baumgartner et al 2018). We 
@@ -253,18 +230,17 @@ We modelled climatic suitability under current conditions (1960-1990) using the 
 (Elith et al. 2011; Phillips et al. 2006; Phillips and Dudik 2008) within the Dismo R package 
 (Hijmans et al. 2016). Maxent is a machine learning, correlative approach to modelling climatic suitability 
 that is generally regarded as superior to other algorithms that are used to model presence-only 
-occurrence data (Elith et al. 2006). 
-
-\
-
-Models were calibrated using most of the default Maxent settings, although hinge and threshold ‘features’ 
-[mathematical transformations/simplifications of predictor variables, Elith et al., 2011] were disabled
-to reduce over-fitting the models. In addition to occurrence records, Maxent requires ‘background’ data 
-that characterise the surrounding environment in which the modelled species occurs. Our background
-points comprised random samples of up to 70,000 cells from the pool of cells that (a) contained occurrence 
-records in ALA for one or more plant species, (b) fell within 200 km of records for the target species
-[i.e. a buffered target-group background, Elith and Leathwick, 2007;Phillips and Dudík, 2008], and 
-(c)were within the same Köppen climate zone as the modelled species' known occurrences [using the Köppen
+occurrence data (Elith et al. 2006). Models were calibrated using most of the default Maxent settings, 
+although hinge and threshold ‘features’ [mathematical transformations/simplifications of predictor variables, 
+Elith et al., 2011] were disabled to reduce over-fitting the models. In addition to occurrence records, 
+Maxent requires ‘background’ data that characterise the surrounding environment in which the modelled 
+species occurs. Our background points comprised random samples of up to 70,000 cells from the pool of 
+cells that (a) contained occurrence records in ALA for one or more plant species, (b) fell within 200 km 
+of records for the target species[i.e. a buffered target-group background, Elith and Leathwick, 2007;Phillips 
+and Dudík, 2008], and (c) were within the same Köppen climate zone as the modelled species' known 
+occurrences [using the Köppen classification from Kriticos et al., 2012]. This approach was utilised to
+ensure that both the occurrence and background points had similar spatial
+biases, a key requirement for improving Maxent model calibration.
 
 \
 
@@ -278,7 +254,7 @@ This is a limitation of the current workflow, but is suitable for processing sma
 
 \
 
-This function runs two maxent models :: one using all the predictor variables supplied and one which uses 
+This function runs two maxent models :: one using all the predictor variables supplied, and one which uses 
 variance inflation factors (VIF) to run backwards selection on the full model. Given a candidate set of predictor 
 variables (e.g. climate, soil, etc.) , this function identifies a subset that meets specified multicollinearity 
 criteria. Subsequently, backward stepwise variable selection (VIF) is used to iteratively drop the variable that 
@@ -316,27 +292,27 @@ lapply(GBIF.spp, function(spp){
     
     ## Finally fit the models using FIT_MAXENT_TARG_BG. 
     tryCatch(
-      FIT_MAXENT_TARG_BG(occ                     = occurrence,  ## occurrence points
-                         bg                      = background,  ## background points
-                         sdm.predictors          = sdm.select,  ## predictor variables
-                         name                    = spp,         ## Species name
-                         outdir,                                ## Output directory
-						 bsdir                   = bs_dir,      ## Store BS results
-						 
-                         backwards_sel           = "TRUE",
-                         cor_thr                 = 0.8,         ## Max pairwise correlation 
-                         pct_thr                 = 5,           ## Min percent contribution
-                         k_thr                   = 4,           ## Min number of variables
-						 
-                         template.raster,                       ## Resolution raster
-                         min_n                   = 20,          ## Minimum records           
-                         max_bg_size             = 70000,       ## Max bg points
-                         Koppen                  = Koppen_1975, ## Koppen Shapefile 
-                         background_buffer_width = 200000,      ## Km
-                         shapefiles              = TRUE,        ## Save bg and occ shp?
-                         features                = 'lpq',       ## Maxent features
-                         replicates              = 5,           ## No. of K-fold
-                         responsecurves          = TRUE),       ## save response curves?
+      fit_maxent_targ_back(occ                     = occurrence,  ## occurrence points
+                           bg                      = background,  ## background points
+                           sdm.predictors          = sdm.select,  ## predictor variables
+                           name                    = spp,         ## Species name
+                           outdir,                                ## Output directory
+                           bsdir                   = bs_dir,      ## Store BS results
+                           
+                           backwards_sel           = "TRUE",
+                           cor_thr                 = 0.8,         ## Max pairwise correlation 
+                           pct_thr                 = 5,           ## Min percent contribution
+                           k_thr                   = 4,           ## Min number of variables
+                           
+                           template.raster,                       ## Resolution raster
+                           min_n                   = 20,          ## Minimum records           
+                           max_bg_size             = 70000,       ## Max bg points
+                           Koppen                  = Koppen_1975, ## Koppen Shapefile 
+                           background_buffer_width = 200000,      ## Km
+                           shapefiles              = TRUE,        ## Save bg and occ shp?
+                           features                = 'lpq',       ## Maxent features
+                           replicates              = 5,           ## No. of K-fold
+                           responsecurves          = TRUE),       ## save response curves?
       
       error = function(cond) {
 
@@ -644,21 +620,41 @@ fit_maxent_targ_bg_back_sel <- function(occ,
 
 \
 
-The performance of each model was estimated by calculating the average test Area Under the Receiver 
-Operating Characteristic curve (AUC, Swets, 1988) and the True Skill Statistic (TSS) through five-fold 
-cross-validation. This involved splitting the occurrence data for each species into five subsets of 
-roughly equal size (i.e. folds), fitting the model to four of the five folds and predicting to the 
-fifth. This process was repeated until each fold was used four times for model fitting and once for 
-model evaluation (Stone, 1974). Below is a plot and table of the results for the backwards selected
-models - this code needs to be updated !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!.
+The performance of each model was estimated by calculating the average Area Under the Receiver Operating 
+Characteristic curve (Swets,1988) and the True Skill Statistic (TSS) on test data through five-fold
+cross-validation. This involved splitting the occurrence data for each species into five random subsets 
+of close to equal size (i.e. folds), fitting the model to four of the five folds and predicting to the fifth. 
+This process was repeated until each fold was used four times for model fitting and once for model evaluation 
+(Stone, 1974, see plot and table below for example species). Subsequently, CSMs were fitted a final time using 
+the complete set of species data. It is important to emphasize that models can have high performance indicators 
+with respect to test/training data, yet still over-project suitability (i.e. although the model projects some 
+cells to be suitable, given ecological knowledge of the species these cells are unlikely to be suitable in reality). 
+This may indicate that models are encountering novel conditions. To explore this, we calculated Multivariate 
+Environmental Similarity Surfaces [MESS, Elith et al., 2010; Baumgartner et al. (2017)]. Although MESS maps indicated 
+that the models were not projecting to novel states for individual variables, this approach does not consider 
+novel combinations of variables. An alternate explanation for over-projection is that suitable conditions 
+for the species are influenced by environmental variables not considered in the model [such as edaphic 
+conditions, see Barry and Elith, 2006]. 
 
 \
 
 ```{r maxent table, message = FALSE, echo = FALSE, warning = FALSE}
-source('./R/MAXENT_TABLE.R', echo = FALSE)
-kable(MAXENT.RESULTS[c("searchTaxon", "X.Background.points", "Var_pimp", "Perm_imp", "Training.AUC",  "max_tss")])
+source('./R/COLLATE_MAXENT_KATANA_RESULTS.R',   echo = FALSE)
+kable(head(MAXENT.RESULTS[1:3, 10:15], 10))
 
 ```
+
+\
+
+As such, we visually assessed all maps of current suitable habitat (e.g. Fig 2), and excluded from our analysis models 
+whose resulting maps contained substantial over projection.Although this approach is somewhat subjective, 
+excluding questionable models in this way adds more rigour to our analysis than if we were to rely solely 
+on AUC and TSS values. This expert validation procedure suggested that for 72 species, additional/alternative 
+climate variables (beyond the readily available bioclimatic variables)may be required in order to adequately 
+characterise the species' realised climate niche. Hence, the following results are based on data for the 
+remaining 176 species with robust models only. The CSM for each of these species was projected onto the 
+six climate scenarios for two future time periods (2030 and 2070), using the project function in the rmaxent 
+package [https://github.com/johnbaums/rmaxent; Baumgartner et al., 2017].
 
 \
 
@@ -666,7 +662,7 @@ kable(MAXENT.RESULTS[c("searchTaxon", "X.Background.points", "Var_pimp", "Perm_i
 ## **Projecting the models to future scenarios**
 We then created a function to take the maxent model for each species, and project it onto the six chosen 
 climate scenarios for three future time periods (2030, 2050 and 2070), using the 'Rmaxent' package.
-This function loops over all 6 climate scenarios for each species analysed, one time period at a time 
+This function loops over all 6 climate scenarios for each species analysed, one period at a time 
 (2030/50/70).
 
 \
@@ -712,8 +708,7 @@ to measure the similarity between the new environments, and those in the trainin
 as models are unreliable when predicting outside their domain (Barbosa et al. 2009). This process is 
 especially important for interpreting the results for taxa which have been reliably recorded across large 
 geographic and environmental ranges (e.g. for plant species that have wide distributions both in their 
-country of 'origin', and throughout the world, as is the case for many forestry species such as E. spp, 
-and invasive example.
+country of 'origin', and throughout the world).
 
 \
 
@@ -1004,19 +999,12 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
             ## Need to save the polygons to file ::  
             message('Converting raster MESS maps to polygons under ', x, ' scenario for ', species) 
             
-            ## If we're on linux, use the standard polygonizer function
-            if (!on_windows) {
-              
-              novel_current_poly <- polygonizer(sprintf('%s/%s%s.tif',   MESS_dir, species, "_current_novel"))
-              novel_future_poly  <- polygonizer(sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_novel_", x))
-              
-            } else {
-              
-              ## If we're on windows, use the GDAL .bat file
-              novel_current_poly <- polygonizer_windows(sprintf('%s/%s%s.tif',   MESS_dir, species, "_current_novel"))
-              novel_future_poly  <- polygonizer_windows(sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_novel_", x))
-              
-            }
+            ## If we're on linux, use the standard polygonizer function             
+            novel_current_poly <- polygonizer(sprintf('%s/%s%s.tif',   
+			MESS_dir, species, "_current_novel"))
+            novel_future_poly  <- polygonizer(sprintf('%s/%s%s%s.tif', 
+			MESS_dir, species, "_future_novel_", x))
+
             
             ## Re-project the shapefiles
             novel_current_poly = novel_current_poly %>%
@@ -1044,7 +1032,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
             ## of the raster, expanded by 10%), to plot on panel 1). 50 = approx 50 lines across the polygon
             message('Creating polygon list under ', x, ' scenario for ', species) 
             
-            ##  cast the objects into the sf class so we avoid issues with wrong methods being called in hatch()
+            ## Cast the objects into the sf class
             novel_hatch <- list(as(extent(pred.current)*1.1, 'SpatialPolygons'),
                                 hatch(as(novel_current_poly, 'sf'), 50),
                                 hatch(as(novel_future_poly,  'sf'), 50))
@@ -1226,7 +1214,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
 \
 
 #########################################################################################################
-## **Summarising the climatic suitability output within Significant Urban areas** 
+## **Summarising change in climatic suitability** 
 The maps generated by the function illustrate how climatic suitability varies across the landscape. 
 In these maps, a grid cell is given a probability value between 0 (highly unsuitable) and 1 (highly suitable). 
 Using a species-specific threshold – the 10th percentile training presence logistic threshold – based on the 
@@ -1239,15 +1227,10 @@ This terminology more clearly articulates the subjective nature of threshold sel
 \newpage 
 ![](output/figures/CV_figs/A_floribunda_continuous.png)
 
-\newpage 
-![](output/figures/CV_figs/A_floribunda_theshold_suit.png
-
-**Figure 2.** Top panel: Example of a continuous climatic suitability map for one plant species under 
+**Figure 2.** Example of a continuous climatic suitability map for one plant species under 
 current conditions. Species occurrence points are plotted in red on the left panel. The cells in the right 
 panel are coded from 0 : no to low suitability, to 1 : highly suitable. The shaded areas on the right panel
 indicate where the maxent model is extrapolating beyond the training data (i.e. the result of a MESS map).
-Bottom panel: the map of climatic suitability has been thresholded to binary representations of regions 
-that are less or more suitable (0 or 1).
 
 \
 
@@ -1316,7 +1299,7 @@ SUA_cell_count = function(unit_path, unit_file, unit_vec,
                           maxent_path, thresholds, percentiles, 
                           time_slice, write_rasters) {
 
-  ###################################################################################################################
+  ######################################################################
   ## Read in shapefiles 
   areal_unit = readRDS(paste0(unit_path, unit_file)) %>%
     spTransform(ALB.CONICAL)
@@ -1614,8 +1597,8 @@ projected to have losses exceeding 90% of baseline climatically suitable habitat
 to experience increases in the extent of climatically suitable habitat of 50%, e.g. Ficus platypoda 
 (Rock fig) and Brachychiton rupestris (Queensland bottle tree). Generally, suitable habitat is predicted 
 to shift poleward. As such, species are likely to experience an extension of their southern (colder) 
-range margin (e.g. Pongamia pinnata and Melia azedarach in Fig. 2), and/or a contraction of their 
-northern (warmer) margin (e.g. Melia azedarach and Syzygium smithii in Fig. 2). However, some species – 
+range margin (e.g. Pongamia pinnata and Melia azedarach in Fig. 4), and/or a contraction of their 
+northern (warmer) margin (e.g. Melia azedarach and Syzygium smithii in Fig. 4). However, some species – 
 particularly those found along coastal regions of southeast Australia – may experience contraction at 
 both range margins(see Syzygium smithii, Fig. 2).
 
@@ -1630,14 +1613,6 @@ to their baseline distributions (grey areas). Australia’s temperate SUAs are p
 in pink on the baseline map. Images are freely available in the public domain from 
 Wikimedia Commons (CC BY-SA 3.0) and credited to Alpsdake (Melia azedarach), 
 L. Shyamal [Pongamia pinnata (Millettia pinnata)] and Akos Kokai (Syzygium smithii).
-\
-
-Generally, suitable habitat is predicted to shift poleward. As such, species are likely to experience an 
-extension of their southern (colder) range margin (e.g., Pongamia pinnata and Melia azedarach in Fig. 4), 
-and/or a contraction of their northern (warmer) margin (e.g., Melia azedarach and Syzygium smithii in 
-Fig. 4). However, some species  –  particularly those found along coastal strips of south-east Australia  
-– may experience contraction at both range latitudinal margins (see Syzygium smithii, Fig. 4).
-
 
 
 \
@@ -1646,32 +1621,54 @@ Fig. 4). However, some species  –  particularly those found along coastal stri
 #########################################################################################################
 ## **Climatically suitable habitat for tree species within urban areas** 
 
-
-\
-
-For the baseline period (1960-1990), SUAs were predicted to contain suitable climate for an average of 
-74 of the 176 species (± 30), ranging from 10 species in Geraldton to 139 in Sydney. By 2070, this average 
-is predicted to decline to 63 species (± 30), with ten SUAs (eight in eastern Queensland and two in 
-south-west Western Australia) predicted to have climate space for 50% fewer species (Fig. 5). However, 
-21 of the 82 SUAs may contain suitable climate for more species by 2070 than during the baseline period, 
-including Orange (50% more species), Wangaratta (25%), and all five of the Tasmanian SUAs in this study 
-(6-24%) - SUAs that predominantly lie in cooler regions. In addition, the spatial extent of suitable 
-habitat across SUAs is generally predicted to decline. That is, averaged across their representative 
-species, 12.3% (± 5.8%) of each SUA’s area will no longer be suitable by 2070, although average gains 
-of 6.3% (± 4.3%) may occur elsewhere within the SUA. 
-
-\
+SUAs were predicted to contain suitable climate for between 10 and 139 of the 176 species for the baseline 
+period,with an average of 74 species(±30). By 2070, this average is predicted to decline to 63 species 
+(±30) per SUA, with ten SUAs (eight in eastern Queensland and two in south-west Western Australia) predicted 
+to have suitable climate for 50% fewer species (Fig. 5). However, 21 of the 82 SUAs may contain suitable
+climate for more species by 2070, than during the baseline period, including Orange in NSW (50% more species), 
+Wangaratta in Victoria(25%), and all five of the Tasmanian SUAs in this study (6–24%). Note that these SUAs 
+predominantly occur in cooler regions.
 
 \newpage 
-![](output/figures/CV_figs/FIG_2_barplots.png)
+![](output/figures/CV_figs/FIG_3_8_panel.png)
 
-**Figure 5.** Based on predictions from a climate suitability model, barplots 
-illustrate the percentage of native tree species with suitable habitat in the 
-baseline period (1960-1990), that are predicted to experience gains (green) or 
-losses (red) in the extent of suitable habitat over 82 Significant Urban Areas 
-(SUA, left panels), and within the 19 largest SUAs (right panels), for 2030 
-(a-b) and 2070 (c-d). SUAs are ranked by current mean annual temperature 
-(MAT, e.g. Hobart is the coolest SUA, Mackay the the warmest)
+\
+
+**Figure 5.** Scatter plots of projected changes to the climatically suitable habitat of 176 commercial 
+native Australian tree species within 82 of Australia's Significant Urban Areas (SUAs) (y axis)
+vs. current mean annual temperature of the SUA (x axis, a-d), and maximum temperature of the warmest month 
+(MAXT, e–h), for 2030 (lighter points) and 2070 (darker points). Panels a,b, e and f show the number 
+of species, within each SUA, for which climatically suitable habitat is absent under baseline conditions, 
+but present in the future (grey=2030, black=2070), expressed as a proportion of the number of species with 
+suitable conditions in the baseline (i.e. species ‘gained’). Panels c, d, g and h show the proportion of 
+species within each SUA with suitable habitat under baseline conditions, that do not have suitable habitat 
+in the future (i.e. species ‘lost’). The left panels are for all 82 SUAs, while the right panels are for 
+the SUAs with area > 200 km2 and with population > 80,000. DE = deviance explained from generalised additive 
+models (GAMs) of species gain/loss (y axis) in each SUA vs. the SUA MAXT (x axis).
+
+\
+
+In general, the spatial extent of climatically suitable habitat across SUAs was predicted to decline for the 
+176 species analysed. That is, averaged across their representative species, 12.3% (±5.8%) of each SUA's
+currently suitable area will no longer be suitable by 2070, although predicted gains of 6.3% (±4.3%) occur 
+elsewhere within the SUA. SUAswith warmer baseline mean annual temperatures are predicted to have fewer tree 
+species that experience increases in the spatial extent of suitable habitat, compared to cooler SUAs (Fig. 4). 
+Similarly, the percentage of tree species predicted to experience losses in suitable habitat is
+greater in warmer SUAs (e.g. 80% in Rockhampton, Queensland) than in cooler SUAs (e.g. 13% in Burnie, Tasmania). 
+These patterns of change were consistent regardless of the area and population of the SUAs (Fig. 4).
+
+\newpage 
+![](output/figures/CV_figs/FIG_4_8_panel.png)
+
+**Figure 6.** Scatter plots of changes to the percent of species with climatically suitable habitat within 
+82 of Australia's Significant Urban Areas (SUAs) (y axis) vs. current mean annual temperature of the SUA 
+(x axis, a–d), and maximum temperature of the warmest month (MAXT, e–h), for 2030 (lighter points) and 
+2070 (darker points). ‘Range gained’ refers to the proportion of species in the future time period projected 
+to experience a net increase in the spatial extent of suitable habitat within that SUA vs. baseline, while 
+‘Range loss’ refers to the proportion of species projected to experience a net decrease in spatial extent 
+of suitable habitat within that SUA. The left panels are for all 82 SUAs, while the right panels are for 
+the SUAs with area > 200 km2 and with human population > 80,000. Deviance = deviance explained by generalised 
+additive models (GAMs) of species range gain/loss (y axis) in each SUA vs. the SUA MAT/MAXT.
 
 \
 
@@ -1684,15 +1681,13 @@ deviance in the short term (2030).
 
 
 \newpage 
-![](output/figures/CV_figs/FIG_3_scatterplots.png)
+![](output/figures/CV_figs/FIG_2_barplots.png)
 
-**Figure 6.** The Scatterplots of the predicted percentage of original native 
-tree species gains (top panels) and losses (bottom panels) within temperate SUAs, 
-vs. the mean annual temperature of the SUA for both 2030 (lighter points) and 
-2070 (darker points). The left panels are for all temperate SUAs, while the 
-right panels are for the SUAs with area > 200 km2 and with population > 80,000. 
-DE = deviance explained from generalised additive models (GAMs) of species 
-gain/loss (y axis) in each SUA vs. the SUA MAT.
+**Figure 7.** Based on predictions from a climate suitability model, barplots illustrate the percentage of 
+native tree species with suitable habitat in the baseline period (1960-1990), that are predicted to experience 
+gains (green) or losses (red) in the extent of suitable habitat over 82 Significant Urban Areas (SUA, left 
+panels), and within the 19 largest SUAs (right panels), for 2030 (a-b) and 2070 (c-d). SUAs are ranked by 
+current mean annual temperature (MAT, e.g. Hobart is the coolest SUA, Mackay the the warmest)
 
 \
 
@@ -1714,11 +1709,24 @@ is driven by the projection of a poleward shift in climate space in the underlyi
 generally within temperate and subtropical regions, species' low-latitude (here, northernmost) range margins 
 are predicted to contract, while their high-latitude (southernmost) margins may extend into new areas.
 
+\
+
+Predicted shifts in climatically suitable habitat mean that urban areas in cooler regions (for example, 
+the city of Orange in central westernNewSouthWales, and the city of Launceston in northern Tasmania),
+are likely to experience smaller reductions in the number of species with suitable habitat than urban areas 
+in warmer regions (such as the cities of Mackay and Brisbane in Queensland) (Fig. 8). This predicted
+broad pattern of decreasing habitat along a gradient of increasing temperature supports previous studies 
+based on realised climate niches(Jenerette et al., 2016; Kendal et al., 2018), which also demonstrated
+that temperature is a key filter on trees in urban environments. Hence our results, combined with those 
+of other studies quantifying climate niches of species (Jenerette et al., 2016; Kendal et al., 2018; McBride
+and Laćan, 2018) indicate that a substantial proportion of the most common urban trees face climate change 
+risks where they are currently planted.
+
 
 \newpage 
 ![](output/figures/CV_figs/FIG_1_SUA_PLOT_crop.png)
 
-**Figure 6.** The largest Significant Urban Areas (SUA) in each Australian 
+**Figure 8.** The largest Significant Urban Areas (SUA) in each Australian 
 State and Territory (Ade = Adelaide, Bris = Brisbane, Can = Canberra, Hob = Hobart, 
 Mel = Melbourne; Per = Perth, Syd = Sydney - The Northern Territory was not included 
 in this study, Australia’s temperate SUAs are plotted in pink). For each largest SUA, 
@@ -1751,6 +1759,8 @@ for urban planning.
 
 \
 
+#########################################################################################################
+## **Conclusions** 
 The number of current horticultural tree species with suitable climate within Australia's SUAs 
 is predicted to progressively decline as climate change intensifies, with more pronounced 
 reductions in urban areas which are currently warmest. Our results show that climatic
