@@ -135,17 +135,16 @@ if (!on_windows) {
 
 
 ## Run the species 500 or 1000 at a time
-#GBIF.spp   = TI.HIA    ##
-
-#GBIF.spp = unique(WPW.spp)  ## your list of species
+#GBIF.spp = unique(WPW.spp)               ## your list of species.
 #GBIF.spp = unique(WPW.non.tree) 
 GBIF.spp = unique(WPW.non.tree)
 #GBIF.spp = unique(WPW.non.tree)
+#GBIF.spp   = TI.HIA    ##
 #GBIF.spp = c("Acacia falcata")
 #GBIF.spp = unique(gsub("_", " ", unique(out_spp$searchTaxon)))
 
 
-## Subset for PBS array jobs
+## Subset for PBS array jobs ::
 if (Sys.getenv("PBS_ARRAYID") != "") {
   
   max_i = as.integer(Sys.getenv("WPW_MAX_I"))
@@ -159,6 +158,7 @@ if (Sys.getenv("PBS_ARRAYID") != "") {
 ## The required folders must be created on katana
 GBIF.spp      = as_utf8(GBIF.spp, normalize = TRUE)   ## Check the species names have the right characters
 save_run      = "ALL_SHRUB_JULY_2018"                 ## a variable to append the run name to the output files
+                                                      ## Need to include tree or not for HIA list
 
 
 ## If running the trees, use all three data sources
@@ -173,10 +173,9 @@ if (grepl("TREE", save_run)) {
 }
 
 
-## Create new directories for the split check
+## Create directories to store the maxent output
 dir.create('./output/maxent/SPLIT_TEST_INV/')
 dir.create('./output/maxent/SPLIT_TEST_INV_BS/')
-
 
 
 #########################################################################################################################
@@ -191,7 +190,7 @@ check_maps    = "FALSE"                              ## Create maps, shapefiles 
 GBIF_path     = "./data/base/HIA_LIST/GBIF_UPDATE/"  ## The path where GBIF data is stored
 ALA_path      = "./data/base/HIA_LIST/ALA_UPDATE/"   ## The path where ALA data is stored place
 DATA_path     = "./data/ANALYSIS/"                   ## The path where the final data from/for analyses are stored. 
-calc_niche    = "TRUE"
+calc_niche    = "TRUE"                               ## Calculate global niches for each species?
 
 
 #########################################################################################################################
@@ -200,8 +199,8 @@ maxent_path   = './output/maxent/SPLIT_TEST_INV/'      ## The directory where ma
 maxent_dir    = 'output/maxent/SPLIT_TEST_INV'         ## Another version of the path needed to run maxent loop
 
 bs_path       = './output/maxent/SPLIT_TEST_INV_BS/'   ## Backwards selection directory
-bs_dir        = 'output/maxent/SPLIT_TEST_INV_BS'      ## the directory to harvest results : BS dir?
-results_dir   = bs_dir   
+bs_dir        = 'output/maxent/SPLIT_TEST_INV_BS'      ## As above
+results_dir   = bs_dir                                 ## The directory where the maxent results are harvested :: backwards selection
 
 
 
