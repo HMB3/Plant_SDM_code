@@ -196,14 +196,13 @@ length(unique(CLEAN.list$Binomial))
 number.grow                        <- tapply(CLEAN.list$Number.of.growers, CLEAN.list$Binomial, sum, na.rm = TRUE)
 number.state                       <- tapply(CLEAN.list$Number.of.States,  CLEAN.list$Binomial, sum, na.rm = TRUE)
 CLEAN.list$Number.of.growers.total <- number.grow[CLEAN.list$Binomial]
-CLEAN.list$Number.of.states.total  <- number.state[CLEAN.list$Binomial]
 
 
 ## Create a table of the contextual HIA columns, using the unique binomials
 ## The "searchTaxon" column is used here, because we will be using this
 ## to search ALA and GBIF. That variable will be used throughout the analysis
-CLEAN.GROW = dplyr::select(CLEAN.list, Binomial, Plant.type, Origin, Number.of.growers.total, Number.of.states.total)
-names(CLEAN.GROW) = c("Evergreen_taxon", "Plant_type", "Origin", "Total_growers", "Number_states")
+CLEAN.GROW = dplyr::select(CLEAN.list, Binomial, Plant.type, Origin, Number.of.growers.total)
+names(CLEAN.GROW) = c("Evergreen_taxon", "Plant_type", "Origin", "Total_growers")
 CLEAN.GROW        = CLEAN.GROW [!duplicated(CLEAN.GROW [,c('Evergreen_taxon')]),]
 View(CLEAN.GROW)
 
@@ -274,7 +273,7 @@ GBIF.NA        = CLEAN.GBIF[(CLEAN.GBIF$species == ""), ]$verbatimScientificName
 CLEAN.GBIF = dplyr::select(CLEAN.GBIF, verbatimScientificName, species)
 CLEAN.GROW <- CLEAN.GROW %>%
   dplyr::left_join(., CLEAN.GBIF, by = c("Evergreen_taxon" = "verbatimScientificName")) %>%
-  dplyr::select(., Evergreen_taxon, species, Origin, Plant_type, Total_growers, Number_states)
+  dplyr::select(., Evergreen_taxon, species, Origin, Plant_type, Total_growers)
 names(CLEAN.GROW)[names(CLEAN.GROW) == 'species'] <- 'GBIF_taxon'
 
 
@@ -313,7 +312,7 @@ CLEAN.GROW <- CLEAN.GROW %>%
   dplyr::left_join(., CLEAN.TAXO, by = c("GBIF_taxon" = "Taxon"))
 
 CLEAN.GROW <- dplyr::select(CLEAN.GROW, Evergreen_taxon, GBIF_taxon, New_binomial, 
-                            New.Taxonomic.status, Origin, Plant_type, Total_growers, Number_states)
+                            New.Taxonomic.status, Origin, Plant_type, Total_growers)
 
 names(CLEAN.GROW)[names(CLEAN.GROW) == 'New_binomial'] <- 'searchTaxon'
 names(CLEAN.GROW)[names(CLEAN.GROW) == 'New.Taxonomic.status'] <- 'Taxo_status'
@@ -335,7 +334,7 @@ colnames(CLEAN.CLASS)[1] <- "searchTaxon"
 ## Use table later to join ::
 GBIF.GROW = join(CLEAN.GROW, CLEAN.CLASS, type = "left")
 GBIF.GROW =  dplyr::select(GBIF.GROW, searchTaxon, Evergreen_taxon, GBIF_taxon, Taxo_status, genus, family, 
-                           order, group, Origin, Plant_type, Total_growers, Number_states)
+                           order, group, Origin, Plant_type, Total_growers)
 View(GBIF.GROW)
 
 
@@ -392,26 +391,6 @@ WPW.spp         = unique(WPW.spp)
 WPW.NA          = unique(c(TPL.NA, GBIF.NA))          ## These taxa did not match either GBIF or ALA
 
 
-## The list of inventory trees, minus the hollow and evergreen species
-TI.HIA          = sort(setdiff(c(TI.spp, HOLLOW.SPP), WPW.spp))
-
-
-
-## This is a list of species we can use to test the models. These spp had poor models without MESS maps
-hollow.test.spp = c("Corymbia citriodora",      "Eucalyptus baileyana",  "Eucalyptus baxteri",  "Eucalyptus decorticans", "Eucalyptus dumosa",
-                    "Eucalyptus major",         "Eucalyptus megacarpa",  "Eucalyptus moluccana", "Eucalyptus ovata",      "Eucalyptus patens",
-                    "Eucalyptus salmonophloia", "Eucalyptus tenuipes")
-
-
-popular.test    = c("Acer palmatum", "Syzygium smithii", "Magnolia grandiflora", "Callistemon viminalis", 
-                    "Gardenia jasminoides", "Pyrus calleryana", "Murraya paniculata", "Ficus microcarpa",
-                    "Jacaranda mimosifolia", "Hardenbergia violacea")
-
-
-popular.test    = intersect(popular.test, TI.spp)
-inv.test        = as.character(head(TI.LUT$searchTaxon, 20))
-inv.test        = unique(c(inv.test, popular.test))
-
 
 #########################################################################################################################
 ## Now we need a list of all the trees, and non trees. Native info not as important.
@@ -432,7 +411,6 @@ results.columns = c("searchTaxon",        ## From the ALA/ GBIF download code
                     "Origin",             ## native/extoic : from Anthony Manea's spreadsheet, affected by taxonomy....
                     "Plant_type",         ## From Anthony Manea's spreadsheet, will be affected by taxonomy....
                     "Total_growers",      ## From Anthony Manea's spreadsheet.....    
-                    #"Number_states",     ## From Anthony Manea's spreadsheet.....
                     
                     "Plantings",         ## No. urban plantings :: from urban tree inventory
                     "Maxent_records",    ## No. records used in the SDM

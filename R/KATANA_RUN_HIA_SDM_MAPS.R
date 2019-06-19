@@ -4,7 +4,7 @@
 
 
 
-## This code runs the whole SDM workflow for the HIA project, for a subset of species (e.g. whichever you supply)
+## This code runs the whole SDM work flow for the HIA project, for a subset of species (e.g. whichever you supply)
 
 
 
@@ -135,12 +135,13 @@ if (!on_windows) {
 
 
 ## Run the species 500 or 1000 at a time
-#GBIF.spp = unique(WPW.spp)               ## your list of species.
+#GBIF.spp = unique(WPW.spp)                                                                       ## Your list of species.
 #GBIF.spp = unique(WPW.non.tree) 
 GBIF.spp = unique(WPW.non.tree)
 #GBIF.spp = unique(WPW.non.tree)
 #GBIF.spp   = TI.HIA    ##
 #GBIF.spp = c("Acacia falcata")
+#GBIF.spp = setdiff(DROUGHT.TRAIT$searchTaxon, WPW.spp)
 #GBIF.spp = unique(gsub("_", " ", unique(out_spp$searchTaxon)))
 
 

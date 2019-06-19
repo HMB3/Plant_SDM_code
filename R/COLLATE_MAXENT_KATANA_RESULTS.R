@@ -206,12 +206,10 @@ head(MAXENT.RESULTS, 20)[1:5]
 ## Plot a miny dashboard of the results 
 if (nrow(MAXENT.RESULTS) > 2) {
   
-  
   ## What other variables are related?
   ## Omission rate vs records, key stats vs. maxent rating, etc. 
   lm.auc = lm(MAXENT.RESULTS$Max_tss ~ MAXENT.RESULTS$Training_AUC)
   lm.auc = lm(MAXENT.RESULTS$Max_tss ~ MAXENT.RESULTS$Training_AUC)
-  
   
   ## Save this to file
   #png(paste0('./output/maxent/', 'Maxent_run_summary_', save_run, '.png'), 16, 12, units = 'in', res = 500)
@@ -253,17 +251,16 @@ if (nrow(MAXENT.RESULTS) > 2) {
 
 
 #########################################################################################################################
-## Change the species column
+## Change the species column so we can join on the contextual data
 MAXENT.RESULTS$searchTaxon = gsub("_", " ", MAXENT.RESULTS$searchTaxon)
 MAXENT.RESULTS = join(COMBO.NICHE.CONTEXT, MAXENT.RESULTS, type = "right")
 MAXENT.RESULTS = dplyr::select(MAXENT.RESULTS, results.columns)
-#summary(MAXENT.RESULTS)
-#View(MAXENT.RESULTS)
 
 
-#########################################################################################################################
-## Source the MESS map creation when it works
-
+## Also, here we could add on the maxent ratings
+## 476 species have been rated, but we need to check if the ratings are still applicable, as the data has been updated
+# str(MAXENT.RATING.LAT)
+# MAXENT.RESULTS = join(MAXENT.RESULTS, MAXENT.RATING.LAT, type = "right")
 
 
 #########################################################################################################################

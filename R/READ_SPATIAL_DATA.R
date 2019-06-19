@@ -580,78 +580,78 @@ scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cc85bi70", "gf85bi70", "hg85b
 
 
 ## Create a list of all dataframes with the extension from this run
-# NICE.list      = list.files(DATA_path, pattern = 'COMBO_NICHE_CONTEXT_EVER_',  full.names = TRUE, recursive = TRUE)
+# NICHE.list      = list.files(DATA_path, pattern = 'COMBO_NICHE_CONTEXT_EVER_',  full.names = TRUE, recursive = TRUE)
 # BG.TABLE.list  = list.files(DATA_path,  pattern = 'SDM_SPAT_ALL_', full.names = TRUE)
-# RECORDS.list   = list.files(DATA_path, pattern = 'COMBO_RASTER_CONTEXT_EVER', full.names = TRUE)
+# RECORDS.list   = list.files(DATA_path,  pattern = 'INV_EVER', full.names = TRUE)
 # SDM.TABLE.list = list.files(DATA_path, pattern = 'SDM_SPAT_OCC_BG_', full.names = TRUE)
 
 
 #########################################################################################################################
 ## Now combine the raster tables for each species into one table
-BG.TABLE.ALL <- BG.TABLE.list %>%
-
-  ## Pipe the list into lapply
-  lapply(function(x) {
-
-    ## Create the character string
-    f <- paste0(x)
-
-    ## Load each file
-    message('Reading file for ', x)
-    d <- readRDS(f)
-    d <- as.data.frame(d)
-    message(nrow(d), ' BG for ', x)
-    message(class(d))
-    
-    return(d)
-
-  }) %>%
-
-  ## Finally, bind all the rows together
-  bind_rows()
-
-## This is a summary of maxent output for current conditions
-dim(BG.TABLE.ALL)
-names(BG.TABLE.ALL)
+# BG.TABLE.ALL <- BG.TABLE.list %>%
+# 
+#   ## Pipe the list into lapply
+#   lapply(function(x) {
+# 
+#     ## Create the character string
+#     f <- paste0(x)
+# 
+#     ## Load each file
+#     message('Reading file for ', x)
+#     d <- readRDS(f)
+#     d <- as.data.frame(d)
+#     message(nrow(d), ' BG for ', x)
+#     message(class(d))
+#     
+#     return(d)
+# 
+#   }) %>%
+# 
+#   ## Finally, bind all the rows together
+#   bind_rows()
+# 
+# ## This is a summary of maxent output for current conditions
+# dim(BG.TABLE.ALL)
+# names(BG.TABLE.ALL)
 
 
 #########################################################################################################################
 ## Save table
-BG.TABLE.ALL    = SpatialPointsDataFrame(coords      = BG.TABLE.ALL[c("lon", "lat")],
-                                         data        = BG.TABLE.ALL,
-                                         proj4string = CRS(sp_epsg54009))
-projection(BG.TABLE.ALL)
-message(length(unique(BG.TABLE.ALL$searchTaxon)), ' species processed through from download to SDM table')
+# BG.TABLE.ALL    = SpatialPointsDataFrame(coords      = BG.TABLE.ALL[c("lon", "lat")],
+#                                          data        = BG.TABLE.ALL,
+#                                          proj4string = CRS(sp_epsg54009))
+# projection(BG.TABLE.ALL)
+# message(length(unique(BG.TABLE.ALL$searchTaxon)), ' species processed through from download to SDM table')
 
 
 ## Save the data
-saveRDS(BG.TABLE.ALL, paste0(DATA_path, 'SDM_SPAT_OCC_BG_ALL_EVREGREEN_JULY_2018.rds'))
+# saveRDS(BG.TABLE.ALL, paste0(DATA_path, 'SDM_SPAT_OCC_BG_ALL_EVREGREEN_JULY_2018.rds'))
 
 
 #########################################################################################################################
 ## Now combine the niche tables for each species into one table
-COMBO.NICHE.ALL <- NICE.list %>%
-
-  ## pipe the list into lapply
-  lapply(function(x) {
-
-    ## create the character string
-    f <- paste0(x)
-
-    ## load each .csv file
-    d <- readRDS(f)
-    message(nrow(d), ' Records for ', x)
-    return(d)
-
-  }) %>%
-
-  ## finally, bind all the rows together
-  bind_rows()
+# COMBO.NICHE.ALL <- NICHE.list %>%
+# 
+#   ## pipe the list into lapply
+#   lapply(function(x) {
+# 
+#     ## create the character string
+#     f <- paste0(x)
+# 
+#     ## load each .csv file
+#     d <- readRDS(f)
+#     message(nrow(d), ' Records for ', x)
+#     return(d)
+# 
+#   }) %>%
+# 
+#   ## finally, bind all the rows together
+#   bind_rows()
 
 
 ## Update this
-str(COMBO.NICHE.ALL)
-dim(COMBO.NICHE.ALL)
+# str(COMBO.NICHE.ALL)
+# dim(COMBO.NICHE.ALL)
 
 
 # Make sure the Species are unique
@@ -662,30 +662,30 @@ dim(COMBO.NICHE.ALL)
 
 #########################################################################################################################
 ## Now combine the raster tables for each species into one table
-RECORDS.TABLE.ALL <- RECORDS.list %>%
-
-  ## Pipe the list into lapply
-  lapply(function(x) {
-
-    ## Create the character string
-    f <- paste0(x)
-
-    ## Load each file
-    message('Reading file for ', x)
-    d <- readRDS(f)
-    message(nrow(d), ' Records for ', x)
-    return(d)
-
-  }) %>%
-
-  ## Finally, bind all the rows together
-  bind_rows()
+# RECORDS.TABLE.ALL <- RECORDS.list %>%
+# 
+#   ## Pipe the list into lapply
+#   lapply(function(x) {
+# 
+#     ## Create the character string
+#     f <- paste0(x)
+# 
+#     ## Load each file
+#     message('Reading file for ', x)
+#     d <- readRDS(f)
+#     message(nrow(d), ' Records for ', x)
+#     return(d)
+# 
+#   }) %>%
+# 
+#   ## Finally, bind all the rows together
+#   bind_rows()
 
 ## This is a summary of maxent output for current conditions
-dim(RECORDS.TABLE.ALL)
-length(unique(RECORDS.TABLE.ALL$searchTaxon))
-unique(RECORDS.TABLE.ALL$SOURCE)
-names(RECORDS.TABLE.ALL)[1:10]
+# dim(RECORDS.TABLE.ALL)
+# length(unique(RECORDS.TABLE.ALL$searchTaxon))
+# unique(RECORDS.TABLE.ALL$SOURCE)
+# names(RECORDS.TABLE.ALL)[1:10]
 
 
 #########################################################################################################################

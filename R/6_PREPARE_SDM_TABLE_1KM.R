@@ -75,15 +75,13 @@ message('Split prodcues ', length(occurrence_cells_all), ' data frames for ', le
 
 
 #########################################################################################################################
-## Now get just one record within each 10*10km cell.
+## Now get just one record within each 1*1km cell.
 SDM.DATA.ALL <- mapply(function(x, cells) {
   x[!duplicated(cells), ]
 }, COMBO.RASTER.SPLIT.ALL, occurrence_cells_all, SIMPLIFY = FALSE) %>% do.call(rbind, .)
 
 
 ## Check to see we have 19 variables + the species for the standard predictors, and 19 for all predictors
-## create two more template.raster files: 5km amnd 10km
-## Check data :: template, data table and species
 message(round(nrow(SDM.DATA.ALL)/nrow(CLEAN.INV)*100, 2), " % records retained at 1km resolution")  
 
 

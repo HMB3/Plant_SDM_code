@@ -15,6 +15,7 @@ if(calc_niche == "TRUE") {
   if(read_data == "TRUE") {
     
     ## read in RDS files from previous step
+    ## CLEAN.INV = CLEAN.INV[CLEAN.INV$searchTaxon %in% na.error$searchTaxon[1:50], ]
     CLEAN.INV = readRDS(paste0(DATA_path, 'CLEAN_INV_', save_run, '.rds'))
     message('Species overlap ', length(intersect(GBIF.spp, unique(CLEAN.INV$searchTaxon))))
     rasterTmpFile()
@@ -47,16 +48,13 @@ if(calc_niche == "TRUE") {
   KOP.WGS      = spTransform(Koppen_shp, CRS.WGS.84)
   
   
-  ## Create global niche and Australian niche.
-  ## So we need a subset for Australia
+  ## Create global niche and Australian niche for website - So we need a subset for Australia
   ## The ,] acts like a clip in ArcMap 
   NICHE.AUS <-  NICHE.1KM.84[AUS.WGS, ] 
   
   
   #########################################################################################################################
-  ## Run join between species records and LGAs/SUAs :: Double check they are the same.
-  ## See the ABS for details :: there are 563 LGAs
-  ## http://www.abs.gov.au/ausstats/abs@.nsf/Lookup/by%20Subject/1270.0.55.003~July%202016~Main%20Features~Local%20Government%20Areas%20(LGA)~7
+  ## Run join between species records and spatial units :: SUA, POA and KOPPEN zones
   message('Joining occurence data to SUAs for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
   projection(NICHE.1KM.84);projection(SUA.WGS);projection(AUS.WGS);projection(POA.WGS)
   SUA.JOIN      = over(NICHE.1KM.84, SUA.WGS)
@@ -96,7 +94,6 @@ if(calc_niche == "TRUE") {
   
   
   ## Now create a table of all the SUA's that each species occurrs
-  #SUA.AGG = join(SUA.AGG, POA.AGG)
   SUA.AGG = join_all(list(SUA.AGG, POA.AGG, KOP.AGG),  by = 'searchTaxon', type = 'full')
   saveRDS(SUA.AGG, paste0(DATA_path, 'SUA_SPP_COUNT_', save_run, '.rds'))
   
@@ -199,9 +196,7 @@ if(calc_niche == "TRUE") {
   ## How are the AUS and GLOB niches related? Many species won't have both Australian and Global niches.
   ## So best to calculate the AUS niche as a separate table. Then, just use the global niche table for the rest of the code
   length(AUS.NICHE$searchTaxon); length(GLOB.NICHE$searchTaxon)
-  setdiff(AUS.NICHE$searchTaxon, GLOB.NICHE$searchTaxon)
-  setdiff(GLOB.NICHE$searchTaxon, AUS.NICHE$searchTaxon)
-  
+
   
   #########################################################################################################################
   ## Add global counts for each species, and record the total number of taxa processed
@@ -219,9 +214,9 @@ if(calc_niche == "TRUE") {
   
   #########################################################################################################################
   ## Add the counts of Australian records for each species to the niche database
-  GLOB.NICHE = join(Aus_records,    GLOB.NICHE)#,  type = "right")
-  GLOB.NICHE = join(Global_records, GLOB.NICHE)#,  type = "right")
-  GLOB.NICHE = join(SUA.AGG,        GLOB.NICHE)#,  type = "right")
+  GLOB.NICHE = join(Aus_records,    GLOB.NICHE,  type = "right")
+  GLOB.NICHE = join(Global_records, GLOB.NICHE,  type = "right")
+  GLOB.NICHE = join(SUA.AGG,        GLOB.NICHE,  type = "right")
   
   
   ## Check the record and POA counts
@@ -229,7 +224,7 @@ if(calc_niche == "TRUE") {
   head(GLOB.NICHE$Global_records, 20)
   head(GLOB.NICHE$SUA_count, 20)
   head(GLOB.NICHE$POA_count, 20)
-  head(GLOB.NICHE$, 20)
+  head(GLOB.NICHE$KOP_count, 20)
   
   
   ## Check
@@ -266,7 +261,7 @@ if(calc_niche == "TRUE") {
       DF   = subset(COMBO.SUA.POA, searchTaxon == x)[, c("lat", "lon", "searchTaxon")]
       
       message('Calcualting geographic ranges for ', x, ', ', nrow(DF), ' records')
-      AOO  = AOO.computing(XY = DF, Cell_size_AOO = 2)  ## Grid size in decimal degrees. Changes the results
+      AOO  = AOO.computing(XY = DF, Cell_size_AOO = 2)  ## Grid size in decimal degrees
       AOO  = as.data.frame(AOO)
       AOO$searchTaxon  <- rownames(AOO)
       rownames(AOO)    <- NULL
@@ -285,72 +280,18 @@ if(calc_niche == "TRUE") {
   #########################################################################################################################
   ## Now join on the geographic range and glasshouse data
   ## There are still some species with records, but NA niches....
-  ## na.spp = GLOB.NICHE[is.na(GLOB.NICHE$Annual_mean_temp_min),]$searchTaxon
+  na.spp = COMBO.NICHE.CONTEXT[is.na(COMBO.NICHE.CONTEXT$Annual_mean_temp_min),]
+  na.no.rec = subset(na.spp, Global_records < 3)
+  na.error  = subset(na.spp, Global_records > 3)
+  
+  ##
   identical(nrow(GBIF.AOO), nrow(GLOB.NICHE))
   GLOB.NICHE = join(GBIF.AOO, GLOB.NICHE, type = "right")
   
   
   
   
-  
-  #########################################################################################################################
-  ## 6). PLOT CONVEX HULL OF ALL DATA
-  #########################################################################################################################
-  
-  
-  #########################################################################################################################
-  ## Create a convex hull plot of points for all specues, according to source :: OCC and GBIF
-  ## This was figure S1 in Burley et al
-  # CLEAN.INV <- mutate(CLEAN.INV, OCC_TYPE = ifelse(grepl("INVENTORY", SOURCE), "INV", "OCC"))
-  # unique(CLEAN.INV$SOURCE)
-  # unique(CLEAN.INV$OCC_TYPE)
-  
-  
-  #########################################################################################################################
-  ## Calculate the hulls for each group
-  #test = subset(CLEAN.INV, searchTaxon == CLEAN.INV$searchTaxon[1])
-  
-  
-  # ## Create PNG file
-  # png(sprintf("./data/ANALYSIS/SPECIES_RANGES/%s", "all_species_1km_convex_hull.png"),
-  #     16, 10, units = 'in', res = 500)
-  # 
-  # p <- ggplot(CLEAN.INV, aes(Annual_mean_temp, Annual_precip, fill = OCC_TYPE, color = OCC_TYPE)) 
-  # 
-  # hull_occ_source <- CLEAN.INV %>%
-  #   group_by(OCC_TYPE) %>%
-  #   slice(chull(Annual_mean_temp, Annual_precip))
-  # 
-  # ## Update the plot with a fill group, and overlay the new hulls
-  # p + geom_polygon(data = hull_occ_source, alpha = 0.3) +
-  #   geom_point(shape = 21, size = 2.5) + ## geom_density_2d
-  #   
-  #   ## Add x,y, and title
-  #   labs(x = "Mean annual temp", 
-  #        y = "Annual precipitation",
-  #        title = "Convex Hull for") +
-  #   
-  #   ## Add themes
-  #   theme(axis.title.x     = element_text(colour = "black", size = 35),
-  #         axis.text.x      = element_text(size = 20),
-  #         
-  #         axis.title.y     = element_text(colour = "black", size = 35),
-  #         axis.text.y      = element_text(size = 20),
-  # 
-  #         panel.background = element_blank(),
-  #         panel.border     = element_rect(colour = "black", fill = NA, size = 1.5),
-  #         plot.title       = element_text(size   = 40, face = "bold"),
-  #         legend.text      = element_text(size   = 20),
-  #         legend.title     = element_text(size   = 20),
-  #         legend.key.size  = unit(1.5, "cm"))
-  # 
-  # ## close device
-  # dev.off()
-  
-  
-  
-  
-  
+
   #########################################################################################################################
   ## 8). JOIN NICHE DATE TO HORTICULTURAL CONTEXTUAL DATA
   #########################################################################################################################
@@ -419,7 +360,7 @@ if(calc_niche == "TRUE") {
   COMBO.NICHE.CONTEXT = COMBO.NICHE.CONTEXT[order(COMBO.NICHE.CONTEXT$searchTaxon),]
   
   
-  ## Set Total.growers NA to blank, then sort by no. of growers
+  ## Set species with no (NA) growers to blank, then sort by no. of growers
   COMBO.NICHE.CONTEXT$Total_growers[is.na(COMBO.NICHE.CONTEXT$Total_growers)] <- 0
   COMBO.NICHE.CONTEXT = COMBO.NICHE.CONTEXT[with(COMBO.NICHE.CONTEXT, rev(order(Total_growers))), ]
   
@@ -434,7 +375,7 @@ if(calc_niche == "TRUE") {
   unique(COMBO.RASTER.CONTEXT$SOURCE)
   
   
-  ## Check the column order for the niche and the record tables
+  ## Check the column order for the niche and the record tables.
   ## Note that for records with catalogue numbers, you can actually search GBIF and ALA for those occurrences
   head(COMBO.NICHE.CONTEXT)[1:15]
   head(COMBO.RASTER.CONTEXT)[1:16]
@@ -443,7 +384,7 @@ if(calc_niche == "TRUE") {
   #########################################################################################################################
   ## save .rds file for the next session
   message('Writing 1km resolution niche and raster data for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
-  saveRDS(COMBO.NICHE.CONTEXT,    paste0(DATA_path, 'COMBO_NICHE_CONTEXT_',  save_run, '.rds'))
+  #saveRDS(COMBO.NICHE.CONTEXT,    paste0(DATA_path, 'COMBO_NICHE_CONTEXT_',  save_run, '.rds'))
   #saveRDS(COMBO.RASTER.CONTEXT,   paste0(DATA_path, 'COMBO_RASTER_CONTEXT_', save_run, '.rds'))
   #write.csv(COMBO.NICHE.CONTEXT,  paste0(DATA_path, 'COMBO_NICHE_CONTEXT_',  save_run, '.csv'), row.names = FALSE)
   
