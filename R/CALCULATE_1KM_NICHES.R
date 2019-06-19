@@ -229,10 +229,13 @@ if(calc_niche == "TRUE") {
   head(GLOB.NICHE$Global_records, 20)
   head(GLOB.NICHE$SUA_count, 20)
   head(GLOB.NICHE$POA_count, 20)
+  head(GLOB.NICHE$, 20)
   
-  names(GLOB.NICHE)
-  dim(GLOB.NICHE)
-  dim(AUS.NICHE)
+  
+  ## Check
+  message(round(nrow(AUS.NICHE)/nrow(GLOB.NICHE)*100, 2), " % species have records in Australia")    
+  dim(GLOB.NICHE)  ## 3680 species from the evergreen list had data to create niches
+  dim(AUS.NICHE)   ## 2752 of those plants had all their data in Australia
   
   
   
@@ -268,7 +271,7 @@ if(calc_niche == "TRUE") {
       AOO$searchTaxon  <- rownames(AOO)
       rownames(AOO)    <- NULL
       
-      ## Remeber to explicitly return the df at the end of loop, so we can bind
+      ## Return the area
       return(AOO)
       
     }) %>%
@@ -281,7 +284,9 @@ if(calc_niche == "TRUE") {
   
   #########################################################################################################################
   ## Now join on the geographic range and glasshouse data
-  identical(nrow(GBIF.AOO), length(GBIF.spp))
+  ## There are still some species with records, but NA niches....
+  ## na.spp = GLOB.NICHE[is.na(GLOB.NICHE$Annual_mean_temp_min),]$searchTaxon
+  identical(nrow(GBIF.AOO), nrow(GLOB.NICHE))
   GLOB.NICHE = join(GBIF.AOO, GLOB.NICHE, type = "right")
   
   
@@ -295,6 +300,7 @@ if(calc_niche == "TRUE") {
   
   #########################################################################################################################
   ## Create a convex hull plot of points for all specues, according to source :: OCC and GBIF
+  ## This was figure S1 in Burley et al
   # CLEAN.INV <- mutate(CLEAN.INV, OCC_TYPE = ifelse(grepl("INVENTORY", SOURCE), "INV", "OCC"))
   # unique(CLEAN.INV$SOURCE)
   # unique(CLEAN.INV$OCC_TYPE)
@@ -355,7 +361,7 @@ if(calc_niche == "TRUE") {
   
   #########################################################################################################################
   ## Now join the horticultural contextual data onto one or both tables ()
-  message('Joining contextual data for raster and niche files ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
+  message('Joining contextual data for raster and niche files ', nrow(GLOB.NICHE), ' species in the set ', "'", save_run, "'")
   COMBO.RASTER.CONTEXT = CLEAN.INV
   names(COMBO.RASTER.CONTEXT)
   
@@ -372,6 +378,7 @@ if(calc_niche == "TRUE") {
   head(COMBO.NICHE.CONTEXT$Global_records, 20)
   head(COMBO.NICHE.CONTEXT$Plantings,      20)
   head(COMBO.NICHE.CONTEXT$SUA_count,      20)
+  head(COMBO.NICHE.CONTEXT$KOP_count,      20)
   
   
   #########################################################################################################################

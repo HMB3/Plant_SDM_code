@@ -139,7 +139,7 @@ if (!on_windows) {
 
 #GBIF.spp = unique(WPW.spp)  ## your list of species
 #GBIF.spp = unique(WPW.non.tree) 
-GBIF.spp = unique(WPW.tree)
+GBIF.spp = unique(WPW.non.tree)
 #GBIF.spp = unique(WPW.non.tree)
 #GBIF.spp = c("Acacia falcata")
 #GBIF.spp = unique(gsub("_", " ", unique(out_spp$searchTaxon)))
@@ -157,8 +157,8 @@ if (Sys.getenv("PBS_ARRAYID") != "") {
 
 #########################################################################################################################
 ## The required folders must be created on katana
-GBIF.spp      = as_utf8(GBIF.spp, normalize = TRUE)  ## Check the species names have the right characters
-save_run      = "ALL_TREE_JULY_2018"                 ## a variable to append the run name to the output files
+GBIF.spp      = as_utf8(GBIF.spp, normalize = TRUE)   ## Check the species names have the right characters
+save_run      = "ALL_SHRUB_JULY_2018"                 ## a variable to append the run name to the output files
 
 
 ## If running the trees, use all three data sources

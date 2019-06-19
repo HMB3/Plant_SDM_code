@@ -74,11 +74,8 @@ for (species in spp.geo) {
   SP.DF     <- NICHE.1KM.84[NICHE.1KM.84$searchTaxon %in% species , ]
   DF        <- CLEAN.INV[CLEAN.INV$searchTaxon %in% species , ]
   
-  TMP.GLO   <- subset(GLOB.NICHE,   searchTaxon == species)#[c("searchTaxon", "Annual_mean_temp_q95_q05",
-                                                              #"Annual_mean_temp_q05", "Annual_mean_temp_q95")]
-
-  TMP.AUS   <- subset(AUS.NICHE,    searchTaxon == species)#[c("searchTaxon", "Annual_mean_temp_q95_q05",
-                                                              #"Annual_mean_temp_q05", "Annual_mean_temp_q95")]
+  TMP.GLO   <- subset(GLOB.NICHE,   searchTaxon == species)
+  TMP.AUS   <- subset(AUS.NICHE,    searchTaxon == species)
 
   #############################################################
   ## Now, build a df of the temperature vectors

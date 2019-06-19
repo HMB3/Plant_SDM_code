@@ -21,7 +21,7 @@
 # world_shp     = "LAND_world.rds"          ## World shapefile
 # 
 # x             = scen_2030[3]              ## List of climate scenarios
-# species       = map_spp[8]               ## List of species folders with maxent models
+# species       = map_spp[1]               ## List of species folders with maxent models
 # maxent_path   = bs_path                   ## Output folder
 # climate_path  = "./data/base/worldclim/aus/1km/bio" ## climate data
 # static_path   = "./data/base/ACLEP"                 ## Soil aata
@@ -106,9 +106,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
             
           }
           
-          ## Note that the backwards selection and targetted algorithms output slightly different 
-          ## swd objects, df and spdf. best to make these the same
-          ## .....................................................................................
+          ## Read in species with data and occurrence files
           swd <- as.data.frame(readRDS(sprintf('%s%s/swd.rds',    maxent_path, species, species)))
           occ <- readRDS(sprintf('%s%s/%s_occ.rds', maxent_path, species, save_name)) %>%
             spTransform(ALB.CONICAL)  
