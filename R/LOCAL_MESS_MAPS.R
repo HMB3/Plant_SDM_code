@@ -112,7 +112,7 @@ create_mess_pngs = function(shp_path, aus_shp, world_shp, scen_list,
         #                     hatch(as(novel_current_poly, 'sf'), 50),
         #                     hatch(as(novel_future_poly,  'sf'), 50))
         
-        novel_hatch <- list(as(extent(pred.current)*1.1, 'SpatialPolygons'),  
+        novel_hatch <- list(as(extent(pred.current)*1.1, 'SpatialLines'),  
                             hatch(novel_current_poly, 50))#,
                             #hatch(novel_future_poly, 50)) 
         
@@ -158,7 +158,7 @@ create_mess_pngs = function(shp_path, aus_shp, world_shp, scen_list,
                 latticeExtra::layer(sp.polygons(aus_poly), data = list(aus_poly = aus_poly)) +
                 latticeExtra::layer(sp.points(occ, pch = 19, cex = 0.15, 
                                               col = c('red', 'transparent', 'transparent')[panel.number()]), data = list(occ = occ)) +
-                latticeExtra::layer(sp.polygons(h[[panel.number()]]), data = list(h = novel_hatch)))
+                latticeExtra::layer(sp.lines(h[[panel.number()]]), data = list(h = novel_hatch)))
         
         ## Finish the device
         dev.off()

@@ -181,9 +181,9 @@ dir.create('./output/maxent/SPLIT_TEST_INV_BS/')
 
 #########################################################################################################################
 ## Reading and writing?
-read_data     = "FALSE"                              ## Read intermediary data between the steps?
-save_data     = "TRUE"                               ## Save data?
-check_maps    = "FALSE"                              ## Create maps, shapefiles and histograms of each speices?
+read_data     = "FALSE"   ## Read intermediary data between the steps?
+save_data     = "TRUE"    ## Save data?
+check_maps    = "FALSE"   ## Create maps, shapefiles and histograms of each speices?
 
 
 #########################################################################################################################

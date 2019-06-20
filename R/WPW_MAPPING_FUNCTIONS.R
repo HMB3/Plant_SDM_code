@@ -16,21 +16,21 @@
 
 #########################################################################################################################
 ## E.G. arguments to run the algorithm inside the function 
-# shp_path      = "./data/base/CONTEXTUAL/" ## Path for shapefile
-# aus_shp       = "aus_states.rds"          ## Shapefile e.g. Australian states
-# world_shp     = "LAND_world.rds"          ## World shapefile
-# 
-# x             = scen_2030[3]              ## List of climate scenarios
-# species       = map_spp[1]               ## List of species folders with maxent models
-# maxent_path   = bs_path                   ## Output folder
-# climate_path  = "./data/base/worldclim/aus/1km/bio" ## climate data
-# static_path   = "./data/base/ACLEP"                 ## Soil aata
-# 
-# grid_names    = grid.names#clim.soil
-# time_slice    = 30                        ## Time period
-# current_grids = aus.grids.current ## clim.soil.current         ## predictor grids
-# create_mess   = "TRUE"
-# nclust        = 1
+shp_path      = "./data/base/CONTEXTUAL/" ## Path for shapefile
+aus_shp       = "aus_states.rds"          ## Shapefile e.g. Australian states
+world_shp     = "LAND_world.rds"          ## World shapefile
+
+x             = scen_2030[3]              ## List of climate scenarios
+species       = map_spp[1]               ## List of species folders with maxent models
+maxent_path   = bs_path                   ## Output folder
+climate_path  = "./data/base/worldclim/aus/1km/bio" ## climate data
+static_path   = "./data/base/ACLEP"                 ## Soil aata
+
+grid_names    = grid.names#clim.soil
+time_slice    = 30                        ## Time period
+current_grids = aus.grids.current ## clim.soil.current         ## predictor grids
+create_mess   = "TRUE"
+nclust        = 1
 
 
 #########################################################################################################################
@@ -701,6 +701,14 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
         thresh_greater       = function (x) {x > thresh}
         current_suit_thresh  = thresh_greater(f_current)
         
+        ## Count the number of patches in the thresholded suitability raster
+        ## And the largest contiguous areas
+        ## Are the environmental conditions at the sites novel?
+        ## see exdet gist for interactions between variables  
+        patches <- SDMTools::ConnCompLabel(current_suit_thresh)
+        n_patches <- maxValue(patches)
+        max_patch_area <- max(table(patches[]))
+        
         #########################################################################################################################
         ## First, calculate the cells which are greater that the: 
         ## Maximum training sensitivity plus specificity Logistic threshold
@@ -731,6 +739,8 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
         ## Now create a raster of the gain, loss and stable
         ## Create a raster stack of the current and future rasters
         message ("Counting cells lost/gained/stable/never suitable, both across AUS and per SUA")
+        
+        ## Add n_patches and max_patch_area to the output tables - same for every scenario though
         
         #########################################################################################################################
         ## Create a table of cell counts using a raster stack of current and future data
@@ -783,8 +793,8 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
         ## Now calculate the number of cells lost/gained/stable across Australia
         message ("Counting cells lost/gained/stable/never suitable across Australia")
         d5 <- stack(current_suit_thresh, combo_suit_4GCM)[]
-        r  <- raster(current_suit_thresh)                     ## rename, too cryptic.............................................
-        z  <- as.data.frame(d4)                               ## rename, too cryptic.............................................
+        r  <- raster(current_suit_thresh)                     
+        z  <- as.data.frame(d4)                               
         
         ## Then classify the raster stack to make each value (i.e. outcome) unique
         r[d5[, 1]==1 & d5[, 2]==0] <- 1  ## 1 in current raster and 0 in future = LOSS

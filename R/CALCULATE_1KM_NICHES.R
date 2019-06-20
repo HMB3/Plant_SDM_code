@@ -196,7 +196,7 @@ if(calc_niche == "TRUE") {
   ## How are the AUS and GLOB niches related? Many species won't have both Australian and Global niches.
   ## So best to calculate the AUS niche as a separate table. Then, just use the global niche table for the rest of the code
   length(AUS.NICHE$searchTaxon); length(GLOB.NICHE$searchTaxon)
-
+  
   
   #########################################################################################################################
   ## Add global counts for each species, and record the total number of taxa processed
@@ -291,7 +291,7 @@ if(calc_niche == "TRUE") {
   
   
   
-
+  
   #########################################################################################################################
   ## 8). JOIN NICHE DATE TO HORTICULTURAL CONTEXTUAL DATA
   #########################################################################################################################
@@ -363,6 +363,7 @@ if(calc_niche == "TRUE") {
   ## Set species with no (NA) growers to blank, then sort by no. of growers
   COMBO.NICHE.CONTEXT$Total_growers[is.na(COMBO.NICHE.CONTEXT$Total_growers)] <- 0
   COMBO.NICHE.CONTEXT = COMBO.NICHE.CONTEXT[with(COMBO.NICHE.CONTEXT, rev(order(Total_growers))), ]
+  COMBO.NICHE.CONTEXT = COMBO.NICHE.CONTEXT[!duplicated(COMBO.NICHE.CONTEXT[,c('searchTaxon')]),]
   
   
   ## Print the dataframe dimensions to screen
@@ -382,9 +383,30 @@ if(calc_niche == "TRUE") {
   
   
   #########################################################################################################################
+  ## Which species don't match taxonomy between ALA and GBIF?
+  ## Still a few taxonomic issues where the evergreen list is right, unfortunately
+  # Match.niche = COMBO.NICHE.CONTEXT[c(1:7, 13, 15)] %>%
+  #   mutate(Match.SN.ST =
+  #            str_detect(searchTaxon, Evergreen_taxon)) %>%  ## Match the searched species with the returned species
+  # 
+  #   select(one_of(c("Match.SN.ST",
+  #                   "searchTaxon",
+  #                   "Evergreen_taxon",
+  #                   "GBIF_taxon",
+  #                   "Global_records",
+  #                   "Aus_records",
+  #                   "Taxo_status",
+  #                   "Origin",
+  #                   "Plant_type",
+  #                   "Total_growers"))) %>%
+  #   subset(., Match.SN.ST == "FALSE") # & Total_growers > 100)
+  # View(Match.niche)
+  
+  #########################################################################################################################
   ## save .rds file for the next session
   message('Writing 1km resolution niche and raster data for ', length(GBIF.spp), ' species in the set ', "'", save_run, "'")
   #saveRDS(COMBO.NICHE.CONTEXT,    paste0(DATA_path, 'COMBO_NICHE_CONTEXT_',  save_run, '.rds'))
+  #saveRDS(Match.niche,    paste0(DATA_path, 'NICHE_TAXO_CHECK.rds'))
   #saveRDS(COMBO.RASTER.CONTEXT,   paste0(DATA_path, 'COMBO_RASTER_CONTEXT_', save_run, '.rds'))
   #write.csv(COMBO.NICHE.CONTEXT,  paste0(DATA_path, 'COMBO_NICHE_CONTEXT_',  save_run, '.csv'), row.names = FALSE)
   

@@ -60,6 +60,19 @@ HOLLOW.SPP          = as_utf8(HOLLOW.SPP, normalize = TRUE)
 
 
 #########################################################################################################################
+## This is a list of all the species David Coleman has traits for
+traits.spp = read.csv("./data/base/TRAITS/uptodatetraitDB.csv", stringsAsFactors = FALSE)
+traits.spp = trimws(traits.spp$searchTaxon)
+
+
+#########################################################################################################################
+## This is a list of all the species David Coleman has traits for
+experiment.spp  = read.csv("./data/base/HIA_LIST/RENEE/RankingTraits_Control_2019.csv", stringsAsFactors = FALSE)
+names(experiment.spp)[names(experiment.spp) == 'Species'] <- 'searchTaxon'
+exp.spp = experiment.spp$searchTaxon
+
+
+#########################################################################################################################
 ## This is a list of all the species with maxent models rated by Linda so far (i.e. for the Stoten publication). 
 ## Just provide here as a guide
 MAXENT.RATING.LAT   = read.csv("./output/maxent/MAXENT_CHECK_RATING_FEB2019.csv",                stringsAsFactors = FALSE)
@@ -390,6 +403,31 @@ WPW.spp         = unique(WPW.spp[lapply(WPW.spp,length)>0])
 WPW.spp         = unique(WPW.spp)
 WPW.NA          = unique(c(TPL.NA, GBIF.NA))          ## These taxa did not match either GBIF or ALA
 
+
+#########################################################################################################################
+## Here is a list of species that are in the project, but not in the evergreen list
+remaining.spp = setdiff(c(traits.spp, exp.spp), WPW.spp)
+
+
+#########################################################################################################################
+## First, remove weird characters - this would be better with a multiple grepl
+remaining.spp = gsub(" x",     "",  remaining.spp, perl = TRUE)
+remaining.spp = gsub("NA",     "",  remaining.spp, perl = TRUE)
+remaining.spp = gsub("  ",     " ", remaining.spp, perl = TRUE)
+remaining.spp = gsub(" $",     "",  remaining.spp, perl = TRUE)
+remaining.spp = gsub("    $",  "",  remaining.spp, perl = TRUE)
+
+
+## Also, remove the taxa labelled "spp". We can't do anything with these
+remaining.spp  <- sub('(^\\S+ \\S+).*', '\\1',   remaining.spp)   # \\s = white space; \\S = not white space
+remaining.spp  <- sub('(^\\S+ \\S+).*', '\\1',   remaining.spp) # \\s = white space; \\S = not white space
+remaining.spp  <- remaining.spp[!grepl("spp.",   remaining.spp)]
+remaining.spp = gsub(" x",     "",  remaining.spp, perl = TRUE)
+
+
+## Then remove those rows with only 1 word, after the above cleaning
+remaining.spp = remaining.spp[sapply(strsplit(as.character(remaining.spp), " "), length)>1]
+outstanding.spp = sort(setdiff(c(remaining.spp), WPW.spp))
 
 
 #########################################################################################################################
