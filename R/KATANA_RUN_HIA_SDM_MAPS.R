@@ -36,7 +36,7 @@ if (on_windows) {
   
 }
 
-#  reassert after loading object
+##  reassert after loading object
 on_windows = switch(Sys.info()[['sysname']], Windows = TRUE, FALSE)
 
 
