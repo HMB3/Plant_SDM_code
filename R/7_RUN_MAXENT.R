@@ -73,6 +73,8 @@ lapply(GBIF.spp, function(species){
    if(species %in% SDM.SPAT.OCC.BG$searchTaxon) {
      message('Doing ', species)
 
+     ## If a species doesn't have any inventory data, we don't need this step
+     
      ## Subset the records to only the taxa being processed
      ## Also subset to the source : ALA+ GBIF, or ALA + GBIF + INV
      ## This is what is causing the proportional sampling to skip.........................................
