@@ -36,7 +36,7 @@ if (on_windows) {
   
 }
 
-#  reassert after loading object
+##  reassert after loading object
 on_windows = switch(Sys.info()[['sysname']], Windows = TRUE, FALSE)
 
 
@@ -140,8 +140,6 @@ if (!on_windows) {
 GBIF.spp = unique(WPW.non.tree)
 #GBIF.spp = unique(WPW.non.tree)
 #GBIF.spp   = TI.HIA    ##
-#GBIF.spp = c("Acacia falcata")
-#GBIF.spp = setdiff(DROUGHT.TRAIT$searchTaxon, WPW.spp)
 #GBIF.spp = unique(gsub("_", " ", unique(out_spp$searchTaxon)))
 
 

@@ -67,8 +67,8 @@ tryCatch(
                             aus_shp       = "aus_states.rds",          ## Shapefile, e.g. Australian states
                             world_shp     = "LAND_world.rds",          ## World shapefile          
                             
-                            scen_list     = scen_2030,            ## List of climate scenarios
-                            species_list  = map_spp,               ## List of species folders with maxent models
+                            scen_list     = scen_2030,                 ## List of climate scenarios
+                            species_list  = map_spp,                   ## List of species folders with maxent models
                             maxent_path   = bs_path,                   ## Output folder
                             climate_path  = "./data/base/worldclim/aus/1km/bio", ## climate data
                             
@@ -76,7 +76,6 @@ tryCatch(
                             time_slice    = 30,                        ## Time period
                             current_grids = aus.grids.current,         ## predictor grids - this must include soil variables too
                             create_mess   = "TRUE",
-                            save_mess     = "FALSE",
                             nclust        = 1),
   
   ## If the species fails, write a fail message to file. 
@@ -109,7 +108,6 @@ tryCatch(
                             time_slice    = 50,                        ## Time period
                             current_grids = aus.grids.current,         ## predictor grids
                             create_mess   = "TRUE",
-                            save_mess     = "FALSE",
                             nclust        = 1),
   
   ## If the species fails, write a fail message to file.
@@ -126,7 +124,7 @@ tryCatch(
 
 #########################################################################################################################
 ## Create 2070 maps
-## Then loop over the species folders and climate scenarios
+## Then, loop over the species folders and climate scenarios
 tryCatch(
   project_maxent_grids_mess(shp_path      = "./data/base/CONTEXTUAL/", ## Path for shapefile
                             aus_shp       = "aus_states.rds",          ## Shapefile, e.g. Australian states
@@ -141,7 +139,6 @@ tryCatch(
                             time_slice    = 70,                        ## Time period
                             current_grids = aus.grids.current,         ## predictor grids
                             create_mess   = "TRUE",
-                            save_mess     = "FALSE",
                             nclust        = 1),
   
   ## If the species fails, write a fail message to file.
@@ -160,28 +157,21 @@ tryCatch(
 
 
 #########################################################################################################################
-## 2). SUMARIZE MAXENT RESULTS FOR EACH SPECIES ACROSS MULTIPLE GCMs, INSIDE SIGNIFCANT URBAN AREAS
+## 2). SUMARIZE MAXENT RESULTS FOR EACH SPECIES ACROSS MULTIPLE GCMs, INSIDE SPATIAL UNITS (E.G SUAs)
 #########################################################################################################################
 
 
 #########################################################################################################################
-## So we can use the values in these columns to threhsold the rasters of habitat suitability (0-1) when combining them.
-## For each species, we will create a binary raster with cell values between 0-6. These cell values represent the number of GCMs 
-## where that cell had a suitability value above the threshold determined by maxent (e.g. the max training sensitivity + specif).
-## We then count the number of cells lost, gained, stable and unchanged, both across Australia, and within SUAs
-
-
-## This function now needs to use the suitability rasters which have novel environments masked out. So that's :: 
-## hs_current_not_novel
-## hs_future_not_novel - for each scenario
-
-
-## Also, add ncores to this function....................................................................................
+## So now use the 10th% Logistic threshold for each species from the maxent models to threhsold the rasters of habitat suitability (0-1) 
+## For each GCM. For each species, summ the 6 GCMS to create a binary raster with cell values between 0-6. These cell values 
+## represent the number of GCMs where that cell had a suitability value above the threshold determined by maxent. 
+## We classify a cell has suitable if it met the threshold in > 4 GCMs, and use this combined raster to compare current and future 
+## suitability, measuring if the suitability of each cell is changing over time, remaining stable or was never suitable.
 
 
 #########################################################################################################################
 ## Combine GCM predictions and calculate gain and loss for 2030
-## Here we can add the mask of novel environments to SUA aggregation
+## Also, add ncores to this function....................................................................................
 
 
 ## Then loop over the species folders and climate scenarios
@@ -194,6 +184,7 @@ tryCatch(mapply(SUA_cell_count,                                  ## Function agg
 
                 DIR_list      = SDM.RESULTS.DIR,                 ## List of directories with rasters
                 species_list  = map_spp,                         ## List of species' directories
+                number_gcms   = 6,                               ## The number of GCMs used (could be determined from object)
                 maxent_path   = bs_path,                         ## Directory of maxent results
                 thresholds    = percent.10.log,                  ## List of maxent thresholds
                 time_slice    = 30,                              ## Time period, eg 2030
@@ -222,10 +213,11 @@ tryCatch(mapply(SUA_cell_count,                                  ## Function agg
                 world_shp     = "LAND_world.rds",                ## Polygon for AUS maps
                 aus_shp       = "aus_states.rds",                ## Polygon for World maps
 
-                DIR_list      = SDM.RESULTS.DIR[10],                 ## List of directories with rasters
-                species_list  = map_spp[10],                         ## List of species' directories
+                DIR_list      = SDM.RESULTS.DIR,                 ## List of directories with rasters
+                species_list  = map_spp,                         ## List of species' directories
+                number_gcms   = 6,                               ## The number of GCMs used (could be determined from object)
                 maxent_path   = bs_path,                         ## Directory of maxent results
-                thresholds    = percent.10.log[10],                  ## List of maxent thresholds
+                thresholds    = percent.10.log,                  ## List of maxent thresholds
                 time_slice    = 50,                              ## Time period, eg 2030
                 write_rasters = TRUE),
 
@@ -258,6 +250,7 @@ tryCatch(mapply(SUA_cell_count,                                  ## Function agg
 
                 DIR_list      = SDM.RESULTS.DIR,                 ## List of directories with rasters
                 species_list  = map_spp,                         ## List of species' directories
+                number_gcms  = 6,                               ## The number of GCMs used (could be determined from object)
                 maxent_path   = bs_path,                         ## Directory of maxent results
                 thresholds    = percent.10.log,                  ## List of maxent thresholds
                 time_slice    = 70,                              ## Time period, eg 2030

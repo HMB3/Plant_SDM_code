@@ -76,7 +76,7 @@ exp.spp = experiment.spp$searchTaxon
 ## This is a list of all the species with maxent models rated by Linda so far (i.e. for the Stoten publication). 
 ## Just provide here as a guide
 MAXENT.RATING.LAT   = read.csv("./output/maxent/MAXENT_CHECK_RATING_FEB2019.csv",                stringsAsFactors = FALSE)
-MXT.CHECK           = read.csv("./output/maxent/MAXNET_ORIGIN_RESULTS.csv",                      stringsAsFactors = FALSE)
+MXT.CHECK           = read.csv("./output/maxent/MAXENT_ORIGIN_RESULTS.csv",                      stringsAsFactors = FALSE)
 
 
 #########################################################################################################################
