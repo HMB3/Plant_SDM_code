@@ -171,6 +171,9 @@ tryCatch(
 
 #########################################################################################################################
 ## Combine GCM predictions and calculate gain and loss for 2030
+## Here we can add the mask of novel environments to SUA aggregation
+
+
 ## Also, add ncores to this function....................................................................................
 
 
@@ -184,7 +187,7 @@ tryCatch(mapply(SUA_cell_count,                                  ## Function agg
 
                 DIR_list      = SDM.RESULTS.DIR,                 ## List of directories with rasters
                 species_list  = map_spp,                         ## List of species' directories
-                number_gcms   = 6,                               ## The number of GCMs used (could be determined from object)
+                number_GCMs   = 6,                               ## The number of GCMs used (could be determined from object)
                 maxent_path   = bs_path,                         ## Directory of maxent results
                 thresholds    = percent.10.log,                  ## List of maxent thresholds
                 time_slice    = 30,                              ## Time period, eg 2030
@@ -215,7 +218,7 @@ tryCatch(mapply(SUA_cell_count,                                  ## Function agg
 
                 DIR_list      = SDM.RESULTS.DIR,                 ## List of directories with rasters
                 species_list  = map_spp,                         ## List of species' directories
-                number_gcms   = 6,                               ## The number of GCMs used (could be determined from object)
+                number_GCMs   = 6,                               ## The number of GCMs used (could be determined from object)
                 maxent_path   = bs_path,                         ## Directory of maxent results
                 thresholds    = percent.10.log,                  ## List of maxent thresholds
                 time_slice    = 50,                              ## Time period, eg 2030
@@ -250,7 +253,7 @@ tryCatch(mapply(SUA_cell_count,                                  ## Function agg
 
                 DIR_list      = SDM.RESULTS.DIR,                 ## List of directories with rasters
                 species_list  = map_spp,                         ## List of species' directories
-                number_gcms  = 6,                               ## The number of GCMs used (could be determined from object)
+                number_GCMs   = 6,                               ## The number of GCMs used (could be determined from object)
                 maxent_path   = bs_path,                         ## Directory of maxent results
                 thresholds    = percent.10.log,                  ## List of maxent thresholds
                 time_slice    = 70,                              ## Time period, eg 2030
