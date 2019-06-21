@@ -124,7 +124,7 @@ tryCatch(
 
 #########################################################################################################################
 ## Create 2070 maps
-## Then loop over the species folders and climate scenarios
+## Then, loop over the species folders and climate scenarios
 tryCatch(
   project_maxent_grids_mess(shp_path      = "./data/base/CONTEXTUAL/", ## Path for shapefile
                             aus_shp       = "aus_states.rds",          ## Shapefile, e.g. Australian states
@@ -157,28 +157,24 @@ tryCatch(
 
 
 #########################################################################################################################
-## 2). SUMARIZE MAXENT RESULTS FOR EACH SPECIES ACROSS MULTIPLE GCMs, INSIDE SIGNIFCANT URBAN AREAS
+## 2). SUMARIZE MAXENT RESULTS FOR EACH SPECIES ACROSS MULTIPLE GCMs, INSIDE SPATIAL UNITS (E.G SUAs)
 #########################################################################################################################
 
 
 #########################################################################################################################
-## So we can use the values in these columns to threhsold the rasters of habitat suitability (0-1) when combining them.
-## For each species, we will create a binary raster with cell values between 0-6. These cell values represent the number of GCMs 
-## where that cell had a suitability value above the threshold determined by maxent (e.g. the max training sensitivity + specif).
-## We then count the number of cells lost, gained, stable and unchanged, both across Australia, and within SUAs
-
-
-## This function now needs to use the suitability rasters which have novel environments masked out. So that's :: 
-## hs_current_not_novel
-## hs_future_not_novel - for each scenario
-
-
-## Also, add ncores to this function....................................................................................
+## So now use the 10th% Logistic threshold for each species from the maxent models to threhsold the rasters of habitat suitability (0-1) 
+## For each GCM. For each species, summ the 6 GCMS to create a binary raster with cell values between 0-6. These cell values 
+## represent the number of GCMs where that cell had a suitability value above the threshold determined by maxent. 
+## We classify a cell has suitable if it met the threshold in > 4 GCMs, and use this combined raster to compare current and future 
+## suitability, measuring if the suitability of each cell is changing over time, remaining stable or was never suitable.
 
 
 #########################################################################################################################
 ## Combine GCM predictions and calculate gain and loss for 2030
 ## Here we can add the mask of novel environments to SUA aggregation
+
+
+## Also, add ncores to this function....................................................................................
 
 
 ## Then loop over the species folders and climate scenarios

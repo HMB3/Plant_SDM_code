@@ -1,11 +1,11 @@
-#########################################################################################################################
+###########################################################################################
 ############################################# FUNCTIONS FOR MAPPING SDMS ################################################ 
-#########################################################################################################################
+###########################################################################################
 
 
-#########################################################################################################################
+###########################################################################################
 ## PROJECT MAXENT MODELS
-#########################################################################################################################
+###########################################################################################
 
 
 ## flag issues with.......................................................................................................
@@ -14,7 +14,7 @@
 ## Add argument for just the MESS panel....................................................................................
 
 
-#########################################################################################################################
+###########################################################################################
 ## E.G. arguments to run the algorithm inside the function 
 # shp_path      = "./data/base/CONTEXTUAL/" ## Path for shapefile
 # aus_shp       = "aus_states.rds"          ## Shapefile e.g. Australian states
@@ -33,7 +33,7 @@
 # nclust        = 1
 
 
-#########################################################################################################################
+###########################################################################################
 ## Try to run the mess maps at the same time as the map creation?
 project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list, 
                                      species_list, maxent_path, climate_path, static_path,
@@ -560,9 +560,9 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
 
 
 
-#########################################################################################################################
+###########################################################################################
 ## COMBINE GCM FUNCTIONS
-#########################################################################################################################
+###########################################################################################
 
 
 ## Arguments needed to run the function manually
@@ -580,7 +580,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
 # write_rasters = TRUE
 
 
-#########################################################################################################################
+###########################################################################################
 ## Loop over directories, species and one threshold for each, also taking a time_slice argument
 ## Add length argument
 SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
@@ -588,7 +588,7 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
                           maxent_path, thresholds, 
                           time_slice, write_rasters) {
   
-  ###################################################################################################################
+  #####################################################################################
   ## Read in shapefiles: clunky, but how else will can you read in shapefiles as arguments?  
   areal_unit = readRDS(paste0(unit_path,  unit_shp)) %>%
     spTransform(ALB.CONICAL)
@@ -602,14 +602,14 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
   world_poly = readRDS(paste0(unit_path, world_shp)) %>%
     spTransform(CRS.WGS.84)
   
-  ###################################################################################################################
+  #####################################################################################
   ## Loop over each directory
   lapply(DIR_list, function(DIR) { 
     
     ## And each species - although we don't want all possible combinations. use mapply in the function call
     lapply(species_list, function(species) {
       
-      ###################################################################################################################
+      #####################################################################################
       ## Create a list of the rasters in each species directory for each time period, then take the mean
       message('Running summary of SDM predictions within SUAs for ', species, ' using ', names(areal_unit)[1], " shapefile")
       message('Calcualting mean of 20', time_slice, ' GCMs for ', species)
@@ -621,13 +621,14 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
       if(!file.exists(f_mean)) { 
         
         ## Read in all the habitat suitability rasters for each time period which are _not_ novel
-        #raster.list       = list.files(as.character(DIR), pattern = sprintf('bi%s.tif$', time_slice), full.names = TRUE)
+        ## This is a bit hack, but it works :: better to use a regular expression
         raster.list       = list.files(as.character(DIR), pattern = 'future_not_novel', full.names = TRUE) 
         raster.list       = raster.list[grep(paste0('bi', time_slice, collapse = '|'), raster.list, ignore.case = TRUE)]
         
+        ## If there are not n (e.g. 6) GCMs for each species, skip to the next species
         if(!length(raster.list) == number_GCMs) { 
           
-          message('Not all GCMs exist for', species, ' ', 20, time_slice,  skip)
+          message('Not all ',  number_GCMs, 'GCMs exist for ', species, ' ', 20, time_slice,  skip)
           next
           
         }
@@ -650,7 +651,7 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
         
       }
       
-      #########################################################################################################################
+      ###########################################################################################
       ## Then, create rasters that meet habitat suitability criteria thresholds, determined by the rmaxent function
       for (thresh in thresholds) {
         
@@ -667,7 +668,7 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
         }
         
         ## Print the species being analysed
-        message('doing ', species, ' | Logistic > ', thresh, ' for 20', time_slice)
+        message('doing ', species, ' | Logistic 10th % threshold > ', thresh, ' for 20', time_slice)
         
         ## Read in the current suitability raster :: get the current_not_novel raster
         f_current <- raster(sprintf('%s/%s/full/%s_current_not_novel.tif', 
@@ -686,7 +687,7 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
         n_patches <- maxValue(patches)
         max_patch_area <- max(table(patches[]))
         
-        #########################################################################################################################
+        ###########################################################################################
         ## First, calculate the cells which are greater that the: 
         ## Maximum training sensitivity plus specificity Logistic threshold
         message('Running thresholds for ', species, ' | 20', time_slice, ' combined suitability > ', thresh)
@@ -699,12 +700,12 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
         suit_ras5_thresh   = thresh_greater(suit.list[[5]])
         suit_ras6_thresh   = thresh_greater(suit.list[[6]])
         
-        #########################################################################################################################
+        ###########################################################################################
         ## Then sum them up: All the threshholds
         combo_suit_thresh   =  Reduce("+", list(suit_ras1_thresh, suit_ras2_thresh, suit_ras3_thresh,
                                                 suit_ras4_thresh, suit_ras5_thresh, suit_ras6_thresh))
         
-        #########################################################################################################################
+        ###########################################################################################
         ## For each species, create a binary raster with cells > 4 GCMs above the maxent threshold = 1, and cells with < 4 GCMs = 0. 
         message('Calculating change for ', species, ' | 20', time_slice, ' combined suitability > ', thresh)
         
@@ -712,14 +713,14 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
         band_4           <- function(x) {ifelse(x >=  4, 1, 0) }
         combo_suit_4GCM  <- calc(combo_suit_thresh, fun = band_4)
         
-        #########################################################################################################################
+        ###########################################################################################
         ## Now create a raster of the gain, loss and stable
         ## Create a raster stack of the current and future rasters
         message ("Counting cells lost/gained/stable/never suitable, both across AUS and per SUA")
         
         ## Add n_patches and max_patch_area to the output tables - same for every scenario though
         
-        #########################################################################################################################
+        ###########################################################################################
         ## Create a table of cell counts using a raster stack of current and future data
         d <- as.data.frame(stack(current_suit_thresh, combo_suit_4GCM)[]) %>% 
           setNames(c('current', 'future')) %>% 
@@ -766,7 +767,7 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
           add_column(., PERIOD  = time_slice, .after = "SPECIES")    %>%
           add_column(., THRESH  = thresh,     .after = "PERIOD")
         
-        #########################################################################################################################
+        ###########################################################################################
         ## Now calculate the number of cells lost/gained/stable across Australia
         message ("Counting cells lost/gained/stable/never suitable across Australia")
         d5 <- stack(current_suit_thresh, combo_suit_4GCM)[]
@@ -805,7 +806,7 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
         gain_loss_df = head(gain_loss_df, 4)
         head(gain_loss_df)
         
-        #########################################################################################################################
+        ###########################################################################################
         ## Save the gain/loss table for the whole of Australia
         message('Writing ', species, ' gain_loss tables for 20', time_slice)
         write.csv(gain_loss_df, sprintf('%s/%s/full/%s_20%s_%s%s.csv', maxent_path,
@@ -815,20 +816,20 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
         write.csv(d4, sprintf('%s/%s/full/%s_20%s_%s%s.csv', maxent_path,
                               species, species, time_slice, "SUA_cell_count_", thresh), row.names = FALSE)
         
-        #########################################################################################################################
+        ###########################################################################################
         ## Now write the rasters
         ## If the rasters don't exist, write them for each species/threshold
         if(write_rasters == "TRUE") {
           
           ## Write the current suitability raster, thresholded using the Maximum training 
           ## sensitivity plus specificity Logistic threshold
-          message('Writing ', species, ' current', ' max train > ', thresh)
+          message('Writing ', species, ' current', ' Logistic 10th % threshold > ', thresh)
           writeRaster(current_suit_thresh, sprintf('%s/%s/full/%s_%s%s.tif', maxent_path,
                                                    species, species, "current_suit_not_novel_above_", thresh), 
                       overwrite = TRUE)
           
           ## Write the combined suitability raster, thresholded using the maximum training value
-          message('Writing ', species, ' | 20', time_slice, ' max train > ', thresh)
+          message('Writing ', species, ' | 20', time_slice, ' Logistic 10th % threshold > ', thresh)
           writeRaster(combo_suit_thresh, sprintf('%s/%s/full/%s_20%s%s%s.tif', maxent_path,
                                                  species, species, time_slice, "_log_thresh_above_", thresh), 
                       overwrite = TRUE)
@@ -844,8 +845,8 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
                                          species, species, time_slice, "_gain_loss_", thresh), datatype = 'INT2U', 
                       overwrite = TRUE)
           
-          #########################################################################################################################
-          #########################################################################################################################
+          ###########################################################################################
+          ###########################################################################################
           ## Create a color scheme for the gain_loss plot
           SUA.plot.cols = brewer.pal(12, "Paired")
           ## Create dataframe of colors that match the categories :;
@@ -870,7 +871,7 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
           levels(gain_plot) <- rat
           
           
-          #########################################################################################################################
+          ###########################################################################################
           ## Save the gain/loss raster to PNG
           save_name = gsub(' ', '_', species)
           identical(projection(aus_poly), projection(gain_plot))
@@ -906,12 +907,12 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
 
 
 
-#########################################################################################################################
+###########################################################################################
 ## PLOTTING FUNCTIONS
-#########################################################################################################################
+###########################################################################################
 
 
-#########################################################################################################################
+###########################################################################################
 ## Create a function to combine the subplots created in Figures 2 and 3
 grid_arrange_shared_legend <- function(..., ncol = length(list(...)), nrow = 1, position = c("top", "right")) {
   
@@ -948,7 +949,7 @@ grid_arrange_shared_legend <- function(..., ncol = length(list(...)), nrow = 1, 
 }
 
 
-#########################################################################################################################
+###########################################################################################
 ## This function creates hatching on a mess map
 hatch <- function(x, density) {
   # x: polygon object (SpatialPolgyons* or sf)
@@ -979,7 +980,7 @@ hatch <- function(x, density) {
 
 
 
-#########################################################################################################################
+###########################################################################################
 ## Plot a rasterVis::levelplot with a colour ramp diverging around zero
 diverge0 <- function(p, ramp) {
   # p: a trellis object resulting from rasterVis::levelplot
@@ -1083,7 +1084,7 @@ polygonizer <- function(x, outshape=NULL, pypath=NULL, readpoly=TRUE,
 
 
 
-#########################################################################################################################
+###########################################################################################
 ## This function turns a raster into a polygon - Windows version
 polygonizer_windows <- function(x, outshape=NULL, pypath=NULL, readpoly=TRUE, 
                                 fillholes=FALSE, aggregate=FALSE, 
@@ -1160,11 +1161,11 @@ polygonizer_windows <- function(x, outshape=NULL, pypath=NULL, readpoly=TRUE,
 
 
 
-#########################################################################################################################
+###########################################################################################
 ## For each scenario, calcualte the mean annual temperature and annual rainfall anomaly
 calculate.anomaly = function(scen_list, time_slice, climate_path) {
   
-  #######################################################################################################################
+  #########################################################################################
   ## Create current rasters :: can the raster creation happen just once?
   ## And read in the current data. Can the specific "current" be removed withouth makin a seconf path argument?
   message('current rasters / 10')
@@ -1180,11 +1181,11 @@ calculate.anomaly = function(scen_list, time_slice, climate_path) {
     ## Assign the scenario name (to use later in the plot)
     scen_name = eval(parse(text = sprintf('gcms.%s$GCM[gcms.%s$id == x]', time_slice, time_slice)))
     
-    #########################################################################################################################
+    ###########################################################################################
     ## Create a raster stack for each 2050 GCM - also an empty raster for the final plot
     s <- stack(sprintf('%s/20%s/%s/%s%s.tif', climate_path, time_slice, x, x, 1:19))
     
-    ########################################################################################################################
+    ##########################################################################################
     ## Create future rasters
     message('20', time_slice, ' rasters / 10')
     
@@ -1199,7 +1200,7 @@ calculate.anomaly = function(scen_list, time_slice, climate_path) {
     plot(temp.anomaly, main = paste0("BIO1  anomaly ", x))
     plot(rain.anomaly, main = paste0("BIO12 anomaly ", x))
     
-    ########################################################################################################################
+    ##########################################################################################
     ## Write the rasters for each species/threshold
     message('Writing BIO1/12 anomaly rasters for 20', time_slice, ' ', x)
     
@@ -1233,11 +1234,11 @@ calculate.anomaly = function(scen_list, time_slice, climate_path) {
 
 
 
-#########################################################################################################################
+###########################################################################################
 ## For each scenario, calcualte the mean annual temperature and annual rainfall anomaly
 gcm.value = function(scen_list, time_slice, climate_path) {
   
-  #########################################################################################################################
+  ###########################################################################################
   ## Create current rasters :: can the raster creation happen just once?
   ## And read in the current data. Can the specific "current" be removed withouth makin a seconf path argument?
   message('current rasters divided by 10')
@@ -1253,11 +1254,11 @@ gcm.value = function(scen_list, time_slice, climate_path) {
     ## Assign the scenario name (to use later in the plot)
     scen_name = eval(parse(text = sprintf('gcms.%s$GCM[gcms.%s$id == x]', time_slice, time_slice)))
     
-    #########################################################################################################################
+    ###########################################################################################
     ## Create a raster stack for each 2050 GCM - also an empty raster for the final plot
     s <- stack(sprintf('%s/20%s/%s/%s%s.tif', climate_path, time_slice, x, x, 1:19))
     
-    ########################################################################################################################
+    ##########################################################################################
     ## Create future rasters
     message('20', time_slice, ' rasters divided by 10')
     
@@ -1275,7 +1276,7 @@ gcm.value = function(scen_list, time_slice, climate_path) {
     plot(temp.anomaly, main = paste0("BIO1  anomaly ", x))
     plot(rain.anomaly, main = paste0("BIO12 anomaly ", x))
     
-    ########################################################################################################################
+    ##########################################################################################
     ## Write the rasters for each species/threshold
     message('Writing BIO1/12 anomaly rasters for 20', time_slice, ' ', x)
     
@@ -1309,9 +1310,9 @@ gcm.value = function(scen_list, time_slice, climate_path) {
 
 
 
-#########################################################################################################################
+###########################################################################################
 ## STACK FUNCTIONS
-#########################################################################################################################
+###########################################################################################
 
 
 # dist_change_binary <- function(from, to) {
