@@ -77,7 +77,7 @@ tryCatch(
                             world_shp     = "LAND_world.rds",          ## World shapefile          
                             
                             scen_list     = scen_2030,                 ## List of climate scenarios
-                            species_list  = map_spp[39:42]],                   ## List of species folders with maxent models
+                            species_list  = map_spp[39:42],                   ## List of species folders with maxent models
                             maxent_path   = bs_path,                   ## Output folder
                             climate_path  = "./data/base/worldclim/aus/1km/bio", ## climate data
                             
@@ -99,7 +99,7 @@ tryCatch(
   })
   
   
-  ## Then loop over the species folders and climate scenarios
+## Then loop over the species folders and climate scenarios
 tryCatch(mapply(SUA_cell_count,                                  ## Function aggreagating GCM predictions by spatial unit
                 unit_path     = "./data/base/CONTEXTUAL/SUA/",   ## Data path for the spatial unit of analysis
                 unit_shp      = "SUA_2016_AUST.rds",             ## Spatial unit of analysis - E.G. SUAs
@@ -108,10 +108,10 @@ tryCatch(mapply(SUA_cell_count,                                  ## Function agg
                 aus_shp       = "aus_states.rds",                ## Polygon for World maps
 
                 DIR_list      = SDM.RESULTS.DIR[39:42],            ## List of directories with rasters
-                species_list  = map_spp[39:42]],                    ## List of species' directories
+                species_list  = map_spp[39:42],                    ## List of species' directories
                 number_GCMs   = 6,                               ## The number of GCMs used (could be determined from object)
                 maxent_path   = bs_path,                         ## Directory of maxent results
-                thresholds    = percent.10.log[39:42]],                  ## List of maxent thresholds
+                thresholds    = percent.10.log[39:42],                  ## List of maxent thresholds
                 time_slice    = 30,                              ## Time period, eg 2030
                 write_rasters = TRUE),
 

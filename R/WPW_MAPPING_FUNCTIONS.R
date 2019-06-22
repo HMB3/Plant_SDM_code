@@ -315,9 +315,8 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
             ## Convert binary rasters of novel climate to polygons
             ## Need to save the polygons to file ::  
             
-            ## This step was causing lots of species to fail on the HPC
+            ## This step was maybe causing lots of species to fail on the HPC
             ## I think this was because _current_novel.tif was being accessed by multiple R sessions on different cores.....                        
-            #message('Converting raster MESS maps to polygons under ', x, ' scenario for ', species) 
             
             ## Also check the MESS maps have not been made
             novel_current_tif_file <- sprintf('%s/%s%s.tif',     MESS_dir, species, "_current_novel")
@@ -326,23 +325,20 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
             ## If we're on linux, use the standard polygonizer function
             if (!on_windows) {
               
-              if(!file.exists(novel_current_tif_file)) {
-                message('Converting current raster MESS maps to polygons for ', species) 
-                novel_current_poly <- gBuffer(polygonizer(novel_current_tif_file), width = 0)
-              }
-              if(!file.exists(novel_future_tif_file)) {
-                message('Converting raster MESS maps to polygons under ', x, ' scenario for ', species) 
-                novel_future_poly  <- gBuffer(polygonizer(novel_future_tif_file), width = 0)
-              }
+              #if(!file.exists(novel_current_tif_file)) {
+              message('Converting current raster MESS maps to polygons for ', species) 
+              novel_current_poly <- gBuffer(polygonizer(novel_current_tif_file), width = 0)
+              #}
+              #if(!file.exists(novel_future_tif_file)) {
+              message('Converting raster MESS maps to polygons under ', x, ' scenario for ', species) 
+              novel_future_poly  <- gBuffer(polygonizer(novel_future_tif_file), width = 0)
+              #}
             } else {
-              if(!file.exists(novel_current_tif_file)) {
-                message('Converting current raster MESS maps to polygons for ', species) 
-                novel_current_poly <- gBuffer(polygonizer_windows(novel_current_tif_file), width = 0)
-              }
-              if(!file.exists(novel_future_tif_file)) {
-                message('Converting raster MESS maps to polygons under ', x, ' scenario for ', species) 
-                novel_future_poly  <- gBuffer(polygonizer_windows(novel_future_tif_file), width = 0)
-              }
+              #if(!file.exists(novel_current_tif_file)) {
+              message('Converting current raster MESS maps to polygons for ', species) 
+              novel_current_poly <- gBuffer(polygonizer_windows(novel_current_tif_file), width = 0)
+              novel_future_poly  <- gBuffer(polygonizer_windows(novel_future_tif_file),  width = 0)
+              #}
             }
             
             ###################################################################
@@ -352,7 +348,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
             
             ## Check if the current MESS shapefile exists?
             novel_current_shp <- sprintf('%s/%s%s.shp',   MESS_dir, species, "_current_novel_polygon")
-            if(!file.exists(novel_current_shp) && exists(novel_current_poly)) {
+            if(!file.exists(novel_current_shp)) {
               
               ## Re-project the shapefiles
               novel_current_poly = novel_current_poly %>%
@@ -368,14 +364,13 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
             
             ## Check if the future MESS shapefile exists? 
             novel_future_shp <- sprintf('%s/%s%s%s.shp',   MESS_dir, species, "_future_novel_polygon_", x)
-            if(!file.exists(novel_future_shp) && exists(novel_future_poly)) {
+            if(!file.exists(novel_future_shp)) {
               
               novel_future_poly = novel_future_poly %>%
                 spTransform(ALB.CONICAL)
               
-              
-              writeOGR(obj    = novel_future_poly, 
-                       dsn    = sprintf('%s',  MESS_shp_path), 
+              writeOGR(obj    = novel_future_poly,
+                       dsn    = sprintf('%s',  MESS_shp_path),
                        layer  = paste0(species, "_future_novel_polygon_", x),
                        driver = "ESRI Shapefile", overwrite_layer = TRUE)
             }
@@ -403,12 +398,12 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
             
             ############################################################
             ## Use the 'levelplot' function to make a multipanel output: occurrence points, current raster and future raster
-            message('Create MESS panel maps for ', species, ' under ', x, ' scenario')
-            
             current_mess_png = sprintf('%s/%s/full/%s_%s.png', maxent_path, species, species, "mess_panel")
             if(!file.exists(current_mess_png)) {                         
               
-              ## Create level plot of current conditions including MESS                        
+              ## Create level plot of current conditions including MESS 
+              message('Create current MESS panel maps for ', species)
+              
               png(sprintf('%s/%s/full/%s_%s.png', maxent_path, species, species, "mess_panel"),      
                   11, 4, units = 'in', res = 300)
               
@@ -437,51 +432,56 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
               
             }
             
-            ##################################################################################
-            ## Save the global records to PNG :: try to code the colors for ALA/GBIF/INVENTORY
-            occ.world <- readRDS(sprintf('%s/%s/%s_occ.rds', maxent_path, species, save_name)) %>%
-              spTransform(CRS.WGS.84)
+          }
+          
+          ##################################################################################
+          ## Save the global records to PNG :: try to code the colors for ALA/GBIF/INVENTORY
+          occ.world <- readRDS(sprintf('%s/%s/%s_occ.rds', maxent_path, species, save_name)) %>%
+            spTransform(CRS.WGS.84)
+          
+          ## If the global map of occurrence points hasn't been created, create it
+          global_occ_map = sprintf('%s/%s/full/%s_%s.png', maxent_path, save_name, save_name, "global_occ_records")
+          if(!file.exists(novel_current_shp)) {
             
-            ## If the global map of occurrence points hasn't been created, create it
-            global_occ_map = sprintf('%s/%s/full/%s_%s.png', maxent_path, save_name, save_name, "global_occ_records")
-            if(!file.exists(novel_current_shp)) {
-              
-              message('writing map of global records for ', species)
-              png(sprintf('%s/%s/full/%s_%s.png', maxent_path, save_name, save_name, "global_occ_records"),
-                  16, 10, units = 'in', res = 500)
-              
-              ## Add land
-              plot(world_poly, #add = TRUE,
-                   lwd = 0.01, asp = 1, col = 'grey', bg = 'sky blue')
-              
-              ## Add points
-              points(subset(occ.world, SOURCE == "GBIF"),
-                     pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2,
-                     xlab = "", ylab = "", asp = 1,
-                     col = "orange",
-                     legend(7,4.3, unique(occ.world$SOURCE), col = "orange", pch = 1))
-              
-              points(subset(occ.world, SOURCE == "ALA"),
-                     pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2,
-                     xlab = "", ylab = "", asp = 1,
-                     col = "blue",
-                     legend(7,4.3, unique(occ.world$SOURCE), col = "blue", pch = 1))
-              
-              points(subset(occ.world, SOURCE == "INVENTORY"),
-                     pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2,
-                     xlab = "", ylab = "", asp = 1,
-                     col = "red",
-                     legend(7,4.3, unique(occ.world$SOURCE), col = "red", pch = 1))
-              
-              title(main = list(paste0(gsub('_', ' ', species), ' global SDM records'), font = 4, cex = 2),
-                    cex.main = 4,   font.main = 4, col.main = "black")
-              
-              dev.off()
-              
-            }
+            message('writing map of global records for ', species)
+            png(sprintf('%s/%s/full/%s_%s.png', maxent_path, save_name, save_name, "global_occ_records"),
+                16, 10, units = 'in', res = 500)
             
-            ############################################################
-            ## Create level plot of scenario x, including MESS                        
+            ## Add land
+            plot(world_poly, #add = TRUE,
+                 lwd = 0.01, asp = 1, col = 'grey', bg = 'sky blue')
+            
+            ## Add points
+            points(subset(occ.world, SOURCE == "GBIF"),
+                   pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2,
+                   xlab = "", ylab = "", asp = 1,
+                   col = "orange",
+                   legend(7,4.3, unique(occ.world$SOURCE), col = "orange", pch = 1))
+            
+            points(subset(occ.world, SOURCE == "ALA"),
+                   pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2,
+                   xlab = "", ylab = "", asp = 1,
+                   col = "blue",
+                   legend(7,4.3, unique(occ.world$SOURCE), col = "blue", pch = 1))
+            
+            points(subset(occ.world, SOURCE == "INVENTORY"),
+                   pch = ".", cex = 3.3, cex.lab = 3, cex.main = 4, cex.axis = 2,
+                   xlab = "", ylab = "", asp = 1,
+                   col = "red",
+                   legend(7,4.3, unique(occ.world$SOURCE), col = "red", pch = 1))
+            
+            title(main = list(paste0(gsub('_', ' ', species), ' global SDM records'), font = 4, cex = 2),
+                  cex.main = 4,   font.main = 4, col.main = "black")
+            
+            dev.off()
+            
+          }
+          
+          ############################################################
+          ## Create level plot of scenario x, including MESS                        
+          future_mess_png = sprintf('%s/%s/full/%s_%s.png', maxent_path, species, species, x)
+          
+          if(!file.exists(future_mess_png)) {
             png(sprintf('%s/%s/full/%s_%s.png', maxent_path, species, species, x),      
                 11, 4, units = 'in', res = 300)
             
@@ -583,7 +583,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
 # write_rasters = TRUE
 
 
-#########################################################################################################################
+####################################################################################################################
 ## Loop over directories, species and one threshold for each, also taking a time_slice argument
 SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
                           DIR_list, species_list, number_gcms,
@@ -894,17 +894,11 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
           dev.off()
           
         } else {
-          
           message(' skip raster writing')
-          
         }
-        
       }
-      
     })
-    
   })
-  
 }
 
 
