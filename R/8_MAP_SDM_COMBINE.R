@@ -56,8 +56,7 @@ head(gcms.50) ; head(gcms.70) ; head(gcms.30)
 # make a map of model predictions and overlay a pattern (e.g. hatching) that indicates where climate is novel.
 
 
-## The MESS map function needs to be modified so that it can handle species with no novel areas..........................
-## Also, make R write a text file here too, which contains the error message if it fails.................................
+## Check why the function is skipping out......................................
 
 
 #########################################################################################################################
@@ -187,7 +186,7 @@ tryCatch(mapply(SUA_cell_count,                                  ## Function agg
 
                 DIR_list      = SDM.RESULTS.DIR,                 ## List of directories with rasters
                 species_list  = map_spp,                         ## List of species' directories
-                number_GCMs   = 6,                               ## The number of GCMs used (could be determined from object)
+                number_gcms   = 6,                               ## The number of GCMs used (could be determined from object)
                 maxent_path   = bs_path,                         ## Directory of maxent results
                 thresholds    = percent.10.log,                  ## List of maxent thresholds
                 time_slice    = 30,                              ## Time period, eg 2030
@@ -218,7 +217,7 @@ tryCatch(mapply(SUA_cell_count,                                  ## Function agg
 
                 DIR_list      = SDM.RESULTS.DIR,                 ## List of directories with rasters
                 species_list  = map_spp,                         ## List of species' directories
-                number_GCMs   = 6,                               ## The number of GCMs used (could be determined from object)
+                number_gcms   = 6,                               ## The number of GCMs used (could be determined from object)
                 maxent_path   = bs_path,                         ## Directory of maxent results
                 thresholds    = percent.10.log,                  ## List of maxent thresholds
                 time_slice    = 50,                              ## Time period, eg 2030
@@ -253,7 +252,7 @@ tryCatch(mapply(SUA_cell_count,                                  ## Function agg
 
                 DIR_list      = SDM.RESULTS.DIR,                 ## List of directories with rasters
                 species_list  = map_spp,                         ## List of species' directories
-                number_GCMs   = 6,                               ## The number of GCMs used (could be determined from object)
+                number_gcms   = 6,                               ## The number of GCMs used (could be determined from object)
                 maxent_path   = bs_path,                         ## Directory of maxent results
                 thresholds    = percent.10.log,                  ## List of maxent thresholds
                 time_slice    = 70,                              ## Time period, eg 2030

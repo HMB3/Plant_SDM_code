@@ -109,7 +109,7 @@ tryCatch(mapply(SUA_cell_count,                                  ## Function agg
 
                 DIR_list      = SDM.RESULTS.DIR[39:42],            ## List of directories with rasters
                 species_list  = map_spp[39:42],                    ## List of species' directories
-                number_GCMs   = 6,                               ## The number of GCMs used (could be determined from object)
+                number_gcms   = 6,                               ## The number of GCMs used (could be determined from object)
                 maxent_path   = bs_path,                         ## Directory of maxent results
                 thresholds    = percent.10.log[39:42],                  ## List of maxent thresholds
                 time_slice    = 30,                              ## Time period, eg 2030

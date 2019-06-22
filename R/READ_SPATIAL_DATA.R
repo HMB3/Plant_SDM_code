@@ -579,6 +579,10 @@ scen_2070 = c("mc85bi70", "no85bi70", "ac85bi70", "cc85bi70", "gf85bi70", "hg85b
 #########################################################################################################################
 
 
+## The new species has "EXTRA", so we need to list those files
+## combine them together, then bind with the existing data for additional background
+
+
 ## Create a list of all dataframes with the extension from this run
 # NICHE.list      = list.files(DATA_path, pattern = 'COMBO_NICHE_CONTEXT_EVER_',  full.names = TRUE, recursive = TRUE)
 # BG.TABLE.list  = list.files(DATA_path,  pattern = 'SDM_SPAT_ALL_', full.names = TRUE)

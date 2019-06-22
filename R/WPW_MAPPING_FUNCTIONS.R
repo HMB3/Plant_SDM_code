@@ -321,26 +321,22 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
             ## Probably best to test it on one core, and run on a clean direcotry                           
             
             ## Also check the MESS maps have not been made
-            novel_current_tif_file <- sprintf('%s/%s%s.tif',     MESS_dir, species, "_current_novel")
-            novel_future_tif_file  <- sprintf('%s/%s%s%s.tif',   MESS_dir, species, "_future_novel_", x)
+            # novel_current_tif_file <- sprintf('%s/%s%s.tif',     MESS_dir, species, "_current_novel")
+            # novel_future_tif_file  <- sprintf('%s/%s%s%s.tif',   MESS_dir, species, "_future_novel_", x)
             
+            ## If we're on linux, use the standard polygonizer function
             ## If we're on linux, use the standard polygonizer function
             if (!on_windows) {
               
-              #if(!file.exists(novel_current_tif_file)) {
-              message('Converting current raster MESS maps to polygons for ', species) 
-              novel_current_poly <- gBuffer(polygonizer(novel_current_tif_file), width = 0)
-              #}
-              #if(!file.exists(novel_future_tif_file)) {
-              message('Converting raster MESS maps to polygons under ', x, ' scenario for ', species) 
-              novel_future_poly  <- gBuffer(polygonizer(novel_future_tif_file), width = 0)
-              #}
+              novel_current_poly <- polygonizer(sprintf('%s/%s%s.tif',   MESS_dir, species, "_current_novel"))
+              novel_future_poly  <- polygonizer(sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_novel_", x))
+              
             } else {
-              #if(!file.exists(novel_current_tif_file)) {
-              message('Converting current raster MESS maps to polygons for ', species) 
-              novel_current_poly <- gBuffer(polygonizer_windows(novel_current_tif_file), width = 0)
-              novel_future_poly  <- gBuffer(polygonizer_windows(novel_future_tif_file),  width = 0)
-              #}
+              
+              ## If we're on windows, use the GDAL .bat file
+              novel_current_poly <- polygonizer_windows(sprintf('%s/%s%s.tif',   MESS_dir, species, "_current_novel"))
+              novel_future_poly  <- polygonizer_windows(sprintf('%s/%s%s%s.tif', MESS_dir, species, "_future_novel_", x))
+              
             }
             
             ###################################################################
@@ -358,10 +354,13 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
               
               ## Now save the novel areas as shapefiles
               ## There is a problem with accessing the files at the same time
+              message('Saving current MESS maps to polygons for ', species) 
               writeOGR(obj    = novel_current_poly, 
                        dsn    = sprintf('%s',  MESS_shp_path), 
                        layer  = paste0(species, "_current_novel_polygon"),
                        driver = "ESRI Shapefile", overwrite_layer = TRUE)
+            } else {
+              message('Current MESS maps already saved to polygons for ', species) 
             }
             
             ## Check if the future MESS shapefile exists? 
@@ -371,10 +370,13 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
               novel_future_poly = novel_future_poly %>%
                 spTransform(ALB.CONICAL)
               
+              message('Saving current MESS maps to polygons for ', species)
               writeOGR(obj    = novel_future_poly,
                        dsn    = sprintf('%s',  MESS_shp_path),
                        layer  = paste0(species, "_future_novel_polygon_", x),
                        driver = "ESRI Shapefile", overwrite_layer = TRUE)
+            } else {
+              message('Future MESS maps already saved to polygons for ', species) 
             }
             
             ## Create a SpatialLines object that indicates novel areas (this will be overlaid)            
@@ -432,6 +434,8 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
                       latticeExtra::layer(sp.lines(h[[panel.number()]]), data = list(h = novel_hatch)))
               dev.off()
               
+            } else {
+              message('Current MESS panel maps already created for ', species)
             }
             
           }
@@ -443,7 +447,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
           
           ## If the global map of occurrence points hasn't been created, create it
           global_occ_map = sprintf('%s/%s/full/%s_%s.png', maxent_path, save_name, save_name, "global_occ_records")
-          if(!file.exists(novel_current_shp)) {
+          if(!file.exists(global_occ_map)) {
             
             message('writing map of global records for ', species)
             png(sprintf('%s/%s/full/%s_%s.png', maxent_path, save_name, save_name, "global_occ_records"),
@@ -477,6 +481,8 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
             
             dev.off()
             
+          } else {
+            message('Global occurrence maps already created for ', species)
           }
           
           ############################################################
@@ -512,6 +518,8 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
                     latticeExtra::layer(sp.lines(h[[panel.number()]]), data = list(h = novel_hatch)))
             dev.off()
             
+          } else {
+            message('Future MESS maps already created for ', species)
           }
           
         } else {
@@ -663,7 +671,7 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
         }
         
         ## If the number of gcms is less than expected, skip that species
-        if(!number.un.nov == number_GCMs) { 
+        if(!number.un.nov == number_gcms) { 
           message('Number of GCMs for ', species, ' ', 20, time_slice, 'less than', number_gcms, ' skip')
           next
         }
