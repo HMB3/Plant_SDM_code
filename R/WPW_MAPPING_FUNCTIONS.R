@@ -316,7 +316,9 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
             ## Need to save the polygons to file ::  
             
             ## This step was maybe causing lots of species to fail on the HPC
-            ## I think this was because _current_novel.tif was being accessed by multiple R sessions on different cores.....                        
+            ## I think this was because _current_novel.tif was being accessed by multiple 
+            ## R sessions on different cores.....this is tricky to solve.
+            ## Probably best to test it on one core, and run on a clean direcotry                           
             
             ## Also check the MESS maps have not been made
             novel_current_tif_file <- sprintf('%s/%s%s.tif',     MESS_dir, species, "_current_novel")
