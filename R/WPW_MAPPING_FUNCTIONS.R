@@ -600,7 +600,7 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
                           maxent_path, thresholds, 
                           time_slice, write_rasters) {
   
-  ###################################################################################################################
+  ##################################################################################################################
   ## Read in shapefiles: clunky, but how else will can you read in shapefiles as arguments?  
   areal_unit = readRDS(paste0(unit_path,  unit_shp)) %>%
     spTransform(ALB.CONICAL)
@@ -614,68 +614,65 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
   world_poly = readRDS(paste0(unit_path, world_shp)) %>%
     spTransform(CRS.WGS.84)
   
-  ###################################################################################################################
+  ##################################################################################################################
   ## Loop over each directory
   lapply(DIR_list, function(DIR) { 
     
     ## And each species - although we don't want all possible combinations. use mapply in the function call
     lapply(species_list, function(species) {
-      
-      ###################################################################################################################
-      ## Create a list of the rasters in each species directory for each time period, then take the mean
-      message('Running summary of SDM predictions within SUAs for ', species, ' using ', names(areal_unit)[1], " shapefile")
-      message('Calcualting mean of 20', time_slice, ' GCMs for ', species)
-      
-      ## Check if the mean GCM raster exists
-      f_mean = sprintf('%s/%s/full/%s_20%s_suitability_mean.tif', maxent_path, species, species, time_slice)
-      
-      ## The mean of the GCMs doesn't exist, create it
-      if(!file.exists(f_mean)) { 
+    
+      ##############################################################################################################
+      ## Then, create rasters that meet habitat suitability criteria thresholds, determined by the rmaxent function
+      for (thresh in thresholds) {
+        
+        ############################################################################################################
+        ## Create a list of the rasters in each species directory for each time period, then take the mean
+        message('Running summary of SDM predictions within SUAs for ', species, ' using ', names(areal_unit)[1], " shapefile")
         
         ## Read in all the habitat suitability rasters for each time period which are _not_ novel
-        #raster.list       = list.files(as.character(DIR), pattern = sprintf('bi%s.tif$', time_slice), full.names = TRUE)
         raster.list       = list.files(as.character(DIR), pattern = 'future_not_novel', full.names = TRUE) 
         raster.list       = raster.list[grep(paste0('bi', time_slice, collapse = '|'), raster.list, ignore.case = TRUE)]
         number.un.nov     = length(raster.list)
         
+        ############################################################################################################
+        ## First, if the number of gcms is less than expected, skip that species
+        if(!number.un.nov == number_gcms) { 
+          message('Number of GCMs for ', species, ' ', 20, time_slice, ' less than ', number_gcms, ' skip')
+          next
+        }
+        
+        ## The create a stack of rasters from the file list
         ## This is a bit hack, but it works :: better to use a regular expression
         message('Combining SDM prediction for ', length(raster.list), ' GCMS for 20', time_slice)
         suit              = stack(raster.list)
         suit.list         = unstack(suit)
-        combo_suit_mean   = mean(suit)
         
-        writeRaster(combo_suit_mean , sprintf('%s/%s/full/%s_20%s_suitability_mean.tif',
-                                              maxent_path, species, species, time_slice), overwrite = TRUE)
-        
-      } else {
-        
-        ## Create another level, without the mean calculation
-        raster.list = list.files(as.character(DIR), pattern = sprintf('bi%s.tif$', time_slice), full.names = TRUE)
-        suit        = stack(raster.list)
-        suit.list   = unstack(suit)
-        
-      }
-      
-      #########################################################################################################################
-      ## Then, create rasters that meet habitat suitability criteria thresholds, determined by the rmaxent function
-      for (thresh in thresholds) {
-        
-        ## Check if the SUA summary table exists
+        ############################################################################################################
+        ## Then, If the gain/loss raster already exists, skip that species
         SUA_file =   sprintf('%s/%s/full/%s_20%s_%s%s.tif', maxent_path,
                              species, species, time_slice, "gain_loss_", thresh)
         
-        ## If the gain/loss raster already exists, skip the calculation
+        ## 
         if(file.exists(SUA_file)) { 
           message(species, ' ', 20, time_slice, ' SUA aggregation already exists, skip')
           next
         }
         
-        ## If the number of gcms is less than expected, skip that species
-        if(!number.un.nov == number_gcms) { 
-          message('Number of GCMs for ', species, ' ', 20, time_slice, 'less than', number_gcms, ' skip')
-          next
+        ############################################################################################################
+        ## Check if the mean GCM raster exists
+        f_mean = sprintf('%s/%s/full/%s_20%s_suitability_mean.tif', maxent_path, species, species, time_slice)
+        
+        if(!file.exists(f_mean)) { 
+          message('Calculating mean of ', length(raster.list), ' GCMS for 20', time_slice)
+          
+          combo_suit_mean   = mean(suit)
+          writeRaster(combo_suit_mean , sprintf('%s/%s/full/%s_20%s_suitability_mean.tif',
+                                                maxent_path, species, species, time_slice), overwrite = TRUE)
+        } else {
+          message('Mean of ', length(raster.list), ' GCMS for 20', time_slice, ' already exists')
         }
         
+        ############################################################################################################
         ## Print the species being analysed
         message('doing ', species, ' | Logistic > ', thresh, ' for 20', time_slice)
         
@@ -696,7 +693,7 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
         n_patches <- maxValue(patches)
         max_patch_area <- max(table(patches[]))
         
-        #########################################################################################################################
+        ############################################################################################################
         ## First, calculate the cells which are greater that the: 
         ## Maximum training sensitivity plus specificity Logistic threshold
         message('Running thresholds for ', species, ' | 20', time_slice, ' combined suitability > ', thresh)

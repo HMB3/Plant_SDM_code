@@ -107,12 +107,12 @@ tryCatch(mapply(SUA_cell_count,                                  ## Function agg
                 world_shp     = "LAND_world.rds",                ## Polygon for AUS maps
                 aus_shp       = "aus_states.rds",                ## Polygon for World maps
 
-                DIR_list      = SDM.RESULTS.DIR[39:42],            ## List of directories with rasters
-                species_list  = map_spp[39:42],                    ## List of species' directories
+                DIR_list      = SDM.RESULTS.DIR[1:5],            ## List of directories with rasters
+                species_list  = map_spp[1:5],                    ## List of species' directories
                 number_gcms   = 6,                               ## The number of GCMs used (could be determined from object)
                 maxent_path   = bs_path,                         ## Directory of maxent results
-                thresholds    = percent.10.log[39:42],                  ## List of maxent thresholds
-                time_slice    = 30,                              ## Time period, eg 2030
+                thresholds    = percent.10.log[1:5],                  ## List of maxent thresholds
+                time_slice    = 50,                              ## Time period, eg 2030
                 write_rasters = TRUE),
 
          ## If the species fails, write a fail message to file.

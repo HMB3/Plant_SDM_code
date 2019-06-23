@@ -91,7 +91,7 @@ if (!on_windows) {
               sprintf('bio_%02d.tif', 1:19)))
   
   ## Divide the current Australian bioclim values by 10
-  ## The future values are divided by 10 within the mapping function
+  ## The future values are divided by 10 wit  hin the mapping function
   message ("Iterating over aus current grids")
   for(i in 1:11) {
     
