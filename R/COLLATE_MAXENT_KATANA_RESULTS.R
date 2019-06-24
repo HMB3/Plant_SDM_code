@@ -293,7 +293,7 @@ tryCatch(
                    aus_shp       = "aus_states.rds",          ## Shapefile, e.g. Australian states
                    world_shp     = "LAND_world.rds",          ## World shapefile          
                    scen_list     = scen_2030,                 ## List of climate scenarios
-                   species_list  = map_spp,                   ## List of species folders with maxent models
+                   species_list  = map_spp,                   ## rev(map_spp)
                    maxent_path   = bs_path,
                    time_slice    = 30,
                    nclust        = 1),
@@ -307,6 +307,8 @@ tryCatch(
     warning(cond$message)
     
   })
+
+
 
 
 ## Then, we need linux/windows code to find all files with strings, and copy and move them to a new location - the
