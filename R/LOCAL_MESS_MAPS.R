@@ -52,11 +52,11 @@ create_mess_pngs = function(shp_path, aus_shp, world_shp, scen_list,
       ## species. Just do the current rasters
       current = sprintf('%s/%s%s.tif', MESS_dir, species, "_current_novel")
 
-      current.mess = sprintf('%s/%s/full/%s_local_mess_panel.png',
+      mess.map = sprintf('%s/%s/full/%s_local_mess_panel.png',
                              maxent_path, species, species)
 
       ## This step assumes the predictions all worked...................
-      if(file.exists(current) && !file.exists(current.mess)) {
+      if(file.exists(current) && !file.exists(mess.map)) {
         
         pred.current = raster(sprintf('%s/%s/full/%s_current.tif',
                                       maxent_path, species, species))
@@ -67,7 +67,7 @@ create_mess_pngs = function(shp_path, aus_shp, world_shp, scen_list,
         ## this can fail if no ebvironments are novel, e.g the red gum.
         ## Can we add a condtiton in poluygonizer to check if the file has data?..............................
         message('Converting raster MESS maps to polygons under ', x, ' scenario for ', species) 
-        novel_current_poly <- polygonizer_windows(sprintf('%s/%s%s.tif',   MESS_dir, species, "_current_novel"))
+        novel_current_poly <- gBuffer(polygonizer_windows(sprintf('%s/%s%s.tif', MESS_dir, species, "_current_novel")), width = 0)
         
         ###################################################################
         ## Re-project the shapefiles
@@ -137,7 +137,6 @@ create_mess_pngs = function(shp_path, aus_shp, world_shp, scen_list,
         ## Finish the device
         dev.off()
         
-        
         ###################################################################
         ## Save the global records to PNG :: try to code the colors for ALA/GBIF/INVENTORY
         occ.world <- readRDS(sprintf('%s/%s/%s_occ.rds', maxent_path, species, save_name)) %>%
@@ -174,19 +173,13 @@ create_mess_pngs = function(shp_path, aus_shp, world_shp, scen_list,
               cex.main = 4,   font.main = 4, col.main = "black")
         
         dev.off()
-
       } else {
-        
         message(species, ' skipped local mess already run')
-        
       } 
-      
     }
     
     if (nclust==1) {
-      
       lapply(species_list, maxent_predict_fun) 
-      
     } else {
       
       cl <- makeCluster(nclust)
@@ -210,18 +203,12 @@ create_mess_pngs = function(shp_path, aus_shp, world_shp, scen_list,
         library(rasterVis)
         library(latticeExtra)
         library(magrittr)
-        
       })
-      
       message('Running project_maxent_grids_mess for ', length(species_list),
               ' species on ', nclust, ' cores for GCM ', x)
-      
     }
     
-    
   })
-  
-  
 }
 
 

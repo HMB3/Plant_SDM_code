@@ -288,7 +288,25 @@ if(save_data == "TRUE") {
 
 
 ## Run MESS maps for all species - this will take awhile!
-#source('./R/LOCAL_MESS_MAPS.R', echo = TRUE)
+tryCatch(
+  create_mess_pngs(shp_path      = "./data/base/CONTEXTUAL/", ## Path for shapefile
+                   aus_shp       = "aus_states.rds",          ## Shapefile, e.g. Australian states
+                   world_shp     = "LAND_world.rds",          ## World shapefile          
+                   scen_list     = scen_2030,                 ## List of climate scenarios
+                   species_list  = map_spp,                   ## List of species folders with maxent models
+                   maxent_path   = bs_path,
+                   time_slice    = 30,
+                   nclust        = 1),
+  
+  error = function(cond) {
+    
+    ## This will write the error message inside the text file, 
+    ## but it won't include the species
+    file.create(file.path(bs_path, "map_png_failed_2030.txt"))
+    cat(cond$message, file=file.path(bs_path, "map_png_failed_2030.txt"))
+    warning(cond$message)
+    
+  })
 
 
 ## Then, we need linux/windows code to find all files with strings, and copy and move them to a new location - the

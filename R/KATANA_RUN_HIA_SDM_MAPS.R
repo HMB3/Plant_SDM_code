@@ -135,11 +135,10 @@ if (!on_windows) {
 
 
 ## Run the species 500 or 1000 at a time
-#GBIF.spp = unique(WPW.spp)                                                                       ## Your list of species.
-#GBIF.spp = unique(WPW.non.tree)
-GBIF.spp = remaining.spp
+#GBIF.spp = WPW.spp                                                                       ## Your list of species.
+GBIF.spp = WPW.non.tree
+#GBIF.spp = remaining.spp
 
-#GBIF.spp = unique(gsub("_", " ", unique(out_spp$searchTaxon)))
 
 
 ## Subset for PBS array jobs ::
@@ -155,7 +154,7 @@ if (Sys.getenv("PBS_ARRAYID") != "") {
 #########################################################################################################################
 ## The required folders must be created on katana
 GBIF.spp      = as_utf8(GBIF.spp, normalize = TRUE)   ## Check the species names have the right characters
-save_run      = "EXTRA_TREE_JULY_2018"                ## a variable to append the run name to the output files
+save_run      = "ALL_SHRUB_JULY_2018"                 ## a variable to append the run name to the output files
                                                       ## Need to include tree or not for HIA list
 
 
@@ -172,8 +171,8 @@ if (grepl("TREE", save_run)) {
 
 
 ## Create directories to store the maxent output
-dir.create('./output/maxent/SPLIT_TEST_INV/')
-dir.create('./output/maxent/SPLIT_TEST_INV_BS/')
+#dir.create('./output/maxent/SPLIT_TEST_INV/')
+#dir.create('./output/maxent/SPLIT_TEST_INV_BS/')
 
 
 #########################################################################################################################
