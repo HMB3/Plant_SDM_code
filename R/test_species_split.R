@@ -1,20 +1,14 @@
-PET      = raster("./data/base/worldclim/world/1km/pet_he_yr1.tif")
-AI       = raster("./data/base/worldclim/world/1km/ai_yr1.tif")
-twi      = raster("./data/base/ACLEP/TWI.tif")
-tpi      = raster("./data/base/ACLEP/TPI.tif")
-
-
 ## Test species
-GBIF.spp = unique(outstanding.spp[1501:length(outstanding.spp)]) 
+GBIF.spp = WPW.spp 
 
 
 ## 
 GBIF.spp      = as_utf8(GBIF.spp, normalize = TRUE)  ## Check the species names have the right characters
-save_run      = "EXTRA_2000"                     ## a variable to append the run name to the output files
+save_run      = "TEST"                     ## a variable to append the run name to the output files
                                                      ## ALL_EVREGREEN_MAY_2018 is the latest version of the niche data
 
 read_data     = "FALSE"                              ## Read intermediary data between the steps?
-save_data     = "TRUE"                               ## Save data?
+save_data     = "FALSE"                               ## Save data?
 check_maps    = "FALSE"                              ## Create maps, shapefiles and histograms of each speices?
 
 GBIF_path     = "./data/base/HIA_LIST/GBIF_UPDATE/"  ## The path where GBIF data is stored
@@ -24,11 +18,11 @@ OCC_SOURCE    = c("ALA", "GBIF", "INVENTORY")
 #OCC_SOURCE    = c("ALA", "GBIF")                     ## Data source :: for trees, ALL. For non trees, ALA/GBIF, for occ and bg
 calc_niche    = "TRUE"
 
-maxent_path   = './output/maxent/SPLIT_TEST_INV/'      ## The directory where maxent files are saved               
-maxent_dir    = 'output/maxent/SPLIT_TEST_INV'         ## Another version of the path needed to run maxent loop
+maxent_path   = './output/maxent/HIA_TEST_INV/'      ## The directory where maxent files are saved               
+maxent_dir    = 'output/maxent/HIA_TEST_INV'         ## Another version of the path needed to run maxent loop
 
-bs_path       = './output/maxent/SPLIT_TEST_INV_BS/'   ## Backwards selection directory
-bs_dir        = 'output/maxent/SPLIT_TEST_INV_BS'      ## the directory to harvest results : BS dir?
+bs_path       = './output/maxent/HIA_TEST_INV_BS/'   ## Backwards selection directory
+bs_dir        = 'output/maxent/HIA_TEST_INV_BS'      ## the directory to harvest results : BS dir?
 results_dir   = bs_dir 
 
 
@@ -77,7 +71,7 @@ tryCatch(
                             world_shp     = "LAND_world.rds",          ## World shapefile          
                             
                             scen_list     = scen_2030,                 ## List of climate scenarios
-                            species_list  = map_spp[39:42],                   ## List of species folders with maxent models
+                            species_list  = map_spp[6:8],                   ## List of species folders with maxent models
                             maxent_path   = bs_path,                   ## Output folder
                             climate_path  = "./data/base/worldclim/aus/1km/bio", ## climate data
                             
@@ -107,12 +101,12 @@ tryCatch(mapply(SUA_cell_count,                                  ## Function agg
                 world_shp     = "LAND_world.rds",                ## Polygon for AUS maps
                 aus_shp       = "aus_states.rds",                ## Polygon for World maps
 
-                DIR_list      = SDM.RESULTS.DIR[1:5],            ## List of directories with rasters
-                species_list  = map_spp[1:5],                    ## List of species' directories
+                DIR_list      = SDM.RESULTS.DIR[6:8],            ## List of directories with rasters
+                species_list  = map_spp[6:8],                    ## List of species' directories
                 number_gcms   = 6,                               ## The number of GCMs used (could be determined from object)
                 maxent_path   = bs_path,                         ## Directory of maxent results
-                thresholds    = percent.10.log[1:5],                  ## List of maxent thresholds
-                time_slice    = 50,                              ## Time period, eg 2030
+                thresholds    = percent.10.log[6:8],                  ## List of maxent thresholds
+                time_slice    = 30,                              ## Time period, eg 2030
                 write_rasters = TRUE),
 
          ## If the species fails, write a fail message to file.

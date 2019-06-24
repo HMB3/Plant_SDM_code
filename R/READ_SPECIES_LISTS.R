@@ -93,21 +93,13 @@ camp.spp     = trimws(campbelltown$Species)
 
 
 #########################################################################################################################
-## READ IN ALA/GBIF PLANT DUMP
+## READ IN ALA/GBIF DATA DUMPS
 #########################################################################################################################
 
 
 #########################################################################################################################
 ## Now read in tables of all plant records from ALA and GBIF
-#ALA.PLANTS  = read.csv("./data/base/HIA_LIST/ALA_plants.csv", stringsAsFactors = FALSE)
-#saveRDS(ALA.PLANTS, './data/base/HIA_LIST/ALA_plants.rds')
-# redgum.test = ALA.PLANTS[ALA.PLANTS$scientificName %like% "Eucalyptus camaldulensis", ]
-# ALA.RG      = ALA.RG[ALA.RG$scientificName %like% "Eucalyptus camaldulensis", ]
-# dim(ALA.RG)
-
-
-
-#GBIF.PLANTS = read.csv("./data/base/HIA_LIST/GBIF_plants.csv", stringsAsFactors = FALSE)
+#ALA.PLANTS 
 
 
 
@@ -160,6 +152,7 @@ head(TI.LUT);dim(TI.LUT)
 TI.LIST     = as.character(unique(TI.XY$searchTaxon))
 TI.SPP      = TI.XY[!duplicated(TI.XY[,c("searchTaxon")]),][c("searchTaxon")]
 TI.SPP$Plant_type = "Tree"
+
 
 
 
@@ -475,7 +468,7 @@ results.columns = c("searchTaxon",        ## From the ALA/ GBIF download code
 
 
 #########################################################################################################################
-## 6). COUNT THE SPECIES WHICH DID NOT COMPLETE THE MAPPING RUN
+## COUNT THE SPECIES WHICH DID NOT COMPLETE THE MAPPING RUNS, IF NEEDED 
 #########################################################################################################################
 
 

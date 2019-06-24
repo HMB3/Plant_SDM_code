@@ -40,6 +40,16 @@ dir.create('data/base/CHELSA/temp',   recursive = TRUE)
 ## Loop over the list of year/months and download the CHELSA data using the 
 download.file(chelsa.baseline.precip, file.path('data/base/CHELSA/precip', 
                                                 basename(chelsa.baseline.precip)), mode = 'wb', method = 'libcurl')
+												
+												
+## Download raster data from NCIS
+# data_path <- 'my_data/pan'
+# s <-lapply(1:12, function(m) {
+#   f <- sprintf('http://dapds00.nci.org.au/thredds/fileServer/rr9/ANUClimate/ANUClimate_v1-0_pan-evaporation_monthly-mean_0-01deg_1976-2005/00000000/ANUClimate_v1-0_pan-evaporation_monthly-mean_0-01deg_1976-2005_00000000_%02d.nc', m)
+#   f_out <- file.path(data_path, basename(f))
+#   download.file(f, f_out, mode='wb')
+#   raster(f_out)
+# }) %>% stack
 
 
 

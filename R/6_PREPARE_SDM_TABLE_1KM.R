@@ -216,10 +216,6 @@ length(unique(SPAT.OUT$searchTaxon))
 head(SPAT.OUT)
 
 
-## Rename the spatial outlier species column, as another identifier
-#names(SPAT.OUT)[names(SPAT.OUT) == 'searchTaxon'] <- 'spat_spp'
-
-
 
 
 
@@ -357,7 +353,7 @@ if(save_data == "TRUE") {
 
 
 #########################################################################################################################
-## 3). FOR SMALL RUNS OF SPECIES, CREATE BACKGROUND POINTS AND VARIBALE NAMES
+## 5). FOR SMALL RUNS OF SPECIES(EG HOLLOWS),  CREATE BACKGROUND POINTS AND VARIBALE NAMES
 #########################################################################################################################
 
 
@@ -374,17 +370,8 @@ if(save_data == "TRUE") {
 # intersect(unique(background.points$searchTaxon), GBIF.spp)
 
 
-#########################################################################################################################
-## Add a column for which source the data comes from :: Background or occurrence 
-# background.points$TYPE = "BG"
-# SDM.SPAT.ALL$TYPE      = "OCC"
 # setdiff(names(SDM.SPAT.ALL), names(background.points))
 # setdiff(names(background.points), names(SDM.SPAT.ALL))
-
- 
-# drops <- c("SPOUT.OBS", "OBS", "CC.OBS", "SPAT_SPP", "SPAT_OUT", "index", "lon", "lat")
-# SDM.SPAT.ALL      <- SDM.SPAT.ALL[,!(names(SDM.SPAT.ALL) %in% drops)]
-# background.points <- background.points[,!(names(background.points) %in% drops)]
 # setdiff(names(SDM.SPAT.ALL), names(background.points))
 
 
@@ -399,7 +386,6 @@ if(save_data == "TRUE") {
 # SDM.SPAT.OCC.BG = rbind(SDM.SPAT.ALL, background.points)
 # unique(SDM.SPAT.OCC.BG$SOURCE)
 # table(SDM.SPAT.OCC.BG$SOURCE)
-# unique(SDM.SPAT.OCC.BG$TYPE)
 # length(unique(SDM.SPAT.OCC.BG$searchTaxon))
 
 
@@ -408,6 +394,7 @@ if(save_data == "TRUE") {
 # if(save_data == "TRUE") {
 #   
 #   ## save .rds file for the next session
+#   SDM.SPAT.OCC.BG = 
 #   saveRDS(SDM.SPAT.OCC.BG, paste0(DATA_path, 'SDM_SPAT_OCC_BG_',  save_run, '.rds'))
 # 
 # } else {

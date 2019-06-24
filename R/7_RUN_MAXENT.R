@@ -19,6 +19,7 @@ if(read_data == "TRUE") {
   
   ## This table will contains all the records for all HIA species (~3.8k).
   ## SDM_SPAT_OCC_BG_ALL_EVREGREEN_JULY_2018 is the latest version of all the species
+  ## SDM.SPAT.OCC.BG = readRDS(paste0(DATA_path, 'SDM_SPAT_OCC_BG_ALL_EXTRA_JULY_2018.rds')) 
   SDM.SPAT.OCC.BG = readRDS(paste0(DATA_path, 'SDM_SPAT_OCC_BG_ALL_EVREGREEN_JULY_2018.rds'))
   
 } else {
@@ -40,7 +41,8 @@ if(read_data == "TRUE") {
 ## Run Maxent using a targetted selection of background points. 
 ## within 200km of existing points
 ## Within the same Koppen zone as the existing points
-SDM.SPAT.OCC.BG = readRDS(paste0(DATA_path, 'SDM_SPAT_OCC_BG_ALL_EVREGREEN_JULY_2018.rds'))
+#SDM.SPAT.OCC.BG = readRDS(paste0(DATA_path, 'SDM_SPAT_OCC_BG_ALL_EVREGREEN_JULY_2018.rds'))
+SDM.SPAT.OCC.BG = readRDS(paste0(DATA_path, 'SDM_SPAT_OCC_BG_ALL_EXTRA_JULY_2018.rds')) 
 
 
 ## Check the table has all the species

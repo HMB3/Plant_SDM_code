@@ -641,7 +641,7 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
           next
         }
         
-        ## The create a stack of rasters from the file list
+        ## Then create a stack of rasters from the file list
         ## This is a bit hack, but it works :: better to use a regular expression
         message('Combining SDM prediction for ', length(raster.list), ' GCMS for 20', time_slice)
         suit              = stack(raster.list)
@@ -652,7 +652,7 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
         SUA_file =   sprintf('%s/%s/full/%s_20%s_%s%s.tif', maxent_path,
                              species, species, time_slice, "gain_loss_", thresh)
         
-        ## 
+        ## Next is easier than if/else 
         if(file.exists(SUA_file)) { 
           message(species, ' ', 20, time_slice, ' SUA aggregation already exists, skip')
           next
@@ -688,7 +688,8 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
         ## Count the number of patches in the thresholded suitability raster
         ## And the largest contiguous areas
         ## Are the environmental conditions at the sites novel?
-        ## see exdet gist for interactions between variables  
+        ## see exdet gist for interactions between variables
+        message('Calcualting the max contiguous suitability patch for ', species)
         patches   <- SDMTools::ConnCompLabel(current_suit_thresh)
         n_patches <- maxValue(patches)
         max_patch_area <- max(table(patches[]))

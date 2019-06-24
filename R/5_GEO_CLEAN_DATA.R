@@ -188,11 +188,6 @@ message("Tree inventory data increases records by ", round(nrow(CLEAN.INV)/nrow(
 
 
 #########################################################################################################################
-## Plot GBIF outliers to check. This might be overkill, but useful to interrogate why species didn't work
-#source('./R/CC_CLEAN_TEST.R', echo = TRUE)
-
-
-#########################################################################################################################
 ## save data
 if(save_data == "TRUE") {
   

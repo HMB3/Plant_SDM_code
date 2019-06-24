@@ -136,10 +136,9 @@ if (!on_windows) {
 
 ## Run the species 500 or 1000 at a time
 #GBIF.spp = unique(WPW.spp)                                                                       ## Your list of species.
-#GBIF.spp = unique(WPW.non.tree) 
-GBIF.spp = unique(WPW.non.tree)
 #GBIF.spp = unique(WPW.non.tree)
-#GBIF.spp   = TI.HIA    ##
+GBIF.spp = remaining.spp
+
 #GBIF.spp = unique(gsub("_", " ", unique(out_spp$searchTaxon)))
 
 
@@ -156,7 +155,7 @@ if (Sys.getenv("PBS_ARRAYID") != "") {
 #########################################################################################################################
 ## The required folders must be created on katana
 GBIF.spp      = as_utf8(GBIF.spp, normalize = TRUE)   ## Check the species names have the right characters
-save_run      = "ALL_SHRUB_JULY_2018"                 ## a variable to append the run name to the output files
+save_run      = "EXTRA_TREE_JULY_2018"                ## a variable to append the run name to the output files
                                                       ## Need to include tree or not for HIA list
 
 
@@ -181,7 +180,7 @@ dir.create('./output/maxent/SPLIT_TEST_INV_BS/')
 ## Reading and writing?
 read_data     = "FALSE"   ## Read intermediary data between the steps?
 save_data     = "TRUE"    ## Save data?
-check_maps    = "FALSE"   ## Create maps, shapefiles and histograms of each speices?
+check_maps    = "FALSE"   ## Create maps checking the data cleaning steps?
 
 
 #########################################################################################################################
@@ -283,9 +282,6 @@ source('./R/8_MAP_SDM_COMBINE.R', echo = TRUE)
 
 ##     - Calculate the environmental ranges and add them to MAXENT results  
 
-##     - Omission rate caculation
-
-##     - Store error messages in step 7 and 8 if possible (didn't work)
 
 ##     - Change the mapping function to handle species with no  novel areas :: Use Eucalyptus Camuldelunsis
 
