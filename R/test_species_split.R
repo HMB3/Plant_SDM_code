@@ -70,13 +70,13 @@ tryCatch(
                             aus_shp       = "aus_states.rds",          ## Shapefile, e.g. Australian states
                             world_shp     = "LAND_world.rds",          ## World shapefile          
                             
-                            scen_list     = scen_2030,                 ## List of climate scenarios
+                            scen_list     = scen_2050,                 ## List of climate scenarios
                             species_list  = map_spp[6:8],                   ## List of species folders with maxent models
                             maxent_path   = bs_path,                   ## Output folder
                             climate_path  = "./data/base/worldclim/aus/1km/bio", ## climate data
                             
                             grid_names    = grid.names,                ## This must include the soil variables, 
-                            time_slice    = 30,                        ## Time period
+                            time_slice    = 50,                        ## Time period
                             current_grids = aus.grids.current,         ## predictor grids - this must include soil variables too
                             create_mess   = "TRUE",
                             nclust        = 1),
@@ -106,7 +106,7 @@ tryCatch(mapply(SUA_cell_count,                                  ## Function agg
                 number_gcms   = 6,                               ## The number of GCMs used (could be determined from object)
                 maxent_path   = bs_path,                         ## Directory of maxent results
                 thresholds    = percent.10.log[6:8],                  ## List of maxent thresholds
-                time_slice    = 30,                              ## Time period, eg 2030
+                time_slice    = 50,                              ## Time period, eg 2030
                 write_rasters = TRUE),
 
          ## If the species fails, write a fail message to file.

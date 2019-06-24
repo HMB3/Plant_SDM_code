@@ -161,11 +161,12 @@ tryCatch(
 
 
 #########################################################################################################################
-## So now use the 10th% Logistic threshold for each species from the maxent models to threhsold the rasters of habitat suitability (0-1) 
-## For each GCM. For each species, summ the 6 GCMS to create a binary raster with cell values between 0-6. These cell values 
-## represent the number of GCMs where that cell had a suitability value above the threshold determined by maxent. 
-## We classify a cell has suitable if it met the threshold in > 4 GCMs, and use this combined raster to compare current and future 
-## suitability, measuring if the suitability of each cell is changing over time, remaining stable or was never suitable.
+## So now use the 10th% Logistic threshold for each species from the maxent models to threhsold the rasters of habitat 
+## suitability (0-1) For each GCM. For each species, summ the 6 GCMS to create a binary raster with cell values between 0-6. 
+## These cell values represent the number of GCMs where that cell had a suitability value above the threshold determined 
+## by maxent. We classify a cell has suitable if it met the threshold in > 4 GCMs, and use this combined raster to compare 
+## current and future suitability, measuring if the suitability of each cell is changing over time, remaining stable or was 
+## never suitable.
 
 
 #########################################################################################################################
