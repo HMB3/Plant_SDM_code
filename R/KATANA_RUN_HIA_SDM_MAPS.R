@@ -135,7 +135,7 @@ if (!on_windows) {
 
 
 ## Run the species 500 or 1000 at a time
-GBIF.spp = WPW.spp ## Your list of species.
+GBIF.spp = WPW.spp        ## Your list of species.
 #GBIF.spp = WPW.tree
 #GBIF.spp = WPW.non.tree
 #GBIF.spp = remaining.spp
@@ -233,14 +233,14 @@ message('Running SDMs and maps for ', length(GBIF.spp), ' species in the set ', 
 ## clean taxonomy, then extract raster values
 ## extract environmental conditions
 # source('./R/4_ALA_GBIF_TAXO_COMBINE.R',   echo = TRUE)
-# source('./R/INVENTORY_RASTER.R',          echo = TRUE)
+# source('./R/4B_INVENTORY_RASTER.R',          echo = TRUE)
 
 
 ## Step 5 :: clean the occurrence data using the 'CleanCoordinates' function in the CoordinateCleaner package, to remove
 ## records near herbaria, duplicates, etc. & add contextual info for each record (taxonomic and horticultural).
 ## Then estimate the environmental and geographic range of each species
 # source('./R/5_GEO_CLEAN_DATA.R',         echo = TRUE)
-# source('./R/CALCULATE_1KM_NICHES.R',     echo = TRUE)
+# source('./R/5B_CALCULATE_1KM_NICHES.R',     echo = TRUE)
 
 
 ## Step 6 :: Prepare the SDM table and clean the spatial outliers at 1km resolution.
@@ -340,7 +340,7 @@ source('./R/8_MAP_SDM_COMBINE.R', echo = TRUE)
 
 ## 3).  H:drive (2TB SSD that I've been working off) and G:drive (8TB HDD for backup).
 
-##      - Clean up files on H: including R folder
+##      - Clean up files on H:
 ##      - Run the code from inside G to test. Keep the full folders on the temporary drive
 ##      - Put species to check in the results
 ##      - Store the full evergreen results in G:
