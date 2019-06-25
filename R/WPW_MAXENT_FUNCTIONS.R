@@ -12,8 +12,7 @@
 
 
 # ## Here are the argumetns needed to run the targetted background selection SDMs inside the function itself
-#spp                     = GBIF.spp[2]
-# This is what is causing the proportional sampling to skip.........................................
+# spp                     = GBIF.spp[1]
 # occ <- subset(SDM.SPAT.OCC.BG, searchTaxon == spp)
 # occ <- occ[grep(paste(OCC_SOURCE, collapse = '|'), occ$SOURCE, ignore.case = TRUE),]
 # message('Using occ records from ', unique(occ$SOURCE))
@@ -27,6 +26,7 @@
 # 
 # 
 # name                    = spp
+# save_name               = 
 # outdir                  = maxent_dir
 # bsdir                   = bs_dir
 # 
@@ -258,7 +258,7 @@ fit_maxent_targ_bg_back_sel <- function(occ,
     
     #####################################################################
     ## Now save an image of the background points 
-    # save_name = gsub(' ', '_', name)
+    save_name = gsub(' ', '_', name)
     # 
     # aus.mol = readRDS(paste0(shp_path, aus_shp)) %>%
     #   spTransform(projection(buffer))

@@ -626,7 +626,7 @@ create_mess_pngs = function(shp_path, aus_shp, world_shp, scen_list,
         ## this can fail if no ebvironments are novel, e.g the red gum.
         ## Can we add a condtiton in poluygonizer to check if the file has data?..............................
         message('Converting raster MESS maps to polygons under ', x, ' scenario for ', species) 
-        novel_current_poly <- gBuffer(polygonizer_windows(sprintf('%s/%s%s.tif', MESS_dir, species, "_current_novel")), width = 0)
+        novel_current_poly <- polygonizer_windows(sprintf('%s/%s%s.tif', MESS_dir, species, "_current_novel"))
         
         ###################################################################
         ## Re-project the shapefiles

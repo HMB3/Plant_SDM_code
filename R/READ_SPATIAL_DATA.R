@@ -235,8 +235,7 @@ env.variables = c("Annual_mean_temp",
                   "Precip_dry_qu",
                   "Precip_warm_qu",
                   "Precip_col_qu",
-                  "PET")#,
-#"AI")
+                  "PET", "AI")
 
 topo.soil.variables = c("PC1", 
                         "PC2", 

@@ -23,7 +23,7 @@ on_windows = switch(Sys.info()[['sysname']], Windows = TRUE, FALSE)
 ## Then read in all data to run the SDM code :: species lists, shapefile, rasters & tables
 if (on_windows) {
   
-  ## Is up to date
+  ## Load the latest R data file
   load("KATANA_RUN_DATA.RData")
   
 } else {

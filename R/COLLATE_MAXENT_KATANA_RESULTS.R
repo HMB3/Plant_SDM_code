@@ -259,8 +259,9 @@ MAXENT.RESULTS = dplyr::select(MAXENT.RESULTS, results.columns)
 
 ## Also, here we could add on the maxent ratings
 ## 476 species have been rated, but we need to check if the ratings are still applicable, as the data has been updated
-# str(MAXENT.RATING.LAT)
-# MAXENT.RESULTS = join(MAXENT.RESULTS, MAXENT.RATING.LAT, type = "right")
+length(intersect(MAXENT.RATING.LAT$searchTaxon, WPW.spp))
+length(intersect(MAXENT.RATING.LAT$searchTaxon, MAXENT.RESULTS$searchTaxon))
+MAXENT.RESULTS = join(MAXENT.RESULTS, MAXENT.RATING.LAT)
 
 
 #########################################################################################################################
@@ -285,6 +286,14 @@ if(save_data == "TRUE") {
 #########################################################################################################################
 ## 4). RUN MESS MAPS LOCALLY - BEST TO GET IT WORKING ON LINUX....
 #########################################################################################################################
+
+
+#########################################################################################################################
+## Now check the match between the species list, and the results list. 
+length(intersect(map_spp_list, MAXENT.RESULTS$searchTaxon)) 
+MAXENT.RESULTS  =  MAXENT.RESULTS[MAXENT.RESULTS$searchTaxon %in% map_spp_list , ] 
+map_spp         = unique(MAXENT.RESULTS$searchTaxon)
+length(map_spp)
 
 
 ## Run MESS maps for all species - this will take awhile!
