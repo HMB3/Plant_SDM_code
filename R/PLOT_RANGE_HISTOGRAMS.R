@@ -5,6 +5,24 @@
 
 ## This code creates barplots, histograms, and convex-hull plots for a set of species
 ## This code can be used to re-do the zonal stats for the SUAs in step 9................................................. 
+## If we need to read the data in? 
+if(read_data == "TRUE") {
+  
+  ## read in RDS files from previous step
+  ## CLEAN.INV = CLEAN.INV[CLEAN.INV$searchTaxon %in% na.error$searchTaxon[1:50], ]
+  CLEAN.INV = readRDS(paste0(DATA_path, 'CLEAN_INV_', save_run, '.rds'))
+  message('Species overlap ', length(intersect(GBIF.spp, unique(CLEAN.INV$searchTaxon))))
+  rasterTmpFile()
+  
+} else {
+  
+  message(' skip file reading, not many species analysed')   ##
+  
+}
+
+
+## Create a list of species to loop over
+spp.geo = as.character(unique(CLEAN.INV$searchTaxon))
 
 
 #########################################################################################################################
@@ -74,8 +92,8 @@ for (spp in spp.geo) {
   SP.DF     <- NICHE.1KM.84[NICHE.1KM.84$searchTaxon %in% spp , ]
   DF        <- CLEAN.INV[CLEAN.INV$searchTaxon %in% spp , ]
   
-  TMP.GLO   <- subset(GLOB.NICHE,   searchTaxon == spp)
-  TMP.AUS   <- subset(AUS.NICHE,    searchTaxon == spp)
+  # TMP.GLO   <- subset(GLOB.NICHE,   searchTaxon == spp)
+  # TMP.AUS   <- subset(AUS.NICHE,    searchTaxon == spp)
 
   #############################################################
   ## Now, build a df of the temperature vectors
@@ -95,9 +113,9 @@ for (spp in spp.geo) {
   # names(TMP.RANGE)[2] = c("Temperature_range")
 
   ## Subset DF into records for each spp
-  DF     <- subset(COMBO.SUA.POA, searchTaxon == spp)
-  DF.OCC <- subset(COMBO.SUA.POA, searchTaxon == spp & SOURCE != "INVENTORY")
-  DF.INV <- subset(COMBO.SUA.POA, searchTaxon == spp & SOURCE == "INVENTORY")
+  # DF     <- subset(COMBO.SUA.POA, searchTaxon == spp)
+  # DF.OCC <- subset(COMBO.SUA.POA, searchTaxon == spp & SOURCE != "INVENTORY")
+  # DF.INV <- subset(COMBO.SUA.POA, searchTaxon == spp & SOURCE == "INVENTORY")
    
   # #############################################################
   # ## Plot occurrence points by source for the world
@@ -172,44 +190,15 @@ for (spp in spp.geo) {
   png(sprintf("./data/ANALYSIS/SPECIES_RANGES/%s_%s", spp, "_1km_convex_hull.png"),
       16, 10, units = 'in', res = 500)
   
-  # p <- ggplot(DF, aes(Annual_mean_temp, Annual_precip, fill = SOURCE, color = SOURCE))
-  # 
-  # hull_occ_source <- DF %>%
-  #   group_by(SOURCE) %>%
-  #   slice(chull(Annual_mean_temp, Annual_precip))
-  # 
-  # ## Update the plot with a fill group, and overlay the new hulls
-  # p + geom_polygon(data = hull_occ_source, alpha = 0.3) +
-  #   geom_point(shape = 21, size = 2.5) + ## geom_density_2d
-  #   
-  #   ## Add x,y, and title
-  #   labs(x     = "Mean annual temp",
-  #        y     = "Annual precipitation",
-  #        title = "Convex Hull for") +
-  #   
-  #   ## Add themes
-    # theme(axis.title.x     = element_text(colour = "black", size = 35),
-    #       axis.text.x      = element_text(size = 20),
-    # 
-    #       axis.title.y     = element_text(colour = "black", size = 35),
-    #       axis.text.y      = element_text(size = 20),
-    # 
-    #       panel.background = element_blank(),
-    #       panel.border     = element_rect(colour = "black", fill = NA, size = 1.5),
-    #       plot.title       = element_text(size   = 40, face = "bold"),
-    #       legend.text      = element_text(size   = 20),
-    #       legend.title     = element_text(size   = 20),
-    #       legend.key.size  = unit(1.5, "cm"))
-    # 
-  ##
-  #print(p + ggtitle(paste0("Convex Hull for ", spp)))
-  
   find_hull <- function(DF) DF[chull(DF$Annual_mean_temp, DF$Annual_precip), ]
-  hulls <- ddply(DF, "SOURCE", find_hull)
-  plot <- ggplot(data = DF, aes(x = Annual_mean_temp, y = Annual_precip, colour = SOURCE, fill = SOURCE)) +
+  hulls     <- ddply(DF, "SOURCE", find_hull)
+  
+  plot      <- ggplot(data = DF, aes(x = Annual_mean_temp, 
+                                     y = Annual_precip, colour = SOURCE, fill = SOURCE)) +
     geom_point() + 
     geom_polygon(data = hulls, alpha = 0.5) +
     labs(x = "Annual_mean_temp", y = "Annual_precip") +
+    
     theme(axis.title.x     = element_text(colour = "black", size = 35),
           axis.text.x      = element_text(size = 20),
           
@@ -222,12 +211,12 @@ for (spp in spp.geo) {
           legend.text      = element_text(size   = 20),
           legend.title     = element_text(size   = 20),
           legend.key.size  = unit(1.5, "cm")) + 
+    
   ggtitle(paste0("Convex Hull for ", spp))
-  plot
+  print(plot)
   
   ## close device
   dev.off()
-  
   
   #############################################################
   ## Plot temperature histograms

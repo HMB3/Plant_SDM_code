@@ -307,6 +307,8 @@ source('./R/8_MAP_SDM_COMBINE.R', echo = TRUE)
 
 ## 4).  Improve the reading of objects and files - e.g. the RData object is cumbersome.... 
 
+## 5).  Create a 'dashboard' for each species, using the MAXENT output (eg see "./R/PLOT_RANGE_HISTOGRAMS.R')
+
 
 
 
