@@ -57,7 +57,9 @@ lapply(GBIF.spp, function(species){
 
    ## Skip the species if the directory already exists, before the loop
    outdir <- maxent_dir
-
+   
+   ## Could also check the folder size, so folders with no contents aren't skipped eg
+   ## && sum(file.info(dir_name)$size) < 1000 (EG 1MB)
    dir_name = file.path(maxent_path, gsub(' ', '_', species))
    if(dir.exists(dir_name)) {
      message('Skipping ', species, ' - already run.')

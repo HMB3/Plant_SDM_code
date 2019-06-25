@@ -120,7 +120,7 @@ for (spp in spp.plot) {
   
   ## Subset DF into records for each spp
   # DF     <- subset(COMBO.SUA.POA, searchTaxon == spp)
-  # DF.OCC <- subset(COMBO.SUA.POA, searchTaxon == spp & SOURCE != "INVENTORY")
+  DF.OCC <- subset(CLEAN.INV, searchTaxon == spp & SOURCE != "INVENTORY")
   # DF.INV <- subset(COMBO.SUA.POA, searchTaxon == spp & SOURCE == "INVENTORY")
   
   # #############################################################

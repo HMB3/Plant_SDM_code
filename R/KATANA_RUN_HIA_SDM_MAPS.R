@@ -240,7 +240,7 @@ message('Running SDMs and maps for ', length(GBIF.spp), ' species in the set ', 
 ## records near herbaria, duplicates, etc. & add contextual info for each record (taxonomic and horticultural).
 ## Then estimate the environmental and geographic range of each species
 # source('./R/5_GEO_CLEAN_DATA.R',         echo = TRUE)
-# source('./R/5C_CALCULATE_1KM_NICHES.R',  echo = TRUE)
+# source('./R/5D_CALCULATE_1KM_NICHES.R',  echo = TRUE)
 
 
 ## Step 6 :: Prepare the SDM table and clean the spatial outliers at 1km resolution.
