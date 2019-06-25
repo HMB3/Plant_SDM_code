@@ -905,6 +905,13 @@ TPL.keep <- c(## GBIF TAXONOMY
 niche_estimate = function (DF, 
                            colname) {
   
+  ## R doesn't seem to have a built-in mode function
+  ## This doesn't really handel multiple modes, but it doesn't matter because mode was just calculated for Renee........                           
+  Mode <- function(x) {
+    ux <- unique(x)
+    ux[which.max(tabulate(match(x, ux)))]
+  }
+  
   ## Use ddply inside a function to create niche widths and medians for each species
   ## This syntax is tricky, maybe ask John and Stu what they think
   

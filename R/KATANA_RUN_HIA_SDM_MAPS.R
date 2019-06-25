@@ -135,11 +135,10 @@ if (!on_windows) {
 
 
 ## Run the species 500 or 1000 at a time
-GBIF.spp = WPW.spp                                                                       ## Your list of species.
+GBIF.spp = WPW.spp ## Your list of species.
 #GBIF.spp = WPW.tree
 #GBIF.spp = WPW.non.tree
 #GBIF.spp = remaining.spp
-
 
 
 ## Subset for PBS array jobs ::
@@ -313,7 +312,7 @@ source('./R/8_MAP_SDM_COMBINE.R', echo = TRUE)
 
 
 #########################################################################################################################
-## OUTSTANDING WORKFLOW TASKS:
+## HIA DELIVERABLES:
 #########################################################################################################################
 
 
@@ -341,9 +340,9 @@ source('./R/8_MAP_SDM_COMBINE.R', echo = TRUE)
 ## 3).  H:drive (2TB SSD that I've been working off) and G:drive (8TB HDD for backup).
 
 ##      - Clean up files on H: ..............................................................................
+##      - Run the code from inside G to test. Keep the full folders on the temporary drive
 ##      - Put species to check in the results
 ##      - Store the full evergreen results in G:
-##      - Run the code from inside G to test. Keep the full folders on the temporary drive
 
 
 ## 4). Latest code for running SDMs and maps on windows and linux. This include the PBS script
@@ -352,7 +351,7 @@ source('./R/8_MAP_SDM_COMBINE.R', echo = TRUE)
 ## 5). Mark down file of example species - a 'read me' file
 
 
-## 6). If possible, environmental ranges, histograms and convex hulls for all species...
+## 6). If possible, plot environmental ranges, histograms and convex hulls for all species...
 
 
 

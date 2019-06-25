@@ -21,7 +21,7 @@
 # world_shp     = "LAND_world.rds"          ## World shapefile
 # 
 # x             = scen_2030[1]              ## List of climate scenarios
-# species       = map_spp[3]               ## List of species folders with maxent models
+# species       = map_spp[3]                ## List of species folders with maxent models
 # maxent_path   = bs_path                   ## Output folder
 # climate_path  = "./data/base/worldclim/aus/1km/bio" ## climate data
 # static_path   = "./data/base/ACLEP"                 ## Soil aata

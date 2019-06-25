@@ -66,46 +66,46 @@
 
 ##############################################################################################
 ## Plot histograms of temperature and rainfall
-## species = spp.geo[1]
+##  spp = spp.geo[1]
 ## geom_rect needs xmin ymax, ymin ymax 
-for (species in spp.geo) {
+for (spp in spp.geo) {
   
-  ## Subset the spatial dataframe into records for each species
-  SP.DF     <- NICHE.1KM.84[NICHE.1KM.84$searchTaxon %in% species , ]
-  DF        <- CLEAN.INV[CLEAN.INV$searchTaxon %in% species , ]
+  ## Subset the spatial dataframe into records for each spp
+  SP.DF     <- NICHE.1KM.84[NICHE.1KM.84$searchTaxon %in% spp , ]
+  DF        <- CLEAN.INV[CLEAN.INV$searchTaxon %in% spp , ]
   
-  TMP.GLO   <- subset(GLOB.NICHE,   searchTaxon == species)
-  TMP.AUS   <- subset(AUS.NICHE,    searchTaxon == species)
+  TMP.GLO   <- subset(GLOB.NICHE,   searchTaxon == spp)
+  TMP.AUS   <- subset(AUS.NICHE,    searchTaxon == spp)
 
   #############################################################
   ## Now, build a df of the temperature vectors
   # if(nrow(TMP.GLO) > 0){
   #   TMP.GLO$RANGE = "GLOBAL"
   # } else {
-  #   message("No global data for ", species)
+  #   message("No global data for ", spp)
   # }
   # 
   # if(nrow(TMP.AUS) > 0){
   #   TMP.AUS$RANGE = "AUS"
   # } else {
-  #   message("No Australian data for ", species, " don't plot the range")
+  #   message("No Australian data for ", spp, " don't plot the range")
   # }
   # 
   # TMP.RANGE <- rbind(TMP.GLO, TMP.AUS)
   # names(TMP.RANGE)[2] = c("Temperature_range")
 
-  ## Subset DF into records for each species
-  DF     <- subset(COMBO.SUA.POA, searchTaxon == species)
-  DF.OCC <- subset(COMBO.SUA.POA, searchTaxon == species & SOURCE != "INVENTORY")
-  DF.INV <- subset(COMBO.SUA.POA, searchTaxon == species & SOURCE == "INVENTORY")
+  ## Subset DF into records for each spp
+  DF     <- subset(COMBO.SUA.POA, searchTaxon == spp)
+  DF.OCC <- subset(COMBO.SUA.POA, searchTaxon == spp & SOURCE != "INVENTORY")
+  DF.INV <- subset(COMBO.SUA.POA, searchTaxon == spp & SOURCE == "INVENTORY")
    
   # #############################################################
   # ## Plot occurrence points by source for the world
-  # message('Writing global occ sources for ', species)
-  # png(sprintf("./data/ANALYSIS/SPECIES_RANGES/%s_%s", species, "1km_occ_points_source.png"),
+  # message('Writing global occ sources for ', spp)
+  # png(sprintf("./data/ANALYSIS/SPECIES_RANGES/%s_%s", spp, "1km_occ_points_source.png"),
   #     16, 10, units = 'in', res = 500)
   # 
-  # plot(LAND.WGS, main = paste0("Global points for ", species),
+  # plot(LAND.WGS, main = paste0("Global points for ", spp),
   #      lwd = 0.01, asp = 1, col = 'grey', bg = 'sky blue')
   # 
   # points(SP.DF,
@@ -117,8 +117,8 @@ for (species in spp.geo) {
   # 
   # #############################################################
   # ## Plot temperature barchart
-  # message('Writing global temp histograms for ', species)
-  # png(sprintf("./data/ANALYSIS/SPECIES_RANGES/%s_%s", species, "temp_barchart_1km_records.png"),
+  # message('Writing global temp histograms for ', spp)
+  # png(sprintf("./data/ANALYSIS/SPECIES_RANGES/%s_%s", spp, "temp_barchart_1km_records.png"),
   #     16, 10, units = 'in', res = 500)
   # 
   # ## Use the 'SOURCE' column to create a histogram for each source.
@@ -145,7 +145,7 @@ for (species in spp.geo) {
     #            col = 'green', size = 1) +
     # 
     # 
-    # ggtitle(paste0("Worldclim temperature ranges for ", species)) +
+    # ggtitle(paste0("Worldclim temperature ranges for ", spp)) +
     # 
     # ## Add themes
     # theme(axis.title.x     = element_text(colour = "black", size = 35),
@@ -159,35 +159,57 @@ for (species in spp.geo) {
     #       legend.key.size  = unit(1.5, "cm"))
   # 
   # ## Print the plot and close the device
-  # print(temp.hist + ggtitle(paste0("Worldclim temp niches for ", species)))
+  # print(temp.hist + ggtitle(paste0("Worldclim temp niches for ", spp)))
   # dev.off()
   
   
   #############################################################
-  ## PLot convex Hull
-  message('Writing global convex hulls for ', species)
+  ## Plot convex Hull
+  message('Writing global convex hulls for ', spp)
   #DF.CONV <- plyr::mutate(DF, OCC_TYPE = ifelse(grepl("INVENTORY", SOURCE), "INV", "OCC"))
-
+  
   ## Start PNG device
-  png(sprintf("./data/ANALYSIS/SPECIES_RANGES/%s_%s", species, "_1km_convex_hull.png"),
+  png(sprintf("./data/ANALYSIS/SPECIES_RANGES/%s_%s", spp, "_1km_convex_hull.png"),
       16, 10, units = 'in', res = 500)
   
-  p <- ggplot(DF, aes(Annual_mean_temp, Annual_precip, fill = SOURCE, color = SOURCE))
+  # p <- ggplot(DF, aes(Annual_mean_temp, Annual_precip, fill = SOURCE, color = SOURCE))
+  # 
+  # hull_occ_source <- DF %>%
+  #   group_by(SOURCE) %>%
+  #   slice(chull(Annual_mean_temp, Annual_precip))
+  # 
+  # ## Update the plot with a fill group, and overlay the new hulls
+  # p + geom_polygon(data = hull_occ_source, alpha = 0.3) +
+  #   geom_point(shape = 21, size = 2.5) + ## geom_density_2d
+  #   
+  #   ## Add x,y, and title
+  #   labs(x     = "Mean annual temp",
+  #        y     = "Annual precipitation",
+  #        title = "Convex Hull for") +
+  #   
+  #   ## Add themes
+    # theme(axis.title.x     = element_text(colour = "black", size = 35),
+    #       axis.text.x      = element_text(size = 20),
+    # 
+    #       axis.title.y     = element_text(colour = "black", size = 35),
+    #       axis.text.y      = element_text(size = 20),
+    # 
+    #       panel.background = element_blank(),
+    #       panel.border     = element_rect(colour = "black", fill = NA, size = 1.5),
+    #       plot.title       = element_text(size   = 40, face = "bold"),
+    #       legend.text      = element_text(size   = 20),
+    #       legend.title     = element_text(size   = 20),
+    #       legend.key.size  = unit(1.5, "cm"))
+    # 
+  ##
+  #print(p + ggtitle(paste0("Convex Hull for ", spp)))
   
-  hull_occ_source <- DF %>%
-    group_by(SOURCE) %>%
-    slice(chull(Annual_mean_temp, Annual_precip))
-  
-  ## Update the plot with a fill group, and overlay the new hulls
-  p + geom_polygon(data = hull_occ_source, alpha = 0.3) +
-    geom_point(shape = 21, size = 2.5) + ## geom_density_2d
-    
-    ## Add x,y, and title
-    labs(x     = "Mean annual temp",
-         y     = "Annual precipitation",
-         title = "Convex Hull for") +
-    
-    ## Add themes
+  find_hull <- function(DF) DF[chull(DF$Annual_mean_temp, DF$Annual_precip), ]
+  hulls <- ddply(DF, "SOURCE", find_hull)
+  plot <- ggplot(data = DF, aes(x = Annual_mean_temp, y = Annual_precip, colour = SOURCE, fill = SOURCE)) +
+    geom_point() + 
+    geom_polygon(data = hulls, alpha = 0.5) +
+    labs(x = "Annual_mean_temp", y = "Annual_precip") +
     theme(axis.title.x     = element_text(colour = "black", size = 35),
           axis.text.x      = element_text(size = 20),
           
@@ -199,10 +221,9 @@ for (species in spp.geo) {
           plot.title       = element_text(size   = 40, face = "bold"),
           legend.text      = element_text(size   = 20),
           legend.title     = element_text(size   = 20),
-          legend.key.size  = unit(1.5, "cm"))
-  
-  ##
-  print(p + ggtitle(paste0("Worldclim niches for ", species)))
+          legend.key.size  = unit(1.5, "cm")) + 
+  ggtitle(paste0("Convex Hull for ", spp))
+  plot
   
   ## close device
   dev.off()
@@ -210,8 +231,8 @@ for (species in spp.geo) {
   
   #############################################################
   ## Plot temperature histograms
-  message('Writing global temp histograms for ', species)
-  png(sprintf("./data/ANALYSIS/SPECIES_RANGES/%s_%s", species, "temp_niche_histograms_1km_records.png"),
+  message('Writing global temp histograms for ', spp)
+  png(sprintf("./data/ANALYSIS/SPECIES_RANGES/%s_%s", spp, "temp_niche_histograms_1km_records.png"),
       16, 10, units = 'in', res = 500)
   
   ## Use the 'SOURCE' column to create a histogram for each source.
@@ -227,7 +248,7 @@ for (species in spp.geo) {
     geom_vline(aes(xintercept = median(DF.OCC$Annual_mean_temp)),
                col = 'red', size = 1) +
     
-    ggtitle(paste0("Worldclim temp niches for ", species)) +
+    ggtitle(paste0("Worldclim temp niches for ", spp)) +
     
     ## Add themes
     theme(axis.title.x     = element_text(colour = "black", size = 35),
@@ -244,13 +265,13 @@ for (species in spp.geo) {
           legend.key.size  = unit(1.5, "cm"))
   
   ## Print the plot and close the device
-  print(temp.hist + ggtitle(paste0("Worldclim temp niches for ", species)))
+  print(temp.hist + ggtitle(paste0("Worldclim temp niches for ", spp)))
   dev.off()
   
   #############################################################
   ## Plot rainfall histograms
-  message('Writing global rain histograms for ', species)
-  png(sprintf("./data/ANALYSIS/SPECIES_RANGES/%s_%s", species, "rain_niche_histograms_1km_records.png"),
+  message('Writing global rain histograms for ', spp)
+  png(sprintf("./data/ANALYSIS/SPECIES_RANGES/%s_%s", spp, "rain_niche_histograms_1km_records.png"),
       16, 10, units = 'in', res = 500)
   
   ## Use the 'SOURCE' column to create a histogram for each source.
@@ -266,7 +287,7 @@ for (species in spp.geo) {
     geom_vline(aes(xintercept = median(DF.OCC$Annual_precip)),
                col = 'red', size = 1) +
     
-    ggtitle(paste0("Worldclim rain niches for ", species)) +
+    ggtitle(paste0("Worldclim rain niches for ", spp)) +
     
     ## Add themes
     theme(axis.title.x     = element_text(colour = "black", size = 35),
@@ -283,7 +304,7 @@ for (species in spp.geo) {
           legend.key.size  = unit(1.5, "cm"))
   
   ## Print the plot and close the device
-  print(rain.hist + ggtitle(paste0("Worldclim rain niches for ", species)))
+  print(rain.hist + ggtitle(paste0("Worldclim rain niches for ", spp)))
   dev.off()
   
 }
