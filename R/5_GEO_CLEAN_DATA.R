@@ -206,7 +206,7 @@ if(save_data == "TRUE") {
 if(check_maps == "TRUE") {
   
   message('Writing shapefiles and maps to checking directory') 
-  source('./R/CC_CLEAN_TEST.R')
+  source('./R/5B_CC_CLEAN_TEST.R')
   
 } else {
   

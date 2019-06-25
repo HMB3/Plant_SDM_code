@@ -15,14 +15,20 @@ if(read_data == "TRUE") {
   rasterTmpFile()
   
 } else {
-  
   message(' skip file reading, not many species analysed')   ##
-  
 }
 
 
 ## Create a list of species to loop over
-spp.geo = as.character(unique(CLEAN.INV$searchTaxon))
+spp.plot = as.character(unique(CLEAN.INV$searchTaxon))
+
+
+
+
+
+#########################################################################################################################
+## 1). EXTRACT CLIMATE DATA FOR AUSTRALIA'S CAPITAL CITY POSTAL CODES
+#########################################################################################################################
 
 
 #########################################################################################################################
@@ -78,7 +84,7 @@ spp.geo = as.character(unique(CLEAN.INV$searchTaxon))
 
 
 #########################################################################################################################
-## 7). PLOT HISTOGRAMS AND BAR CHARTS FOR EACH SPECIES AT 1KM
+## 2). PLOT BAR CHARTS, CONVEX HULLS AND HISTOGRAMS FOR EACH SPECIES AT 1KM
 #########################################################################################################################
 
 
@@ -86,15 +92,15 @@ spp.geo = as.character(unique(CLEAN.INV$searchTaxon))
 ## Plot histograms of temperature and rainfall
 ##  spp = spp.geo[1]
 ## geom_rect needs xmin ymax, ymin ymax 
-for (spp in spp.geo) {
+for (spp in spp.plot) {
   
   ## Subset the spatial dataframe into records for each spp
-  SP.DF     <- NICHE.1KM.84[NICHE.1KM.84$searchTaxon %in% spp , ]
+  #SP.DF     <- NICHE.1KM.84[NICHE.1KM.84$searchTaxon %in% spp , ]
   DF        <- CLEAN.INV[CLEAN.INV$searchTaxon %in% spp , ]
   
   # TMP.GLO   <- subset(GLOB.NICHE,   searchTaxon == spp)
   # TMP.AUS   <- subset(AUS.NICHE,    searchTaxon == spp)
-
+  
   #############################################################
   ## Now, build a df of the temperature vectors
   # if(nrow(TMP.GLO) > 0){
@@ -111,12 +117,12 @@ for (spp in spp.geo) {
   # 
   # TMP.RANGE <- rbind(TMP.GLO, TMP.AUS)
   # names(TMP.RANGE)[2] = c("Temperature_range")
-
+  
   ## Subset DF into records for each spp
   # DF     <- subset(COMBO.SUA.POA, searchTaxon == spp)
   # DF.OCC <- subset(COMBO.SUA.POA, searchTaxon == spp & SOURCE != "INVENTORY")
   # DF.INV <- subset(COMBO.SUA.POA, searchTaxon == spp & SOURCE == "INVENTORY")
-   
+  
   # #############################################################
   # ## Plot occurrence points by source for the world
   # message('Writing global occ sources for ', spp)
@@ -146,35 +152,35 @@ for (spp in spp.geo) {
   # 
   # temp.bar =
   #   ggplot(TMP.RANGE, aes(y = Temperature_range, x = RANGE, fill = RANGE)) +   ## supply xmin, etc in aes
-
-    # scale_y_discrete(limits = c(min.temp,
-    #                             max.temp)) +
-
-    # geom_bar(stat = "identity", position = "identity", width = 0.1) +          ## use geom_rect here   
-    # coord_flip() +                                                             ## geom_segment
-    # 
-    # ## Add some median lines : overall, ALA and GBIF
-    # ## This will only work if we plot the full range of temperatures on the x-axis
-    # geom_vline(aes(xintercept = POA.SYD$Annual_mean_temp),
-    #            col = 'blue', size = 1) +
-    # geom_vline(aes(xintercept = POA.SYD$Annual_mean_temp_50),
-    #            col = 'red', size = 1) +
-    # geom_vline(aes(xintercept = POA.SYD$Annual_mean_temp_70),
-    #            col = 'green', size = 1) +
-    # 
-    # 
-    # ggtitle(paste0("Worldclim temperature ranges for ", spp)) +
-    # 
-    # ## Add themes
-    # theme(axis.title.x     = element_text(colour = "black", size = 35),
-    #       axis.text.x      = element_text(size = 25),
-    # 
-    #       panel.background = element_blank(),
-    #       panel.border     = element_rect(colour = "black", fill = NA, size = 3),
-    #       plot.title       = element_text(size   = 40, face = "bold"),
-    #       legend.text      = element_text(size   = 20),
-    #       legend.title     = element_text(size   = 20),
-    #       legend.key.size  = unit(1.5, "cm"))
+  
+  # scale_y_discrete(limits = c(min.temp,
+  #                             max.temp)) +
+  
+  # geom_bar(stat = "identity", position = "identity", width = 0.1) +          ## use geom_rect here   
+  # coord_flip() +                                                             ## geom_segment
+  # 
+  # ## Add some median lines : overall, ALA and GBIF
+  # ## This will only work if we plot the full range of temperatures on the x-axis
+  # geom_vline(aes(xintercept = POA.SYD$Annual_mean_temp),
+  #            col = 'blue', size = 1) +
+  # geom_vline(aes(xintercept = POA.SYD$Annual_mean_temp_50),
+  #            col = 'red', size = 1) +
+  # geom_vline(aes(xintercept = POA.SYD$Annual_mean_temp_70),
+  #            col = 'green', size = 1) +
+  # 
+  # 
+  # ggtitle(paste0("Worldclim temperature ranges for ", spp)) +
+  # 
+  # ## Add themes
+  # theme(axis.title.x     = element_text(colour = "black", size = 35),
+  #       axis.text.x      = element_text(size = 25),
+  # 
+  #       panel.background = element_blank(),
+  #       panel.border     = element_rect(colour = "black", fill = NA, size = 3),
+  #       plot.title       = element_text(size   = 40, face = "bold"),
+  #       legend.text      = element_text(size   = 20),
+  #       legend.title     = element_text(size   = 20),
+  #       legend.key.size  = unit(1.5, "cm"))
   # 
   # ## Print the plot and close the device
   # print(temp.hist + ggtitle(paste0("Worldclim temp niches for ", spp)))
@@ -183,119 +189,143 @@ for (spp in spp.geo) {
   
   #############################################################
   ## Plot convex Hull
-  message('Writing global convex hulls for ', spp)
-  #DF.CONV <- plyr::mutate(DF, OCC_TYPE = ifelse(grepl("INVENTORY", SOURCE), "INV", "OCC"))
-  
-  ## Start PNG device
-  png(sprintf("./data/ANALYSIS/SPECIES_RANGES/%s_%s", spp, "_1km_convex_hull.png"),
-      16, 10, units = 'in', res = 500)
-  
-  find_hull <- function(DF) DF[chull(DF$Annual_mean_temp, DF$Annual_precip), ]
-  hulls     <- ddply(DF, "SOURCE", find_hull)
-  
-  plot      <- ggplot(data = DF, aes(x = Annual_mean_temp, 
-                                     y = Annual_precip, colour = SOURCE, fill = SOURCE)) +
-    geom_point() + 
-    geom_polygon(data = hulls, alpha = 0.5) +
-    labs(x = "Annual_mean_temp", y = "Annual_precip") +
+  ## Check if the file exists
+  convex.png = sprintf("./data/ANALYSIS/SPECIES_RANGES/%s_%s", spp, "_1km_convex_hull.png")
+  if(!file.exists(convex.png)) {
     
-    theme(axis.title.x     = element_text(colour = "black", size = 35),
-          axis.text.x      = element_text(size = 20),
-          
-          axis.title.y     = element_text(colour = "black", size = 35),
-          axis.text.y      = element_text(size = 20),
-          
-          panel.background = element_blank(),
-          panel.border     = element_rect(colour = "black", fill = NA, size = 1.5),
-          plot.title       = element_text(size   = 40, face = "bold"),
-          legend.text      = element_text(size   = 20),
-          legend.title     = element_text(size   = 20),
-          legend.key.size  = unit(1.5, "cm")) + 
+    ## Start PNG device
+    message('Writing global convex hulls for ', spp)
+    png(sprintf("./data/ANALYSIS/SPECIES_RANGES/%s_%s", spp, "_1km_convex_hull.png"),
+        16, 10, units = 'in', res = 500)
     
-  ggtitle(paste0("Convex Hull for ", spp))
-  print(plot)
-  
-  ## close device
-  dev.off()
+    find_hull <- function(DF) DF[chull(DF$Annual_mean_temp, DF$Annual_precip), ]
+    hulls     <- ddply(DF, "SOURCE", find_hull)
+    
+    plot      <- ggplot(data = DF, aes(x = Annual_mean_temp, 
+                                       y = Annual_precip, colour = SOURCE, fill = SOURCE)) +
+      geom_point() + 
+      geom_polygon(data = hulls, alpha = 0.5) +
+      labs(x = "Annual_mean_temp", y = "Annual_precip") +
+      
+      theme(axis.title.x     = element_text(colour = "black", size = 35),
+            axis.text.x      = element_text(size = 20),
+            
+            axis.title.y     = element_text(colour = "black", size = 35),
+            axis.text.y      = element_text(size = 20),
+            
+            panel.background = element_blank(),
+            panel.border     = element_rect(colour = "black", fill = NA, size = 1.5),
+            plot.title       = element_text(size   = 40, face = "bold"),
+            legend.text      = element_text(size   = 20),
+            legend.title     = element_text(size   = 20),
+            legend.key.size  = unit(1.5, "cm")) + 
+      
+      ggtitle(paste0("Convex Hull for ", spp))
+    print(plot)
+    
+    ## close device
+    dev.off()
+    
+  } else {
+    message('Convex hull already created for ', spp)
+  }
   
   #############################################################
   ## Plot temperature histograms
-  message('Writing global temp histograms for ', spp)
-  png(sprintf("./data/ANALYSIS/SPECIES_RANGES/%s_%s", spp, "temp_niche_histograms_1km_records.png"),
-      16, 10, units = 'in', res = 500)
+  temp.png = sprintf("./data/ANALYSIS/SPECIES_RANGES/%s_%s", spp, "temp_niche_histograms_1km_records.png")
   
-  ## Use the 'SOURCE' column to create a histogram for each source.
-  temp.hist = ggplot(DF, aes(x = Annual_mean_temp, group = SOURCE, fill = SOURCE)) +
+  ## Check if file exists
+  if(!file.exists(temp.png)) {
+    message('Writing global temp histograms for ', spp)
+    png(sprintf("./data/ANALYSIS/SPECIES_RANGES/%s_%s", spp, "temp_niche_histograms_1km_records.png"),
+        16, 10, units = 'in', res = 500)
     
-    geom_histogram(position = "identity", alpha = 0.5, binwidth = 0.25,
-                   aes(y =..density..))  +
-    geom_density(col = 4, alpha = 0.5) +
+    ## Use the 'SOURCE' column to create a histogram for each source.
+    temp.hist = ggplot(DF, aes(x = Annual_mean_temp, group = SOURCE, fill = SOURCE)) +
+      
+      geom_histogram(position = "identity", alpha = 0.5, binwidth = 0.25,
+                     aes(y =..density..))  +
+      geom_density(col = 4, alpha = 0.5) +
+      
+      ## Add some median lines : overall, ALA and GBIF
+      geom_vline(aes(xintercept = median(DF$Annual_mean_temp)),
+                 col = 'blue', size = 1) +
+      geom_vline(aes(xintercept = median(DF.OCC$Annual_mean_temp)),
+                 col = 'red', size = 1) +
+      
+      ggtitle(paste0("Worldclim temp niches for ", spp)) +
+      
+      ## Add themes
+      theme(axis.title.x     = element_text(colour = "black", size = 35),
+            axis.text.x      = element_text(size = 25),
+            
+            axis.title.y     = element_text(colour = "black", size = 35),
+            axis.text.y      = element_text(size = 25),
+            
+            panel.background = element_blank(),
+            panel.border     = element_rect(colour = "black", fill = NA, size = 3),
+            plot.title       = element_text(size   = 40, face = "bold"),
+            legend.text      = element_text(size   = 20),
+            legend.title     = element_text(size   = 20),
+            legend.key.size  = unit(1.5, "cm"))
     
-    ## Add some median lines : overall, ALA and GBIF
-    geom_vline(aes(xintercept = median(DF$Annual_mean_temp)),
-               col = 'blue', size = 1) +
-    geom_vline(aes(xintercept = median(DF.OCC$Annual_mean_temp)),
-               col = 'red', size = 1) +
+    ## Print the plot and close the device
+    print(temp.hist + ggtitle(paste0("Worldclim temp niches for ", spp)))
+    dev.off()
     
-    ggtitle(paste0("Worldclim temp niches for ", spp)) +
-    
-    ## Add themes
-    theme(axis.title.x     = element_text(colour = "black", size = 35),
-          axis.text.x      = element_text(size = 25),
-          
-          axis.title.y     = element_text(colour = "black", size = 35),
-          axis.text.y      = element_text(size = 25),
-          
-          panel.background = element_blank(),
-          panel.border     = element_rect(colour = "black", fill = NA, size = 3),
-          plot.title       = element_text(size   = 40, face = "bold"),
-          legend.text      = element_text(size   = 20),
-          legend.title     = element_text(size   = 20),
-          legend.key.size  = unit(1.5, "cm"))
+  } else {
+    message('Temp histogram already created for ', spp)
+  }
   
-  ## Print the plot and close the device
-  print(temp.hist + ggtitle(paste0("Worldclim temp niches for ", spp)))
-  dev.off()
   
   #############################################################
   ## Plot rainfall histograms
-  message('Writing global rain histograms for ', spp)
-  png(sprintf("./data/ANALYSIS/SPECIES_RANGES/%s_%s", spp, "rain_niche_histograms_1km_records.png"),
-      16, 10, units = 'in', res = 500)
+  rain.png = sprintf("./data/ANALYSIS/SPECIES_RANGES/%s_%s", spp, "rain_niche_histograms_1km_records.png")
   
-  ## Use the 'SOURCE' column to create a histogram for each source.
-  rain.hist = ggplot(DF, aes(x = Annual_precip, group = SOURCE, fill = SOURCE)) +
+  ## Check if file exists
+  if(!file.exists(rain.png)) {
+    message('Writing global rain histograms for ', spp)
     
-    geom_histogram(position = "identity", alpha = 0.5, binwidth = 15,
-                   aes(y =..density..))  +
-    geom_density(col = 4, alpha = 0.5) +
+    message('Writing global rain histograms for ', spp)
+    png(sprintf("./data/ANALYSIS/SPECIES_RANGES/%s_%s", spp, "rain_niche_histograms_1km_records.png"),
+        16, 10, units = 'in', res = 500)
     
-    ## Add some median lines : overall, ALA and GBIF
-    geom_vline(aes(xintercept = median(DF$Annual_precip)),
-               col = 'blue', size = 1) +
-    geom_vline(aes(xintercept = median(DF.OCC$Annual_precip)),
-               col = 'red', size = 1) +
+    ## Use the 'SOURCE' column to create a histogram for each source.
+    rain.hist = ggplot(DF, aes(x = Annual_precip, group = SOURCE, fill = SOURCE)) +
+      
+      geom_histogram(position = "identity", alpha = 0.5, binwidth = 15,
+                     aes(y =..density..))  +
+      geom_density(col = 4, alpha = 0.5) +
+      
+      ## Add some median lines : overall, ALA and GBIF
+      geom_vline(aes(xintercept = median(DF$Annual_precip)),
+                 col = 'blue', size = 1) +
+      geom_vline(aes(xintercept = median(DF.OCC$Annual_precip)),
+                 col = 'red', size = 1) +
+      
+      ggtitle(paste0("Worldclim rain niches for ", spp)) +
+      
+      ## Add themes
+      theme(axis.title.x     = element_text(colour = "black", size = 35),
+            axis.text.x      = element_text(size = 25),
+            
+            axis.title.y     = element_text(colour = "black", size = 35),
+            axis.text.y      = element_text(size = 25),
+            
+            panel.background = element_blank(),
+            panel.border     = element_rect(colour = "black", fill = NA, size = 3),
+            plot.title       = element_text(size   = 40, face = "bold"),
+            legend.text      = element_text(size   = 20),
+            legend.title     = element_text(size   = 20),
+            legend.key.size  = unit(1.5, "cm"))
     
-    ggtitle(paste0("Worldclim rain niches for ", spp)) +
+    ## Print the plot and close the device
+    print(rain.hist + ggtitle(paste0("Worldclim rain niches for ", spp)))
+    dev.off()
     
-    ## Add themes
-    theme(axis.title.x     = element_text(colour = "black", size = 35),
-          axis.text.x      = element_text(size = 25),
-          
-          axis.title.y     = element_text(colour = "black", size = 35),
-          axis.text.y      = element_text(size = 25),
-          
-          panel.background = element_blank(),
-          panel.border     = element_rect(colour = "black", fill = NA, size = 3),
-          plot.title       = element_text(size   = 40, face = "bold"),
-          legend.text      = element_text(size   = 20),
-          legend.title     = element_text(size   = 20),
-          legend.key.size  = unit(1.5, "cm"))
-  
-  ## Print the plot and close the device
-  print(rain.hist + ggtitle(paste0("Worldclim rain niches for ", spp)))
-  dev.off()
-  
+  } else {
+    message('Rain histogram already created for ', spp)
+  }
 }
 
 
