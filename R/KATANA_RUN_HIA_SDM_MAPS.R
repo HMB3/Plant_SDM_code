@@ -157,7 +157,6 @@ GBIF.spp      = as_utf8(GBIF.spp, normalize = TRUE)   ## Check the species names
 save_run      = "ALL_TREE_JULY_2018"                  ## a variable to append the run name to the output files
                                                       ## Need to include tree or not for HIA list
 
-
 ## If running the trees, use all three data sources
 if (grepl("TREE", save_run)) {
   OCC_SOURCE    = c("ALA", "GBIF", "INVENTORY")
