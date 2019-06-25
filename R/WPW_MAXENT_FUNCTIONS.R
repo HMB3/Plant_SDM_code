@@ -12,8 +12,8 @@
 
 
 # ## Here are the argumetns needed to run the targetted background selection SDMs inside the function itself
-# spp                     = GBIF.spp[1]
-# # This is what is causing the proportional sampling to skip.........................................
+#spp                     = GBIF.spp[2]
+# This is what is causing the proportional sampling to skip.........................................
 # occ <- subset(SDM.SPAT.OCC.BG, searchTaxon == spp)
 # occ <- occ[grep(paste(OCC_SOURCE, collapse = '|'), occ$SOURCE, ignore.case = TRUE),]
 # message('Using occ records from ', unique(occ$SOURCE))
@@ -258,59 +258,59 @@ fit_maxent_targ_bg_back_sel <- function(occ,
     
     #####################################################################
     ## Now save an image of the background points 
-    save_name = gsub(' ', '_', name)
-    
-    aus.mol = readRDS(paste0(shp_path, aus_shp)) %>%
-      spTransform(projection(buffer))
-    
-    #aus.kop = crop(Koppen_crop, aus.mol)
-    
-    occ.mol <- occ %>%
-      spTransform(projection(buffer))
-    
-    ## Print the koppen zones, occurrences and points to screen
-    plot(Koppen_crop, legend = FALSE,
-         main = paste0('Occurence SDM records for ', name))
-    
-    plot(aus.mol, add = TRUE)
-    plot(buffer,  add = TRUE, col = "red")
-    plot(occ.mol, add = TRUE, col = "blue")
-    
-    ## Then save the occurrence points
-    png(sprintf('%s/%s/%s_%s.png', maxent_path, save_name, save_name, "buffer_occ"),
-        16, 10, units = 'in', res = 300)
-    
-    plot(Koppen_crop, legend = FALSE,
-         main = paste0('Occurence SDM records for ', name))
-    
-    plot(aus.mol, add = TRUE)
-    plot(buffer,  add = TRUE, col = "red")
-    plot(occ.mol, add = TRUE, col = "blue")
-    
-    dev.off()
-    
-    ## Only save inventory data if it exists in occ
-    if ("INVENTORY" %in% unique(occ$SOURCE) == "TRUE") {
-      
-      inv.mol <- bg.inv  %>%
-        spTransform(projection(buffer))  
-      
-      png(sprintf('%s/%s/%s_%s.png', maxent_path, save_name, save_name, "buffer_inv"),
-          16, 10, units = 'in', res = 300)
-      
-      plot(Koppen_crop, legend = FALSE, 
-           main = paste0('Inventory sdm records for ', save_name))
-      plot(aus.mol, add = TRUE)
-      plot(buffer,  add = TRUE, col = "red")
-      plot(inv.mol, add = TRUE, col = "black")
-      
-      dev.off()
-      
-    } else {
-      
-      message('No inventory data, dont make bg map')
-      
-    }
+    # save_name = gsub(' ', '_', name)
+    # 
+    # aus.mol = readRDS(paste0(shp_path, aus_shp)) %>%
+    #   spTransform(projection(buffer))
+    # 
+    # #aus.kop = crop(Koppen_crop, aus.mol)
+    # 
+    # occ.mol <- occ %>%
+    #   spTransform(projection(buffer))
+    # 
+    # ## Print the koppen zones, occurrences and points to screen
+    # plot(Koppen_crop, legend = FALSE,
+    #      main = paste0('Occurence SDM records for ', name))
+    # 
+    # plot(aus.mol, add = TRUE)
+    # plot(buffer,  add = TRUE, col = "red")
+    # plot(occ.mol, add = TRUE, col = "blue")
+    # 
+    # ## Then save the occurrence points
+    # png(sprintf('%s/%s/%s_%s.png', maxent_path, save_name, save_name, "buffer_occ"),
+    #     16, 10, units = 'in', res = 300)
+    # 
+    # plot(Koppen_crop, legend = FALSE,
+    #      main = paste0('Occurence SDM records for ', name))
+    # 
+    # plot(aus.mol, add = TRUE)
+    # plot(buffer,  add = TRUE, col = "red")
+    # plot(occ.mol, add = TRUE, col = "blue")
+    # 
+    # dev.off()
+    # 
+    # ## Only save inventory data if it exists in occ
+    # if ("INVENTORY" %in% unique(occ$SOURCE) == "TRUE") {
+    #   
+    #   inv.mol <- bg.inv  %>%
+    #     spTransform(projection(buffer))  
+    #   
+    #   png(sprintf('%s/%s/%s_%s.png', maxent_path, save_name, save_name, "buffer_inv"),
+    #       16, 10, units = 'in', res = 300)
+    #   
+    #   plot(Koppen_crop, legend = FALSE, 
+    #        main = paste0('Inventory sdm records for ', save_name))
+    #   plot(aus.mol, add = TRUE)
+    #   plot(buffer,  add = TRUE, col = "red")
+    #   plot(inv.mol, add = TRUE, col = "black")
+    #   
+    #   dev.off()
+    #   
+    # } else {
+    #   
+    #   message('No inventory data, dont make bg map')
+    #   
+    # }
     
     #####################################################################
     ## Now save the buffer, the occ and bg points as shapefiles
