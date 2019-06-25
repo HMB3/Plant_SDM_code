@@ -154,7 +154,7 @@ if (Sys.getenv("PBS_ARRAYID") != "") {
 #########################################################################################################################
 ## The required folders must be created on katana
 GBIF.spp      = as_utf8(GBIF.spp, normalize = TRUE)   ## Check the species names have the right characters
-save_run      = "ALL_TREE_JULY_2018"                 ## a variable to append the run name to the output files
+save_run      = "ALL_TREE_JULY_2018"                  ## a variable to append the run name to the output files
                                                       ## Need to include tree or not for HIA list
 
 
@@ -341,7 +341,7 @@ source('./R/8_MAP_SDM_COMBINE.R', echo = TRUE)
 
 ## 3).  H:drive (2TB SSD that I've been working off) and G:drive (8TB HDD for backup).
 
-##      - Clean up files on H: ..............................................................................
+##      - Clean up files on H: including R folder
 ##      - Run the code from inside G to test. Keep the full folders on the temporary drive
 ##      - Put species to check in the results
 ##      - Store the full evergreen results in G:
