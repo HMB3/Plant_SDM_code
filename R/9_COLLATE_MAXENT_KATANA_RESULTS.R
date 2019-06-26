@@ -14,7 +14,8 @@ if(read_data == "TRUE") {
   ## Load GBIF and ALA data :: this would ideally be for all species, not just for those run
   ## the full niche file is :: 'COMBO_NICHE_CONTEXT_ALL_EVREGREEN_MAY_2018.rds'
   COMBO.NICHE.CONTEXT = readRDS(paste0(DATA_path, 'COMBO_NICHE_CONTEXT_',  save_run, '.rds'))
-  message('Reading niche data for ', length(unique(COMBO.NICHE.CONTEXT$searchTaxon)), ' species in the set ', "'", save_run, "'")
+  message('Reading niche data for ', length(unique(COMBO.NICHE.CONTEXT$searchTaxon)), 
+          ' species in the set ', "'", save_run, "'")
   
 } else {
   message(' skip file reading, running species in parallel')   ##

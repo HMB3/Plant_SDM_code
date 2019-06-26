@@ -129,16 +129,19 @@ if (!on_windows) {
 
 #########################################################################################################################
 ## Now set global analysis variables :: these assume you are using an R project folder structure
-# least_mapped <- readRDS("./data/ANALYSIS/mapped_least.rds")
-# less_mapped  <- readRDS("./data/ANALYSIS/mapped_less.rds")
-# out_spp      <- readRDS("./data/ANALYSIS/outstanding_spp.rds")
+## Is it better to run all the species, which involves skipping over all the species that
+## didn't work, or make a list of all the species from WPW which have not yet completed, and add the extra species to this?
+# out_spp <- readRDS("./data/ANALYSIS/extra_spp.rds")
+# all_spp <- readRDS("./data/ANALYSIS/original_plus_extra_spp.rds")
+
 
 
 ## Run the species 500 or 1000 at a time
 GBIF.spp = WPW.spp ## Your list of species.
 #GBIF.spp = WPW.tree
 #GBIF.spp = WPW.non.tree
-#GBIF.spp = remaining.spp
+#GBIF.spp = out_spp
+#GBIF.spp = all_spp
 
 
 ## Subset for PBS array jobs ::
