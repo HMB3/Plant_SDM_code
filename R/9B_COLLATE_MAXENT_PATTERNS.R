@@ -35,9 +35,9 @@ ggplot(MXT.PLOT, aes(x = Number_background_points, y = Max_tss, fill = MAXENT_RA
 
 
 ## Create a scatterplot maxrix for all the quantiatitve variables
-## Need to minise these variables, which make the most sense?
+## Need to minise these variables, which make the most sense. Can debate these, but they are all related
 MXT.COR = dplyr::select(MXT.PLOT, Max_tss, Logistic_threshold, Aus_records, KOP_count,
-                        Number_var, Perm_imp, KOP_count, MAXENT_RATING)
+                        Number_var, Number_background_points, KOP_count, MAXENT_RATING)
 
 
 ## Try using ggpairs to summarise all the data :: need to tweak the settings, to create more informative plot
