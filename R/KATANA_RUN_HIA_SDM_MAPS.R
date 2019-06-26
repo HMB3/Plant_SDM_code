@@ -49,7 +49,7 @@ p <- c('ff',      'things',    'raster',        'dismo',             'sp',      
        'rvest',   'magrittr',  'devtools',      'ggplot2',           'reshape2',     'rmarkdown',             'flexdashboard', 
        'shiny',   'rgbif',     'ENMeval',       'tibble',            'ncdf4',        'Cairo',                 'taxonlookup',  
        'kgc',     'betareg',   'gridExtra',     'grid',              'lattice',      'ConR',                  'writexl',
-       'sf',      'ggmap',     'DataCombine',   'exactextractr',     'mgcv', 'doSNOW', 'tidyverse')
+       'sf',      'ggmap',     'DataCombine',   'exactextractr',     'mgcv', 'doSNOW', 'tidyverse',  'ggpubr', 'GGally')
 
 
 ## Require packages
@@ -179,6 +179,7 @@ if (grepl("TREE", save_run)) {
 read_data     = "FALSE"   ## Read intermediary data between the steps?
 save_data     = "TRUE"    ## Save data?
 check_maps    = "FALSE"   ## Create maps checking the data cleaning steps?
+explore_maps  = "TRUE"
 
 
 #########################################################################################################################

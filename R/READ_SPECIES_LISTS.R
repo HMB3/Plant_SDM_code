@@ -443,12 +443,13 @@ results.columns = c("searchTaxon",        ## From the ALA/ GBIF download code
                     "Plant_type",         ## From Anthony Manea's spreadsheet, will be affected by taxonomy....
                     "Total_growers",      ## From Anthony Manea's spreadsheet.....    
                     
-                    "Plantings",         ## No. urban plantings :: from urban tree inventory
-                    "Maxent_records",    ## No. records used in the SDM
-                    "Aus_records",       ## No. AUS records     :: from the R workflow
-                    "SUA_count",         ## No. SUAs each species occurs in :: From the R workflow
-                    "POA_count",         ## No. POAs each species occurs in :: From the R workflow
-                    "AOO",               ## Area of occurrence across australia
+                    "Plantings",          ## No. urban plantings :: from urban tree inventory
+                    "Maxent_records",     ## No. records used in the SDM
+                    "Aus_records",        ## No. AUS records     :: from the R workflow
+                    "SUA_count",          ## No. SUAs each species occurs in :: From the R workflow
+                    "POA_count",          ## No. POAs each species occurs in :: From the R workflow
+                    "AOO",                ## Global Area of occurrence
+                    "KOP_count",          ## Number of koppen zones each species is found in...
                     
                     "Number_var",        ## No. maxent variables :: from Maxent code
                     "Var_pcont",         ## Maxent Variable with highest permutation importance    

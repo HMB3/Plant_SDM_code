@@ -1,12 +1,11 @@
 #########################################################################################################################
-###################### PREDICT MAXENT TO FUTURE CLIMATES AND SUMARISE THE RESULTS ####################################### 
+############################################# SUMARISE MAXENT RESULTS ################################################### 
 #########################################################################################################################
 
 
 #########################################################################################################################
 ## This code collates the SDM results for species analyzed on Katana....................................................
 ## First step is to get the katana models run.
-
 
 
 ## Read in niche data :: this is needed to combine the context data with the maxent output
@@ -18,9 +17,7 @@ if(read_data == "TRUE") {
   message('Reading niche data for ', length(unique(COMBO.NICHE.CONTEXT$searchTaxon)), ' species in the set ', "'", save_run, "'")
   
 } else {
-  
   message(' skip file reading, running species in parallel')   ##
-  
 }
 
 
@@ -187,81 +184,59 @@ summary(MAXENT.RESULTS$Max_tss)
 summary(MAXENT.RESULTS$Omission_rate)
 
 
-## This is a summary of maxent output for current conditions
-## All species should have AUC > 0.7
+## Check the results
 dim(MAXENT.RESULTS)
-head(MAXENT.RESULTS, 20)[1:5]
+head(MAXENT.RESULTS, 10)[1:5]
 
 
 
 
 
 #########################################################################################################################
-## 2). PLOT DASHBOARD OF MAXENT STATS FOR SPOT CHECK
+## 2). COMBINE SDM RESULTS WITH HIA CONTEXT DATA & VISUALISE RELATIONSHIPS BETWEEN VARIABLES
 #########################################################################################################################
 
 
-
 #########################################################################################################################
-## Plot a miny dashboard of the results 
-if (nrow(MAXENT.RESULTS) > 2) {
-  
-  ## What other variables are related?
-  ## Omission rate vs records, key stats vs. maxent rating, etc. 
-  lm.auc = lm(MAXENT.RESULTS$Max_tss ~ MAXENT.RESULTS$Training_AUC)
-  lm.auc = lm(MAXENT.RESULTS$Max_tss ~ MAXENT.RESULTS$Training_AUC)
-  
-  ## Save this to file
-  #png(paste0('./output/maxent/', 'Maxent_run_summary_', save_run, '.png'), 16, 12, units = 'in', res = 500)
-  
-  layout(matrix(c(1,1,2,3), 1, 1, byrow = TRUE))
-  
-  plot(MAXENT.RESULTS$Training_AUC, MAXENT.RESULTS$Max_tss, pch = 19, col  = "blue",
-       xlab = "AUC", ylab = "TSS", 
-       abline(lm(MAXENT.RESULTS$Max_tss ~ MAXENT.RESULTS$Training_AUC)), 
-       main = '', cex = 1.3)
-  
-  legend("topleft", bty = "n", 
-         legend = paste("R2 is", format(summary(lm.auc)$adj.r.squared, digits = 4)))
-  
-  # hist(MAXENT.RESULTS$Training_AUC, breaks = 10, col = "blue",   border = FALSE,
-  #      ylab = "Frequency",
-  #      xlab = "Training AUC", main = "AUC", cex = 3)
-  # hist(MAXENT.RESULTS$Max_tss,      breaks = 10, col = "orange", border = FALSE,
-  #      ylab = "",
-  #      xlab = "Maximum True Skill Statistic", main = "TSS", cex = 3)
-  
-  ## Finsish the device
-  #dev.off()
-  
-  ## If the species list is < 2 records, don't plot
-} else {
-  
-  message('Dont plot, only ', length(GBIF.spp), ' species analysed')
-  
-}
+## So we've got a range of quantiative and qualitative measures for each species (e.g. maxent output, number of records,
+## model score). Before embarking on a machine learning odessy, can we see some patterns in the 450-odd species that have
+## already been rated by hand? Simple categorical visualations in R should be sufficient to enough to get at the patterns.
 
-
-
-
-
-#########################################################################################################################
-## 3). COMBINE SDM RESULTS WITH HIA CONTEXT DATA, RUN LOCAL MESS MAPS AND SAVE
-#########################################################################################################################
+## So we have a discreate variable - good, fair, poor, and some quantiative and discrete variables. How can they be 
+## analysed? 
 
 
 #########################################################################################################################
 ## Change the species column so we can join on the contextual data
 MAXENT.RESULTS$searchTaxon = gsub("_", " ", MAXENT.RESULTS$searchTaxon)
-MAXENT.RESULTS = join(COMBO.NICHE.CONTEXT, MAXENT.RESULTS, type = "right")
-MAXENT.RESULTS = dplyr::select(MAXENT.RESULTS, results.columns)
+MAXENT.CONTEXT = join(COMBO.NICHE.CONTEXT, MAXENT.RESULTS)
+MAXENT.CONTEXT = dplyr::select(MAXENT.CONTEXT, results.columns)
 
 
-## Also, here we could add on the maxent ratings
 ## 476 species have been rated, but we need to check if the ratings are still applicable, as the data has been updated
 length(intersect(MAXENT.RATING.LAT$searchTaxon, WPW.spp))
 length(intersect(MAXENT.RATING.LAT$searchTaxon, MAXENT.RESULTS$searchTaxon))
-MAXENT.RESULTS = join(MAXENT.RESULTS, MAXENT.RATING.LAT)
+
+
+## Add a new text string for good/fair/poor models :: might be easier to use in visualisations
+## Join on the new rating
+MAXENT.RATING.LAT = mutate(MAXENT.RATING.LAT, 
+                           MAXENT_RATING = ifelse(CHECK_MAP %in% 1, "GOOD",
+                                                  ifelse(CHECK_MAP %in% 2, "FAIR",
+                                                         ifelse(CHECK_MAP %in% 3, "POOR", "UN-RATED"))))
+MAXENT.RATING.LAT$CHECK_MAP = NULL
+MAXENT.CONTEXT = join(MAXENT.CONTEXT, MAXENT.RATING.LAT)
+
+
+#########################################################################################################################
+if(explore_maps == "TRUE") {
+  
+  ## save .rds file for the next session
+  source('./R/9B_COLLATE_MAXENT_PATTERNS.R')
+  
+} else {
+  message('Dont explore patterns in SDM results')
+}
 
 
 #########################################################################################################################
@@ -272,11 +247,8 @@ if(save_data == "TRUE") {
   saveRDS(MAXENT.RESULTS,   paste0(DATA_path, 'MAXENT_RESULTS_', save_run, '.rds'))
   write.csv(MAXENT.RESULTS, paste0(DATA_path, 'MAXENT_RESULTS_', save_run, '.csv'), row.names = FALSE)
   
-  
 } else {
-  
   message('Dont save niche summary, only ', length(GBIF.spp), ' species analysed')
-  
 }
 
 
@@ -284,14 +256,14 @@ if(save_data == "TRUE") {
 
 
 #########################################################################################################################
-## 4). RUN MESS MAPS LOCALLY - BEST TO GET IT WORKING ON LINUX....
+## 3). RUN MESS MAPS LOCALLY - BEST TO GET IT WORKING ON LINUX....
 #########################################################################################################################
 
 
 #########################################################################################################################
 ## Now check the match between the species list, and the results list. 
 length(intersect(map_spp_list, MAXENT.RESULTS$searchTaxon)) 
-MAXENT.RESULTS  =  MAXENT.RESULTS[MAXENT.RESULTS$searchTaxon %in% map_spp_list , ] 
+MAXENT.CONTEXT =  MAXENT.RESULTS[MAXENT.RESULTS$searchTaxon %in% map_spp_list , ] 
 map_spp         = unique(MAXENT.RESULTS$searchTaxon)
 length(map_spp)
 
@@ -346,6 +318,6 @@ tryCatch(
 
 
 
-########################################################################################################################
+#########################################################################################################################
 #####################################################  TBC ############################################################## 
 #########################################################################################################################
