@@ -132,13 +132,11 @@ if (!on_windows) {
 ## Is it better to run all the species, which involves skipping over all the species that
 ## didn't work, or make a list of all the species from WPW which have not yet completed, and add the extra species to this?
 ## Run the difference between Shawn's list and mine locally.....
-# out_spp <- readRDS("./data/ANALYSIS/extra_spp.rds")
-# all_spp <- readRDS("./data/ANALYSIS/original_plus_extra_spp.rds")
-
+extra.spp <- readRDS("./data/ANALYSIS/extra_spp.rds")
 
 
 ## Run the species 500 or 1000 at a time
-GBIF.spp = WPW.spp ## Your list of species.
+GBIF.spp = extra.spp ## Your list of species.
 #GBIF.spp = WPW.tree
 #GBIF.spp = WPW.non.tree
 #GBIF.spp = out_spp
@@ -183,7 +181,7 @@ if (grepl("TREE", save_run)) {
 read_data     = "FALSE"   ## Read intermediary data between the steps?
 save_data     = "TRUE"    ## Save data?
 check_maps    = "FALSE"   ## Create maps checking the data cleaning steps?
-explore_maps  = "TRUE"
+explore_maps  = "FALSE"
 
 
 #########################################################################################################################
@@ -254,8 +252,8 @@ message('Running SDMs and maps for ', length(GBIF.spp), ' species in the set ', 
 # 
 ## Step 7 :: Run maxent on a table of all species, using targeted background selection, then backwards selection
 ## Step 8 :: Create habitat suitability maps for each species using six GCMs and three time slices (2030/50/70).
-source('./R/7_RUN_MAXENT.R',      echo = TRUE)
-source('./R/8_MAP_SDM_COMBINE.R', echo = TRUE)
+source('./R/7_RUN_MAXENT_EXTRA_SPP.R', echo = TRUE)
+source('./R/8_MAP_SDM_COMBINE.R',      echo = TRUE)
 
 
 ## COLLATE SDM RESULTS & PLOT MESS MAPS
