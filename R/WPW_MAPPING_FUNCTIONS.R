@@ -140,18 +140,33 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
                              maxent_path, species, 'MESS_output')
           f_mess_current = sprintf('%s/%s%s.tif', MESS_dir, species, "_current_mess")
           
-          ## Set the names of the rasters to match the occ data, and subset both
-          sdm_vars             = names(m@presence)
-          current_grids        = subset(current_grids, sdm_vars)
-          swd                  = swd [,sdm_vars]
-          identical(names(swd), names(current_grids))
           
-          ## Create a map of novel environments for current conditions.
-          ## This similarity function only uses variables (e.g. n bioclim), not features
-          message('Run similarity function for current condtions for ', species)
-          mess_current  <- similarity(current_grids, swd, full = TRUE)
-          novel_current <- mess_current$similarity_min < 0  ##   All novel environments are < 0
-          novel_current[novel_current==0] <- NA             ##   0 values are NA
+          ## If the current novel layer doesn't exist, create it
+          if(!file.exists(sprintf('%s/%s%s.tif', MESS_dir, species, "_current_novel")))  {
+            
+            message('Writing currently novel environments to file for ', species) 
+            writeRaster(novel_current, sprintf('%s/%s%s.tif', MESS_dir, species, "_current_novel"), 
+                        overwrite = TRUE)
+            
+            ## Set the names of the rasters to match the occ data, and subset both
+            sdm_vars             = names(m@presence)
+            current_grids        = subset(current_grids, sdm_vars)
+            swd                  = swd [,sdm_vars]
+            identical(names(swd), names(current_grids))
+            
+            ## Create a map of novel environments for current conditions.
+            ## This similarity function only uses variables (e.g. n bioclim), not features
+            message('Run similarity function for current condtions for ', species)
+            mess_current  <- similarity(current_grids, swd, full = TRUE)
+            novel_current <- mess_current$similarity_min < 0  ##   All novel environments are < 0
+            novel_current[novel_current==0] <- NA             ##   0 values are NA
+            
+            
+          } else {
+            ## Otherwise, read in the current novel layer
+            message(species, 'Current MESS file already saved') 
+            novel_current = raster(sprintf('%s/%s%s.tif', MESS_dir, species, "_current_novel"))
+          }
           
           ##################################################################
           ## Write out the current mess maps - 
@@ -165,32 +180,32 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
           }
           
           ## Then write the mess output to a directory inside the 'full' maxent folder
-          writeRaster(mess_current$similarity_min, sprintf('%s/%s%s.tif', MESS_dir, species, "_current_mess"), 
-                      overwrite = TRUE)
+          # writeRaster(mess_current$similarity_min, sprintf('%s/%s%s.tif', MESS_dir, species, "_current_mess"), 
+          #             overwrite = TRUE)
           
           ##################################################################
           ## Create a PNG file of MESS maps for each maxent variable
           ## raster_list  = unstack(mess_current$similarity) :: list of environmental rasters
           ## raster_names = names(mess_current$similarity)   :: names of the rasters
-          message('Creating mess maps of each current environmental predictor for ', species)
-          mapply(function(raster, raster_name) {
-            
-            ## Create a level plot of MESS output for each predictor variable, for each species
-            p <- levelplot(raster, margin = FALSE, scales = list(draw = FALSE),
-                           at = seq(minValue(raster), maxValue(raster), len = 100),
-                           colorkey = list(height = 0.6), 
-                           main = gsub('_', ' ', sprintf('Current_mess_for_%s (%s)', raster_name, species))) +
-              
-              latticeExtra::layer(sp.polygons(aus_poly), data = list(aus_poly = aus_poly))  ## need list() for polygon
-            
-            p <- diverge0(p, 'RdBu')
-            f <- sprintf('%s/%s%s%s.png', MESS_dir, species, "_current_mess_", raster_name)
-            
-            png(f, 8, 8, units = 'in', res = 300, type = 'cairo')
-            print(p)
-            dev.off()
-            
-          }, unstack(mess_current$similarity), names(mess_current$similarity))
+          # message('Creating mess maps of each current environmental predictor for ', species)
+          # mapply(function(raster, raster_name) {
+          #   
+          #   ## Create a level plot of MESS output for each predictor variable, for each species
+          #   p <- levelplot(raster, margin = FALSE, scales = list(draw = FALSE),
+          #                  at = seq(minValue(raster), maxValue(raster), len = 100),
+          #                  colorkey = list(height = 0.6), 
+          #                  main = gsub('_', ' ', sprintf('Current_mess_for_%s (%s)', raster_name, species))) +
+          #     
+          #     latticeExtra::layer(sp.polygons(aus_poly), data = list(aus_poly = aus_poly))  ## need list() for polygon
+          #   
+          #   p <- diverge0(p, 'RdBu')
+          #   f <- sprintf('%s/%s%s%s.png', MESS_dir, species, "_current_mess_", raster_name)
+          #   
+          #   png(f, 8, 8, units = 'in', res = 300, type = 'cairo')
+          #   print(p)
+          #   dev.off()
+          #   
+          # }, unstack(mess_current$similarity), names(mess_current$similarity))
           
           ## Write the raster of novel environments to the MESS sub-directory
           if(!file.exists(sprintf('%s/%s%s.tif', MESS_dir, species, "_current_novel")))  {
@@ -821,7 +836,7 @@ SUA_cell_count = function(unit_path, unit_shp, unit_vec, aus_shp, world_shp,
     
     ## And each species - although we don't want all possible combinations. use mapply in the function call
     lapply(species_list, function(species) {
-    
+      
       ##############################################################################################################
       ## Then, create rasters that meet habitat suitability criteria thresholds, determined by the rmaxent function
       for (thresh in thresholds) {

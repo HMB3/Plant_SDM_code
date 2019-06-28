@@ -132,13 +132,13 @@ if (!on_windows) {
 ## Is it better to run all the species, which involves skipping over all the species that
 ## didn't work, or make a list of all the species from WPW which have not yet completed, and add the extra species to this?
 ## Run the difference between Shawn's list and mine locally.....
-# out_spp <- readRDS("./data/ANALYSIS/extra_spp.rds")
-# all_spp <- readRDS("./data/ANALYSIS/original_plus_extra_spp.rds")
-
 
 
 ## Run the species 500 or 1000 at a time
 GBIF.spp = WPW.spp ## Your list of species.
+#GBIF.spp = setdiff(WPW.spp, modelled.spp$Species)
+#GBIF.spp = GBIF.spp[592:1184]
+##GBIF.spp = rev(setdiff(WPW.spp, modelled.spp$Species))
 #GBIF.spp = WPW.tree
 #GBIF.spp = WPW.non.tree
 #GBIF.spp = out_spp

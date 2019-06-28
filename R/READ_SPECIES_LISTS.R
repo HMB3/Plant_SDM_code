@@ -474,6 +474,7 @@ results.columns = c("searchTaxon",        ## From the ALA/ GBIF download code
 
 
 ## Read in a list of species which didn't complete
+# modelled.spp   = read.csv("./data/ANALYSIS/modelled_spp_latest.csv", stringsAsFactors = FALSE)
 # mapping.files    = read.csv("./output/maxent/list_of_maping_species.csv", stringsAsFactors = FALSE)
 # mapping.species  = read.csv("./output/maxent/mapped_species.csv",         stringsAsFactors = FALSE)
 
