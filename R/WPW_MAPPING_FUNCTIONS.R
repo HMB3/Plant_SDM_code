@@ -143,11 +143,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
           
           ## If the current novel layer doesn't exist, create it
           if(!file.exists(sprintf('%s/%s%s.tif', MESS_dir, species, "_current_novel")))  {
-            
-            message('Writing currently novel environments to file for ', species) 
-            writeRaster(novel_current, sprintf('%s/%s%s.tif', MESS_dir, species, "_current_novel"), 
-                        overwrite = TRUE)
-            
+                        
             ## Set the names of the rasters to match the occ data, and subset both
             sdm_vars             = names(m@presence)
             current_grids        = subset(current_grids, sdm_vars)
@@ -164,7 +160,7 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
             
           } else {
             ## Otherwise, read in the current novel layer
-            message(species, 'Current MESS file already saved') 
+            message(species, ' Current similarity analysis already run') 
             novel_current = raster(sprintf('%s/%s%s.tif', MESS_dir, species, "_current_novel"))
           }
           
@@ -174,39 +170,35 @@ project_maxent_grids_mess = function(shp_path, aus_shp, world_shp, scen_list,
           if(!dir.exists(MESS_dir)) {
             message('Creating MESS directory for ', species) 
             dir.create(MESS_dir)
-            
-          } else {
-            message(species, ' MESS directory already created') 
-          }
-          
-          ## Then write the mess output to a directory inside the 'full' maxent folder
-          # writeRaster(mess_current$similarity_min, sprintf('%s/%s%s.tif', MESS_dir, species, "_current_mess"), 
-          #             overwrite = TRUE)
-          
+					          
           ##################################################################
           ## Create a PNG file of MESS maps for each maxent variable
           ## raster_list  = unstack(mess_current$similarity) :: list of environmental rasters
           ## raster_names = names(mess_current$similarity)   :: names of the rasters
-          # message('Creating mess maps of each current environmental predictor for ', species)
-          # mapply(function(raster, raster_name) {
-          #   
-          #   ## Create a level plot of MESS output for each predictor variable, for each species
-          #   p <- levelplot(raster, margin = FALSE, scales = list(draw = FALSE),
-          #                  at = seq(minValue(raster), maxValue(raster), len = 100),
-          #                  colorkey = list(height = 0.6), 
-          #                  main = gsub('_', ' ', sprintf('Current_mess_for_%s (%s)', raster_name, species))) +
-          #     
-          #     latticeExtra::layer(sp.polygons(aus_poly), data = list(aus_poly = aus_poly))  ## need list() for polygon
-          #   
-          #   p <- diverge0(p, 'RdBu')
-          #   f <- sprintf('%s/%s%s%s.png', MESS_dir, species, "_current_mess_", raster_name)
-          #   
-          #   png(f, 8, 8, units = 'in', res = 300, type = 'cairo')
-          #   print(p)
-          #   dev.off()
-          #   
-          # }, unstack(mess_current$similarity), names(mess_current$similarity))
-          
+          message('Creating mess maps of each current environmental predictor for ', species)
+          mapply(function(raster, raster_name) {
+            
+            ## Create a level plot of MESS output for each predictor variable, for each species
+            p <- levelplot(raster, margin = FALSE, scales = list(draw = FALSE),
+                           at = seq(minValue(raster), maxValue(raster), len = 100),
+                           colorkey = list(height = 0.6), 
+                           main = gsub('_', ' ', sprintf('Current_mess_for_%s (%s)', raster_name, species))) +
+              
+              latticeExtra::layer(sp.polygons(aus_poly), data = list(aus_poly = aus_poly))  ## need list() for polygon
+            
+            p <- diverge0(p, 'RdBu')
+            f <- sprintf('%s/%s%s%s.png', MESS_dir, species, "_current_mess_", raster_name)
+            
+            png(f, 8, 8, units = 'in', res = 300, type = 'cairo')
+            print(p)
+            dev.off()
+            
+          }, unstack(mess_current$similarity), names(mess_current$similarity))
+            
+          } else {
+            message(species, ' MESS directory already created') 
+          }
+                  
           ## Write the raster of novel environments to the MESS sub-directory
           if(!file.exists(sprintf('%s/%s%s.tif', MESS_dir, species, "_current_novel")))  {
             
