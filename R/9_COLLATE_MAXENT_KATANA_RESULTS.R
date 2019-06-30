@@ -275,7 +275,7 @@ tryCatch(
                    aus_shp       = "aus_states.rds",          ## Shapefile, e.g. Australian states
                    world_shp     = "LAND_world.rds",          ## World shapefile          
                    scen_list     = scen_2030,                 ## List of climate scenarios
-                   species_list  = map_spp,                   ## rev(map_spp)
+                   species_list  = rev(map_spp),                   ## rev(map_spp)
                    maxent_path   = bs_path,
                    time_slice    = 30,
                    nclust        = 1),

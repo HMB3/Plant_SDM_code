@@ -57,6 +57,11 @@ head(gcms.50) ; head(gcms.70) ; head(gcms.30)
 
 
 ## Check why the function is skipping out......................................
+## Converting raster MESS maps to polygons under mc85bi30 scenario for Moringa_oleifera
+# H:\green_cities_sdm
+# Warning messages:
+#   1: In ogrFIDs(dsn = dsn, layer = layer) : no features found
+# 2: In value[[3L]](cond) : no features found
 
 
 #########################################################################################################################
