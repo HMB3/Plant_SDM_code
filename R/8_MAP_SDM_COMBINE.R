@@ -41,27 +41,17 @@ head(gcms.50) ; head(gcms.70) ; head(gcms.30)
 ## (Elith et al. 2010).
 
 
-## Jonh on MESS :
+## This error needs de-bugging in project_maxent_grids_mess......................................
 
-# MESS describes whether/how novel the predictors' values at a grid cell are, relative to the environmental 
-# space captured by the model-fitting (background and occurrence locations) data. You can't use the current 
-# climate MESS mask to describe future novelty - you really need to recalculate MESS for each climate you're 
-# projecting to (or ensemble thereof). 
-
-# Instead, I think the model predictions should be shown, but with an indication of where these predictions
-# are uncertain due to extrapolation to novel climates. Essentially, we're just less confident about model
-# behaviour when one or more predictors' values are novel, and that means we're uncertain about both suitability
-# and unsuitability. If we just label it as unsuitable, it kind of implies that we're as confident that it's
-# unsuitable as we are for non-novel areas that are predicted to be unsuitable. One way to present it is to
-# make a map of model predictions and overlay a pattern (e.g. hatching) that indicates where climate is novel.
-
-
-## Check why the function is skipping out......................................
 ## Converting raster MESS maps to polygons under mc85bi30 scenario for Moringa_oleifera
 # H:\green_cities_sdm
 # Warning messages:
 #   1: In ogrFIDs(dsn = dsn, layer = layer) : no features found
 # 2: In value[[3L]](cond) : no features found
+
+## Also, probably best to remove the plotting from the mapping function, and create a separate function that does this
+## It was tricky to get the plotting working on Linux (HPC) and Windows, so maybe it's best to create the files on the
+## HPC, and then create the plots locally.
 
 
 #########################################################################################################################
