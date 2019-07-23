@@ -135,7 +135,7 @@ if (!on_windows) {
 
 
 ## Run the species 500 or 1000 at a time
-GBIF.spp = WPW.spp ## Your list of species.
+GBIF.spp = WPW.spp[1000:1003] ## Your list of species.
 #GBIF.spp = setdiff(WPW.spp, modelled.spp$Species)
 #GBIF.spp = GBIF.spp[592:1184]
 ##GBIF.spp = rev(setdiff(WPW.spp, modelled.spp$Species))
@@ -182,8 +182,6 @@ if (grepl("TREE", save_run)) {
 ## Reading and writing?
 read_data     = "FALSE"   ## Read intermediary data between the steps?
 save_data     = "FALSE"    ## Save data?
-check_maps    = "FALSE"   ## Create maps checking the data cleaning steps?
-explore_maps  = "FALSE"
 
 
 #########################################################################################################################
@@ -245,7 +243,6 @@ message('Running SDMs and maps for ', length(GBIF.spp), ' species in the set ', 
 ## records near herbaria, duplicates, etc. & add contextual info for each record (taxonomic and horticultural).
 ## Then estimate the environmental and geographic range of each species.
 # source('./R/5_GEO_CLEAN_DATA.R',         echo = TRUE)
-# source('./R/5D_CALCULATE_1KM_NICHES.R',  echo = TRUE)
 
 
 ## Step 6 :: Prepare the SDM table and clean the spatial outliers at 1km resolution.

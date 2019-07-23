@@ -203,11 +203,12 @@ if(save_data == "TRUE") {
 
 #########################################################################################################################
 ## Plot GBIF outliers to check. This might be overkill, but useful to interrogate why species didn't work
-if(check_maps == "TRUE") {
+if(calc_niche == "TRUE") {
   
   message('Writing shapefiles and maps to checking directory') 
   source('./R/5B_CC_CLEAN_TEST.R')
   source('./R/5C_CC_CLEAN_TEST.R')
+  source('./R/5D_PLOT_RANGE_HISTOGRAMS.R')
   
 } else {
   

@@ -255,10 +255,6 @@ length(unique(SDM.SPAT.ALL$searchTaxon))
 message(round(nrow(SDM.SPAT.ALL)/nrow(SPAT.FLAG)*100, 2), " % records retained after spatial outlier detection")                                               
 
 
-#########################################################################################################################
-## Now calculate the niches here
-## source('./R/CALC_1KM_NICHES.R')
-
 
 #########################################################################################################################
 ## Convert back to format for SDMs :: use Mollweide projection
