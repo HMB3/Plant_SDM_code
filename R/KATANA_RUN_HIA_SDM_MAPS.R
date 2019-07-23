@@ -243,7 +243,7 @@ message('Running SDMs and maps for ', length(GBIF.spp), ' species in the set ', 
 
 ## Step 5 :: clean the occurrence data using the 'CleanCoordinates' function in the CoordinateCleaner package, to remove
 ## records near herbaria, duplicates, etc. & add contextual info for each record (taxonomic and horticultural).
-## Then estimate the environmental and geographic range of each species
+## Then estimate the environmental and geographic range of each species.
 # source('./R/5_GEO_CLEAN_DATA.R',         echo = TRUE)
 # source('./R/5D_CALCULATE_1KM_NICHES.R',  echo = TRUE)
 
