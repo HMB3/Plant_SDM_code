@@ -24,7 +24,7 @@ on_windows = switch(Sys.info()[['sysname']], Windows = TRUE, FALSE)
 if (on_windows) {
   
   ## Load the latest R data file
-  load("KATANA_RUN_DATA.RData")
+  load("HIA_RUN_DATA.RData")
   
 } else {
   
@@ -181,9 +181,9 @@ if (grepl("TREE", save_run)) {
 #########################################################################################################################
 ## Reading and writing?
 read_data     = "FALSE"   ## Read intermediary data between the steps?
-save_data     = "TRUE"    ## Save data?
+save_data     = "FALSE"    ## Save data?
 check_maps    = "FALSE"   ## Create maps checking the data cleaning steps?
-explore_maps  = "TRUE"
+explore_maps  = "FALSE"
 
 
 #########################################################################################################################

@@ -134,6 +134,7 @@ install_github('johnbaums/jagstools')
 install_github('johnbaums/hues')
 install_github('johnbaums/trees')
 install_github('johnbaums/things')
+install_github('isciences/exactextractr')
 
 
 ## Other tidbits
