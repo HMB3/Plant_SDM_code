@@ -207,7 +207,7 @@ if(calc_niche == "TRUE") {
   
   message('Writing shapefiles and maps to checking directory') 
   source('./R/5B_CC_CLEAN_TEST.R')
-  source('./R/5C_CC_CLEAN_TEST.R')
+  source('./R/5C_CALCULATE_1KM_NICHES.R')
   source('./R/5D_PLOT_RANGE_HISTOGRAMS.R')
   
 } else {

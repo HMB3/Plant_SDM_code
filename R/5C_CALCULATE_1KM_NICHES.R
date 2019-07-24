@@ -125,10 +125,9 @@ if(calc_niche == "TRUE") {
     dplyr::select(., searchTaxon, one_of(env.variables))
   
   
-  ## new_DF <- NICHE.AUS.DF[rowSums(is.na(NICHE.AUS.DF)) > 0,]
-  NICHE.AUS.DF = completeFun(NICHE.AUS.DF, c("PET"))
-  NICHE.GLO.DF = completeFun(NICHE.GLO.DF, c("PET"))
-  
+  ## Currently, the niche estimator can't handle NAs
+  NICHE.AUS.DF = completeFun(NICHE.AUS.DF, c("PET", "AI"))
+  NICHE.GLO.DF = completeFun(NICHE.GLO.DF, c("PET", "AI"))
   
   head(niche_estimate (DF = NICHE.AUS.DF, colname = "Annual_mean_temp"))  ## Including the q05 and q95
   head(niche_estimate (DF = NICHE.GLO.DF, colname = "Annual_mean_temp"))  ## Including the q05 and q95
@@ -280,9 +279,9 @@ if(calc_niche == "TRUE") {
   #########################################################################################################################
   ## Now join on the geographic range and glasshouse data
   ## There are still some species with records, but NA niches....
-  na.spp = COMBO.NICHE.CONTEXT[is.na(COMBO.NICHE.CONTEXT$Annual_mean_temp_min),]
-  na.no.rec = subset(na.spp, Global_records < 3)
-  na.error  = subset(na.spp, Global_records > 3)
+  # na.spp = COMBO.NICHE.CONTEXT[is.na(COMBO.NICHE.CONTEXT$Annual_mean_temp_min),]
+  # na.no.rec = subset(na.spp, Global_records < 3)
+  # na.error  = subset(na.spp, Global_records > 3)
   
   ##
   identical(nrow(GBIF.AOO), nrow(GLOB.NICHE))
@@ -320,39 +319,6 @@ if(calc_niche == "TRUE") {
   head(COMBO.NICHE.CONTEXT$Plantings,      20)
   head(COMBO.NICHE.CONTEXT$SUA_count,      20)
   head(COMBO.NICHE.CONTEXT$KOP_count,      20)
-  
-  
-  #########################################################################################################################
-  ## Is there a relationship between the number of records in each category of records?
-  ## Aus records now gets removed, because we are using maxent records
-  #windows();
-  # plot(COMBO.NICHE.CONTEXT$Aus_records, COMBO.NICHE.CONTEXT$Global_records)
-  # plot(COMBO.NICHE.CONTEXT$Aus_records, COMBO.NICHE.CONTEXT$Plantings)
-  
-  
-  # lm.glob  = lm(COMBO.NICHE.CONTEXT$Aus_records ~ COMBO.NICHE.CONTEXT$Global_records)
-  # lm.plant = lm(COMBO.NICHE.CONTEXT$Aus_records ~ COMBO.NICHE.CONTEXT$Plantings)
-  # 
-  # layout(matrix(c(1,1,2,3), 2, 1, byrow = TRUE))
-  # 
-  # plot(COMBO.NICHE.CONTEXT$Global_records, COMBO.NICHE.CONTEXT$Aus_records,
-  #      pch = 19, col  = "blue",
-  #      xlab = "Global records", ylab = "Australian records",
-  #      abline(lm.glob),
-  #      main = save_run, cex = 2)
-  # 
-  # legend("topleft", bty = "n",
-  #        legend = paste("R2 is", format(summary(lm.glob)$adj.r.squared, digits = 4)))
-  # 
-  # plot(COMBO.NICHE.CONTEXT$Plantings, COMBO.NICHE.CONTEXT$Aus_records,
-  #      pch = 19, col  = "blue",
-  #      xlab = "Plantings", 
-  #      ylab = "Australian records", 
-  #      abline(lm.plant),
-  #      main = save_run, cex = 2)
-  # 
-  # legend("topright", bty = "n",
-  #        legend = paste("R2 is", format(summary(lm.plant)$adj.r.squared, digits = 4)))
   
   
   #########################################################################################################################
